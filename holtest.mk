@@ -2,6 +2,7 @@ HOLLIGHT:=./hol.sh
 
 STANDALONE_EXAMPLES:=\
 	Library/agm \
+	Library/apery \
 	Library/bdd \
 	Examples/bdd_examples \
 	Library/binary \
@@ -106,6 +107,7 @@ EXTENDED_EXAMPLES:=\
 	RichterHilbertAxiomGeometry/HilbertAxiom_read \
 	Rqe/make \
 	Unity/make \
+	WZ/make \
 	Multivariate/cross \
 	Multivariate/cvectors \
 	Multivariate/flyspeck \

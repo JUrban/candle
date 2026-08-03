@@ -8,6 +8,59 @@
   * page: https://github.com/jrh13/hol-light/commits/master         *
   * *****************************************************************
 
+Sun  2nd Aug 2026       WZ [new directory]
+
+Added a formal implementation of the Wilf-Zeilberger algorithm for
+hypergeometric summation, one which largely avoids akwardnesses over zero
+denominators and special cases by an interpretion using real gamma function
+limits. This was fully implemented back in 2014 and described in the paper:
+
+  John Harrison
+  "Formal Proofs of Hypergeometric Sums"
+  Journal of Automated Reasoning 55 (2015)
+  https://www.cl.cam.ac.uk/~jrh13/papers/wz.html
+
+The setup has belatedly been made available having been cleaned up and
+extended, mainly with a cleaner Maxima certificate-generation interface
+and a few more examples, by Codex using gpt-5.6-sol (xhigh). Among the
+automatic examples is the A recurrence that is proved more manually in
+the recently added Examples/apery.ml proof.
+
+Sat  1st Aug 2026       Examples/apery.ml [new file]
+
+Added a proof of Apery's theorem, the irrationality of zeta(3). This
+originates in 2014, when I was inspired by a presentation from Assia
+Mahboubi of a proof project in Coq, which was eventually completed and
+published as A. Mahboubi and T. Sibut-Pinote, "A Formal Proof of the
+Irrationality of zeta(3)" (2021). At that time the A and B recurrences
+had been proved in Coq following Bruno Salvy's computer algebra proof
+
+  http://algo.inria.fr/libraries/autocomb/Apery2-html/apery.html
+
+but there was no machinery to provide the lcm(1..n) estimate needed
+for the full result. I decided to derive them from the HOL Light proof
+of the Prime Number Theorem (which is overkill). At that time I also
+formalized almost all other parts of the Apery proof including the A
+recurrence, but ground to a halt on the B recurrence which seemed to
+require much more work. I eventually revived this in 2026 and had
+Claude Opus 4.8 complete the B recurrence proof, following Salvy again.
+
+Fri 10th Jul 2026       nets.ml
+
+Made an optimization from June Lee to the discrimination nets in nets.ml,
+using balanced trees to speed lookup. The original code is conceptually
+ancient, little changed from Cambridge LCF days.
+
+Mon 15th Jun 2026       iterate.ml
+
+Added a simple but useful generalization of CARD_UNIONS whose proof is
+no more difficult than that special cases, which is now derived from it.
+
+  CARD_UNIONS_IMAGE =
+    |- !f s. FINITE s /\ (!t. t IN s ==> FINITE(f t)) /\
+             (!t u. t IN s /\ u IN s /\ ~(t = u) ==> f t INTER f u = {})
+             ==> CARD(UNIONS(IMAGE f s)) = nsum s (\i. CARD(f i))
+
 Mon  8th Jun 2026       Library/ringtheory.ml, Library/rabin_test.ml, 100/transcendence.ml
 
 Extended the ring theory library with the Hilbert Basis Theorem for
