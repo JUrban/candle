@@ -63,12 +63,14 @@ STANDALONE_EXAMPLES:=\
 	Examples/rectypes \
 	Library/ringtheory \
 	Examples/safetyliveness \
+	Autoformalization/sarkovskii \
 	Examples/schnirelmann \
 	Examples/solovay \
 	Examples/sos \
 	Examples/ste \
 	Examples/sylvester_gallai \
 	Library/symmetric_group \
+	Autoformalization/three_squares \
 	Examples/vitali \
 	Library/wo \
 	Library/words \
