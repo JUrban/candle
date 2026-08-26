@@ -13,21 +13,32 @@ let print_saved () =
       print_newline ()
     ) !saved_ths;;
 
+let pft_max_string_length = ref (1024 * 1024);;
+
 let decode_uleb128 : Text_io.instream -> int =
   let zero     = Cake.Word8.fromInt   0 in
   let lower7   = Cake.Word8.fromInt 127 in
   let high_bit = Cake.Word8.fromInt 128 in
-  let rec decode_uleb128 acc shift fd =
+  let rec decode_uleb128 acc shift byte_count fd =
+    if byte_count >= 9 then failwith "decode_uleb128: integer overflow" else
     match Text_io.input1 fd with
     | None -> failwith "decode_uleb128: EOF"
     | Some char ->
        let byte = Cake.Word8.fromChar char in
-       let int = Cake.Word8.toInt (Cake.Word8.andb byte lower7) in
-       let acc = int * shift + acc in
-       let shift = shift * 128 in
+       let payload = Cake.Word8.toInt (Cake.Word8.andb byte lower7) in
+       let _ =
+         if payload > (max_int - acc) / shift
+         then failwith "decode_uleb128: integer overflow" else () in
+       let acc = payload * shift + acc in
        let done_ = Cake.Word8.(=) zero (Cake.Word8.andb byte high_bit) in
-       if done_ then acc else decode_uleb128 acc shift fd
-  in decode_uleb128 0 1;;
+       if done_ then
+         if byte_count > 0 && payload = 0
+         then failwith "decode_uleb128: non-canonical encoding"
+         else acc
+       else if shift > max_int / 128
+       then failwith "decode_uleb128: integer overflow"
+       else decode_uleb128 acc (shift * 128) (byte_count + 1) fd
+  in decode_uleb128 0 1 0;;
 
 let process_footer trace_path =
   let cmd = String.concat " " [extract_footer_path; trace_path] in
@@ -74,7 +85,9 @@ let read_exactly fd n =
 
 let decode_string fd =
   let s_len = decode_uleb128 fd in
-  read_exactly fd s_len;;
+  if s_len > !pft_max_string_length
+  then failwith "decode_string: length exceeds configured limit"
+  else read_exactly fd s_len;;
 
 let next_command fd = Text_io.input1 fd;;
 
