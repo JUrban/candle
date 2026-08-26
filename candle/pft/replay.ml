@@ -23,6 +23,7 @@ let pft_max_table_slots = ref 50000000;;
 let pft_max_list_length = ref 10000000;;
 let pft_axiom_policy = ref (fun (_: string) (_: term) -> false);;
 let pft_axioms_used = ref ([]: (string * term) list);;
+let pft_compute_context = ref (None: thm list option);;
 let allow_pft_axioms_exact allowed =
   pft_axiom_policy :=
     (fun name tm ->
@@ -196,7 +197,6 @@ let next_command fd = Text_io.input1 fd;;
 let replay trace_path =
 
 let _ = print ("Processing " ^ trace_path ^ "\n") in
-let command_stream = Text_io.openIn trace_path in
 let _ = print_types_of_subterms := 2 in
 
 let (n_ty, n_tm, n_th) = process_footer trace_path in
@@ -211,7 +211,7 @@ let _ = check_table_limit "theorem" n_th in
 let tys = Array.make n_ty (None: hol_type option) in
 let tms = Array.make n_tm (None: term option) in
 let ths = Array.make n_th (None: thm option) in
-let compute_context = ref (None: thm list option) in
+let command_stream = Text_io.openIn trace_path in
 
 let get_ty id =
   if id < 0 || id >= Array.length tys then
@@ -370,10 +370,13 @@ let pft_compute_init () =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
       let eq = get_th eq_id in
+      let _ =
+        if hyp eq = [] then ()
+        else failwith "COMPUTE_INIT: equation has hypotheses" in
       loop (i - 1) (eq::eqs) in
   let eqs = loop n_eqs [] in
-  (match !compute_context with
-   | None -> compute_context := Some eqs
+  (match !pft_compute_context with
+   | None -> pft_compute_context := Some eqs
    | Some _ -> failwith "COMPUTE_INIT: already initialized") in
 
 let pft_compute () =
@@ -384,8 +387,11 @@ let pft_compute () =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
       let eq = get_th eq_id in
+      let _ =
+        if hyp eq = [] then ()
+        else failwith "COMPUTE: code equation has hypotheses" in
       loop (i - 1) (eq::eqs) in
-  let eqs = match !compute_context with
+  let eqs = match !pft_compute_context with
     | Some eqs -> eqs
     | None -> failwith "COMPUTE: before COMPUTE_INIT" in
   let code_eqs = loop n_ths [] in
