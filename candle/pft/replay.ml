@@ -80,9 +80,7 @@ let next_command fd = Text_io.input1 fd;;
 
 (* --- Replay files --- *)
 
-let replay trace_name =
-
-let trace_path = here ^ trace_name in
+let replay trace_path =
 
 let _ = print ("Processing " ^ trace_path ^ "\n") in
 let command_stream = Text_io.openIn trace_path in
@@ -441,5 +439,3 @@ let _ = incr_cnt () in
 cleanup (); print "Success!\n";;
 
 let replay_all paths = List.iter replay paths;;
-
-let _ = replay_all ["merged.candle.pft.bin"];;
