@@ -1,8 +1,5 @@
 needs "candle/pft/pft.ml";;
 
-let here = "candle/pft/";;
-let extract_footer_path = here ^ "extract_footer";;
-
 let saved_ths = ref ([]: (string * thm) list);;
 let save_th name th = saved_ths := (name, th)::(!saved_ths);;
 let load_th name = assoc name (!saved_ths);;
@@ -41,26 +38,71 @@ let decode_uleb128 : Text_io.instream -> int =
        else decode_uleb128 acc (shift * 128) (byte_count + 1) fd
   in decode_uleb128 0 1 0;;
 
+let decode_uleb128_bytes bytes start end_ =
+  let lower7 = Cake.Word8.fromInt 127 in
+  let high_bit = Cake.Word8.fromInt 128 in
+  let zero = Cake.Word8.fromInt 0 in
+  let rec loop acc shift byte_count pos =
+    if pos >= end_ then failwith "footer: truncated varint"
+    else if byte_count >= 9 then failwith "footer: integer overflow"
+    else
+      let byte = Bytes.get bytes pos in
+      let payload = Cake.Word8.toInt (Cake.Word8.andb byte lower7) in
+      let _ =
+        if payload > (max_int - acc) / shift
+        then failwith "footer: integer overflow" else () in
+      let acc = payload * shift + acc in
+      let done_ = Cake.Word8.(=) zero (Cake.Word8.andb byte high_bit) in
+      if done_ then
+        if byte_count > 0 && payload = 0
+        then failwith "footer: non-canonical varint"
+        else (acc, pos + 1)
+      else if shift > max_int / 128
+      then failwith "footer: integer overflow"
+      else loop acc (shift * 128) (byte_count + 1) (pos + 1) in
+  loop 0 1 0 start;;
+
 let process_footer trace_path =
-  let cmd = String.concat " " [extract_footer_path; trace_path] in
-  let r = Sys.command cmd in
-  let _ = if r <> 0 then failwith ("process_footer: failed to extract footer") in
-  let stream = Text_io.openIn (trace_path ^ ".footer") in
-  try
-    match Text_io.input1 stream with
-    | None -> failwith "EOF"
-    | Some cmd ->
-       if Char.code cmd <> 0xFF then failwith "bad opcode" else
-       let n_ty = decode_uleb128 stream in
-       let n_tm = decode_uleb128 stream in
-       let n_th = decode_uleb128 stream in
-       Text_io.closeIn stream;
-       (n_ty, n_tm, n_th)
-  with e ->
-    Text_io.closeIn stream;
-    (match e with
-     | Failure s -> failwith ("process_footer: " ^ s)
-     | _ -> raise e);;
+  let chunk_size = 32768 in
+  let tail_size = 64 in
+  let stream = Text_io.openIn trace_path in
+  let buffer = Bytes.create chunk_size in
+  let tail = ref (Bytes.create tail_size) in
+  let tail_len = ref 0 in
+  let rec scan () =
+    let n = Text_io.input stream buffer 0 chunk_size in
+    if n = 0 then ()
+    else if n >= tail_size then (
+      Cake.Word8_array.copy buffer (n - tail_size) tail_size !tail 0;
+      tail_len := tail_size;
+      scan ())
+    else
+      let keep =
+        if !tail_len < tail_size - n then !tail_len else tail_size - n in
+      let next_tail = Bytes.create tail_size in
+      let _ =
+        Cake.Word8_array.copy !tail (!tail_len - keep) keep next_tail 0 in
+      let _ = Cake.Word8_array.copy buffer 0 n next_tail keep in
+      tail := next_tail;
+      tail_len := keep + n;
+      scan () in
+  let _ =
+    try scan (); Text_io.closeIn stream
+    with e -> Text_io.closeIn stream; raise e in
+  if !tail_len < 6 then failwith "footer: file too short" else
+  let lo = Cake.Word8.toInt (Bytes.get !tail (!tail_len - 2)) in
+  let hi = Cake.Word8.toInt (Bytes.get !tail (!tail_len - 1)) in
+  let footer_len = lo + 256 * hi in
+  if footer_len < 4 || footer_len + 2 > !tail_len
+  then failwith "footer: invalid length" else
+  let start = !tail_len - footer_len - 2 in
+  if Cake.Word8.toInt (Bytes.get !tail start) <> 0xFF
+  then failwith "footer: bad opcode" else
+  let n_ty, pos = decode_uleb128_bytes !tail (start + 1) (!tail_len - 2) in
+  let n_tm, pos = decode_uleb128_bytes !tail pos (!tail_len - 2) in
+  let n_th, pos = decode_uleb128_bytes !tail pos (!tail_len - 2) in
+  if pos <> !tail_len - 2 then failwith "footer: unexpected payload"
+  else (n_ty, n_tm, n_th);;
 
 let expect_char fd char =
   match Text_io.input1 fd with
