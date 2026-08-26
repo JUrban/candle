@@ -1,8 +1,16 @@
 needs "candle/pft/pft.ml";;
 
 let saved_ths = ref ([]: (string * thm) list);;
-let save_th name th = saved_ths := (name, th)::(!saved_ths);;
-let load_th name = assoc name (!saved_ths);;
+let rec saved_th_exists name = function
+  | [] -> false
+  | (name', _)::rest -> name = name' || saved_th_exists name rest;;
+let save_th name th =
+  if saved_th_exists name !saved_ths
+  then failwith ("SAVE: duplicate name: " ^ name)
+  else saved_ths := (name, th)::(!saved_ths);;
+let rec load_th name = function
+  | [] -> failwith ("LOAD: unknown name: " ^ name)
+  | (name', th)::rest -> if name = name' then th else load_th name rest;;
 let print_saved () =
   do_list (fun (s, th) ->
       print_endline (s ^ ": ");
@@ -12,6 +20,12 @@ let print_saved () =
 
 let pft_max_string_length = ref (1024 * 1024);;
 let pft_max_table_slots = ref 50000000;;
+let pft_axiom_policy = ref (fun (_: string) (_: term) -> false);;
+let pft_axioms_used = ref ([]: (string * term) list);;
+let allow_pft_axioms_exact allowed =
+  pft_axiom_policy :=
+    (fun name tm ->
+       try aconv (assoc name allowed) tm with Failure _ -> false);;
 
 let decode_uleb128 : Text_io.instream -> int =
   let zero     = Cake.Word8.fromInt   0 in
@@ -284,6 +298,12 @@ let pft_new_specification () =
       loop (i - 1) (name::names) in
   let names = loop n_names [] in
   let th = get_th th_id in
+  let actual_names =
+    map (fun eq -> fst (dest_var (lhs eq))) (hyp th) in
+  let _ =
+    if names <> actual_names
+    then failwith "new_specification: encoded names do not match witnesses"
+    else () in
   let _ = check_free_th id in
   let result = Kernel.new_specification th in
   set_th id result in
@@ -339,7 +359,7 @@ let pft_save () =
 let pft_load () =
   let th_id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
-  let th = load_th name in
+  let th = load_th name !saved_ths in
   set_th th_id th in
 
 let pft_sym () =
@@ -408,7 +428,12 @@ let pft_axiom () =
   let tm_id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
   let tm = get_tm tm_id in
+  let _ = check_free_th id in
+  let _ =
+    if !pft_axiom_policy name tm then ()
+    else failwith ("AXIOM: rejected by policy: " ^ name) in
   let result = Kernel.new_axiom tm in
+  let _ = pft_axioms_used := (name, tm)::(!pft_axioms_used) in
   set_th id result in
 
 let pft_beta () =
