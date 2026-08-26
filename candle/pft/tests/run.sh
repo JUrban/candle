@@ -24,11 +24,13 @@ run_replay() {
   local trace=$2
   local label=$3
   local setup=${4:-}
+  local assertion=${5:-}
   local log="$tmp_dir/$label.log"
   timeout 180 "$repo_dir/candle.sh" >"$log" 2>&1 <<EOF
 #use "candle/pft/replay.ml";;
 $setup
-replay "$trace";;
+let evidence = replay "$trace";;
+$assertion
 EOF
   if [[ "$expected" == pass ]]; then
     if ! rg -q '^Success!$' "$log" || rg -q '^EXCEPTION:' "$log"; then
@@ -46,12 +48,26 @@ EOF
   printf 'PASS: %s (%s)\n' "$label" "$expected"
 }
 
-run_replay pass "$core_fixture" core
+run_replay pass "$core_fixture" core '' \
+  'if pft_result_command_count evidence = 18 &&
+      pft_result_table_limits evidence = (3,4,3) &&
+      pft_result_peak_live evidence = (3,4,3) &&
+      length (pft_result_saved_theorems evidence) = 2 &&
+      pft_result_axioms evidence = []
+   then print_endline "Evidence OK"
+   else failwith "unexpected core replay evidence";;'
 run_replay reject "$axiom_fixture" unauthorized-axiom
 run_replay reject "$impostor_fixture" impostor-standard-axiom \
   'allow_standard_pft_axioms ();;'
 run_replay pass "$preamble_fixture" standard-preamble \
-  'allow_standard_pft_axioms ();;'
+  'allow_standard_pft_axioms ();;' \
+  'if pft_result_command_count evidence = 1181 &&
+      pft_result_table_limits evidence = (31,329,775) &&
+      pft_result_peak_live evidence = (31,329,775) &&
+      length (pft_result_saved_theorems evidence) = 42 &&
+      length (pft_result_axioms evidence) = 3
+   then print_endline "Evidence OK"
+   else failwith "unexpected preamble replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"

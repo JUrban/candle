@@ -101,6 +101,30 @@ let allow_pft_axioms_exact allowed =
     (fun name tm ->
        try aconv (assoc name allowed) tm with Failure _ -> false);;
 
+let pft_theorem_identity th =
+  let hypotheses, conclusion = dest_thm th in
+  let hypothesis_ids =
+    sort (fun left right -> String.compare left right < 0)
+         (map pft_term_identity hypotheses) in
+  "h" ^ string_of_int (length hypothesis_ids) ^ "[" ^
+  pft_concat_identities pft_atom_identity hypothesis_ids ^ "]c" ^
+  pft_atom_identity (pft_term_identity conclusion);;
+
+type pft_replay_result =
+  | Pft_replay_result of
+      string * int * (int * int * int) * (int * int * int) *
+      (string * string) list * (string * string) list * bool
+;;
+
+let pft_result_trace_path (Pft_replay_result (x,_,_,_,_,_,_)) = x;;
+let pft_result_command_count (Pft_replay_result (_,x,_,_,_,_,_)) = x;;
+let pft_result_table_limits (Pft_replay_result (_,_,x,_,_,_,_)) = x;;
+let pft_result_peak_live (Pft_replay_result (_,_,_,x,_,_,_)) = x;;
+let pft_result_saved_theorems (Pft_replay_result (_,_,_,_,x,_,_)) = x;;
+let pft_result_axioms (Pft_replay_result (_,_,_,_,_,x,_)) = x;;
+let pft_result_compute_initialized
+    (Pft_replay_result (_,_,_,_,_,_,x)) = x;;
+
 let decode_uleb128 : Text_io.instream -> int =
   let zero     = Cake.Word8.fromInt   0 in
   let lower7   = Cake.Word8.fromInt 127 in
@@ -284,6 +308,19 @@ let tys = Array.make n_ty (None: hol_type option) in
 let tms = Array.make n_tm (None: term option) in
 let ths = Array.make n_th (None: thm option) in
 let command_stream = Text_io.openIn trace_path in
+let live_ty = ref 0 in
+let live_tm = ref 0 in
+let live_th = ref 0 in
+let peak_ty = ref 0 in
+let peak_tm = ref 0 in
+let peak_th = ref 0 in
+let trace_saved = ref ([]: (string * thm) list) in
+let trace_axioms = ref ([]: (string * term) list) in
+
+let note_set live peak =
+  live := !live + 1;
+  if !live > !peak then peak := !live else () in
+let note_del live = live := !live - 1 in
 
 let get_ty id =
   if id < 0 || id >= Array.length tys then
@@ -323,20 +360,26 @@ let check_free_th id =
   | None -> ()
   | Some _ -> failwith ("live theorem result ID: " ^ string_of_int id) in
 
-let set_ty id ty = check_free_ty id; Array.set tys id (Some ty) in
-let set_tm id tm = check_free_tm id; Array.set tms id (Some tm) in
-let set_th id th = check_free_th id; Array.set ths id (Some th) in
+let set_ty id ty =
+  check_free_ty id; Array.set tys id (Some ty); note_set live_ty peak_ty in
+let set_tm id tm =
+  check_free_tm id; Array.set tms id (Some tm); note_set live_tm peak_tm in
+let set_th id th =
+  check_free_th id; Array.set ths id (Some th); note_set live_th peak_th in
 
-let del_ty id = let _ = get_ty id in Array.set tys id None in
-let del_tm id = let _ = get_tm id in Array.set tms id None in
-let del_th id = let _ = get_th id in Array.set ths id None in
+let del_ty id =
+  let _ = get_ty id in Array.set tys id None; note_del live_ty in
+let del_tm id =
+  let _ = get_tm id in Array.set tms id None; note_del live_tm in
+let del_th id =
+  let _ = get_th id in Array.set ths id None; note_del live_th in
 let del_range del lo hi =
   if hi < lo then failwith "DEL range has descending bounds" else
   let rec validate i =
     if i > hi then () else let _ = del i in validate (i + 1) in
   validate lo in
 
-let cmd_cnt = ref 1 in
+let cmd_cnt = ref 0 in
 let incr_cnt () = cmd_cnt := !cmd_cnt + 1 in
 let print_cnt () = print (string_of_int (!cmd_cnt) ^ "\n") in
 
@@ -475,7 +518,8 @@ let pft_save () =
   let name = decode_string command_stream in
   let th_id = decode_uleb128 command_stream in
   let th = get_th th_id in
-  save_th name th in
+  save_th name th;
+  trace_saved := (name, th)::(!trace_saved) in
 
 let pft_load () =
   let th_id = decode_uleb128 command_stream in
@@ -555,6 +599,7 @@ let pft_axiom () =
     else failwith ("AXIOM: rejected by policy: " ^ name) in
   let result = Kernel.new_axiom tm in
   let _ = pft_axioms_used := (name, tm)::(!pft_axioms_used) in
+  let _ = trace_axioms := (name, tm)::(!trace_axioms) in
   set_th id result in
 
 let pft_beta () =
@@ -723,6 +768,17 @@ let _ = incr_cnt () in
 
 (try command_loop () with e -> (cleanup (); raise e));
 let _ = if not !seen_footer then (cleanup (); failwith "missing footer") else () in
-cleanup (); print "Success!\n";;
+let saved_evidence =
+  map (fun (name, th) -> (name, pft_theorem_identity th))
+      (rev (!trace_saved)) in
+let axiom_evidence =
+  map (fun (name, tm) -> (name, pft_term_identity tm))
+      (rev (!trace_axioms)) in
+let result =
+  Pft_replay_result
+    (trace_path, !cmd_cnt, (n_ty, n_tm, n_th),
+     (!peak_ty, !peak_tm, !peak_th), saved_evidence, axiom_evidence,
+     (match !pft_compute_context with None -> false | Some _ -> true)) in
+cleanup (); print "Success!\n"; result;;
 
-let replay_all paths = List.iter replay paths;;
+let replay_all paths = map replay paths;;
