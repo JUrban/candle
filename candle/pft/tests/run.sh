@@ -6,8 +6,11 @@ test_dir="$repo_dir/candle/pft/tests"
 fixture_dir="$test_dir/fixtures"
 core_fixture="$fixture_dir/core.pft.bin"
 axiom_fixture="$fixture_dir/unauthorized-axiom.pft.bin"
+impostor_fixture="$fixture_dir/impostor-standard-axiom.pft.bin"
+preamble_fixture="$fixture_dir/preamble.pft.bin"
 
-if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ]]; then
+if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
+      ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -20,9 +23,11 @@ run_replay() {
   local expected=$1
   local trace=$2
   local label=$3
+  local setup=${4:-}
   local log="$tmp_dir/$label.log"
   timeout 180 "$repo_dir/candle.sh" >"$log" 2>&1 <<EOF
 #use "candle/pft/replay.ml";;
+$setup
 replay "$trace";;
 EOF
   if [[ "$expected" == pass ]]; then
@@ -43,6 +48,10 @@ EOF
 
 run_replay pass "$core_fixture" core
 run_replay reject "$axiom_fixture" unauthorized-axiom
+run_replay reject "$impostor_fixture" impostor-standard-axiom \
+  'allow_standard_pft_axioms ();;'
+run_replay pass "$preamble_fixture" standard-preamble \
+  'allow_standard_pft_axioms ();;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"
