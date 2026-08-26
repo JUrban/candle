@@ -24,6 +24,18 @@ commands for exact hypotheses and conclusions and is replayed under the exact
 three-standard-axiom policy.  Its recorded table limits are
 `(19125,57241,91135)` across 171,560 replay commands.
 
+`fixtures/flyspeck-refinement-leaves.pft.bin` is produced by Flyspeck's pinned
+route-selection harness at commit
+`0e2f9e331b0eded8aca3dbacfe26df92fc84bcac`.  The harness checks the digests
+of `leg/basics.hl` and `general/vukhacky_tactics.hl`, then runs the original
+proof statements and proof lists with only their minimal tactic prelude.  The
+trace saves the list/refinement theorem `Basics.LENGTH3` and real-arithmetic
+refinement theorem `Vukhacky_tactics.REDUCE_WITH_DIV_Euler_lemma`.  It contains
+547,811 replay commands with table limits `(44830,143185,288314)`, crosses a
+producer checkpoint, and exercises both type and term range deletion.  This is
+representative-leaf route evidence, not evidence that either complete source
+file or the Flyspeck foundation was loaded.
+
 The core/negative fixture set was produced at HOL4 development commit
 `6dc37788c18e3404294bf137067046bae5904ad0`.  The preamble was produced at
 `97226a41ada4c95c4998f4d6959bc554175a42ed`.  `fixtures/SHA256SUMS` pins the
@@ -44,3 +56,5 @@ statement must still fail.  The HOL Light bootstrap must pass under the same
 exact policy with six saved theorems and three authorized axioms.
 The Flyspeck leaf fixture must additionally return both named targets with its
 locked resource counters and no compute initialization.
+The refinement fixture applies the same checks to both extracted targets and
+also supplies positive checkpoint/range-deletion coverage.

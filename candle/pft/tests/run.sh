@@ -10,11 +10,13 @@ impostor_fixture="$fixture_dir/impostor-standard-axiom.pft.bin"
 preamble_fixture="$fixture_dir/preamble.pft.bin"
 hol_light_bootstrap_fixture="$fixture_dir/hol-light-bootstrap.pft.bin"
 flyspeck_hol_library_fixture="$fixture_dir/flyspeck-hol-library.pft.bin"
+flyspeck_refinement_fixture="$fixture_dir/flyspeck-refinement-leaves.pft.bin"
 
 if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
       ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ||
       ! -f "$hol_light_bootstrap_fixture" ||
-      ! -f "$flyspeck_hol_library_fixture" ]]; then
+      ! -f "$flyspeck_hol_library_fixture" ||
+      ! -f "$flyspeck_refinement_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -24,7 +26,8 @@ trap 'rm -rf -- "$tmp_dir"' EXIT
 python3 "$test_dir/mutate_fixtures.py" "$core_fixture" "$tmp_dir/malformed"
 python3 "$test_dir/inspect_opcodes.py" \
   "$core_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
-  "$flyspeck_hol_library_fixture" >"$tmp_dir/opcodes.json"
+  "$flyspeck_hol_library_fixture" "$flyspeck_refinement_fixture" \
+  >"$tmp_dir/opcodes.json"
 printf 'PASS: structural opcode inspection (pass)\n'
 
 run_replay() {
@@ -97,6 +100,18 @@ run_replay pass "$flyspeck_hol_library_fixture" flyspeck-hol-library \
       not (pft_result_compute_initialized evidence)
    then print_endline "Evidence OK"
    else failwith "unexpected Flyspeck leaf replay evidence";;'
+run_replay pass "$flyspeck_refinement_fixture" flyspeck-refinement-leaves \
+  'allow_standard_pft_axioms ();;' \
+  'if pft_result_command_count evidence = 547811 &&
+      pft_result_table_limits evidence = (44830,143185,288314) &&
+      pft_result_peak_live evidence = (44830,143185,288314) &&
+      map fst (pft_result_saved_theorems evidence) =
+        ["flyspeck$Basics.LENGTH3";
+         "flyspeck$Vukhacky_tactics.REDUCE_WITH_DIV_Euler_lemma"] &&
+      length (pft_result_axioms evidence) = 3 &&
+      not (pft_result_compute_initialized evidence)
+   then print_endline "Evidence OK"
+   else failwith "unexpected Flyspeck refinement replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"
