@@ -14,6 +14,7 @@ let print_saved () =
     ) !saved_ths;;
 
 let pft_max_string_length = ref (1024 * 1024);;
+let pft_max_table_slots = ref 50000000;;
 
 let decode_uleb128 : Text_io.instream -> int =
   let zero     = Cake.Word8.fromInt   0 in
@@ -101,14 +102,68 @@ let _ = print_types_of_subterms := 2 in
 
 let (n_ty, n_tm, n_th) = process_footer trace_path in
 
-(* Initial values for the arrays *)
-let xvar = mk_var ("x", aty) in
-let xrefl = REFL xvar in
+let check_table_limit kind n =
+  if n < 0 || n > !pft_max_table_slots
+  then failwith (kind ^ " table limit exceeds configured maximum") else () in
+let _ = check_table_limit "type" n_ty in
+let _ = check_table_limit "term" n_tm in
+let _ = check_table_limit "theorem" n_th in
 
-let tys = Array.make n_ty aty in
-let tms = Array.make n_tm xvar in
-let ths = Array.make n_th xrefl in
+let tys = Array.make n_ty (None: hol_type option) in
+let tms = Array.make n_tm (None: term option) in
+let ths = Array.make n_th (None: thm option) in
 let compute_context = ref (None: thm list option) in
+
+let get_ty id =
+  if id < 0 || id >= Array.length tys then
+    failwith ("type ID out of range: " ^ string_of_int id)
+  else match Array.get tys id with
+  | Some ty -> ty
+  | None -> failwith ("dead type ID: " ^ string_of_int id) in
+let get_tm id =
+  if id < 0 || id >= Array.length tms then
+    failwith ("term ID out of range: " ^ string_of_int id)
+  else match Array.get tms id with
+  | Some tm -> tm
+  | None -> failwith ("dead term ID: " ^ string_of_int id) in
+let get_th id =
+  if id < 0 || id >= Array.length ths then
+    failwith ("theorem ID out of range: " ^ string_of_int id)
+  else match Array.get ths id with
+  | Some th -> th
+  | None -> failwith ("dead theorem ID: " ^ string_of_int id) in
+
+let check_free_ty id =
+  if id < 0 || id >= Array.length tys then
+    failwith ("type result ID out of range: " ^ string_of_int id)
+  else match Array.get tys id with
+  | None -> ()
+  | Some _ -> failwith ("live type result ID: " ^ string_of_int id) in
+let check_free_tm id =
+  if id < 0 || id >= Array.length tms then
+    failwith ("term result ID out of range: " ^ string_of_int id)
+  else match Array.get tms id with
+  | None -> ()
+  | Some _ -> failwith ("live term result ID: " ^ string_of_int id) in
+let check_free_th id =
+  if id < 0 || id >= Array.length ths then
+    failwith ("theorem result ID out of range: " ^ string_of_int id)
+  else match Array.get ths id with
+  | None -> ()
+  | Some _ -> failwith ("live theorem result ID: " ^ string_of_int id) in
+
+let set_ty id ty = check_free_ty id; Array.set tys id (Some ty) in
+let set_tm id tm = check_free_tm id; Array.set tms id (Some tm) in
+let set_th id th = check_free_th id; Array.set ths id (Some th) in
+
+let del_ty id = let _ = get_ty id in Array.set tys id None in
+let del_tm id = let _ = get_tm id in Array.set tms id None in
+let del_th id = let _ = get_th id in Array.set ths id None in
+let del_range del lo hi =
+  if hi < lo then failwith "DEL range has descending bounds" else
+  let rec validate i =
+    if i > hi then () else let _ = del i in validate (i + 1) in
+  validate lo in
 
 let cmd_cnt = ref 1 in
 let incr_cnt () = cmd_cnt := !cmd_cnt + 1 in
@@ -121,7 +176,7 @@ let pft_tyvar () =
   let id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
   let result = Kernel.mk_vartype name in
-  Array.set tys id result in
+  set_ty id result in
 
 let pft_tyop () =
   let id = decode_uleb128 command_stream in
@@ -130,52 +185,52 @@ let pft_tyop () =
   let rec loop i args =
     if i <= 0 then rev args else
       let id = decode_uleb128 command_stream in
-      let ty = Array.get tys id in
+      let ty = get_ty id in
       loop (i - 1) (ty::args) in
   let args = loop n_args [] in
   let result = Kernel.mk_type (name, args) in
-  Array.set tys id result in
+  set_ty id result in
 
 let pft_const () =
   let id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
   let type_id = decode_uleb128 command_stream in
-  let ty = Array.get tys type_id in
+  let ty = get_ty type_id in
   let result = mk_mconst (name, ty) in
-  Array.set tms id result in
+  set_tm id result in
 
 let pft_var () =
   let id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
   let type_id = decode_uleb128 command_stream in
-  let ty = Array.get tys type_id in
+  let ty = get_ty type_id in
   let result = Kernel.mk_var (name, ty) in
-  Array.set tms id result in
+  set_tm id result in
 
 let pft_abs () =
   let id = decode_uleb128 command_stream in
   let var_id = decode_uleb128 command_stream in
   let body_id = decode_uleb128 command_stream in
-  let var_tm = Array.get tms var_id in
-  let body_tm = Array.get tms body_id in
+  let var_tm = get_tm var_id in
+  let body_tm = get_tm body_id in
   let result = Kernel.mk_abs (var_tm, body_tm) in
-  Array.set tms id result in
+  set_tm id result in
 
 let pft_comb () =
   let id = decode_uleb128 command_stream in
   let rator_id = decode_uleb128 command_stream in
   let rand_id = decode_uleb128 command_stream in
-  let rator_tm = Array.get tms rator_id in
-  let rand_tm = Array.get tms rand_id in
+  let rator_tm = get_tm rator_id in
+  let rand_tm = get_tm rand_id in
   let result = mk_comb (rator_tm, rand_tm) in
-  Array.set tms id result in
+  set_tm id result in
 
 let pft_assume () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
-  let tm = Array.get tms tm_id in
+  let tm = get_tm tm_id in
   let result = Kernel.ASSUME tm in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_new_specification () =
   let id = decode_uleb128 command_stream in
@@ -186,9 +241,10 @@ let pft_new_specification () =
       let name = decode_string command_stream in
       loop (i - 1) (name::names) in
   let names = loop n_names [] in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
+  let _ = check_free_th id in
   let result = Kernel.new_specification th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_new_type_definition () =
   let id = decode_uleb128 command_stream in
@@ -196,18 +252,19 @@ let pft_new_type_definition () =
   let tyname = decode_string command_stream in
   let absname = decode_string command_stream in
   let repname = decode_string command_stream in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
+  let _ = check_free_th id; check_free_th (id + 1) in
   let absth, repth =
     Kernel.new_basic_type_definition (tyname, (absname, (repname, th))) in
-  Array.set ths id absth;
-  Array.set ths (id + 1) repth in
+  set_th id absth;
+  set_th (id + 1) repth in
 
 let pft_compute_init () =
   let n_eqs = decode_uleb128 command_stream in
   let rec loop i eqs =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
-      let eq = Array.get ths eq_id in
+      let eq = get_th eq_id in
       loop (i - 1) (eq::eqs) in
   let eqs = loop n_eqs [] in
   (match !compute_context with
@@ -221,82 +278,82 @@ let pft_compute () =
   let rec loop i eqs =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
-      let eq = Array.get ths eq_id in
+      let eq = get_th eq_id in
       loop (i - 1) (eq::eqs) in
   let eqs = match !compute_context with
     | Some eqs -> eqs
     | None -> failwith "COMPUTE: before COMPUTE_INIT" in
   let code_eqs = loop n_ths [] in
-  let tm = Array.get tms tm_id in
+  let tm = get_tm tm_id in
   let th = Kernel.compute (eqs, code_eqs) tm in
-  Array.set ths id th in
+  set_th id th in
 
 let pft_save () =
   let name = decode_string command_stream in
   let th_id = decode_uleb128 command_stream in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
   save_th name th in
 
 let pft_load () =
   let th_id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
   let th = load_th name in
-  Array.set ths th_id th in
+  set_th th_id th in
 
 let pft_sym () =
   let id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
   let result = SYM th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_prove_hyp () =
   let id = decode_uleb128 command_stream in
   let th1_id = decode_uleb128 command_stream in
   let th2_id = decode_uleb128 command_stream in
-  let th1 = Array.get ths th1_id in
-  let th2 = Array.get ths th2_id in
+  let th1 = get_th th1_id in
+  let th2 = get_th th2_id in
   let result = PROVE_HYP th1 th2 in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_refl () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
-  let tm = Array.get tms tm_id in
+  let tm = get_tm tm_id in
   let result = REFL tm in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_trans () =
   let id = decode_uleb128 command_stream in
   let th1_id = decode_uleb128 command_stream in
   let th2_id = decode_uleb128 command_stream in
-  let th1 = Array.get ths th1_id in
-  let th2 = Array.get ths th2_id in
+  let th1 = get_th th1_id in
+  let th2 = get_th th2_id in
   let result = Kernel.TRANS th1 th2 in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_mk_comb_thm () =
   let id = decode_uleb128 command_stream in
   let th1_id = decode_uleb128 command_stream in
   let th2_id = decode_uleb128 command_stream in
-  let th1 = Array.get ths th1_id in
-  let th2 = Array.get ths th2_id in
+  let th1 = get_th th1_id in
+  let th2 = get_th th2_id in
   let result = MK_COMB (th1, th2) in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_abs_thm () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let tm = Array.get tms tm_id in
-  let th = Array.get ths th_id in
+  let tm = get_tm tm_id in
+  let th = get_th th_id in
   let result = ABS tm th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_new_const () =
   let name = decode_string command_stream in
   let ty_id = decode_uleb128 command_stream in
-  let ty = Array.get tys ty_id in
+  let ty = get_ty ty_id in
   Kernel.new_constant (name, ty) in
 
 let pft_new_type () =
@@ -308,34 +365,34 @@ let pft_axiom () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
-  let tm = Array.get tms tm_id in
+  let tm = get_tm tm_id in
   let result = Kernel.new_axiom tm in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_beta () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
-  let tm = Array.get tms tm_id in
+  let tm = get_tm tm_id in
   let result = Kernel.BETA tm in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_eq_mp () =
   let id = decode_uleb128 command_stream in
   let eq_id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let eq = Array.get ths eq_id in
-  let th = Array.get ths th_id in
+  let eq = get_th eq_id in
+  let th = get_th th_id in
   let result = EQ_MP eq th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_deduct_antisym_rule () =
   let id = decode_uleb128 command_stream in
   let th1_id = decode_uleb128 command_stream in
   let th2_id = decode_uleb128 command_stream in
-  let th1 = Array.get ths th1_id in
-  let th2 = Array.get ths th2_id in
+  let th1 = get_th th1_id in
+  let th2 = get_th th2_id in
   let result = DEDUCT_ANTISYM_RULE th1 th2 in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_inst () =
   let id = decode_uleb128 command_stream in
@@ -345,13 +402,13 @@ let pft_inst () =
     if i <= 0 then rev pairs else
       let id1 = decode_uleb128 command_stream in
       let id2 = decode_uleb128 command_stream in
-      let tm1 = Array.get tms id1 in
-      let tm2 = Array.get tms id2 in
+      let tm1 = get_tm id1 in
+      let tm2 = get_tm id2 in
       loop (i - 1) ((tm2, tm1)::pairs) in
   let pairs = loop n_pairs [] in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
   let result = Kernel.INST pairs th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_inst_type () =
   let id = decode_uleb128 command_stream in
@@ -361,33 +418,59 @@ let pft_inst_type () =
     if i <= 0 then rev pairs else
       let id1 = decode_uleb128 command_stream in
       let id2 = decode_uleb128 command_stream in
-      let ty1 = Array.get tys id1 in
-      let ty2 = Array.get tys id2 in
+      let ty1 = get_ty id1 in
+      let ty2 = get_ty id2 in
       loop (i - 1) ((ty2, ty1)::pairs) in
   let pairs = loop n_pairs [] in
-  let th = Array.get ths th_id in
+  let th = get_th th_id in
   let result = Kernel.INST_TYPE pairs th in
-  Array.set ths id result in
+  set_th id result in
 
 let pft_expect () =
   let id = decode_uleb128 command_stream in
-  let th = Array.get ths id in
+  let th = get_th id in
   let actual_hyps = hyp th in
   let actual_concl = concl th in
   let n_hyps = decode_uleb128 command_stream in
   let rec loop i hyps =
     if i <= 0 then rev hyps else
       let hyp_id = decode_uleb128 command_stream in
-      let tm = Array.get tms hyp_id in
+      let tm = get_tm hyp_id in
       loop (i - 1) (tm::hyps) in
   let expected_hyps = loop n_hyps [] in
   let subset_aconv l1 l2 = forall (fun t1 -> exists (aconv t1) l2) l1 in
   let set_eq_aconv l1 l2 = subset_aconv l1 l2 && subset_aconv l2 l1 in
   if not (set_eq_aconv expected_hyps actual_hyps) then failwith "mismatched hypotheses!";
   let concl_id = decode_uleb128 command_stream in
-  let expected_concl = Array.get tms concl_id in
+  let expected_concl = get_tm concl_id in
   if not (aconv expected_concl actual_concl) then failwith "mismatched conclusion!";
   () in
+
+let pft_footer () =
+  let footer_n_ty = decode_uleb128 command_stream in
+  let footer_n_tm = decode_uleb128 command_stream in
+  let footer_n_th = decode_uleb128 command_stream in
+  let _ =
+    if footer_n_ty <> n_ty || footer_n_tm <> n_tm || footer_n_th <> n_th
+    then failwith "footer limits changed between reads" else () in
+  let rec encoded_length n =
+    if n < 128 then 1 else 1 + encoded_length (n / 128) in
+  let expected_length =
+    1 + encoded_length n_ty + encoded_length n_tm + encoded_length n_th in
+  let lo = match Text_io.input1 command_stream with
+    | Some c -> Char.code c
+    | None -> failwith "footer: missing length" in
+  let hi = match Text_io.input1 command_stream with
+    | Some c -> Char.code c
+    | None -> failwith "footer: truncated length" in
+  let _ =
+    if lo + 256 * hi <> expected_length
+    then failwith "footer: invalid encoded length" else () in
+  match Text_io.input1 command_stream with
+  | None -> ()
+  | Some _ -> failwith "footer: trailing bytes" in
+
+let seen_footer = ref false in
 
 let rec command_loop () =
   match next_command command_stream with
@@ -421,20 +504,22 @@ let rec command_loop () =
      else if cmd = 0x41 then pft_compute ()
      else if cmd = 0x50 then pft_save ()
      else if cmd = 0x51 then pft_load ()
-     (* We allocate enough memory to fit the peak number of objects, so we can
-        can ignore deletion requests. *)
-     else if 0xE0 <= cmd && cmd <= 0xE3 then (
-       decode_uleb128 command_stream; ())
+     else if cmd = 0xE0 then del_ty (decode_uleb128 command_stream)
+     else if cmd = 0xE1 then del_tm (decode_uleb128 command_stream)
+     else if cmd = 0xE2 then del_th (decode_uleb128 command_stream)
      else if cmd = 0xEF then pft_expect ()
-     else if 0xF0 <= cmd && cmd <= 0xF3 then (
-       decode_uleb128 command_stream;
-       decode_uleb128 command_stream; ())
-     else if cmd = 0xFF then (
-       decode_uleb128 command_stream;
-       decode_uleb128 command_stream;
-       decode_uleb128 command_stream;
-       Text_io.input1 command_stream;
-       Text_io.input1 command_stream; ())
+     else if cmd = 0xF0 then
+       let lo = decode_uleb128 command_stream in
+       let hi = decode_uleb128 command_stream in del_range del_ty lo hi
+     else if cmd = 0xF1 then
+       let lo = decode_uleb128 command_stream in
+       let hi = decode_uleb128 command_stream in del_range del_tm lo hi
+     else if cmd = 0xF2 then
+       let lo = decode_uleb128 command_stream in
+       let hi = decode_uleb128 command_stream in del_range del_th lo hi
+     else if cmd = 0xFF then
+       if !seen_footer then failwith "duplicate footer"
+       else (seen_footer := true; pft_footer ())
      else failwith ("command_loop: unsupported command: " ^ string_of_int cmd);
      incr_cnt ();
      command_loop () in
@@ -449,6 +534,7 @@ let _ =
 let _ = incr_cnt () in
 
 (try command_loop () with e -> (cleanup (); raise e));
+let _ = if not !seen_footer then (cleanup (); failwith "missing footer") else () in
 cleanup (); print "Success!\n";;
 
 let replay_all paths = List.iter replay paths;;
