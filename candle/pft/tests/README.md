@@ -8,10 +8,20 @@ three come from `generate-candle-fixture.sml`; the preamble comes from
 cross-repository golden inputs; regenerate them rather than editing the
 binaries by hand.
 
+`fixtures/hol-light-bootstrap.pft.bin` is generated directly by HOL Light's
+`ProofTrace/pft.ml` exporter.  It selects six bootstrap targets and includes
+their complete definitional context, ordinary primitive inferences, the `num`
+type definition, and the three standard axioms.  It is the cross-implementation
+integration fixture for the Flyspeck producer path.
+
 The core/negative fixture set was produced at HOL4 development commit
 `6dc37788c18e3404294bf137067046bae5904ad0`.  The preamble was produced at
 `97226a41ada4c95c4998f4d6959bc554175a42ed`.  `fixtures/SHA256SUMS` pins the
 exact bytes.
+
+The HOL Light bootstrap was produced from development branch
+`codex/flyspeck-pft-producer`; its exact producer commit is recorded in the
+project lock manifest when the producer checkpoint is cut.
 
 Run `./candle/pft/tests/run.sh` from the Candle repository root.  The harness
 first replays the golden trace, then creates deterministic corruptions and
@@ -19,4 +29,5 @@ checks that each one is rejected in a fresh Candle process.  A structurally
 valid AXIOM trace is also required to fail under the default-deny policy.  The
 official preamble must pass only after enabling the exact standard-axiom
 identity policy, while a trace using the name `SELECT_AX` for a different
-statement must still fail.
+statement must still fail.  The HOL Light bootstrap must pass under the same
+exact policy with six saved theorems and three authorized axioms.

@@ -8,9 +8,11 @@ core_fixture="$fixture_dir/core.pft.bin"
 axiom_fixture="$fixture_dir/unauthorized-axiom.pft.bin"
 impostor_fixture="$fixture_dir/impostor-standard-axiom.pft.bin"
 preamble_fixture="$fixture_dir/preamble.pft.bin"
+hol_light_bootstrap_fixture="$fixture_dir/hol-light-bootstrap.pft.bin"
 
 if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
-      ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ]]; then
+      ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ||
+      ! -f "$hol_light_bootstrap_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -68,6 +70,15 @@ run_replay pass "$preamble_fixture" standard-preamble \
       length (pft_result_axioms evidence) = 3
    then print_endline "Evidence OK"
    else failwith "unexpected preamble replay evidence";;'
+run_replay pass "$hol_light_bootstrap_fixture" hol-light-bootstrap \
+  'allow_standard_pft_axioms ();;' \
+  'if pft_result_command_count evidence = 8817 &&
+      pft_result_table_limits evidence = (1148,2735,4919) &&
+      pft_result_peak_live evidence = (1148,2735,4919) &&
+      length (pft_result_saved_theorems evidence) = 6 &&
+      length (pft_result_axioms evidence) = 3
+   then print_endline "Evidence OK"
+   else failwith "unexpected HOL Light bootstrap replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"
