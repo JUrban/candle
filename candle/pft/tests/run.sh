@@ -11,12 +11,14 @@ preamble_fixture="$fixture_dir/preamble.pft.bin"
 hol_light_bootstrap_fixture="$fixture_dir/hol-light-bootstrap.pft.bin"
 flyspeck_hol_library_fixture="$fixture_dir/flyspeck-hol-library.pft.bin"
 flyspeck_refinement_fixture="$fixture_dir/flyspeck-refinement-leaves.pft.bin"
+compute_fixture="$fixture_dir/compute-zero.pft.bin"
 
 if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
       ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ||
       ! -f "$hol_light_bootstrap_fixture" ||
       ! -f "$flyspeck_hol_library_fixture" ||
-      ! -f "$flyspeck_refinement_fixture" ]]; then
+      ! -f "$flyspeck_refinement_fixture" ||
+      ! -f "$compute_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -27,6 +29,7 @@ python3 "$test_dir/mutate_fixtures.py" "$core_fixture" "$tmp_dir/malformed"
 python3 "$test_dir/inspect_opcodes.py" \
   "$core_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
   "$flyspeck_hol_library_fixture" "$flyspeck_refinement_fixture" \
+  "$compute_fixture" \
   >"$tmp_dir/opcodes.json"
 printf 'PASS: structural opcode inspection (pass)\n'
 
@@ -112,6 +115,18 @@ run_replay pass "$flyspeck_refinement_fixture" flyspeck-refinement-leaves \
       not (pft_result_compute_initialized evidence)
    then print_endline "Evidence OK"
    else failwith "unexpected Flyspeck refinement replay evidence";;'
+run_replay pass "$compute_fixture" compute-zero \
+  'allow_standard_pft_axioms ();;' \
+  'if pft_result_command_count evidence = 1311902 &&
+      pft_result_table_limits evidence = (200544,585972,525260) &&
+      pft_result_peak_live evidence = (200544,585972,525260) &&
+      length (pft_result_saved_theorems evidence) = 63 &&
+      fst (hd (rev (pft_result_saved_theorems evidence))) =
+        "candle$COMPUTE_ZERO" &&
+      length (pft_result_axioms evidence) = 3 &&
+      pft_result_compute_initialized evidence
+   then print_endline "Evidence OK"
+   else failwith "unexpected compute replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"

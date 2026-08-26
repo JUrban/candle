@@ -36,6 +36,19 @@ producer checkpoint, and exercises both type and term range deletion.  This is
 representative-leaf route evidence, not evidence that either complete source
 file or the Flyspeck foundation was loaded.
 
+`fixtures/compute-zero.pft.bin` is generated in two reproducible stages.  From
+the proof-recording HOL Light compatibility checkout, load `ProofTrace/pft.ml`
+and then `export_compute_basis.ml` with `CANDLE_DIR` and `CANDLE_PFT_OUTPUT`
+set.  The exporter loads this checkout's `candle/compute.ml` and writes the
+primitive proof dependencies of its 62 exact `COMPUTE_INIT_THMS`.  Then run
+`generate_compute_fixture.py BASIS OUTPUT`; it structurally validates the
+named basis and appends `LOAD`, `COMPUTE_INIT`, a computation of
+`Cexp_num (NUMERAL _0)`, `EXPECT`, and `SAVE`.  The resulting fixture contains
+1,311,902 replay commands with limits `(200544,585972,525260)` and saves
+`candle$COMPUTE_ZERO`.  Its positive replay covers the verified compute
+primitive through the compiled Candle endpoint; it does not yet encode a
+Flyspeck-specific compute equation.
+
 The core/negative fixture set was produced at HOL4 development commit
 `6dc37788c18e3404294bf137067046bae5904ad0`.  The preamble was produced at
 `97226a41ada4c95c4998f4d6959bc554175a42ed`.  `fixtures/SHA256SUMS` pins the
@@ -58,3 +71,6 @@ The Flyspeck leaf fixture must additionally return both named targets with its
 locked resource counters and no compute initialization.
 The refinement fixture applies the same checks to both extracted targets and
 also supplies positive checkpoint/range-deletion coverage.
+The compute fixture must additionally initialize the compute context, replay
+all 62 source-aligned equations, execute the primitive, and save its checked
+result.
