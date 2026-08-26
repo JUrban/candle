@@ -141,11 +141,48 @@ let read_exactly fd n =
   if n < 0 then failwith ("read_exactly: negative argument")
   else loop 0; Bytes.to_string bytes;;
 
+let valid_pft_utf8 s =
+  let len = String.length s in
+  let byte i = Char.code (String.get s i) in
+  let continuation i =
+    i < len && 0x80 <= byte i && byte i <= 0xBF in
+  let rec loop i =
+    if i >= len then true else
+    let b0 = byte i in
+    if b0 < 0x20 || b0 = 0x7F then false
+    else if b0 <= 0x7E then loop (i + 1)
+    else if b0 = 0xC2 then
+      i + 1 < len && 0xA0 <= byte (i + 1) && byte (i + 1) <= 0xBF &&
+      loop (i + 2)
+    else if 0xC3 <= b0 && b0 <= 0xDF then
+      continuation (i + 1) && loop (i + 2)
+    else if b0 = 0xE0 then
+      i + 2 < len && 0xA0 <= byte (i + 1) && byte (i + 1) <= 0xBF &&
+      continuation (i + 2) && loop (i + 3)
+    else if (0xE1 <= b0 && b0 <= 0xEC) || (0xEE <= b0 && b0 <= 0xEF) then
+      continuation (i + 1) && continuation (i + 2) && loop (i + 3)
+    else if b0 = 0xED then
+      i + 2 < len && 0x80 <= byte (i + 1) && byte (i + 1) <= 0x9F &&
+      continuation (i + 2) && loop (i + 3)
+    else if b0 = 0xF0 then
+      i + 3 < len && 0x90 <= byte (i + 1) && byte (i + 1) <= 0xBF &&
+      continuation (i + 2) && continuation (i + 3) && loop (i + 4)
+    else if 0xF1 <= b0 && b0 <= 0xF3 then
+      continuation (i + 1) && continuation (i + 2) &&
+      continuation (i + 3) && loop (i + 4)
+    else if b0 = 0xF4 then
+      i + 3 < len && 0x80 <= byte (i + 1) && byte (i + 1) <= 0x8F &&
+      continuation (i + 2) && continuation (i + 3) && loop (i + 4)
+    else false in
+  loop 0;;
+
 let decode_string fd =
   let s_len = decode_uleb128 fd in
   if s_len > !pft_max_string_length
   then failwith "decode_string: length exceeds configured limit"
-  else read_exactly fd s_len;;
+  else let s = read_exactly fd s_len in
+    if valid_pft_utf8 s then s
+    else failwith "decode_string: invalid UTF-8 or control character";;
 
 let decode_count kind fd =
   let n = decode_uleb128 fd in
