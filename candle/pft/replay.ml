@@ -31,12 +31,56 @@ let rec pft_concat_identities f = function
   | [] -> ""
   | x::xs -> f x ^ pft_concat_identities f xs;;
 
-let rec pft_type_identity ty =
-  if is_vartype ty then "v" ^ pft_atom_identity (dest_vartype ty)
+let rec pft_type_variable_index name variables index =
+  match variables with
+  | [] -> failwith "pft_type_identity: unindexed type variable"
+  | variable::rest ->
+      if name = variable then index
+      else pft_type_variable_index name rest (index + 1);;
+
+let rec pft_string_member name = function
+  | [] -> false
+  | value::rest -> name = value || pft_string_member name rest;;
+
+let rec pft_collect_type_variables ty variables =
+  if is_vartype ty then
+    let name = dest_vartype ty in
+    if pft_string_member name variables
+    then variables else variables @ [name]
+  else
+    let name, args = dest_type ty in
+    pft_collect_type_variable_list args variables
+and pft_collect_type_variable_list args variables =
+  match args with
+  | [] -> variables
+  | arg::rest ->
+      pft_collect_type_variable_list rest
+        (pft_collect_type_variables arg variables);;
+
+let rec pft_collect_term_type_variables tm variables =
+  if is_var tm || is_const tm then
+    pft_collect_type_variables (type_of tm) variables
+  else if is_comb tm then
+    let rator, rand = dest_comb tm in
+    pft_collect_term_type_variables rand
+      (pft_collect_term_type_variables rator variables)
+  else if is_abs tm then
+    let var, body = dest_abs tm in
+    pft_collect_term_type_variables body
+      (pft_collect_type_variables (type_of var) variables)
+  else failwith "pft_term_identity: unknown term node";;
+
+let rec pft_type_identity_env variables ty =
+  if is_vartype ty then
+    "v" ^ string_of_int
+      (pft_type_variable_index (dest_vartype ty) variables 0) ^ ";"
   else
     let name, args = dest_type ty in
     "t" ^ pft_atom_identity name ^ string_of_int (length args) ^ "[" ^
-    pft_concat_identities pft_type_identity args ^ "]";;
+    pft_concat_identities (pft_type_identity_env variables) args ^ "]";;
+
+let pft_type_identity ty =
+  pft_type_identity_env (pft_collect_type_variables ty []) ty;;
 
 let rec pft_bound_index tm env index =
   match env with
@@ -45,42 +89,46 @@ let rec pft_bound_index tm env index =
       if aconv tm v then Some index
       else pft_bound_index tm vs (index + 1);;
 
-let rec pft_term_identity_env env tm =
+let rec pft_term_identity_env type_variables env tm =
   if is_var tm then
     let name, ty = dest_var tm in
     (match pft_bound_index tm env 0 with
      | Some index -> "b" ^ string_of_int index ^ ";"
-     | None -> "v" ^ pft_atom_identity name ^ pft_type_identity ty)
+     | None -> "v" ^ pft_atom_identity name ^
+               pft_type_identity_env type_variables ty)
   else if is_const tm then
     let name, ty = dest_const tm in
-    "c" ^ pft_atom_identity name ^ pft_type_identity ty
+    "c" ^ pft_atom_identity name ^ pft_type_identity_env type_variables ty
   else if is_comb tm then
     let rator, rand = dest_comb tm in
-    "m" ^ pft_term_identity_env env rator ^
-    pft_term_identity_env env rand ^ ";"
+    "m" ^ pft_term_identity_env type_variables env rator ^
+    pft_term_identity_env type_variables env rand ^ ";"
   else if is_abs tm then
     let var, body = dest_abs tm in
-    "l" ^ pft_type_identity (type_of var) ^
-    pft_term_identity_env (var::env) body ^ ";"
+    "l" ^ pft_type_identity_env type_variables (type_of var) ^
+    pft_term_identity_env type_variables (var::env) body ^ ";"
   else failwith "pft_term_identity: unknown term node";;
 
-let pft_term_identity tm = pft_term_identity_env [] tm;;
+let pft_term_identity tm =
+  let type_variables = pft_collect_term_type_variables tm [] in
+  pft_term_identity_env type_variables [] tm;;
 
 (* Exact primitive axioms emitted by HOL's PFTCandlePreamble.  The identity
-   format includes constant and free-variable types, and uses de Bruijn
-   indices for bound variables so harmless binder renaming is accepted. *)
+   format includes constant and free-variable types, and uses first-occurrence
+   indexes for type variables plus de Bruijn indexes for bound variables, so
+   harmless source-level renaming is accepted. *)
 let pft_standard_axiom_identities =
   [
     ("SELECT_AX",
-     "mc1:!t3:fun2[t3:fun2[t3:fun2[v2:'at4:bool0[]]t4:bool0[]]" ^
-     "t4:bool0[]]lt3:fun2[v2:'at4:bool0[]]mc1:!t3:fun2[t3:fun2[" ^
-     "v2:'at4:bool0[]]t4:bool0[]]lv2:'ammc3:==>t3:fun2[t4:bool0[]" ^
+     "mc1:!t3:fun2[t3:fun2[t3:fun2[v0;t4:bool0[]]t4:bool0[]]" ^
+     "t4:bool0[]]lt3:fun2[v0;t4:bool0[]]mc1:!t3:fun2[t3:fun2[" ^
+     "v0;t4:bool0[]]t4:bool0[]]lv0;mmc3:==>t3:fun2[t4:bool0[]" ^
      "t3:fun2[t4:bool0[]t4:bool0[]]]mb1;b0;;;mb1;mc1:@t3:fun2[" ^
-     "t3:fun2[v2:'at4:bool0[]]v2:'a]b1;;;;;;;;");
+     "t3:fun2[v0;t4:bool0[]]v0;]b1;;;;;;;;");
     ("ETA_AX",
-     "mc1:!t3:fun2[t3:fun2[t3:fun2[v2:'av2:'b]t4:bool0[]]t4:bool0[]]" ^
-     "lt3:fun2[v2:'av2:'b]mmc1:=t3:fun2[t3:fun2[v2:'av2:'b]" ^
-     "t3:fun2[t3:fun2[v2:'av2:'b]t4:bool0[]]]lv2:'amb1;b0;;;;b0;;;;");
+     "mc1:!t3:fun2[t3:fun2[t3:fun2[v0;v1;]t4:bool0[]]t4:bool0[]]" ^
+     "lt3:fun2[v0;v1;]mmc1:=t3:fun2[t3:fun2[v0;v1;]" ^
+     "t3:fun2[t3:fun2[v0;v1;]t4:bool0[]]]lv0;mb1;b0;;;;b0;;;;");
     ("INFINITY_AX",
      "mc1:?t3:fun2[t3:fun2[t3:fun2[t3:ind0[]t3:ind0[]]t4:bool0[]]" ^
      "t4:bool0[]]lt3:fun2[t3:ind0[]t3:ind0[]]mmc2:/\\t3:fun2[" ^
