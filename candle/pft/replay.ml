@@ -24,6 +24,78 @@ let pft_max_list_length = ref 10000000;;
 let pft_axiom_policy = ref (fun (_: string) (_: term) -> false);;
 let pft_axioms_used = ref ([]: (string * term) list);;
 let pft_compute_context = ref (None: thm list option);;
+
+let pft_atom_identity s = string_of_int (String.length s) ^ ":" ^ s;;
+
+let rec pft_concat_identities f = function
+  | [] -> ""
+  | x::xs -> f x ^ pft_concat_identities f xs;;
+
+let rec pft_type_identity ty =
+  if is_vartype ty then "v" ^ pft_atom_identity (dest_vartype ty)
+  else
+    let name, args = dest_type ty in
+    "t" ^ pft_atom_identity name ^ string_of_int (length args) ^ "[" ^
+    pft_concat_identities pft_type_identity args ^ "]";;
+
+let rec pft_bound_index tm env index =
+  match env with
+  | [] -> None
+  | v::vs ->
+      if aconv tm v then Some index
+      else pft_bound_index tm vs (index + 1);;
+
+let rec pft_term_identity_env env tm =
+  if is_var tm then
+    let name, ty = dest_var tm in
+    (match pft_bound_index tm env 0 with
+     | Some index -> "b" ^ string_of_int index ^ ";"
+     | None -> "v" ^ pft_atom_identity name ^ pft_type_identity ty)
+  else if is_const tm then
+    let name, ty = dest_const tm in
+    "c" ^ pft_atom_identity name ^ pft_type_identity ty
+  else if is_comb tm then
+    let rator, rand = dest_comb tm in
+    "m" ^ pft_term_identity_env env rator ^
+    pft_term_identity_env env rand ^ ";"
+  else if is_abs tm then
+    let var, body = dest_abs tm in
+    "l" ^ pft_type_identity (type_of var) ^
+    pft_term_identity_env (var::env) body ^ ";"
+  else failwith "pft_term_identity: unknown term node";;
+
+let pft_term_identity tm = pft_term_identity_env [] tm;;
+
+(* Exact primitive axioms emitted by HOL's PFTCandlePreamble.  The identity
+   format includes constant and free-variable types, and uses de Bruijn
+   indices for bound variables so harmless binder renaming is accepted. *)
+let pft_standard_axiom_identities =
+  [
+    ("SELECT_AX",
+     "mc1:!t3:fun2[t3:fun2[t3:fun2[v2:'at4:bool0[]]t4:bool0[]]" ^
+     "t4:bool0[]]lt3:fun2[v2:'at4:bool0[]]mc1:!t3:fun2[t3:fun2[" ^
+     "v2:'at4:bool0[]]t4:bool0[]]lv2:'ammc3:==>t3:fun2[t4:bool0[]" ^
+     "t3:fun2[t4:bool0[]t4:bool0[]]]mb1;b0;;;mb1;mc1:@t3:fun2[" ^
+     "t3:fun2[v2:'at4:bool0[]]v2:'a]b1;;;;;;;;");
+    ("ETA_AX",
+     "mc1:!t3:fun2[t3:fun2[t3:fun2[v2:'av2:'b]t4:bool0[]]t4:bool0[]]" ^
+     "lt3:fun2[v2:'av2:'b]mmc1:=t3:fun2[t3:fun2[v2:'av2:'b]" ^
+     "t3:fun2[t3:fun2[v2:'av2:'b]t4:bool0[]]]lv2:'amb1;b0;;;;b0;;;;");
+    ("INFINITY_AX",
+     "mc1:?t3:fun2[t3:fun2[t3:fun2[t3:ind0[]t3:ind0[]]t4:bool0[]]" ^
+     "t4:bool0[]]lt3:fun2[t3:ind0[]t3:ind0[]]mmc2:/\\t3:fun2[" ^
+     "t4:bool0[]t3:fun2[t4:bool0[]t4:bool0[]]]mc7:ONE_ONEt3:fun2[" ^
+     "t3:fun2[t3:ind0[]t3:ind0[]]t4:bool0[]]b0;;;mc1:~t3:fun2[" ^
+     "t4:bool0[]t4:bool0[]]mc4:ONTOt3:fun2[t3:fun2[t3:ind0[]" ^
+     "t3:ind0[]]t4:bool0[]]b0;;;;;;")
+  ];;
+
+let allow_standard_pft_axioms () =
+  pft_axiom_policy :=
+    (fun name tm ->
+       try assoc name pft_standard_axiom_identities = pft_term_identity tm
+       with Failure _ -> false);;
+
 let allow_pft_axioms_exact allowed =
   pft_axiom_policy :=
     (fun name tm ->
