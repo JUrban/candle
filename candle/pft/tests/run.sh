@@ -9,10 +9,12 @@ axiom_fixture="$fixture_dir/unauthorized-axiom.pft.bin"
 impostor_fixture="$fixture_dir/impostor-standard-axiom.pft.bin"
 preamble_fixture="$fixture_dir/preamble.pft.bin"
 hol_light_bootstrap_fixture="$fixture_dir/hol-light-bootstrap.pft.bin"
+flyspeck_hol_library_fixture="$fixture_dir/flyspeck-hol-library.pft.bin"
 
 if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
       ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ||
-      ! -f "$hol_light_bootstrap_fixture" ]]; then
+      ! -f "$hol_light_bootstrap_fixture" ||
+      ! -f "$flyspeck_hol_library_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -20,6 +22,10 @@ fi
 tmp_dir=$(mktemp -d)
 trap 'rm -rf -- "$tmp_dir"' EXIT
 python3 "$test_dir/mutate_fixtures.py" "$core_fixture" "$tmp_dir/malformed"
+python3 "$test_dir/inspect_opcodes.py" \
+  "$core_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
+  "$flyspeck_hol_library_fixture" >"$tmp_dir/opcodes.json"
+printf 'PASS: structural opcode inspection (pass)\n'
 
 run_replay() {
   local expected=$1
@@ -79,6 +85,18 @@ run_replay pass "$hol_light_bootstrap_fixture" hol-light-bootstrap \
       length (pft_result_axioms evidence) = 3
    then print_endline "Evidence OK"
    else failwith "unexpected HOL Light bootstrap replay evidence";;'
+run_replay pass "$flyspeck_hol_library_fixture" flyspeck-hol-library \
+  'allow_standard_pft_axioms ();;' \
+  'if pft_result_command_count evidence = 171560 &&
+      pft_result_table_limits evidence = (19125,57241,91135) &&
+      pft_result_peak_live evidence = (19125,57241,91135) &&
+      map fst (pft_result_saved_theorems evidence) =
+        ["flyspeck$IMAGE_DELETE_INJ_COMPAT";
+         "flyspeck$HAS_SIZE_2_EXISTS"] &&
+      length (pft_result_axioms evidence) = 3 &&
+      not (pft_result_compute_initialized evidence)
+   then print_endline "Evidence OK"
+   else failwith "unexpected Flyspeck leaf replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"
