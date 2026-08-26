@@ -12,13 +12,15 @@ hol_light_bootstrap_fixture="$fixture_dir/hol-light-bootstrap.pft.bin"
 flyspeck_hol_library_fixture="$fixture_dir/flyspeck-hol-library.pft.bin"
 flyspeck_refinement_fixture="$fixture_dir/flyspeck-refinement-leaves.pft.bin"
 compute_fixture="$fixture_dir/compute-zero.pft.bin"
+resume_fixture="$fixture_dir/producer-resume.pft.bin"
 
 if [[ ! -f "$core_fixture" || ! -f "$axiom_fixture" ||
       ! -f "$impostor_fixture" || ! -f "$preamble_fixture" ||
       ! -f "$hol_light_bootstrap_fixture" ||
       ! -f "$flyspeck_hol_library_fixture" ||
       ! -f "$flyspeck_refinement_fixture" ||
-      ! -f "$compute_fixture" ]]; then
+      ! -f "$compute_fixture" ||
+      ! -f "$resume_fixture" ]]; then
   printf 'missing generated fixtures under %s\n' "$fixture_dir" >&2
   exit 2
 fi
@@ -29,7 +31,7 @@ python3 "$test_dir/mutate_fixtures.py" "$core_fixture" "$tmp_dir/malformed"
 python3 "$test_dir/inspect_opcodes.py" \
   "$core_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
   "$flyspeck_hol_library_fixture" "$flyspeck_refinement_fixture" \
-  "$compute_fixture" \
+  "$compute_fixture" "$resume_fixture" \
   >"$tmp_dir/opcodes.json"
 printf 'PASS: structural opcode inspection (pass)\n'
 
@@ -127,6 +129,16 @@ run_replay pass "$compute_fixture" compute-zero \
       pft_result_compute_initialized evidence
    then print_endline "Evidence OK"
    else failwith "unexpected compute replay evidence";;'
+run_replay pass "$resume_fixture" producer-resume '' \
+  'if pft_result_command_count evidence = 305 &&
+      pft_result_table_limits evidence = (63,64,99) &&
+      pft_result_peak_live evidence = (63,64,99) &&
+      map fst (pft_result_saved_theorems evidence) =
+        ["candle$RESUME_BEFORE"; "candle$RESUME_AFTER"] &&
+      pft_result_axioms evidence = [] &&
+      not (pft_result_compute_initialized evidence)
+   then print_endline "Evidence OK"
+   else failwith "unexpected resumed-producer replay evidence";;'
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"

@@ -49,6 +49,19 @@ named basis and appends `LOAD`, `COMPUTE_INIT`, a computation of
 primitive through the compiled Candle endpoint; it does not yet encode a
 Flyspeck-specific compute equation.
 
+`fixtures/producer-resume.pft.bin` is the byte-for-byte common output of an
+uninterrupted producer and a forced DMTCP checkpoint/kill/restore run.  The
+producer calls `prepare_pft_stream_checkpoint` after saving
+`candle$RESUME_BEFORE`; the checkpointed generation writes an invalid tail and
+is killed.  On restore, `restore_pft_stream_checkpoint` validates the in-memory
+logical counters, truncates the trace to the flushed byte boundary, and derives
+`candle$RESUME_AFTER` from the pre-checkpoint theorem.  The project-level
+`scripts/test-producer-resume.sh` reproduces the cycle and requires both traces
+to have SHA-256
+`7a3c7cefe5649bd70ddb8fa6a8c6c18443068c9e1e522385c9dce2d767aa0dc2`
+before replaying the resumed result in compiled Candle.  DMTCP images are
+executable producer state and are never trusted release inputs.
+
 The core/negative fixture set was produced at HOL4 development commit
 `6dc37788c18e3404294bf137067046bae5904ad0`.  The preamble was produced at
 `97226a41ada4c95c4998f4d6959bc554175a42ed`.  `fixtures/SHA256SUMS` pins the
@@ -74,3 +87,5 @@ also supplies positive checkpoint/range-deletion coverage.
 The compute fixture must additionally initialize the compute context, replay
 all 62 source-aligned equations, execute the primitive, and save its checked
 result.
+The resume fixture supplies stable consumer coverage for the output of the
+separately run process-restart acceptance test.
