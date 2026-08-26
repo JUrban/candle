@@ -20,6 +20,7 @@ let print_saved () =
 
 let pft_max_string_length = ref (1024 * 1024);;
 let pft_max_table_slots = ref 50000000;;
+let pft_max_list_length = ref 10000000;;
 let pft_axiom_policy = ref (fun (_: string) (_: term) -> false);;
 let pft_axioms_used = ref ([]: (string * term) list);;
 let allow_pft_axioms_exact allowed =
@@ -146,6 +147,11 @@ let decode_string fd =
   then failwith "decode_string: length exceeds configured limit"
   else read_exactly fd s_len;;
 
+let decode_count kind fd =
+  let n = decode_uleb128 fd in
+  if n > !pft_max_list_length
+  then failwith (kind ^ " count exceeds configured limit") else n;;
+
 let next_command fd = Text_io.input1 fd;;
 
 (* --- Replay files --- *)
@@ -237,7 +243,7 @@ let pft_tyvar () =
 let pft_tyop () =
   let id = decode_uleb128 command_stream in
   let name = decode_string command_stream in
-  let n_args = decode_uleb128 command_stream in
+  let n_args = decode_count "TYOP arguments" command_stream in
   let rec loop i args =
     if i <= 0 then rev args else
       let id = decode_uleb128 command_stream in
@@ -291,7 +297,7 @@ let pft_assume () =
 let pft_new_specification () =
   let id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let n_names = decode_uleb128 command_stream in
+  let n_names = decode_count "new_specification names" command_stream in
   let rec loop i names =
     if i <= 0 then rev names else
       let name = decode_string command_stream in
@@ -322,7 +328,7 @@ let pft_new_type_definition () =
   set_th (id + 1) repth in
 
 let pft_compute_init () =
-  let n_eqs = decode_uleb128 command_stream in
+  let n_eqs = decode_count "COMPUTE_INIT equations" command_stream in
   let rec loop i eqs =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
@@ -336,7 +342,7 @@ let pft_compute_init () =
 let pft_compute () =
   let id = decode_uleb128 command_stream in
   let tm_id = decode_uleb128 command_stream in
-  let n_ths = decode_uleb128 command_stream in
+  let n_ths = decode_count "COMPUTE equations" command_stream in
   let rec loop i eqs =
     if i <= 0 then rev eqs else
       let eq_id = decode_uleb128 command_stream in
@@ -464,7 +470,7 @@ let pft_deduct_antisym_rule () =
 let pft_inst () =
   let id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let n_pairs = decode_uleb128 command_stream in
+  let n_pairs = decode_count "INST substitutions" command_stream in
   let rec loop i pairs =
     if i <= 0 then rev pairs else
       let id1 = decode_uleb128 command_stream in
@@ -480,7 +486,7 @@ let pft_inst () =
 let pft_inst_type () =
   let id = decode_uleb128 command_stream in
   let th_id = decode_uleb128 command_stream in
-  let n_pairs = decode_uleb128 command_stream in
+  let n_pairs = decode_count "INST_TYPE substitutions" command_stream in
   let rec loop i pairs =
     if i <= 0 then rev pairs else
       let id1 = decode_uleb128 command_stream in
@@ -498,7 +504,7 @@ let pft_expect () =
   let th = get_th id in
   let actual_hyps = hyp th in
   let actual_concl = concl th in
-  let n_hyps = decode_uleb128 command_stream in
+  let n_hyps = decode_count "EXPECT hypotheses" command_stream in
   let rec loop i hyps =
     if i <= 0 then rev hyps else
       let hyp_id = decode_uleb128 command_stream in
