@@ -250,6 +250,7 @@
         "kind": "pure_source_runtime_binding",
         "description": "implement only exact floor, ceiling, half-away-from-zero round, and reciprocal negative powers using verified Cake.Rat operations",
         "source": "candle/nums.ml",
+        "integration_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
         "new_ffi": false,
         "process_support": false
       },

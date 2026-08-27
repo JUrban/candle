@@ -179,6 +179,7 @@ BASELINE_OBSERVATIONS = {
             "status": "pass",
             "selected_case_count": 15,
             "oracle": "candle/compatibility/test_num_rationals.py",
+            "source_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
             "target_status": "pending_remaining_sos_compatibility",
         },
         "evidence": {
