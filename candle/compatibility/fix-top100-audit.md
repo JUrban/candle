@@ -72,6 +72,19 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
+The same clean baseline later reached target 19 of 65 with 14 load-only passes
+and four failures through target 18. In addition to `bertrand-primerecip` and
+`ceva`, `constructible` failed on the multiline `define_type` string at
+`100/constructible.ml:115`, and `cubic` failed in
+`Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
+`SEMIRING_NORMALIZERS_CONV` received Candle's incompatible inferred type. The
+latter maps directly to the small `Term.(<)` normalization in `5c44565`; the
+former is a newly exposed lexer-compatibility item, not covered by the eight
+audited anchor commits. `cubedissection` passed after approximately 63 minutes
+of active log time, under the recorded inactivity-only/unbounded-wall policy;
+that pass remains provisional because no theorem or assumption fingerprint was
+captured.
+
 ## Integration sequence
 
 1. Land the generated inventory, ledger, and static checks on the integration

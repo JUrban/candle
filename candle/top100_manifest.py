@@ -165,6 +165,75 @@ BASELINE_OBSERVATIONS = {
             "compatibility_paths_match_audited_base": True,
         },
     },
+    "100/ceva": {
+        "status": "fail",
+        "phase": "dependency_load",
+        "compatibility_category": "missing numeric helper",
+        "diagnostic": "undefined value round_num while loading Examples/sos.ml",
+        "first_source_location": "Examples/sos.ml",
+        "wall_seconds": 1428.4,
+        "peak_rss_kib": None,
+        "anchor_candidate": "218c7c9",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/constructible": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml multiline string literal",
+        "diagnostic": "LEXER ERROR; Parsing failed inside the multiline define_type string",
+        "first_source_location": "100/constructible.ml:115",
+        "log_active_seconds_approx": 3730.4,
+        "peak_rss_kib": None,
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/cubedissection": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 3794.6,
+        "observed_process_rss_kib": 6413644,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/cubic": {
+        "status": "fail",
+        "phase": "dependency_elaboration",
+        "compatibility_category": "polymorphic comparison",
+        "diagnostic": (
+            "SEMIRING_NORMALIZERS_CONV comparator inferred as term -> term -> bool "
+            "where int -> int -> bool was expected"
+        ),
+        "first_source_location": "Complex/complexnumbers.ml:720",
+        "log_active_seconds_approx": 192.0,
+        "peak_rss_kib": None,
+        "anchor_candidate": "5c44565",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
 }
 
 
@@ -267,7 +336,11 @@ def build_manifest():
             raise ValueError(f"{name}: missing load files: {', '.join(missing)}")
         covered_sources.update(load_files)
         observation = BASELINE_OBSERVATIONS.get(name)
-        fingerprint_status = "not_reached" if observation else "missing"
+        fingerprint_status = (
+            "not_reached"
+            if observation and observation["status"] != "pass"
+            else "missing"
+        )
         targets.append({
             "name": name,
             "load_files": load_files,
