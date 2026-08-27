@@ -17,11 +17,14 @@ python3 candle/flyspeck_manifest.py \
 ```
 
 The current pinned inventory contains 297 ordered build entries (287 unique),
-397 recursively reached source nodes, 417 selected dependency edges, and 42
+398 recursively reached source nodes, 417 selected dependency edges, and 42
 hashed LP/archive/nonlinear inputs.  There are no unresolved build roots,
 unreviewed dynamic loads, missing ordinary sources, path escapes, ambiguous
 loads, or detected cycles.  Sixteen non-literal call sites have explicit
 source-and-line reviews; the selected OCaml-version branch is pinned to 4.14.
+The manifest also pins `flyspeck_l2_target.ml`, the direct Candle theorem glue
+for `Candle_flyspeck_l2.tame_imp_kepler_conjecture`; that file has no trace
+producer or theorem-import shortcut.
 
 This artifact is deliberately not loader-execution evidence.  In particular,
 two generated-runtime contracts remain visible:

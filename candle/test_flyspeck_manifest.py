@@ -73,7 +73,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(self.payload["build_sequence_count"], 297)
         self.assertEqual(self.payload["build_sequence_unique_count"], 287)
         self.assertEqual(len(self.payload["build_sequence_roots"]), 297)
-        self.assertEqual(self.payload["source_node_count"], 397)
+        self.assertEqual(self.payload["source_node_count"], 398)
         self.assertGreater(self.payload["source_edge_count"], 300)
 
     def test_diagnostics_are_promotion_gates(self):
@@ -117,6 +117,15 @@ class GeneratedManifestTests(unittest.TestCase):
                 "flyspeck:text_formalization/general/serialization.hl",
             },
         )
+
+    def test_final_target_is_direct_source_only(self):
+        target = self.payload["final_target"]
+        self.assertEqual(target["source"], "candle:candle/flyspeck_l2_target.ml")
+        source = Path(__file__).with_name("flyspeck_l2_target.ml").read_text(encoding="utf-8")
+        for forbidden in ("PFT", "pft", "save_pft", "new_axiom", "mk_thm"):
+            self.assertNotIn(forbidden, source)
+        self.assertIn("Candle_flyspeck_l2", source)
+        self.assertIn("import_tame_classification", source)
 
 
 if __name__ == "__main__":

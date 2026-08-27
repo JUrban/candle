@@ -2148,6 +2148,14 @@
     "reviewed_dynamic_dependencies": 16,
     "unresolved_build_roots": []
   },
+  "final_target": {
+    "imported_premises": [
+      "import_tame_classification"
+    ],
+    "name": "Candle_flyspeck_l2.tame_imp_kepler_conjecture",
+    "source": "candle:candle/flyspeck_l2_target.ml",
+    "statement": "import_tame_classification ==> the_kepler_conjecture"
+  },
   "generated_dependency_contracts": [
     {
       "generation": {
@@ -2437,12 +2445,12 @@
       "note": "pinned externally to avoid a self-referential commit hash"
     },
     "flyspeck": {
-      "commit": "2ea440e9f7c55734d1e47738e44a6129ce0ecf5a"
+      "commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53"
     }
   },
   "schema": 1,
   "source_edge_count": 417,
-  "source_node_count": 397,
+  "source_node_count": 398,
   "source_nodes": {
     "candle:Library/binomial.ml": {
       "bytes": 18352,
@@ -3370,6 +3378,13 @@
       "path": "candle/compute.ml",
       "repository": "candle",
       "sha256": "cf327c067fa7cb127ed14bb5909cbbecb9f9ac48b13f59d576c9ca2230cbb6d9"
+    },
+    "candle:candle/flyspeck_l2_target.ml": {
+      "bytes": 384,
+      "dependencies": [],
+      "path": "candle/flyspeck_l2_target.ml",
+      "repository": "candle",
+      "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/kernel.ml": {
       "bytes": 5795,
@@ -5530,7 +5545,7 @@
       "sha256": "4570334c652aedda6e4c2aa6d9582b5e4737cd87989cf173fdea4867f3b88a9e"
     },
     "flyspeck:formal_lp/hypermap/verify_all.hl": {
-      "bytes": 4423,
+      "bytes": 4259,
       "dependencies": [
         {
           "kind": "needs",
@@ -5545,7 +5560,7 @@
       ],
       "path": "formal_lp/hypermap/verify_all.hl",
       "repository": "flyspeck",
-      "sha256": "68904dc372886efdc349add7671718179e54469b606b88ea096b2b6ccc63d22e"
+      "sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
     },
     "flyspeck:formal_lp/ineqs/constants_approx.hl": {
       "bytes": 18080,
@@ -5752,7 +5767,7 @@
       "sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9"
     },
     "flyspeck:load_flyspeck.ml": {
-      "bytes": 1941,
+      "bytes": 1304,
       "dependencies": [
         {
           "kind": "#load",
@@ -5762,7 +5777,7 @@
         },
         {
           "kind": "needs",
-          "line": 31,
+          "line": 10,
           "literal": "Multivariate/flyspeck.ml",
           "matches": [
             "candle:Multivariate/flyspeck.ml"
@@ -5773,7 +5788,7 @@
         {
           "expression": "needs (Filename.concat flyspeck_dir \"build/strictbuild.hl\")",
           "kind": "needs",
-          "line": 33,
+          "line": 12,
           "reason": "flyspeck_dir is the manifest text_formalization root",
           "selected_targets": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -5785,7 +5800,7 @@
         },
         {
           "kind": "needs",
-          "line": 34,
+          "line": 13,
           "literal": "build/build.hl",
           "matches": [
             "flyspeck:text_formalization/build/build.hl"
@@ -5796,14 +5811,14 @@
         {
           "expression": "flyspeck_needs seq0 in ()",
           "kind": "flyspeck_needs",
-          "line": 39,
+          "line": 18,
           "reason": "seq0 is a prefix of the separately extracted authoritative build sequence",
           "status": "root-driver"
         }
       ],
       "path": "load_flyspeck.ml",
       "repository": "flyspeck",
-      "sha256": "26ef1ce6c057cdf8be70bb389bc3bf220bf670b9f3b3b56c9bb1179a2f27aacb"
+      "sha256": "b6c9fb80740f7b7bfadc8efc1d514c3d4d0b2d8cf21d8685d8859a8e4c1f1e46"
     },
     "flyspeck:text_formalization/build/build.hl": {
       "bytes": 13059,
@@ -5813,7 +5828,7 @@
       "sha256": "9a0cb02595e42fee7f97841221eb81b7c844f07c3b80c81dd11b2ccc759b5029"
     },
     "flyspeck:text_formalization/build/strictbuild.hl": {
-      "bytes": 9581,
+      "bytes": 9380,
       "dependencies": [
         {
           "kind": "#load",
@@ -5830,7 +5845,7 @@
         {
           "expression": "loadt (flyspeckpath \"general/parser_verbose.hl\")",
           "kind": "loadt",
-          "line": 107,
+          "line": 103,
           "reason": "flyspeckpath prefixes the pinned text_formalization root",
           "selected_targets": [
             "flyspeck:text_formalization/general/parser_verbose.hl"
@@ -5843,7 +5858,7 @@
         {
           "expression": "loadt (flyspeckpath \"general/debug.hl\")",
           "kind": "loadt",
-          "line": 108,
+          "line": 104,
           "reason": "flyspeckpath prefixes the pinned text_formalization root",
           "selected_targets": [
             "flyspeck:text_formalization/general/debug.hl"
@@ -5855,7 +5870,7 @@
         },
         {
           "kind": "needs",
-          "line": 119,
+          "line": 115,
           "literal": "Library/rstc.ml",
           "matches": [
             "candle:Library/rstc.ml"
@@ -5865,7 +5880,7 @@
         },
         {
           "kind": "needs",
-          "line": 120,
+          "line": 116,
           "literal": "Rqe/num_calc_simp.ml",
           "matches": [
             "candle:Rqe/num_calc_simp.ml"
@@ -5875,7 +5890,7 @@
         },
         {
           "kind": "needs",
-          "line": 121,
+          "line": 117,
           "literal": "general/hol-library.hl",
           "matches": [
             "flyspeck:text_formalization/general/hol-library.hl"
@@ -5885,7 +5900,7 @@
         },
         {
           "kind": "needs",
-          "line": 123,
+          "line": 119,
           "literal": "general/print_types.hl",
           "matches": [
             "flyspeck:text_formalization/general/print_types.hl"
@@ -5895,7 +5910,7 @@
         },
         {
           "kind": "needs",
-          "line": 125,
+          "line": 121,
           "literal": "general/hol_pervasives.hl",
           "matches": [
             "flyspeck:text_formalization/general/hol_pervasives.hl"
@@ -5905,7 +5920,7 @@
         },
         {
           "kind": "needs",
-          "line": 126,
+          "line": 122,
           "literal": "general/prove_by_refinement.hl",
           "matches": [
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
@@ -5915,7 +5930,7 @@
         },
         {
           "kind": "needs",
-          "line": 128,
+          "line": 124,
           "literal": "build/build.hl",
           "matches": [
             "flyspeck:text_formalization/build/build.hl"
@@ -5926,13 +5941,13 @@
         {
           "expression": "loadt s in let _ = Format.print_string(\"File \\\"\"^s'^\"\\\" -successfully loaded\\n\") in ()",
           "kind": "loadt",
-          "line": 143,
+          "line": 139,
           "reason": "implementation of the literal needs wrapper; not an invocation",
           "status": "loader-definition"
         },
         {
           "kind": "needs",
-          "line": 166,
+          "line": 162,
           "literal": "build/use_serialization.hl",
           "matches": [
             "flyspeck:text_formalization/build/use_serialization.hl"
@@ -5942,7 +5957,7 @@
         },
         {
           "kind": "needs",
-          "line": 169,
+          "line": 165,
           "literal": "Multivariate/flyspeck.ml",
           "matches": [
             "candle:Multivariate/flyspeck.ml"
@@ -5953,7 +5968,7 @@
         {
           "expression": "loadt (flyspeckpath \"general/state_manager.hl\")",
           "kind": "loadt",
-          "line": 171,
+          "line": 167,
           "reason": "flyspeckpath prefixes the pinned text_formalization root",
           "selected_targets": [
             "flyspeck:text_formalization/general/state_manager.hl"
@@ -5966,42 +5981,42 @@
         {
           "expression": "loadt (flyspeckpath s)",
           "kind": "loadt",
-          "line": 172,
+          "line": 168,
           "reason": "definition of reneeds; call targets are reviewed at invocations",
           "status": "loader-definition"
         },
         {
           "expression": "reneeds",
           "kind": "reneeds",
-          "line": 173,
+          "line": 169,
           "reason": "rflyspeck_needs aliases reneeds without invoking it",
           "status": "function-alias"
         },
         {
           "expression": "flyspeck_needs Build.build_sequence_main_statement in \"full load completed\") with Failure t -> t in let oc = open_out_gen [Open_append;Open_text] 436 (flyspeckp",
           "kind": "flyspeck_needs",
-          "line": 250,
+          "line": 246,
           "reason": "maps the separately extracted main build sequence",
           "status": "root-driver"
         },
         {
           "expression": "flyspeck_needs build_list in \"full load completed\") with Failure t -> t in build_report s",
           "kind": "flyspeck_needs",
-          "line": 257,
+          "line": 253,
           "reason": "do_build argument is constrained by the loader build-mode manifest",
           "status": "root-driver"
         },
         {
           "expression": "flyspeck_needs s; s) !build_list in let unloaded = filter(not o already_loaded) !build_list in (loaded,unloaded)",
           "kind": "flyspeck_needs",
-          "line": 280,
+          "line": 276,
           "reason": "maps a loader-selected build list; no independent source target",
           "status": "root-driver"
         }
       ],
       "path": "text_formalization/build/strictbuild.hl",
       "repository": "flyspeck",
-      "sha256": "f30920f6e6cfc37cfbfb114d3f20e765f2aa411088ae4cb1df42c6d2f1c04ae3"
+      "sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a"
     },
     "flyspeck:text_formalization/build/use_serialization.hl": {
       "bytes": 431,
@@ -7470,7 +7485,7 @@
       "sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58"
     },
     "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl": {
-      "bytes": 14619,
+      "bytes": 14453,
       "dependencies": [
         {
           "kind": "flyspeck_needs",
@@ -7525,7 +7540,7 @@
       ],
       "path": "text_formalization/nonlinear/mk_all_ineq.hl",
       "repository": "flyspeck",
-      "sha256": "899665e3be8659b2f32d3611c808f3035b1f53f97dc8c187a6311be99751f0bc"
+      "sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11"
     },
     "flyspeck:text_formalization/nonlinear/nonlin_def.hl": {
       "bytes": 28510,
