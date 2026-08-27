@@ -37,13 +37,15 @@ that a shared dependency belongs to only one mathematical subject.
 
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries
-OCaml `Digest.file`-compatible MD5 values for all 399 selected source nodes;
-the JSON manifest and generated program remain SHA-256-pinned externally.
-`flyspeck_loader.ml` executes the in-process preflight before loading
-`strictbuild.hl`, rejecting a missing file, unknown repository, entry-count
-drift, or digest mismatch.  This detects on-disk source corruption before the
-Flyspeck build, but `hol.ml` and the loader necessarily begin executing before
-the preflight and remain launcher/authentication obligations.
+OCaml `Digest.file`-compatible MD5 values for 398 selected source nodes: every
+node except the executing loader.  The loader embeds and checks the generated
+program's MD5 before executing it, while the JSON manifest and generated
+program remain SHA-256-pinned externally.  `flyspeck_loader.ml` executes the
+in-process preflight before loading `strictbuild.hl`, rejecting a missing file,
+unknown repository, entry-count drift, or digest mismatch.  This detects
+on-disk source corruption before the Flyspeck build, but `hol.ml` and the
+loader necessarily begin executing before the preflight and remain
+launcher/authentication obligations.
 
 `flyspeck_loader.ml` is the initial enforcing loader slice.  In a clean Candle
 process it first fails closed unless the mode is `full`, then loads the pinned
@@ -106,8 +108,8 @@ clock, or directory behavior.  The other selected operations fail explicitly,
 so the overall library status is still
 `blocked-pending-static-binding-evidence`.
 
-The selected graph also has 15 executable qualified `Digest` occurrences:
-seven `file`, three type `t`, two `string`, and three `to_hex`; it has no
+The selected graph also has 17 executable qualified `Digest` occurrences:
+eight `file`, three type `t`, two `string`, and four `to_hex`; it has no
 `open Digest`.  `ocaml.ml` supplies these operations with a pure MD5
 implementation and no hashing FFI.  `test_digest_compat.sh` differentially
 checks OCaml 4.14.1 across deterministic binary inputs of every length from 0

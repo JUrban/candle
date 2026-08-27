@@ -2248,7 +2248,7 @@
         "runtime_input": "candle/flyspeck_manifest.json"
       },
       "kind": "needs",
-      "line": 53,
+      "line": 62,
       "literal": "candle/flyspeck_source_digests.ml",
       "source": "candle:candle/flyspeck_loader.ml",
       "status": "generated-contract"
@@ -2558,6 +2558,18 @@
     },
     "capability_uses": [
       {
+        "line": 58,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 58,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
         "line": 14,
         "member": "file",
         "module": "Digest",
@@ -2652,6 +2664,18 @@
     "opened_module_uses": [],
     "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
     "qualified_uses": [
+      {
+        "line": 58,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 58,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
       {
         "line": 14,
         "member": "file",
@@ -2775,13 +2799,18 @@
   "source_digest_contract": {
     "activation_status": "preflight-before-strictbuild",
     "algorithm": "MD5 for OCaml Digest.file compatibility",
-    "coverage": "all selected source nodes, including loader and hol.ml",
-    "entry_count": 399,
-    "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution",
+    "bootstrap_exclusions": [
+      "candle:candle/flyspeck_loader.ml"
+    ],
+    "coverage": "all selected source nodes except the executing loader",
+    "entry_count": 398,
+    "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_sha256": "c3cd0090c7084889de8005afeadfc17d5e7074b251c728e5d00bb79218b84e8a",
-    "outer_integrity": "manifest and generated program pinned by SHA-256"
+    "generated_source_md5": "552a21f448e866a7f8fcd49ce8908c2f",
+    "generated_source_sha256": "0af74c3dab90d8c37234a07b55c632257dcced97fa7fca924fa5fb8f6bc362ab",
+    "outer_integrity": "manifest and generated program pinned by SHA-256",
+    "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
   "source_edge_count": 418,
   "source_node_count": 399,
@@ -5260,7 +5289,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 3448,
+      "bytes": 3868,
       "dependencies": [
         {
           "kind": "#use",
@@ -5279,13 +5308,13 @@
             "runtime_input": "candle/flyspeck_manifest.json"
           },
           "kind": "needs",
-          "line": 53,
+          "line": 62,
           "literal": "candle/flyspeck_source_digests.ml",
           "status": "generated-contract"
         },
         {
           "kind": "needs",
-          "line": 54,
+          "line": 63,
           "literal": "candle/flyspeck_source_integrity.ml",
           "matches": [
             "candle:candle/flyspeck_source_integrity.ml"
@@ -5295,7 +5324,7 @@
         },
         {
           "kind": "needs",
-          "line": 70,
+          "line": 79,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -5306,13 +5335,13 @@
         {
           "expression": "flyspeck_needs source; source) Build.build_sequence_full",
           "kind": "flyspeck_needs",
-          "line": 73,
+          "line": 82,
           "reason": "maps the separately extracted authoritative full build sequence",
           "status": "root-driver"
         },
         {
           "kind": "needs",
-          "line": 80,
+          "line": 89,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -5321,10 +5350,10 @@
           "status": "resolved"
         }
       ],
-      "md5": "c124321d2a1dd5d6bcfdd7168efec336",
+      "md5": "f4222e3b0d4d05cf568e621914c0e5f7",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "55fa47c11013dad1cfbcc79c82d9f535bd5b094c6791abf56f976323c276d3cd"
+      "sha256": "9276ee725001a5e9a1257b7101136b8b380e2bd5d229245d647757caeecb2bd1"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,

@@ -253,7 +253,11 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('candle_flyspeck_build_mode must be full', source)
         self.assertIn('needs "build/strictbuild.hl"', source)
         self.assertIn('needs "candle/flyspeck_source_digests.ml"', source)
-        self.assertIn("candle_flyspeck_verify_sources 399", source)
+        self.assertIn("candle_flyspeck_verify_sources 398", source)
+        self.assertIn(
+            self.payload["source_digest_contract"]["generated_source_md5"],
+            source,
+        )
         self.assertIn("Build.build_sequence_full", source)
         self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
         for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
@@ -262,12 +266,17 @@ class GeneratedManifestTests(unittest.TestCase):
     def test_source_digest_contract_is_complete_and_preflighted(self):
         contract = self.payload["source_digest_contract"]
         self.assertEqual(contract["activation_status"], "preflight-before-strictbuild")
-        self.assertEqual(contract["entry_count"], self.payload["source_node_count"])
+        self.assertEqual(contract["entry_count"], self.payload["source_node_count"] - 1)
+        self.assertEqual(
+            contract["bootstrap_exclusions"],
+            ["candle:candle/flyspeck_loader.ml"],
+        )
         self.assertEqual(
             contract["generated_source"],
             "candle:candle/flyspeck_source_digests.ml",
         )
         self.assertRegex(contract["generated_source_sha256"], r"^[0-9a-f]{64}$")
+        self.assertRegex(contract["generated_source_md5"], r"^[0-9a-f]{32}$")
         generated = Path(__file__).with_name("flyspeck_source_digests.ml")
         self.assertTrue(generated.is_file())
         self.assertEqual(
@@ -275,7 +284,11 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["generated_source_sha256"],
         )
         source = generated.read_text(encoding="utf-8")
-        self.assertEqual(source.count('\n  ("'), self.payload["source_node_count"])
+        self.assertEqual(source.count('\n  ("'), contract["entry_count"])
+        self.assertNotIn(
+            '("candle","candle/flyspeck_loader.ml",',
+            source,
+        )
         integrity = Path(__file__).with_name(
             "flyspeck_source_integrity.ml"
         ).read_text(encoding="utf-8")
@@ -395,13 +408,13 @@ class GeneratedManifestTests(unittest.TestCase):
             ["file", "string", "t", "to_hex"],
         )
         uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 15)
+        self.assertEqual(len(uses), 17)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 7, "string": 2, "t": 3, "to_hex": 3},
+            {"file": 8, "string": 2, "t": 3, "to_hex": 4},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")

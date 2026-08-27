@@ -21,6 +21,7 @@ from pathlib import Path
 
 SCHEMA = 1
 SOURCE_DIGEST_PROGRAM = "candle/flyspeck_source_digests.ml"
+SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
 DIRECTIVE_RE = re.compile(r"#\s*(use|load)\b")
@@ -199,7 +200,7 @@ KNOWN_GENERATED_DEPENDENCIES = {
     },
 }
 MANUAL_DYNAMIC_REVIEWS = {
-    ("candle:candle/flyspeck_loader.ml", 73, "flyspeck_needs"): {
+    ("candle:candle/flyspeck_loader.ml", 82, "flyspeck_needs"): {
         "status": "root-driver",
         "reason": "maps the separately extracted authoritative full build sequence",
     },
@@ -743,6 +744,8 @@ def _render_source_digest_program(nodes: dict[str, dict[str, object]]) -> str:
         "let candle_flyspeck_source_digests = [",
     ]
     for key in sorted(nodes):
+        if key in SOURCE_DIGEST_EXCLUSIONS:
+            continue
         node = nodes[key]
         repository = json.dumps(str(node["repository"]))
         path = json.dumps(str(node["path"]))
@@ -1054,6 +1057,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         sequence, build_roots, nodes, edges, bootstrap, loader_source,
     )
     source_digest_program = _render_source_digest_program(nodes)
+    source_digest_program_bytes = source_digest_program.encode()
     return {
         "schema": SCHEMA,
         "claim": "G6 source inventory only; not loader execution evidence",
@@ -1101,13 +1105,21 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "outer_integrity": "manifest and generated program pinned by SHA-256",
             "generated_source": f"candle:{SOURCE_DIGEST_PROGRAM}",
             "generated_source_sha256": hashlib.sha256(
-                source_digest_program.encode()
+                source_digest_program_bytes
             ).hexdigest(),
-            "entry_count": len(nodes),
-            "coverage": "all selected source nodes, including loader and hol.ml",
+            "generated_source_md5": hashlib.md5(
+                source_digest_program_bytes, usedforsecurity=False
+            ).hexdigest(),
+            "entry_count": len(nodes) - len(SOURCE_DIGEST_EXCLUSIONS),
+            "coverage": "all selected source nodes except the executing loader",
+            "bootstrap_exclusions": sorted(SOURCE_DIGEST_EXCLUSIONS),
+            "preload_authentication": (
+                "loader checks generated_source_md5 before executing the program"
+            ),
             "execution_limit": (
                 "preflight detects on-disk corruption before strictbuild; hol.ml "
-                "and the loader have already begun execution"
+                "and the loader have already begun execution, and the loader is "
+                "authenticated only by the outer release lock"
             ),
             "gate": "candle:candle/test_flyspeck_source_digests.sh",
         },

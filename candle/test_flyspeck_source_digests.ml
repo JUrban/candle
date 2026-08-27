@@ -2,7 +2,7 @@
 needs "candle/flyspeck_source_digests.ml";;
 needs "candle/flyspeck_source_integrity.ml";;
 
-candle_flyspeck_verify_sources 399 "." candle_flyspeck_test_flyspeck_root
+candle_flyspeck_verify_sources 398 "." candle_flyspeck_test_flyspeck_root
   candle_flyspeck_source_digests;;
 
 let candle_flyspeck_digest_negative =
