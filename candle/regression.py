@@ -31,6 +31,7 @@ import argparse
 import hashlib
 import json
 import re
+import signal
 import subprocess
 import tempfile
 import threading
@@ -289,10 +290,20 @@ class CandleREPL:
             self._check_output()
 
     def kill(self):
-        # No criu restore anymore, so there is no detached process group to
-        # chase down: closing the pexpect child (and its candle.sh subtree) is
-        # enough.
-        self.process.close(force=True)
+        # pexpect makes candle.sh a session/process-group leader and cake stays
+        # in that foreground group.  Kill the verified isolated group so a
+        # timed-out cake child cannot outlive its shell.  Never target a group
+        # that is not rooted at the pexpect child.
+        pid = self.process.pid
+        try:
+            if os.getpgid(pid) == pid and os.getsid(pid) == pid:
+                os.killpg(pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
+        try:
+            self.process.close(force=True)
+        except (OSError, pexpect.ExceptionPexpect):
+            pass
 
 
 # ---------------------------------------------------------------------------
