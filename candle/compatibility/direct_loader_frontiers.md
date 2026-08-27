@@ -44,10 +44,17 @@ offset.  The repository contains 17 standalone directives: ten `unix.cma`,
 five `str.cma`, and two `nums.cma`.  The reachable full-build graph contains
 only six: three `unix.cma` and three `str.cma`; neither `nums.cma` directive is
 reachable.  The generated manifest now freezes those six source locations and
-41 qualified capability uses.  Its library contract remains inactive pending
-static-binding evidence, blocks every unknown library, and forbids directive
-erasure or a generic no-op.  The next remedy must provide semantics for the
-seven used `Unix` members and five used `Str` members before activating it.
+44 capability occurrences: 41 qualified plus three reviewed lexical candidates
+under `open Str`.  The two `Str` opens and absence of `Unix` opens are recorded
+separately.  Its library contract remains inactive pending static-binding
+evidence, blocks every unknown library/member, and forbids directive erasure or
+a generic no-op.
+
+The five selected `Str` members now have a pure source implementation.  A
+compiled gate matches OCaml 4.14.1 on all selected literal regex forms and
+fails explicitly on unimplemented advanced syntax; it introduces no dynamic
+loader or FFI.  This is partial evidence because one source definition builds a
+regex from an argument, and the seven `Unix` members remain unimplemented.
 
 ## Open boundaries exposed by this slice
 

@@ -29,10 +29,36 @@ STATIC_RUNTIME_LIBRARIES = {
     "str.cma": "Str",
     "unix.cma": "Unix",
 }
+STATIC_RUNTIME_MEMBERS = {
+    "Str": {
+        "first_chars", "global_replace", "regexp", "split", "string_match",
+    },
+    "Unix": {
+        "close_process", "close_process_in", "gettimeofday", "mkdir",
+        "open_process", "open_process_in", "putenv",
+    },
+}
+# Complete OCaml Str names that can be conservatively attributed after
+# [open Str].  Qualified use scanning does not need this list because it
+# records every member following [Str.].  There is no reachable [open Unix].
+OPENED_MODULE_EXPORTS = {
+    "Str": {
+        "bounded_full_split", "bounded_split", "bounded_split_delim",
+        "first_chars", "full_split", "global_replace", "global_substitute",
+        "group_beginning", "group_end", "last_chars", "match_beginning",
+        "match_end", "matched_group", "matched_string", "quote", "regexp",
+        "regexp_case_fold", "regexp_string", "regexp_string_case_fold",
+        "replace_first", "search_backward", "search_forward", "split",
+        "split_delim", "string_after", "string_before", "string_match",
+        "string_partial_match", "substitute_first",
+    },
+    "Unix": STATIC_RUNTIME_MEMBERS["Unix"],
+}
 PROMOTION_EMPTY_DIAGNOSTICS = (
     "unresolved_build_roots",
     "cycles",
     "unsupported_runtime_libraries",
+    "unsupported_runtime_members",
 )
 PROMOTION_ZERO_DIAGNOSTICS = (
     "dynamic_dependencies",
@@ -387,6 +413,53 @@ def scan_qualified_module_uses(source: str, modules: set[str]) -> list[dict[str,
     ]
 
 
+def scan_opened_module_uses(
+    source: str, module_exports: dict[str, set[str]],
+) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    """Conservatively attribute known unqualified names after module opens."""
+    clean = strip_ocaml_comments(source)
+    mask = _code_mask(clean)
+    module_pattern = "|".join(re.escape(module) for module in sorted(module_exports))
+    open_re = re.compile(r"\bopen\s+(" + module_pattern + r")\b")
+    opens = [
+        {
+            "line": clean.count("\n", 0, match.start()) + 1,
+            "module": match.group(1),
+            "offset": match.start(),
+        }
+        for match in open_re.finditer(mask)
+    ]
+    uses: list[dict[str, object]] = []
+    for module in sorted(module_exports):
+        module_opens = [entry for entry in opens if entry["module"] == module]
+        if not module_opens:
+            continue
+        first_open = min(int(entry["offset"]) for entry in module_opens)
+        members = module_exports[module]
+        if not members:
+            continue
+        member_re = re.compile(
+            r"\b(" + "|".join(re.escape(member) for member in sorted(members))
+            + r")\b"
+        )
+        for match in member_re.finditer(mask, first_open):
+            prefix = mask[:match.start()].rstrip()
+            if prefix.endswith("."):
+                continue
+            uses.append({
+                "line": clean.count("\n", 0, match.start()) + 1,
+                "module": module,
+                "member": match.group(1),
+                "qualification": "opened-module",
+                "attribution_status": "lexical-reviewed-not-compiler-proved",
+                "open_lines": [int(entry["line"]) for entry in module_opens],
+            })
+    return (
+        [{key: value for key, value in entry.items() if key != "offset"} for entry in opens],
+        uses,
+    )
+
+
 def promotion_blockers(diagnostics: dict[str, object]) -> list[str]:
     blockers = [
         key for key in PROMOTION_EMPTY_DIAGNOSTICS if diagnostics.get(key) != []
@@ -505,6 +578,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     edges: dict[str, list[str]] = {}
     static_library_directives: list[dict[str, object]] = []
     qualified_runtime_uses: list[dict[str, object]] = []
+    opened_runtime_uses: list[dict[str, object]] = []
+    runtime_module_opens: list[dict[str, object]] = []
     while pending:
         ref = pending.pop(0)
         if ref.key in nodes:
@@ -519,6 +594,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             raise ValueError(f"{ref.key}: {error}") from error
         for use in scan_qualified_module_uses(text, set(STATIC_RUNTIME_LIBRARIES.values())):
             qualified_runtime_uses.append({"source": ref.key, **use})
+        opens, opened_uses = scan_opened_module_uses(text, OPENED_MODULE_EXPORTS)
+        runtime_module_opens.extend({"source": ref.key, **entry} for entry in opens)
+        opened_runtime_uses.extend({"source": ref.key, **entry} for entry in opened_uses)
         for call in calls:
             dependency = dict(call)
             literal = call.get("literal")
@@ -602,6 +680,28 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         for directive in static_library_directives
         if directive["library"] not in STATIC_RUNTIME_LIBRARIES
     ]
+    def add_runtime_library(use: dict[str, object]) -> dict[str, object]:
+        return {
+            **use,
+            "library": next(
+                library
+                for library, module in STATIC_RUNTIME_LIBRARIES.items()
+                if module == use["module"]
+            ),
+        }
+
+    qualified_runtime_contract_uses = [
+        add_runtime_library(use) for use in qualified_runtime_uses
+    ]
+    opened_runtime_contract_uses = [
+        add_runtime_library(use) for use in opened_runtime_uses
+    ]
+    all_runtime_uses = qualified_runtime_contract_uses + opened_runtime_contract_uses
+    unsupported_runtime_members = [
+        use
+        for use in all_runtime_uses
+        if use["member"] not in STATIC_RUNTIME_MEMBERS[str(use["module"])]
+    ]
     diagnostics = {
         "unresolved_build_roots": unresolved_roots,
         "dynamic_dependencies": sum(
@@ -632,6 +732,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             1 for node in nodes.values() for dep in node["dependencies"] if dep["status"] == "forbidden"
         ),
         "unsupported_runtime_libraries": unsupported_runtime_libraries,
+        "unsupported_runtime_members": unsupported_runtime_members,
         "cycles": _cycles(edges),
     }
     sequence_positions: dict[str, list[int]] = {}
@@ -696,22 +797,55 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "members have semantically adequate static Candle bindings"
             ),
             "library_modules": STATIC_RUNTIME_LIBRARIES,
+            "library_members": {
+                library: sorted(STATIC_RUNTIME_MEMBERS[module])
+                for library, module in STATIC_RUNTIME_LIBRARIES.items()
+            },
+            "binding_evidence": {
+                "str.cma": {
+                    "status": "partial-pure-source-differential-gate",
+                    "source": "candle:candle/ocaml.ml",
+                    "members": sorted(STATIC_RUNTIME_MEMBERS["Str"]),
+                    "oracle": "OCaml 4.14.1 Str",
+                    "gate": "candle:candle/test_str_compat.sh",
+                    "open_limit": (
+                        "escaped grouping, alternation, back-references, and "
+                        "empty-match global replacement fail explicitly"
+                    ),
+                },
+                "unix.cma": {
+                    "status": "unimplemented",
+                    "members": sorted(STATIC_RUNTIME_MEMBERS["Unix"]),
+                },
+            },
+            "opened_use_attribution": (
+                "conservative lexical candidates after a source open; exact "
+                "sites reviewed for shadowing, not a compiler name-resolution proof"
+            ),
             "directives": sorted(
                 static_library_directives,
                 key=lambda entry: (str(entry["source"]), int(entry["line"])),
             ),
             "qualified_uses": sorted(
-                (
-                    {
-                        **use,
-                        "library": next(
-                            library
-                            for library, module in STATIC_RUNTIME_LIBRARIES.items()
-                            if module == use["module"]
-                        ),
-                    }
-                    for use in qualified_runtime_uses
+                qualified_runtime_contract_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
                 ),
+            ),
+            "module_opens": sorted(
+                runtime_module_opens,
+                key=lambda entry: (str(entry["source"]), int(entry["line"])),
+            ),
+            "opened_module_uses": sorted(
+                opened_runtime_contract_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
+            "capability_uses": sorted(
+                all_runtime_uses,
                 key=lambda entry: (
                     str(entry["source"]), int(entry["line"]),
                     str(entry["module"]), str(entry["member"]),

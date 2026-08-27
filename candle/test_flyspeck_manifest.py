@@ -70,6 +70,27 @@ class SyntaxTests(unittest.TestCase):
             ["unsupported_runtime_libraries"],
         )
 
+    def test_opened_module_uses_are_not_lost(self):
+        source = '''
+          open Str;;
+          let split_words = split (regexp " +");;
+          let qualified = Str.global_replace;;
+          let data = "string_match regexp";;
+          (* bounded_split is not used *)
+        '''
+        opens, uses = flyspeck_manifest.scan_opened_module_uses(
+            source, flyspeck_manifest.OPENED_MODULE_EXPORTS,
+        )
+        self.assertEqual(opens, [{"line": 2, "module": "Str"}])
+        self.assertEqual(
+            [(use["line"], use["module"], use["member"]) for use in uses],
+            [(3, "Str", "split"), (3, "Str", "regexp")],
+        )
+        self.assertEqual(
+            {use["attribution_status"] for use in uses},
+            {"lexical-reviewed-not-compiler-proved"},
+        )
+
     def test_resolution_precedence_and_path_policy(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -113,6 +134,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "unresolved_build_roots",
             "cycles",
             "unsupported_runtime_libraries",
+            "unsupported_runtime_members",
         ):
             self.assertEqual(diagnostics[key], [])
         for key in (
@@ -205,9 +227,43 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertTrue(uses)
         self.assertEqual({use["module"] for use in uses}, {"Str", "Unix"})
         self.assertEqual({use["library"] for use in uses}, {"str.cma", "unix.cma"})
-        for entry in directives + uses:
+        self.assertEqual(len(uses), 41)
+        opened_uses = contract["opened_module_uses"]
+        self.assertEqual(len(opened_uses), 3)
+        self.assertEqual(
+            [(use["line"], use["member"]) for use in opened_uses],
+            [(137, "regexp"), (138, "global_replace"), (138, "regexp")],
+        )
+        self.assertEqual(len(contract["capability_uses"]), 44)
+        self.assertIn("not a compiler name-resolution proof", contract["opened_use_attribution"])
+        self.assertEqual(
+            {use["attribution_status"] for use in opened_uses},
+            {"lexical-reviewed-not-compiler-proved"},
+        )
+        self.assertEqual(
+            {(entry["source"], entry["line"], entry["module"])
+             for entry in contract["module_opens"]},
+            {
+                ("flyspeck:formal_lp/glpk/glpk_link.ml", 31, "Str"),
+                ("flyspeck:formal_lp/hypermap/computations/"
+                 "list_hypermap_computations.hl", 11, "Str"),
+            },
+        )
+        for entry in directives + contract["capability_uses"]:
             self.assertRegex(entry["source"], r"^(candle|flyspeck):")
             self.assertGreater(entry["line"], 0)
+
+    def test_str_binding_evidence_is_partial_and_source_backed(self):
+        evidence = self.payload["static_library_contract"]["binding_evidence"]
+        self.assertEqual(
+            evidence["str.cma"]["status"],
+            "partial-pure-source-differential-gate",
+        )
+        self.assertEqual(evidence["unix.cma"]["status"], "unimplemented")
+        source = Path(__file__).with_name("ocaml.ml").read_text(encoding="utf-8")
+        self.assertIn("module Str = struct", source)
+        for member in evidence["str.cma"]["members"]:
+            self.assertRegex(source, rf"\blet\s+{member}\b")
 
 
 if __name__ == "__main__":

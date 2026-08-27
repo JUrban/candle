@@ -168,6 +168,233 @@ module String = struct
     Cake.Word64.toInt (Cake.List.foldl step (Cake.Word64.fromInt 5381) (Cake.String.explode s));;
 end;;
 
+(* A source-level compatibility implementation for the exact [Str] surface in
+   the direct Flyspeck full-build graph.  This is deliberately pure: accepting
+   [str.cma] must not turn into a host dynamic-loader or FFI capability.
+
+   The supported regular-expression syntax is the subset exercised by the
+   pinned source: literals, dot, character classes (including negation and
+   ranges), the [*], [+], and [?] quantifiers, and beginning/end anchors.
+   OCaml Str's escaped grouping, alternation, and back-reference syntax fails
+   explicitly instead of being silently misinterpreted. *)
+module Str = struct
+  type atom =
+    | Str_char of char
+    | Str_any
+    | Str_class of bool * char list
+    | Str_start
+    | Str_end
+
+  type quantifier =
+    | Str_once
+    | Str_star
+    | Str_plus
+    | Str_optional
+
+  type regexp = Str_regexp of (atom * quantifier) list
+
+  let invalid_regexp () = invalid_arg "Str.regexp: unsupported or malformed pattern"
+
+  let regexp pattern =
+    let pattern_length = String.length pattern in
+    let rec add_range first last chars =
+      let first_code = Char.code first in
+      let last_code = Char.code last in
+      let rec add code acc =
+        if code > last_code then acc
+        else add (code + 1) (Char.chr code :: acc) in
+      if first_code > last_code then invalid_regexp ()
+      else add first_code chars in
+    let read_class_char index =
+      if index >= pattern_length then invalid_regexp ()
+      else
+        let first = String.get pattern index in
+        if first = '\\' then
+          if index + 1 >= pattern_length then invalid_regexp ()
+          else (String.get pattern (index + 1), index + 2)
+        else (first, index + 1) in
+    let rec parse_class negated chars index =
+      if index >= pattern_length then invalid_regexp ()
+      else if String.get pattern index = ']' then
+        if chars = [] then invalid_regexp ()
+        else (Str_class (negated, List.rev chars), index + 1)
+      else
+        let first, next = read_class_char index in
+        if next + 1 < pattern_length &&
+           String.get pattern next = '-' &&
+           String.get pattern (next + 1) <> ']' then
+          let last, after = read_class_char (next + 1) in
+          parse_class negated (add_range first last chars) after
+        else
+          parse_class negated (first :: chars) next in
+    let quantifier atom index =
+      if index >= pattern_length then (Str_once, index)
+      else
+        let candidate = String.get pattern index in
+        let repeat, next =
+          if candidate = '*' then (Str_star, index + 1)
+          else if candidate = '+' then (Str_plus, index + 1)
+          else if candidate = '?' then (Str_optional, index + 1)
+          else (Str_once, index) in
+        match atom, repeat with
+        | (Str_start, Str_once) -> (repeat, next)
+        | (Str_end, Str_once) -> (repeat, next)
+        | (Str_start, _) -> invalid_regexp ()
+        | (Str_end, _) -> invalid_regexp ()
+        | _ -> (repeat, next) in
+    let rec parse pieces index =
+      if index >= pattern_length then Str_regexp (List.rev pieces)
+      else
+        let current = String.get pattern index in
+        let atom, next =
+          if current = '[' then
+            let class_start = index + 1 in
+            if class_start < pattern_length &&
+               String.get pattern class_start = '^' then
+              parse_class true [] (class_start + 1)
+            else parse_class false [] class_start
+          else if current = '\\' then
+            if index + 1 >= pattern_length then invalid_regexp ()
+            else
+              let escaped = String.get pattern (index + 1) in
+              if List.mem escaped ['('; ')'; '|'; '1'; '2'; '3'; '4';
+                                   '5'; '6'; '7'; '8'; '9'] then
+                invalid_regexp ()
+              else (Str_char escaped, index + 2)
+          else if current = '.' then (Str_any, index + 1)
+          else if current = '^' then (Str_start, index + 1)
+          else if current = '$' then (Str_end, index + 1)
+          else if current = '*' || current = '+' || current = '?' then
+            invalid_regexp ()
+          else (Str_char current, index + 1) in
+        let repeat, after = quantifier atom next in
+        parse ((atom, repeat) :: pieces) after in
+    parse [] 0
+
+  let atom_advance atom text position =
+    let text_length = String.length text in
+    match atom with
+    | Str_start -> if position = 0 then Some position else None
+    | Str_end -> if position = text_length then Some position else None
+    | Str_char expected ->
+       if position < text_length && String.get text position = expected then
+         Some (position + 1)
+       else None
+    | Str_any ->
+       if position < text_length && String.get text position <> '\n' then
+         Some (position + 1)
+       else None
+    | Str_class (negated, chars) ->
+       if position >= text_length then None
+       else
+         let present = List.mem (String.get text position) chars in
+         if present <> negated then Some (position + 1) else None
+
+  let rec match_pieces pieces text position =
+    match pieces with
+    | [] -> Some position
+    | (atom, repeat) :: rest ->
+       let rec try_positions = function
+         | [] -> None
+         | candidate :: candidates ->
+            (match match_pieces rest text candidate with
+             | Some ending -> Some ending
+             | None -> try_positions candidates) in
+       let rec consume candidate positions =
+         match atom_advance atom text candidate with
+         | Some next ->
+            if next > candidate then consume next (next :: positions)
+            else positions
+         | None -> positions in
+       match repeat with
+       | Str_once ->
+          (match atom_advance atom text position with
+           | Some next -> match_pieces rest text next
+           | None -> None)
+       | Str_optional ->
+          (match atom_advance atom text position with
+           | Some next -> try_positions [next; position]
+           | None -> match_pieces rest text position)
+       | Str_star -> try_positions (consume position [position])
+       | Str_plus ->
+          (match atom_advance atom text position with
+           | Some next ->
+              if next > position then try_positions (consume next [next])
+              else None
+           | None -> None)
+
+  let match_at (Str_regexp pieces) text position =
+    match_pieces pieces text position
+
+  let string_match expression text position =
+    if position < 0 || position > String.length text then
+      invalid_arg "Str.string_match"
+    else
+      match match_at expression text position with
+      | Some _ -> true
+      | None -> false
+
+  let search_forward expression text start =
+    let text_length = String.length text in
+    let rec search position =
+      if position > text_length then None
+      else
+        match match_at expression text position with
+        | Some ending -> Some (position, ending)
+        | None -> search (position + 1) in
+    if start < 0 || start > text_length then invalid_arg "Str.search_forward"
+    else search start
+
+  let split expression text =
+    let text_length = String.length text in
+    let rec drop_empty_prefix = function
+      | "" :: fields -> drop_empty_prefix fields
+      | fields -> fields in
+    let trim_empty_edges fields =
+      let without_leading = drop_empty_prefix fields in
+      List.rev (drop_empty_prefix (List.rev without_leading)) in
+    let add_field start ending fields =
+      String.sub text start (ending - start) :: fields in
+    let finish fields = trim_empty_edges (List.rev fields) in
+    let rec fields field_start search_start result =
+      if search_start > text_length then
+        finish (add_field field_start text_length result)
+      else
+        match search_forward expression text search_start with
+        | None -> finish (add_field field_start text_length result)
+        | Some (match_start, match_end) ->
+           let result' = add_field field_start match_start result in
+           if match_end > match_start then
+             fields match_end match_end result'
+           else if match_start < text_length then
+             fields match_start (match_start + 1) result'
+           else finish result' in
+    fields 0 0 []
+
+  let global_replace expression replacement text =
+    let rec literal_replacement index =
+      if index >= String.length replacement then ()
+      else if String.get replacement index = '\\' then
+        invalid_arg "Str.global_replace: replacement back-references unsupported"
+      else literal_replacement (index + 1) in
+    let text_length = String.length text in
+    let rec replace copied search_start result =
+      match search_forward expression text search_start with
+      | None ->
+         String.concat ""
+           (List.rev (String.sub text copied (text_length - copied) :: result))
+      | Some (match_start, match_end) ->
+         if match_end = match_start then
+           invalid_arg "Str.global_replace: empty matches unsupported"
+         else
+           let prefix = String.sub text copied (match_start - copied) in
+           replace match_end match_end (replacement :: prefix :: result) in
+    let _ = literal_replacement 0 in
+    replace 0 0 []
+
+  let first_chars text count = String.sub text 0 count
+end;;
+
 module Array = struct
   let make n x = Cake.Array.array n x
   let length a = Cake.Array.length a

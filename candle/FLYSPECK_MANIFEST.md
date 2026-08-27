@@ -48,11 +48,25 @@ yet recognize `#load "unix.cma";;`.  The pinned repository has exactly 17
 standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
 Only six are in the recursively reached full-build graph: three `unix.cma` and
 three `str.cma`; no `nums.cma` site is reachable.  The manifest's static-library
-contract records those six sites plus 41 source-located qualified uses: 19
-`Unix` uses over seven members and 22 `Str` uses over five members.  It is
-explicitly inactive until semantically adequate static bindings are evidenced.
-Unknown libraries are promotion-blocking diagnostics, and directive erasure or
-a generic no-op is forbidden.
+contract records those six sites plus 44 source-located capability uses: 41
+qualified uses and three conservative, manually reviewed candidates under
+`open Str`.  There are 19 `Unix` uses over seven members and 25 `Str` uses over
+five members.  The two reachable `open Str` sites and absence of `open Unix`
+are frozen separately; open-based attribution is explicitly not represented as
+a compiler name-resolution proof.  Unknown libraries or members are
+promotion-blocking diagnostics, and directive erasure or a generic no-op is
+forbidden.
+
+`ocaml.ml` now provides the five selected `Str` members as pure Candle source,
+so `str.cma` does not imply host dynamic loading or an FFI.  The compiled
+`test_str_compat.sh` gate matches an OCaml 4.14.1 oracle for every literal
+regular-expression form in the selected graph, offset matching, character
+ranges, splitting, replacement, and `first_chars`.  Unsupported escaped
+grouping, alternation, back-references, and empty-match replacement fail
+explicitly.  This is partial binding evidence rather than activation of the
+library contract: arbitrary dynamic regex input and all seven `Unix` members
+remain open, so the overall status is still
+`blocked-pending-static-binding-evidence`.
 
 `Sys.file_exists` in this slice deliberately forwards to CakeML's verified
 TextIO-backed ordinary-file predicate.  OCaml-compatible directory existence,
