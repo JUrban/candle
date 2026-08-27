@@ -567,6 +567,11 @@ let pp_func pk pv (Func (cmp, f)) =
     [Pretty_printer.pp_list (fun (k, v) ->
       Pretty_printer.tuple [pk k; pv v]) f];;
 
+(* Explicit structural comparison for finite functions.  Candle cannot use
+   OCaml's polymorphic comparison here: callers must supply the key/value-pair
+   comparator appropriate to the function's representation. *)
+let _func_compare cmp (Func (_, f)) (Func (_, g)) = List.compare cmp f g;;
+
 (* ------------------------------------------------------------------------- *)
 (* Undefined function.                                                       *)
 (* ------------------------------------------------------------------------- *)
