@@ -122,9 +122,10 @@ let num_of_int i = Int i
    behavior without an FFI conversion. *)
 let num_of_string s =
   if s = "" then Int 0 else
-  match Cake.Int.fromString s with
-  | None -> failwith "num_of_string"
-  | Some i -> Int i
+  if Cake.String.sub s 0 = '~' then failwith "num_of_string" else
+    match Cake.Int.fromString s with
+    | None -> failwith "num_of_string"
+    | Some i -> Int i
 ;;
 
 let int_of_num n =
