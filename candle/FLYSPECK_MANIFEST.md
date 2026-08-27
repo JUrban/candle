@@ -48,6 +48,19 @@ successful no-op loaded anything.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.  Authentication does not activate the directive.
 
+The top-level interface contract also inventories the small set of Flyspeck
+identifiers that could consume compiler reflection.  The selected graph has
+only the definitions of `test_id_thm`, `use_arg_then`, and `eval_command`; it
+has no other lexical reference to those bindings.  In contrast, the explicit
+theorem-fallback helper `use_arg_then2`, which does not call `Toploop`, occurs
+23,810 times in 22 selected files.  The pinned OCaml-4 route has one active
+compiler-environment consumer: the load-time `update_database ()` call in
+`update_database_400.ml`.  All 20 relevant identifier sites are source/line
+reviewed, and any site drift aborts manifest generation.  This supports a
+narrow fail-closed normalization design, but lexical non-use is not proof
+against reflection or external invocation; compiled reference and final
+fingerprint gates remain mandatory.
+
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries
 OCaml `Digest.file`-compatible MD5 values for 398 selected source nodes: every
