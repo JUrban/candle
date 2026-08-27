@@ -33,17 +33,22 @@ The clean full-mode run reaches the original pinned
 `text_formalization/build/strictbuild.hl` and reports:
 
 ```text
-Parsing failed at line 23
-
-#load "unix.cma";;
-^
+- Selecting statically linked library unix.cma (module Unix)
+- Selecting statically linked library str.cma (module Str)
+ERROR: Undefined variable: Toploop.use_file at line 7
 ```
 
-The source line is 21; the loader's diagnostic line includes its input-stack
-offset.  The repository contains 17 standalone directives: ten `unix.cma`,
-five `str.cma`, and two `nums.cma`.  The enforcing loader graph contains only
-five: two `unix.cma` and three `str.cma`; neither `nums.cma` directive is
-reachable.  The preceding graph incorrectly counted the convenience entry
+The failing definition starts at source line 86 and calls
+`Toploop.use_file Format.std_formatter s` at source line 90; the diagnostic's
+line 7 is relative to that submitted declaration.  Before the failure,
+strictbuild evaluates its exact Unix metadata path and binds `load_date` to the
+manifest input `1970-01-01T00:00:00Z\n`.  No dummy or no-op `Toploop` binding is
+installed.
+
+The repository contains 17 standalone directives: ten `unix.cma`, five
+`str.cma`, and two `nums.cma`.  The enforcing loader graph contains only five:
+two `unix.cma` and three `str.cma`; neither `nums.cma` directive is reachable.
+The preceding graph incorrectly counted the convenience entry
 `load_flyspeck.ml`, although the enforcing loader enters `strictbuild.hl`
 directly.  Removing that false root also removes its two placeholder
 `Unix.putenv` uses from execution claims.
@@ -51,9 +56,10 @@ directly.  Removing that false root also removes its two placeholder
 The generated manifest now freezes the five actual directive locations and 42
 capability occurrences: 39 qualified plus three reviewed lexical candidates
 under `open Str`.  The two `Str` opens and absence of `Unix` opens are recorded
-separately.  Its library contract remains inactive pending static-binding
-evidence, blocks every unknown library/member, and forbids directive erasure or
-a generic no-op.
+separately.  The boot accepts only complete standalone directives for the two
+listed libraries and selects their fixed static modules.  Embedded, malformed,
+and unknown loads fail closed.  This exact activation is not full member
+compatibility; every member remains governed by the partial evidence below.
 
 The five selected `Str` members now have a pure source implementation.  A
 compiled gate matches OCaml 4.14.1 on all selected literal regex forms and
@@ -70,7 +76,7 @@ gate exercises strictbuild's byte-at-a-time reader, including channel close,
 and verifies rejection of arbitrary commands and clock access.
 This does not cover indirect command helpers elsewhere in the source graph or
 general Unix process, clock, and directory semantics.  Those paths remain
-explicitly fail-closed, and the library contract remains inactive.
+explicitly fail-closed.
 
 The separate OCaml-compatibility ledger records 13 selected `Digest` uses over
 `file`, `string`, `to_hex`, and type `t`, with no `open Digest`.  A pure
@@ -90,12 +96,15 @@ preload and 1,216,768 KiB maximum RSS.
   theory/program;
 - sandbox/refinement contracts for non-metadata process calls, clock access,
   and directory creation;
+- a verified, transactional replacement for `Toploop.use_file`; a dummy or
+  successful no-op loader is forbidden;
 - complete source-library resolution and manifest digest enforcement.
 
 Reproduce the two current compiled gates with:
 
 ```sh
 candle/test_flyspeck_loader_guard.sh ./candle.sh /path/to/flyspeck
+candle/test_static_load_directive.sh ./candle.sh
 candle/test_flyspeck_loader_frontier.sh ./candle.sh /path/to/flyspeck
 candle/test_str_compat.sh
 candle/test_unix_metadata.sh

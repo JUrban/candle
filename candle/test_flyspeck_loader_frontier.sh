@@ -26,8 +26,13 @@ let candle_flyspeck_build_mode = "full";;
 EOF
 )
 
-rg -Fq 'Parsing failed at line 23' "$log"
-rg -Fq '#load "unix.cma";;' "$log"
+rg -Fq -- '- Selecting statically linked library unix.cma (module Unix)' "$log"
+rg -Fq -- '- Selecting statically linked library str.cma (module Str)' "$log"
+rg -Fq 'ERROR: Undefined variable: Toploop.use_file at line 7' "$log"
+if rg -q 'Parsing failed at line 23|Static #load rejected|No such file: .*\.cma' "$log"; then
+  tail -n 60 "$log" >&2
+  exit 1
+fi
 if rg -q 'Undefined variable: (Sys\.(configure_manifest_environment|file_exists)|Filename\.concat|load_path)' "$log"; then
   tail -n 60 "$log" >&2
   exit 1
@@ -36,4 +41,4 @@ if rg -q 'CANDLE_FLYSPECK_DIRECT_FULL_OK|build/strictbuild\.hl.*successfully loa
   tail -n 40 "$log" >&2
   exit 1
 fi
-printf 'EXPECTED GAP: full loader stops at allowlisted #load compatibility\n'
+printf 'EXPECTED GAP: full loader stops at strictbuild Toploop.use_file\n'
