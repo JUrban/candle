@@ -14,6 +14,12 @@ if candle_flyspeck_build_mode <> "full" then
 
 let candle_flyspeck_text_root =
   Filename.concat candle_flyspeck_root "text_formalization";;
+let candle_flyspeck_metadata_root =
+  Filename.concat candle_hollight_root "candle/flyspeck_metadata";;
+let candle_flyspeck_date_input =
+  Filename.concat candle_flyspeck_metadata_root "date.txt";;
+let candle_flyspeck_user_input =
+  Filename.concat candle_flyspeck_metadata_root "user.txt";;
 
 Sys.configure_manifest_environment
   candle_hollight_root candle_flyspeck_text_root candle_hollight_root false;;
@@ -29,13 +35,18 @@ let candle_flyspeck_required_sources =
    Filename.concat candle_flyspeck_root "formal_lp/README.txt";
    Filename.concat candle_flyspeck_root "formal_graph/archive/README.md";
    Filename.concat candle_flyspeck_root "formal_ineqs/README.md";
-   Filename.concat candle_flyspeck_root "jHOLLight/.project"];;
+   Filename.concat candle_flyspeck_root "jHOLLight/.project";
+   candle_flyspeck_date_input;
+   candle_flyspeck_user_input];;
 
 let candle_flyspeck_require_source path =
   if not (Sys.file_exists path) then
     failwith ("missing pinned Flyspeck source: " ^ path);;
 
 List.iter candle_flyspeck_require_source candle_flyspeck_required_sources;;
+
+candle_configure_manifest_process_inputs
+  candle_flyspeck_date_input candle_flyspeck_user_input;;
 
 let candle_flyspeck_add_load_path path =
   if List.mem path !load_path then () else load_path := path :: !load_path;;

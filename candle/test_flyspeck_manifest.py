@@ -261,17 +261,54 @@ class GeneratedManifestTests(unittest.TestCase):
             self.assertRegex(entry["source"], r"^(candle|flyspeck):")
             self.assertGreater(entry["line"], 0)
 
-    def test_str_binding_evidence_is_partial_and_source_backed(self):
+    def test_static_binding_evidence_is_partial_and_source_backed(self):
         evidence = self.payload["static_library_contract"]["binding_evidence"]
         self.assertEqual(
             evidence["str.cma"]["status"],
             "partial-pure-source-differential-gate",
         )
-        self.assertEqual(evidence["unix.cma"]["status"], "unimplemented")
+        self.assertEqual(
+            evidence["unix.cma"]["status"],
+            "startup-metadata-only-explicit-fail-otherwise",
+        )
         source = Path(__file__).with_name("ocaml.ml").read_text(encoding="utf-8")
         self.assertIn("module Str = struct", source)
         for member in evidence["str.cma"]["members"]:
             self.assertRegex(source, rf"\blet\s+{member}\b")
+        self.assertIn("module Unix = struct", source)
+        for member in evidence["unix.cma"]["members"]:
+            self.assertRegex(source, rf"\blet\s+{member}\b")
+        self.assertIn("module Buffer = struct", source)
+        for member in ("create", "add_channel", "add_string", "contents", "reset"):
+            self.assertRegex(source, rf"\blet(?:\s+rec)?\s+{member}\b")
+        self.assertEqual(evidence["unix.cma"]["source"], "candle:candle/ocaml.ml")
+        self.assertEqual(
+            evidence["unix.cma"]["gate"],
+            "candle:candle/test_unix_metadata.sh",
+        )
+        self.assertEqual(
+            evidence["unix.cma"]["deterministic_process_inputs"],
+            [
+                {
+                    "command": "date",
+                    "source": "candle:candle/flyspeck_metadata/date.txt",
+                    "bytes": 21,
+                    "sha256": (
+                        "8f2148c336b70d69d770cd80e0f3decc"
+                        "5a1c9716fac2fc7961f7a5b2d57701e8"
+                    ),
+                },
+                {
+                    "command": "whoami",
+                    "source": "candle:candle/flyspeck_metadata/user.txt",
+                    "bytes": 16,
+                    "sha256": (
+                        "ad29b534dd27882add87d6996aa4ccf39"
+                        "bf1e5b15ccfd08804636905e8b8d864"
+                    ),
+                },
+            ],
+        )
 
 
 if __name__ == "__main__":

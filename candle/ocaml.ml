@@ -168,6 +168,39 @@ module String = struct
     Cake.Word64.toInt (Cake.List.foldl step (Cake.Word64.fromInt 5381) (Cake.String.explode s));;
 end;;
 
+(* OCaml's mutable string buffer is distinct from the token queue named
+   [Buffer] in Candle's REPL boot image.  Flyspeck's strictbuild reader and
+   serializer need only this small, pure source-backed subset. *)
+module Buffer = struct
+  type t = string list ref
+
+  let create capacity =
+    if capacity < 0 then invalid_arg "Buffer.create"
+    else ref ([] : string list)
+
+  let add_string buffer value =
+    buffer := value :: !buffer
+
+  let add_char buffer value =
+    add_string buffer (String.make 1 value)
+
+  let rec add_channel buffer channel count =
+    if count < 0 then invalid_arg "Buffer.add_channel"
+    else if count = 0 then ()
+    else
+      match Text_io.input1 channel with
+      | None -> raise End_of_file
+      | Some value ->
+         add_char buffer value;
+         add_channel buffer channel (count - 1)
+
+  let contents buffer =
+    String.concat "" (List.rev !buffer)
+
+  let reset buffer =
+    buffer := []
+end;;
+
 (* A source-level compatibility implementation for the exact [Str] surface in
    the direct Flyspeck full-build graph.  This is deliberately pure: accepting
    [str.cma] must not turn into a host dynamic-loader or FFI capability.
@@ -576,6 +609,47 @@ module Sys = struct
   let time () =
     print_endline "TODO Sys.time (always returns 0)";
     Float.zero;;
+end;;
+
+(* Direct Flyspeck uses [Unix.open_process_in] during strictbuild startup and
+   reporting to obtain metadata from [date] and [whoami].  The release path
+   substitutes manifest-hashed text files for those nondeterministic shell
+   commands.  No ambient process execution is exposed.  Other selected Unix
+   operations stay fail-closed until their sandbox/refinement obligations are
+   implemented. *)
+let candle_unix_manifest_process_inputs =
+  ref (None : (string * string) option);;
+
+let candle_configure_manifest_process_inputs date_file user_file =
+    if date_file = "" || user_file = "" then
+      invalid_arg "candle_configure_manifest_process_inputs: empty path"
+    else if not (Sys.file_exists date_file) || not (Sys.file_exists user_file) then
+      invalid_arg "candle_configure_manifest_process_inputs: missing ordinary file"
+    else candle_unix_manifest_process_inputs := Some (date_file, user_file);;
+
+module Unix = struct
+  let open_process_in command =
+    match !candle_unix_manifest_process_inputs with
+    | None -> failwith "Unix.open_process_in: manifest inputs not configured"
+    | Some (date_file, user_file) ->
+       if command = "date" then open_in date_file
+       else if command = "whoami" then open_in user_file
+       else failwith ("Unix.open_process_in: command not allowlisted: " ^ command)
+
+  let close_process_in channel =
+    close_in channel
+
+  let open_process command =
+    failwith ("Unix.open_process: disabled pending sandbox contract: " ^ command)
+
+  let close_process channels =
+    failwith "Unix.close_process: unavailable without an opened sandboxed process"
+
+  let gettimeofday () =
+    failwith "Unix.gettimeofday: disabled pending clock contract"
+
+  let mkdir path mode =
+    failwith ("Unix.mkdir: disabled pending filesystem contract: " ^ path)
 end;;
 
 (* Save the boot-library filename operations before the OCaml-compatible

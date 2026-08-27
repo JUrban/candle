@@ -59,16 +59,26 @@ The five selected `Str` members now have a pure source implementation.  A
 compiled gate matches OCaml 4.14.1 on all selected literal regex forms and
 fails explicitly on unimplemented advanced syntax; it introduces no dynamic
 loader or FFI.  This is partial evidence because one source definition builds a
-regex from an argument, and the six route-selected `Unix` members remain
-unimplemented.
+regex from an argument.
+
+The immediate strictbuild metadata dependency also has a narrow pure-source
+binding.  Its exact `date` and `whoami` commands read two manifest-hashed text
+inputs through TextIO; no shell or ambient clock/user state is exposed.  The
+source compatibility layer also shadows Candle REPL's token queue with the
+small OCaml `Buffer` subset used by strictbuild and serialization.  A compiled
+gate exercises strictbuild's byte-at-a-time reader, including channel close,
+and verifies rejection of arbitrary commands and clock access.
+This does not cover indirect command helpers elsewhere in the source graph or
+general Unix process, clock, and directory semantics.  Those paths remain
+explicitly fail-closed, and the library contract remains inactive.
 
 ## Open boundaries exposed by this slice
 
 - directory existence, directory enumeration, and directory-type queries;
 - exact `Digest`/MD5 behavior used by duplicate tracking, serialization, and
   LP output checks;
-- reproducible substitutes for strictbuild's `date` and `whoami` process
-  probes (the release path may not invoke a shell for these);
+- sandbox/refinement contracts for non-metadata process calls, clock access,
+  and directory creation;
 - complete source-library resolution and manifest digest enforcement.
 
 Reproduce the two current compiled gates with:
@@ -76,4 +86,6 @@ Reproduce the two current compiled gates with:
 ```sh
 candle/test_flyspeck_loader_guard.sh ./candle.sh /path/to/flyspeck
 candle/test_flyspeck_loader_frontier.sh ./candle.sh /path/to/flyspeck
+candle/test_str_compat.sh
+candle/test_unix_metadata.sh
 ```

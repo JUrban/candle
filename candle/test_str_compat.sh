@@ -32,7 +32,8 @@ diff -u "$temporary/oracle.results" "$temporary/candle.results"
 
 rg -q 'STR:reject_grouping=true' "$temporary/candle.log"
 rg -q 'CANDLE_STR_COMPAT_OK' "$temporary/candle.log"
-if rg -q 'EXCEPTION:' "$temporary/candle.log"; then
+if rg -q 'EXCEPTION:|Parsing failed|ERROR:|Undefined variable:' \
+  "$temporary/candle.log"; then
   tail -n 80 "$temporary/candle.log" >&2
   exit 1
 fi

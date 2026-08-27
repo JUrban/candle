@@ -3397,7 +3397,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 2439,
+      "bytes": 2893,
       "dependencies": [
         {
           "kind": "#use",
@@ -3411,7 +3411,7 @@
         },
         {
           "kind": "needs",
-          "line": 48,
+          "line": 59,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -3422,13 +3422,13 @@
         {
           "expression": "flyspeck_needs source; source) Build.build_sequence_full",
           "kind": "flyspeck_needs",
-          "line": 51,
+          "line": 62,
           "reason": "maps the separately extracted authoritative full build sequence",
           "status": "root-driver"
         },
         {
           "kind": "needs",
-          "line": 58,
+          "line": 69,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -3439,7 +3439,7 @@
       ],
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "a92f5dbd3fd423fbdd37401f59f7e5bb75bb5cd366424a48cd47f23bd7ca9a4f"
+      "sha256": "27c298670036b3879d7fab9611682df14d952571de4132080b9bdd4a18586ada"
     },
     "candle:candle/kernel.ml": {
       "bytes": 5795,
@@ -3456,11 +3456,11 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 22871,
+      "bytes": 25620,
       "dependencies": [],
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "4e2fe82f5109952b92858b79b9edf18262ee6d233f3bd042ec6d99c655ec0394"
+      "sha256": "56d204bb36562199360729b1a1e8118a9b5f60f761056209f1cd8de4f73d2b17"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -9731,6 +9731,21 @@
         "status": "partial-pure-source-differential-gate"
       },
       "unix.cma": {
+        "deterministic_process_inputs": [
+          {
+            "bytes": 21,
+            "command": "date",
+            "sha256": "8f2148c336b70d69d770cd80e0f3decc5a1c9716fac2fc7961f7a5b2d57701e8",
+            "source": "candle:candle/flyspeck_metadata/date.txt"
+          },
+          {
+            "bytes": 16,
+            "command": "whoami",
+            "sha256": "ad29b534dd27882add87d6996aa4ccf39bf1e5b15ccfd08804636905e8b8d864",
+            "source": "candle:candle/flyspeck_metadata/user.txt"
+          }
+        ],
+        "gate": "candle:candle/test_unix_metadata.sh",
         "members": [
           "close_process",
           "close_process_in",
@@ -9739,7 +9754,8 @@
           "open_process",
           "open_process_in"
         ],
-        "status": "unimplemented"
+        "source": "candle:candle/ocaml.ml",
+        "status": "startup-metadata-only-explicit-fail-otherwise"
       }
     },
     "capability_uses": [

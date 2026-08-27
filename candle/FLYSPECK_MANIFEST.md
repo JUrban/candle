@@ -69,8 +69,22 @@ regular-expression form in the selected graph, offset matching, character
 ranges, splitting, replacement, and `first_chars`.  Unsupported escaped
 grouping, alternation, back-references, and empty-match replacement fail
 explicitly.  This is partial binding evidence rather than activation of the
-library contract: arbitrary dynamic regex input and all six `Unix` members
-remain open, so the overall status is still
+library contract: arbitrary dynamic regex input remains open.
+
+The immediate strictbuild process dependency is now source-bound without a
+shell.  `Unix.open_process_in` accepts only the exact commands `date` and
+`whoami`, returning TextIO channels over two manifest-hashed repository inputs;
+`Unix.close_process_in` closes those channels (the selected Flyspeck source
+discards its return value).  The same source slice supplies the small pure
+OCaml `Buffer` subset used by strictbuild's byte-at-a-time reader and Flyspeck's
+serializer, rather than exposing Candle REPL's unrelated token-queue module.
+`test_unix_metadata.sh` exercises the original byte-at-a-time
+`process_to_string` pattern against a compiled Candle and proves that an
+arbitrary command and the clock operation fail closed.  This covers only
+strictbuild's load/build-report metadata.  It does not authorize the indirect
+command helpers defined elsewhere in Flyspeck, nor implement general process,
+clock, or directory behavior.  The other selected operations fail explicitly,
+so the overall library status is still
 `blocked-pending-static-binding-evidence`.
 
 `Sys.file_exists` in this slice deliberately forwards to CakeML's verified

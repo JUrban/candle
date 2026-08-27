@@ -75,6 +75,10 @@ NAMED_INPUTS = (
     ("nonlinear-preparation", "text_formalization/nonlinear/prep.hl"),
     ("nonlinear-case-log", "text_formalization/nonlinear/break_case_log.hl"),
 )
+DETERMINISTIC_PROCESS_INPUTS = (
+    ("date", "candle/flyspeck_metadata/date.txt"),
+    ("whoami", "candle/flyspeck_metadata/user.txt"),
+)
 KNOWN_GENERATED_DEPENDENCIES = {
     "candle/build/insulate.ml": {
         "generator": "candle/insulate.py",
@@ -83,7 +87,7 @@ KNOWN_GENERATED_DEPENDENCIES = {
     },
 }
 MANUAL_DYNAMIC_REVIEWS = {
-    ("candle:candle/flyspeck_loader.ml", 51, "flyspeck_needs"): {
+    ("candle:candle/flyspeck_loader.ml", 62, "flyspeck_needs"): {
         "status": "root-driver",
         "reason": "maps the separately extracted authoritative full build sequence",
     },
@@ -741,6 +745,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "source": source_key,
                 **dependency,
             })
+    deterministic_process_inputs = []
+    for command, relative in DETERMINISTIC_PROCESS_INPUTS:
+        path = candle_root / relative
+        deterministic_process_inputs.append({
+            "command": command,
+            "source": f"candle:{relative}",
+            "bytes": path.stat().st_size,
+            "sha256": _sha256(path),
+        })
     return {
         "schema": SCHEMA,
         "claim": "G6 source inventory only; not loader execution evidence",
@@ -803,8 +816,11 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     ),
                 },
                 "unix.cma": {
-                    "status": "unimplemented",
+                    "status": "startup-metadata-only-explicit-fail-otherwise",
                     "members": sorted(STATIC_RUNTIME_MEMBERS["Unix"]),
+                    "source": "candle:candle/ocaml.ml",
+                    "deterministic_process_inputs": deterministic_process_inputs,
+                    "gate": "candle:candle/test_unix_metadata.sh",
                 },
             },
             "opened_use_attribution": (
