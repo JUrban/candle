@@ -97,3 +97,26 @@ map, printer, float, filesystem, and solver boundaries remain separate work.
 The pinned 15-case OCaml/Candle run passes on this branch. Zero to a negative
 power remains an explicit excluded boundary because the reference Zarith layer
 admits an infinite rational while Candle rejects denominator zero.
+
+`sos_finite_func_cases.json` isolates the first representation boundary after
+the numeric SOS gate.  The reference HOL Light implementation uses
+polymorphic comparison inside canonical Patricia-tree finite functions;
+Candle's association-list representation instead requires an explicit key
+comparator.  The selected adaptation supplies only the concrete `Int`, pair,
+`Term`, `Num`, and nested monomial comparators needed by the prefix of
+`Examples/sos.ml`.  It does not add general polymorphic comparison or import
+the anchor's later printer, float, value-restriction, filesystem, or solver
+changes.  Run both sides with:
+
+```sh
+python3 candle/compatibility/test_sos_finite_functions.py \
+  --reference-root /path/to/pinned/hol-light \
+  --candle-root /path/to/candle
+```
+
+The six cases cover integer and pair maps, combining with zero elision,
+nested finite-function keys and equality, a real-term monomial used as a
+polynomial-style key, and map/fold behavior.  Both pinned OCaml 4.14.1/HOL
+Light and a fresh compiled-Candle process pass.  This remains a differential
+sub-gate until the affected source targets load and their theorem/assumption
+fingerprints are approved.

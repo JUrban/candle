@@ -269,6 +269,64 @@
         "clean ceva, piseries, and thales loads",
         "approved target theorem and assumption fingerprints"
       ]
+    },
+    {
+      "id": "CANDLE-HOLLIGHT-SOS-FINITE-FUNC-001",
+      "status": "differential_pass_target_pending",
+      "priority": "P0",
+      "category": "source_representation_compatibility",
+      "summary": "HOL Light SOS relies on polymorphic finite-function keys while Candle's finite-function representation requires explicit key comparators",
+      "minimal_reproducer": "candle/compatibility/sos_finite_func_cases.json",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "implementation": "the pinned HOL Light Patricia-tree finite partial functions",
+        "comparison": "reference polymorphic comparison and canonical graph behavior"
+      },
+      "candle_observation": {
+        "outcome": "static_source_api_mismatch",
+        "diagnostic": "Examples/sos.ml supplies bare undefined values and graph calls to Candle's comparator-parameterized func API",
+        "target_confirmation": "pending completion of the isolated post-Num 100/ceva rerun"
+      },
+      "affected_targets": [
+        "100/ceva",
+        "100/thales"
+      ],
+      "affected_source_locations": [
+        "Examples/sos.ml:69-341"
+      ],
+      "anchor_candidate": {
+        "repository": "HOL-Light/candle",
+        "branch": "origin/fix-top100",
+        "commit": "218c7c966da7ebdc04e318835e889cc6285469b7",
+        "disposition": "split; only the independently tested finite-function prefix is selected"
+      },
+      "selected_remedy": {
+        "kind": "explicit_comparator_source_adaptation",
+        "description": "supply Int, pair, Term, Num, and nested monomial comparators at the SOS prefix call sites and add one structural finite-function comparator helper",
+        "integration_commit": "eefc4c4909605475731aa9e73198fdff463c963c",
+        "general_polymorphic_compare_added": false,
+        "value_restriction_changes": false,
+        "printer_changes": false,
+        "filesystem_or_process_support": false,
+        "new_ffi": false
+      },
+      "regression_oracle": "candle/compatibility/test_sos_finite_functions.py with candle/compatibility/sos_finite_func_cases.json",
+      "differential_validation": {
+        "status": "pass",
+        "ocaml_version": "4.14.1",
+        "selected_case_count": 6,
+        "cases": "integer and pair maps, zero-eliding combine, nested finite-function keys and equality, a real-term monomial key, and map/fold behavior",
+        "reference_execution": "fresh pinned OCaml/HOL Light process",
+        "candle_execution": "fresh compiled-Candle process loading the selected source tree"
+      },
+      "proof_obligation": "the selected explicit comparators reproduce the six reference observations without adding general polymorphic comparison; later SOS representation, printer, float, value-restriction, filesystem, and solver boundaries remain excluded",
+      "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",
+      "remaining_evidence": [
+        "post-Num 100/ceva failure confirmation",
+        "clean 100/ceva and 100/thales loads",
+        "separate review of the remaining Examples/sos.ml changes",
+        "approved target theorem and assumption fingerprints"
+      ]
     }
   ]
 }
