@@ -2233,7 +2233,7 @@
     "unsupported_runtime_members": []
   },
   "dopen_corpus_contract": {
-    "activation_status": "inventory-complete-pending-verified-dopen",
+    "activation_status": "verified-source-stack-integration-pending-compiler-rebuild-and-corpus-run",
     "earliest_stratum_counts": [
       {
         "module_path_count": 15,
@@ -2292,11 +2292,19 @@
       "dotted": 0,
       "simple": 3180
     },
-    "required_gate": "the verified inference stack must build and a real corpus-derived open-dependent compiled Candle slice must match pinned OCaml/HOL Light reference fingerprints",
+    "required_gate": "rebuild the x64-64 compiler from the pinned verified integration, then require a real corpus-derived open-dependent compiled Candle slice to match pinned OCaml/HOL Light reference fingerprints",
     "scope": "declaration opens in the reachable direct-source full-build graph",
     "site_digest_format": "SHA-256 of canonical compact sorted JSON records with source, line, module_path, path_form, and override_warning_suppression",
     "site_sha256": "bce30814051df12ea23c14f2918a55e6b839b72760fd58b8996e32f1c05bf282",
-    "source_file_count": 234
+    "source_file_count": 234,
+    "verified_cakeml_integration": {
+      "branch": "codex/flyspeck-v13-integration",
+      "commit": "c006dc4998c354f820d652ce619c0714918a5ed4",
+      "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
+      "dopen_proof_theories": 39,
+      "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
+      "proof_hol4_commit": "427496c4b6d9796b0d02167715ac7412f5f83a44"
+    }
   },
   "final_target": {
     "imported_premises": [

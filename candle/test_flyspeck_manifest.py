@@ -246,7 +246,18 @@ class GeneratedManifestTests(unittest.TestCase):
         contract = self.payload["dopen_corpus_contract"]
         self.assertEqual(
             contract["activation_status"],
-            "inventory-complete-pending-verified-dopen",
+            "verified-source-stack-integration-pending-compiler-rebuild-and-corpus-run",
+        )
+        self.assertEqual(
+            contract["verified_cakeml_integration"],
+            {
+                "branch": "codex/flyspeck-v13-integration",
+                "commit": "c006dc4998c354f820d652ce619c0714918a5ed4",
+                "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
+                "dopen_proof_theories": 39,
+                "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
+                "proof_hol4_commit": "427496c4b6d9796b0d02167715ac7412f5f83a44",
+            },
         )
         self.assertEqual(contract["occurrence_count"], 3180)
         self.assertEqual(contract["source_file_count"], 234)

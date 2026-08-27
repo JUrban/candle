@@ -2203,11 +2203,21 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "source_edge_count": sum(len(targets) for targets in edges.values()),
         "dopen_corpus_contract": {
             "scope": "declaration opens in the reachable direct-source full-build graph",
-            "activation_status": "inventory-complete-pending-verified-dopen",
+            "activation_status": (
+                "verified-source-stack-integration-pending-compiler-rebuild-and-corpus-run"
+            ),
+            "verified_cakeml_integration": {
+                "branch": "codex/flyspeck-v13-integration",
+                "commit": "c006dc4998c354f820d652ce619c0714918a5ed4",
+                "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
+                "dopen_proof_theories": 39,
+                "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
+                "proof_hol4_commit": "427496c4b6d9796b0d02167715ac7412f5f83a44",
+            },
             "required_gate": (
-                "the verified inference stack must build and a real corpus-derived "
-                "open-dependent compiled Candle slice must match pinned OCaml/HOL "
-                "Light reference fingerprints"
+                "rebuild the x64-64 compiler from the pinned verified integration, "
+                "then require a real corpus-derived open-dependent compiled Candle "
+                "slice to match pinned OCaml/HOL Light reference fingerprints"
             ),
             "exclusions": (
                 "local let-open and parenthesized local-open expressions are separate "
