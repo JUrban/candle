@@ -20,6 +20,7 @@ import sys
 import os
 import time
 import argparse
+import json
 import tempfile
 import concurrent.futures
 from dataclasses import dataclass
@@ -90,76 +91,24 @@ REGRESSION = [
     _t("100/cayley_hamilton"),
 ]
 
-# The full "Top 100 theorems" suite, mirroring GREAT_100_THEOREMS in holtest.mk.
-# bertrand-primerecip is special: primerecip.ml depends on bertrand.ml, so both
-# are loaded (in order) in the same session.
-TOP100 = [
-    _t("100/arithmetic_geometric_mean"),
-    _t("100/arithmetic"),
-    _t("100/ballot"),
-    _t("100/bernoulli"),
-    _t("100/bertrand-primerecip", "100/bertrand.ml", "100/primerecip.ml"),
-    _t("100/birthday"),
-    _t("100/buffon"),
-    _t("100/cantor"),
-    _t("100/cayley_hamilton"),
-    _t("100/ceva"),
-    _t("100/circle"),
-    _t("100/chords"),
-    _t("100/combinations"),
-    _t("100/constructible"),
-    _t("100/cosine"),
-    _t("100/cubedissection"),
-    _t("100/cubic"),
-    _t("100/derangements"),
-    _t("100/desargues"),
-    _t("100/descartes"),
-    _t("100/dirichlet"),
-    _t("100/div3"),
-    _t("100/divharmonic"),
-    _t("100/e_is_transcendental"),
-    _t("100/euler"),
-    _t("100/feuerbach"),
-    _t("100/fourier"),
-    _t("100/four_squares"),
-    _t("100/friendship"),
-    _t("100/fta"),
-    _t("100/gcd"),
-    _t("100/green"),
-    _t("100/heron"),
-    _t("100/isoperimetric"),
-    _t("100/inclusion_exclusion"),
-    _t("100/independence"),
-    _t("100/isosceles"),
-    _t("100/konigsberg"),
-    _t("100/lagrange"),
-    _t("100/leibniz"),
-    _t("100/lhopital"),
-    _t("100/liouville"),
-    _t("100/minkowski"),
-    _t("100/morley"),
-    _t("100/pascal"),
-    _t("100/perfect"),
-    _t("100/pick"),
-    _t("100/piseries"),
-    _t("100/platonic"),
-    _t("100/pnt"),
-    _t("100/polyhedron"),
-    _t("100/ptolemy"),
-    _t("100/pythagoras"),
-    _t("100/quartic"),
-    _t("100/ramsey"),
-    _t("100/ratcountable"),
-    _t("100/realsuncountable"),
-    _t("100/reciprocity"),
-    _t("100/stirling"),
-    _t("100/subsequence"),
-    _t("100/thales"),
-    _t("100/transcendence"),
-    _t("100/triangular"),
-    _t("100/two_squares"),
-    _t("100/wilson"),
-]
+def _load_top100_manifest():
+    """Load the audited suite inventory and reject any hidden skip."""
+    path = CANDLE_ROOT / "candle" / "top100_manifest.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1:
+        raise ValueError(f"unsupported Great 100 manifest schema: {path}")
+    targets = payload.get("targets", [])
+    if payload.get("target_count") != len(targets):
+        raise ValueError(f"Great 100 target_count does not match targets: {path}")
+    if any(target.get("skip") is not None for target in targets):
+        raise ValueError(f"Great 100 manifest contains a skipped target: {path}")
+    return [Test(target["name"], tuple(target["load_files"]))
+            for target in targets]
+
+
+# The machine-readable manifest is generated from GREAT_100_THEOREMS and also
+# records dependencies, exclusions, and missing fingerprint/resource evidence.
+TOP100 = _load_top100_manifest()
 
 # Lookup by name, so --test can reuse multi-file definitions (e.g. the
 # bertrand-primerecip pairing) rather than always assuming "<name>.ml".

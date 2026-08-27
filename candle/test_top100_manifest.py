@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+"""Static, single-core tests for the Great 100 inventory contract."""
+
+import json
+import unittest
+
+import top100_manifest
+
+
+class Top100ManifestTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.manifest = json.loads(
+            top100_manifest.MANIFEST.read_text(encoding="utf-8")
+        )
+
+    def test_generated_manifest_is_current(self):
+        self.assertEqual(self.manifest, top100_manifest.build_manifest())
+
+    def test_actual_suite_shape_is_explicit(self):
+        self.assertEqual(self.manifest["target_count"], 65)
+        self.assertEqual(self.manifest["covered_source_count"], 66)
+        self.assertEqual(
+            self.manifest["excluded_100_sources"],
+            [{
+                "path": "100/sqrt.ml",
+                "reason": "absent_from_upstream_GREAT_100_THEOREMS",
+                "approval_status": "unreviewed",
+                "flyspeck_dependency_impact": "unassessed",
+            }],
+        )
+
+    def test_no_hidden_skips(self):
+        self.assertTrue(all(target["skip"] is None
+                            for target in self.manifest["targets"]))
+        self.assertTrue(all(target["expected_status"] == "pass"
+                            for target in self.manifest["targets"]))
+
+    def test_missing_s1_evidence_is_not_misreported_as_success(self):
+        for target in self.manifest["targets"]:
+            self.assertIn(target["fingerprints"]["status"],
+                          {"missing", "not_reached"})
+            self.assertIsNone(target["fingerprints"]["theorems"])
+            self.assertIsNone(target["fingerprints"]["assumptions"])
+
+    def test_observed_failure_links_to_minimized_ledger_entry(self):
+        targets = {target["name"]: target for target in self.manifest["targets"]}
+        observation = targets["100/bertrand-primerecip"]["baseline_observation"]
+        self.assertEqual(observation["status"], "fail")
+        self.assertEqual(
+            observation["ledger_id"], "CANDLE-OCAML-FLOAT-LITERAL-001")
+        ledger = json.loads(
+            (top100_manifest.ROOT / "candle" / "compatibility" / "ledger.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertIn(observation["ledger_id"],
+                      {entry["id"] for entry in ledger["entries"]})
+
+
+if __name__ == "__main__":
+    unittest.main()

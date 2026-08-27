@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "compatibility_specification": "observable OCaml behavior for the pinned HOL Light/Flyspeck subset",
+  "entries": [
+    {
+      "id": "CANDLE-OCAML-FLOAT-LITERAL-001",
+      "status": "open",
+      "priority": "P0",
+      "category": "syntax_and_numeric_runtime",
+      "summary": "Candle rejects OCaml float literals before elaboration",
+      "minimal_reproducer": "candle/compatibility/oracles/float_literal.ml",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "outcome": "accepted",
+        "binding": "candle_float_literal : float = 2."
+      },
+      "candle_observation": {
+        "outcome": "parse_failure",
+        "diagnostic": "Expected to be at EOF; Parsing failed at line 1",
+        "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+        "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+        "audited_compatible_source_base": "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d"
+      },
+      "affected_targets": [
+        "100/bertrand-primerecip"
+      ],
+      "affected_source_locations": [
+        "100/bertrand.ml:19",
+        "100/bertrand.ml:20",
+        "100/bertrand.ml:21",
+        "100/bertrand.ml:31"
+      ],
+      "anchor_workaround": {
+        "commit": "dceb27dee4f390b46ee4a5df31d18774f2867328",
+        "description": "replace integral float literals with float_of_int and the zero literal with Float.zero"
+      },
+      "candidate_remedy": "mechanically normalize the used integral float literals, or add verified literal support",
+      "proof_obligation": "normalization preserves OCaml IEEE-754 values for every rewritten literal and comparisons retain OCaml behavior",
+      "regression_requirement": "OCaml/Candle differential test plus successful clean bertrand-primerecip load and theorem fingerprints"
+    }
+  ]
+}

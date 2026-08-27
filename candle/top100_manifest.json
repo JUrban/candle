@@ -1,0 +1,1395 @@
+{
+  "schema_version": 1,
+  "suite": "HOL Light Great 100",
+  "suite_semantics": "The historical Great 100 suite has 65 clean-process execution targets over 66 source files; the name does not imply 100 runner entries.",
+  "audited_tree_base": "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d",
+  "inventory_source": {
+    "path": "holtest.mk",
+    "variable": "GREAT_100_THEOREMS"
+  },
+  "dependency_scan": "direct literal needs \"path\";; calls in load_files",
+  "execution_contract": {
+    "baseline": "hol.ml",
+    "isolation": "fresh Candle process per target",
+    "cache_policy": "no theorem-state reuse between targets"
+  },
+  "target_count": 65,
+  "covered_source_count": 66,
+  "targets": [
+    {
+      "name": "100/arithmetic_geometric_mean",
+      "load_files": [
+        "100/arithmetic_geometric_mean.ml"
+      ],
+      "load_file_sha256": {
+        "100/arithmetic_geometric_mean.ml": "a2fef405f98eb99716481821afcf38cae0cd1e5a77ba66f5c5ad262bb0f5adca"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/arithmetic",
+      "load_files": [
+        "100/arithmetic.ml"
+      ],
+      "load_file_sha256": {
+        "100/arithmetic.ml": "abeead425d77af901c251289083e8d297198abb120850d48dfe9d3d588a490ce"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ballot",
+      "load_files": [
+        "100/ballot.ml"
+      ],
+      "load_file_sha256": {
+        "100/ballot.ml": "45c4ffb05bce4a252ab85d001a8f16234d01690c618afc2aed42d464995b8147"
+      },
+      "direct_needs": [
+        "Library/binomial.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/bernoulli",
+      "load_files": [
+        "100/bernoulli.ml"
+      ],
+      "load_file_sha256": {
+        "100/bernoulli.ml": "2cb8aa227e736429229c405230fa98c4f93aebc10894935163a9853f14a2da3d"
+      },
+      "direct_needs": [
+        "Library/binomial.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/bertrand-primerecip",
+      "load_files": [
+        "100/bertrand.ml",
+        "100/primerecip.ml"
+      ],
+      "load_file_sha256": {
+        "100/bertrand.ml": "05ab9af1a8ab4419d80548ef12488321823fb063e140633d7f45c2a681a894f0",
+        "100/primerecip.ml": "40c7c276c62778932109e1040b4bfe700ff8adc8b94968419f13e99160e56a21"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/calc_real.ml",
+        "Library/floor.ml",
+        "100/bertrand.ml",
+        "100/divharmonic.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml float-literal syntax",
+        "ledger_id": "CANDLE-OCAML-FLOAT-LITERAL-001",
+        "diagnostic": "Expected to be at EOF; Parsing failed at let num_of_float",
+        "first_source_location": "100/bertrand.ml:18",
+        "wall_seconds": 212.6,
+        "peak_rss_kib": null,
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "compatibility_paths_match_audited_base": true
+        }
+      }
+    },
+    {
+      "name": "100/birthday",
+      "load_files": [
+        "100/birthday.ml"
+      ],
+      "load_file_sha256": {
+        "100/birthday.ml": "f2298f7d1b411d0b6341eedc6bcff6348e2537cec39bb00b7c61414c0602c591"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/buffon",
+      "load_files": [
+        "100/buffon.ml"
+      ],
+      "load_file_sha256": {
+        "100/buffon.ml": "90759e5aedb978ffc352be1733320799c99da9c4043947a9e295ef8da555267b"
+      },
+      "direct_needs": [
+        "Probability/measure.ml",
+        "Probability/random_variables.ml",
+        "Probability/independence.ml",
+        "Probability/expectation.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cantor",
+      "load_files": [
+        "100/cantor.ml"
+      ],
+      "load_file_sha256": {
+        "100/cantor.ml": "279ceb1194e4c8ef39257ce325e914cad60a526ac463a014445b70243b3a2309"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cayley_hamilton",
+      "load_files": [
+        "100/cayley_hamilton.ml"
+      ],
+      "load_file_sha256": {
+        "100/cayley_hamilton.ml": "16157ee2af134d5fee286cb33e97f7a7af4673d80d9ca4d02cf5f0e9c5e9860a"
+      },
+      "direct_needs": [
+        "Multivariate/complexes.ml",
+        "Multivariate/msum.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ceva",
+      "load_files": [
+        "100/ceva.ml"
+      ],
+      "load_file_sha256": {
+        "100/ceva.ml": "64f1e753aa7481cad8fa3962b41df69331ba415bb8ee97bd53b0e8eb693601a0"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml",
+        "Examples/sos.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/circle",
+      "load_files": [
+        "100/circle.ml"
+      ],
+      "load_file_sha256": {
+        "100/circle.ml": "050c2b27046bfd98a5cea5b5b27f201323617fe4c872dbeac78b02613a54309a"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml",
+        "Multivariate/realanalysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/chords",
+      "load_files": [
+        "100/chords.ml"
+      ],
+      "load_file_sha256": {
+        "100/chords.ml": "31ee5d270c5d451707f3561134e9370188464ad86c7ddb5175c4415671e783d9"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/combinations",
+      "load_files": [
+        "100/combinations.ml"
+      ],
+      "load_file_sha256": {
+        "100/combinations.ml": "90735a26385b05d09e7614bad37ae7f51c9ff18cd9fb291d0efc308dc83c6614"
+      },
+      "direct_needs": [
+        "Library/binomial.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/constructible",
+      "load_files": [
+        "100/constructible.ml"
+      ],
+      "load_file_sha256": {
+        "100/constructible.ml": "d7c8ff66ee27851e516b56afc267b65489333c366f8996bfb75cb8487d910c8c"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/floor.ml",
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cosine",
+      "load_files": [
+        "100/cosine.ml"
+      ],
+      "load_file_sha256": {
+        "100/cosine.ml": "bbab37692d124960942d62ce080584b6dfc0ec5e54e6e83cf1f7349c514bb972"
+      },
+      "direct_needs": [
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cubedissection",
+      "load_files": [
+        "100/cubedissection.ml"
+      ],
+      "load_file_sha256": {
+        "100/cubedissection.ml": "c04a0ce85556b71fe81f8efc836546dcc7120436edc6106f941f94dcec07d662"
+      },
+      "direct_needs": [
+        "Multivariate/integration.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cubic",
+      "load_files": [
+        "100/cubic.ml"
+      ],
+      "load_file_sha256": {
+        "100/cubic.ml": "a0962ca95490da722f125490b511a69b7276aaf9dcc9c41d1f7375a06d0f29d1"
+      },
+      "direct_needs": [
+        "Complex/complex_transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/derangements",
+      "load_files": [
+        "100/derangements.ml"
+      ],
+      "load_file_sha256": {
+        "100/derangements.ml": "37c460acbc2863cdcd154bc3d4620080b3da23116c353d4bb77d89d99534a322"
+      },
+      "direct_needs": [
+        "Library/transc.ml",
+        "Library/calc_real.ml",
+        "Library/floor.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/desargues",
+      "load_files": [
+        "100/desargues.ml"
+      ],
+      "load_file_sha256": {
+        "100/desargues.ml": "4a2e50e603ff2fe94cf622c36c652fbbb0e05be9084c0bd406edd49d9458330a"
+      },
+      "direct_needs": [
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/descartes",
+      "load_files": [
+        "100/descartes.ml"
+      ],
+      "load_file_sha256": {
+        "100/descartes.ml": "880cdfb592db39eecdd150aa1cb4544c3e122556ff8dbe2b4fe95c5e43128d72"
+      },
+      "direct_needs": [
+        "Multivariate/realanalysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/dirichlet",
+      "load_files": [
+        "100/dirichlet.ml"
+      ],
+      "load_file_sha256": {
+        "100/dirichlet.ml": "ac8724d0febaba90d728d05d3b1c22beb9af32abe365248f68e0a1abadd6d742"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/agm.ml",
+        "Multivariate/transcendentals.ml",
+        "Library/pocklington.ml",
+        "Library/multiplicative.ml",
+        "Examples/mangoldt.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/div3",
+      "load_files": [
+        "100/div3.ml"
+      ],
+      "load_file_sha256": {
+        "100/div3.ml": "38c51884b1abbded986d323259493f6eda7881336171d8875a4aa169bcedbfb9"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/divharmonic",
+      "load_files": [
+        "100/divharmonic.ml"
+      ],
+      "load_file_sha256": {
+        "100/divharmonic.ml": "632930f1d4cf4f0a51d37af811ff334e535e93c315dbe161b7eab894a9d0c0d6"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/e_is_transcendental",
+      "load_files": [
+        "100/e_is_transcendental.ml"
+      ],
+      "load_file_sha256": {
+        "100/e_is_transcendental.ml": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839"
+      },
+      "direct_needs": [
+        "Library/binomial.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/prime.ml",
+        "Library/iter.ml",
+        "Library/integer.ml",
+        "Library/floor.ml",
+        "100/liouville.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/euler",
+      "load_files": [
+        "100/euler.ml"
+      ],
+      "load_file_sha256": {
+        "100/euler.ml": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88"
+      },
+      "direct_needs": [
+        "Library/binary.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/feuerbach",
+      "load_files": [
+        "100/feuerbach.ml"
+      ],
+      "load_file_sha256": {
+        "100/feuerbach.ml": "d1391bded699f87ed03ac6cc4d86e4cd39b121d98e669839bcc3b328a2bfb18a"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/fourier",
+      "load_files": [
+        "100/fourier.ml"
+      ],
+      "load_file_sha256": {
+        "100/fourier.ml": "3034cc1f10555786b1f07760ece7f990ea7d0eda85ebe7a90ba2a1b3fad63d93"
+      },
+      "direct_needs": [
+        "Multivariate/lpspaces.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/four_squares",
+      "load_files": [
+        "100/four_squares.ml"
+      ],
+      "load_file_sha256": {
+        "100/four_squares.ml": "db543a45a9432f562ee582169e9b8a3f808fdd4182ed5bc1154d2a053fa5a232"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/friendship",
+      "load_files": [
+        "100/friendship.ml"
+      ],
+      "load_file_sha256": {
+        "100/friendship.ml": "7abe66cd207eb724097253f8065f138e32a59545b6933cb040238a1bbe840e98"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/fta",
+      "load_files": [
+        "100/fta.ml"
+      ],
+      "load_file_sha256": {
+        "100/fta.ml": "053b543777c79114c606bb952c4f8fd4afb6a9adc8b7a7dbd4308bcb35d5d292"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/gcd",
+      "load_files": [
+        "100/gcd.ml"
+      ],
+      "load_file_sha256": {
+        "100/gcd.ml": "238ce0ed5a718bb916fc49e01fdf5887c0a8ea0556203d9fb89cdc884b970930"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/green",
+      "load_files": [
+        "100/green.ml"
+      ],
+      "load_file_sha256": {
+        "100/green.ml": "21defc70d80876d52ba62a6685343851a4281e4be504c3b71f98aac1635a6eeb"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/lpspaces.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/heron",
+      "load_files": [
+        "100/heron.ml"
+      ],
+      "load_file_sha256": {
+        "100/heron.ml": "de7cd4bd92e9d6fa19076ae2195d58fe6c68901307a15da05c366bc0b2b40763"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/isoperimetric",
+      "load_files": [
+        "100/isoperimetric.ml"
+      ],
+      "load_file_sha256": {
+        "100/isoperimetric.ml": "ac4823128eb53db23d90e624ba27630b587247b01322ef74d87bbb5e820bb246"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/lpspaces.ml",
+        "100/green.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/inclusion_exclusion",
+      "load_files": [
+        "100/inclusion_exclusion.ml"
+      ],
+      "load_file_sha256": {
+        "100/inclusion_exclusion.ml": "a45a01760713421a522b913af462bb2ec061279aeff054178b06c61331964441"
+      },
+      "direct_needs": [
+        "Library/products.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/independence",
+      "load_files": [
+        "100/independence.ml"
+      ],
+      "load_file_sha256": {
+        "100/independence.ml": "83ce6195031b469bea18714841659b67a43a87942d8c7aec1997b58369bb3dc0"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/tarski.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/isosceles",
+      "load_files": [
+        "100/isosceles.ml"
+      ],
+      "load_file_sha256": {
+        "100/isosceles.ml": "d5ba9d75047e112113396e22534e24a7ba94b406591cdfa08b714931da0a4d84"
+      },
+      "direct_needs": [
+        "Multivariate/geom.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/konigsberg",
+      "load_files": [
+        "100/konigsberg.ml"
+      ],
+      "load_file_sha256": {
+        "100/konigsberg.ml": "8c49c5b56bc64d601fa81fe7a065d4df77fe125d85e70638c4e950aab4a08711"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/lagrange",
+      "load_files": [
+        "100/lagrange.ml"
+      ],
+      "load_file_sha256": {
+        "100/lagrange.ml": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/leibniz",
+      "load_files": [
+        "100/leibniz.ml"
+      ],
+      "load_file_sha256": {
+        "100/leibniz.ml": "1c14786c8ea185e5cce7342895d7d3461b99d88e2d907baf808c8d0621b7ab84"
+      },
+      "direct_needs": [
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/lhopital",
+      "load_files": [
+        "100/lhopital.ml"
+      ],
+      "load_file_sha256": {
+        "100/lhopital.ml": "6f2d47c4128df441b9bb757500a431462e52582929c826a336518ba5c85cc815"
+      },
+      "direct_needs": [
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/liouville",
+      "load_files": [
+        "100/liouville.ml"
+      ],
+      "load_file_sha256": {
+        "100/liouville.ml": "582da88b937a8bc3b6d0aff01eb415d58d7e85941a33a69feeb535303fa14389"
+      },
+      "direct_needs": [
+        "Library/floor.ml",
+        "Library/poly.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/minkowski",
+      "load_files": [
+        "100/minkowski.ml"
+      ],
+      "load_file_sha256": {
+        "100/minkowski.ml": "ca52385f73231c2f5f09070e9408924fec25b3bd2ea42d5b075e17aea5d3900d"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/morley",
+      "load_files": [
+        "100/morley.ml"
+      ],
+      "load_file_sha256": {
+        "100/morley.ml": "9c49e7db8b439cd004e8604f978638dceba835e50eccbfc7c3219e17204356e6"
+      },
+      "direct_needs": [
+        "Library/iter.ml",
+        "Multivariate/geom.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pascal",
+      "load_files": [
+        "100/pascal.ml"
+      ],
+      "load_file_sha256": {
+        "100/pascal.ml": "516aca235c3ff1f51fa9c5d86d3b2e4fbd62c6763a584fc2cf1fd95ba16c4786"
+      },
+      "direct_needs": [
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/perfect",
+      "load_files": [
+        "100/perfect.ml"
+      ],
+      "load_file_sha256": {
+        "100/perfect.ml": "47ab55705e340ca93367db4cf7b81b50e6f0fd9b0ec358d86dd4c91c4b71536c"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pick",
+      "load_files": [
+        "100/pick.ml"
+      ],
+      "load_file_sha256": {
+        "100/pick.ml": "2b9d45cc0ad88eb7d09c5b70cab39b559089f25d412f4c7bd3d23874cecd6c72"
+      },
+      "direct_needs": [
+        "Multivariate/polytope.ml",
+        "Multivariate/measure.ml",
+        "Multivariate/moretop.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/piseries",
+      "load_files": [
+        "100/piseries.ml"
+      ],
+      "load_file_sha256": {
+        "100/piseries.ml": "0518534342e1d53501ad9a7f21ad8dfc8d64e369b90e5c593750bb0a78d5c4a7"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/floor.ml",
+        "Library/poly.ml",
+        "Examples/machin.ml",
+        "Library/iter.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/platonic",
+      "load_files": [
+        "100/platonic.ml"
+      ],
+      "load_file_sha256": {
+        "100/platonic.ml": "ec208c94ef8069c4085479ce575f4954bede5a00de9e75febae14e6e89c41c36"
+      },
+      "direct_needs": [
+        "100/polyhedron.ml",
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pnt",
+      "load_files": [
+        "100/pnt.ml"
+      ],
+      "load_file_sha256": {
+        "100/pnt.ml": "6b39b727fd266b764f655e69e57765457b91a14068bf19b33a57ae2155a9bdc7"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Library/pocklington.ml",
+        "Examples/mangoldt.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/polyhedron",
+      "load_files": [
+        "100/polyhedron.ml"
+      ],
+      "load_file_sha256": {
+        "100/polyhedron.ml": "266cd95c83c1620d4a358416e6db887a929a1da8c829357250aaa6cd82f9fb69"
+      },
+      "direct_needs": [
+        "Multivariate/polytope.ml",
+        "Library/binomial.ml",
+        "100/inclusion_exclusion.ml",
+        "100/combinations.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ptolemy",
+      "load_files": [
+        "100/ptolemy.ml"
+      ],
+      "load_file_sha256": {
+        "100/ptolemy.ml": "a60b58fb71379c8dc7d8d07683b1d376704c41453880da7183d871be69c18da7"
+      },
+      "direct_needs": [
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pythagoras",
+      "load_files": [
+        "100/pythagoras.ml"
+      ],
+      "load_file_sha256": {
+        "100/pythagoras.ml": "50d03afe5b299a4d9cb7b4dab119db5ce69982fa6ce14fd2a1ad4b8733da6157"
+      },
+      "direct_needs": [
+        "Multivariate/misc.ml",
+        "Multivariate/vectors.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/quartic",
+      "load_files": [
+        "100/quartic.ml"
+      ],
+      "load_file_sha256": {
+        "100/quartic.ml": "f0ce259b828a32e23867425c5aab40958650945254ca6f4faf319eef0095afcf"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ramsey",
+      "load_files": [
+        "100/ramsey.ml"
+      ],
+      "load_file_sha256": {
+        "100/ramsey.ml": "c27a2197fd0faa1a8197523ec8b7e8182a122959c3ce3b76f0f0f70326ced94f"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ratcountable",
+      "load_files": [
+        "100/ratcountable.ml"
+      ],
+      "load_file_sha256": {
+        "100/ratcountable.ml": "b57e7a4b2835c23cf9a077447b4f5452f07ee341cbeb18d2842ec33aa9dc6fbb"
+      },
+      "direct_needs": [
+        "Library/card.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/realsuncountable",
+      "load_files": [
+        "100/realsuncountable.ml"
+      ],
+      "load_file_sha256": {
+        "100/realsuncountable.ml": "32f5c7c4e1afd4cba3d4def39e23c847cf58f6a3bd84bd47441875fd6c6b06fa"
+      },
+      "direct_needs": [
+        "Library/card.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/reciprocity",
+      "load_files": [
+        "100/reciprocity.ml"
+      ],
+      "load_file_sha256": {
+        "100/reciprocity.ml": "ea90380fb59218c02f5360e14bffbe496e19b12c1e12a93d82d62022fe57b838"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml",
+        "Library/products.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/stirling",
+      "load_files": [
+        "100/stirling.ml"
+      ],
+      "load_file_sha256": {
+        "100/stirling.ml": "ca6c9f8c142344cff11216808716b2d80817a49809e5dbd69560f5e7fc0735a0"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/subsequence",
+      "load_files": [
+        "100/subsequence.ml"
+      ],
+      "load_file_sha256": {
+        "100/subsequence.ml": "5dea02aff5cc6e1e7326b1e979255be049930b7b28d403132701b83120a6325c"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/thales",
+      "load_files": [
+        "100/thales.ml"
+      ],
+      "load_file_sha256": {
+        "100/thales.ml": "a33f3ee54c333ffc5eb5add50d8bf5da680aaf51501c8c3f5a617f4bdf4856a4"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml",
+        "Examples/sos.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/transcendence",
+      "load_files": [
+        "100/transcendence.ml"
+      ],
+      "load_file_sha256": {
+        "100/transcendence.ml": "648c150ca6cf173f194cfc0fb9a7c5bc5ed11c6e0a7f0a16a504b09d4b568b6b"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/ringtheory.ml",
+        "Multivariate/cauchy.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/triangular",
+      "load_files": [
+        "100/triangular.ml"
+      ],
+      "load_file_sha256": {
+        "100/triangular.ml": "e6c8e7ac48ce73657dda0ced5e59521d84220c3e0d8689348275148200806c0d"
+      },
+      "direct_needs": [
+        "Multivariate/misc.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/two_squares",
+      "load_files": [
+        "100/two_squares.ml"
+      ],
+      "load_file_sha256": {
+        "100/two_squares.ml": "6a9c45206dd94797a701d828e12687616760480aeb813d07c5d45f33929af7ca"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/wilson",
+      "load_files": [
+        "100/wilson.ml"
+      ],
+      "load_file_sha256": {
+        "100/wilson.ml": "d741275568246c1e0a8e7a5181c5463f8dd5b0f7f207812f790357665034a079"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null
+      },
+      "baseline_observation": null
+    }
+  ],
+  "excluded_100_sources": [
+    {
+      "path": "100/sqrt.ml",
+      "reason": "absent_from_upstream_GREAT_100_THEOREMS",
+      "approval_status": "unreviewed",
+      "flyspeck_dependency_impact": "unassessed"
+    }
+  ]
+}
