@@ -193,6 +193,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("neutralize_state exactly once", contract["required_loader_action"])
         self.assertIn("already-loaded duplicate", contract["required_loader_action"])
         self.assertIn("must not be erased", contract["failure_policy"])
+        self.assertIn("before strictbuild", contract["preload_authentication"])
 
         generated = Path(__file__).with_name("flyspeck_full_build.ml")
         self.assertTrue(generated.is_file())
@@ -296,6 +297,11 @@ class GeneratedManifestTests(unittest.TestCase):
             self.payload["source_digest_contract"]["generated_source_md5"],
             source,
         )
+        self.assertIn(
+            self.payload["static_full_build_contract"]["generated_source_md5"],
+            source,
+        )
+        self.assertIn("static full-build program authentication failed", source)
         self.assertIn("Build.build_sequence_full", source)
         self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
         for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
@@ -446,13 +452,13 @@ class GeneratedManifestTests(unittest.TestCase):
             ["file", "string", "t", "to_hex"],
         )
         uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 17)
+        self.assertEqual(len(uses), 19)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 8, "string": 2, "t": 3, "to_hex": 4},
+            {"file": 9, "string": 2, "t": 3, "to_hex": 5},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")

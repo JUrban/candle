@@ -2248,7 +2248,7 @@
         "runtime_input": "candle/flyspeck_manifest.json"
       },
       "kind": "needs",
-      "line": 62,
+      "line": 69,
       "literal": "candle/flyspeck_source_digests.ml",
       "source": "candle:candle/flyspeck_loader.ml",
       "status": "generated-contract"
@@ -2558,13 +2558,25 @@
     },
     "capability_uses": [
       {
-        "line": 58,
+        "line": 60,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 58,
+        "line": 60,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 65,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 65,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -2665,13 +2677,25 @@
     "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
     "qualified_uses": [
       {
-        "line": 58,
+        "line": 60,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 58,
+        "line": 60,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 65,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 65,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5289,7 +5313,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 3868,
+      "bytes": 4232,
       "dependencies": [
         {
           "kind": "#use",
@@ -5308,13 +5332,13 @@
             "runtime_input": "candle/flyspeck_manifest.json"
           },
           "kind": "needs",
-          "line": 62,
+          "line": 69,
           "literal": "candle/flyspeck_source_digests.ml",
           "status": "generated-contract"
         },
         {
           "kind": "needs",
-          "line": 63,
+          "line": 70,
           "literal": "candle/flyspeck_source_integrity.ml",
           "matches": [
             "candle:candle/flyspeck_source_integrity.ml"
@@ -5324,7 +5348,7 @@
         },
         {
           "kind": "needs",
-          "line": 79,
+          "line": 86,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -5335,13 +5359,13 @@
         {
           "expression": "flyspeck_needs source; source) Build.build_sequence_full",
           "kind": "flyspeck_needs",
-          "line": 82,
+          "line": 89,
           "reason": "maps the separately extracted authoritative full build sequence",
           "status": "root-driver"
         },
         {
           "kind": "needs",
-          "line": 89,
+          "line": 96,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -5350,10 +5374,10 @@
           "status": "resolved"
         }
       ],
-      "md5": "f4222e3b0d4d05cf568e621914c0e5f7",
+      "md5": "fec2433e39a3872664e00a51b183c42f",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "9276ee725001a5e9a1257b7101136b8b380e2bd5d229245d647757caeecb2bd1"
+      "sha256": "510b8a7a58c7493c277b9a47ad9315e06c4ef5a980ad03581eabc6fd7e920f86"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -12000,6 +12024,7 @@
     "generated_source_sha256": "1bb71f85fd66c23d974599ded954344fd54f8b6904ebb4e51c4325d9ca0e8947",
     "open_gate": "the generated program is not executed until the compiled Candle loader implements and tests the exact action",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
+    "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
     "required_loader_action": "at the directive position resolve only the manifest-selected source; if not already loaded, evaluate it and then call State_manager.neutralize_state exactly once after success; an already-loaded duplicate performs neither action",
     "source_selection_binding": "every generated entry records its manifest-selected source key and SHA-256 beside the authoritative target literal",
     "unique_target_count": 287

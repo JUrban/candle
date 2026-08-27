@@ -44,7 +44,9 @@ evaluate a newly selected source at that exact point and call
 duplicate does neither.  Unknown, malformed, reordered, unresolved, or
 hash-mismatched entries abort.  This separates the static load-order contract
 from Flyspeck's `Toploop.use_file` implementation without pretending that a
-successful no-op loaded anything.
+successful no-op loaded anything.  The direct loader authenticates the
+generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
+release-manifest pin.  Authentication does not activate the directive.
 
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries

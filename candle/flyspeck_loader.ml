@@ -53,11 +53,18 @@ List.iter candle_flyspeck_require_source candle_flyspeck_required_sources;;
    sources. *)
 let candle_flyspeck_source_digest_program =
   Filename.concat candle_hollight_root "candle/flyspeck_source_digests.ml";;
+let candle_flyspeck_full_build_program =
+  Filename.concat candle_hollight_root "candle/flyspeck_full_build.ml";;
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
      "552a21f448e866a7f8fcd49ce8908c2f" then
   failwith "Flyspeck source digest program authentication failed";;
+
+if not (Sys.file_exists candle_flyspeck_full_build_program) ||
+   Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
+     "5853a6e82e9303ba52ad874c98282842" then
+  failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
 needs "candle/flyspeck_source_integrity.ml";;

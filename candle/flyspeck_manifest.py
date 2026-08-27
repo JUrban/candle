@@ -201,7 +201,7 @@ KNOWN_GENERATED_DEPENDENCIES = {
     },
 }
 MANUAL_DYNAMIC_REVIEWS = {
-    ("candle:candle/flyspeck_loader.ml", 82, "flyspeck_needs"): {
+    ("candle:candle/flyspeck_loader.ml", 89, "flyspeck_needs"): {
         "status": "root-driver",
         "reason": "maps the separately extracted authoritative full build sequence",
     },
@@ -1164,6 +1164,10 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "source_selection_binding": (
                 "every generated entry records its manifest-selected source key "
                 "and SHA-256 beside the authoritative target literal"
+            ),
+            "preload_authentication": (
+                "the direct loader checks generated_source_md5 before strictbuild; "
+                "the outer release manifest pins generated_source_sha256"
             ),
             "required_loader_action": (
                 "at the directive position resolve only the manifest-selected "
