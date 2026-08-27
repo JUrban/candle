@@ -190,6 +190,11 @@ BASELINE_OBSERVATIONS = {
         "first_source_location": "100/constructible.ml:115",
         "log_active_seconds_approx": 3730.4,
         "peak_rss_kib": None,
+        "upstream_remedy": {
+            "repository": "CakeML/cakeml",
+            "commit": "c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+            "status": "present_in_audited_source_base; compiled Candle rebuild required",
+        },
         "evidence": {
             "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
             "candle_executable_sha256": (

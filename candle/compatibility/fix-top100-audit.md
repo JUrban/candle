@@ -79,11 +79,13 @@ and four failures through target 18. In addition to `bertrand-primerecip` and
 `Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
 `SEMIRING_NORMALIZERS_CONV` received Candle's incompatible inferred type. The
 latter maps directly to the small `Term.(<)` normalization in `5c44565`; the
-former is a newly exposed lexer-compatibility item, not covered by the eight
-audited anchor commits. `cubedissection` passed after approximately 63 minutes
-of active log time, under the recorded inactivity-only/unbounded-wall policy;
-that pass remains provisional because no theorem or assumption fingerprint was
-captured.
+former is not covered by the eight audited anchor commits, but it is already
+fixed in the audited CakeML source base by `c26aa71d2b1`. That upstream commit
+explicitly cites `100/constructible.ml`, and its regression was part of the
+green `camlTestsTheory` build; the pinned compiled Candle simply predates it.
+`cubedissection` passed after approximately 63 minutes of active log time,
+under the recorded inactivity-only/unbounded-wall policy; that pass remains
+provisional because no theorem or assumption fingerprint was captured.
 
 ## Integration sequence
 

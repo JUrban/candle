@@ -65,6 +65,48 @@
         "clean bertrand-primerecip load",
         "bertrand theorem and assumption fingerprints"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-MULTILINE-STRING-001",
+      "status": "upstream_available_rebuild_required",
+      "priority": "P0",
+      "category": "syntax",
+      "summary": "Pinned compiled Candle rejects a source string containing an embedded newline",
+      "minimal_reproducer": "candle/compatibility/oracles/multiline_string.ml",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "outcome": "accepted",
+        "binding": "candle_multiline_string : string = \"alpha\\nbeta\""
+      },
+      "candle_observation": {
+        "outcome": "parse_failure",
+        "diagnostic": "LEXER ERROR; Parsing failed at line 2",
+        "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+        "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61"
+      },
+      "affected_targets": [
+        "100/constructible"
+      ],
+      "affected_source_locations": [
+        "100/constructible.ml:115-121"
+      ],
+      "upstream_remedy": {
+        "repository": "CakeML/cakeml",
+        "commit": "c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+        "description": "continue scan_strlit across an embedded newline instead of producing ErrorS",
+        "present_in_audited_source_base": "dcc03f2866f05b1db18b9f45c731ce45c3a3133e"
+      },
+      "proof_evidence": {
+        "test": "camlTestsScript multiline nExpr parser regression",
+        "command": "Holmake -j 1 --qof camlTestsTheory.uo",
+        "result": "pass"
+      },
+      "regression_requirement": "OCaml/Candle minimal differential, clean constructible load, and populated theorem plus assumption fingerprints",
+      "remaining_evidence": [
+        "rebuilt Candle accepts the exact multiline source and preserves the newline",
+        "clean constructible load",
+        "constructible theorem and assumption fingerprints"
+      ]
     }
   ]
 }

@@ -46,3 +46,11 @@ baseline literal time is diagnostic only and is not a valid performance ratio.
 The ledger entry remains under test until the rebuilt IEEE differential,
 end-to-end negative parses, load-time comparison, clean target load, and
 theorem/assumption fingerprints are present.
+
+`oracles/multiline_string.ml` minimizes
+`CANDLE-OCAML-MULTILINE-STRING-001`, which was exposed when the baseline reached
+`100/constructible`. OCaml 4.14.1 parses the embedded newline; the pinned
+compiled Candle reports a lexer error. No new parser implementation is needed:
+the audited CakeML source already contains `c26aa71d2b1`, including a parser
+regression specifically citing `100/constructible.ml`. The remaining gate is an
+isolated Candle rebuild followed by the minimal oracle and clean target load.
