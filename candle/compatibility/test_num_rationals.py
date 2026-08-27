@@ -40,13 +40,11 @@ def oracle_source(payload):
             f'candle_num_check "{case["id"]}" "{case["expected"]}" '
             f'({case["expression"]});;')
     for case in payload["exception_cases"]:
-        lines.extend([
-            (f'let candle_num_exception_{case["id"]} = try ignore '
-             f'({case["expression"]}); false with Failure _ -> true;;'),
-            (f'if candle_num_exception_{case["id"]} then '
-             f'print_endline "CANDLE_NUM_EXCEPTION={case["id"]}=Failure" '
-             f'else failwith "missing Num exception: {case["id"]}";;'),
-        ])
+        lines.append(
+            f'if (try ignore ({case["expression"]}); false '
+            f'with Failure _ -> true) then '
+            f'print_endline "CANDLE_NUM_EXCEPTION={case["id"]}=Failure" '
+            f'else failwith "missing Num exception: {case["id"]}";;')
     lines.append("let candle_num_rational_differential_passed = true;;")
     return "\n".join(lines) + "\n"
 

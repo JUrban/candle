@@ -6,6 +6,7 @@
 module type NUM = sig
 
   val num_of_int : int -> num
+  val num_of_string : string -> num
   val int_of_num : num -> int
   val string_of_num : num -> string
 
@@ -114,6 +115,16 @@ let norm n = num_fix n
 ;;
 
 let num_of_int i = Int i
+;;
+
+(* The Num compatibility operation accepts integer strings.  CakeML integers
+   are unbounded, so the existing parser preserves the selected decimal SOS
+   behavior without an FFI conversion. *)
+let num_of_string s =
+  if s = "" then Int 0 else
+  match Cake.Int.fromString s with
+  | None -> failwith "num_of_string"
+  | Some i -> Int i
 ;;
 
 let int_of_num n =
