@@ -2562,10 +2562,10 @@
     "known_current_boot_defect": "the baseline boot scanner treats any level-zero needs/loads/#use token as a directive, including a token inside a definition or expression; promotion requires exact start recognition",
     "recognition_policy": "a source directive is recognized only when it is the complete standalone top-level phrase and has its exact literal grammar; an identifier in a definition, conditional, function body, argument, or other expression is ordinary source syntax",
     "required_actions": {
-      "#flyspeck_needs": "enforce the generated index, stratum, selected source key, source hash, and root order, then apply flyspeck_needs semantics",
+      "#flyspeck_needs": "enforce the generated index, stratum, selected source key, source hash, and root order, then apply the accepted-run-exact, fail-closed flyspeck_needs refinement",
       "#load": "activate only an exact allowlisted static library; unknown, inactive, or malformed directives abort",
       "#use": "evaluate the literal source even if previously loaded",
-      "flyspeck_needs": "if new, evaluate in place and neutralize state exactly once after success; if already loaded, do neither",
+      "flyspeck_needs": "if new, evaluate in place, require success, neutralize state exactly once, and record success only after both return; if already loaded, do neither; any failure aborts the one-shot process",
       "loads": "evaluate the literal source even if previously loaded",
       "loadt": "evaluate even if previously loaded",
       "needs": "evaluate once and skip an already-loaded source",
@@ -5589,10 +5589,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "454ef27a01533922410378f0e6e56e36",
+      "md5": "bb90cc6bc634c065de798268fb7f3ea3",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "fed002843962d2bb80388cefa46aa8b72106b11731128d9eac6fa52f4f8eebdd"
+      "sha256": "db0d507ae83d11657edfe824496a0cf6e6e7a3c6fff662fb12d8728838db4a5a"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -7875,10 +7875,11 @@
       ],
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
-        "kind": "exact_bytes_replace_once",
+        "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 45263,
         "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
-        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4"
+        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
+        "operation_count": 1
       },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
@@ -8848,6 +8849,14 @@
     "flyspeck:text_formalization/general/lib.hl": {
       "bytes": 29240,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 29873,
+        "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
+        "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
+        "operation_count": 5
+      },
       "md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
       "path": "text_formalization/general/lib.hl",
       "repository": "flyspeck",
@@ -8864,6 +8873,14 @@
     "flyspeck:text_formalization/general/print_types.hl": {
       "bytes": 3116,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3140,
+        "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
+        "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
+        "operation_count": 1
+      },
       "md5": "d004cc811172daa7461e746516a215e6",
       "path": "text_formalization/general/print_types.hl",
       "repository": "flyspeck",
@@ -9153,6 +9170,14 @@
     "flyspeck:text_formalization/jordan/tactics_jordan.hl": {
       "bytes": 54846,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-POINTER-S3-RELABEL-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 54860,
+        "normalized_md5": "e2076c132f1901e8e9dab2b1ed3cf02a",
+        "normalized_sha256": "e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5",
+        "operation_count": 1
+      },
       "md5": "bd35c3dc23e929b6495940412fcc7c03",
       "path": "text_formalization/jordan/tactics_jordan.hl",
       "repository": "flyspeck",
@@ -12605,38 +12630,142 @@
   },
   "source_normalization_contract": {
     "activation_status": "ready-pending-compiled-loader-integration",
-    "contract_sha256": "d326dc023dbd996aab1d9a542be2f3433b37550e716cfc903da2956c8972aba6",
+    "contract_sha256": "a8c94a3d9bd7d01a3858d42d7f913ae39cceb1d71e153089950fb70bf0e20752",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
-        "kind": "exact_bytes_replace_once",
+        "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 45263,
         "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
         "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
-        "operation": {
-          "after": "    if n = 1 then [] else\n",
-          "before": "    if n == 1 then [] else\n",
-          "kind": "exact_bytes_replace_once",
-          "line": 1050
-        },
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "    if n = 1 then [] else\n",
+            "before": "    if n == 1 then [] else\n",
+            "id": "PROJECT-POINTER-S3-IMMEDIATE-001-REPLACE",
+            "kind": "exact_bytes_replace_once",
+            "line": 1050
+          }
+        ],
         "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "scope_limit": "This scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison.",
         "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value.",
         "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
         "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
+      },
+      {
+        "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 29873,
+        "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
+        "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
+        "operation_count": 5,
+        "operations": [
+          {
+            "after": "let filter p l =\n  let rec changed l =\n    match l with\n      [] -> None\n    | h::t ->\n        (match changed t with\n           None -> if p(h) then None else Some t\n         | Some t' -> if p(h) then Some(h::t') else Some t') in\n  match changed l with None -> l | Some l' -> l';;",
+            "before": "let rec filter p l =\n  match l with\n    [] -> l\n  | h::t -> let t' = filter p t in\n            if p(h) then if t'==t then l else h::t'\n            else t';;",
+            "id": "PROJECT-POINTER-S3-LIB-FILTER-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 209
+          },
+          {
+            "after": "let partition p l =\n  let rec part l =\n    match l with\n      [] -> [],[],true,true\n    | h::t ->\n        let yes,no,all_yes,all_no = part t in\n        if p(h) then\n          ((if all_yes then l else h::yes),no,all_yes,false)\n        else\n          (yes,(if all_no then l else h::no),false,all_no) in\n  let yes,no,_,_ = part l in yes,no;;",
+            "before": "let rec partition p l =\n  match l with\n    [] -> [],l\n  | h::t -> let yes,no = partition p t in\n            if p(h) then (if yes == t then l,[] else h::yes,no)\n            else (if no == t then [],l else yes,h::no);;",
+            "id": "PROJECT-POINTER-S3-LIB-PARTITION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 216
+          },
+          {
+            "after": "let uniq l =\n  let rec changed l =\n    match l with\n      x::(y::_ as t) ->\n        (match changed t with\n           None ->\n             if Stdlib.compare x y = 0 then Some t else None\n         | Some t' ->\n             if Stdlib.compare x y = 0 then Some t' else Some(x::t'))\n    | _ -> None in\n  match changed l with None -> l | Some l' -> l';;",
+            "before": "let rec uniq l =\n  match l with\n    x::(y::_ as t) -> let t' = uniq t in\n                      if Stdlib.compare x y = 0 then t' else\n                      if t'==t then l else x::t'\n | _ -> l;;",
+            "id": "PROJECT-POINTER-S3-LIB-UNIQ-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 345
+          },
+          {
+            "after": "let qmap _ _ =\n  failwith \"Candle Flyspeck: qmap requires physical sharing observation\";;",
+            "before": "let rec qmap f l =\n  match l with\n    h::t -> let h' = f h and t' = qmap f t in\n            if h' == h && t' == t then l else h'::t'\n  | _ -> l;;",
+            "id": "PROJECT-POINTER-S3-LIB-QMAP-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 474
+          },
+          {
+            "after": "let undefine =\n  let rec undefine_list_changed x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then Some t\n          else if c < 0 then None else\n          (match undefine_list_changed x t with\n             None -> None\n           | Some t' -> Some(ab::t'))\n    | [] -> None in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und_changed t =\n      match t with\n        Leaf(h,l) when h = k ->\n          (match undefine_list_changed x l with\n             None -> None\n           | Some l' ->\n               Some(if l' = [] then Empty else Leaf(h,l')))\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            (match und_changed l with\n               None -> None\n             | Some l' ->\n                 Some(match l' with Empty -> r\n                                    | _ -> Branch(p,b,l',r)))\n          else\n            (match und_changed r with\n               None -> None\n             | Some r' ->\n                 Some(match r' with Empty -> l\n                                    | _ -> Branch(p,b,l,r')))\n      | _ -> None in\n    fun t -> match und_changed t with None -> t | Some t' -> t';;",
+            "before": "let undefine =\n  let rec undefine_list x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then t\n          else if c < 0 then l else\n          let t' = undefine_list x t in\n          if t' == t then l else ab::t'\n    | [] -> [] in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und t =\n      match t with\n        Leaf(h,l) when h = k ->\n          let l' = undefine_list x l in\n          if l' == l then t\n          else if l' = [] then Empty\n          else Leaf(h,l')\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            let l' = und l in\n            if l' == l then t\n            else (match l' with Empty -> r | _ -> Branch(p,b,l',r))\n          else\n            let r' = und r in\n            if r' == r then t\n            else (match r' with Empty -> l | _ -> Branch(p,b,l,r'))\n      | _ -> t in\n    und;;",
+            "id": "PROJECT-POINTER-S3-LIB-UNDEFINE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 622
+          }
+        ],
+        "path": "text_formalization/general/lib.hl",
+        "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates.",
+        "semantic_rule": "The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
+        "source_key": "flyspeck:text_formalization/general/lib.hl",
+        "source_md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
+        "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865"
+      },
+      {
+        "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3140,
+        "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
+        "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "  let unsuppress _ = failwith \"Candle Flyspeck: unsuppress requires physical string identity\"",
+            "before": "  let unsuppress s = suppressed := List.filter ((!=) s) (!suppressed)",
+            "id": "PROJECT-POINTER-S3-UNSUPPRESS-001-FAIL-CLOSED",
+            "kind": "exact_bytes_replace_once",
+            "line": 34
+          }
+        ],
+        "path": "text_formalization/general/print_types.hl",
+        "scope_limit": "This is a selected-graph non-use refinement, not general compatibility for Print_types.unsuppress; source/hash drift or any observed call keeps the release gate open.",
+        "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation.",
+        "source_key": "flyspeck:text_formalization/general/print_types.hl",
+        "source_md5": "d004cc811172daa7461e746516a215e6",
+        "source_sha256": "193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6"
+      },
+      {
+        "id": "PROJECT-POINTER-S3-RELABEL-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 54860,
+        "normalized_md5": "e2076c132f1901e8e9dab2b1ed3cf02a",
+        "normalized_sha256": "e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "        let avoids = filter (fun y -> not (y = x)) (vars_and_constants tm []) in",
+            "before": "        let avoids = filter ((!=) x) (vars_and_constants tm []) in",
+            "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
+            "kind": "exact_bytes_replace_once",
+            "line": 256
+          }
+        ],
+        "path": "text_formalization/jordan/tactics_jordan.hl",
+        "scope_limit": "The rule is specific to relabel_bound_conv and its fresh-name consumer; it does not authorize replacing physical identity by structural equality elsewhere. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release.",
+        "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged.",
+        "source_key": "flyspeck:text_formalization/jordan/tactics_jordan.hl",
+        "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
+        "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe"
       }
     ],
-    "entry_count": 1,
-    "failure_policy": "commit, path, input digest, anchor count, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
+    "entry_count": 4,
+    "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
       "candle:candle/test_flyspeck_normalize.py",
+      "candle:candle/test_check_flyspeck_normalized_identity.py",
+      "candle:candle/test_flyspeck_identity_normalization.sh",
       "candle:candle/test_flyspeck_immediate_normalization.sh"
     ],
-    "input_policy": "authenticate the pinned original source before applying an exact replacement whose anchor must occur once",
+    "input_policy": "authenticate the pinned original source before applying an exact ordered replacement sequence whose every anchor must occur once",
     "output_policy": "authenticate the normalized byte count, MD5, and SHA-256 before parsing or evaluating the result",
+    "performance_probe": "candle:candle/flyspeck_identity_benchmark.ml",
     "reference_implementation": {
       "commit": "99cb5d93fc30f1a6f3e69f5aa5d2063994d33a93",
       "repository": "https://github.com/ocaml/ocaml.git",
@@ -12649,20 +12778,54 @@
       ],
       "tag": "4.14.1"
     },
-    "scope_limit": "the one immediate-int rule does not apply to allocated values or discharge the separate identity-sensitive list gate"
+    "scope_limit": "the rules are site-specific; qmap and unsuppress are selected-graph non-use refinements that fail closed on any call, and compiled/fingerprint/performance gates remain open",
+    "selected_graph_non_use_bindings": {
+      "identifiers": [
+        "qmap",
+        "unsuppress"
+      ],
+      "policy": "only signature, definition, and recursive-body occurrences are allowed; any caller occurrence aborts regeneration",
+      "reviewed_occurrences": [
+        {
+          "identifier": "qmap",
+          "line": 474,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/lib.hl"
+        },
+        {
+          "identifier": "qmap",
+          "line": 476,
+          "role": "recursive-body",
+          "source": "flyspeck:text_formalization/general/lib.hl"
+        },
+        {
+          "identifier": "unsuppress",
+          "line": 21,
+          "role": "signature",
+          "source": "flyspeck:text_formalization/general/print_types.hl"
+        },
+        {
+          "identifier": "unsuppress",
+          "line": 34,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/print_types.hl"
+        }
+      ]
+    }
   },
   "static_full_build_contract": {
     "activation_status": "generated-fail-closed-pending-loader-action",
+    "assurance_limit": "exact for accepted and already-loaded observations and an intentional fail-closed refinement of pinned failure behavior; the release does not preserve post-failure state, diagnostics, neutralization after evaluator false, or swallowed Failure from neutralization",
     "directive": "#flyspeck_needs",
     "entry_count": 297,
-    "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, failed, or unsupported dynamic loads abort; the directive must not be erased or implemented as an ordinary successful no-op",
+    "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "c6cc507c34ae22b8f07d1c3ba0979e56",
-    "generated_source_sha256": "3b509d7187b49d557d080e5f07e9ca9b9e0c736c766cbb16178db8f3d83737bf",
+    "generated_source_md5": "fa440c6eae11574a55adab1f881fd834",
+    "generated_source_sha256": "44ae6acc8b43e9408694f64457e0c1fe8b481865abc9afdd2921fcf981094b4a",
     "open_gate": "the generated program is not executed until the compiled Candle loader implements and tests the exact action",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
-    "required_loader_action": "at the directive position resolve only the manifest-selected source; if not already loaded, evaluate it and then call State_manager.neutralize_state exactly once after success; an already-loaded duplicate performs neither action",
+    "required_loader_action": "at the directive position authenticate and resolve only the manifest-selected source; an already-loaded duplicate performs neither evaluation nor neutralization; otherwise evaluate it exactly once, require a true result, then call State_manager.neutralize_state exactly once; record action success only after both steps return normally",
     "source_selection_binding": "every generated entry records its manifest-selected source key and SHA-256 beside the authoritative target literal; a normalized entry additionally records its exact normalization id and output hash",
     "unique_target_count": 287
   },

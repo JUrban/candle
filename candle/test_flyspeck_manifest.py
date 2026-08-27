@@ -221,7 +221,9 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(contract["unique_target_count"], 287)
         self.assertIn("neutralize_state exactly once", contract["required_loader_action"])
         self.assertIn("already-loaded duplicate", contract["required_loader_action"])
-        self.assertIn("must not be erased", contract["failure_policy"])
+        self.assertIn("evaluator false", contract["failure_policy"])
+        self.assertIn("neutralization exception", contract["failure_policy"])
+        self.assertIn("fail-closed refinement", contract["assurance_limit"])
         self.assertIn("before strictbuild", contract["preload_authentication"])
 
         generated = Path(__file__).with_name("flyspeck_full_build.ml")
@@ -256,27 +258,27 @@ class GeneratedManifestTests(unittest.TestCase):
             marker += " *)"
             self.assertIn(marker, source)
 
-    def test_immediate_int_normalization_is_exact_and_narrow(self):
+    def test_source_normalizations_are_exact_and_narrow(self):
         contract = self.payload["source_normalization_contract"]
         self.assertEqual(
             contract["activation_status"],
             "ready-pending-compiled-loader-integration",
         )
-        self.assertEqual(contract["entry_count"], 1)
-        self.assertIn("anchor must occur once", contract["input_policy"])
+        self.assertEqual(contract["entry_count"], 4)
+        self.assertIn("every anchor must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
-        self.assertIn("allocated values", contract["scope_limit"])
+        self.assertIn("qmap", contract["scope_limit"])
         contract_path = Path(__file__).with_name("flyspeck_normalizations.json")
         self.assertEqual(
             flyspeck_normalize.contract_sha256(contract_path),
             contract["contract_sha256"],
         )
-        entry = contract["entries"][0]
-        self.assertEqual(entry["id"], "PROJECT-POINTER-S3-IMMEDIATE-001")
+        entries = {entry["id"]: entry for entry in contract["entries"]}
+        entry = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(entry["source_key"], (
             "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
         ))
-        self.assertEqual(entry["operation"]["line"], 1050)
+        self.assertEqual(entry["operations"][0]["line"], 1050)
         node = self.payload["source_nodes"][entry["source_key"]]
         self.assertEqual(node["sha256"], entry["source_sha256"])
         self.assertEqual(node["md5"], entry["source_md5"])
@@ -288,7 +290,40 @@ class GeneratedManifestTests(unittest.TestCase):
             key for key, value in self.payload["source_nodes"].items()
             if "execution_normalization" in value
         ]
-        self.assertEqual(normalized_nodes, [entry["source_key"]])
+        self.assertEqual(set(normalized_nodes), {
+            value["source_key"] for value in entries.values()
+        })
+        self.assertEqual(
+            entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]["operation_count"],
+            5,
+        )
+        self.assertIn(
+            "failwith",
+            entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]["operations"][0]["after"],
+        )
+        non_use = contract["selected_graph_non_use_bindings"]
+        self.assertEqual(non_use["identifiers"], ["qmap", "unsuppress"])
+        self.assertEqual(
+            [
+                (site["identifier"], site["role"])
+                for site in non_use["reviewed_occurrences"]
+            ],
+            [
+                ("qmap", "definition"),
+                ("qmap", "recursive-body"),
+                ("unsuppress", "signature"),
+                ("unsuppress", "definition"),
+            ],
+        )
+        self.assertIn("any caller occurrence aborts", non_use["policy"])
+        self.assertIn(
+            "candle:candle/test_flyspeck_identity_normalization.sh",
+            contract["gates"],
+        )
+        self.assertEqual(
+            contract["performance_probe"],
+            "candle:candle/flyspeck_identity_benchmark.ml",
+        )
 
     def test_diagnostics_are_promotion_gates(self):
         diagnostics = self.payload["diagnostics"]

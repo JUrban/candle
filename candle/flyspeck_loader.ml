@@ -63,7 +63,7 @@ if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "c6cc507c34ae22b8f07d1c3ba0979e56" then
+     "fa440c6eae11574a55adab1f881fd834" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;

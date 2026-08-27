@@ -125,6 +125,13 @@ TOPLEVEL_CONSUMER_SITE_REVIEWS = (
     ("flyspeck:text_formalization/general/update_database_400.ml", 332, "theorems", "deferred-body", "selected-4.x"),
     ("flyspeck:text_formalization/general/update_database_400.ml", 338, "update_database", "top-level-call", "selected-4.x"),
 )
+NORMALIZATION_NONUSE_IDENTIFIERS = {"qmap", "unsuppress"}
+NORMALIZATION_NONUSE_SITE_REVIEWS = (
+    ("flyspeck:text_formalization/general/lib.hl", 474, "qmap", "definition"),
+    ("flyspeck:text_formalization/general/lib.hl", 476, "qmap", "recursive-body"),
+    ("flyspeck:text_formalization/general/print_types.hl", 21, "unsuppress", "signature"),
+    ("flyspeck:text_formalization/general/print_types.hl", 34, "unsuppress", "definition"),
+)
 # Operational checkpoint strata for the authoritative full sequence.  These
 # names are intentionally contiguous load-order partitions, not claims that a
 # source file has dependencies in only one mathematical area.  Transitive
@@ -943,6 +950,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     compatibility_module_opens: list[dict[str, object]] = []
     toplevel_interface_uses: list[dict[str, object]] = []
     toplevel_consumer_uses: list[dict[str, object]] = []
+    normalization_nonuse_uses: list[dict[str, object]] = []
     typed_theorem_lookup_counts: dict[str, int] = {}
     runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
     compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
@@ -978,6 +986,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         if ref.repository == "flyspeck":
             for use in scan_identifier_uses(text, TOPLEVEL_CONSUMER_IDENTIFIERS):
                 toplevel_consumer_uses.append({"source": ref.key, **use})
+            for use in scan_identifier_uses(text, NORMALIZATION_NONUSE_IDENTIFIERS):
+                normalization_nonuse_uses.append({"source": ref.key, **use})
             typed_count = len(scan_identifier_uses(
                 text, {TYPED_THEOREM_LOOKUP_IDENTIFIER},
             ))
@@ -1080,7 +1090,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             )
         execution_normalization = {
             "id": entry["id"],
-            "kind": entry["operation"]["kind"],
+            "kind": "exact_bytes_replace_sequence",
+            "operation_count": len(entry["operations"]),
             "normalized_bytes": len(normalized),
             "normalized_sha256": entry["normalized_sha256"],
             "normalized_md5": entry["normalized_md5"],
@@ -1093,7 +1104,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "source_sha256": entry["source_sha256"],
             "source_md5": entry["source_md5"],
             **execution_normalization,
-            "operation": entry["operation"],
+            "operations": entry["operations"],
             "semantic_rule": entry["semantic_rule"],
             "scope_limit": entry["scope_limit"],
         })
@@ -1280,6 +1291,41 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         )
         for identifier in sorted(TOPLEVEL_CONSUMER_IDENTIFIERS)
     }
+    observed_normalization_nonuse_sites = {
+        (str(use["source"]), int(use["line"]), str(use["identifier"]))
+        for use in normalization_nonuse_uses
+    }
+    reviewed_normalization_nonuse_sites = {
+        (source, line, identifier)
+        for source, line, identifier, _role
+        in NORMALIZATION_NONUSE_SITE_REVIEWS
+    }
+    if len(observed_normalization_nonuse_sites) != len(normalization_nonuse_uses):
+        raise ValueError("duplicate normalization non-use site")
+    if observed_normalization_nonuse_sites != reviewed_normalization_nonuse_sites:
+        missing = sorted(
+            reviewed_normalization_nonuse_sites - observed_normalization_nonuse_sites
+        )
+        unreviewed = sorted(
+            observed_normalization_nonuse_sites - reviewed_normalization_nonuse_sites
+        )
+        raise ValueError(
+            "normalization non-use sites drifted: "
+            f"missing={missing}; unreviewed={unreviewed}"
+        )
+    normalization_nonuse_roles = {
+        (source, line, identifier): role
+        for source, line, identifier, role in NORMALIZATION_NONUSE_SITE_REVIEWS
+    }
+    reviewed_normalization_nonuse_uses = [
+        {
+            **use,
+            "role": normalization_nonuse_roles[
+                (str(use["source"]), int(use["line"]), str(use["identifier"]))
+            ],
+        }
+        for use in normalization_nonuse_uses
+    ]
     typed_theorem_lookup_occurrences = sum(typed_theorem_lookup_counts.values())
     dependency_kind_status_counts: dict[tuple[str, str], int] = {}
     dependency_position_counts: dict[tuple[str, str], int] = {}
@@ -1361,15 +1407,28 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "the outer release manifest pins generated_source_sha256"
             ),
             "required_loader_action": (
-                "at the directive position resolve only the manifest-selected "
-                "source; if not already loaded, evaluate it and then call "
-                "State_manager.neutralize_state exactly once after success; an "
-                "already-loaded duplicate performs neither action"
+                "at the directive position authenticate and resolve only the "
+                "manifest-selected source; an already-loaded duplicate performs "
+                "neither evaluation nor neutralization; otherwise evaluate it "
+                "exactly once, require a true result, then call "
+                "State_manager.neutralize_state exactly once; record action "
+                "success only after both steps return normally"
             ),
             "failure_policy": (
-                "unknown, malformed, reordered, unresolved, hash-mismatched, "
-                "failed, or unsupported dynamic loads abort; the directive must "
-                "not be erased or implemented as an ordinary successful no-op"
+                "unknown, malformed, reordered, unresolved, hash-mismatched, or "
+                "unsupported dynamic loads abort; evaluator false or any "
+                "evaluation exception aborts the one-shot process before "
+                "neutralization, later targets, or a success marker; any "
+                "neutralization exception likewise aborts before action success; "
+                "the directive must not be erased or implemented as a successful "
+                "no-op"
+            ),
+            "assurance_limit": (
+                "exact for accepted and already-loaded observations and an "
+                "intentional fail-closed refinement of pinned failure behavior; "
+                "the release does not preserve post-failure state, diagnostics, "
+                "neutralization after evaluator false, or swallowed Failure from "
+                "neutralization"
             ),
             "open_gate": (
                 "the generated program is not executed until the compiled Candle "
@@ -1385,21 +1444,37 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "flyspeck_commit": normalization_contract["flyspeck_commit"],
             "entry_count": len(normalization_entries),
             "entries": normalization_entries,
+            "selected_graph_non_use_bindings": {
+                "identifiers": sorted(NORMALIZATION_NONUSE_IDENTIFIERS),
+                "reviewed_occurrences": sorted(
+                    reviewed_normalization_nonuse_uses,
+                    key=lambda entry: (
+                        str(entry["source"]), int(entry["line"]),
+                        str(entry["identifier"]),
+                    ),
+                ),
+                "policy": (
+                    "only signature, definition, and recursive-body occurrences "
+                    "are allowed; any caller occurrence aborts regeneration"
+                ),
+            },
             "input_policy": (
                 "authenticate the pinned original source before applying an exact "
-                "replacement whose anchor must occur once"
+                "ordered replacement sequence whose every anchor must occur once"
             ),
             "output_policy": (
                 "authenticate the normalized byte count, MD5, and SHA-256 before "
                 "parsing or evaluating the result"
             ),
             "failure_policy": (
-                "commit, path, input digest, anchor count, output size, or output "
-                "digest drift aborts; heuristic and blanket rewrites are forbidden"
+                "commit, path, input digest, original anchor count/line, operation "
+                "order, output size, or output digest drift aborts; heuristic and "
+                "blanket rewrites are forbidden"
             ),
             "scope_limit": (
-                "the one immediate-int rule does not apply to allocated values or "
-                "discharge the separate identity-sensitive list gate"
+                "the rules are site-specific; qmap and unsuppress are selected-"
+                "graph non-use refinements that fail closed on any call, and "
+                "compiled/fingerprint/performance gates remain open"
             ),
             "reference_implementation": {
                 "repository": "https://github.com/ocaml/ocaml.git",
@@ -1415,8 +1490,13 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             },
             "gates": [
                 "candle:candle/test_flyspeck_normalize.py",
+                "candle:candle/test_check_flyspeck_normalized_identity.py",
+                "candle:candle/test_flyspeck_identity_normalization.sh",
                 "candle:candle/test_flyspeck_immediate_normalization.sh",
             ],
+            "performance_probe": (
+                "candle:candle/flyspeck_identity_benchmark.ml"
+            ),
         },
         "bootstrap_roots": [ref.key for ref in bootstrap],
         "loader": {
@@ -1710,12 +1790,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "needs": "evaluate once and skip an already-loaded source",
                 "loadt": "evaluate even if previously loaded",
                 "flyspeck_needs": (
-                    "if new, evaluate in place and neutralize state exactly once "
-                    "after success; if already loaded, do neither"
+                    "if new, evaluate in place, require success, neutralize state "
+                    "exactly once, and record success only after both return; if "
+                    "already loaded, do neither; any failure aborts the one-shot "
+                    "process"
                 ),
                 "#flyspeck_needs": (
                     "enforce the generated index, stratum, selected source key, "
-                    "source hash, and root order, then apply flyspeck_needs semantics"
+                    "source hash, and root order, then apply the accepted-run-exact, "
+                    "fail-closed flyspeck_needs refinement"
                 ),
                 "reneeds": "evaluate even if previously loaded, without neutralization",
             },

@@ -6,11 +6,11 @@
 (* stratum: base *)
 (* 000 selected=flyspeck:text_formalization/general/hol_pervasives.hl sha256=d9a64b56a366a45b5caa587000eb54963606e223f8a5f772aa9c1b98a54627e2 *)
 #flyspeck_needs "general/hol_pervasives.hl";;
-(* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 *)
+(* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 normalization=PROJECT-POINTER-S3-ALLOCATED-LIB-001 normalized_sha256=d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f *)
 #flyspeck_needs "general/lib.hl";;
 (* 002 selected=flyspeck:text_formalization/general/flyspeck_lib.hl sha256=2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5 *)
 #flyspeck_needs "general/flyspeck_lib.hl";;
-(* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 *)
+(* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 normalization=PROJECT-POINTER-S3-UNSUPPRESS-001 normalized_sha256=cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de *)
 #flyspeck_needs "general/print_types.hl";;
 (* 004 selected=flyspeck:text_formalization/general/sphere.hl sha256=3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32 *)
 #flyspeck_needs "general/sphere.hl";;
@@ -48,7 +48,7 @@
 #flyspeck_needs "jordan/goal_printer.hl";;
 (* 021 selected=flyspeck:text_formalization/jordan/real_ext.hl sha256=07038124181fadb80326312d889390b93289fba28e1525dc3346adf24833edc4 *)
 #flyspeck_needs "jordan/real_ext.hl";;
-(* 022 selected=flyspeck:text_formalization/jordan/tactics_jordan.hl sha256=3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe *)
+(* 022 selected=flyspeck:text_formalization/jordan/tactics_jordan.hl sha256=3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe normalization=PROJECT-POINTER-S3-RELABEL-001 normalized_sha256=e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5 *)
 #flyspeck_needs "jordan/tactics_jordan.hl";;
 (* 023 selected=flyspeck:text_formalization/jordan/num_ext_nabs.hl sha256=883ad0bc9adc88d392e652491c19e91697a158627c7774e8b2a54bf109771b59 *)
 #flyspeck_needs "jordan/num_ext_nabs.hl";;

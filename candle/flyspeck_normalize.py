@@ -35,12 +35,13 @@ def contract_sha256(contract_path: Path) -> str:
 
 def load_contract(contract_path: Path) -> dict[str, Any]:
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    if contract.get("schema") != 1:
+    if contract.get("schema") != 2:
         raise ValueError("unsupported Flyspeck normalization schema")
     entries = contract.get("entries")
     if not isinstance(entries, list) or not entries:
         raise ValueError("normalization contract must contain entries")
     ids: set[str] = set()
+    operation_ids: set[str] = set()
     paths: set[str] = set()
     for entry in entries:
         entry_id = entry.get("id")
@@ -55,13 +56,32 @@ def load_contract(contract_path: Path) -> dict[str, Any]:
         source_key = entry.get("source_key")
         if source_key != f"flyspeck:{relative.as_posix()}":
             raise ValueError(f"source key/path mismatch for {entry_id}")
-        operation = entry.get("operation")
-        if not isinstance(operation, dict) or operation.get("kind") != "exact_bytes_replace_once":
-            raise ValueError(f"unsupported normalization operation for {entry_id}")
-        before = operation.get("before")
-        after = operation.get("after")
-        if not isinstance(before, str) or not before or not isinstance(after, str):
-            raise ValueError(f"invalid exact replacement for {entry_id}")
+        operations = entry.get("operations")
+        if not isinstance(operations, list) or not operations:
+            raise ValueError(f"normalization operations must be nonempty for {entry_id}")
+        for operation in operations:
+            operation_id = operation.get("id") if isinstance(operation, dict) else None
+            if (
+                not isinstance(operation_id, str)
+                or not operation_id
+                or operation_id in operation_ids
+            ):
+                raise ValueError("normalization operation ids must be nonempty and unique")
+            if operation.get("kind") != "exact_bytes_replace_once":
+                raise ValueError(f"unsupported normalization operation for {entry_id}")
+            before = operation.get("before")
+            after = operation.get("after")
+            if (
+                not isinstance(before, str)
+                or not before
+                or not isinstance(after, str)
+                or before == after
+            ):
+                raise ValueError(f"invalid exact replacement for {operation_id}")
+            line = operation.get("line")
+            if not isinstance(line, int) or line < 1:
+                raise ValueError(f"invalid source line for {operation_id}")
+            operation_ids.add(operation_id)
         for field, length in (
             ("source_sha256", 64), ("source_md5", 32),
             ("normalized_sha256", 64), ("normalized_md5", 32),
@@ -70,6 +90,11 @@ def load_contract(contract_path: Path) -> dict[str, Any]:
             if not isinstance(value, str) or len(value) != length or any(
                 char not in "0123456789abcdef" for char in value
             ):
+                raise ValueError(f"invalid {field} for {entry_id}")
+        if not isinstance(entry.get("normalized_bytes"), int) or entry["normalized_bytes"] < 0:
+            raise ValueError(f"invalid normalized_bytes for {entry_id}")
+        for field in ("semantic_rule", "scope_limit"):
+            if not isinstance(entry.get(field), str) or not entry[field]:
                 raise ValueError(f"invalid {field} for {entry_id}")
         ids.add(entry_id)
         paths.add(path)
@@ -80,12 +105,30 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
     entry_id = str(entry["id"])
     if _sha256(source) != entry["source_sha256"] or _md5(source) != entry["source_md5"]:
         raise ValueError(f"source digest mismatch for normalization {entry_id}")
-    operation = entry["operation"]
-    before = str(operation["before"]).encode("utf-8")
-    after = str(operation["after"]).encode("utf-8")
-    if source.count(before) != 1:
-        raise ValueError(f"exact replacement anchor count is not one for {entry_id}")
-    normalized = source.replace(before, after, 1)
+    for operation in entry["operations"]:
+        operation_id = str(operation["id"])
+        before = str(operation["before"]).encode("utf-8")
+        if source.count(before) != 1:
+            raise ValueError(
+                "original source anchor count is not one for " + operation_id
+            )
+        offset = source.index(before)
+        observed_line = source.count(b"\n", 0, offset) + 1
+        if observed_line != operation["line"]:
+            raise ValueError(
+                f"source line mismatch for {operation_id}: "
+                f"expected {operation['line']}, got {observed_line}"
+            )
+    normalized = source
+    for operation in entry["operations"]:
+        operation_id = str(operation["id"])
+        before = str(operation["before"]).encode("utf-8")
+        after = str(operation["after"]).encode("utf-8")
+        if normalized.count(before) != 1:
+            raise ValueError(
+                "exact replacement anchor count is not one for " + operation_id
+            )
+        normalized = normalized.replace(before, after, 1)
     if len(normalized) != entry["normalized_bytes"]:
         raise ValueError(f"normalized byte count mismatch for {entry_id}")
     if (
@@ -120,6 +163,22 @@ def evaluate_contract(
     return contract, outputs
 
 
+def _prepare_destination(output_root: Path, relative: Path) -> Path:
+    parent = output_root
+    for part in relative.parent.parts:
+        parent = parent / part
+        if parent.is_symlink():
+            raise ValueError(f"refusing normalization output symlink: {parent}")
+        if parent.exists():
+            if not parent.is_dir():
+                raise ValueError(
+                    f"normalization output parent is not a directory: {parent}"
+                )
+        else:
+            parent.mkdir()
+    return parent / relative.name
+
+
 def materialize(
     contract_path: Path, source_root: Path, output_root: Path,
 ) -> dict[str, Any]:
@@ -138,8 +197,7 @@ def materialize(
     output_root.mkdir(parents=True, exist_ok=True)
     rendered_entries: list[dict[str, Any]] = []
     for entry, normalized in outputs:
-        destination = output_root / entry["path"]
-        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination = _prepare_destination(output_root, Path(entry["path"]))
         temporary = destination.with_name(destination.name + ".tmp")
         if destination.is_symlink() or temporary.is_symlink():
             raise ValueError(f"refusing normalization output symlink: {destination}")
@@ -148,12 +206,15 @@ def materialize(
         rendered_entries.append({
             "id": entry["id"],
             "path": entry["path"],
+            "operation_ids": [
+                operation["id"] for operation in entry["operations"]
+            ],
             "normalized_bytes": len(normalized),
             "normalized_sha256": _sha256(normalized),
             "normalized_md5": _md5(normalized),
         })
     receipt = {
-        "schema": 1,
+        "schema": 2,
         "contract_sha256": contract_sha256(contract_path),
         "flyspeck_commit": contract["flyspeck_commit"],
         "entries": rendered_entries,

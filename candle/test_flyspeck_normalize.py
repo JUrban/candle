@@ -27,6 +27,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         source = b"prefix\n    if n == 1 then [] else\nsuffix\n"
         normalized = b"prefix\n    if n = 1 then [] else\nsuffix\n"
         entry = copy.deepcopy(self.contract["entries"][0])
+        entry["operations"][0]["line"] = 2
         entry["source_sha256"], entry["source_md5"] = digests(source)
         entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
         entry["normalized_bytes"] = len(normalized)
@@ -50,6 +51,38 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "anchor count is not one"):
             flyspeck_normalize.normalize_bytes(doubled, entry)
 
+    def test_ordered_operations_are_not_commuted(self):
+        entry, _, _ = self.fixture_entry()
+        source = b"a\nb\n"
+        normalized = b"c\nb\n"
+        entry["operations"] = [
+            {
+                "id": "fixture-first",
+                "kind": "exact_bytes_replace_once",
+                "line": 1,
+                "before": "a\n",
+                "after": "b\n",
+            },
+            {
+                "id": "fixture-second",
+                "kind": "exact_bytes_replace_once",
+                "line": 2,
+                "before": "b\n",
+                "after": "c\n",
+            },
+        ]
+        entry["source_sha256"], entry["source_md5"] = digests(source)
+        entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
+        entry["normalized_bytes"] = len(normalized)
+        with self.assertRaisesRegex(ValueError, "anchor count is not one"):
+            flyspeck_normalize.normalize_bytes(source, entry)
+
+    def test_source_line_drift_fails_closed(self):
+        entry, source, _ = self.fixture_entry()
+        entry["operations"][0]["line"] += 1
+        with self.assertRaisesRegex(ValueError, "source line mismatch"):
+            flyspeck_normalize.normalize_bytes(source, entry)
+
     def test_output_digest_fails_closed(self):
         entry, source, _ = self.fixture_entry()
         entry["normalized_sha256"] = "0" * 64
@@ -57,14 +90,28 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             flyspeck_normalize.normalize_bytes(source, entry)
 
     def test_contract_is_narrow_and_auditable(self):
-        self.assertEqual(self.contract["schema"], 1)
-        self.assertEqual(len(self.contract["entries"]), 1)
-        entry = self.contract["entries"][0]
-        self.assertEqual(entry["id"], "PROJECT-POINTER-S3-IMMEDIATE-001")
-        self.assertEqual(entry["operation"]["line"], 1050)
-        self.assertEqual(entry["operation"]["before"].count("=="), 1)
-        self.assertNotIn("==", entry["operation"]["after"])
-        self.assertIn("does not apply to allocated values", entry["scope_limit"])
+        self.assertEqual(self.contract["schema"], 2)
+        self.assertEqual(len(self.contract["entries"]), 4)
+        entries = {entry["id"]: entry for entry in self.contract["entries"]}
+        immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
+        self.assertEqual(immediate["operations"][0]["line"], 1050)
+        self.assertEqual(immediate["operations"][0]["before"].count("=="), 1)
+        self.assertNotIn("==", immediate["operations"][0]["after"])
+        self.assertIn("does not apply to allocated values", immediate["scope_limit"])
+        allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
+        self.assertEqual(len(allocated["operations"]), 5)
+        self.assertIn("qmap is a selected-graph non-use", allocated["scope_limit"])
+        unsuppress = entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]
+        self.assertIn("failwith", unsuppress["operations"][0]["after"])
+        relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
+        self.assertIn("not (y = x)", relabel["operations"][0]["after"])
+        operation_ids = [
+            operation["id"]
+            for entry in entries.values()
+            for operation in entry["operations"]
+        ]
+        self.assertEqual(len(operation_ids), 8)
+        self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
         entry, source, normalized = self.fixture_entry()
@@ -107,6 +154,37 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 flyspeck_normalize.materialize(
                     self.contract_path, root, root,
                 )
+
+    def test_materialization_refuses_parent_symlink(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            output_root = root / "output"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            output_root.mkdir()
+            first_component = Path(entry["path"]).parts[0]
+            (output_root / first_component).symlink_to(
+                source_root / first_component, target_is_directory=True,
+            )
+            contract_path = root / "contract.json"
+            contract_path.write_text(
+                json.dumps(contract, indent=2) + "\n", encoding="utf-8",
+            )
+            original_git_head = flyspeck_normalize._git_head
+            flyspeck_normalize._git_head = lambda _: "a" * 40
+            try:
+                with self.assertRaisesRegex(ValueError, "output symlink"):
+                    flyspeck_normalize.materialize(
+                        contract_path, source_root, output_root,
+                    )
+            finally:
+                flyspeck_normalize._git_head = original_git_head
 
 
 if __name__ == "__main__":

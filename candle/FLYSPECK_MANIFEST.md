@@ -37,28 +37,39 @@ that a shared dependency belongs to only one mathematical subject.
 
 `flyspeck_full_build.ml` is generated from the same 297-entry sequence.  Each
 entry carries its index, stratum, manifest-selected source key, and source
-SHA-256 beside an explicit `#flyspeck_needs` directive.  Build entry 182 also
-records the exact normalization id and output SHA-256 described below.  The directive is
-intentionally fail-closed today.  Its required future loader action is atomic:
-evaluate a newly selected source at that exact point and call
-`State_manager.neutralize_state` once only after success; an already-loaded
-duplicate does neither.  Unknown, malformed, reordered, unresolved, or
-hash-mismatched entries abort.  This separates the static load-order contract
-from Flyspeck's `Toploop.use_file` implementation without pretending that a
-successful no-op loaded anything.  The direct loader authenticates the
-generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
-release-manifest pin.  Authentication does not activate the directive.
+SHA-256 beside an explicit `#flyspeck_needs` directive.  Entries whose source
+is normalized also record the exact normalization id and output SHA-256.  The
+directive is intentionally fail-closed today.  Its required future loader
+action evaluates a new authenticated source once, requires a true result,
+calls `State_manager.neutralize_state` once, and records success only after
+both steps return normally; an already-loaded duplicate does neither.  An
+evaluator false result, evaluation exception, or neutralization exception
+aborts the one-shot release before later targets or a success marker.  This is
+exact for accepted and already-loaded observations and intentionally stronger
+than the pinned helper's unsafe failure recovery.  Unknown, malformed,
+reordered, unresolved, or hash-mismatched entries also abort.  The direct
+loader authenticates the generated program's MD5 before `strictbuild`; its
+SHA-256 remains an outer release-manifest pin.  Authentication does not
+activate the directive.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement the first
-mechanical source normalization.  The sole entry is
-`PROJECT-POINTER-S3-IMMEDIATE-001`: after authenticating the pinned upstream
-`formal_lp/hypermap/main/prove_flyspeck_lp.hl`, it replaces the unique exact
-line `if n == 1 then [] else` with `if n = 1 then [] else` and authenticates
-the normalized size, MD5, and SHA-256.  Commit, path, input hash, anchor count,
-or output drift aborts.  The manifest annotates exactly that source node and no
-other.  This rule is confined to the `int` returned by `count_terminals`; it
-does not rewrite or discharge any identity-sensitive comparison over allocated
-lists.  The host test and pinned-source gate are:
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement four
+site-specific source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
+unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
+`PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
+the ten physical-sharing tests in `general/lib.hl`: explicit change flags
+preserve the original unchanged objects for `filter`, `partition`, `uniq`, and
+`undefine`.  The selected graph contains no call of either `qmap` or
+`Print_types.unsuppress`, so both normalized bindings fail explicitly if a
+missed dynamic or future call reaches them; no general compatibility is
+claimed.  Accordingly,
+`PROJECT-POINTER-S3-UNSUPPRESS-001` replaces its identity-sensitive binding by
+an explicit failure.  `PROJECT-POINTER-S3-RELABEL-001` confines structural
+comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
+fingerprints must still validate its selected calls.  Each original file,
+each ordered unique anchor, and each final output size/MD5/SHA-256 is
+authenticated.  Commit, path, input hash, anchor count, order, or output drift
+aborts; no blanket rewrite is authorized.  The host tests and pinned-source
+gate are:
 
 ```sh
 (cd candle && python3 -m unittest -v test_flyspeck_normalize.py)
@@ -66,16 +77,19 @@ python3 candle/flyspeck_normalize.py \
   --flyspeck-root /path/to/pinned/flyspeck --check
 CANDLE_BINARY=/path/to/candle.sh \
   candle/test_flyspeck_immediate_normalization.sh
+CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
+  candle/test_flyspeck_identity_normalization.sh
 ```
 
-The pinned OCaml 4.14.1 implementation binds `==` through `%eq` directly to
+For the immediate-integer entry, pinned OCaml 4.14.1 binds `==` through `%eq` directly to
 integer comparison, specializes structural `=` on `int` to the same
 `Pintcomp Ceq`, and encodes every OCaml `int` injectively as a tagged immediate
 word.  Thus the branch predicate is equal for every representable `int`, not
 only the oracle samples.  The compiled Candle oracle separately confirms that
 the normalized branch is accepted and selects the expected cases.  Runtime
-application of the recorded patch is still pending integration with the exact
-compiled source loader, so the manifest status remains
+application of all recorded patches is still pending integration with the exact
+compiled source loader.  The allocation refinements also retain compiled,
+performance, and final-fingerprint gates, so the manifest status remains
 `ready-pending-compiled-loader-integration` and this work alone advances no S
 milestone.
 
