@@ -27,7 +27,16 @@
     "branch": "codex/flyspeck-v13-sos-func",
     "commit": "eefc4c4909605475731aa9e73198fdff463c963c",
     "differential_case_count": 6,
-    "target_validation": "pending isolated post-patch load"
+    "target_validation": "isolated hol.ml plus Examples/sos.ml load advances through all selected prefix bindings to the separate #install_printer boundary"
+  },
+  "post_patch_prefix_validation": {
+    "status": "advanced_to_next_compatibility_frontier",
+    "last_value": "print_poly",
+    "next_frontier": "unsupported #install_printer directive",
+    "total_elapsed_seconds": 141.98,
+    "maximum_resident_set_kib": 1232000,
+    "log": "/project/flyspeck-candle-runs/v13-sos-func-prefix-load.log",
+    "log_sha256": "b49311769b23031d9967864cad300580fa5d97261a58ba31cccda554a261e37d"
   },
   "claim_boundary": "The numeric remedy advanced the real source target to this finite-function frontier; neither that advancement nor the comparator differential is a clean target pass or fingerprint match."
 }

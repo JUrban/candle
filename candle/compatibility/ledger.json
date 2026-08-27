@@ -279,7 +279,7 @@
     },
     {
       "id": "CANDLE-HOLLIGHT-SOS-FINITE-FUNC-001",
-      "status": "differential_pass_frontier_confirmed_target_patch_pending",
+      "status": "differential_pass_target_prefix_advanced",
       "priority": "P0",
       "category": "source_representation_compatibility",
       "summary": "HOL Light SOS relies on polymorphic finite-function keys while Candle's finite-function representation requires explicit key comparators",
@@ -328,6 +328,16 @@
         "cases": "integer and pair maps, zero-eliding combine, nested finite-function keys and equality, a real-term monomial key, and map/fold behavior",
         "reference_execution": "fresh pinned OCaml/HOL Light process",
         "candle_execution": "fresh compiled-Candle process loading the selected source tree"
+      },
+      "target_prefix_validation": {
+        "status": "advanced_to_next_compatibility_frontier",
+        "source": "Examples/sos.ml",
+        "last_value": "print_poly",
+        "next_frontier": "unsupported #install_printer directive",
+        "artifact": "candle/compatibility/sos_finite_func_observation.json",
+        "log_sha256": "b49311769b23031d9967864cad300580fa5d97261a58ba31cccda554a261e37d",
+        "total_elapsed_seconds": 141.98,
+        "maximum_resident_set_kib": 1232000
       },
       "proof_obligation": "the selected explicit comparators reproduce the six reference observations without adding general polymorphic comparison; later SOS representation, printer, float, value-restriction, filesystem, and solver boundaries remain excluded",
       "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",

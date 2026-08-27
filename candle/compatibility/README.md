@@ -127,3 +127,9 @@ real source target: it reaches `let mapa f (d,v)` and fails because bare
 resource observation are pinned in `sos_finite_func_observation.json`.  This
 also advances the Num entry beyond its original failure, but it does not make
 Ceva a pass; the comparator remedy still needs a clean target run.
+
+The post-patch prefix load reaches and defines `print_poly` before stopping at
+the separately classified unsupported `#install_printer` directive.  Its
+141.98-second, 1,232,000-KiB observation and exact log hash are recorded with
+the frontier artifact.  That is evidence that the comparator prefix advances;
+it is not evidence for the later SOS body or a clean Ceva result.
