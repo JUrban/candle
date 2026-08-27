@@ -118,8 +118,8 @@ fingerprint gates remain mandatory.
 
 The loader action contract separately freezes all 731 loading-syntax sites.
 It distinguishes 297 generated standalone `#flyspeck_needs` actions from the
-434 source-language loading sites.  The source set has 422 complete standalone
-phrases and 12 embedded occurrences, including 144 literal `flyspeck_needs`
+434 source-language loading sites.  The source set has 423 complete standalone
+phrases and 11 embedded occurrences, including 144 literal `flyspeck_needs`
 calls, whose post-success
 state neutralization is observably different from ordinary `needs`; the
 embedded set contains the version conditional, optional serialization path,
