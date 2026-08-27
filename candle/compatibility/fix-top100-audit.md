@@ -72,7 +72,7 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later completed target 19 of 65 with 15 load-only
+The same clean baseline later completed target 20 of 65 with 16 load-only
 passes and four failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
@@ -94,8 +94,9 @@ explicitly cites `100/constructible.ml`, and its regression was part of the
 green `camlTestsTheory` build; the pinned compiled Candle simply predates it.
 `cubedissection` passed after approximately 63 minutes of active log time and
 `desargues` passed after approximately 23 minutes under the recorded
-inactivity-only/unbounded-wall policy. Both passes remain provisional because
-no theorem or assumption fingerprint was captured.
+inactivity-only/unbounded-wall policy. `descartes` likewise passed after
+approximately 68.5 minutes. These passes remain provisional because no theorem
+or assumption fingerprint was captured.
 
 ## Integration sequence
 
