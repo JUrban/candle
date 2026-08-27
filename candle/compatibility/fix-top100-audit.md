@@ -72,7 +72,7 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later completed target 30 of 65 with 25 load-only
+The same clean baseline later completed target 31 of 65 with 26 load-only
 passes and five failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
@@ -119,6 +119,7 @@ to the missing reference fingerprints.
 `four_squares` followed with a load-only pass after approximately 3.0 minutes.
 `friendship` also passed after approximately 3.0 minutes.
 `fta` passed after approximately 2.6 minutes.
+`gcd` passed after approximately 2.7 minutes.
 
 ## Integration sequence
 
