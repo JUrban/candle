@@ -212,6 +212,55 @@
       ],
       "semantic_rule": "OCaml 4.14.1 accepts a trailing sequence separator immediately before the closing parenthesis and evaluates it as the same unit-valued sequence. Removing that one exact separator preserves evaluation order, effects, exceptions, and result.",
       "scope_limit": "This one-token correction is confined to Debug.print_m at pinned source line 22 and does not claim general parser support for trailing sequence separators. Any source drift or newly selected occurrence requires a separate inventory and remedy."
+    },
+    {
+      "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+      "source_key": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
+      "path": "formal_lp/hypermap/main/lp_certificate.hl",
+      "source_sha256": "256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709",
+      "source_md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
+      "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
+      "normalized_md5": "639783011d135bd2aa117330b257174d",
+      "normalized_bytes": 3300,
+      "operations": [
+        {
+          "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-REMOVE-RUNTIME-EXTRACTION",
+          "kind": "exact_bytes_replace_once",
+          "line": 88,
+          "before": "let run_command dir com =\n  let cur_dir = Sys.getcwd() in\n  let _ = Sys.chdir dir in\n  let result = Sys.command com in\n  let _ = Sys.chdir cur_dir in\n    result;;\n\nlet create_tmp_dir base_dir = \n  let tmp_dir = Filename.concat base_dir \"tmp\" in\n    if Sys.file_exists tmp_dir then\n      if Sys.is_directory tmp_dir then\n\tif Array.length (Sys.readdir tmp_dir) > 0 then\n\t  failwith (\"create_tmp_dir: the directory is not empty: \" ^\n\t\t      tmp_dir)\n\telse\n\t  tmp_dir\n      else\n\tfailwith (\"create_tmp_dir: cannot create the directory \" ^\n\t\t    tmp_dir)\n    else\n      let _ = Unix.mkdir tmp_dir 0o777 in\n\ttmp_dir;;\n",
+          "after": "(* Candle S3 reads only manifest-authenticated, host-prepared certificate files. *)\n"
+        },
+        {
+          "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-FAIL-CLOSED-GZIP",
+          "kind": "exact_bytes_replace_once",
+          "line": 124,
+          "before": "let read_compressed_lp_certificates fname =\n  let base_dir = Filename.dirname fname in\n  let tmp_dir = create_tmp_dir base_dir in\n  let cmd = Format.sprintf \"tar -xvzf \\\"%s\\\"\" fname in\n  let _ = run_command tmp_dir cmd in\n  let files = Sys.readdir tmp_dir in\n  let certs =\n    Array.fold_left \n      (fun all file ->\n\t let fname = Filename.concat tmp_dir file in\n\t let cs = read_raw_lp_certificates fname in\n\t   cs @ all) [] files in\n  let _ = run_command base_dir (Format.sprintf \"rm -rf \\\"%s\\\"\" tmp_dir) in\n    certs;;\n\nlet read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    read_compressed_lp_certificates fname\n  else\n    read_raw_lp_certificates fname;;\n",
+          "after": "let read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    failwith \"compressed LP certificate reached the shell-free Candle S3 runtime\"\n  else\n    read_raw_lp_certificates fname;;\n"
+        }
+      ],
+      "semantic_rule": "The release input preparer authenticates the sole selected tar.gz archive, requires exactly one ordinary hard_7.dat member, and atomically emits bytes with a pinned digest into a separate generated-input tree. The compiled source therefore reads raw certificate bytes only; those bytes remain untrusted evidence checked by the existing HOL Light LP verifier.",
+      "scope_limit": "This exact selected-route rewrite requires the 39-entry authenticated certificate table and the prepared hard_7.dat receipt. It does not claim general Sys.command, tar, temporary-directory, directory-enumeration, or compressed-input compatibility. Any .gz path reaching the compiled reader fails closed."
+    },
+    {
+      "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
+      "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
+      "path": "formal_lp/hypermap/verify_all.hl",
+      "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95",
+      "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
+      "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
+      "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
+      "normalized_bytes": 3929,
+      "operations": [
+        {
+          "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
+          "kind": "exact_bytes_replace_once",
+          "line": 10,
+          "before": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_files_with_prefix dir prefix =\n  let files = Array.to_list (Sys.readdir dir) in\n  let n = String.length prefix in\n  let files1 = filter (fun f -> String.length f >= n) files in\n  let files2 = filter (fun f -> String.sub f 0 n = prefix) files1 in\n    map (fun f -> sprintf \"%s/%s\" dir f) files2;;\n\nlet get_certificate_files_with_prefix dir prefix =\n  let alt_dir = dir ^ \"/lp_certificates\" in\n  let files1 = get_files_with_prefix dir prefix in\n  let files2 =\n    if Sys.file_exists alt_dir then\n      get_files_with_prefix alt_dir prefix\n    else\n      [] in\n    files1 @ files2;;\n\n",
+          "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n"
+        }
+      ],
+      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run.",
+      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight."
     }
   ]
 }

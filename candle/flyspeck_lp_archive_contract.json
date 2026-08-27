@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "archive": {
+    "path": "formal_lp/glpk/binary/hard_7.tar.gz",
+    "bytes": 22943752,
+    "sha256": "7056e306a03d7eb02db3c0bed898f3eef6f84f06556c040ac38ba93eb0a12453",
+    "format": "tar.gz"
+  },
+  "members": [
+    {
+      "archive_name": "hard_7.dat",
+      "output_path": "formal_lp/glpk/binary/hard_7.dat",
+      "kind": "regular-file",
+      "mode": 420,
+      "bytes": 119855733,
+      "sha256": "0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526"
+    }
+  ],
+  "policy": {
+    "archive_member_set": "exact",
+    "links": "forbidden",
+    "absolute_or_parent_paths": "forbidden",
+    "output_root": "separate generated-input tree",
+    "overwrite": "atomic after complete digest validation",
+    "runtime_shell_or_extraction": "forbidden"
+  }
+}

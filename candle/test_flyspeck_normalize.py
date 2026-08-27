@@ -91,7 +91,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 7)
+        self.assertEqual(len(self.contract["entries"]), 9)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -137,12 +137,29 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn('print_string "\\n");;', (
             trailing_semi["operations"][0]["after"]
         ))
+        shell_free = entries["PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001"]
+        self.assertEqual(
+            [operation["line"] for operation in shell_free["operations"]],
+            [88, 124],
+        )
+        self.assertNotIn("Sys.command", "".join(
+            operation["after"] for operation in shell_free["operations"]
+        ))
+        self.assertIn("fails closed", shell_free["scope_limit"])
+        static_inventory = entries["PROJECT-FFI-S3-LP-STATIC-INVENTORY-001"]
+        self.assertEqual(static_inventory["operations"][0]["line"], 10)
+        self.assertIn("candle_flyspeck_lp_certificate_files", (
+            static_inventory["operations"][0]["after"]
+        ))
+        self.assertNotIn("Sys.readdir", (
+            static_inventory["operations"][0]["after"]
+        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 16)
+        self.assertEqual(len(operation_ids), 19)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

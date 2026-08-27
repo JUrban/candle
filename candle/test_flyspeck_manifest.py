@@ -1,4 +1,5 @@
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -325,7 +326,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 7)
+        self.assertEqual(contract["entry_count"], 9)
         self.assertIn("every anchor must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -441,6 +442,43 @@ class GeneratedManifestTests(unittest.TestCase):
         for generated in self.payload["generated_inputs"]:
             self.assertRegex(generated["sha256"], r"^[0-9a-f]{64}$")
 
+    def test_lp_archive_is_host_prepared_without_runtime_shell(self):
+        contract = self.payload["lp_archive_preparation_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "materializer-ready-pending-direct-runtime-leaf",
+        )
+        self.assertEqual(
+            contract["archive"]["path"],
+            "formal_lp/glpk/binary/hard_7.tar.gz",
+        )
+        self.assertEqual(len(contract["members"]), 1)
+        self.assertEqual(
+            contract["members"][0]["output_path"],
+            "formal_lp/glpk/binary/hard_7.dat",
+        )
+        self.assertEqual(contract["policy"]["links"], "forbidden")
+        self.assertEqual(
+            contract["policy"]["runtime_shell_or_extraction"], "forbidden",
+        )
+        basenames = contract["runtime_certificate_basenames"]
+        self.assertEqual(len(basenames), 39)
+        self.assertEqual(len(set(basenames)), 39)
+        self.assertEqual(basenames, sorted(basenames))
+        self.assertIn("hard_7.dat", basenames)
+        self.assertFalse(any(name.endswith(".gz") for name in basenames))
+        prepared = [
+            item for item in self.payload["generated_inputs"]
+            if item["class"] == "lp-certificate-prepared"
+        ]
+        self.assertEqual(len(prepared), 1)
+        self.assertEqual(prepared[0]["sha256"], contract["members"][0]["sha256"])
+        loader_source = Path(__file__).with_name("flyspeck_loader.ml").read_text()
+        table = loader_source.split(
+            "let candle_flyspeck_lp_certificate_basenames =", 1
+        )[1].split("];;", 1)[0]
+        self.assertEqual(re.findall(r'"([^"]+)"', table), basenames)
+
     def test_generated_runtime_dependencies_remain_explicit(self):
         contracts = self.payload["generated_dependency_contracts"]
         self.assertEqual(len(contracts), 3)
@@ -476,6 +514,7 @@ class GeneratedManifestTests(unittest.TestCase):
             [
                 "candle_hollight_root", "candle_flyspeck_root",
                 "candle_flyspeck_overlay_root",
+                "candle_flyspeck_generated_root",
                 "candle_flyspeck_build_mode",
             ],
         )
@@ -657,13 +696,13 @@ class GeneratedManifestTests(unittest.TestCase):
             ["file", "string", "t", "to_hex"],
         )
         uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 21)
+        self.assertEqual(len(uses), 23)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 10, "string": 2, "t": 3, "to_hex": 6},
+            {"file": 11, "string": 2, "t": 3, "to_hex": 7},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")

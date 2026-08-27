@@ -368,7 +368,7 @@
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl";;
 (* 176 selected=flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl sha256=d0783e75e9e3cc2d0a2009a50f4b7efcc9f6b783116ff6fee04167426e5a39a9 *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_body_ineqs.hl";;
-(* 177 selected=flyspeck:formal_lp/hypermap/main/lp_certificate.hl sha256=256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709 *)
+(* 177 selected=flyspeck:formal_lp/hypermap/main/lp_certificate.hl sha256=256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709 normalization=PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001 normalized_sha256=79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c *)
 #flyspeck_needs "../formal_lp/hypermap/main/lp_certificate.hl";;
 (* 178 selected=flyspeck:formal_lp/hypermap/computations/informal_computations.hl sha256=fcf3cb31c7d15b5886ae40babb49672328181dcbbc9d47f081246faeadf0ed5a *)
 #flyspeck_needs "../formal_lp/hypermap/computations/informal_computations.hl";;
@@ -380,7 +380,7 @@
 #flyspeck_needs "../formal_lp/more_arith/prove_lp.hl";;
 (* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4 *)
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
-(* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 *)
+(* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0 *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;
 (* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 *)
 #flyspeck_needs "tame/linear_programming_results.hl";;

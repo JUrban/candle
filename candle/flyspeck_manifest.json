@@ -2314,7 +2314,7 @@
         "runtime_input": "candle/flyspeck_manifest.json"
       },
       "kind": "needs",
-      "line": 70,
+      "line": 142,
       "literal": "candle/flyspeck_source_digests.ml",
       "source": "candle:candle/flyspeck_loader.ml",
       "status": "generated-contract",
@@ -2563,7 +2563,7 @@
     },
     {
       "bytes": 22943752,
-      "class": "lp-certificate",
+      "class": "lp-certificate-archive",
       "path": "formal_lp/glpk/binary/hard_7.tar.gz",
       "sha256": "7056e306a03d7eb02db3c0bed898f3eef6f84f06556c040ac38ba93eb0a12453"
     },
@@ -2578,6 +2578,14 @@
       "class": "lp-certificate",
       "path": "formal_lp/glpk/binary/hard_9.dat",
       "sha256": "7a3db0e86e13e5b7ca561419db423abc411c275b57a914e5fe49da7b7f762408"
+    },
+    {
+      "bytes": 119855733,
+      "class": "lp-certificate-prepared",
+      "derivation_contract_sha256": "fdebe3aca0b693f367ac284c28d2b2e01f1b00b5342a4366d4cdd093016f5024",
+      "derived_from": "formal_lp/glpk/binary/hard_7.tar.gz",
+      "path": "formal_lp/glpk/binary/hard_7.dat",
+      "sha256": "0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526"
     },
     {
       "bytes": 9099782,
@@ -2609,6 +2617,7 @@
       "candle_hollight_root",
       "candle_flyspeck_root",
       "candle_flyspeck_overlay_root",
+      "candle_flyspeck_generated_root",
       "candle_flyspeck_build_mode"
     ],
     "required_build_mode": "full",
@@ -2773,6 +2782,80 @@
       }
     ]
   },
+  "lp_archive_preparation_contract": {
+    "activation_status": "materializer-ready-pending-direct-runtime-leaf",
+    "archive": {
+      "bytes": 22943752,
+      "format": "tar.gz",
+      "path": "formal_lp/glpk/binary/hard_7.tar.gz",
+      "sha256": "7056e306a03d7eb02db3c0bed898f3eef6f84f06556c040ac38ba93eb0a12453"
+    },
+    "contract_sha256": "fdebe3aca0b693f367ac284c28d2b2e01f1b00b5342a4366d4cdd093016f5024",
+    "contract_source": "candle:candle/flyspeck_lp_archive_contract.json",
+    "evidence_boundary": "preparation authenticates bytes and container shape; the HOL-side LP verifier remains responsible for certificate validity",
+    "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+    "members": [
+      {
+        "archive_name": "hard_7.dat",
+        "bytes": 119855733,
+        "kind": "regular-file",
+        "mode": 420,
+        "output_path": "formal_lp/glpk/binary/hard_7.dat",
+        "sha256": "0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526"
+      }
+    ],
+    "policy": {
+      "absolute_or_parent_paths": "forbidden",
+      "archive_member_set": "exact",
+      "links": "forbidden",
+      "output_root": "separate generated-input tree",
+      "overwrite": "atomic after complete digest validation",
+      "runtime_shell_or_extraction": "forbidden"
+    },
+    "runtime_certificate_basenames": [
+      "easy_1.dat",
+      "easy_10.dat",
+      "easy_11.dat",
+      "easy_12.dat",
+      "easy_13.dat",
+      "easy_14.dat",
+      "easy_15.dat",
+      "easy_16.dat",
+      "easy_17.dat",
+      "easy_18.dat",
+      "easy_19.dat",
+      "easy_2.dat",
+      "easy_20.dat",
+      "easy_21.dat",
+      "easy_22.dat",
+      "easy_23.dat",
+      "easy_24.dat",
+      "easy_3.dat",
+      "easy_4.dat",
+      "easy_5.dat",
+      "easy_6.dat",
+      "easy_7.dat",
+      "easy_8.dat",
+      "easy_9.dat",
+      "hard_1.dat",
+      "hard_10.dat",
+      "hard_11.dat",
+      "hard_12.dat",
+      "hard_13.dat",
+      "hard_14.dat",
+      "hard_15.dat",
+      "hard_2.dat",
+      "hard_3.dat",
+      "hard_4.dat",
+      "hard_5.dat",
+      "hard_6.dat",
+      "hard_7.dat",
+      "hard_8.dat",
+      "hard_9.dat"
+    ],
+    "runtime_certificate_basenames_sha256": "4a4f95cbb6ad331c12945097645dfaf011567ebcb2309b603887b60a12d3eeec",
+    "runtime_contract": "the compiled S3 route receives the prepared ordinary file and must not invoke a shell, tar, rm, or runtime archive extraction"
+  },
   "ocaml_compatibility_contract": {
     "activation_status": "partial-source-bindings",
     "binding_evidence": {
@@ -2786,37 +2869,49 @@
     },
     "capability_uses": [
       {
-        "line": 61,
+        "line": 55,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 61,
+        "line": 55,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 66,
+        "line": 133,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 66,
+        "line": 133,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 129,
+        "line": 138,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 129,
+        "line": 138,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 211,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 211,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -2917,37 +3012,49 @@
     "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
     "qualified_uses": [
       {
-        "line": 61,
+        "line": 55,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 61,
+        "line": 55,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 66,
+        "line": 133,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 66,
+        "line": 133,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 129,
+        "line": 138,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 129,
+        "line": 138,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 211,
+        "member": "file",
+        "module": "Digest",
+        "source": "candle:candle/flyspeck_loader.ml"
+      },
+      {
+        "line": 211,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3083,8 +3190,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "795a2a1a28ab69e7a4ec8cf4b4d24dce",
-    "generated_source_sha256": "ec87812b2121d8a4671ce3bf2262abc7e1151d18c6a8305f66fa1a5d1451637b",
+    "generated_source_md5": "067af2ac1c0e0757f8f29b4831a7ccba",
+    "generated_source_sha256": "52bbed3bed822f772c1718ac6ee4eb96091f58356aa2549db821d4bee4efe129",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -5848,7 +5955,7 @@
       "sha256": "cf327c067fa7cb127ed14bb5909cbbecb9f9ac48b13f59d576c9ca2230cbb6d9"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 55530,
+      "bytes": 55803,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -9118,10 +9225,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "fa440c6eae11574a55adab1f881fd834",
+      "md5": "f2eeca4d26e3fa91309c7aff8821a83e",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "44ae6acc8b43e9408694f64457e0c1fe8b481865abc9afdd2921fcf981094b4a"
+      "sha256": "e12c1af9d51a52b05193a1352e1b55d3063d1c8e65b3792d07489171a0815660"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -9132,7 +9239,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 7370,
+      "bytes": 9996,
       "dependencies": [
         {
           "kind": "#use",
@@ -9152,14 +9259,14 @@
             "runtime_input": "candle/flyspeck_manifest.json"
           },
           "kind": "needs",
-          "line": 70,
+          "line": 142,
           "literal": "candle/flyspeck_source_digests.ml",
           "status": "generated-contract",
           "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
-          "line": 71,
+          "line": 143,
           "literal": "candle/flyspeck_source_integrity.ml",
           "matches": [
             "candle:candle/flyspeck_source_integrity.ml"
@@ -9170,7 +9277,7 @@
         },
         {
           "kind": "needs",
-          "line": 150,
+          "line": 232,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -9181,7 +9288,7 @@
         },
         {
           "kind": "needs",
-          "line": 156,
+          "line": 238,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -9192,7 +9299,7 @@
         },
         {
           "kind": "needs",
-          "line": 158,
+          "line": 240,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -9202,10 +9309,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1571c1921867f3efcbebba008f00ef02",
+      "md5": "33b6dea779ce439c4d71635b99e50c38",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "94130a9896e30c1d32e6bc0f2a3c52de70fce8caa84bf549479d77c2ef8ce114"
+      "sha256": "b0d8d71bdbb6ad8f3b0bd6ea1759f1246214d338b2e89fdd730284a4972a0c44"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -9232,12 +9339,12 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 30310,
+      "bytes": 29854,
       "dependencies": [],
-      "md5": "20b4c3892a794ea4ab5c4aac98eb0e92",
+      "md5": "634640bcf77b493aa757378c84c76a4e",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "ab67859a40826eecf6543149c22215de8a0764e10d64e569e11d3b1d93eecafd"
+      "sha256": "8f0cc6ac14200fe491649f9c6502df8fee4550dd849ec228d8a46ab9cc8959ef"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -11400,6 +11507,14 @@
     "flyspeck:formal_lp/hypermap/main/lp_certificate.hl": {
       "bytes": 4310,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3300,
+        "normalized_md5": "639783011d135bd2aa117330b257174d",
+        "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
+        "operation_count": 2
+      },
       "md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
       "path": "formal_lp/hypermap/main/lp_certificate.hl",
       "repository": "flyspeck",
@@ -11629,6 +11744,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3929,
+        "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
+        "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
+        "operation_count": 1
+      },
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
       "path": "formal_lp/hypermap/verify_all.hl",
       "repository": "flyspeck",
@@ -16267,7 +16390,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "dfe12cb8171e8f8d63330bf4c5f647072ffda5a5676f4d70f005ce8cccaf46e3",
+    "contract_sha256": "ea38ed5b4515af81eaace1ab83859695d052f42579d8eb0c0689234fbf268067",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -16493,9 +16616,62 @@
         "source_key": "flyspeck:text_formalization/general/debug.hl",
         "source_md5": "e34834e6b77b9f01836c28eca156119b",
         "source_sha256": "b19e1e179b0863e551671688d76c24b13498965b460c0f514b9065a1bb8a8483"
+      },
+      {
+        "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3300,
+        "normalized_md5": "639783011d135bd2aa117330b257174d",
+        "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "(* Candle S3 reads only manifest-authenticated, host-prepared certificate files. *)\n",
+            "before": "let run_command dir com =\n  let cur_dir = Sys.getcwd() in\n  let _ = Sys.chdir dir in\n  let result = Sys.command com in\n  let _ = Sys.chdir cur_dir in\n    result;;\n\nlet create_tmp_dir base_dir = \n  let tmp_dir = Filename.concat base_dir \"tmp\" in\n    if Sys.file_exists tmp_dir then\n      if Sys.is_directory tmp_dir then\n\tif Array.length (Sys.readdir tmp_dir) > 0 then\n\t  failwith (\"create_tmp_dir: the directory is not empty: \" ^\n\t\t      tmp_dir)\n\telse\n\t  tmp_dir\n      else\n\tfailwith (\"create_tmp_dir: cannot create the directory \" ^\n\t\t    tmp_dir)\n    else\n      let _ = Unix.mkdir tmp_dir 0o777 in\n\ttmp_dir;;\n",
+            "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-REMOVE-RUNTIME-EXTRACTION",
+            "kind": "exact_bytes_replace_once",
+            "line": 88
+          },
+          {
+            "after": "let read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    failwith \"compressed LP certificate reached the shell-free Candle S3 runtime\"\n  else\n    read_raw_lp_certificates fname;;\n",
+            "before": "let read_compressed_lp_certificates fname =\n  let base_dir = Filename.dirname fname in\n  let tmp_dir = create_tmp_dir base_dir in\n  let cmd = Format.sprintf \"tar -xvzf \\\"%s\\\"\" fname in\n  let _ = run_command tmp_dir cmd in\n  let files = Sys.readdir tmp_dir in\n  let certs =\n    Array.fold_left \n      (fun all file ->\n\t let fname = Filename.concat tmp_dir file in\n\t let cs = read_raw_lp_certificates fname in\n\t   cs @ all) [] files in\n  let _ = run_command base_dir (Format.sprintf \"rm -rf \\\"%s\\\"\" tmp_dir) in\n    certs;;\n\nlet read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    read_compressed_lp_certificates fname\n  else\n    read_raw_lp_certificates fname;;\n",
+            "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-FAIL-CLOSED-GZIP",
+            "kind": "exact_bytes_replace_once",
+            "line": 124
+          }
+        ],
+        "path": "formal_lp/hypermap/main/lp_certificate.hl",
+        "scope_limit": "This exact selected-route rewrite requires the 39-entry authenticated certificate table and the prepared hard_7.dat receipt. It does not claim general Sys.command, tar, temporary-directory, directory-enumeration, or compressed-input compatibility. Any .gz path reaching the compiled reader fails closed.",
+        "semantic_rule": "The release input preparer authenticates the sole selected tar.gz archive, requires exactly one ordinary hard_7.dat member, and atomically emits bytes with a pinned digest into a separate generated-input tree. The compiled source therefore reads raw certificate bytes only; those bytes remain untrusted evidence checked by the existing HOL Light LP verifier.",
+        "source_key": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
+        "source_md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
+        "source_sha256": "256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709"
+      },
+      {
+        "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3929,
+        "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
+        "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n",
+            "before": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_files_with_prefix dir prefix =\n  let files = Array.to_list (Sys.readdir dir) in\n  let n = String.length prefix in\n  let files1 = filter (fun f -> String.length f >= n) files in\n  let files2 = filter (fun f -> String.sub f 0 n = prefix) files1 in\n    map (fun f -> sprintf \"%s/%s\" dir f) files2;;\n\nlet get_certificate_files_with_prefix dir prefix =\n  let alt_dir = dir ^ \"/lp_certificates\" in\n  let files1 = get_files_with_prefix dir prefix in\n  let files2 =\n    if Sys.file_exists alt_dir then\n      get_files_with_prefix alt_dir prefix\n    else\n      [] in\n    files1 @ files2;;\n\n",
+            "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
+            "kind": "exact_bytes_replace_once",
+            "line": 10
+          }
+        ],
+        "path": "formal_lp/hypermap/verify_all.hl",
+        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight.",
+        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run.",
+        "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
+        "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
+        "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
       }
     ],
-    "entry_count": 7,
+    "entry_count": 9,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -16523,7 +16699,7 @@
     },
     "runtime_selection_policy": "after the original-source preflight, authenticate each normalized MD5 and install one exact original-path to output-path mapping; never add the overlay directory to load_path",
     "runtime_selection_source": "cakeml:candle/prover/candle_boot.ml@1b17732f and candle:candle/flyspeck_loader.ml",
-    "scope_limit": "the rules are site-specific; qmap, unsuppress, and strictbuild's use_file_b are selected-static-route non-use refinements that fail closed on any call, and compiled/fingerprint/performance gates remain open",
+    "scope_limit": "the rules are site-specific; qmap, unsuppress, and strictbuild's use_file_b are selected-static-route non-use refinements that fail closed on any call; the LP rules require the exact prepared-input contract and static 39-file inventory; compiled, fingerprint, and performance gates remain open",
     "selected_graph_non_use_bindings": {
       "identifiers": [
         "qmap",
@@ -16578,8 +16754,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "fa440c6eae11574a55adab1f881fd834",
-    "generated_source_sha256": "44ae6acc8b43e9408694f64457e0c1fe8b481865abc9afdd2921fcf981094b4a",
+    "generated_source_md5": "f2eeca4d26e3fa91309c7aff8821a83e",
+    "generated_source_sha256": "e12c1af9d51a52b05193a1352e1b55d3063d1c8e65b3792d07489171a0815660",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
@@ -17655,13 +17831,13 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op use_file is forbidden",
     "qualified_uses": [
       {
-        "line": 604,
+        "line": 605,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 605,
+        "line": 606,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"

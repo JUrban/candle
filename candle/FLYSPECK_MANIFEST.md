@@ -168,7 +168,8 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates and
-registers the seven exact normalization outputs, executes the generated static
+registers the nine exact normalization outputs, authenticates a host-prepared
+`hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
 not yet complete that sequence or implement versioned checkpoints, so it is
 frontier evidence rather than S2/S3 acceptance.  Its current source preflight
@@ -233,8 +234,8 @@ The overall directive status is therefore
 `exact-static-link-selection-active-member-compatibility-partial`, not a claim
 of complete `unix.cma` behavior.
 
-The selected graph also has 21 executable qualified `Digest` occurrences:
-ten `file`, three type `t`, two `string`, and six `to_hex`; it has no
+The selected graph also has 23 executable qualified `Digest` occurrences:
+11 `file`, three type `t`, two `string`, and seven `to_hex`; it has no
 `open Digest`.  `ocaml.ml` supplies these operations with a pure MD5
 implementation and no hashing FFI.  `test_digest_compat.sh` differentially
 checks OCaml 4.14.1 across deterministic binary inputs of every length from 0
@@ -247,10 +248,20 @@ informational largest-selected-file probe hashes the 9,099,782-byte
 1,216,768 KiB maximum RSS on the development machine.
 
 `Sys.file_exists` in this slice deliberately forwards to CakeML's verified
-TextIO-backed ordinary-file predicate.  OCaml-compatible directory existence,
-`Sys.is_directory`, and `Sys.readdir` remain open and require the versioned,
-sandboxed filesystem contract.  No directory behavior is claimed by the
-marker-file checks.
+TextIO-backed ordinary-file predicate.  The selected LP path no longer needs
+directory enumeration: the manifest supplies 39 exact filenames.  The sole
+compressed member is authenticated and expanded before Candle starts under
+`flyspeck_lp_archive_contract.json`; the runtime rejects `.gz` and invokes no
+shell, `tar`, `rm`, temporary-directory, or custom FFI operation.  Container
+preparation is not proof evidence: Candle still unmarshals and verifies the
+resulting certificate bytes.  OCaml-compatible directory operations used by
+other unresolved source paths remain open.
+
+The compiled executable now starts from the repository root through relative
+links to its generated boot/config inputs.  The obsolete `chdir` boot suffix,
+unrestricted `system` bridge, custom-FFI C patch, and their call sites are not
+part of the source tree or build recipe.  Relocation of the complete checkout
+therefore preserves startup without granting an ambient process capability.
 
 This artifact is deliberately not loader-execution evidence.  In particular,
 two generated-runtime contracts remain visible:

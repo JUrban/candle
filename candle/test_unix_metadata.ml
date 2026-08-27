@@ -36,8 +36,12 @@ let candle_unix_rejects_command =
 let candle_unix_rejects_clock =
   try let _ = Unix.gettimeofday () in false
   with Failure _ -> true;;
+let candle_sys_rejects_command =
+  try let _ = Sys.command "true" in false
+  with Failure _ -> true;;
 
-if not candle_unix_rejects_command || not candle_unix_rejects_clock then
+if not candle_unix_rejects_command || not candle_unix_rejects_clock ||
+   not candle_sys_rejects_command then
   failwith "Unix fail-closed contract mismatch";;
 
 print_endline "CANDLE_UNIX_METADATA_OK";;

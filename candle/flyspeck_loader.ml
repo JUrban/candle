@@ -1,9 +1,9 @@
 (* Manifest-rooted direct Flyspeck source loader, initial full-build slice.
    The manifest launcher must first bind [candle_hollight_root],
-   [candle_flyspeck_root], [candle_flyspeck_overlay_root], and
-   [candle_flyspeck_build_mode].  The loader turns these hashed source-level
-   inputs into the small environment allowlist used by Flyspeck; it does not
-   inherit ambient host variables. *)
+   [candle_flyspeck_root], [candle_flyspeck_overlay_root],
+   [candle_flyspeck_generated_root], and [candle_flyspeck_build_mode].  The
+   loader turns these hashed source-level inputs into the small environment
+   allowlist used by Flyspeck; it does not inherit ambient host variables. *)
 
 if candle_flyspeck_build_mode <> "full" then
   failwith "candle_flyspeck_build_mode must be full";;
@@ -21,6 +21,11 @@ let candle_flyspeck_date_input =
   Filename.concat candle_flyspeck_metadata_root "date.txt";;
 let candle_flyspeck_user_input =
   Filename.concat candle_flyspeck_metadata_root "user.txt";;
+let candle_flyspeck_lp_source_root =
+  Filename.concat candle_flyspeck_root "formal_lp/glpk/binary";;
+let candle_flyspeck_lp_generated_hard_7 =
+  Filename.concat candle_flyspeck_generated_root
+    "formal_lp/glpk/binary/hard_7.dat";;
 
 Sys.configure_manifest_environment
   candle_hollight_root candle_flyspeck_text_root candle_hollight_root false;;
@@ -38,13 +43,80 @@ let candle_flyspeck_required_sources =
    Filename.concat candle_flyspeck_root "formal_ineqs/README.md";
    Filename.concat candle_flyspeck_root "jHOLLight/.project";
    candle_flyspeck_date_input;
-   candle_flyspeck_user_input];;
+   candle_flyspeck_user_input;
+   candle_flyspeck_lp_generated_hard_7];;
 
 let candle_flyspeck_require_source path =
   if not (Sys.file_exists path) then
     failwith ("missing pinned Flyspeck source: " ^ path);;
 
 List.iter candle_flyspeck_require_source candle_flyspeck_required_sources;;
+
+if Digest.to_hex (Digest.file candle_flyspeck_lp_generated_hard_7) <>
+     "8fe3a451e601c3263fbe11530fedc5ca" then
+  failwith "prepared hard_7.dat authentication failed";;
+
+(* Replace ambient directory enumeration and in-process tar/rm calls by one
+   exact, deterministic certificate inventory.  The outer manifest pins all
+   39 SHA-256 values and the archive-to-hard_7.dat derivation; this loader also
+   authenticates the prepared exceptional member before any Flyspeck source
+   runs. *)
+let candle_flyspeck_lp_certificate_basenames =
+  ["easy_1.dat";
+   "easy_10.dat";
+   "easy_11.dat";
+   "easy_12.dat";
+   "easy_13.dat";
+   "easy_14.dat";
+   "easy_15.dat";
+   "easy_16.dat";
+   "easy_17.dat";
+   "easy_18.dat";
+   "easy_19.dat";
+   "easy_2.dat";
+   "easy_20.dat";
+   "easy_21.dat";
+   "easy_22.dat";
+   "easy_23.dat";
+   "easy_24.dat";
+   "easy_3.dat";
+   "easy_4.dat";
+   "easy_5.dat";
+   "easy_6.dat";
+   "easy_7.dat";
+   "easy_8.dat";
+   "easy_9.dat";
+   "hard_1.dat";
+   "hard_10.dat";
+   "hard_11.dat";
+   "hard_12.dat";
+   "hard_13.dat";
+   "hard_14.dat";
+   "hard_15.dat";
+   "hard_2.dat";
+   "hard_3.dat";
+   "hard_4.dat";
+   "hard_5.dat";
+   "hard_6.dat";
+   "hard_7.dat";
+   "hard_8.dat";
+   "hard_9.dat"];;
+
+let candle_flyspeck_lp_certificate_path basename =
+  if basename = "hard_7.dat" then candle_flyspeck_lp_generated_hard_7
+  else Filename.concat candle_flyspeck_lp_source_root basename;;
+
+let candle_flyspeck_lp_certificate_files =
+  map candle_flyspeck_lp_certificate_path
+      candle_flyspeck_lp_certificate_basenames;;
+
+if List.length candle_flyspeck_lp_certificate_files <> 39 ||
+   List.exists (fun path -> Filename.check_suffix path ".gz")
+               candle_flyspeck_lp_certificate_files then
+  failwith "Flyspeck LP certificate inventory mismatch";;
+
+List.iter candle_flyspeck_require_source
+  candle_flyspeck_lp_certificate_files;;
 
 (* This generated program is SHA-256-pinned by the outer release manifest and
    MD5-authenticated here before execution.  Its OCaml-compatible MD5 values
@@ -59,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "795a2a1a28ab69e7a4ec8cf4b4d24dce" then
+     "067af2ac1c0e0757f8f29b4831a7ccba" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "fa440c6eae11574a55adab1f881fd834" then
+     "f2eeca4d26e3fa91309c7aff8821a83e" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -84,7 +156,7 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer may materialize only these seven outputs in a
+(* The host-side normalizer may materialize only these nine outputs in a
    separate tree.  The outer release manifest authenticates size and SHA-256;
    this process independently checks OCaml-compatible MD5 before registering
    exact original-path -> normalized-path substitutions.  The overlay root is
@@ -110,6 +182,16 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/debug.hl",
     "9180a21c2ba1ae40ae032387d0418255");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/main/lp_certificate.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/main/lp_certificate.hl",
+    "639783011d135bd2aa117330b257174d");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/verify_all.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/verify_all.hl",
+    "f37e71e8e7319c0036082fc8c2525055");
    (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/tactics_jordan.hl",
@@ -120,7 +202,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     "fddf2accd2071d09095166ff7af885c7")];;
 
-if List.length candle_flyspeck_normalized_sources <> 7 then
+if List.length candle_flyspeck_normalized_sources <> 9 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

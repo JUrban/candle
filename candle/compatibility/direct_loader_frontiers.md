@@ -9,8 +9,8 @@ loader.  It is not S1/S2/S3 acceptance evidence.
 - compiled Candle executable SHA-256:
   `d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3`;
 - the loader is invoked once in a clean process with explicit Candle root,
-  Flyspeck root, authenticated normalization-overlay root, and `full` build
-  mode;
+  Flyspeck root, authenticated normalization-overlay root, prepared-input
+  root, and `full` build mode;
 - ambient `HOLLIGHT_DIR`, `FLYSPECK_DIR`, and serialization variables are not
   read.
 
@@ -33,9 +33,15 @@ loader.  It is not S1/S2/S3 acceptance evidence.
    `file_on_path` names are bound before the rest of HOL loads.  Resolution uses
    only ordinary files below explicit load roots; ambient `.` resolution fails
    closed.
-9. The seven authenticated normalization outputs are checked independently by
+9. The nine authenticated normalization outputs are checked independently by
    MD5, registered as exact original-to-output mappings, and never added as a
    shadowing load root.
+10. The executable starts in the repository root through relative generated
+    boot/config links, so no startup `chdir` FFI is compiled into the selected
+    build recipe.
+11. The prepared `hard_7.dat` has the exact archive-derivation digest and joins
+    38 original `.dat` files in a fixed table; no `.gz`, directory scan, shell,
+    `tar`, `rm`, or temporary directory reaches the runtime path.
 
 ## Closed strictbuild loading frontiers
 
@@ -115,7 +121,7 @@ This does not cover indirect command helpers elsewhere in the source graph or
 general Unix process, clock, and directory semantics.  Those paths remain
 explicitly fail-closed.
 
-The separate OCaml-compatibility ledger records 21 selected `Digest` uses over
+The separate OCaml-compatibility ledger records 23 selected `Digest` uses over
 `file`, `string`, `to_hex`, and type `t`, with no `open Digest`.  A pure
 source implementation matches OCaml 4.14.1 on binary and padding-boundary
 vectors at every length from 0 through 130, multi-block input, file hashing,
@@ -130,11 +136,11 @@ preload and 1,216,768 KiB maximum RSS.
 
 - verified Dopen integration against the generated 3,180-site, 234-file
   declaration-open corpus contract rather than only a synthetic fixture;
-- directory existence, directory enumeration, and directory-type queries;
+- directory operations on later paths outside the normalized LP inventory;
 - a formal link between the source `Digest` binding and CakeML's verified MD5
   theory/program;
-- sandbox/refinement contracts for non-metadata process calls, clock access,
-  and directory creation;
+- sandbox/refinement contracts for any later non-metadata process, clock, or
+  directory-creation path (the selected LP archive path no longer exposes one);
 - verified Dopen integration for `open Parser_verbose` and all later
   source-language frontiers;
 - dynamic non-use proof for strictbuild's fail-closed legacy loader helpers;

@@ -1,3 +1,4 @@
+exception Sys_error of string;;
 exception Invalid_argument of string;;
 exception End_of_file;;
 exception Not_found;;
@@ -709,19 +710,7 @@ module Sys = struct
 
   let remove (s: string) = print "TODO Sys.remove (noop)\n"
   let command (s: string) =
-    let slen = String.length s in
-    (* slen + 1: null-terminated string; 2: status bytes *)
-    let blen = Int.max 2 (slen + 1) in
-    let bytes = Bytes.create blen in
-    (* Avoid recomputing length by using blit_string instead of of_string *)
-    let _ = Bytes.blit_string s 0 bytes 0 slen in
-    let _ = Cake.Runtime.customFFI "system" bytes in
-    let ret = Cake.Word8.toInt (Bytes.get bytes 0) in
-    let _ =
-      if 0 < ret
-      then raise (Sys_error "Sys.command: no termination status for child")
-      else () in
-    Cake.Word8.toInt (Bytes.get bytes 1);;
+    failwith ("Sys.command: disabled by the Flyspeck S3 runtime policy: " ^ s);;
   let time () =
     print_endline "TODO Sys.time (always returns 0)";
     Float.zero;;

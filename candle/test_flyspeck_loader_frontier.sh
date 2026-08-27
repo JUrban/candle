@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 3 ]]; then
-  printf 'usage: %s /path/to/candle.sh /path/to/flyspeck /path/to/overlay\n' "$0" >&2
+if [[ $# -ne 4 ]]; then
+  printf 'usage: %s /path/to/candle.sh /path/to/flyspeck /path/to/overlay /path/to/generated-inputs\n' "$0" >&2
   exit 2
 fi
 
@@ -10,9 +10,24 @@ loader_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 candle_script=$(realpath -- "$1")
 flyspeck_root=$(realpath -- "$2")
 overlay_root=$(realpath -- "$3")
+generated_root=$(realpath -- "$4")
 candle_root=$(cd -- "$(dirname -- "$candle_script")" && pwd)
+if rg -q '(^|[^A-Za-z0-9_.])(Cake\.)?Runtime\.customFFI' \
+     "$candle_root" -g '*.ml' -g '*.hl'; then
+  echo "selected Candle/Flyspeck source tree still exposes customFFI" >&2
+  exit 1
+fi
+if rg -q 'basis_ffi\.c\.patch|chdir_to_root\.ml' \
+     "$candle_root/build-instructions.sh"; then
+  echo "Candle build recipe still installs the obsolete custom FFI" >&2
+  exit 1
+fi
 log=$(mktemp /tmp/candle-flyspeck-loader-frontier.XXXXXX.log)
 cleanup() {
+  result=$?
+  if [[ $result -ne 0 && -f "$log" ]]; then
+    tail -n 80 "$log" >&2
+  fi
   find "$log" -maxdepth 0 -type f -delete 2>/dev/null || true
 }
 trap cleanup EXIT
@@ -23,6 +38,7 @@ trap cleanup EXIT
 let candle_flyspeck_root = "$flyspeck_root";;
 let candle_hollight_root = "$candle_root";;
 let candle_flyspeck_overlay_root = "$overlay_root";;
+let candle_flyspeck_generated_root = "$generated_root";;
 let candle_flyspeck_build_mode = "full";;
 #use "$loader_dir/flyspeck_loader.ml";;
 EOF

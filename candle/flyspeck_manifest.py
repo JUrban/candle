@@ -19,12 +19,14 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import flyspeck_normalize
+import flyspeck_prepare_inputs
 
 
 SCHEMA = 1
 SOURCE_DIGEST_PROGRAM = "candle/flyspeck_source_digests.ml"
 FULL_BUILD_PROGRAM = "candle/flyspeck_full_build.ml"
 SOURCE_NORMALIZATION_CONTRACT = "candle/flyspeck_normalizations.json"
+LP_ARCHIVE_CONTRACT = "candle/flyspeck_lp_archive_contract.json"
 SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
@@ -1144,17 +1146,38 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "scope_limit": entry["scope_limit"],
         })
 
+    lp_archive_contract_path = candle_root / LP_ARCHIVE_CONTRACT
+    lp_archive_contract = flyspeck_prepare_inputs.evaluate(
+        lp_archive_contract_path, flyspeck_root,
+    )
+    lp_archive_member = lp_archive_contract["members"][0]
+
     generated_inputs: list[dict[str, object]] = []
     generated_paths: set[Path] = set()
     for pattern in GENERATED_INPUT_GLOBS:
         generated_paths.update(flyspeck_root.glob(pattern))
     for path in sorted(generated_paths):
+        relative = path.relative_to(flyspeck_root).as_posix()
         generated_inputs.append({
-            "class": "lp-certificate",
-            "path": path.relative_to(flyspeck_root).as_posix(),
+            "class": (
+                "lp-certificate-archive"
+                if relative == lp_archive_contract["archive"]["path"]
+                else "lp-certificate"
+            ),
+            "path": relative,
             "bytes": path.stat().st_size,
             "sha256": _sha256(path),
         })
+    generated_inputs.append({
+        "class": "lp-certificate-prepared",
+        "path": lp_archive_member["output_path"],
+        "bytes": lp_archive_member["bytes"],
+        "sha256": lp_archive_member["sha256"],
+        "derived_from": lp_archive_contract["archive"]["path"],
+        "derivation_contract_sha256": hashlib.sha256(
+            lp_archive_contract_path.read_bytes()
+        ).hexdigest(),
+    })
     for input_class, relative in NAMED_INPUTS:
         path = flyspeck_root / relative
         generated_inputs.append({
@@ -1163,6 +1186,17 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "bytes": path.stat().st_size,
             "sha256": _sha256(path),
         })
+    lp_runtime_certificate_basenames = sorted(
+        Path(str(item["path"])).name
+        for item in generated_inputs
+        if item["class"] in {"lp-certificate", "lp-certificate-prepared"}
+    )
+    if (
+        len(lp_runtime_certificate_basenames) != 39
+        or len(set(lp_runtime_certificate_basenames)) != 39
+        or any(name.endswith(".gz") for name in lp_runtime_certificate_basenames)
+    ):
+        raise ValueError("prepared LP runtime certificate inventory mismatch")
 
     unsupported_runtime_libraries = [
         directive
@@ -1544,8 +1578,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "scope_limit": (
                 "the rules are site-specific; qmap, unsuppress, and strictbuild's "
                 "use_file_b are selected-static-route non-use refinements that fail "
-                "closed on any call, and compiled/fingerprint/performance gates "
-                "remain open"
+                "closed on any call; the LP rules require the exact prepared-input "
+                "contract and static 39-file inventory; compiled, fingerprint, and "
+                "performance gates remain open"
             ),
             "reference_implementation": {
                 "repository": "https://github.com/ocaml/ocaml.git",
@@ -1577,7 +1612,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "required_build_mode": "full",
             "configuration_bindings": [
                 "candle_hollight_root", "candle_flyspeck_root",
-                "candle_flyspeck_overlay_root", "candle_flyspeck_build_mode",
+                "candle_flyspeck_overlay_root", "candle_flyspeck_generated_root",
+                "candle_flyspeck_build_mode",
             ],
             "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK",
         },
@@ -1832,6 +1868,32 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     "fingerprint gates remain mandatory"
                 ),
             },
+        },
+        "lp_archive_preparation_contract": {
+            "activation_status": "materializer-ready-pending-direct-runtime-leaf",
+            "contract_source": f"candle:{LP_ARCHIVE_CONTRACT}",
+            "contract_sha256": hashlib.sha256(
+                lp_archive_contract_path.read_bytes()
+            ).hexdigest(),
+            "flyspeck_commit": lp_archive_contract["flyspeck_commit"],
+            "archive": lp_archive_contract["archive"],
+            "members": lp_archive_contract["members"],
+            "policy": lp_archive_contract["policy"],
+            "runtime_certificate_basenames": lp_runtime_certificate_basenames,
+            "runtime_certificate_basenames_sha256": hashlib.sha256(
+                json.dumps(
+                    lp_runtime_certificate_basenames,
+                    separators=(",", ":"),
+                ).encode()
+            ).hexdigest(),
+            "runtime_contract": (
+                "the compiled S3 route receives the prepared ordinary file and "
+                "must not invoke a shell, tar, rm, or runtime archive extraction"
+            ),
+            "evidence_boundary": (
+                "preparation authenticates bytes and container shape; the HOL-side "
+                "LP verifier remains responsible for certificate validity"
+            ),
         },
         "loader_action_contract": {
             "scope": "all loading syntax in the reachable direct-source graph",
