@@ -63,9 +63,14 @@ float token to the parser and lowers through the existing `Double.fromString`
 operation. Exact reference words and negative parses are pinned in
 `float_literal_cases.json`. CakeML commit `30e014bd9` has passed the targeted
 four-theory build and its 10 positive normalization plus six rejection tests.
-That is syntax/proof evidence only: the rebuilt-Candle IEEE differential,
-end-to-end rejection run, performance comparison, clean target load, and
-fingerprints remain missing.
+The first translated-program build then completed 193 of its 194-theory closure
+and saved the direct float bridge theorems, but failed the final
+`caml_parserProgTheory` target at `ptree_Expr_preconds`. The failure reproduced
+the exact side-proof line removed by upstream commit `5bfcf6b40` during the
+float-disable cleanup. CakeML commit `8ef793fd8` restores that single historical
+unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
+IEEE differential, end-to-end rejection run, performance comparison, clean
+target load, and fingerprints therefore remain missing.
 
 ## Integration sequence
 

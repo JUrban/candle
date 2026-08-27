@@ -1,12 +1,14 @@
 {
   "schema_version": 1,
   "ledger_id": "CANDLE-OCAML-FLOAT-LITERAL-001",
-  "updated_utc": "2026-08-27T07:28:18Z",
+  "updated_utc": "2026-08-27T12:35:19Z",
   "implementation": {
     "repository": "CakeML/cakeml",
     "base_commit": "dcc03f2866f05b1db18b9f45c731ce45c3a3133e",
     "branch": "codex/flyspeck-v13-float-literals",
-    "commit": "30e014bd9cfd80b356f4718124cdbeed0409c10e",
+    "commit": "8ef793fd847595366e711ada0d2cc1a520622b95",
+    "parser_commit": "30e014bd9cfd80b356f4718124cdbeed0409c10e",
+    "translation_proof_repair_commit": "8ef793fd847595366e711ada0d2cc1a520622b95",
     "new_ffi": false,
     "runtime_conversion": "Option.valOf (Double.fromString normalized_decimal_lexeme)"
   },
@@ -35,6 +37,24 @@
     "positive_normalization_cases": 10,
     "negative_parser_cases": 6
   },
+  "translated_program_build": {
+    "holdir_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
+    "command": "Holmake -j 1 --qof caml_parserProgTheory.uo",
+    "prerequisite_theories_passed": 193,
+    "closure_theories": 194,
+    "result": "target_failed_before_repair",
+    "failed_target": "caml_parserProgTheory.uo",
+    "failed_tactic": "ptree_Expr_preconds",
+    "direct_float_bridge_theorems_saved": [
+      "caml_lex_isfloat_v_thm",
+      "caml_lex_destfloat_v_thm",
+      "camlptreeconversion_ptree_double_v_thm"
+    ],
+    "diagnosis": "the float-disable cleanup removed the ptree_Double side-condition unfolding step from the expression-family proof",
+    "repair": "restore the exact historical camlptreeconversion_ptree_double_side_def simplification",
+    "repair_commit": "8ef793fd847595366e711ada0d2cc1a520622b95",
+    "repair_validation": "pending shared HOLDIR handoff"
+  },
   "evidence_scope": {
     "established": [
       "decimal FloatT tokens participate in nLiteral",
@@ -43,6 +63,7 @@
       "the proof-script oracle normalizes 10 accepted lexemes and rejects six malformed forms"
     ],
     "not_established": [
+      "the repaired caml_parserProgTheory translation proof builds to completion",
       "compiled Candle produces the 10 pinned OCaml IEEE-754 words",
       "compiled Candle rejects all six malformed declarations end-to-end",
       "source-literal runtime and parser performance is acceptable",
@@ -68,6 +89,7 @@
       "compiler64ProgTheory",
       "x64BootstrapTheory"
     ],
+    "current_status": "caml_parserTheory and its direct translated float bridge are green; rerun caml_parserProgTheory after the one-line historical side-proof repair before advancing to compiler64ProgTheory",
     "verified_path": "build the entry parser, its translated program, compiler64 translation, and x64/64 bootstrap cake.S; link in an isolated directory, then apply only Candle's existing cake.S/basis_ffi patches and boot-file generation",
     "faster_diagnostic_path": "replace x64BootstrapTheory with sexprBootstrap64Theory, then cross-compile its regenerated cake-sexpr-64 using a released compiler; this is explicitly unverified diagnostic evidence only",
     "live_great100_executable_reused": false
