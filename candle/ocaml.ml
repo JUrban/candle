@@ -292,13 +292,13 @@ module Digest = struct
 
   let file path =
     let channel = open_in path in
-    try
-      let contents = Text_io.inputAll channel in
-      close_in channel;
-      string contents
-    with error ->
-      close_in channel;
-      raise error
+    let contents =
+      try Text_io.inputAll channel
+      with error ->
+        close_in channel;
+        raise error in
+    close_in channel;
+    string contents
 
   let to_hex digest =
     if String.length digest <> 16 then invalid_arg "Digest.to_hex"
