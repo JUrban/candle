@@ -1447,7 +1447,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "source_normalization_contract": {
             "activation_status": "exact-overlay-selection-active-pending-full-run",
             "runtime_selection_source": (
-                "cakeml:candle/prover/candle_boot.ml@0e749990 and "
+                "cakeml:candle/prover/candle_boot.ml@1b17732f and "
                 "candle:candle/flyspeck_loader.ml"
             ),
             "runtime_selection_policy": (
@@ -1784,7 +1784,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "loader_action_contract": {
             "scope": "all loading syntax in the reachable direct-source graph",
             "activation_status": "partial-exact-static-actions-active",
-            "static_action_source": "cakeml:candle/prover/candle_boot.ml@0e749990",
+            "static_action_source": "cakeml:candle/prover/candle_boot.ml@1b17732f",
             "static_action_gate": "candle:candle/test_flyspeck_needs_directive.sh",
             "source_site_count": loader_action_site_count,
             "site_counts": [

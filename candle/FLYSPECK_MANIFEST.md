@@ -55,7 +55,7 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement five
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement seven
 site-specific source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -76,7 +76,14 @@ failures and converts its three standalone `loadt` phrases to exact
 the authenticated logical identity only after success, and never neutralizes
 state.  The authenticated `#flyspeck_needs` driver remains the selected
 production loader, and any missed runtime helper call therefore aborts rather
-than silently succeeding.  Each original file,
+than silently succeeding.  `PROJECT-PARSER-S3-LET-OR-PATTERN-001` rewrites the
+single selected let-binding or-pattern in `general/parser_verbose.hl` as an
+ordinary match over the same two constructor alternatives; it also replaces
+one `%s`-only `sprintf` call by concatenation with the same rendered number.
+`PROJECT-PARSER-S3-TRAILING-SEMI-001` removes the single trailing sequence
+separator immediately before the closing parenthesis of `Debug.print_m` in
+`general/debug.hl`; expression order, effects, and result are unchanged.  Each
+original file,
 each ordered unique anchor, and each final output size/MD5/SHA-256 is
 authenticated.  Commit, path, input hash, anchor count, order, or output drift
 aborts; no blanket rewrite is authorized.  The host tests and pinned-source
@@ -90,6 +97,7 @@ CANDLE_BINARY=/path/to/candle.sh \
   candle/test_flyspeck_immediate_normalization.sh
 CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
   candle/test_flyspeck_identity_normalization.sh
+candle/test_flyspeck_parser_orpattern_normalization.sh ./candle.sh
 ```
 
 For the immediate-integer entry, pinned OCaml 4.14.1 binds `==` through `%eq` directly to
@@ -97,12 +105,11 @@ integer comparison, specializes structural `=` on `int` to the same
 `Pintcomp Ceq`, and encodes every OCaml `int` injectively as a tagged immediate
 word.  Thus the branch predicate is equal for every representable `int`, not
 only the oracle samples.  The compiled Candle oracle separately confirms that
-the normalized branch is accepted and selects the expected cases.  Runtime
-application of all recorded patches is still pending integration with the exact
-compiled source loader.  The allocation refinements also retain compiled,
-performance, and final-fingerprint gates.  Runtime application is now wired
+the normalized branch is accepted and selects the expected cases.  The
+allocation refinements retain compiled, performance, and final-fingerprint
+gates.  Runtime application is wired
 through the authenticated static source action: the manifest and compiled boot
-select the exact five-file overlay, but the complete-run status remains
+select the exact seven-file overlay, but the complete-run status remains
 `exact-overlay-selection-active-pending-full-run`; this work alone advances no
 S milestone.
 
@@ -152,7 +159,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates and
-registers the five exact normalization outputs, executes the generated static
+registers the seven exact normalization outputs, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
 not yet complete that sequence or implement versioned checkpoints, so it is
 frontier evidence rather than S2/S3 acceptance.  Its current source preflight
@@ -166,11 +173,12 @@ With `full` selected, `test_flyspeck_loader_frontier.sh` now proves that the
 compiled path passes the former manifest-environment, ordinary-file,
 `Filename`, standard `load_path`, logical source-identity, digest-preflight,
 overlay-selection, static-library, metadata, `Toploop`, `loaded_files`, and
-`file_on_path`, phrase-boundary, loaded-file EOF, and strictbuild `loadt`
-frontiers.  It selects the normalized strictbuild and stops inside
-`general/parser_verbose.hl` at the local let-binding or-pattern on original
-source line 86.  The failed action commits no identity and emits no completion
-marker.  The pinned repository has exactly 17
+`file_on_path`, phrase-boundary, loaded-file EOF, strictbuild `loadt`, parser
+or-pattern, `%s` formatting, module-item separator, and trailing-sequence
+frontiers.  It selects and completes the normalized `parser_verbose.hl`, then
+selects normalized `general/debug.hl` and stops at its line 16
+`open Parser_verbose` declaration.  The failed debug action commits no
+identity and emits no completion marker.  The pinned repository has exactly 17
 standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
 Only five are in the enforcing loader's recursively reached full-build graph:
 two `unix.cma` and three `str.cma`; no `nums.cma` site is reachable.  The

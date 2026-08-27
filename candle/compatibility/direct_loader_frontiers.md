@@ -33,7 +33,7 @@ loader.  It is not S1/S2/S3 acceptance evidence.
    `file_on_path` names are bound before the rest of HOL loads.  Resolution uses
    only ordinary files below explicit load roots; ambient `.` resolution fails
    closed.
-9. The five authenticated normalization outputs are checked independently by
+9. The seven authenticated normalization outputs are checked independently by
    MD5, registered as exact original-to-output mappings, and never added as a
    shadowing load root.
 
@@ -51,24 +51,34 @@ an exact phrase start.  A compiled fixture proves identifiers inside a
 definition and false conditional remain ordinary source syntax, while a
 phrase-start directive still loads.  Loaded-file EOF also terminates a final
 declaration without requiring `;;`; the parent action resumes at a fresh phrase
-boundary.
+boundary.  The scanner treats `;;` inside `struct` and `sig` as module-item
+separators while retaining separators inside `begin` expressions, and a
+compiled nested-module fixture plus a negative `begin 1;; 2 end` case freezes
+that distinction.
 
 ## Current exact frontier
 
-After passing the former `loadt` boundary, the direct run reports:
+After passing the former `loadt` and parser boundaries, the direct run reports:
 
 ```text
-- Loading .../text_formalization/general/parser_verbose.hl
-Or-patterns are not allowed in let (rec) bindings
-Parsing failed at line 90
+- Flyspeck source action complete: general/parser_verbose.hl
+- Selecting normalized source .../text_formalization/general/debug.hl -> .../text_formalization/general/debug.hl
+- Loading .../text_formalization/general/debug.hl
+open-declarations are not supported (yet)
+Parsing failed at line 16
+
+  open Parser_verbose
 ```
 
-The first unsupported source form is the `("="|"<=>")` or-pattern in the
-argument of local `pdest_eq` at original `general/parser_verbose.hl:86`.
-Because evaluation fails, the loadt action reaches neither its logical-identity
-commit nor its completion marker, and strictbuild does not continue to
-`general/debug.hl`.  Before the failure, strictbuild evaluates its exact Unix
-metadata path and binds `load_date` to the manifest input
+The authenticated parser overlay replaces its single let-binding or-pattern
+by an ordinary match and its single `%s`-only `sprintf` call by concatenation;
+the compiled loader exports all `Parser_verbose` bindings and commits that
+action.  The authenticated debug overlay removes an OCaml-valid trailing
+sequence separator that Candle cannot parse.  Its next exact unsupported form
+is the module-opening declaration at original `general/debug.hl:16`.
+Because evaluation fails, the debug action reaches neither its logical-identity
+commit nor its completion marker.  Before the failure, strictbuild evaluates
+its exact Unix metadata path and binds `load_date` to the manifest input
 `1970-01-01T00:00:00Z\n`.  No dummy or no-op `Toploop` or `loadt` binding is
 installed.
 
@@ -123,8 +133,8 @@ preload and 1,216,768 KiB maximum RSS.
   theory/program;
 - sandbox/refinement contracts for non-metadata process calls, clock access,
   and directory creation;
-- an exact semantics-backed remedy for the selected parser or-pattern and all
-  later source-language frontiers;
+- verified Dopen integration for `open Parser_verbose` and all later
+  source-language frontiers;
 - dynamic non-use proof for strictbuild's fail-closed legacy loader helpers;
 - complete direct sequence execution, checkpoints, and semantic fingerprints.
 
@@ -134,6 +144,7 @@ Reproduce the two current compiled gates with:
 candle/test_flyspeck_loader_guard.sh ./candle.sh /path/to/flyspeck
 candle/test_static_load_directive.sh ./candle.sh
 candle/test_flyspeck_needs_directive.sh
+candle/test_flyspeck_parser_orpattern_normalization.sh ./candle.sh
 candle/test_filename_compat.sh
 candle/test_flyspeck_loader_frontier.sh \
   ./candle.sh /path/to/flyspeck /path/to/materialized-overlay

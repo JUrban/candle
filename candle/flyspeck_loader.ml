@@ -84,7 +84,7 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer may materialize only these five outputs in a
+(* The host-side normalizer may materialize only these seven outputs in a
    separate tree.  The outer release manifest authenticates size and SHA-256;
    this process independently checks OCaml-compatible MD5 before registering
    exact original-path -> normalized-path substitutions.  The overlay root is
@@ -102,6 +102,14 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/print_types.hl",
     "221e52fdf51a79f1910c55a9ba886be3");
+   (Filename.concat candle_flyspeck_text_root "general/parser_verbose.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/parser_verbose.hl",
+    "ca206581943b009ea815225c0ff9ad95");
+   (Filename.concat candle_flyspeck_text_root "general/debug.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/debug.hl",
+    "9180a21c2ba1ae40ae032387d0418255");
    (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/tactics_jordan.hl",
@@ -112,7 +120,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     "fddf2accd2071d09095166ff7af885c7")];;
 
-if List.length candle_flyspeck_normalized_sources <> 5 then
+if List.length candle_flyspeck_normalized_sources <> 7 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

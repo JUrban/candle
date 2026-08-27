@@ -83,8 +83,10 @@ let loads (_:string) = flyspeck_action_value := 200;;
 if false then needs "$fixture_prefix/flyspeck_needs_action_ok.ml";;
 if false then loads "$fixture_prefix/flyspeck_needs_action_ok.ml";;
 loads "$fixture_prefix/source_action_boundary_module.ml";;
+loads "$fixture_prefix/source_action_internal_semis_module.ml";;
 needs "$fixture_prefix/flyspeck_needs_action_ok.ml";;
-if !flyspeck_action_value = 1 && Source_action_boundary_module.value = 7 then
+if !flyspeck_action_value = 1 && Source_action_boundary_module.value = 7 &&
+   Source_action_internal_semis_module.total = 7 then
   print "ORDINARY_SOURCE_ACTION_BOUNDARY_OK\n"
 else failwith "ordinary source action escaped its phrase boundary";;
 EOF
@@ -176,6 +178,13 @@ if rg -q 'Flyspeck source action complete' "$test_dir/malformed.log"; then
   tail -n 30 "$test_dir/malformed.log" >&2
   exit 1
 fi
+
+run_candle invalid-inner-semis <<'EOF'
+module Invalid_inner_semis = struct
+  let value = begin 1;; 2 end;;
+end;;
+EOF
+rg -Fq 'Parsing failed' "$test_dir/invalid-inner-semis.log"
 
 run_candle malformed-loadt <<'EOF'
 let malformed_prefix = 1 #flyspeck_loadt "candle/compatibility/fixtures/flyspeck_loadt_action.ml";;

@@ -163,6 +163,55 @@
       ],
       "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, or reneeds chains; their normalized bindings fail explicitly if that assumption is wrong. No Toploop shim or successful no-op is installed.",
       "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file or dynamic loadt compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+    },
+    {
+      "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",
+      "source_key": "flyspeck:text_formalization/general/parser_verbose.hl",
+      "path": "text_formalization/general/parser_verbose.hl",
+      "source_sha256": "c999e6428ff402a781db826ca3b4c3e4b7ad400c9f549b6e964b4798e4981ba5",
+      "source_md5": "7ebe35d505dd4c5a4793bd55c49a5bce",
+      "normalized_sha256": "1af4e5bc6e7fc7a95c3ae9d12a6a721e17575451573d595f015c1c6a2ef461d1",
+      "normalized_md5": "ca206581943b009ea815225c0ff9ad95",
+      "normalized_bytes": 13239,
+      "operations": [
+        {
+          "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-STRING-FORMAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 36,
+          "before": "        failwith (sprintf \"parse_pretype_verbose: mk_prefinty, n = %s\" (string_of_num n))",
+          "after": "        failwith (\"parse_pretype_verbose: mk_prefinty, n = \" ^ string_of_num n)"
+        },
+        {
+          "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-LIFT-INNER-MATCH",
+          "kind": "exact_bytes_replace_once",
+          "line": 86,
+          "before": "  let pdest_eq (Combp(Combp(Varp((\"=\"|\"<=>\"),_),l),r)) = l,r in",
+          "after": "  let pdest_eq (Combp(Combp(Varp(opname,_),l),r)) =\n    match opname with \"=\" | \"<=>\" -> l,r in"
+        }
+      ],
+      "semantic_rule": "The constructor spine and returned subterms are unchanged. The two constant alternatives are moved from the function argument into an ordinary match, which CakeML already distributes into equivalent clauses. Both accepted operators return the identical l and r values; every other operator or constructor shape still aborts with Match_failure. The file's sole sprintf call has one %s conversion and is replaced by prefix concatenation, yielding the same bytes for every string_of_num result.",
+      "scope_limit": "The pinned selected graph contains one let-binding or-pattern, in parser_verbose.hl; the duplicate under azure/hol-light-nat is outside the selected graph. This exact rewrite does not claim general let-binding or-pattern or formatted-printing support. Source drift, a new selected occurrence, changed accepted results, changed failure text, or changed rejection class blocks release."
+    },
+    {
+      "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001",
+      "source_key": "flyspeck:text_formalization/general/debug.hl",
+      "path": "text_formalization/general/debug.hl",
+      "source_sha256": "b19e1e179b0863e551671688d76c24b13498965b460c0f514b9065a1bb8a8483",
+      "source_md5": "e34834e6b77b9f01836c28eca156119b",
+      "normalized_sha256": "a456dba39b239cfbe135ec10c9acfebcade7857fbfc36e1d52487f7856cfa187",
+      "normalized_md5": "9180a21c2ba1ae40ae032387d0418255",
+      "normalized_bytes": 6122,
+      "operations": [
+        {
+          "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001-REMOVE",
+          "kind": "exact_bytes_replace_once",
+          "line": 22,
+          "before": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\";);;",
+          "after": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\");;"
+        }
+      ],
+      "semantic_rule": "OCaml 4.14.1 accepts a trailing sequence separator immediately before the closing parenthesis and evaluates it as the same unit-valued sequence. Removing that one exact separator preserves evaluation order, effects, exceptions, and result.",
+      "scope_limit": "This one-token correction is confined to Debug.print_m at pinned source line 22 and does not claim general parser support for trailing sequence separators. Any source drift or newly selected occurrence requires a separate inventory and remedy."
     }
   ]
 }

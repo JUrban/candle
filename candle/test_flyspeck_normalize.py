@@ -91,7 +91,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 5)
+        self.assertEqual(len(self.contract["entries"]), 7)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -118,12 +118,31 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("dynamic strictbuild reneeds is disabled", (
             strictbuild["operations"][4]["after"]
         ))
+        parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
+        self.assertEqual(
+            [operation["line"] for operation in parser_orpattern["operations"]],
+            [36, 86],
+        )
+        self.assertIn("string_of_num n", (
+            parser_orpattern["operations"][0]["after"]
+        ))
+        self.assertIn("match opname with", (
+            parser_orpattern["operations"][1]["after"]
+        ))
+        self.assertNotIn("Varp((\"=\"|\"<=>\")", (
+            parser_orpattern["operations"][1]["after"]
+        ))
+        trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
+        self.assertEqual(trailing_semi["operations"][0]["line"], 22)
+        self.assertIn('print_string "\\n");;', (
+            trailing_semi["operations"][0]["after"]
+        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 13)
+        self.assertEqual(len(operation_ids), 16)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

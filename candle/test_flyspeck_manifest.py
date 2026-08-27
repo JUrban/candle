@@ -269,7 +269,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 5)
+        self.assertEqual(contract["entry_count"], 7)
         self.assertIn("every anchor must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -307,6 +307,21 @@ class GeneratedManifestTests(unittest.TestCase):
             "failwith",
             entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]["operations"][0]["after"],
         )
+        parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
+        self.assertEqual(
+            parser_orpattern["source_key"],
+            "flyspeck:text_formalization/general/parser_verbose.hl",
+        )
+        self.assertEqual(
+            [operation["line"] for operation in parser_orpattern["operations"]],
+            [36, 86],
+        )
+        trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
+        self.assertEqual(
+            trailing_semi["source_key"],
+            "flyspeck:text_formalization/general/debug.hl",
+        )
+        self.assertEqual(trailing_semi["operations"][0]["line"], 22)
         non_use = contract["selected_graph_non_use_bindings"]
         self.assertEqual(
             non_use["identifiers"], ["qmap", "unsuppress", "use_file_b"],
