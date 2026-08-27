@@ -72,7 +72,7 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later completed target 26 of 65 with 21 load-only
+The same clean baseline later completed target 27 of 65 with 22 load-only
 passes and five failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
@@ -113,7 +113,9 @@ path. The resulting structural identity has zero hypotheses and three global
 axioms, but remains `observed_uncompared` pending an approved reference.
 The valid live baseline then continued: `euler` passed after approximately 2.6
 minutes and `feuerbach` after approximately 26.0 minutes. Those results remain
-provisional load-only evidence.
+provisional load-only evidence. `fourier` then passed after approximately 66.3
+minutes; its broad theorem mapping remains explicit manual-review in addition
+to the missing reference fingerprints.
 
 ## Integration sequence
 
