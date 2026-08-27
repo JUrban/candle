@@ -149,9 +149,11 @@ capability uses: 39 qualified uses and three conservative, manually reviewed
 candidates under `open Str`.  There are 17 `Unix` uses over six members and 25
 `Str` uses over five members.  The two reachable `open Str` sites and absence of `open Unix`
 are frozen separately; open-based attribution is explicitly not represented as
-a compiler name-resolution proof.  Unknown libraries or members are
-promotion-blocking diagnostics, and directive erasure or a generic no-op is
-forbidden.
+a compiler name-resolution proof.  The compiled boot now accepts only complete
+standalone `#load "unix.cma";;` and `#load "str.cma";;` phrases and selects the
+corresponding fixed static module.  Every other library and every embedded or
+malformed use fails closed.  This exact selection is not full member
+compatibility; the per-member evidence and failures below remain authoritative.
 
 `ocaml.ml` now provides the five selected `Str` members as pure Candle source,
 so `str.cma` does not imply host dynamic loading or an FFI.  The compiled
@@ -174,9 +176,10 @@ serializer, rather than exposing Candle REPL's unrelated token-queue module.
 arbitrary command and the clock operation fail closed.  This covers only
 strictbuild's load/build-report metadata.  It does not authorize the indirect
 command helpers defined elsewhere in Flyspeck, nor implement general process,
-clock, or directory behavior.  The other selected operations fail explicitly,
-so the overall library status is still
-`blocked-pending-static-binding-evidence`.
+clock, or directory behavior.  The other selected operations fail explicitly.
+The overall directive status is therefore
+`exact-static-link-selection-active-member-compatibility-partial`, not a claim
+of complete `unix.cma` behavior.
 
 The selected graph also has 17 executable qualified `Digest` occurrences:
 eight `file`, three type `t`, two `string`, and four `to_hex`; it has no

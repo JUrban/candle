@@ -409,13 +409,26 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("Digest.file", integrity)
         self.assertIn("source digest mismatch before Flyspeck build", integrity)
 
-    def test_static_library_contract_is_exact_and_inactive(self):
+    def test_static_library_contract_has_exact_static_selection(self):
         contract = self.payload["static_library_contract"]
         self.assertEqual(
             contract["activation_status"],
-            "blocked-pending-static-binding-evidence",
+            "exact-static-link-selection-active-member-compatibility-partial",
         )
-        self.assertIn("no-op is forbidden", contract["directive_policy"])
+        self.assertIn("complete standalone #load phrase", contract["directive_policy"])
+        self.assertIn("not full member compatibility", contract["directive_policy"])
+        self.assertEqual(
+            contract["activation_source"],
+            "cakeml:candle/prover/candle_boot.ml",
+        )
+        self.assertEqual(
+            contract["activation_gate"],
+            "candle:candle/test_static_load_directive.sh",
+        )
+        self.assertEqual(
+            contract["member_compatibility_status"],
+            "partial-and-fail-closed-as-recorded-per-library",
+        )
         self.assertEqual(
             contract["library_modules"],
             {"str.cma": "Str", "unix.cma": "Unix"},
