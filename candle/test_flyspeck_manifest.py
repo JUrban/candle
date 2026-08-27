@@ -252,11 +252,24 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["verified_cakeml_integration"],
             {
                 "branch": "codex/flyspeck-v13-integration",
-                "commit": "c006dc4998c354f820d652ce619c0714918a5ed4",
+                "commit": "fec48e7d76b7d3b132ef2d420279a5f0655c76f7",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
                 "proof_hol4_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
+                "soundness_targets": [
+                    "semantics/proofs/namespacePropsTheory.uo",
+                    "semantics/proofs/weakeningTheory.uo",
+                    "semantics/proofs/typeSoundTheory.uo",
+                    "translator/evaluate_decTheory.uo",
+                    "candle/prover/permsTheory.uo",
+                ],
+                "soundness_repairs": [
+                    "d4ed3e6d5b811dd2457f46d494b30bc67b706fdf",
+                    "a336d8493b1ffc81b3a93348c4326d6200cf2d78",
+                    "ed49b28052c79abf612642921bff808c16f2332b",
+                    "fec48e7d76b7d3b132ef2d420279a5f0655c76f7",
+                ],
             },
         )
         self.assertEqual(contract["occurrence_count"], 3180)
