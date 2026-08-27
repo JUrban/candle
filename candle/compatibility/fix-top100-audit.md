@@ -72,8 +72,8 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later completed target 23 of 65 with 19 load-only
-passes and four failures. In addition to `bertrand-primerecip` and
+The same clean baseline later completed target 24 of 65 with 19 load-only
+passes and five failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
 `Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
@@ -99,6 +99,13 @@ approximately 68.5 minutes, followed by `dirichlet` after approximately 62.7
 minutes, `div3` after approximately 2.8 minutes, and `divharmonic` after
 approximately 3.2 minutes. These passes remain provisional because no theorem
 or assumption fingerprint was captured.
+
+Target 24, `e_is_transcendental`, then failed after approximately 4.1 minutes.
+The parser points at the start of `module Pm_eqn4_rhs`, but the isolated module
+name passes. The minimized OCaml/Candle differential instead identifies the
+trailing semicolon after `ll5` inside that module: OCaml 4.14.1 accepts it and
+compiled Candle rejects the whole enclosing phrase. This exactly matches the
+one-token correction in `badbd63`; no parser extension is selected.
 
 ## Integration sequence
 

@@ -65,3 +65,12 @@ from `5c44565`, not a general polymorphic-comparison implementation.
 `cubic_target_observation.json` records the resulting clean target pass and
 structural `CUBIC` identity. Its `observed_uncompared` status is intentional:
 the recorded hash is evidence, not a reference-approved fingerprint.
+
+`oracles/trailing_semicolon_argument.ml` minimizes
+`CANDLE-OCAML-TRAILING-SEMICOLON-001`. OCaml 4.14.1 accepts the trailing
+semicolon in a parenthesized argument expression; compiled Candle rejects the
+enclosing module phrase. Its diagnostic points at `module Pm_eqn4_rhs`, but
+`oracles/module_identifier_underscore.ml` proves that the same module name is
+accepted without the interior semicolon. The selected remedy is therefore the
+one-token source normalization from `badbd63`, not a module-parser change.
+`trailing_semicolon_observation.json` preserves both compiled-Candle runs.

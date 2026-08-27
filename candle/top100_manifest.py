@@ -326,6 +326,28 @@ BASELINE_OBSERVATIONS = {
             "resource_sampling": "incomplete_after_procfs_sampler_race",
         },
     },
+    "100/e_is_transcendental": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "trailing semicolon in argument expression",
+        "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+        "diagnostic": (
+            "Expected to be at EOF; parsing rejects the enclosing "
+            "Pm_eqn4_rhs module phrase"
+        ),
+        "diagnostic_pointer": "100/e_is_transcendental.ml:921",
+        "first_incompatible_source_location": "100/e_is_transcendental.ml:995",
+        "log_active_seconds_approx": 246.7,
+        "peak_rss_kib": None,
+        "anchor_candidate": "badbd63",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
 }
 
 

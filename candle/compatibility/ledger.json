@@ -156,6 +156,50 @@
       "remaining_evidence": [
         "approved reference comparison for the observed cubic theorem and assumption fingerprint"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+      "status": "minimized_fix_identified",
+      "priority": "P0",
+      "category": "source_syntax_compatibility",
+      "summary": "OCaml accepts a trailing semicolon in a parenthesized argument expression while Candle rejects the enclosing module phrase",
+      "minimal_reproducer": "candle/compatibility/oracles/trailing_semicolon_argument.ml",
+      "passing_control": "candle/compatibility/oracles/module_identifier_underscore.ml",
+      "observation_artifact": "candle/compatibility/trailing_semicolon_observation.json",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "outcome": "accepted"
+      },
+      "candle_observation": {
+        "outcome": "parse_failure",
+        "diagnostic": "Expected to be at EOF; Parsing failed at the start of the enclosing module phrase",
+        "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+        "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+        "control_outcome": "the same Pm_eqn4_rhs module name without the trailing semicolon passes"
+      },
+      "affected_targets": [
+        "100/e_is_transcendental"
+      ],
+      "affected_source_locations": [
+        "100/e_is_transcendental.ml:995"
+      ],
+      "existing_fix": {
+        "repository": "HOL-Light/candle",
+        "branch": "origin/fix-top100",
+        "commit": "badbd63c4802b6a7a8e73d39affff99e3a6dc3b3",
+        "present_in_audited_master": false,
+        "description": "remove only the trailing semicolon after ll5"
+      },
+      "selected_remedy": {
+        "kind": "source_normalization",
+        "description": "import the existing one-token source correction; no parser extension"
+      },
+      "regression_requirement": "minimal OCaml/Candle differential remains documented; normalized target loads; TRANSCENDENTAL_E and assumptions match approved fingerprints",
+      "remaining_evidence": [
+        "clean normalized e_is_transcendental load",
+        "observed theorem and assumption fingerprint",
+        "approved reference comparison"
+      ]
     }
   ]
 }
