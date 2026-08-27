@@ -41,10 +41,15 @@ Parsing failed at line 23
 
 The source line is 21; the loader's diagnostic line includes its input-stack
 offset.  The repository contains 17 standalone directives: ten `unix.cma`,
-five `str.cma`, and two `nums.cma`.  The reachable full-build graph contains
-only six: three `unix.cma` and three `str.cma`; neither `nums.cma` directive is
-reachable.  The generated manifest now freezes those six source locations and
-44 capability occurrences: 41 qualified plus three reviewed lexical candidates
+five `str.cma`, and two `nums.cma`.  The enforcing loader graph contains only
+five: two `unix.cma` and three `str.cma`; neither `nums.cma` directive is
+reachable.  The preceding graph incorrectly counted the convenience entry
+`load_flyspeck.ml`, although the enforcing loader enters `strictbuild.hl`
+directly.  Removing that false root also removes its two placeholder
+`Unix.putenv` uses from execution claims.
+
+The generated manifest now freezes the five actual directive locations and 42
+capability occurrences: 39 qualified plus three reviewed lexical candidates
 under `open Str`.  The two `Str` opens and absence of `Unix` opens are recorded
 separately.  Its library contract remains inactive pending static-binding
 evidence, blocks every unknown library/member, and forbids directive erasure or
@@ -54,7 +59,8 @@ The five selected `Str` members now have a pure source implementation.  A
 compiled gate matches OCaml 4.14.1 on all selected literal regex forms and
 fails explicitly on unimplemented advanced syntax; it introduces no dynamic
 loader or FFI.  This is partial evidence because one source definition builds a
-regex from an argument, and the seven `Unix` members remain unimplemented.
+regex from an argument, and the six route-selected `Unix` members remain
+unimplemented.
 
 ## Open boundaries exposed by this slice
 

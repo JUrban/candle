@@ -1,9 +1,7 @@
 {
   "bootstrap_roots": [
     "candle:hol.ml",
-    "flyspeck:load_flyspeck.ml",
-    "flyspeck:text_formalization/build/strictbuild.hl",
-    "flyspeck:text_formalization/build/build.hl"
+    "flyspeck:text_formalization/build/strictbuild.hl"
   ],
   "build_mode": "full",
   "build_sequence": [
@@ -2145,7 +2143,7 @@
     "forbidden_dependencies": 0,
     "generated_dependencies": 1,
     "missing_dependencies": 0,
-    "reviewed_dynamic_dependencies": 17,
+    "reviewed_dynamic_dependencies": 15,
     "unresolved_build_roots": [],
     "unsupported_runtime_libraries": [],
     "unsupported_runtime_members": []
@@ -2461,8 +2459,8 @@
     }
   },
   "schema": 1,
-  "source_edge_count": 420,
-  "source_node_count": 399,
+  "source_edge_count": 417,
+  "source_node_count": 398,
   "source_nodes": {
     "candle:Library/binomial.ml": {
       "bytes": 18352,
@@ -5822,60 +5820,6 @@
       "path": "jHOLLight/caml/ssreflect.hl",
       "repository": "flyspeck",
       "sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9"
-    },
-    "flyspeck:load_flyspeck.ml": {
-      "bytes": 1304,
-      "dependencies": [
-        {
-          "kind": "#load",
-          "line": 1,
-          "literal": "unix.cma",
-          "status": "runtime-library"
-        },
-        {
-          "kind": "needs",
-          "line": 10,
-          "literal": "Multivariate/flyspeck.ml",
-          "matches": [
-            "candle:Multivariate/flyspeck.ml"
-          ],
-          "selected": "candle:Multivariate/flyspeck.ml",
-          "status": "resolved"
-        },
-        {
-          "expression": "needs (Filename.concat flyspeck_dir \"build/strictbuild.hl\")",
-          "kind": "needs",
-          "line": 12,
-          "reason": "flyspeck_dir is the manifest text_formalization root",
-          "selected_targets": [
-            "flyspeck:text_formalization/build/strictbuild.hl"
-          ],
-          "status": "resolved-dynamic",
-          "targets": [
-            "build/strictbuild.hl"
-          ]
-        },
-        {
-          "kind": "needs",
-          "line": 13,
-          "literal": "build/build.hl",
-          "matches": [
-            "flyspeck:text_formalization/build/build.hl"
-          ],
-          "selected": "flyspeck:text_formalization/build/build.hl",
-          "status": "resolved"
-        },
-        {
-          "expression": "flyspeck_needs seq0 in ()",
-          "kind": "flyspeck_needs",
-          "line": 18,
-          "reason": "seq0 is a prefix of the separately extracted authoritative build sequence",
-          "status": "root-driver"
-        }
-      ],
-      "path": "load_flyspeck.ml",
-      "repository": "flyspeck",
-      "sha256": "b6c9fb80740f7b7bfadc8efc1d514c3d4d0b2d8cf21d8685d8859a8e4c1f1e46"
     },
     "flyspeck:text_formalization/build/build.hl": {
       "bytes": 13059,
@@ -9793,8 +9737,7 @@
           "gettimeofday",
           "mkdir",
           "open_process",
-          "open_process_in",
-          "putenv"
+          "open_process_in"
         ],
         "status": "unimplemented"
       }
@@ -9985,20 +9928,6 @@
       },
       {
         "library": "unix.cma",
-        "line": 7,
-        "member": "putenv",
-        "module": "Unix",
-        "source": "flyspeck:load_flyspeck.ml"
-      },
-      {
-        "library": "unix.cma",
-        "line": 8,
-        "member": "putenv",
-        "module": "Unix",
-        "source": "flyspeck:load_flyspeck.ml"
-      },
-      {
-        "library": "unix.cma",
         "line": 44,
         "member": "open_process_in",
         "module": "Unix",
@@ -10143,11 +10072,6 @@
       },
       {
         "library": "unix.cma",
-        "line": 1,
-        "source": "flyspeck:load_flyspeck.ml"
-      },
-      {
-        "library": "unix.cma",
         "line": 21,
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
@@ -10171,8 +10095,7 @@
         "gettimeofday",
         "mkdir",
         "open_process",
-        "open_process_in",
-        "putenv"
+        "open_process_in"
       ]
     },
     "library_modules": {
@@ -10377,20 +10300,6 @@
         "member": "gettimeofday",
         "module": "Unix",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
-      },
-      {
-        "library": "unix.cma",
-        "line": 7,
-        "member": "putenv",
-        "module": "Unix",
-        "source": "flyspeck:load_flyspeck.ml"
-      },
-      {
-        "library": "unix.cma",
-        "line": 8,
-        "member": "putenv",
-        "module": "Unix",
-        "source": "flyspeck:load_flyspeck.ml"
       },
       {
         "library": "unix.cma",

@@ -35,7 +35,7 @@ STATIC_RUNTIME_MEMBERS = {
     },
     "Unix": {
         "close_process", "close_process_in", "gettimeofday", "mkdir",
-        "open_process", "open_process_in", "putenv",
+        "open_process", "open_process_in",
     },
 }
 # Complete OCaml Str names that can be conservatively attributed after
@@ -96,15 +96,6 @@ MANUAL_DYNAMIC_REVIEWS = {
         "status": "resolved-dynamic",
         "targets": ["../formal_graph/archive/archive_all.ml"],
         "reason": "project_root_dir is pinned Flyspeck repository path",
-    },
-    ("flyspeck:load_flyspeck.ml", 12, "needs"): {
-        "status": "resolved-dynamic",
-        "targets": ["build/strictbuild.hl"],
-        "reason": "flyspeck_dir is the manifest text_formalization root",
-    },
-    ("flyspeck:load_flyspeck.ml", 18, "flyspeck_needs"): {
-        "status": "root-driver",
-        "reason": "seq0 is a prefix of the separately extracted authoritative build sequence",
     },
     ("flyspeck:text_formalization/build/strictbuild.hl", 103, "loadt"): {
         "status": "resolved-dynamic",
@@ -544,9 +535,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
 
     bootstrap = [
         SourceRef("candle", "hol.ml"),
-        SourceRef("flyspeck", "load_flyspeck.ml"),
         SourceRef("flyspeck", "text_formalization/build/strictbuild.hl"),
-        SourceRef("flyspeck", "text_formalization/build/build.hl"),
     ]
     loader_source = SourceRef("candle", "candle/flyspeck_loader.ml")
     final_target = SourceRef("candle", "candle/flyspeck_l2_target.ml")

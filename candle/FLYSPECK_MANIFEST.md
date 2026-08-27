@@ -17,10 +17,10 @@ python3 candle/flyspeck_manifest.py \
 ```
 
 The current pinned inventory contains 297 ordered build entries (287 unique),
-399 recursively reached source nodes, 419 selected dependency edges, and 42
+398 recursively reached source nodes, 417 selected dependency edges, and 42
 hashed LP/archive/nonlinear inputs.  There are no unresolved build roots,
 unreviewed dynamic loads, missing ordinary sources, path escapes, ambiguous
-loads, or detected cycles.  Seventeen non-literal call sites have explicit
+loads, or detected cycles.  Fifteen non-literal call sites have explicit
 source-and-line reviews; the selected OCaml-version branch is pinned to 4.14.
 The manifest also pins `flyspeck_l2_target.ml`, the direct Candle theorem glue
 for `Candle_flyspeck_l2.tame_imp_kepler_conjecture`; that file has no trace
@@ -46,12 +46,17 @@ compiled path passes the former manifest-environment, ordinary-file,
 direct source file and stops at `build/strictbuild.hl:21`, where Candle does not
 yet recognize `#load "unix.cma";;`.  The pinned repository has exactly 17
 standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
-Only six are in the recursively reached full-build graph: three `unix.cma` and
-three `str.cma`; no `nums.cma` site is reachable.  The manifest's static-library
-contract records those six sites plus 44 source-located capability uses: 41
-qualified uses and three conservative, manually reviewed candidates under
-`open Str`.  There are 19 `Unix` uses over seven members and 25 `Str` uses over
-five members.  The two reachable `open Str` sites and absence of `open Unix`
+Only five are in the enforcing loader's recursively reached full-build graph:
+two `unix.cma` and three `str.cma`; no `nums.cma` site is reachable.  The
+repository convenience entry `load_flyspeck.ml` is not executed by this loader:
+it hard-codes `/home/user` paths and was incorrectly included as an extra root
+in the preceding manifest.  Removing that false root removes its directive and
+two `Unix.putenv` occurrences from execution-route claims.
+
+The manifest contract records the five actual sites plus 42 source-located
+capability uses: 39 qualified uses and three conservative, manually reviewed
+candidates under `open Str`.  There are 17 `Unix` uses over six members and 25
+`Str` uses over five members.  The two reachable `open Str` sites and absence of `open Unix`
 are frozen separately; open-based attribution is explicitly not represented as
 a compiler name-resolution proof.  Unknown libraries or members are
 promotion-blocking diagnostics, and directive erasure or a generic no-op is
@@ -64,7 +69,7 @@ regular-expression form in the selected graph, offset matching, character
 ranges, splitting, replacement, and `first_chars`.  Unsupported escaped
 grouping, alternation, back-references, and empty-match replacement fail
 explicitly.  This is partial binding evidence rather than activation of the
-library contract: arbitrary dynamic regex input and all seven `Unix` members
+library contract: arbitrary dynamic regex input and all six `Unix` members
 remain open, so the overall status is still
 `blocked-pending-static-binding-evidence`.
 

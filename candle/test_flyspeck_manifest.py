@@ -125,8 +125,16 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(self.payload["build_sequence_count"], 297)
         self.assertEqual(self.payload["build_sequence_unique_count"], 287)
         self.assertEqual(len(self.payload["build_sequence_roots"]), 297)
-        self.assertEqual(self.payload["source_node_count"], 399)
-        self.assertGreater(self.payload["source_edge_count"], 300)
+        self.assertEqual(self.payload["source_node_count"], 398)
+        self.assertEqual(self.payload["source_edge_count"], 417)
+        self.assertNotIn("flyspeck:load_flyspeck.ml", self.payload["source_nodes"])
+        self.assertEqual(
+            self.payload["bootstrap_roots"],
+            [
+                "candle:hol.ml",
+                "flyspeck:text_formalization/build/strictbuild.hl",
+            ],
+        )
 
     def test_diagnostics_are_promotion_gates(self):
         diagnostics = self.payload["diagnostics"]
@@ -144,7 +152,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "forbidden_dependencies",
         ):
             self.assertEqual(diagnostics[key], 0)
-        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 17)
+        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 15)
         self.assertEqual(diagnostics["generated_dependencies"], 1)
 
     def test_manifest_has_no_absolute_source_identity(self):
@@ -213,7 +221,7 @@ class GeneratedManifestTests(unittest.TestCase):
             {"str.cma": "Str", "unix.cma": "Unix"},
         )
         directives = contract["directives"]
-        self.assertEqual(len(directives), 6)
+        self.assertEqual(len(directives), 5)
         self.assertEqual(
             {directive["library"] for directive in directives},
             {"str.cma", "unix.cma"},
@@ -221,20 +229,20 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(
             {directive["library"]: sum(d["library"] == directive["library"] for d in directives)
              for directive in directives},
-            {"str.cma": 3, "unix.cma": 3},
+            {"str.cma": 3, "unix.cma": 2},
         )
         uses = contract["qualified_uses"]
         self.assertTrue(uses)
         self.assertEqual({use["module"] for use in uses}, {"Str", "Unix"})
         self.assertEqual({use["library"] for use in uses}, {"str.cma", "unix.cma"})
-        self.assertEqual(len(uses), 41)
+        self.assertEqual(len(uses), 39)
         opened_uses = contract["opened_module_uses"]
         self.assertEqual(len(opened_uses), 3)
         self.assertEqual(
             [(use["line"], use["member"]) for use in opened_uses],
             [(137, "regexp"), (138, "global_replace"), (138, "regexp")],
         )
-        self.assertEqual(len(contract["capability_uses"]), 44)
+        self.assertEqual(len(contract["capability_uses"]), 42)
         self.assertIn("not a compiler name-resolution proof", contract["opened_use_attribution"])
         self.assertEqual(
             {use["attribution_status"] for use in opened_uses},
