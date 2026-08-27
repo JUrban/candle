@@ -1534,11 +1534,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         },
         "static_library_contract": {
             "scope": "reachable direct-source full-build graph only",
-            "activation_status": "blocked-pending-static-binding-evidence",
+            "activation_status": (
+                "exact-static-link-selection-active-member-compatibility-partial"
+            ),
             "directive_policy": (
-                "recognize only the listed libraries; reject every other #load; "
-                "directive erasure or no-op is forbidden until all listed module "
-                "members have semantically adequate static Candle bindings"
+                "accept only a complete standalone #load phrase for a listed "
+                "library and select its fixed statically linked module; reject "
+                "every other #load; selection is not full member compatibility"
+            ),
+            "activation_source": "cakeml:candle/prover/candle_boot.ml",
+            "activation_gate": "candle:candle/test_static_load_directive.sh",
+            "member_compatibility_status": (
+                "partial-and-fail-closed-as-recorded-per-library"
             ),
             "library_modules": STATIC_RUNTIME_LIBRARIES,
             "library_members": {

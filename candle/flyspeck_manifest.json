@@ -12830,7 +12830,9 @@
     "unique_target_count": 287
   },
   "static_library_contract": {
-    "activation_status": "blocked-pending-static-binding-evidence",
+    "activation_gate": "candle:candle/test_static_load_directive.sh",
+    "activation_source": "cakeml:candle/prover/candle_boot.ml",
+    "activation_status": "exact-static-link-selection-active-member-compatibility-partial",
     "binding_evidence": {
       "str.cma": {
         "gate": "candle:candle/test_str_compat.sh",
@@ -13185,7 +13187,7 @@
         "source": "flyspeck:text_formalization/nonlinear/merge_ineq.hl"
       }
     ],
-    "directive_policy": "recognize only the listed libraries; reject every other #load; directive erasure or no-op is forbidden until all listed module members have semantically adequate static Candle bindings",
+    "directive_policy": "accept only a complete standalone #load phrase for a listed library and select its fixed statically linked module; reject every other #load; selection is not full member compatibility",
     "directives": [
       {
         "library": "unix.cma",
@@ -13234,6 +13236,7 @@
       "str.cma": "Str",
       "unix.cma": "Unix"
     },
+    "member_compatibility_status": "partial-and-fail-closed-as-recorded-per-library",
     "module_opens": [
       {
         "line": 31,
