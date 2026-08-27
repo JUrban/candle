@@ -29,5 +29,20 @@ The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax
 is explicitly out of scope because CakeML's retained scanner is decimal-only
 and the audited Great 100 slice contains no hexadecimal float literal.
-The ledger entry remains under test until the proof build, rebuilt differential,
-clean target load, and theorem/assumption fingerprints are present.
+`float_literal_progress.json` records the completed proof build without treating
+it as runtime evidence. `benchmark_float_literals.py` measures representative
+compiled-Candle load time for integer controls, explicit `Double.fromString`,
+and source literals; the latter remains a recorded rejection on the baseline.
+The pinned baseline command is:
+
+```sh
+python3 candle/compatibility/benchmark_float_literals.py \
+  --candle-root /path/to/isolated/baseline --terms 100 --repetitions 3
+```
+
+Repeat it with `--require-literals` against the rebuilt isolated tree. Compare
+the rebuilt medians with `float_literal_benchmark_baseline.json`; the rejected
+baseline literal time is diagnostic only and is not a valid performance ratio.
+The ledger entry remains under test until the rebuilt IEEE differential,
+end-to-end negative parses, load-time comparison, clean target load, and
+theorem/assumption fingerprints are present.

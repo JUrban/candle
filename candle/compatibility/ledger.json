@@ -43,18 +43,23 @@
       },
       "selected_remedy": {
         "cakeml_branch": "codex/flyspeck-v13-float-literals",
+        "cakeml_commit": "30e014bd9cfd80b356f4718124cdbeed0409c10e",
         "description": "restore the retained FloatT grammar path and lower each normalized decimal lexeme to Option.valOf (Double.fromString lexeme)",
         "supported_subset": "decimal points, decimal exponents, and separator underscores already recognized and normalized by scan_float_or_int",
         "excluded_syntax": "hexadecimal float literals",
         "new_ffi": false,
         "trust_and_performance_boundary": "uses the existing double_fromString basis FFI once per literal at evaluation time; no frexp, byte-packing shim, or catch-all FFI dispatch is imported"
       },
+      "proof_build_evidence": "candle/compatibility/float_literal_progress.json",
       "proof_obligation": "CakeML grammar and conversion theories build; every accepted oracle literal produces exactly the OCaml 4.14.1 IEEE-754 word; every negative oracle is rejected; the existing Double.fromString FFI remains the explicit parsing trust boundary",
       "regression_oracle": "candle/compatibility/test_float_literals.py with candle/compatibility/float_literal_cases.json",
+      "performance_benchmark": "candle/compatibility/benchmark_float_literals.py",
+      "performance_baseline": "candle/compatibility/float_literal_benchmark_baseline.json",
       "regression_requirement": "targeted CakeML parser proof build, OCaml/Candle differential test, successful clean bertrand-primerecip load, and populated theorem plus assumption fingerprints",
       "remaining_evidence": [
-        "targeted camlTestsTheory proof build",
-        "rebuilt Candle differential execution",
+        "rebuilt Candle exact IEEE-754 differential execution",
+        "rebuilt Candle end-to-end malformed-literal rejection",
+        "representative compiled-Candle load-time performance comparison",
         "clean bertrand-primerecip load",
         "bertrand theorem and assumption fingerprints"
       ]

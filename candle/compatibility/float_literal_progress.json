@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-FLOAT-LITERAL-001",
+  "updated_utc": "2026-08-27T07:28:18Z",
+  "implementation": {
+    "repository": "CakeML/cakeml",
+    "base_commit": "dcc03f2866f05b1db18b9f45c731ce45c3a3133e",
+    "branch": "codex/flyspeck-v13-float-literals",
+    "commit": "30e014bd9cfd80b356f4718124cdbeed0409c10e",
+    "new_ffi": false,
+    "runtime_conversion": "Option.valOf (Double.fromString normalized_decimal_lexeme)"
+  },
+  "proof_build": {
+    "holdir_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
+    "command": "Holmake -j 1 --qof camlTestsTheory.uo",
+    "result": "pass",
+    "theories": [
+      {
+        "name": "caml_lex",
+        "elapsed_seconds": 534
+      },
+      {
+        "name": "camlPEG",
+        "elapsed_seconds": 176
+      },
+      {
+        "name": "camlPtreeConversion",
+        "elapsed_seconds": 108
+      },
+      {
+        "name": "camlTests",
+        "elapsed_seconds": 191
+      }
+    ],
+    "positive_normalization_cases": 10,
+    "negative_parser_cases": 6
+  },
+  "evidence_scope": {
+    "established": [
+      "decimal FloatT tokens participate in nLiteral",
+      "normalized lexemes lower through the existing option-valued Double.fromString basis operation",
+      "the retained lexer and parser termination/correctness obligations build",
+      "the proof-script oracle normalizes 10 accepted lexemes and rejects six malformed forms"
+    ],
+    "not_established": [
+      "compiled Candle produces the 10 pinned OCaml IEEE-754 words",
+      "compiled Candle rejects all six malformed declarations end-to-end",
+      "source-literal runtime and parser performance is acceptable",
+      "100/bertrand-primerecip loads successfully",
+      "BERTRAND and PRIMERECIP_DIVERGES match approved theorem and assumption fingerprints"
+    ]
+  },
+  "performance_baseline": {
+    "artifact": "candle/compatibility/float_literal_benchmark_baseline.json",
+    "terms_per_source": 100,
+    "repetitions": 3,
+    "executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+    "integer_control_median_seconds": 0.11401740368455648,
+    "explicit_from_string_median_seconds": 0.2469191737473011,
+    "source_literal_outcome": "reject",
+    "source_literal_median_to_rejection_seconds": 0.0657659750431776,
+    "comparison_status": "awaiting rebuilt compiler"
+  },
+  "next_rebuild_gate": {
+    "theory_dependency_path": [
+      "caml_parserTheory",
+      "caml_parserProgTheory",
+      "compiler64ProgTheory",
+      "x64BootstrapTheory"
+    ],
+    "verified_path": "build the entry parser, its translated program, compiler64 translation, and x64/64 bootstrap cake.S; link in an isolated directory, then apply only Candle's existing cake.S/basis_ffi patches and boot-file generation",
+    "faster_diagnostic_path": "replace x64BootstrapTheory with sexprBootstrap64Theory, then cross-compile its regenerated cake-sexpr-64 using a released compiler; this is explicitly unverified diagnostic evidence only",
+    "live_great100_executable_reused": false
+  }
+}

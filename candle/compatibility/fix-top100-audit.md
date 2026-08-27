@@ -61,8 +61,11 @@ is not being imported: it combines the syntax workaround with broad float/byte
 FFI. The smaller implementation under test restores CakeML's retained decimal
 float token to the parser and lowers through the existing `Double.fromString`
 operation. Exact reference words and negative parses are pinned in
-`float_literal_cases.json`. This adds no FFI, but the CakeML proof build,
-rebuilt-Candle differential, clean target load, and fingerprints are missing.
+`float_literal_cases.json`. CakeML commit `30e014bd9` has passed the targeted
+four-theory build and its 10 positive normalization plus six rejection tests.
+That is syntax/proof evidence only: the rebuilt-Candle IEEE differential,
+end-to-end rejection run, performance comparison, clean target load, and
+fingerprints remain missing.
 
 ## Integration sequence
 
