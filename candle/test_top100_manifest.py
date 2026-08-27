@@ -75,6 +75,16 @@ class Top100ManifestTest(unittest.TestCase):
         self.assertIn(observation["ledger_id"],
                       {entry["id"] for entry in ledger["entries"]})
 
+    def test_module_scoped_theorem_request_is_qualified(self):
+        target = next(target for target in self.manifest["targets"]
+                      if target["name"] == "100/e_is_transcendental")
+        theorem = target["fingerprint_request"]["theorems"][0]
+        self.assertEqual(theorem["name"], "Finale.TRANSCENDENTAL_E")
+        self.assertEqual(theorem["resolved_declaration"]["line"], 2903)
+        self.assertIn(
+            {"path": "100/e_is_transcendental.ml", "line": 2910},
+            theorem["qualified_references"])
+
 
 if __name__ == "__main__":
     unittest.main()

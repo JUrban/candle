@@ -57,7 +57,7 @@ TARGET_THEOREMS = {
     "100/dirichlet": ["DIRICHLET"],
     "100/div3": ["DIVISIBILITY_BY_3"],
     "100/divharmonic": ["HARMONIC_DIVERGES"],
-    "100/e_is_transcendental": ["TRANSCENDENTAL_E"],
+    "100/e_is_transcendental": ["Finale.TRANSCENDENTAL_E"],
     "100/euler": ["EULER_PARTITION_THEOREM"],
     "100/feuerbach": ["FEUERBACH"],
     "100/fourier": [
@@ -165,6 +165,336 @@ BASELINE_OBSERVATIONS = {
             "compatibility_paths_match_audited_base": True,
         },
     },
+    "100/ceva": {
+        "status": "fail",
+        "phase": "dependency_load",
+        "compatibility_category": "missing numeric helper",
+        "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
+        "diagnostic": "undefined value round_num while loading Examples/sos.ml",
+        "first_source_location": "Examples/sos.ml",
+        "wall_seconds": 1428.4,
+        "peak_rss_kib": None,
+        "anchor_candidate": "218c7c9",
+        "isolated_numeric_validation": {
+            "status": "pass",
+            "selected_case_count": 15,
+            "oracle": "candle/compatibility/test_num_rationals.py",
+            "source_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
+            "target_status": "pending_remaining_sos_compatibility",
+        },
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/constructible": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml multiline string literal",
+        "diagnostic": "LEXER ERROR; Parsing failed inside the multiline define_type string",
+        "first_source_location": "100/constructible.ml:115",
+        "log_active_seconds_approx": 3730.4,
+        "peak_rss_kib": None,
+        "upstream_remedy": {
+            "repository": "CakeML/cakeml",
+            "commit": "c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+            "status": "present_in_audited_source_base; compiled Candle rebuild required",
+        },
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/cubedissection": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 3794.6,
+        "observed_process_rss_kib": 6413644,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/cubic": {
+        "status": "fail",
+        "phase": "dependency_elaboration",
+        "compatibility_category": "polymorphic comparison",
+        "ledger_id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
+        "diagnostic": (
+            "SEMIRING_NORMALIZERS_CONV comparator inferred as term -> term -> bool "
+            "where int -> int -> bool was expected"
+        ),
+        "first_source_location": "Complex/complexnumbers.ml:720",
+        "log_active_seconds_approx": 192.0,
+        "peak_rss_kib": None,
+        "anchor_candidate": "5c44565",
+        "isolated_source_validation": {
+            "source_normalization_commit": "75d4062",
+            "status": "pass",
+            "fingerprint_status": "observed_uncompared",
+            "artifact": "candle/compatibility/cubic_target_observation.json",
+        },
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/desargues": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 1379.9,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/descartes": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 4108.9,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/dirichlet": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 3759.4,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/div3": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 169.0,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/divharmonic": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 193.8,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/e_is_transcendental": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "trailing semicolon in argument expression",
+        "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+        "diagnostic": (
+            "Expected to be at EOF; parsing rejects the enclosing "
+            "Pm_eqn4_rhs module phrase"
+        ),
+        "diagnostic_pointer": "100/e_is_transcendental.ml:921",
+        "first_incompatible_source_location": "100/e_is_transcendental.ml:995",
+        "log_active_seconds_approx": 246.7,
+        "peak_rss_kib": None,
+        "anchor_candidate": "badbd63",
+        "isolated_source_validation": {
+            "source_normalization_commit": "6ce6fc1",
+            "status": "pass",
+            "fingerprint_status": "observed_uncompared",
+            "fingerprint_value_path": "Finale.TRANSCENDENTAL_E",
+            "artifact": (
+                "candle/compatibility/"
+                "e_is_transcendental_target_observation.json"
+            ),
+        },
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/euler": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 153.5,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/feuerbach": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 1560.6,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/fourier": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem mapping is manual-review and theorem plus "
+            "assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 3977.2,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/four_squares": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 182.1,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/friendship": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 182.0,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/fta": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 158.3,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/gcd": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 162.2,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
+    "100/green": {
+        "status": "pass",
+        "evidence_scope": (
+            "load_only; theorem and assumption fingerprints remain missing"
+        ),
+        "log_active_seconds_approx": 4437.4,
+        "peak_rss_kib": None,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+            "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+            "candle_executable_sha256": (
+                "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3"
+            ),
+            "resource_sampling": "incomplete_after_procfs_sampler_race",
+        },
+    },
 }
 
 
@@ -226,15 +556,31 @@ def _theorem_request(target, load_files):
 
     theorems = []
     for name in requested_names:
-        occurrences = declarations.get(name, [])
+        declaration_name = name.rsplit(".", 1)[-1]
+        occurrences = declarations.get(declaration_name, [])
         if not occurrences:
             raise ValueError(
                 f"{target}: requested theorem binding is absent: {name}")
-        theorems.append({
+        theorem = {
             "name": name,
             "resolved_declaration": occurrences[-1],
             "shadowed_declarations": occurrences[:-1],
-        })
+        }
+        if "." in name:
+            references = []
+            reference_re = re.compile(rf"(?<![A-Za-z0-9_']){re.escape(name)}"
+                                      rf"(?![A-Za-z0-9_'])")
+            for path in load_files:
+                source = (ROOT / path).read_text(encoding="utf-8")
+                references.extend({
+                    "path": path,
+                    "line": source.count("\n", 0, match.start()) + 1,
+                } for match in reference_re.finditer(source))
+            if not references:
+                raise ValueError(
+                    f"{target}: qualified theorem is never referenced: {name}")
+            theorem["qualified_references"] = references
+        theorems.append(theorem)
 
     review_note = MANUAL_REVIEW_MAPPINGS.get(target)
     return {
@@ -267,7 +613,11 @@ def build_manifest():
             raise ValueError(f"{name}: missing load files: {', '.join(missing)}")
         covered_sources.update(load_files)
         observation = BASELINE_OBSERVATIONS.get(name)
-        fingerprint_status = "not_reached" if observation else "missing"
+        fingerprint_status = (
+            "not_reached"
+            if observation and observation["status"] != "pass"
+            else "missing"
+        )
         targets.append({
             "name": name,
             "load_files": load_files,

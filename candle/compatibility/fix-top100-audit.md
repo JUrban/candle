@@ -16,7 +16,7 @@ not from `fix-top100`, and likewise contain none of the eight commits.
 
 | Commit | Corpus slice | Compatibility class | Integration assessment |
 | --- | --- | --- | --- |
-| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; small source normalization, missing oracle and fingerprints. |
+| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; minimized oracle confirms a narrow source normalization. Isolated target reload passes; fingerprint is observed but not yet reference-approved. |
 | `badbd63` | `100/e_is_transcendental` | source syntax | Removes a stray semicolon inside a call; source correction rather than a runtime feature. |
 | `02ed7f7` | `100/heron` | polymorphic comparison | Supplies `Term.(<)` to `setify`; small source normalization, missing fingerprints. |
 | `1bfc727` | `100/piseries` | numerics and value restriction | Adds `round_num`, `ceiling_num`, changes negative rational floor behavior, and adds a type annotation. Needs OCaml boundary tests before promotion. |
@@ -61,8 +61,66 @@ is not being imported: it combines the syntax workaround with broad float/byte
 FFI. The smaller implementation under test restores CakeML's retained decimal
 float token to the parser and lowers through the existing `Double.fromString`
 operation. Exact reference words and negative parses are pinned in
-`float_literal_cases.json`. This adds no FFI, but the CakeML proof build,
-rebuilt-Candle differential, clean target load, and fingerprints are missing.
+`float_literal_cases.json`. CakeML commit `30e014bd9` has passed the targeted
+four-theory build and its 10 positive normalization plus six rejection tests.
+The first translated-program build then completed 193 of its 194-theory closure
+and saved the direct float bridge theorems, but failed the final
+`caml_parserProgTheory` target at `ptree_Expr_preconds`. The failure reproduced
+the exact side-proof line removed by upstream commit `5bfcf6b40` during the
+float-disable cleanup. CakeML commit `8ef793fd8` restores that single historical
+unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
+IEEE differential, end-to-end rejection run, performance comparison, clean
+target load, and fingerprints therefore remain missing.
+
+The same clean baseline later completed target 32 of 65 with 27 load-only
+passes and five failures. In addition to `bertrand-primerecip` and
+`ceva`, `constructible` failed on the multiline `define_type` string at
+`100/constructible.ml:115`, and `cubic` failed in
+`Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
+`SEMIRING_NORMALIZERS_CONV` received Candle's incompatible inferred type. The
+latter maps directly to the small `Term.(<)` normalization in `5c44565`.
+`CANDLE-OCAML-POLYMORPHIC-COMPARISON-001` independently reproduces the boundary:
+OCaml accepts bare `(<)` at an `int list -> int list -> bool` context, whereas
+Candle fixes the bare operator at `int -> int -> bool`. Thus the approved
+direction is the two explicit term-comparator call sites, not adding general
+polymorphic comparison to Candle. After importing those exact two sites as
+`75d4062`, an isolated clean-process `100/cubic` run passed in 221.2 seconds.
+It captured a structural identity for `CUBIC` with zero hypotheses and three
+global axioms; the result remains `observed_uncompared`, not an approved
+fingerprint match. The
+former is not covered by the eight audited anchor commits, but it is already
+fixed in the audited CakeML source base by `c26aa71d2b1`. That upstream commit
+explicitly cites `100/constructible.ml`, and its regression was part of the
+green `camlTestsTheory` build; the pinned compiled Candle simply predates it.
+`cubedissection` passed after approximately 63 minutes of active log time and
+`desargues` passed after approximately 23 minutes under the recorded
+inactivity-only/unbounded-wall policy. `descartes` likewise passed after
+approximately 68.5 minutes, followed by `dirichlet` after approximately 62.7
+minutes, `div3` after approximately 2.8 minutes, and `divharmonic` after
+approximately 3.2 minutes. These passes remain provisional because no theorem
+or assumption fingerprint was captured.
+
+Target 24, `e_is_transcendental`, then failed after approximately 4.1 minutes.
+The parser points at the start of `module Pm_eqn4_rhs`, but the isolated module
+name passes. The minimized OCaml/Candle differential instead identifies the
+trailing semicolon after `ll5` inside that module: OCaml 4.14.1 accepts it and
+compiled Candle rejects the whole enclosing phrase. This exactly matches the
+one-token correction in `badbd63`; no parser extension is selected.
+The exact correction was imported as `6ce6fc1`, after which a clean isolated
+target run passed in 256.5 seconds. The intended theorem is module-scoped as
+`Finale.TRANSCENDENTAL_E`, so the runner now requests that safe qualified value
+path. The resulting structural identity has zero hypotheses and three global
+axioms, but remains `observed_uncompared` pending an approved reference.
+The valid live baseline then continued: `euler` passed after approximately 2.6
+minutes and `feuerbach` after approximately 26.0 minutes. Those results remain
+provisional load-only evidence. `fourier` then passed after approximately 66.3
+minutes; its broad theorem mapping remains explicit manual-review in addition
+to the missing reference fingerprints.
+`four_squares` followed with a load-only pass after approximately 3.0 minutes.
+`friendship` also passed after approximately 3.0 minutes.
+`fta` passed after approximately 2.6 minutes.
+`gcd` passed after approximately 2.7 minutes.
+`green` passed after approximately 74.0 minutes.
 
 ## Integration sequence
 

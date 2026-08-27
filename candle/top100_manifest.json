@@ -498,11 +498,33 @@
         "expected_identities": null
       },
       "fingerprints": {
-        "status": "missing",
+        "status": "not_reached",
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "dependency_load",
+        "compatibility_category": "missing numeric helper",
+        "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
+        "diagnostic": "undefined value round_num while loading Examples/sos.ml",
+        "first_source_location": "Examples/sos.ml",
+        "wall_seconds": 1428.4,
+        "peak_rss_kib": null,
+        "anchor_candidate": "218c7c9",
+        "isolated_numeric_validation": {
+          "status": "pass",
+          "selected_case_count": 15,
+          "oracle": "candle/compatibility/test_num_rationals.py",
+          "source_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
+          "target_status": "pending_remaining_sos_compatibility"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/circle",
@@ -689,11 +711,29 @@
         "expected_identities": null
       },
       "fingerprints": {
-        "status": "missing",
+        "status": "not_reached",
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml multiline string literal",
+        "diagnostic": "LEXER ERROR; Parsing failed inside the multiline define_type string",
+        "first_source_location": "100/constructible.ml:115",
+        "log_active_seconds_approx": 3730.4,
+        "peak_rss_kib": null,
+        "upstream_remedy": {
+          "repository": "CakeML/cakeml",
+          "commit": "c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+          "status": "present_in_audited_source_base; compiled Candle rebuild required"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/cosine",
@@ -775,7 +815,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3794.6,
+        "observed_process_rss_kib": 6413644,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/cubic",
@@ -812,11 +863,32 @@
         "expected_identities": null
       },
       "fingerprints": {
-        "status": "missing",
+        "status": "not_reached",
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "dependency_elaboration",
+        "compatibility_category": "polymorphic comparison",
+        "ledger_id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
+        "diagnostic": "SEMIRING_NORMALIZERS_CONV comparator inferred as term -> term -> bool where int -> int -> bool was expected",
+        "first_source_location": "Complex/complexnumbers.ml:720",
+        "log_active_seconds_approx": 192.0,
+        "peak_rss_kib": null,
+        "anchor_candidate": "5c44565",
+        "isolated_source_validation": {
+          "source_normalization_commit": "75d4062",
+          "status": "pass",
+          "fingerprint_status": "observed_uncompared",
+          "artifact": "candle/compatibility/cubic_target_observation.json"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/derangements",
@@ -900,7 +972,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 1379.9,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/descartes",
@@ -941,7 +1024,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 4108.9,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/dirichlet",
@@ -987,7 +1081,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3759.4,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/div3",
@@ -1029,7 +1134,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 169.0,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/divharmonic",
@@ -1071,7 +1187,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 193.8,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/e_is_transcendental",
@@ -1079,7 +1206,7 @@
         "100/e_is_transcendental.ml"
       ],
       "load_file_sha256": {
-        "100/e_is_transcendental.ml": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839"
+        "100/e_is_transcendental.ml": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0"
       },
       "direct_needs": [
         "Library/binomial.ml",
@@ -1099,12 +1226,18 @@
         "review_note": null,
         "theorems": [
           {
-            "name": "TRANSCENDENTAL_E",
+            "name": "Finale.TRANSCENDENTAL_E",
             "resolved_declaration": {
               "path": "100/e_is_transcendental.ml",
               "line": 2903
             },
-            "shadowed_declarations": []
+            "shadowed_declarations": [],
+            "qualified_references": [
+              {
+                "path": "100/e_is_transcendental.ml",
+                "line": 2910
+              }
+            ]
           }
         ],
         "identity_contract": {
@@ -1115,11 +1248,34 @@
         "expected_identities": null
       },
       "fingerprints": {
-        "status": "missing",
+        "status": "not_reached",
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "trailing semicolon in argument expression",
+        "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+        "diagnostic": "Expected to be at EOF; parsing rejects the enclosing Pm_eqn4_rhs module phrase",
+        "diagnostic_pointer": "100/e_is_transcendental.ml:921",
+        "first_incompatible_source_location": "100/e_is_transcendental.ml:995",
+        "log_active_seconds_approx": 246.7,
+        "peak_rss_kib": null,
+        "anchor_candidate": "badbd63",
+        "isolated_source_validation": {
+          "source_normalization_commit": "6ce6fc1",
+          "status": "pass",
+          "fingerprint_status": "observed_uncompared",
+          "fingerprint_value_path": "Finale.TRANSCENDENTAL_E",
+          "artifact": "candle/compatibility/e_is_transcendental_target_observation.json"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/euler",
@@ -1160,7 +1316,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 153.5,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/feuerbach",
@@ -1201,7 +1368,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 1560.6,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/fourier",
@@ -1266,7 +1444,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem mapping is manual-review and theorem plus assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3977.2,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/four_squares",
@@ -1316,7 +1505,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 182.1,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/friendship",
@@ -1358,7 +1558,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 182.0,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/fta",
@@ -1399,7 +1610,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 158.3,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/gcd",
@@ -1440,7 +1662,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 162.2,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/green",
@@ -1482,7 +1715,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 4437.4,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/heron",

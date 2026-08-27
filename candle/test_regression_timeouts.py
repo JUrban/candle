@@ -4,8 +4,18 @@
 import json
 from pathlib import Path
 import unittest
+from unittest import mock
 
 import regression
+
+
+class _FakeProcess:
+    def __init__(self, pid):
+        self.pid = pid
+        self.close_calls = []
+
+    def close(self, force=False):
+        self.close_calls.append(force)
 
 
 class TimeoutPolicyTest(unittest.TestCase):
@@ -64,6 +74,30 @@ class TimeoutPolicyTest(unittest.TestCase):
         self.assertEqual(policy["load_inactivity_timeout_seconds"], 1800)
         self.assertIsNone(policy["total_wall_timeout_seconds"])
         self.assertEqual(policy["wall_policy"], "unbounded")
+
+    def test_teardown_kills_verified_pexpect_process_group(self):
+        repl = object.__new__(regression.CandleREPL)
+        repl.process = _FakeProcess(123)
+        with (
+            mock.patch.object(regression.os, "getpgid", return_value=123),
+            mock.patch.object(regression.os, "getsid", return_value=123),
+            mock.patch.object(regression.os, "killpg") as killpg,
+        ):
+            repl.kill()
+        killpg.assert_called_once_with(123, regression.signal.SIGKILL)
+        self.assertEqual(repl.process.close_calls, [True])
+
+    def test_teardown_never_kills_an_unrelated_process_group(self):
+        repl = object.__new__(regression.CandleREPL)
+        repl.process = _FakeProcess(123)
+        with (
+            mock.patch.object(regression.os, "getpgid", return_value=99),
+            mock.patch.object(regression.os, "getsid", return_value=99),
+            mock.patch.object(regression.os, "killpg") as killpg,
+        ):
+            repl.kill()
+        killpg.assert_not_called()
+        self.assertEqual(repl.process.close_calls, [True])
 
 
 if __name__ == "__main__":

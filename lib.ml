@@ -537,6 +537,11 @@ let increasing f x y = compare (f x) (f y) < 0;;
 let decreasing f x y = compare (f x) (f y) > 0;;
 *)
 
+(* Candle deliberately has no general polymorphic [compare]. Keep the
+   explicit-comparator variant separate so source adaptations do not change
+   the arity of HOL Light's conventional [increasing] helper. *)
+let increasing_by cmp f x y = cmp (f x) (f y) < 0;;
+
 (* ------------------------------------------------------------------------- *)
 (* Polymorphic finite partial functions via Patricia trees.                  *)
 (*                                                                           *)
@@ -566,6 +571,11 @@ let pp_func pk pv (Func (cmp, f)) =
   Pretty_printer.app_block "func"
     [Pretty_printer.pp_list (fun (k, v) ->
       Pretty_printer.tuple [pk k; pv v]) f];;
+
+(* Explicit structural comparison for finite functions.  Candle cannot use
+   OCaml's polymorphic comparison here: callers must supply the key/value-pair
+   comparator appropriate to the function's representation. *)
+let _func_compare cmp (Func (_, f)) (Func (_, g)) = List.compare cmp f g;;
 
 (* ------------------------------------------------------------------------- *)
 (* Undefined function.                                                       *)

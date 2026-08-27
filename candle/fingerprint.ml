@@ -3,6 +3,16 @@
 
 let candle_s1_field s = string_of_int (String.length s) ^ ":" ^ s;;
 
+let candle_s1_hex_digits = "0123456789abcdef";;
+
+let candle_s1_hex_byte s =
+  let n = Char.code (String.get s 0) in
+  String.make 1 (String.get candle_s1_hex_digits (n / 16)) ^
+  String.make 1 (String.get candle_s1_hex_digits (n mod 16));;
+
+let candle_s1_hex s =
+  String.concat "" (List.map candle_s1_hex_byte (explode s));;
+
 let candle_s1_node tag fields =
   candle_s1_field tag ^
   candle_s1_field (string_of_int (List.length fields)) ^
@@ -69,10 +79,10 @@ let candle_s1_emit_fingerprint name theorem =
     candle_s1_theorem_parts theorem in
   let axiom_identity = candle_s1_global_axioms () in
   print_endline
-    ("CANDLE_FINGERPRINT_V1\t" ^ String.escaped name ^ "\t" ^
-     String.escaped theorem_identity ^ "\t" ^
-     String.escaped hypothesis_identity ^ "\t" ^
-     String.escaped conclusion_identity ^ "\t" ^
-     String.escaped axiom_identity ^ "\t" ^
+    ("CANDLE_FINGERPRINT_V1\t" ^ candle_s1_hex name ^ "\t" ^
+     candle_s1_hex theorem_identity ^ "\t" ^
+     candle_s1_hex hypothesis_identity ^ "\t" ^
+     candle_s1_hex conclusion_identity ^ "\t" ^
+     candle_s1_hex axiom_identity ^ "\t" ^
      string_of_int (List.length (hyp theorem)) ^ "\t" ^
      string_of_int (List.length (axioms())));;

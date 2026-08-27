@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "benchmark": "CANDLE-OCAML-FLOAT-LITERAL-001 load-time v1",
+  "measurement_scope": "post-boot #use through Finished loading",
+  "terms_per_source": 100,
+  "repetitions": 3,
+  "candle_root": "/project/worktrees/candle-source-v13",
+  "candle_git_head": "bb5fb495c8e850d525f58f25a13a51ebbc974a10",
+  "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+  "scenarios": {
+    "integer_control": {
+      "outcome": "pass",
+      "runs": [
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.11217482481151819
+        },
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.11401740368455648
+        },
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.11461379006505013
+        }
+      ],
+      "median_seconds": 0.11401740368455648,
+      "minimum_seconds": 0.11217482481151819,
+      "maximum_seconds": 0.11461379006505013
+    },
+    "explicit_from_string": {
+      "outcome": "pass",
+      "runs": [
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.2469191737473011
+        },
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.22470708098262548
+        },
+        {
+          "outcome": "pass",
+          "elapsed_seconds": 0.25437410781159997
+        }
+      ],
+      "median_seconds": 0.2469191737473011,
+      "minimum_seconds": 0.22470708098262548,
+      "maximum_seconds": 0.25437410781159997
+    },
+    "source_literal": {
+      "outcome": "reject",
+      "runs": [
+        {
+          "outcome": "reject",
+          "elapsed_seconds": 0.06577819958329201,
+          "detail": "Parsing failed"
+        },
+        {
+          "outcome": "reject",
+          "elapsed_seconds": 0.06526131182909012,
+          "detail": "Parsing failed"
+        },
+        {
+          "outcome": "reject",
+          "elapsed_seconds": 0.0657659750431776,
+          "detail": "Parsing failed"
+        }
+      ],
+      "median_seconds": 0.0657659750431776,
+      "minimum_seconds": 0.06526131182909012,
+      "maximum_seconds": 0.06577819958329201
+    }
+  }
+}

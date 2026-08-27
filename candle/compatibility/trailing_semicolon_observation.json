@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+  "source_head": "0985479f63ee59b7b017cdc0f8efbf61d1377597",
+  "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+  "ocaml_reference": {
+    "version": "4.14.1",
+    "module_identifier_control": "accepted",
+    "trailing_semicolon_reproducer": "accepted"
+  },
+  "candle_runs": [
+    {
+      "oracle": "candle/compatibility/oracles/module_identifier_underscore.ml",
+      "status": "PASS",
+      "total_elapsed_seconds": 143.13986427290365,
+      "test_elapsed_seconds": 0.06637565791606903,
+      "peak_process_rss_kib": 6329244,
+      "peak_tree_rss_kib": 6332844
+    },
+    {
+      "oracle": "candle/compatibility/oracles/trailing_semicolon_argument.ml",
+      "status": "FAIL",
+      "error_message": "Parsing failed [while loading: candle/compatibility/oracles/trailing_semicolon_argument.ml] (last val: candle_semicolon_identity)",
+      "total_elapsed_seconds": 143.03049776516855,
+      "test_elapsed_seconds": 0.060680152382701635,
+      "peak_process_rss_kib": 6329248,
+      "peak_tree_rss_kib": 6332808
+    }
+  ],
+  "classification": "the module identifier is accepted; the trailing semicolon causes rejection of the enclosing module phrase"
+}
