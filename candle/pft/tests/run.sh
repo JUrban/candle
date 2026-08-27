@@ -27,13 +27,21 @@ fi
 
 tmp_dir=$(mktemp -d)
 trap 'rm -rf -- "$tmp_dir"' EXIT
+coverage_fixture="$tmp_dir/command-coverage.pft.bin"
+python3 "$test_dir/derive_command_coverage_fixture.py" \
+  "$core_fixture" "$coverage_fixture"
 python3 "$test_dir/mutate_fixtures.py" "$core_fixture" "$tmp_dir/malformed"
-python3 "$test_dir/inspect_opcodes.py" \
-  "$core_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
+python3 "$test_dir/inspect_opcodes.py" --require-all \
+  "$coverage_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
   "$flyspeck_hol_library_fixture" "$flyspeck_refinement_fixture" \
   "$compute_fixture" "$resume_fixture" \
   >"$tmp_dir/opcodes.json"
-printf 'PASS: structural opcode inspection (pass)\n'
+python3 "$test_dir/mutate_command_classes.py" \
+  "$tmp_dir/command-classes" \
+  "$coverage_fixture" "$preamble_fixture" "$hol_light_bootstrap_fixture" \
+  "$flyspeck_hol_library_fixture" "$flyspeck_refinement_fixture" \
+  "$compute_fixture" "$resume_fixture"
+printf 'PASS: complete positive opcode inspection (pass)\n'
 
 run_replay() {
   local expected=$1
@@ -72,6 +80,15 @@ run_replay pass "$core_fixture" core '' \
       pft_result_axioms evidence = []
    then print_endline "Evidence OK"
    else failwith "unexpected core replay evidence";;'
+run_replay pass "$coverage_fixture" command-coverage '' \
+  'if pft_result_command_count evidence = 21 &&
+      pft_result_table_limits evidence = (3,4,3) &&
+      pft_result_peak_live evidence = (3,4,3) &&
+      map fst (pft_result_saved_theorems evidence) =
+        ["fixture$REFL_TRANS"; "fixture$ASSUME"] &&
+      pft_result_axioms evidence = []
+   then print_endline "Evidence OK"
+   else failwith "unexpected command-coverage replay evidence";;'
 run_replay reject "$axiom_fixture" unauthorized-axiom
 run_replay reject "$impostor_fixture" impostor-standard-axiom \
   'allow_standard_pft_axioms ();;'
@@ -142,4 +159,8 @@ run_replay pass "$resume_fixture" producer-resume '' \
 for trace in "$tmp_dir"/malformed/*.pft.bin; do
   label=$(basename "$trace" .pft.bin)
   run_replay reject "$trace" "$label"
+done
+for trace in "$tmp_dir"/command-classes/*.pft.bin; do
+  label=$(basename "$trace" .pft.bin)
+  run_replay reject "$trace" "$label" 'allow_standard_pft_axioms ();;'
 done

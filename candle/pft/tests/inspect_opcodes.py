@@ -90,13 +90,16 @@ class Decoder:
             self.varint()
 
 
-def inspect(path: Path) -> dict[str, object]:
+def inspect_with_positions(
+    path: Path,
+) -> tuple[dict[str, object], dict[str, int]]:
     decoder = Decoder(path.read_bytes())
     if decoder.raw(4) != b"PFT\0":
         raise ValueError("bad PFT magic")
     version = decoder.string().decode("utf-8")
     ruleset = decoder.string().decode("utf-8")
     counts: Counter[str] = Counter()
+    positions: dict[str, int] = {}
     footer_length: int | None = None
 
     while decoder.position < len(decoder.data):
@@ -106,6 +109,7 @@ def inspect(path: Path) -> dict[str, object]:
         except KeyError as error:
             raise ValueError(f"unknown opcode 0x{opcode:02x}") from error
         counts[name] += 1
+        positions.setdefault(name, decoder.position - 1)
 
         if opcode == 0x01:
             decoder.varint(); decoder.string()
@@ -156,7 +160,7 @@ def inspect(path: Path) -> dict[str, object]:
     if footer_length is None:
         raise ValueError("missing footer")
 
-    return {
+    result = {
         "path": str(path),
         "version": version,
         "ruleset": ruleset,
@@ -164,13 +168,34 @@ def inspect(path: Path) -> dict[str, object]:
         "opcodes": dict(sorted(counts.items())),
         "footer_encoded_length": footer_length,
     }
+    return result, positions
+
+
+def inspect(path: Path) -> dict[str, object]:
+    result, _ = inspect_with_positions(path)
+    return result
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--require-all",
+        action="store_true",
+        help="reject the input set unless every supported opcode occurs",
+    )
     parser.add_argument("trace", nargs="+", type=Path)
     args = parser.parse_args()
-    print(json.dumps([inspect(path) for path in args.trace], indent=2))
+    results = [inspect(path) for path in args.trace]
+    if args.require_all:
+        observed = {
+            opcode_name
+            for result in results
+            for opcode_name in result["opcodes"]
+        }
+        missing = sorted(set(OPCODE_NAMES.values()) - observed)
+        if missing:
+            raise ValueError(f"missing supported opcodes: {', '.join(missing)}")
+    print(json.dumps(results, indent=2))
 
 
 if __name__ == "__main__":

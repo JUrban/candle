@@ -72,11 +72,16 @@ The HOL Light bootstrap was produced from development branch
 project lock manifest when the producer checkpoint is cut.
 
 Run `./candle/pft/tests/run.sh` from the Candle repository root.  The harness
-first structurally decodes every positive fixture, replays the golden traces,
-then creates deterministic corruptions and
-checks that each one is rejected in a fresh Candle process.  A structurally
-valid AXIOM trace is also required to fail under the default-deny policy.  The
-official preamble must pass only after enabling the exact standard-axiom
+first structurally decodes every positive fixture.  At test time it derives a
+trace from the official core fixture with safe end-of-stream `DEL_TYPE`,
+`DEL_TERM`, and `DEL_THEOREM_RANGE` commands; the complete fixture set must
+positively exercise every supported opcode.  It then inserts a non-canonical
+integer immediately after one occurrence of every command opcode and checks
+that each resulting trace is rejected in a fresh Candle process.  No derived
+trace is checked in or substituted for its official golden source.  A
+structurally valid AXIOM trace is also required to fail under the default-deny
+policy.  The official preamble must pass only after enabling the exact
+standard-axiom
 identity policy, while a trace using the name `SELECT_AX` for a different
 statement must still fail.  The HOL Light bootstrap must pass under the same
 exact policy with six saved theorems and three authorized axioms.
