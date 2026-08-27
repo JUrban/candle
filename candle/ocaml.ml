@@ -283,6 +283,54 @@ module Bytes = struct
 end;;
 
 module Sys = struct
+  (*
+     The release loader supplies these values from its hashed manifest rather
+     than inheriting the host process environment.  Keep the allowlist small:
+     Flyspeck only needs these names during the direct-source build, and an
+     absent serialization entry must retain OCaml's [Not_found] behaviour.
+
+     This is a source-level compatibility slice.  [file_exists] intentionally
+     uses CakeML's verified TextIO-backed file predicate, so it covers ordinary
+     files but not directories.  Directory queries remain a separate, open FFI
+     contract instead of silently widening this predicate with shell access.
+  *)
+  let manifest_environment = ref ([] : (string * string) list)
+  let manifest_cwd = ref (None : string option)
+
+  let configure_manifest_environment cwd flyspeck_dir hollight_dir
+                                         serialization_enabled =
+    if cwd = "" || flyspeck_dir = "" || hollight_dir = "" then
+      invalid_arg "Sys.configure_manifest_environment: empty path"
+    else
+      let bindings =
+        [("FLYSPECK_DIR", flyspeck_dir);
+         ("HOLLIGHT_DIR", hollight_dir)] in
+      let bindings' =
+        if serialization_enabled then
+          ("FLYSPECK_SERIALIZATION", "1") :: bindings
+        else bindings in
+      manifest_cwd := Some cwd;
+      manifest_environment := bindings';;
+
+  let rec getenv_from_manifest name = function
+    | [] -> raise Not_found
+    | (key, value) :: rest ->
+        if key = name then value else getenv_from_manifest name rest
+
+  let getenv name = getenv_from_manifest name !manifest_environment
+
+  let getcwd () =
+    match !manifest_cwd with
+    | None -> raise (Sys_error "Sys.getcwd: manifest environment not configured")
+    | Some cwd -> cwd
+
+  let file_exists = isFile
+
+  (* The compatibility target is the pinned OCaml differential oracle.  The
+     suffix makes it explicit that this is Candle, while preserving the OCaml
+     version probes used by Flyspeck. *)
+  let ocaml_version = "4.14.1-candle"
+
   let remove (s: string) = print "TODO Sys.remove (noop)\n"
   let command (s: string) =
     let slen = String.length s in
@@ -303,7 +351,30 @@ module Sys = struct
     Float.zero;;
 end;;
 
+(* Save the boot-library filename operations before the OCaml-compatible
+   [Filename] module below shadows that module name. *)
+let candle_filename_is_relative = Filename.isRelative
+let candle_filename_concat = Filename.concat
+let candle_filename_basename = Filename.basename
+let candle_filename_dirname = Filename.dirname
+
 module Filename = struct
+  (* Preserve the filename operations supplied by Candle's verified boot
+     library.  Defining this OCaml-compatibility module used to shadow those
+     operations and retain only the two temporary-file stubs. *)
+  let current_dir_name = "."
+  let parent_dir_name = ".."
+  let is_relative = candle_filename_is_relative
+  let concat = candle_filename_concat
+  let basename = candle_filename_basename
+  let dirname = candle_filename_dirname
+
+  let check_suffix name suffix =
+    let name_len = String.length name in
+    let suffix_len = String.length suffix in
+    suffix_len <= name_len &&
+    String.sub name (name_len - suffix_len) suffix_len = suffix
+
   let get_temp_dir_name () =
     print_endline "TODO Filename.get_temp_dir_name (always returns /tmp)";
     "/tmp"

@@ -26,22 +26,35 @@ The manifest also pins `flyspeck_l2_target.ml`, the direct Candle theorem glue
 for `Candle_flyspeck_l2.tame_imp_kepler_conjecture`; that file has no trace
 producer or theorem-import shortcut.
 
-`flyspeck_loader.ml` is the initial enforcing loader slice.  The manifest
-launcher binds the source root and build mode as explicit source-level inputs;
-the current verified runtime does not implement `Sys.getenv`.  The loader
-fails closed unless the mode is `full`, checks the required source roots,
-installs only the manifest load paths, runs the complete authoritative build
-sequence, and then loads the direct target.  It does not yet check every
-manifest digest or implement versioned checkpoints, so it is not execution
-acceptance evidence.
+`flyspeck_loader.ml` is the initial enforcing loader slice.  In a clean Candle
+process it first fails closed unless the mode is `full`, then loads the pinned
+Candle/HOL source stack itself.  The launcher supplies the Candle and Flyspeck
+roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
+turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
+source build; ambient host variables are not inherited.  The loader checks
+ordinary marker files, installs only the manifest load paths, runs the complete
+authoritative build sequence, and then loads the direct target.  It does not
+yet check every manifest digest or implement versioned checkpoints, so it is
+not execution acceptance evidence.
 
 The fail-closed ordering is exercised against a compiled Candle executable by
 `test_flyspeck_loader_guard.sh`; the negative test must reach the exact mode
 exception without reaching filesystem compatibility or the success marker.
-With `full` selected, `test_flyspeck_loader_frontier.sh` currently localizes
-the next P0 runtime gap to missing `Sys.file_exists`, before strictbuild is
-loaded.  That expected-gap test must be replaced by positive OCaml-equivalent
-file-and-directory behavior before this loader slice can advance.
+With `full` selected, `test_flyspeck_loader_frontier.sh` now proves that the
+compiled path passes the former manifest-environment, ordinary-file,
+`Filename.concat`, and standard `load_path` frontiers.  It reaches the exact
+direct source file and stops at `build/strictbuild.hl:21`, where Candle does not
+yet recognize `#load "unix.cma";;`.  The pinned direct corpus has exactly 17
+standalone `#load` directives: ten `unix.cma`, five `str.cma`, and two
+`nums.cma`.  The next frontend slice must accept only this declared static
+library set (or record an exact mechanical normalization) and must fail on
+unknown libraries.  A generic no-op would violate the no-silent-fallback rule.
+
+`Sys.file_exists` in this slice deliberately forwards to CakeML's verified
+TextIO-backed ordinary-file predicate.  OCaml-compatible directory existence,
+`Sys.is_directory`, and `Sys.readdir` remain open and require the versioned,
+sandboxed filesystem contract.  No directory behavior is claimed by the
+marker-file checks.
 
 This artifact is deliberately not loader-execution evidence.  In particular,
 two generated-runtime contracts remain visible:

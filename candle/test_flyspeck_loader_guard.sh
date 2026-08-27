@@ -9,6 +9,7 @@ fi
 loader_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 candle_script=$(realpath -- "$1")
 flyspeck_root=$(realpath -- "$2")
+candle_root=$(cd -- "$(dirname -- "$candle_script")" && pwd)
 log=$(mktemp /tmp/candle-flyspeck-loader-guard.XXXXXX.log)
 cleanup() {
   find "$log" -maxdepth 0 -type f -delete 2>/dev/null || true
@@ -19,6 +20,7 @@ trap cleanup EXIT
   cd -- "$(dirname -- "$candle_script")"
   timeout 180 "$candle_script" >"$log" 2>&1 <<EOF
 let candle_flyspeck_root = "$flyspeck_root";;
+let candle_hollight_root = "$candle_root";;
 let candle_flyspeck_build_mode = "not-full";;
 #use "$loader_dir/flyspeck_loader.ml";;
 EOF

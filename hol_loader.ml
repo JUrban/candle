@@ -11,3 +11,9 @@
 (* ========================================================================= *)
 
 let hol_dir = ref "hol-light/";;
+
+(* Candle's verified boot loader keeps the search path in
+   [Cakeml.loadPath].  Expose the standard HOL Light name as the same reference
+   so direct source workloads can extend it without maintaining a second,
+   divergent path list. *)
+let load_path = Cakeml.loadPath;;
