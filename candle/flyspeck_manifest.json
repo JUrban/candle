@@ -11990,6 +11990,20 @@
       "sha256": "a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c"
     }
   },
+  "static_full_build_contract": {
+    "activation_status": "generated-fail-closed-pending-loader-action",
+    "directive": "#flyspeck_needs",
+    "entry_count": 297,
+    "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, failed, or unsupported dynamic loads abort; the directive must not be erased or implemented as an ordinary successful no-op",
+    "generated_source": "candle:candle/flyspeck_full_build.ml",
+    "generated_source_md5": "5853a6e82e9303ba52ad874c98282842",
+    "generated_source_sha256": "1bb71f85fd66c23d974599ded954344fd54f8b6904ebb4e51c4325d9ca0e8947",
+    "open_gate": "the generated program is not executed until the compiled Candle loader implements and tests the exact action",
+    "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
+    "required_loader_action": "at the directive position resolve only the manifest-selected source; if not already loaded, evaluate it and then call State_manager.neutralize_state exactly once after success; an already-loaded duplicate performs neither action",
+    "source_selection_binding": "every generated entry records its manifest-selected source key and SHA-256 beside the authoritative target literal",
+    "unique_target_count": 287
+  },
   "static_library_contract": {
     "activation_status": "blocked-pending-static-binding-evidence",
     "binding_evidence": {

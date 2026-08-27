@@ -181,6 +181,44 @@ class GeneratedManifestTests(unittest.TestCase):
             memberships["candle:candle/flyspeck_l2_target.ml"],
         )
 
+    def test_static_full_build_program_is_exact_and_fail_closed(self):
+        contract = self.payload["static_full_build_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "generated-fail-closed-pending-loader-action",
+        )
+        self.assertEqual(contract["directive"], "#flyspeck_needs")
+        self.assertEqual(contract["entry_count"], 297)
+        self.assertEqual(contract["unique_target_count"], 287)
+        self.assertIn("neutralize_state exactly once", contract["required_loader_action"])
+        self.assertIn("already-loaded duplicate", contract["required_loader_action"])
+        self.assertIn("must not be erased", contract["failure_policy"])
+
+        generated = Path(__file__).with_name("flyspeck_full_build.ml")
+        self.assertTrue(generated.is_file())
+        self.assertEqual(
+            flyspeck_manifest._sha256(generated),
+            contract["generated_source_sha256"],
+        )
+        source = generated.read_text(encoding="utf-8")
+        directives = [
+            line for line in source.splitlines()
+            if line.startswith("#flyspeck_needs ")
+        ]
+        self.assertEqual(len(directives), contract["entry_count"])
+        targets = [
+            json.loads(line[len("#flyspeck_needs "):-2])
+            for line in directives
+        ]
+        self.assertEqual(targets, self.payload["build_sequence"])
+        for index, root in enumerate(self.payload["build_sequence_roots"]):
+            node = self.payload["source_nodes"][root["selected"]]
+            marker = (
+                f"(* {index:03d} selected={root['selected']} "
+                f"sha256={node['sha256']} *)"
+            )
+            self.assertIn(marker, source)
+
     def test_diagnostics_are_promotion_gates(self):
         diagnostics = self.payload["diagnostics"]
         for key in (

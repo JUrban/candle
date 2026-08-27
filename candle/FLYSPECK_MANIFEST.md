@@ -35,6 +35,17 @@ propagated through every selected dependency edge; all 399 source nodes must
 have at least one membership.  These are load/checkpoint labels, not a claim
 that a shared dependency belongs to only one mathematical subject.
 
+`flyspeck_full_build.ml` is generated from the same 297-entry sequence.  Each
+entry carries its index, stratum, manifest-selected source key, and source
+SHA-256 beside an explicit `#flyspeck_needs` directive.  The directive is
+intentionally fail-closed today.  Its required future loader action is atomic:
+evaluate a newly selected source at that exact point and call
+`State_manager.neutralize_state` once only after success; an already-loaded
+duplicate does neither.  Unknown, malformed, reordered, unresolved, or
+hash-mismatched entries abort.  This separates the static load-order contract
+from Flyspeck's `Toploop.use_file` implementation without pretending that a
+successful no-op loaded anything.
+
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries
 OCaml `Digest.file`-compatible MD5 values for 398 selected source nodes: every
@@ -55,8 +66,10 @@ turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, runs the complete
 authoritative build sequence, and then loads the direct target.  It does not
-yet check every manifest digest or implement versioned checkpoints, so it is
-not execution acceptance evidence.
+yet execute the generated static sequence or implement versioned checkpoints,
+so it is not execution acceptance evidence.  Its current source preflight
+checks all selected source nodes except the already-executing loader; the
+outer release lock authenticates that loader and the generated contracts.
 
 The fail-closed ordering is exercised against a compiled Candle executable by
 `test_flyspeck_loader_guard.sh`; the negative test must reach the exact mode
