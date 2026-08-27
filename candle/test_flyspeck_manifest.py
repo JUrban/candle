@@ -725,6 +725,28 @@ class GeneratedManifestTests(unittest.TestCase):
             ],
         )
         self.assertIn("let gettimeofday () =\n    Float.zero", source)
+        process_route = evidence["unix.cma"]["process_filesystem_route"]
+        self.assertIn("fail-closed-bindings", process_route["status"])
+        self.assertEqual(
+            process_route["lp_mkdir_disposition"]["normalization"],
+            "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+        )
+        chain = process_route["glpk_generator_chain"]
+        self.assertEqual(chain["reviewed_occurrence_count"], 32)
+        self.assertEqual(chain["external_qualified_uses"], [])
+        self.assertEqual(chain["route_root"], "Lpproc.execute")
+        self.assertEqual(
+            chain["module_opens"],
+            [{
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml",
+                "line": 58,
+                "module_path": "Glpk_link",
+                "path_form": "simple",
+                "override_warning_suppression": False,
+            }],
+        )
+        self.assertIn("not proof against reflection", chain["assurance_limit"])
+        self.assertIn("let chdir path =", source)
 
     def test_digest_compatibility_contract_is_exact_and_source_backed(self):
         contract = self.payload["ocaml_compatibility_contract"]

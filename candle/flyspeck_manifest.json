@@ -3190,8 +3190,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "bbf86c97f90944a70f0d0347e9dac05b",
-    "generated_source_sha256": "4ee2ad10e2f7f8ae81f971d350bd32c99697afb499ba1d60a93781f4f6ca4630",
+    "generated_source_md5": "949f016c2779c3534abad78ee4d829b8",
+    "generated_source_sha256": "bc3c5624e21fc7041d74d0f03cd5307421113a4260cb2f57812a5b256e91245a",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -9309,10 +9309,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a6ccf445c48e653209871a13323d3218",
+      "md5": "824b085bf29137fd8384c4e6e2b3a69e",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "1e6ec466f94009c542d6167ad1137afcbc75d438904483d1c1d4cd6283ac1849"
+      "sha256": "84e61ac98aa9d57482ed87fea0aea57d648d8505766123ad87479c6ab1323606"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -9339,12 +9339,12 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 30316,
+      "bytes": 30791,
       "dependencies": [],
-      "md5": "f3bd0be05fd084b346fd0da78b121550",
+      "md5": "17c52bb024ed4744db54f4424ef3066b",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "86fb4288b714cf69883c984432d5bb9e161d39ddb0c06653f1c5a529f8e769f3"
+      "sha256": "2ec2a65214cc706e0c0dc9cfb883d1d94e4c93dce6025a9451d59d0efce97b8d"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -16838,6 +16838,234 @@
           "open_process",
           "open_process_in"
         ],
+        "process_filesystem_route": {
+          "glpk_generator_chain": {
+            "assurance_limit": "the exact lexical chain and absence of selected external callers are necessary non-use evidence, not proof against reflection or external input; a complete compiled run and final theorem fingerprints remain mandatory",
+            "definition_only_entrypoints": [
+              "Glpk_link.cpx_branch",
+              "Glpk_link.display_ampl",
+              "Glpk_link.display_lp",
+              "Glpk_link.get_dumpvar",
+              "Glpk_link.solve_dual_f",
+              "Glpk_link.strip_archive",
+              "Lpproc.execute"
+            ],
+            "external_qualified_uses": [],
+            "module_opens": [
+              {
+                "line": 58,
+                "module_path": "Glpk_link",
+                "override_warning_suppression": false,
+                "path_form": "simple",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              }
+            ],
+            "policy": "load the shared pure definitions, but keep Sys.chdir, Sys.command, Unix.open_process, Unix.close_process, and Unix.mkdir fail-closed; any unexpected invocation must abort the one-shot S3 run",
+            "reviewed_occurrence_count": 32,
+            "reviewed_occurrences": [
+              {
+                "identifier": "strip_archive",
+                "line": 140,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "display_ampl",
+                "line": 189,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "solve",
+                "line": 199,
+                "role": "definition-shared-helper",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "solve_branch_f",
+                "line": 214,
+                "role": "definition-branch-adapter",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "solve",
+                "line": 216,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "solve_dual_f",
+                "line": 218,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "solve",
+                "line": 220,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "display_lp",
+                "line": 222,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "cpx_branch",
+                "line": 230,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "get_dumpvar",
+                "line": 241,
+                "role": "definition-entrypoint",
+                "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+              },
+              {
+                "identifier": "make_model",
+                "line": 78,
+                "role": "definition-terminal",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve_branch_verbose",
+                "line": 346,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve_f",
+                "line": 360,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve_branch_verbose",
+                "line": 361,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve",
+                "line": 365,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve_f",
+                "line": 365,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "filter_feas_f",
+                "line": 376,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve_f",
+                "line": 377,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "filter_feas",
+                "line": 379,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "filter_feas_f",
+                "line": 379,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "echo",
+                "line": 433,
+                "role": "definition-terminal",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "onepass",
+                "line": 435,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "echo",
+                "line": 437,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "filter_feas",
+                "line": 438,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "allpass",
+                "line": 440,
+                "role": "definition-chain",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "allpass",
+                "line": 442,
+                "role": "recursive-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "onepass",
+                "line": 442,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "execute",
+                "line": 493,
+                "role": "definition-route-root",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "make_model",
+                "line": 494,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "filter_feas",
+                "line": 498,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "solve",
+                "line": 498,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              },
+              {
+                "identifier": "allpass",
+                "line": 500,
+                "role": "deferred-call",
+                "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+              }
+            ],
+            "route_root": "Lpproc.execute"
+          },
+          "lp_mkdir_disposition": {
+            "effect": "the authenticated ordinary-certificate overlay removes mkdir, chdir, command, readdir, tar, and rm",
+            "normalization": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+            "original_line": 108,
+            "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+          },
+          "status": "selected-proof-route-static-nonuse-with-fail-closed-bindings-pending-complete-run"
+        },
         "source": "candle:candle/ocaml.ml",
         "status": "startup-metadata-and-zero-telemetry-explicit-fail-otherwise",
         "telemetry_policy": "gettimeofday returns deterministic Float.zero; exact selected consumers use elapsed values only for reports, and the external release runner owns wall/RSS telemetry",

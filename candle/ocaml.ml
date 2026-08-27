@@ -701,6 +701,14 @@ module Sys = struct
     | None -> raise (Sys_error "Sys.getcwd: manifest environment not configured")
     | Some cwd -> cwd
 
+  (* The selected proof route only mentions [Sys.chdir] inside the historical
+     GLPK generator chain and the LP archive extractor.  The latter is removed
+     by an authenticated source normalization; the former has no selected
+     external caller.  Retain the name so those deferred function bodies type,
+     but abort if the generator lane is unexpectedly entered. *)
+  let chdir path =
+    failwith ("Sys.chdir: disabled by the Flyspeck S3 runtime policy: " ^ path)
+
   let file_exists = isFile
 
   (* The compatibility target is the pinned OCaml differential oracle.  The

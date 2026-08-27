@@ -140,6 +140,56 @@ NORMALIZATION_NONUSE_SITE_REVIEWS = (
     ("flyspeck:text_formalization/general/print_types.hl", 21, "unsuppress", "signature"),
     ("flyspeck:text_formalization/general/print_types.hl", 34, "unsuppress", "definition"),
 )
+# The selected graph loads the historical GLPK generator modules because their
+# pure parsers and data types are shared with verification.  Their shell/process
+# helpers are ordinary function bodies, however, and the proof route has no
+# external lexical caller.  Freeze the complete internal call chain so a future
+# source change cannot silently make the fail-closed process bindings active.
+PROCESS_ROUTE_MODULES = {"Glpk_link", "Lpproc"}
+PROCESS_ROUTE_IDENTIFIERS_BY_SOURCE = {
+    "flyspeck:formal_lp/glpk/glpk_link.ml": {
+        "cpx_branch", "display_ampl", "display_lp", "get_dumpvar", "solve",
+        "solve_branch_f", "solve_dual_f", "strip_archive",
+    },
+    "flyspeck:formal_lp/glpk/lpproc.ml": {
+        "allpass", "echo", "execute", "filter_feas", "filter_feas_f",
+        "make_model", "onepass", "solve", "solve_branch_verbose", "solve_f",
+    },
+}
+PROCESS_ROUTE_SITE_REVIEWS = (
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 140, "strip_archive", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 189, "display_ampl", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 199, "solve", "definition-shared-helper"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 214, "solve_branch_f", "definition-branch-adapter"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 216, "solve", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 218, "solve_dual_f", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 220, "solve", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 222, "display_lp", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 230, "cpx_branch", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/glpk_link.ml", 241, "get_dumpvar", "definition-entrypoint"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 78, "make_model", "definition-terminal"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 346, "solve_branch_verbose", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 360, "solve_f", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 361, "solve_branch_verbose", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 365, "solve", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 365, "solve_f", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 376, "filter_feas_f", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 377, "solve_f", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 379, "filter_feas", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 379, "filter_feas_f", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 433, "echo", "definition-terminal"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 435, "onepass", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 437, "echo", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 438, "filter_feas", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 440, "allpass", "definition-chain"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 442, "allpass", "recursive-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 442, "onepass", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 493, "execute", "definition-route-root"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 494, "make_model", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 498, "filter_feas", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 498, "solve", "deferred-call"),
+    ("flyspeck:formal_lp/glpk/lpproc.ml", 500, "allpass", "deferred-call"),
+)
 # Operational checkpoint strata for the authoritative full sequence.  These
 # names are intentionally contiguous load-order partitions, not claims that a
 # source file has dependencies in only one mathematical area.  Transitive
@@ -986,6 +1036,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     toplevel_interface_uses: list[dict[str, object]] = []
     toplevel_consumer_uses: list[dict[str, object]] = []
     normalization_nonuse_uses: list[dict[str, object]] = []
+    process_route_uses: list[dict[str, object]] = []
+    process_route_qualified_uses: list[dict[str, object]] = []
     typed_theorem_lookup_counts: dict[str, int] = {}
     runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
     compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
@@ -1007,9 +1059,12 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             raise ValueError(f"{ref.key}: {error}") from error
         for use in scan_qualified_module_uses(
             text,
-            runtime_modules | compatibility_modules | TOPLEVEL_INTERFACE_MODULES,
+            runtime_modules | compatibility_modules | TOPLEVEL_INTERFACE_MODULES
+            | PROCESS_ROUTE_MODULES,
         ):
-            if use["module"] in TOPLEVEL_INTERFACE_MODULES:
+            if use["module"] in PROCESS_ROUTE_MODULES:
+                process_route_qualified_uses.append({"source": ref.key, **use})
+            elif use["module"] in TOPLEVEL_INTERFACE_MODULES:
                 toplevel_interface_uses.append({"source": ref.key, **use})
             else:
                 target = (
@@ -1023,6 +1078,10 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 toplevel_consumer_uses.append({"source": ref.key, **use})
             for use in scan_identifier_uses(text, NORMALIZATION_NONUSE_IDENTIFIERS):
                 normalization_nonuse_uses.append({"source": ref.key, **use})
+            process_identifiers = PROCESS_ROUTE_IDENTIFIERS_BY_SOURCE.get(ref.key)
+            if process_identifiers is not None:
+                for use in scan_identifier_uses(text, process_identifiers):
+                    process_route_uses.append({"source": ref.key, **use})
             typed_count = len(scan_identifier_uses(
                 text, {TYPED_THEOREM_LOOKUP_IDENTIFIER},
             ))
@@ -1395,6 +1454,60 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         }
         for use in normalization_nonuse_uses
     ]
+    observed_process_route_sites = {
+        (str(use["source"]), int(use["line"]), str(use["identifier"]))
+        for use in process_route_uses
+    }
+    reviewed_process_route_sites = {
+        (source, line, identifier)
+        for source, line, identifier, _role in PROCESS_ROUTE_SITE_REVIEWS
+    }
+    if len(observed_process_route_sites) != len(process_route_uses):
+        raise ValueError("duplicate reviewed process-route site")
+    if observed_process_route_sites != reviewed_process_route_sites:
+        missing = sorted(reviewed_process_route_sites - observed_process_route_sites)
+        unreviewed = sorted(observed_process_route_sites - reviewed_process_route_sites)
+        raise ValueError(
+            "process-route sites drifted: "
+            f"missing={missing}; unreviewed={unreviewed}"
+        )
+    if process_route_qualified_uses:
+        raise ValueError(
+            "selected graph gained an external qualified GLPK process-route use: "
+            f"{process_route_qualified_uses}"
+        )
+    process_route_roles = {
+        (source, line, identifier): role
+        for source, line, identifier, role in PROCESS_ROUTE_SITE_REVIEWS
+    }
+    reviewed_process_route_uses = [
+        {
+            **use,
+            "role": process_route_roles[
+                (str(use["source"]), int(use["line"]), str(use["identifier"]))
+            ],
+        }
+        for use in process_route_uses
+    ]
+    process_route_module_opens = [
+        entry for entry in declaration_opens
+        if entry["module_path"] in PROCESS_ROUTE_MODULES
+    ]
+    expected_process_route_module_opens = [
+        {
+            "source": "flyspeck:formal_lp/glpk/lpproc.ml",
+            "line": 58,
+            "module_path": "Glpk_link",
+            "path_form": "simple",
+            "override_warning_suppression": False,
+        },
+    ]
+    if process_route_module_opens != expected_process_route_module_opens:
+        raise ValueError(
+            "selected GLPK process-route module opens drifted: "
+            f"expected={expected_process_route_module_opens}; "
+            f"observed={process_route_module_opens}"
+        )
     typed_theorem_lookup_occurrences = sum(typed_theorem_lookup_counts.values())
     dependency_kind_status_counts: dict[tuple[str, str], int] = {}
     dependency_position_counts: dict[tuple[str, str], int] = {}
@@ -1699,6 +1812,65 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         if entry["module"] == "Unix"
                         and entry["member"] == "gettimeofday"
                     ],
+                    "process_filesystem_route": {
+                        "status": (
+                            "selected-proof-route-static-nonuse-with-"
+                            "fail-closed-bindings-pending-complete-run"
+                        ),
+                        "lp_mkdir_disposition": {
+                            "source": (
+                                "flyspeck:formal_lp/hypermap/main/"
+                                "lp_certificate.hl"
+                            ),
+                            "original_line": 108,
+                            "normalization": (
+                                "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001"
+                            ),
+                            "effect": (
+                                "the authenticated ordinary-certificate overlay "
+                                "removes mkdir, chdir, command, readdir, tar, and rm"
+                            ),
+                        },
+                        "glpk_generator_chain": {
+                            "reviewed_occurrences": sorted(
+                                reviewed_process_route_uses,
+                                key=lambda entry: (
+                                    str(entry["source"]), int(entry["line"]),
+                                    str(entry["identifier"]),
+                                ),
+                            ),
+                            "reviewed_occurrence_count": len(
+                                reviewed_process_route_uses
+                            ),
+                            "external_qualified_uses": (
+                                process_route_qualified_uses
+                            ),
+                            "module_opens": process_route_module_opens,
+                            "route_root": "Lpproc.execute",
+                            "definition_only_entrypoints": [
+                                "Glpk_link.cpx_branch",
+                                "Glpk_link.display_ampl",
+                                "Glpk_link.display_lp",
+                                "Glpk_link.get_dumpvar",
+                                "Glpk_link.solve_dual_f",
+                                "Glpk_link.strip_archive",
+                                "Lpproc.execute",
+                            ],
+                            "policy": (
+                                "load the shared pure definitions, but keep Sys.chdir, "
+                                "Sys.command, Unix.open_process, Unix.close_process, "
+                                "and Unix.mkdir fail-closed; any unexpected invocation "
+                                "must abort the one-shot S3 run"
+                            ),
+                            "assurance_limit": (
+                                "the exact lexical chain and absence of selected "
+                                "external callers are necessary non-use evidence, not "
+                                "proof against reflection or external input; a complete "
+                                "compiled run and final theorem fingerprints remain "
+                                "mandatory"
+                            ),
+                        },
+                    },
                     "gate": "candle:candle/test_unix_metadata.sh",
                 },
             },

@@ -49,11 +49,14 @@ let candle_unix_rejects_mkdir =
 let candle_sys_rejects_command =
   try let _ = Sys.command "true" in false
   with Failure _ -> true;;
+let candle_sys_rejects_chdir =
+  try let _ = Sys.chdir "/" in false
+  with Failure _ -> true;;
 
 if not candle_unix_rejects_command || not candle_unix_zero_clock ||
    candle_unix_timed_result <> 42 || not candle_unix_timed_zero ||
    not candle_unix_rejects_process || not candle_unix_rejects_mkdir ||
-   not candle_sys_rejects_command then
+   not candle_sys_rejects_command || not candle_sys_rejects_chdir then
   failwith "Unix fail-closed contract mismatch";;
 
 print_endline "CANDLE_UNIX_METADATA_OK";;

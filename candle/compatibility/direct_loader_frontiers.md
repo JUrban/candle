@@ -116,10 +116,14 @@ inputs through TextIO; no shell or ambient clock/user state is exposed.  The
 source compatibility layer also shadows Candle REPL's token queue with the
 small OCaml `Buffer` subset used by strictbuild and serialization.  A compiled
 gate exercises strictbuild's byte-at-a-time reader, including channel close,
-and verifies rejection of arbitrary commands and clock access.
-This does not cover indirect command helpers elsewhere in the source graph or
-general Unix process, clock, and directory semantics.  Those paths remain
-explicitly fail-closed.
+checks zero-only report telemetry, and verifies rejection of arbitrary
+commands, process creation, `mkdir`, and `chdir`.  The manifest freezes all 32
+identifier occurrences in the historical GLPK generator call chain: it finds
+no selected external qualified consumer, and its only module open is internal
+to `Lpproc`.  The LP archive's own filesystem/shell block is removed by the
+authenticated prepared-input normalization.  This is bounded static non-use
+evidence; reflection and the complete compiled run remain open.  General Unix
+process and mutable-directory semantics stay explicitly fail-closed.
 
 The separate OCaml-compatibility ledger records 23 selected `Digest` uses over
 `file`, `string`, `to_hex`, and type `t`, with no `open Digest`.  A pure

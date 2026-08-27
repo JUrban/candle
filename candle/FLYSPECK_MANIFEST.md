@@ -225,11 +225,18 @@ discards its return value).  The same source slice supplies the small pure
 OCaml `Buffer` subset used by strictbuild's byte-at-a-time reader and Flyspeck's
 serializer, rather than exposing Candle REPL's unrelated token-queue module.
 `test_unix_metadata.sh` exercises the original byte-at-a-time
-`process_to_string` pattern against a compiled Candle and proves that an
-arbitrary command and the clock operation fail closed.  This covers only
-strictbuild's load/build-report metadata.  It does not authorize the indirect
-command helpers defined elsewhere in Flyspeck, nor implement general process,
-clock, or directory behavior.  The other selected operations fail explicitly.
+`process_to_string` pattern against a compiled Candle, checks deterministic
+zero-only load-report telemetry, and proves that arbitrary commands, process
+creation, `mkdir`, and `chdir` fail closed.  The manifest also freezes the full
+32-site call chain through the historical `Glpk_link`/`Lpproc` generator
+helpers.  There is no selected external qualified consumer, and the only
+selected `open Glpk_link` is inside `Lpproc`; `Lpproc.execute` itself is
+definition-only.  The LP certificate path separately removes its original
+mkdir/chdir/command/extraction block through the authenticated ordinary-file
+normalization.  This is static non-use evidence, not proof against reflection
+or an S3 claim; complete execution and final fingerprints remain mandatory.
+General process, mutable-directory, and directory-creation behavior remains
+unimplemented and fails explicitly.
 The overall directive status is therefore
 `exact-static-link-selection-active-member-compatibility-partial`, not a claim
 of complete `unix.cma` behavior.
