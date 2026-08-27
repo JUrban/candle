@@ -250,10 +250,13 @@ class ProcessTreeSampler:
                 pid = int(entry.name)
                 stat = (entry / "stat").read_text(encoding="utf-8")
                 fields = stat[stat.rfind(")") + 2:].split()
-                parents[pid] = int(fields[1])
+                parent = int(fields[1])
                 statm = (entry / "statm").read_text(encoding="utf-8").split()
-                rss[pid] = int(statm[1]) * page_kib
-            except (FileNotFoundError, PermissionError, ValueError, IndexError):
+                resident = int(statm[1]) * page_kib
+                parents[pid] = parent
+                rss[pid] = resident
+            except (FileNotFoundError, ProcessLookupError, PermissionError,
+                    ValueError, IndexError):
                 continue
         return parents, rss
 
