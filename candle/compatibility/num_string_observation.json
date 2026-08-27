@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
+  "source": "Examples/sos.ml",
+  "pre_patch": {
+    "status": "undefined_binding",
+    "last_value": "sdpa_of_problem",
+    "frontier": "Num.num_of_string in the decimal parser",
+    "log": "/project/flyspeck-candle-runs/v13-sos-order-narrow-prefix-load.log",
+    "log_sha256": "d0b3ae0feb11ca045b7cc2ece1e215e354387a9248c3f6ffc145ad709379fe90"
+  },
+  "selected_remedy": {
+    "branch": "codex/flyspeck-v13-sos-num-string",
+    "commit": "f81e782",
+    "description": "add Num.num_of_string over CakeML's unbounded Int.fromString option and raise Failure on invalid nonempty strings",
+    "new_ffi": false,
+    "bounded_machine_integer_conversion": false
+  },
+  "differential_validation": {
+    "status": "pass",
+    "ocaml_version": "4.14.1",
+    "selected_case_count": 22,
+    "covered_string_cases": [
+      "zero",
+      "positive",
+      "negative",
+      "leading zero",
+      "unbounded integer",
+      "empty string",
+      "invalid rational raises Failure"
+    ]
+  },
+  "post_patch": {
+    "status": "advanced_to_existing_rebuild_frontier",
+    "observed_bindings": {
+      "decimal": "string list -> num * string list",
+      "mkparser": "(string list -> 'a * 'b list) -> string -> 'a",
+      "parse_decimal": "string -> num",
+      "parse_sdpaoutput": "string -> int * (int,num) func",
+      "parse_csdpoutput": "string -> int * (int,num) func",
+      "sdpa_run_succeeded": "string -> bool"
+    },
+    "next_frontier": "compiled Candle rejects the multiline sdpa_default_parameters string; tracked by CANDLE-OCAML-MULTILINE-STRING-001 and already fixed in CakeML source commit c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+    "total_elapsed_seconds": 136.46,
+    "maximum_resident_set_kib": 1232000,
+    "log": "/project/flyspeck-candle-runs/v13-sos-num-string-load.log",
+    "log_sha256": "514b0e8a99f99303d8cc545ab033588e7a14c19f0cad1c098cc624a7cd1f2e00"
+  },
+  "claim_boundary": "The exact Num differential passes and the isolated SOS load advances through all decimal and solver-output parsers. The next failure is a separately tracked compiler-rebuild gate, not a clean SOS or target pass."
+}

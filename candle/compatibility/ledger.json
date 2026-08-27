@@ -212,7 +212,7 @@
       "status": "differential_pass_target_advanced",
       "priority": "P0",
       "category": "numeric_runtime",
-      "summary": "Candle's Num subset lacks round_num and ceiling_num and truncates negative rational floor and negative powers incorrectly",
+      "summary": "Candle's Num subset lacks round_num, ceiling_num, and num_of_string and truncates negative rational floor and negative powers incorrectly",
       "minimal_reproducer": "candle/compatibility/num_rational_cases.json",
       "ocaml_reference": {
         "version": "4.14.1",
@@ -223,7 +223,7 @@
       },
       "candle_observation": {
         "outcome": "missing_bindings_and_semantic_mismatch",
-        "diagnostic": "round_num is undefined in Examples/sos.ml; the old floor_num and power_num produce wrong results for negative inputs",
+        "diagnostic": "round_num and Num.num_of_string are undefined in Examples/sos.ml; the old floor_num and power_num produce wrong results for negative inputs",
         "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
         "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61"
       },
@@ -234,6 +234,7 @@
       ],
       "affected_source_locations": [
         "Examples/sos.ml:27",
+        "Examples/sos.ml:495-497",
         "Examples/sos.ml:656",
         "Examples/machin.ml:487",
         "Examples/machin.ml:496",
@@ -248,9 +249,10 @@
       },
       "selected_remedy": {
         "kind": "pure_source_runtime_binding",
-        "description": "implement only exact floor, ceiling, half-away-from-zero round, and reciprocal negative powers using verified Cake.Rat operations",
+        "description": "implement exact floor, ceiling, half-away-from-zero round, reciprocal negative powers, and unbounded integer-string parsing using Cake.Rat and Cake.Int operations",
         "source": "candle/nums.ml",
         "integration_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
+        "num_of_string_commit": "f81e782",
         "new_ffi": false,
         "process_support": false
       },
@@ -258,8 +260,9 @@
       "differential_validation": {
         "status": "pass",
         "ocaml_version": "4.14.1",
-        "selected_case_count": 15,
+        "selected_case_count": 22,
         "candle_execution": "fresh compiled-Candle process loading the modified hol.ml source tree",
+        "string_boundary": "signed, leading-zero, unbounded, and empty integer strings match the reference; an invalid rational string raises Failure",
         "excluded_boundary": "zero to a negative power: reference infinity versus deliberate Candle zero-denominator failure"
       },
       "target_validation": {
@@ -269,7 +272,16 @@
         "next_frontier": "Examples/sos.ml mapa finite-function comparator",
         "total_elapsed_seconds": 1558.3893307922408
       },
-      "proof_obligation": "all selected positive, negative, half-boundary, and reciprocal cases match the OCaml 4.14.1 HOL Light layer; the unselected zero-to-negative-power infinity boundary and downstream SOS changes remain explicit exclusions",
+      "sos_prefix_validation": {
+        "status": "advanced_to_existing_rebuild_frontier",
+        "artifact": "candle/compatibility/num_string_observation.json",
+        "last_new_value": "sdpa_run_succeeded",
+        "next_frontier": "CANDLE-OCAML-MULTILINE-STRING-001 compiled-Candle rebuild gate",
+        "total_elapsed_seconds": 136.46,
+        "maximum_resident_set_kib": 1232000,
+        "log_sha256": "514b0e8a99f99303d8cc545ab033588e7a14c19f0cad1c098cc624a7cd1f2e00"
+      },
+      "proof_obligation": "all selected positive, negative, half-boundary, reciprocal, and integer-string cases match the OCaml 4.14.1 HOL Light layer; the unselected zero-to-negative-power infinity boundary and downstream SOS changes remain explicit exclusions",
       "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",
       "remaining_evidence": [
         "separate review of the remaining Examples/sos.ml representation changes",

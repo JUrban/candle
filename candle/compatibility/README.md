@@ -94,9 +94,14 @@ python3 candle/compatibility/test_num_rationals.py \
 Add `--candle-root /path/to/candle` for the compiled-Candle half. A green Num
 oracle does not authorize importing the rest of `Examples/sos.ml`; its finite
 map, printer, float, filesystem, and solver boundaries remain separate work.
-The pinned 15-case OCaml/Candle run passes on this branch. Zero to a negative
-power remains an explicit excluded boundary because the reference Zarith layer
-admits an infinite rational while Candle rejects denominator zero.
+The pinned 22-case OCaml/Candle run passes on this branch. In addition to the
+15 rational cases, it covers `Num.num_of_string` on signed, leading-zero,
+unbounded, empty, and invalid inputs. The implementation consumes
+`Cake.Int.fromString` directly, avoiding the `Bind` raised by Candle's
+`Option.valOf`-based global wrapper while preserving the reference `Failure`
+contract. Zero to a negative power remains an explicit excluded boundary
+because the reference Zarith layer admits an infinite rational while Candle
+rejects denominator zero.
 
 `sos_finite_func_cases.json` isolates the first representation boundary after
 the numeric SOS gate.  The reference HOL Light implementation uses
@@ -153,3 +158,13 @@ load.  This avoids changing the arity of HOL Light's conventional
 to the independent missing `Num.num_of_string` binding in the decimal parser.
 `sos_order_observation.json` pins the 129.78-second, 1,233,792-KiB run and its
 exact transcript hash.
+
+The pure `Num.num_of_string` addition then passes all 22 reference/Candle
+cases and advances the same SOS load through `decimal`, `parse_decimal`, both
+solver-output parsers, and `sdpa_run_succeeded`. The next failure is the first
+embedded newline in `sdpa_default_parameters`. That is not a new source
+adaptation: it is the existing `CANDLE-OCAML-MULTILINE-STRING-001` rebuild
+gate, already repaired and proved in the audited CakeML source by
+`c26aa71d2b1`. `num_string_observation.json` records the 136.46-second,
+1,232,000-KiB load and exact transcript hash without claiming a complete SOS
+or target pass.
