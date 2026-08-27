@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
+  "generated_utc": "2026-08-27T13:02:16.767364+00:00",
+  "source_branch": "codex/flyspeck-v13-source-baseline",
+  "source_head": "5f773225f9de17b7a0f8c7ae76c08619519cff4e",
+  "source_normalization_commit": "75d4062",
+  "runner_fingerprint_wire_commit": "5f77322",
+  "worktree_status": [],
+  "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+  "command": "CML_HEAP_SIZE=6000 python3 candle/regression.py --test 100/cubic -j 1 --inactivity-timeout 1800 --wall-timeout 1200 --json-report /tmp/candle-cubic-v13-report.json",
+  "result": {
+    "status": "PASS",
+    "timeout_kind": null,
+    "boot_elapsed_seconds": 2.47951234690845,
+    "hol_elapsed_seconds": 144.29687931528315,
+    "test_elapsed_seconds": 63.78758621774614,
+    "fingerprint_elapsed_seconds": 10.596717327833176,
+    "total_elapsed_seconds": 221.1606952077709,
+    "peak_process_rss_kib": 6336256,
+    "peak_tree_rss_kib": 6339876
+  },
+  "fingerprints": {
+    "status": "observed_uncompared",
+    "mapping_status": "audited",
+    "expected_identities_present": false,
+    "serializer_sha256": "f5c9563154606fb2dbcdebf8fef26c802a9d22210253a51d7dcb2e2db76a2fdd",
+    "theorems": [
+      {
+        "name": "CUBIC",
+        "theorem_sha256": "83ccb03273c077826597e3e3bd3d8805df0c63f5d3dad359c99ff42d771cd857",
+        "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+        "conclusion_sha256": "c5ab5ca81db0022e1aa717d4cb23dd6284a406aa8b59c2a816dd437cd48f0cc7",
+        "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+        "hypothesis_count": 0,
+        "global_axiom_count": 3
+      }
+    ]
+  },
+  "acceptance": "load passed; fingerprint is evidence only until compared with an approved reference identity"
+}

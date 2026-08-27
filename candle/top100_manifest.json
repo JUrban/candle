@@ -869,6 +869,12 @@
         "log_active_seconds_approx": 192.0,
         "peak_rss_kib": null,
         "anchor_candidate": "5c44565",
+        "isolated_source_validation": {
+          "source_normalization_commit": "75d4062",
+          "status": "pass",
+          "fingerprint_status": "observed_uncompared",
+          "artifact": "candle/compatibility/cubic_target_observation.json"
+        },
         "evidence": {
           "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
           "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",

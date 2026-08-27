@@ -110,7 +110,7 @@
     },
     {
       "id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
-      "status": "minimized_fix_identified",
+      "status": "source_fix_load_pass_fingerprint_uncompared",
       "priority": "P0",
       "category": "source_type_compatibility",
       "summary": "Bare OCaml comparison is polymorphic, while Candle resolves bare (<) to integer comparison",
@@ -143,13 +143,18 @@
       "selected_remedy": {
         "kind": "source_normalization",
         "description": "import only the two explicit Term.(<) call-site changes",
-        "broad_polymorphic_compare_added": false
+        "broad_polymorphic_compare_added": false,
+        "integration_commit": "75d4062"
+      },
+      "source_validation": {
+        "artifact": "candle/compatibility/cubic_target_observation.json",
+        "status": "pass",
+        "total_elapsed_seconds": 221.1606952077709,
+        "fingerprint_status": "observed_uncompared"
       },
       "regression_requirement": "minimal differential remains documented; Complex/complexnumbers.ml and 100/cubic load; cubic theorem and assumptions match approved fingerprints",
       "remaining_evidence": [
-        "targeted load of the normalized Complex/complexnumbers.ml dependency",
-        "clean cubic load",
-        "cubic theorem and assumption fingerprints"
+        "approved reference comparison for the observed cubic theorem and assumption fingerprint"
       ]
     }
   ]

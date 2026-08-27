@@ -16,7 +16,7 @@ not from `fix-top100`, and likewise contain none of the eight commits.
 
 | Commit | Corpus slice | Compatibility class | Integration assessment |
 | --- | --- | --- | --- |
-| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; minimized OCaml/Candle oracle confirms this is a narrow source normalization. Target reload and fingerprints remain missing. |
+| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; minimized oracle confirms a narrow source normalization. Isolated target reload passes; fingerprint is observed but not yet reference-approved. |
 | `badbd63` | `100/e_is_transcendental` | source syntax | Removes a stray semicolon inside a call; source correction rather than a runtime feature. |
 | `02ed7f7` | `100/heron` | polymorphic comparison | Supplies `Term.(<)` to `setify`; small source normalization, missing fingerprints. |
 | `1bfc727` | `100/piseries` | numerics and value restriction | Adds `round_num`, `ceiling_num`, changes negative rational floor behavior, and adds a type annotation. Needs OCaml boundary tests before promotion. |
@@ -83,7 +83,11 @@ latter maps directly to the small `Term.(<)` normalization in `5c44565`.
 OCaml accepts bare `(<)` at an `int list -> int list -> bool` context, whereas
 Candle fixes the bare operator at `int -> int -> bool`. Thus the approved
 direction is the two explicit term-comparator call sites, not adding general
-polymorphic comparison to Candle. The
+polymorphic comparison to Candle. After importing those exact two sites as
+`75d4062`, an isolated clean-process `100/cubic` run passed in 221.2 seconds.
+It captured a structural identity for `CUBIC` with zero hypotheses and three
+global axioms; the result remains `observed_uncompared`, not an approved
+fingerprint match. The
 former is not covered by the eight audited anchor commits, but it is already
 fixed in the audited CakeML source base by `c26aa71d2b1`. That upstream commit
 explicitly cites `100/constructible.ml`, and its regression was part of the

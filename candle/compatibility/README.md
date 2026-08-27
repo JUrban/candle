@@ -62,3 +62,6 @@ Candle's compatibility environment resolves the same spelling to the integer
 operator and reports a type mismatch. The `cubic` failure needs term ordering,
 so the selected remedy is the existing two-site `Term.(<)` source normalization
 from `5c44565`, not a general polymorphic-comparison implementation.
+`cubic_target_observation.json` records the resulting clean target pass and
+structural `CUBIC` identity. Its `observed_uncompared` status is intentional:
+the recorded hash is evidence, not a reference-approved fingerprint.
