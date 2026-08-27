@@ -398,6 +398,51 @@
         "clean 100/ceva and 100/thales loads",
         "approved target theorem and assumption fingerprints"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-SOS-EXPLICIT-ORDER-001",
+      "status": "source_fix_target_prefix_advanced",
+      "priority": "P0",
+      "category": "source_ordering_compatibility",
+      "summary": "SOS SDPA serialization uses OCaml polymorphic comparison through increasing, while Candle requires explicit key comparators",
+      "minimal_reproducer": "the first two SDPA sort sites in Examples/sos.ml",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "behavior": "polymorphic comparison orders integer pairs and triples lexicographically"
+      },
+      "candle_observation": {
+        "outcome": "undefined_binding",
+        "diagnostic": "increasing is deliberately absent from Candle's compatibility library",
+        "artifact": "candle/compatibility/sos_order_observation.json"
+      },
+      "affected_targets": [
+        "100/ceva",
+        "100/thales"
+      ],
+      "affected_source_locations": [
+        "Examples/sos.ml:432-461"
+      ],
+      "selected_remedy": {
+        "kind": "explicit_comparator_source_adaptation",
+        "description": "add increasing_by without changing the conventional increasing arity, then use explicit lexicographic Int comparators at the two reached SDPA sites",
+        "integration_commit": "d32505a",
+        "global_increasing_arity_changed": false,
+        "general_polymorphic_compare_added": false,
+        "new_ffi": false
+      },
+      "target_prefix_validation": {
+        "status": "advanced_to_next_compatibility_frontier",
+        "last_new_value": "sdpa_of_problem",
+        "next_frontier": "undefined Num.num_of_string in the decimal parser",
+        "total_elapsed_seconds": 129.78,
+        "maximum_resident_set_kib": 1233792,
+        "log_sha256": "d0b3ae0feb11ca045b7cc2ece1e215e354387a9248c3f6ffc145ad709379fe90"
+      },
+      "regression_requirement": "explicit pair and triple ordering elaborates without a global polymorphic comparison, then clean affected targets and approved theorem/assumption fingerprints pass",
+      "remaining_evidence": [
+        "clean 100/ceva and 100/thales loads",
+        "approved target theorem and assumption fingerprints"
+      ]
     }
   ]
 }

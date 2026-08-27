@@ -143,3 +143,13 @@ anchor's accidental second `print_poly` definition.  The isolated load records
 all eight types and advances to the later explicit-comparator `increasing`
 boundary.  `sos_printer_observation.json` pins both logs and keeps this
 display-only step separate from theorem semantics.
+
+The next patch does not restore a misleading global polymorphic ordering
+helper.  It adds the separately named `increasing_by` and supplies explicit
+lexicographic integer comparators only at the two SDPA sites reached by the
+load.  This avoids changing the arity of HOL Light's conventional
+`increasing` name for unrelated files.  The isolated load elaborates
+`sdpa_of_blockdiagonal`, `sdpa_of_matrix`, and `sdpa_of_problem`, then advances
+to the independent missing `Num.num_of_string` binding in the decimal parser.
+`sos_order_observation.json` pins the 129.78-second, 1,233,792-KiB run and its
+exact transcript hash.
