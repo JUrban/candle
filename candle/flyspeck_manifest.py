@@ -42,6 +42,10 @@ KNOWN_GENERATED_DEPENDENCIES = {
     },
 }
 MANUAL_DYNAMIC_REVIEWS = {
+    ("candle:candle/flyspeck_loader.ml", 36, "flyspeck_needs"): {
+        "status": "root-driver",
+        "reason": "maps the separately extracted authoritative full build sequence",
+    },
     ("flyspeck:formal_lp/glpk/lpproc.ml", 53, "needs"): {
         "status": "resolved-dynamic",
         "targets": ["../formal_lp/glpk/glpk_link.ml"],
@@ -426,6 +430,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         SourceRef("flyspeck", "text_formalization/build/strictbuild.hl"),
         SourceRef("flyspeck", "text_formalization/build/build.hl"),
     ]
+    loader_source = SourceRef("candle", "candle/flyspeck_loader.ml")
     final_target = SourceRef("candle", "candle/flyspeck_l2_target.ml")
     roots = list(bootstrap)
     build_roots: list[dict[str, object]] = []
@@ -448,7 +453,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             if len(matches) > 1:
                 root_entry["matches"] = [match.key for match in matches]
                 unresolved_roots.append(root_entry)
-    roots.append(final_target)
+    roots.append(loader_source)
 
     pending = list(dict.fromkeys(roots))
     nodes: dict[str, dict[str, object]] = {}
@@ -612,6 +617,14 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "build_sequence": sequence,
         "build_sequence_roots": build_roots,
         "bootstrap_roots": [ref.key for ref in bootstrap],
+        "loader": {
+            "source": loader_source.key,
+            "required_build_mode": "full",
+            "configuration_bindings": [
+                "candle_flyspeck_root", "candle_flyspeck_build_mode",
+            ],
+            "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK",
+        },
         "final_target": {
             "source": final_target.key,
             "name": "Candle_flyspeck_l2.tame_imp_kepler_conjecture",

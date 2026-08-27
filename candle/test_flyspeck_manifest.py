@@ -73,7 +73,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(self.payload["build_sequence_count"], 297)
         self.assertEqual(self.payload["build_sequence_unique_count"], 287)
         self.assertEqual(len(self.payload["build_sequence_roots"]), 297)
-        self.assertEqual(self.payload["source_node_count"], 398)
+        self.assertEqual(self.payload["source_node_count"], 399)
         self.assertGreater(self.payload["source_edge_count"], 300)
 
     def test_diagnostics_are_promotion_gates(self):
@@ -90,7 +90,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "forbidden_dependencies",
         ):
             self.assertEqual(diagnostics[key], 0)
-        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 16)
+        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 17)
         self.assertEqual(diagnostics["generated_dependencies"], 1)
 
     def test_manifest_has_no_absolute_source_identity(self):
@@ -126,6 +126,18 @@ class GeneratedManifestTests(unittest.TestCase):
             self.assertNotIn(forbidden, source)
         self.assertIn("Candle_flyspeck_l2", source)
         self.assertIn("import_tame_classification", source)
+
+    def test_loader_has_a_fail_closed_build_mode(self):
+        loader = self.payload["loader"]
+        self.assertEqual(loader["source"], "candle:candle/flyspeck_loader.ml")
+        self.assertEqual(loader["required_build_mode"], "full")
+        source = Path(__file__).with_name("flyspeck_loader.ml").read_text(encoding="utf-8")
+        self.assertIn('candle_flyspeck_build_mode must be full', source)
+        self.assertIn('needs "build/strictbuild.hl"', source)
+        self.assertIn("Build.build_sequence_full", source)
+        self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
+        for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
+            self.assertNotIn(forbidden, source)
 
 
 if __name__ == "__main__":

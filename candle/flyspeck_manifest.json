@@ -2145,7 +2145,7 @@
     "forbidden_dependencies": 0,
     "generated_dependencies": 1,
     "missing_dependencies": 0,
-    "reviewed_dynamic_dependencies": 16,
+    "reviewed_dynamic_dependencies": 17,
     "unresolved_build_roots": []
   },
   "final_target": {
@@ -2439,6 +2439,15 @@
     "flyspeck:jHOLLight",
     "candle:."
   ],
+  "loader": {
+    "configuration_bindings": [
+      "candle_flyspeck_root",
+      "candle_flyspeck_build_mode"
+    ],
+    "required_build_mode": "full",
+    "source": "candle:candle/flyspeck_loader.ml",
+    "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK"
+  },
   "repositories": {
     "candle": {
       "identity": "manifest-owning-tree",
@@ -2449,8 +2458,8 @@
     }
   },
   "schema": 1,
-  "source_edge_count": 417,
-  "source_node_count": 398,
+  "source_edge_count": 419,
+  "source_node_count": 399,
   "source_nodes": {
     "candle:Library/binomial.ml": {
       "bytes": 18352,
@@ -3385,6 +3394,41 @@
       "path": "candle/flyspeck_l2_target.ml",
       "repository": "candle",
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
+    },
+    "candle:candle/flyspeck_loader.ml": {
+      "bytes": 1725,
+      "dependencies": [
+        {
+          "kind": "needs",
+          "line": 33,
+          "literal": "build/strictbuild.hl",
+          "matches": [
+            "flyspeck:text_formalization/build/strictbuild.hl"
+          ],
+          "selected": "flyspeck:text_formalization/build/strictbuild.hl",
+          "status": "resolved"
+        },
+        {
+          "expression": "flyspeck_needs source; source) Build.build_sequence_full",
+          "kind": "flyspeck_needs",
+          "line": 36,
+          "reason": "maps the separately extracted authoritative full build sequence",
+          "status": "root-driver"
+        },
+        {
+          "kind": "needs",
+          "line": 43,
+          "literal": "candle/flyspeck_l2_target.ml",
+          "matches": [
+            "candle:candle/flyspeck_l2_target.ml"
+          ],
+          "selected": "candle:candle/flyspeck_l2_target.ml",
+          "status": "resolved"
+        }
+      ],
+      "path": "candle/flyspeck_loader.ml",
+      "repository": "candle",
+      "sha256": "f12519ef9d171147f660e6a27a0ae3ff6d0e584e0eb8d3cdac7ff301d3cea560"
     },
     "candle:candle/kernel.ml": {
       "bytes": 5795,
