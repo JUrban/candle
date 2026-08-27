@@ -94,12 +94,15 @@ python3 candle/compatibility/test_num_rationals.py \
 Add `--candle-root /path/to/candle` for the compiled-Candle half. A green Num
 oracle does not authorize importing the rest of `Examples/sos.ml`; its finite
 map, printer, float, filesystem, and solver boundaries remain separate work.
-The pinned 22-case OCaml/Candle run passes on this branch. In addition to the
-15 rational cases, it covers `Num.num_of_string` on signed, leading-zero,
-unbounded, empty, and invalid inputs. The implementation consumes
+The pinned 25-case OCaml/Candle run passes on this branch. In addition to the
+15 rational cases, it covers `Num.num_of_string` on decimal plus/minus signs,
+leading-zero, unbounded, empty, and invalid inputs. The implementation consumes
 `Cake.Int.fromString` directly, avoiding the `Bind` raised by Candle's
 `Option.valOf`-based global wrapper while preserving the reference `Failure`
-contract. Zero to a negative power remains an explicit excluded boundary
+contract. It explicitly rejects the SML-only `~` negative sign and trailing
+junk. This is the integer-token subset exercised by Flyspeck's SOS decimal
+parser, not a claim of complete Zarith `Z.of_string` compatibility. Zero to a
+negative power remains an explicit excluded boundary
 because the reference Zarith layer admits an infinite rational while Candle
 rejects denominator zero.
 
@@ -159,7 +162,7 @@ to the independent missing `Num.num_of_string` binding in the decimal parser.
 `sos_order_observation.json` pins the 129.78-second, 1,233,792-KiB run and its
 exact transcript hash.
 
-The pure `Num.num_of_string` addition then passes all 22 reference/Candle
+The pure `Num.num_of_string` addition then passes all 25 reference/Candle
 cases and advances the same SOS load through `decimal`, `parse_decimal`, both
 solver-output parsers, and `sdpa_run_succeeded`. The next failure is the first
 embedded newline in `sdpa_default_parameters`. That is not a new source

@@ -253,6 +253,7 @@
         "source": "candle/nums.ml",
         "integration_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
         "num_of_string_commit": "f81e782",
+        "num_of_string_contract_commit": "604e9a7a2aacd4f02d20ba2a74594f0a106e92fd",
         "new_ffi": false,
         "process_support": false
       },
@@ -260,9 +261,10 @@
       "differential_validation": {
         "status": "pass",
         "ocaml_version": "4.14.1",
-        "selected_case_count": 22,
+        "selected_case_count": 25,
         "candle_execution": "fresh compiled-Candle process loading the modified hol.ml source tree",
-        "string_boundary": "signed, leading-zero, unbounded, and empty integer strings match the reference; an invalid rational string raises Failure",
+        "string_boundary": "the Flyspeck SOS integer-token subset matches on decimal plus/minus signs, leading zeros, unbounded integers, and the historical empty-string special case; SML tilde, trailing junk, and an invalid rational string raise Failure",
+        "claim_boundary": "this validation covers the integer tokens produced by Examples/sos.ml and does not claim complete Zarith Z.of_string whitespace or base-prefix compatibility",
         "excluded_boundary": "zero to a negative power: reference infinity versus deliberate Candle zero-denominator failure"
       },
       "target_validation": {

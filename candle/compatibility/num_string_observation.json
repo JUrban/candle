@@ -12,6 +12,7 @@
   "selected_remedy": {
     "branch": "codex/flyspeck-v13-sos-num-string",
     "commit": "f81e782",
+    "contract_commit": "604e9a7a2aacd4f02d20ba2a74594f0a106e92fd",
     "description": "add Num.num_of_string over CakeML's unbounded Int.fromString option and raise Failure on invalid nonempty strings",
     "new_ffi": false,
     "bounded_machine_integer_conversion": false
@@ -19,15 +20,18 @@
   "differential_validation": {
     "status": "pass",
     "ocaml_version": "4.14.1",
-    "selected_case_count": 22,
+    "selected_case_count": 25,
     "covered_string_cases": [
       "zero",
       "positive",
+      "explicit plus sign",
       "negative",
       "leading zero",
       "unbounded integer",
       "empty string",
-      "invalid rational raises Failure"
+      "invalid rational raises Failure",
+      "SML tilde sign raises Failure",
+      "trailing junk raises Failure"
     ]
   },
   "post_patch": {
@@ -46,5 +50,5 @@
     "log": "/project/flyspeck-candle-runs/v13-sos-num-string-load.log",
     "log_sha256": "514b0e8a99f99303d8cc545ab033588e7a14c19f0cad1c098cc624a7cd1f2e00"
   },
-  "claim_boundary": "The exact Num differential passes and the isolated SOS load advances through all decimal and solver-output parsers. The next failure is a separately tracked compiler-rebuild gate, not a clean SOS or target pass."
+  "claim_boundary": "The 25-case Num differential passes for the integer-token subset exercised by Examples/sos.ml; it is not a claim of complete Zarith Z.of_string compatibility. The isolated SOS load advances through all decimal and solver-output parsers. The next failure is a separately tracked compiler-rebuild gate, not a clean SOS or target pass."
 }
