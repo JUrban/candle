@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 import flyspeck_manifest
+import flyspeck_normalize
 
 
 class SyntaxTests(unittest.TestCase):
@@ -244,9 +245,50 @@ class GeneratedManifestTests(unittest.TestCase):
             node = self.payload["source_nodes"][root["selected"]]
             marker = (
                 f"(* {index:03d} selected={root['selected']} "
-                f"sha256={node['sha256']} *)"
+                f"sha256={node['sha256']}"
             )
+            normalization = node.get("execution_normalization")
+            if normalization:
+                marker += (
+                    f" normalization={normalization['id']} "
+                    f"normalized_sha256={normalization['normalized_sha256']}"
+                )
+            marker += " *)"
             self.assertIn(marker, source)
+
+    def test_immediate_int_normalization_is_exact_and_narrow(self):
+        contract = self.payload["source_normalization_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "ready-pending-compiled-loader-integration",
+        )
+        self.assertEqual(contract["entry_count"], 1)
+        self.assertIn("anchor must occur once", contract["input_policy"])
+        self.assertIn("before parsing", contract["output_policy"])
+        self.assertIn("allocated values", contract["scope_limit"])
+        contract_path = Path(__file__).with_name("flyspeck_normalizations.json")
+        self.assertEqual(
+            flyspeck_normalize.contract_sha256(contract_path),
+            contract["contract_sha256"],
+        )
+        entry = contract["entries"][0]
+        self.assertEqual(entry["id"], "PROJECT-POINTER-S3-IMMEDIATE-001")
+        self.assertEqual(entry["source_key"], (
+            "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+        ))
+        self.assertEqual(entry["operation"]["line"], 1050)
+        node = self.payload["source_nodes"][entry["source_key"]]
+        self.assertEqual(node["sha256"], entry["source_sha256"])
+        self.assertEqual(node["md5"], entry["source_md5"])
+        self.assertEqual(
+            node["execution_normalization"]["normalized_sha256"],
+            entry["normalized_sha256"],
+        )
+        normalized_nodes = [
+            key for key, value in self.payload["source_nodes"].items()
+            if "execution_normalization" in value
+        ]
+        self.assertEqual(normalized_nodes, [entry["source_key"]])
 
     def test_diagnostics_are_promotion_gates(self):
         diagnostics = self.payload["diagnostics"]

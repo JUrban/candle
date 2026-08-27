@@ -378,7 +378,7 @@
 #flyspeck_needs "../formal_lp/more_arith/arith_int.hl";;
 (* 181 selected=flyspeck:formal_lp/more_arith/prove_lp.hl sha256=e43b85cb2e403458dd8715376d80862cd5ffa3a7007586521907c8f230d69c75 *)
 #flyspeck_needs "../formal_lp/more_arith/prove_lp.hl";;
-(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f *)
+(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4 *)
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
 (* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;

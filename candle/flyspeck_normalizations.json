@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "claim": "Exact hash-bound mechanical source normalizations for the pinned direct Flyspeck route",
+  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "entries": [
+    {
+      "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
+      "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+      "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+      "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f",
+      "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
+      "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
+      "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
+      "normalized_bytes": 45263,
+      "operation": {
+        "kind": "exact_bytes_replace_once",
+        "line": 1050,
+        "before": "    if n == 1 then [] else\n",
+        "after": "    if n = 1 then [] else\n"
+      },
+      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value.",
+      "scope_limit": "This scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison."
+    }
+  ]
+}

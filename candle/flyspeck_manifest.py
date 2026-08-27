@@ -18,10 +18,13 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+import flyspeck_normalize
+
 
 SCHEMA = 1
 SOURCE_DIGEST_PROGRAM = "candle/flyspeck_source_digests.ml"
 FULL_BUILD_PROGRAM = "candle/flyspeck_full_build.ml"
+SOURCE_NORMALIZATION_CONTRACT = "candle/flyspeck_normalizations.json"
 SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
@@ -877,9 +880,17 @@ def _render_full_build_program(
         if stratum != previous_stratum:
             lines.extend(["", f"(* stratum: {stratum} *)"])
             previous_stratum = stratum
-        lines.append(
-            f"(* {index:03d} selected={selected} sha256={nodes[selected]['sha256']} *)"
+        marker = (
+            f"(* {index:03d} selected={selected} "
+            f"sha256={nodes[selected]['sha256']}"
         )
+        normalization = nodes[selected].get("execution_normalization")
+        if isinstance(normalization, dict):
+            marker += (
+                f" normalization={normalization['id']} "
+                f"normalized_sha256={normalization['normalized_sha256']}"
+            )
+        lines.append(marker + " *)")
         lines.append(f"#flyspeck_needs {json.dumps(target)};;")
     lines.append("")
     return "\n".join(lines)
@@ -1045,6 +1056,47 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "sha256": _sha256(path),
             "dependencies": dependencies,
         }
+
+    normalization_path = candle_root / SOURCE_NORMALIZATION_CONTRACT
+    normalization_contract, normalization_outputs = (
+        flyspeck_normalize.evaluate_contract(
+            normalization_path, flyspeck_root,
+        )
+    )
+    normalization_entries: list[dict[str, object]] = []
+    for entry, normalized in normalization_outputs:
+        source_key = str(entry["source_key"])
+        if source_key not in nodes:
+            raise ValueError(
+                f"normalization source is outside selected graph: {source_key}"
+            )
+        node = nodes[source_key]
+        if (
+            node["sha256"] != entry["source_sha256"]
+            or node["md5"] != entry["source_md5"]
+        ):
+            raise ValueError(
+                f"normalization/source-node digest mismatch: {source_key}"
+            )
+        execution_normalization = {
+            "id": entry["id"],
+            "kind": entry["operation"]["kind"],
+            "normalized_bytes": len(normalized),
+            "normalized_sha256": entry["normalized_sha256"],
+            "normalized_md5": entry["normalized_md5"],
+        }
+        node["execution_normalization"] = execution_normalization
+        normalization_entries.append({
+            "id": entry["id"],
+            "source_key": source_key,
+            "path": entry["path"],
+            "source_sha256": entry["source_sha256"],
+            "source_md5": entry["source_md5"],
+            **execution_normalization,
+            "operation": entry["operation"],
+            "semantic_rule": entry["semantic_rule"],
+            "scope_limit": entry["scope_limit"],
+        })
 
     generated_inputs: list[dict[str, object]] = []
     generated_paths: set[Path] = set()
@@ -1301,7 +1353,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ).hexdigest(),
             "source_selection_binding": (
                 "every generated entry records its manifest-selected source key "
-                "and SHA-256 beside the authoritative target literal"
+                "and SHA-256 beside the authoritative target literal; a normalized "
+                "entry additionally records its exact normalization id and output hash"
             ),
             "preload_authentication": (
                 "the direct loader checks generated_source_md5 before strictbuild; "
@@ -1322,6 +1375,48 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "the generated program is not executed until the compiled Candle "
                 "loader implements and tests the exact action"
             ),
+        },
+        "source_normalization_contract": {
+            "activation_status": "ready-pending-compiled-loader-integration",
+            "contract_source": f"candle:{SOURCE_NORMALIZATION_CONTRACT}",
+            "contract_sha256": flyspeck_normalize.contract_sha256(
+                normalization_path
+            ),
+            "flyspeck_commit": normalization_contract["flyspeck_commit"],
+            "entry_count": len(normalization_entries),
+            "entries": normalization_entries,
+            "input_policy": (
+                "authenticate the pinned original source before applying an exact "
+                "replacement whose anchor must occur once"
+            ),
+            "output_policy": (
+                "authenticate the normalized byte count, MD5, and SHA-256 before "
+                "parsing or evaluating the result"
+            ),
+            "failure_policy": (
+                "commit, path, input digest, anchor count, output size, or output "
+                "digest drift aborts; heuristic and blanket rewrites are forbidden"
+            ),
+            "scope_limit": (
+                "the one immediate-int rule does not apply to allocated values or "
+                "discharge the separate identity-sensitive list gate"
+            ),
+            "reference_implementation": {
+                "repository": "https://github.com/ocaml/ocaml.git",
+                "tag": "4.14.1",
+                "commit": "99cb5d93fc30f1a6f3e69f5aa5d2063994d33a93",
+                "sources": [
+                    "stdlib/stdlib.ml:69-77",
+                    "lambda/translprim.ml:165",
+                    "lambda/translprim.ml:475-482",
+                    "lambda/translprim.ml:543-547",
+                    "runtime/caml/mlvalues.h:75-80",
+                ],
+            },
+            "gates": [
+                "candle:candle/test_flyspeck_normalize.py",
+                "candle:candle/test_flyspeck_immediate_normalization.sh",
+            ],
         },
         "bootstrap_roots": [ref.key for ref in bootstrap],
         "loader": {

@@ -37,7 +37,8 @@ that a shared dependency belongs to only one mathematical subject.
 
 `flyspeck_full_build.ml` is generated from the same 297-entry sequence.  Each
 entry carries its index, stratum, manifest-selected source key, and source
-SHA-256 beside an explicit `#flyspeck_needs` directive.  The directive is
+SHA-256 beside an explicit `#flyspeck_needs` directive.  Build entry 182 also
+records the exact normalization id and output SHA-256 described below.  The directive is
 intentionally fail-closed today.  Its required future loader action is atomic:
 evaluate a newly selected source at that exact point and call
 `State_manager.neutralize_state` once only after success; an already-loaded
@@ -47,6 +48,36 @@ from Flyspeck's `Toploop.use_file` implementation without pretending that a
 successful no-op loaded anything.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.  Authentication does not activate the directive.
+
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement the first
+mechanical source normalization.  The sole entry is
+`PROJECT-POINTER-S3-IMMEDIATE-001`: after authenticating the pinned upstream
+`formal_lp/hypermap/main/prove_flyspeck_lp.hl`, it replaces the unique exact
+line `if n == 1 then [] else` with `if n = 1 then [] else` and authenticates
+the normalized size, MD5, and SHA-256.  Commit, path, input hash, anchor count,
+or output drift aborts.  The manifest annotates exactly that source node and no
+other.  This rule is confined to the `int` returned by `count_terminals`; it
+does not rewrite or discharge any identity-sensitive comparison over allocated
+lists.  The host test and pinned-source gate are:
+
+```sh
+(cd candle && python3 -m unittest -v test_flyspeck_normalize.py)
+python3 candle/flyspeck_normalize.py \
+  --flyspeck-root /path/to/pinned/flyspeck --check
+CANDLE_BINARY=/path/to/candle.sh \
+  candle/test_flyspeck_immediate_normalization.sh
+```
+
+The pinned OCaml 4.14.1 implementation binds `==` through `%eq` directly to
+integer comparison, specializes structural `=` on `int` to the same
+`Pintcomp Ceq`, and encodes every OCaml `int` injectively as a tagged immediate
+word.  Thus the branch predicate is equal for every representable `int`, not
+only the oracle samples.  The compiled Candle oracle separately confirms that
+the normalized branch is accepted and selects the expected cases.  Runtime
+application of the recorded patch is still pending integration with the exact
+compiled source loader, so the manifest status remains
+`ready-pending-compiled-loader-integration` and this work alone advances no S
+milestone.
 
 The top-level interface contract also inventories the small set of Flyspeck
 identifiers that could consume compiler reflection.  The selected graph has

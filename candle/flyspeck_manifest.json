@@ -5589,10 +5589,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "fec2433e39a3872664e00a51b183c42f",
+      "md5": "454ef27a01533922410378f0e6e56e36",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "510b8a7a58c7493c277b9a47ad9315e06c4ef5a980ad03581eabc6fd7e920f86"
+      "sha256": "fed002843962d2bb80388cefa46aa8b72106b11731128d9eac6fa52f4f8eebdd"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -7873,6 +7873,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
+        "kind": "exact_bytes_replace_once",
+        "normalized_bytes": 45263,
+        "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
+        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4"
+      },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
       "repository": "flyspeck",
@@ -12596,19 +12603,67 @@
       "sha256": "a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c"
     }
   },
+  "source_normalization_contract": {
+    "activation_status": "ready-pending-compiled-loader-integration",
+    "contract_sha256": "d326dc023dbd996aab1d9a542be2f3433b37550e716cfc903da2956c8972aba6",
+    "contract_source": "candle:candle/flyspeck_normalizations.json",
+    "entries": [
+      {
+        "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
+        "kind": "exact_bytes_replace_once",
+        "normalized_bytes": 45263,
+        "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
+        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
+        "operation": {
+          "after": "    if n = 1 then [] else\n",
+          "before": "    if n == 1 then [] else\n",
+          "kind": "exact_bytes_replace_once",
+          "line": 1050
+        },
+        "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "scope_limit": "This scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison.",
+        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value.",
+        "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
+        "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
+      }
+    ],
+    "entry_count": 1,
+    "failure_policy": "commit, path, input digest, anchor count, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
+    "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+    "gates": [
+      "candle:candle/test_flyspeck_normalize.py",
+      "candle:candle/test_flyspeck_immediate_normalization.sh"
+    ],
+    "input_policy": "authenticate the pinned original source before applying an exact replacement whose anchor must occur once",
+    "output_policy": "authenticate the normalized byte count, MD5, and SHA-256 before parsing or evaluating the result",
+    "reference_implementation": {
+      "commit": "99cb5d93fc30f1a6f3e69f5aa5d2063994d33a93",
+      "repository": "https://github.com/ocaml/ocaml.git",
+      "sources": [
+        "stdlib/stdlib.ml:69-77",
+        "lambda/translprim.ml:165",
+        "lambda/translprim.ml:475-482",
+        "lambda/translprim.ml:543-547",
+        "runtime/caml/mlvalues.h:75-80"
+      ],
+      "tag": "4.14.1"
+    },
+    "scope_limit": "the one immediate-int rule does not apply to allocated values or discharge the separate identity-sensitive list gate"
+  },
   "static_full_build_contract": {
     "activation_status": "generated-fail-closed-pending-loader-action",
     "directive": "#flyspeck_needs",
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, failed, or unsupported dynamic loads abort; the directive must not be erased or implemented as an ordinary successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "5853a6e82e9303ba52ad874c98282842",
-    "generated_source_sha256": "1bb71f85fd66c23d974599ded954344fd54f8b6904ebb4e51c4325d9ca0e8947",
+    "generated_source_md5": "c6cc507c34ae22b8f07d1c3ba0979e56",
+    "generated_source_sha256": "3b509d7187b49d557d080e5f07e9ca9b9e0c736c766cbb16178db8f3d83737bf",
     "open_gate": "the generated program is not executed until the compiled Candle loader implements and tests the exact action",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
     "required_loader_action": "at the directive position resolve only the manifest-selected source; if not already loaded, evaluate it and then call State_manager.neutralize_state exactly once after success; an already-loaded duplicate performs neither action",
-    "source_selection_binding": "every generated entry records its manifest-selected source key and SHA-256 beside the authoritative target literal",
+    "source_selection_binding": "every generated entry records its manifest-selected source key and SHA-256 beside the authoritative target literal; a normalized entry additionally records its exact normalization id and output hash",
     "unique_target_count": 287
   },
   "static_library_contract": {
