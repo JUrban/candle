@@ -83,6 +83,29 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "source line mismatch"):
             flyspeck_normalize.normalize_bytes(source, entry)
 
+    def test_exact_span_normalization_and_span_drift(self):
+        source = b"prefix\nSTART\ninside\nEND\nsuffix\n"
+        normalized = b"prefix\nreplacement\nsuffix\n"
+        entry = copy.deepcopy(self.contract["entries"][0])
+        span = b"START\ninside\nEND\n"
+        entry["operations"] = [{
+            "id": "fixture-span",
+            "kind": "exact_span_replace_once",
+            "line": 2,
+            "end_line": 4,
+            "start": "START\n",
+            "end": "END\n",
+            "span_sha256": hashlib.sha256(span).hexdigest(),
+            "after": "replacement\n",
+        }]
+        entry["source_sha256"], entry["source_md5"] = digests(source)
+        entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
+        entry["normalized_bytes"] = len(normalized)
+        self.assertEqual(flyspeck_normalize.normalize_bytes(source, entry), normalized)
+        entry["operations"][0]["span_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "source span digest mismatch"):
+            flyspeck_normalize.normalize_bytes(source, entry)
+
     def test_output_digest_fails_closed(self):
         entry, source, _ = self.fixture_entry()
         entry["normalized_sha256"] = "0" * 64
@@ -91,7 +114,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 10)
+        self.assertEqual(len(self.contract["entries"]), 13)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -110,6 +133,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
         self.assertNotIn("Set.Make", set_make["operations"][0]["after"])
         self.assertIn("only through empty, add, and mem", set_make["semantic_rule"])
+        self.assertEqual(len(set_make["operations"]), 2)
+        self.assertIn("#flyspeck_loadt", set_make["operations"][1]["after"])
+        update_database = entries["PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001"]
+        self.assertEqual(
+            [operation["kind"] for operation in update_database["operations"]],
+            ["exact_bytes_replace_once", "exact_span_replace_once"],
+        )
+        self.assertIn("failwith", update_database["operations"][1]["after"])
+        self.assertIn("dead-effect elimination", update_database["scope_limit"])
+        eval_command = entries["PROJECT-TOPLOOP-S3-EVAL-COMMAND-001"]
+        self.assertIn("failwith", eval_command["operations"][0]["after"])
+        ssreflect = entries["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"]
+        self.assertIn("use_arg_then2", ssreflect["semantic_rule"])
+        self.assertNotIn("Toploop", ssreflect["operations"][0]["after"])
         strictbuild = entries["PROJECT-TOPLOOP-S3-USE-FILE-B-001"]
         self.assertIn("dynamic use_file_b is disabled", (
             strictbuild["operations"][0]["after"]
@@ -164,7 +201,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 20)
+        self.assertEqual(len(operation_ids), 25)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

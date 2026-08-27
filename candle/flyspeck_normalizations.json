@@ -121,9 +121,9 @@
       "path": "text_formalization/general/serialization.hl",
       "source_sha256": "fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed",
       "source_md5": "9228eaf6a96159d9f59fea40fcc2a12f",
-      "normalized_sha256": "062139c28e400951aaab8436298fecdcdb1c5a76b19ec3e19fa65f6fce3915ea",
-      "normalized_md5": "6d3501717892b247f1f9809cfa2d87f5",
-      "normalized_bytes": 26580,
+      "normalized_sha256": "93343a90863d775f0a09257859553aacb7ad5b885ed95f21517ba0402ce253a3",
+      "normalized_md5": "c109c6567cd777812a1479cb54eea6e9",
+      "normalized_bytes": 26464,
       "operations": [
         {
           "id": "PROJECT-MODULE-S3-SET-MAKE-001-EXPLICIT-STRING-SET",
@@ -131,10 +131,96 @@
           "line": 34,
           "before": "module  String_compare : Set.OrderedType with type t = string = struct\n  type t = string;;\n  let  compare (t1:string) (t2:string) = Stdlib.compare (t1) (t2);;\nend;;\n\nmodule St = Set.Make(String_compare);;",
           "after": "module St = struct\n  type elt = string;;\n  type t = string list;;\n  let empty = [];;\n  let rec mem value values =\n    match values with\n      [] -> false\n    | head::tail -> value = head || mem value tail;;\n  let add value values =\n    if mem value values then values else value::values;;\nend;;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-STATIC-LOAD",
+          "kind": "exact_bytes_replace_once",
+          "line": 20,
+          "before": "let _ = if Str.string_match (Str.regexp \"Ocaml 4.\") (ocaml_version()) 0 then \n  needs \"general/update_database_400.ml\"\nelse\n  needs \"general/update_database_310.ml\";;",
+          "after": "#flyspeck_loadt \"general/update_database_400.ml\";;"
         }
       ],
-      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph.",
-      "scope_limit": "This is not general functor or Set.Make support. It is confined to the pinned Serialization.St module and the exact selected empty/add/mem use set. Any new St operation, representation observation, source drift, or selected functor application reopens the module compatibility gate."
+      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted.",
+      "scope_limit": "This is not general functor, Set.Make, or conditional dynamic-loading support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, and the pinned 4.14.1 update-database branch. Any new St operation, representation observation, source/version drift, or branch change reopens the compatibility gate."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",
+      "source_key": "flyspeck:text_formalization/general/update_database_400.ml",
+      "path": "text_formalization/general/update_database_400.ml",
+      "source_sha256": "f1d0a45a0ce2ec54a57bf017989d6960124fd9bbfeb0a8a3ad24a3ffac268467",
+      "source_md5": "4e923bcd7bc9f75b38329fdf2e380406",
+      "normalized_sha256": "3fe52ade9303ab0ae0839cadac09995254d5dce553fe949bb5cda558ed8aefbe",
+      "normalized_md5": "85ffaa8772cbaf66897720a5bf6215bd",
+      "normalized_bytes": 5871,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-ELIDE-INITIAL-DEAD-EFFECT",
+          "kind": "exact_bytes_replace_once",
+          "line": 338,
+          "before": "update_database ();;",
+          "after": "let candle_flyspeck_update_database_effect_elided = true;;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-REMOVE-COMPILER-INTERNALS",
+          "kind": "exact_span_replace_once",
+          "line": 27,
+          "end_line": 234,
+          "start": "let exec = ignore o Toploop.execute_phrase false Format.std_formatter\r\n  o !Toploop.parse_toplevel_phrase o Lexing.from_string;;\r\n",
+          "end": "\"   lastStamp := !currentStamp;\r\n    theorems := Hashtbl.fold (fun s t l -> (s,t)::l) thms [];;\r\n\");;\r\n",
+          "span_sha256": "321ace78ddb20b521a213df73bf2d3b8ac73774293b6266e8aeb7d789c6e5a2d",
+          "after": "let update_database () =\r\n  failwith \"Candle Flyspeck: dynamic theorem-search database update is disabled by the static proof route\";;\r\n"
+        }
+      ],
+      "semantic_rule": "The only selected active update_database call is the initial load-time replacement of the interactive theorem-search cache. Exact comment/string/quotation-aware inventory finds no selected accepted-run consumer of that cache or of search/search_thml; later update_database and !theorems sites are in deferred serialization helper bodies. The static proof route therefore removes the unobserved initial cache mutation, retains pure search-pattern constructors, and makes every future dynamic update/search attempt fail closed instead of supplying Toploop, Lexing, Obj.magic, or compiler-layout guesses.",
+      "scope_limit": "This is selected-route dead-effect elimination, not a successful no-op implementation of Toploop or theorem search. The complete run, exact final theorem/assumption fingerprints, and mutation tests must confirm non-observation. Any selected search call, theorem-cache read, reflection, source drift, or fingerprint difference invalidates the normalization and requires a typed registry or verified dynamic-evaluation design."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001",
+      "source_key": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl",
+      "path": "text_formalization/general/flyspeck_eval_4.14.hl",
+      "source_sha256": "602d1d0e3e224d742fb412e0fb7bd88b4c176a1aa713bb4f6dc7d6ff350eae15",
+      "source_md5": "0f625ae4acb1fa69d4add5957e0ff308",
+      "normalized_sha256": "5a4175e6542ccee003418bfe6528b3d54d481970c3cff9b564ebda6c7301c117",
+      "normalized_md5": "3ba61c19dc69f135bf014dff38fc2ead",
+      "normalized_bytes": 456,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001-FAIL-CLOSED",
+          "kind": "exact_span_replace_once",
+          "line": 13,
+          "end_line": 28,
+          "start": "let eval_command ?(silent=false) command =\n",
+          "end": "     (false,  Buffer.contents buffer);;\n",
+          "span_sha256": "0ebce65eb0ebabca9f8924fd3fdb8648b18b7bfb6427957b554f3b31bf8c2169",
+          "after": "let eval_command ?(silent=false) (command:string) : bool * string =\n  failwith (\"Candle Flyspeck: dynamic eval_command is disabled by the static manifest: \"^command);;\n"
+        }
+      ],
+      "semantic_rule": "The exact selected graph contains only the eval_command definition; its sole external caller is in the unselected archive-generation helper. Replacing the body by an explicit failure preserves every selected accepted run and prevents latent dynamic source evaluation from being mistaken for a checked result.",
+      "scope_limit": "This is a lexical selected-graph non-use refinement, not eval_command compatibility. A complete compiled run and final fingerprints remain required; any call, reflection, external input, or source drift blocks promotion."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
+      "source_key": "flyspeck:jHOLLight/caml/ssreflect.hl",
+      "path": "jHOLLight/caml/ssreflect.hl",
+      "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9",
+      "source_md5": "6f69a400e5f3922f4d572840748b35c7",
+      "normalized_sha256": "43e8a264534ce3974bf73e1d376f1e98eb32518205fe0fbee5319a37cdfb414e",
+      "normalized_md5": "2d0f8e0f45731595440fb400ac6956e6",
+      "normalized_bytes": 33197,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001-FAIL-CLOSED",
+          "kind": "exact_span_replace_once",
+          "line": 721,
+          "end_line": 753,
+          "start": "let test_id_thm id =\n",
+          "end": "\t  Arg_theorem !use_arg_then_result in\n    arg_tac arg g;;\n",
+          "span_sha256": "bfad00902444f02b10e2ce81ad0ae03865ee8a1effed82d033ce99c8838f61fc",
+          "after": "let test_id_thm (id:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic test_id_thm is disabled by typed theorem arguments: \"^id);;\n\n\n(* The selected compiled route uses use_arg_then2 with an explicit theorem. *)\nlet use_arg_then (id:string) (arg_tac:arg_type->tactic) (g:goal) =\n  failwith (\"Candle Flyspeck: dynamic use_arg_then is disabled by typed theorem arguments: \"^id);;\n"
+        }
+      ],
+      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged.",
+      "scope_limit": "This is not general ssreflect string lookup or Toploop compatibility. Lexical non-use cannot exclude reflection or external callers; the complete run and final fingerprints remain mandatory, and any call or change in the exact 22-file typed-use inventory reopens the gate."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",

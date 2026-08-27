@@ -1677,7 +1677,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             },
             "input_policy": (
                 "authenticate the pinned original source before applying an exact "
-                "ordered replacement sequence whose every anchor must occur once"
+                "ordered replacement sequence whose byte or span anchors must occur "
+                "once; authenticate every removed span independently"
             ),
             "output_policy": (
                 "authenticate the normalized byte count, MD5, and SHA-256 before "
@@ -1694,6 +1695,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "closed on any call; the LP rules require the exact prepared-input "
                 "contract and static 39-file inventory; the Serialization.St rule "
                 "implements only the exact selected empty/add/mem observations; "
+                "dynamic eval_command, obsolete ssreflect lookup, and future theorem-"
+                "database updates fail closed after the one unobserved initial cache "
+                "mutation is eliminated; "
                 "compiled, fingerprint, and "
                 "performance gates remain open"
             ),
@@ -1717,6 +1721,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_needs_directive.sh",
                 "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
                 "candle:candle/test_flyspeck_set_make_normalization.sh",
+                "candle:candle/test_flyspeck_toplevel_normalization.sh",
             ],
             "performance_probe": (
                 "candle:candle/flyspeck_identity_benchmark.ml"
@@ -1967,11 +1972,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         },
         "toplevel_interface_contract": {
             "scope": "reachable direct-source full-build graph only",
-            "activation_status": "blocked-no-dummy-or-no-op",
+            "activation_status": (
+                "partial-exact-static-normalizations-active-pending-full-run"
+            ),
             "policy": (
                 "Toploop and dynamically evaluated source are correctness-relevant; "
                 "a dummy return, silent skip, unchecked Obj.magic, or successful "
-                "no-op use_file is forbidden"
+                "no-op implementation is forbidden. Exact selected-route "
+                "dead-effect elimination and fail-closed non-use bindings require "
+                "complete-run and final-fingerprint confirmation"
             ),
             "qualified_uses": sorted(
                 toplevel_interface_uses,
@@ -2006,9 +2015,31 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "dynamic_source_payloads": list(DYNAMIC_TOPLEVEL_PAYLOADS),
             "dynamic_payload_policy": (
                 "string bodies are masked by ordinary capability scanning and "
-                "therefore require an explicit typed registry transformation or "
-                "verified dynamic-evaluation contract before activation"
+                "therefore cannot be implemented by a dummy evaluator. The selected "
+                "update_database_400 payload block is removed by an exact hash-bound "
+                "dead-effect normalization; any future observation requires an "
+                "explicit typed registry or verified dynamic-evaluation contract"
             ),
+            "selected_execution_disposition": {
+                "serialization_branch_action": (
+                    "PROJECT-MODULE-S3-SET-MAKE-001"
+                ),
+                "update_database_dead_effect": (
+                    "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001"
+                ),
+                "definition_only_fail_closed": [
+                    "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001",
+                    "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
+                    "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
+                ],
+                "unselected_original_source": (
+                    "flyspeck:text_formalization/general/update_database_310.ml"
+                ),
+                "acceptance_gate": (
+                    "complete compiled selected run with exact theorem, assumption, "
+                    "and target fingerprints"
+                ),
+            },
             "consumer_inventory": {
                 "scope": (
                     "exact identifiers in reachable Flyspeck source, outside "
@@ -2032,6 +2063,10 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     "effect": (
                         "load-time compiler-environment enumeration and theorem "
                         "database replacement"
+                    ),
+                    "execution_disposition": (
+                        "exact selected-route dead-effect elimination; update_database "
+                        "remains fail-closed for every deferred caller"
                     ),
                 },
                 "definition_only_selected_graph": [

@@ -67,20 +67,40 @@ def load_contract(contract_path: Path) -> dict[str, Any]:
                 or operation_id in operation_ids
             ):
                 raise ValueError("normalization operation ids must be nonempty and unique")
-            if operation.get("kind") != "exact_bytes_replace_once":
-                raise ValueError(f"unsupported normalization operation for {entry_id}")
-            before = operation.get("before")
+            kind = operation.get("kind")
             after = operation.get("after")
-            if (
-                not isinstance(before, str)
-                or not before
-                or not isinstance(after, str)
-                or before == after
-            ):
-                raise ValueError(f"invalid exact replacement for {operation_id}")
             line = operation.get("line")
             if not isinstance(line, int) or line < 1:
                 raise ValueError(f"invalid source line for {operation_id}")
+            if kind == "exact_bytes_replace_once":
+                before = operation.get("before")
+                if (
+                    not isinstance(before, str)
+                    or not before
+                    or not isinstance(after, str)
+                    or before == after
+                ):
+                    raise ValueError(f"invalid exact replacement for {operation_id}")
+            elif kind == "exact_span_replace_once":
+                start = operation.get("start")
+                end = operation.get("end")
+                end_line = operation.get("end_line")
+                span_sha256 = operation.get("span_sha256")
+                if (
+                    not isinstance(start, str)
+                    or not start
+                    or not isinstance(end, str)
+                    or not end
+                    or not isinstance(after, str)
+                    or not isinstance(end_line, int)
+                    or end_line < line
+                    or not isinstance(span_sha256, str)
+                    or len(span_sha256) != 64
+                    or any(char not in "0123456789abcdef" for char in span_sha256)
+                ):
+                    raise ValueError(f"invalid exact span replacement for {operation_id}")
+            else:
+                raise ValueError(f"unsupported normalization operation for {entry_id}")
             operation_ids.add(operation_id)
         for field, length in (
             ("source_sha256", 64), ("source_md5", 32),
@@ -105,30 +125,58 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
     entry_id = str(entry["id"])
     if _sha256(source) != entry["source_sha256"] or _md5(source) != entry["source_md5"]:
         raise ValueError(f"source digest mismatch for normalization {entry_id}")
+    def operation_bounds(data: bytes, operation: dict[str, Any], phase: str) -> tuple[int, int]:
+        operation_id = str(operation["id"])
+        if operation["kind"] == "exact_bytes_replace_once":
+            before = str(operation["before"]).encode("utf-8")
+            if data.count(before) != 1:
+                raise ValueError(
+                    f"{phase} source anchor count is not one for " + operation_id
+                )
+            start_offset = data.index(before)
+            return start_offset, start_offset + len(before)
+        start_anchor = str(operation["start"]).encode("utf-8")
+        end_anchor = str(operation["end"]).encode("utf-8")
+        if data.count(start_anchor) != 1 or data.count(end_anchor) != 1:
+            raise ValueError(
+                f"{phase} source span anchor count is not one for " + operation_id
+            )
+        start_offset = data.index(start_anchor)
+        end_offset = data.index(end_anchor) + len(end_anchor)
+        if start_offset >= end_offset:
+            raise ValueError(
+                f"{phase} source span anchors are reversed for " + operation_id
+            )
+        return start_offset, end_offset
+
     for operation in entry["operations"]:
         operation_id = str(operation["id"])
-        before = str(operation["before"]).encode("utf-8")
-        if source.count(before) != 1:
-            raise ValueError(
-                "original source anchor count is not one for " + operation_id
-            )
-        offset = source.index(before)
-        observed_line = source.count(b"\n", 0, offset) + 1
+        start_offset, end_offset = operation_bounds(source, operation, "original")
+        observed_line = source.count(b"\n", 0, start_offset) + 1
         if observed_line != operation["line"]:
             raise ValueError(
                 f"source line mismatch for {operation_id}: "
                 f"expected {operation['line']}, got {observed_line}"
             )
+        if operation["kind"] == "exact_span_replace_once":
+            observed_end_line = source.count(b"\n", 0, end_offset - 1) + 1
+            if observed_end_line != operation["end_line"]:
+                raise ValueError(
+                    f"source end line mismatch for {operation_id}: "
+                    f"expected {operation['end_line']}, got {observed_end_line}"
+                )
+            if _sha256(source[start_offset:end_offset]) != operation["span_sha256"]:
+                raise ValueError(f"source span digest mismatch for {operation_id}")
     normalized = source
     for operation in entry["operations"]:
         operation_id = str(operation["id"])
-        before = str(operation["before"]).encode("utf-8")
         after = str(operation["after"]).encode("utf-8")
-        if normalized.count(before) != 1:
-            raise ValueError(
-                "exact replacement anchor count is not one for " + operation_id
-            )
-        normalized = normalized.replace(before, after, 1)
+        start_offset, end_offset = operation_bounds(normalized, operation, "exact")
+        if operation["kind"] == "exact_span_replace_once" and (
+            _sha256(normalized[start_offset:end_offset]) != operation["span_sha256"]
+        ):
+            raise ValueError(f"exact replacement span digest mismatch for {operation_id}")
+        normalized = normalized[:start_offset] + after + normalized[end_offset:]
     if len(normalized) != entry["normalized_bytes"]:
         raise ValueError(f"normalized byte count mismatch for {entry_id}")
     if (

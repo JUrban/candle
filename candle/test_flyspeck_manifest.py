@@ -326,8 +326,8 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 10)
-        self.assertIn("every anchor must occur once", contract["input_policy"])
+        self.assertEqual(contract["entry_count"], 13)
+        self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
         self.assertIn("qmap", contract["scope_limit"])
@@ -337,6 +337,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertIn(
             "candle:candle/test_flyspeck_set_make_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_flyspeck_toplevel_normalization.sh",
             contract["gates"],
         )
         contract_path = Path(__file__).with_name("flyspeck_normalizations.json")
@@ -781,8 +785,18 @@ class GeneratedManifestTests(unittest.TestCase):
 
     def test_toplevel_interface_contract_is_exact_and_fail_closed(self):
         contract = self.payload["toplevel_interface_contract"]
-        self.assertEqual(contract["activation_status"], "blocked-no-dummy-or-no-op")
+        self.assertEqual(
+            contract["activation_status"],
+            "partial-exact-static-normalizations-active-pending-full-run",
+        )
         self.assertIn("dummy return", contract["policy"])
+        disposition = contract["selected_execution_disposition"]
+        self.assertEqual(
+            disposition["update_database_dead_effect"],
+            "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",
+        )
+        self.assertEqual(len(disposition["definition_only_fail_closed"]), 3)
+        self.assertIn("complete compiled", disposition["acceptance_gate"])
         uses = contract["qualified_uses"]
         self.assertEqual(len(uses), 133)
         self.assertEqual(
@@ -831,6 +845,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertTrue(active["source"].endswith("update_database_400.ml"))
         self.assertEqual(active["line"], 338)
         self.assertEqual(active["identifier"], "update_database")
+        self.assertIn("dead-effect elimination", active["execution_disposition"])
         typed = consumers["typed_theorem_lookup"]
         self.assertEqual(typed["identifier"], "use_arg_then2")
         self.assertEqual(typed["occurrences"], 23810)

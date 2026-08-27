@@ -264,7 +264,7 @@
 #flyspeck_needs "tame/tame_defs.hl";;
 (* 125 selected=flyspeck:text_formalization/tame/tame_concl.hl sha256=bb3fc6d2a24788cfa9014282fa59b52b4dcb18013c1771c5f21349a8b2699145 *)
 #flyspeck_needs "tame/tame_concl.hl";;
-(* 126 selected=flyspeck:jHOLLight/caml/ssreflect.hl sha256=9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9 *)
+(* 126 selected=flyspeck:jHOLLight/caml/ssreflect.hl sha256=9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9 normalization=PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001 normalized_sha256=43e8a264534ce3974bf73e1d376f1e98eb32518205fe0fbee5319a37cdfb414e *)
 #flyspeck_needs "../jHOLLight/caml/ssreflect.hl";;
 (* 127 selected=flyspeck:jHOLLight/caml/sections.hl sha256=05e435d55cada51b56fee84696fffe30b7e11b0010fb8a56061c2e9b2c815b51 *)
 #flyspeck_needs "../jHOLLight/caml/sections.hl";;
@@ -608,7 +608,7 @@
 #flyspeck_needs "general/audit_formal_proof.hl";;
 (* 294 selected=flyspeck:text_formalization/general/the_kepler_conjecture.hl sha256=d2a45bd4fca8c4f7f705736bf5c34cdbb60e7182226102560b1c5bc3369de3c7 *)
 #flyspeck_needs "general/the_kepler_conjecture.hl";;
-(* 295 selected=flyspeck:text_formalization/general/serialization.hl sha256=fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed normalization=PROJECT-MODULE-S3-SET-MAKE-001 normalized_sha256=062139c28e400951aaab8436298fecdcdb1c5a76b19ec3e19fa65f6fce3915ea *)
+(* 295 selected=flyspeck:text_formalization/general/serialization.hl sha256=fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed normalization=PROJECT-MODULE-S3-SET-MAKE-001 normalized_sha256=93343a90863d775f0a09257859553aacb7ad5b885ed95f21517ba0402ce253a3 *)
 #flyspeck_needs "general/serialization.hl";;
 (* 296 selected=flyspeck:text_formalization/nonlinear/mk_all_ineq.hl sha256=99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11 *)
 #flyspeck_needs "nonlinear/mk_all_ineq.hl";;
