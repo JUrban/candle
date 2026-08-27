@@ -133,3 +133,13 @@ the separately classified unsupported `#install_printer` directive.  Its
 141.98-second, 1,232,000-KiB observation and exact log hash are recorded with
 the frontier artifact.  That is evidence that the comparator prefix advances;
 it is not evidence for the later SOS body or a clean Ceva result.
+
+The next independent boundary is OCaml's display-only `#install_printer`
+directive.  Candle does not execute this toplevel directive.  The selected
+source adaptation retains the four ordinary `print_* : ... -> unit` values and
+adds four distinct `pp_* : ... -> pp_data` adapters, then comments out only the
+directives.  In particular it uses `pp_poly`; it does not import the audited
+anchor's accidental second `print_poly` definition.  The isolated load records
+all eight types and advances to the later explicit-comparator `increasing`
+boundary.  `sos_printer_observation.json` pins both logs and keeps this
+display-only step separate from theorem semantics.

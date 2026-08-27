@@ -346,6 +346,58 @@
         "separate review of the remaining Examples/sos.ml changes",
         "approved target theorem and assumption fingerprints"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-SOS-INSTALL-PRINTER-001",
+      "status": "source_fix_target_prefix_advanced",
+      "priority": "P0",
+      "category": "source_toplevel_compatibility",
+      "summary": "OCaml toplevel #install_printer directives are not part of Candle's source language",
+      "minimal_reproducer": "the four consecutive #install_printer directives in Examples/sos.ml",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "behavior": "registers display-only toplevel printers without changing the ordinary print_* values"
+      },
+      "candle_observation": {
+        "outcome": "parse_failure",
+        "diagnostic": "Expected to be at EOF at #install_printer print_vector",
+        "artifact": "candle/compatibility/sos_printer_observation.json"
+      },
+      "affected_targets": [
+        "100/ceva",
+        "100/thales"
+      ],
+      "affected_source_locations": [
+        "Examples/sos.ml:350-353"
+      ],
+      "anchor_candidate": {
+        "repository": "HOL-Light/candle",
+        "branch": "origin/fix-top100",
+        "commit": "218c7c966da7ebdc04e318835e889cc6285469b7",
+        "deviation": "use pp_poly rather than the anchor's accidental second print_poly binding"
+      },
+      "selected_remedy": {
+        "kind": "display_only_source_adaptation",
+        "description": "comment out only the unsupported directives, preserve all four unit-returning print_* functions, and add four distinct pretty-valued pp_* adapters",
+        "integration_commit": "03c888d8a453856693ac7b8b7d7572b0570597e7",
+        "theorem_or_kernel_semantics_changed": false,
+        "new_ffi": false
+      },
+      "target_prefix_validation": {
+        "status": "advanced_to_next_compatibility_frontier",
+        "last_new_value": "pp_poly",
+        "ordinary_print_poly_type_preserved": "poly -> unit",
+        "pretty_poly_type": "poly -> pp_data",
+        "next_frontier": "undefined explicit-comparator increasing helper in sdpa_of_blockdiagonal",
+        "total_elapsed_seconds": 130.35,
+        "maximum_resident_set_kib": 1232896,
+        "log_sha256": "de6ebde0775972999e472462c7d792401d700b1646f8e64b190157cfab2e23b0"
+      },
+      "regression_requirement": "ordinary printer functions retain their unit-returning types, pp_* adapters elaborate, then clean affected targets and approved theorem/assumption fingerprints pass",
+      "remaining_evidence": [
+        "clean 100/ceva and 100/thales loads",
+        "approved target theorem and assumption fingerprints"
+      ]
     }
   ]
 }
