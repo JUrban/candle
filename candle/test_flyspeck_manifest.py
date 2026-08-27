@@ -136,6 +136,51 @@ class GeneratedManifestTests(unittest.TestCase):
             ],
         )
 
+    def test_build_strata_cover_order_and_dependency_graph(self):
+        strata = self.payload["build_strata"]
+        self.assertEqual(
+            [entry["name"] for entry in strata],
+            [
+                "base", "arithmetic", "nonlinear_support", "analysis",
+                "geometry", "lp_support", "text_formalization",
+                "final_assembly",
+            ],
+        )
+        expected_index = 0
+        covered = 0
+        for entry in strata:
+            self.assertEqual(entry["start_index"], expected_index)
+            self.assertEqual(
+                entry["entry_count"],
+                entry["end_index"] - entry["start_index"] + 1,
+            )
+            self.assertEqual(
+                entry["first"],
+                self.payload["build_sequence"][entry["start_index"]],
+            )
+            self.assertEqual(
+                entry["last"],
+                self.payload["build_sequence"][entry["end_index"]],
+            )
+            self.assertRegex(entry["ordered_root_sha256"], r"^[0-9a-f]{64}$")
+            self.assertGreater(entry["transitive_source_node_count"], 0)
+            expected_index = entry["end_index"] + 1
+            covered += entry["entry_count"]
+        self.assertEqual(covered, self.payload["build_sequence_count"])
+        self.assertEqual(expected_index, self.payload["build_sequence_count"])
+
+        memberships = self.payload["source_node_strata"]
+        self.assertEqual(set(memberships), set(self.payload["source_nodes"]))
+        allowed = {entry["name"] for entry in strata}
+        for membership in memberships.values():
+            self.assertTrue(membership)
+            self.assertLessEqual(set(membership), allowed)
+        self.assertIn("base", memberships["candle:hol.ml"])
+        self.assertIn(
+            "final_assembly",
+            memberships["candle:candle/flyspeck_l2_target.ml"],
+        )
+
     def test_diagnostics_are_promotion_gates(self):
         diagnostics = self.payload["diagnostics"]
         for key in (

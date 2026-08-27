@@ -26,6 +26,15 @@ The manifest also pins `flyspeck_l2_target.ml`, the direct Candle theorem glue
 for `Candle_flyspeck_l2.tame_imp_kepler_conjecture`; that file has no trace
 producer or theorem-import shortcut.
 
+The 297 entries are also partitioned into eight contiguous operational
+checkpoint strata: base, arithmetic, nonlinear support, analysis, geometry,
+LP support, text formalization, and final assembly.  Each stratum records its
+exact inclusive indexes, boundary paths, entry count, and a digest over the
+ordered resolved roots and their source hashes.  Stratum membership is
+propagated through every selected dependency edge; all 398 source nodes must
+have at least one membership.  These are load/checkpoint labels, not a claim
+that a shared dependency belongs to only one mathematical subject.
+
 `flyspeck_loader.ml` is the initial enforcing loader slice.  In a clean Candle
 process it first fails closed unless the mode is `full`, then loads the pinned
 Candle/HOL source stack itself.  The launcher supplies the Candle and Flyspeck

@@ -81,6 +81,68 @@ DYNAMIC_TOPLEVEL_PAYLOADS = (
         "purpose": "declare update_database with top-level environment enumeration",
     },
 )
+# Operational checkpoint strata for the authoritative full sequence.  These
+# names are intentionally contiguous load-order partitions, not claims that a
+# source file has dependencies in only one mathematical area.  Transitive
+# source nodes below record every stratum from which they are reachable.
+BUILD_STRATA = (
+    {
+        "name": "base",
+        "start": 0,
+        "end": 29,
+        "first": "general/hol_pervasives.hl",
+        "last": "general/vukhacky_tactics.hl",
+    },
+    {
+        "name": "arithmetic",
+        "start": 30,
+        "end": 37,
+        "first": "trigonometry/trig1.hl",
+        "last": "trigonometry/HVIHVEC.hl",
+    },
+    {
+        "name": "nonlinear_support",
+        "start": 38,
+        "end": 49,
+        "first": "nonlinear/calc_derivative.hl",
+        "last": "nonlinear/merge_ineq.hl",
+    },
+    {
+        "name": "analysis",
+        "start": 50,
+        "end": 60,
+        "first": "volume/vol1.hl",
+        "last": "fan/polyhedron.hl",
+    },
+    {
+        "name": "geometry",
+        "start": 61,
+        "end": 151,
+        "first": "packing/pack1.hl",
+        "last": "local/lp_details.hl",
+    },
+    {
+        "name": "lp_support",
+        "start": 152,
+        "end": 184,
+        "first": "../formal_lp/hypermap/arith_link.hl",
+        "last": "tame/linear_programming_results.hl",
+    },
+    {
+        "name": "text_formalization",
+        "start": 185,
+        "end": 290,
+        "first": "local/ZITHLQN.hl",
+        "last": "packing/flyspeck_devol.hl",
+    },
+    {
+        "name": "final_assembly",
+        "start": 291,
+        "end": 296,
+        "first": "general/kepler_spec.hl",
+        "last": "nonlinear/mk_all_ineq.hl",
+    },
+)
 # Complete OCaml Str names that can be conservatively attributed after
 # [open Str].  Qualified use scanning does not need this list because it
 # records every member following [Str.].  There is no reachable [open Unix].
@@ -575,6 +637,92 @@ def _cycles(edges: dict[str, list[str]]) -> list[list[str]]:
     return found
 
 
+def _build_strata_contract(
+    sequence: list[str],
+    build_roots: list[dict[str, object]],
+    nodes: dict[str, dict[str, object]],
+    edges: dict[str, list[str]],
+    bootstrap: list[SourceRef],
+    loader_source: SourceRef,
+) -> tuple[list[dict[str, object]], dict[str, list[str]]]:
+    expected_index = 0
+    stratum_for_index: dict[int, str] = {}
+    contract: list[dict[str, object]] = []
+    names = [str(spec["name"]) for spec in BUILD_STRATA]
+    for spec in BUILD_STRATA:
+        start = int(spec["start"])
+        end = int(spec["end"])
+        name = str(spec["name"])
+        if start != expected_index or end < start:
+            raise ValueError(f"non-contiguous build stratum {name}: {start}..{end}")
+        if end >= len(sequence):
+            raise ValueError(f"build stratum {name} exceeds full sequence")
+        if sequence[start] != spec["first"] or sequence[end] != spec["last"]:
+            raise ValueError(f"build stratum boundary drifted: {name}")
+        rows: list[dict[str, object]] = []
+        for index in range(start, end + 1):
+            root = build_roots[index]
+            selected = root.get("selected")
+            if not isinstance(selected, str) or selected not in nodes:
+                raise ValueError(f"unresolved stratum root: {name}:{index}")
+            rows.append({
+                "index": index,
+                "target": sequence[index],
+                "selected": selected,
+                "sha256": nodes[selected]["sha256"],
+            })
+            stratum_for_index[index] = name
+        encoded = json.dumps(rows, sort_keys=True, separators=(",", ":")).encode()
+        contract.append({
+            "name": name,
+            "start_index": start,
+            "end_index": end,
+            "entry_count": len(rows),
+            "first": sequence[start],
+            "last": sequence[end],
+            "ordered_root_sha256": hashlib.sha256(encoded).hexdigest(),
+        })
+        expected_index = end + 1
+    if expected_index != len(sequence) or len(stratum_for_index) != len(sequence):
+        raise ValueError("build strata do not cover the authoritative full sequence")
+
+    memberships: dict[str, set[str]] = {key: set() for key in nodes}
+
+    def mark_reachable(root: str, name: str) -> None:
+        pending = [root]
+        seen: set[str] = set()
+        while pending:
+            node = pending.pop()
+            if node in seen:
+                continue
+            if node not in nodes:
+                raise ValueError(f"stratum edge leaves selected graph: {node}")
+            seen.add(node)
+            memberships[node].add(name)
+            pending.extend(edges.get(node, []))
+
+    for root in bootstrap:
+        mark_reachable(root.key, "base")
+    for index, root in enumerate(build_roots):
+        mark_reachable(str(root["selected"]), stratum_for_index[index])
+    mark_reachable(loader_source.key, "final_assembly")
+
+    missing = sorted(key for key, membership in memberships.items() if not membership)
+    if missing:
+        raise ValueError(f"source nodes lack a build stratum: {missing}")
+    order = {name: index for index, name in enumerate(names)}
+    rendered_memberships = {
+        key: sorted(membership, key=order.__getitem__)
+        for key, membership in memberships.items()
+    }
+    for entry in contract:
+        name = str(entry["name"])
+        entry["transitive_source_node_count"] = sum(
+            name in membership for membership in rendered_memberships.values()
+        )
+    return contract, rendered_memberships
+
+
 def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     _require_git_clean(flyspeck_root)
     resolver = Resolver(candle_root, flyspeck_root)
@@ -869,6 +1017,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             raise ValueError(
                 f"dynamic top-level payload site drifted: {source_key}:{line_number}"
             )
+    build_strata, source_node_strata = _build_strata_contract(
+        sequence, build_roots, nodes, edges, bootstrap, loader_source,
+    )
     return {
         "schema": SCHEMA,
         "claim": "G6 source inventory only; not loader execution evidence",
@@ -895,6 +1046,11 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "build_sequence_duplicates": duplicates,
         "build_sequence": sequence,
         "build_sequence_roots": build_roots,
+        "build_strata_policy": (
+            "contiguous operational checkpoint partitions in authoritative load "
+            "order; labels do not imply mathematical dependency isolation"
+        ),
+        "build_strata": build_strata,
         "bootstrap_roots": [ref.key for ref in bootstrap],
         "loader": {
             "source": loader_source.key,
@@ -1082,6 +1238,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         },
         "source_node_count": len(nodes),
         "source_edge_count": sum(len(targets) for targets in edges.values()),
+        "source_node_strata": {
+            key: source_node_strata[key] for key in sorted(source_node_strata)
+        },
         "source_nodes": {key: nodes[key] for key in sorted(nodes)},
         "generated_inputs": generated_inputs,
         "generated_dependency_contracts": generated_dependency_contracts,

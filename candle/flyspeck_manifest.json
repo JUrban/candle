@@ -2135,6 +2135,89 @@
     "sha256": "9a0cb02595e42fee7f97841221eb81b7c844f07c3b80c81dd11b2ccc759b5029"
   },
   "build_sequence_unique_count": 287,
+  "build_strata": [
+    {
+      "end_index": 29,
+      "entry_count": 30,
+      "first": "general/hol_pervasives.hl",
+      "last": "general/vukhacky_tactics.hl",
+      "name": "base",
+      "ordered_root_sha256": "c6b61460ac2b4fef1fbc4f12a422ef30b6a562d96b8365abb3a5c3b971812d5d",
+      "start_index": 0,
+      "transitive_source_node_count": 130
+    },
+    {
+      "end_index": 37,
+      "entry_count": 8,
+      "first": "trigonometry/trig1.hl",
+      "last": "trigonometry/HVIHVEC.hl",
+      "name": "arithmetic",
+      "ordered_root_sha256": "6400259446d70b760a4e47b5fc68f07e7ed998b86827889fe86dd6efc0eba94d",
+      "start_index": 30,
+      "transitive_source_node_count": 17
+    },
+    {
+      "end_index": 49,
+      "entry_count": 12,
+      "first": "nonlinear/calc_derivative.hl",
+      "last": "nonlinear/merge_ineq.hl",
+      "name": "nonlinear_support",
+      "ordered_root_sha256": "ee5e849ed41a2b4345ffd82cb98285a15a926bae8cd599153fa91eff2d82f1b3",
+      "start_index": 38,
+      "transitive_source_node_count": 13
+    },
+    {
+      "end_index": 60,
+      "entry_count": 11,
+      "first": "volume/vol1.hl",
+      "last": "fan/polyhedron.hl",
+      "name": "analysis",
+      "ordered_root_sha256": "8d40490ac6ffaec79e9a68aeef1a3aec62c3fd48dc449654cc386e2cc9ace3c9",
+      "start_index": 50,
+      "transitive_source_node_count": 13
+    },
+    {
+      "end_index": 151,
+      "entry_count": 91,
+      "first": "packing/pack1.hl",
+      "last": "local/lp_details.hl",
+      "name": "geometry",
+      "ordered_root_sha256": "066d7fb2450d8681e95b43572654ce6dce04afe172e610550cf63ae30259fee3",
+      "start_index": 61,
+      "transitive_source_node_count": 125
+    },
+    {
+      "end_index": 184,
+      "entry_count": 33,
+      "first": "../formal_lp/hypermap/arith_link.hl",
+      "last": "tame/linear_programming_results.hl",
+      "name": "lp_support",
+      "ordered_root_sha256": "148ff317ca0cd94c0c4ea2dd558a8deb508b9c4bec3b08e6b5bd0a583b139154",
+      "start_index": 152,
+      "transitive_source_node_count": 79
+    },
+    {
+      "end_index": 290,
+      "entry_count": 106,
+      "first": "local/ZITHLQN.hl",
+      "last": "packing/flyspeck_devol.hl",
+      "name": "text_formalization",
+      "ordered_root_sha256": "2f1a4ead5d03eba2cd7d2e4f5fabeaffe3313a5eec2ff8fd621ed8f65a01a9c6",
+      "start_index": 185,
+      "transitive_source_node_count": 148
+    },
+    {
+      "end_index": 296,
+      "entry_count": 6,
+      "first": "general/kepler_spec.hl",
+      "last": "nonlinear/mk_all_ineq.hl",
+      "name": "final_assembly",
+      "ordered_root_sha256": "aa63d1c9b5d1b9adfba740f2addfa182648b58def16faf5ad5302e8fa90c4d89",
+      "start_index": 291,
+      "transitive_source_node_count": 171
+    }
+  ],
+  "build_strata_policy": "contiguous operational checkpoint partitions in authoritative load order; labels do not imply mathematical dependency isolation",
   "claim": "G6 source inventory only; not loader execution evidence",
   "diagnostics": {
     "ambiguous_dependencies": 0,
@@ -2655,6 +2738,1500 @@
   "schema": 1,
   "source_edge_count": 417,
   "source_node_count": 398,
+  "source_node_strata": {
+    "candle:Library/binomial.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/card.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/floor.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/frag.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/grouptheory.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/iter.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/matroids.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/permutations.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/prime.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/products.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Library/rstc.ml": [
+      "base",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "candle:Library/wo.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/canal.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/complexes.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/convex.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/cross.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/degree.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/derivatives.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/determinants.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/flyspeck.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/geom.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/homology.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/integration.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/measure.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/metric.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/misc.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/paths.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/polytope.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/realanalysis.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/topology.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/transcendentals.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Multivariate/vectors.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:Rqe/num_calc_simp.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:arith.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:basics.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:bignum_num.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:bool.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:calc_int.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:calc_num.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:calc_rat.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:candle/compute.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:candle/flyspeck_l2_target.ml": [
+      "final_assembly"
+    ],
+    "candle:candle/flyspeck_loader.ml": [
+      "final_assembly"
+    ],
+    "candle:candle/kernel.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:candle/nums.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:candle/ocaml.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:candle/pretty.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:canon.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:cart.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:class.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:compute.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:define.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:drule.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:equal.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:firstorder.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:grobner.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:hol.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:hol_lib.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:hol_loader.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:impconv.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:ind_defs.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:ind_types.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:int.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:itab.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:iterate.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:lib.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:lists.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:meson.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:metis.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:nets.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:normalizer.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:nums.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:pair.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:parser.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:preterm.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:printer.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:quot.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:real.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:realarith.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:realax.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:recursion.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:sets.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:simp.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:system.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:tactics.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:theorems.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:trivia.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:wf.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:formal_graph/archive/archive_all.ml": [
+      "lp_support"
+    ],
+    "flyspeck:formal_ineqs/arith/arith_cache.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_ineqs/arith/arith_nat.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_ineqs/arith/arith_num.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_ineqs/arith_options.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_ineqs/misc/misc_functions.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_ineqs/misc/misc_vars.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/glpk/glpk_link.ml": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/glpk/lpproc.ml": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/arith_link.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/computations/informal_computations.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/computations/list_conversions2.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl": [
+      "lp_support",
+      "text_formalization"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl": [
+      "lp_support",
+      "text_formalization"
+    ],
+    "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/main/lp_certificate.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/hypermap/verify_all.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/ineqs/constants_approx.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/ineqs/delta_ineq.hl": [
+      "lp_support",
+      "final_assembly"
+    ],
+    "flyspeck:formal_lp/more_arith/arith_int.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/more_arith/lin_f.hl": [
+      "lp_support"
+    ],
+    "flyspeck:formal_lp/more_arith/prove_lp.hl": [
+      "lp_support"
+    ],
+    "flyspeck:jHOLLight/Examples/seq-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:jHOLLight/caml/sections.hl": [
+      "geometry"
+    ],
+    "flyspeck:jHOLLight/caml/ssreflect.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/build/build.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/build/strictbuild.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/build/use_serialization.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/CFYXFTY.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/fan/Conforming.hl": [
+      "analysis"
+    ],
+    "flyspeck:text_formalization/fan/GMLWKPK.hl": [
+      "analysis"
+    ],
+    "flyspeck:text_formalization/fan/fan.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/fan_defs.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/fan_misc.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/hypermap_and_fan.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/fan/planarity.hl": [
+      "analysis",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/fan/polyhedron.hl": [
+      "analysis"
+    ],
+    "flyspeck:text_formalization/fan/topology.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/audit_formal_proof.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/debug.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/general/flyspeck_lib.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/general/hales_tactic.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/general/hol-library.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/hol_pervasives.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/kepler_spec.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/lib.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/general/parser_verbose.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/print_types.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/prove_by_refinement.hl": [
+      "base",
+      "arithmetic",
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/serialization.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/sphere.hl": [
+      "base",
+      "arithmetic",
+      "nonlinear_support",
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/state_manager.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/tactics.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/general/the_kepler_conjecture.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/the_main_statement.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/theorem_digest.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/theorem_nonlinear_digest.hl": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/truong_tactic.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/general/update_database_310.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/update_database_400.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/general/vukhacky_tactics.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/hypermap/hypermap.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/jordan/float.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/flyspeck_constants.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/goal_printer.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/jordan/hash_term.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/lib_ext.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/misc_defs_and_lemmas.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/jordan/num_ext_nabs.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/parse_ext_override_interface.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/real_ext.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/refinement.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/tactics_jordan.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/jordan/taylor_atn.hl": [
+      "base",
+      "geometry"
+    ],
+    "flyspeck:text_formalization/leg/AFF_SGN_TAC.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/affprops.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/basics.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/leg/cayleyR_def.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/collect_geom.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/collect_geom2.hl": [
+      "base"
+    ],
+    "flyspeck:text_formalization/leg/enclosed_def.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/geomdetail.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/leg/muR_def.hl": [
+      "base",
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/local/ARDBZYE.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/AUEAHEH.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/AURSIPD.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/AXJRPNC.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/AYQJTMD.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/BKOSSGE.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/CNICGSF.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/CQAOQLR.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/CUXVZOZ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/EYYPQDW.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/FEKTYIY.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/GBYCPXS.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/HDPLYGY.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/HIJQAHA.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/HXHYTIJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/IMJXPHR.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/IUNBUIG.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/JCYFMRP.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/JEJTVGB.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/JKQEWGV.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/JLXFDMJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/JOTSWIX.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/LDURDPN.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/LFJCIXP.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/LKGRQUI.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/LVDUCXU.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/MIQMCSN.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/MTUWLUN.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/NKEZBFC.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/NUXCOEA.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/OCBICBY.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/ODXLSTC.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/OTMTOTJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/PCRTTID.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/PPBTYDQ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/PQCSXWG.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/QKNVMLB.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/RNSYJXM-compiled.hl": [
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/local/RRCWNSJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/SGTRNAF.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/TECOXBM.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/TFITSKC.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/UAGHHBM.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/UXCKFPE.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/VASYYAU.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/VPWSHTO.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/WJSCPRO.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/WKEIDFT.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/WRGCVDR.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/XIVPHKS.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/XWITCCN.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/YRTAFYH.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/YXIONXL.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/YXIONXL2.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/ZITHLQN.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/ZLZTHIC.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/appendix.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/deformation.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/dih2k.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/hexagons.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/local_lemmas.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/local_lemmas1.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/localization.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/lp_details.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/local/lunar_deform.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/local/pent_hex.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/local/polar_fan.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/local/terminal.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/nonlinear/break_case_exec.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/break_case_log.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/break_case_type.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/calc_derivative.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/function_list.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/functional_equation.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/ineq.hl": [
+      "nonlinear_support",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl": [
+      "nonlinear_support",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/merge_ineq.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/nonlin_def.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/nonlinear_lemma.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/optimize.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/parse_ineq.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/nonlinear/prep.hl": [
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/nonlinear/types.hl": [
+      "nonlinear_support"
+    ],
+    "flyspeck:text_formalization/packing/AJRIPQN.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/DDZUPHJ.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/EMNWUUS.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/GRUTOTI.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/HDTFNFZ.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/KIZHLTL.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/LEPJBDJ.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/NJIUTIU.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/OXLZLEZ1.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/OXLZLEZ2.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/OXLZLEZ3.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/QZKSYKG.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/QZYZMJC.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/RDWKARC.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/REUHADY.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/RVFXZBU.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/Rogers.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/SLTSTLO.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/TARJJUW.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/TEZFFSK.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/TSKAJXY1.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/TSKAJXY2.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/TSKAJXY3.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/UPFZBZM.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/UPFZBZM_support_lemmas.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/URRPHBZ1.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/URRPHBZ2.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/URRPHBZ3.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/YNHYJIT.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/YSSKQOY.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/bump.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/counting_spheres.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/flyspeck_devol.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/packing/leaf_cell.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/marchal1.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/marchal2.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/marchal3.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/pack1.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/packing/pack2.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/packing/pack3.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/pack_concl.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/packing/pack_defs.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/packing/sum_gamma.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/AQ1.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ10.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ11.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ12.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ13.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ23.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ4.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ56.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ7.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ8.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AQ9.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/ASFUTBF.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AUQTZYZ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/AUQTZYZ_list.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/CDTETAT.hl": [
+      "geometry",
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/CKQOWSA.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/CKQOWSA_3.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/CKQOWSA_4.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/CRTTXAT.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/DANGEYJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/DIOWAAS.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/DPZGBYF.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/ELLLNYZ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/FATUGPD.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/HOJODCM.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/HRXEFDM.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/Inequalities.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/JCAJYDU.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/JGTDEBU.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/KBWPBHQ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/LEBHIRJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/MEEIXJO.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/NCVIBWU.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/OBDATYB.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/OHCGKFU.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/OXAXUCS.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/PBFLHET.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/PNXVWFS.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/PPLHULJ.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/PWSSRAT.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/QCDVKEA.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/RXOKSKC.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/RYIUUVK.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/WMLNYMD.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/arc_properties.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/betwn_core0_z_y.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/betwn_corek_z_x.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/good_list_archive.hl": [
+      "lp_support"
+    ],
+    "flyspeck:text_formalization/tame/import_tame_classification.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/linear_programming_results.hl": [
+      "lp_support"
+    ],
+    "flyspeck:text_formalization/tame/more_lemma1.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/more_lemma2.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/more_tame_concl.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/reduction1.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/reduction2.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/reduction3.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/reduction4.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/reduction5.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/MQMSMAB-compiled.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/tame_concl.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/tame/tame_defs.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/tame_defs2.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/tame_general.hl": [
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/tame/tame_list.hl": [
+      "text_formalization"
+    ],
+    "flyspeck:text_formalization/tame/tame_opposite.hl": [
+      "geometry"
+    ],
+    "flyspeck:text_formalization/trigonometry/HVIHVEC.hl": [
+      "arithmetic"
+    ],
+    "flyspeck:text_formalization/trigonometry/delta_x.hl": [
+      "arithmetic"
+    ],
+    "flyspeck:text_formalization/trigonometry/euler_complement.hl": [
+      "arithmetic"
+    ],
+    "flyspeck:text_formalization/trigonometry/euler_main_theorem.hl": [
+      "arithmetic"
+    ],
+    "flyspeck:text_formalization/trigonometry/euler_multivariate.hl": [
+      "arithmetic"
+    ],
+    "flyspeck:text_formalization/trigonometry/trig1.hl": [
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/trigonometry/trig2.hl": [
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/trigonometry/trig3.hl": [
+      "arithmetic",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ],
+    "flyspeck:text_formalization/volume/vol1.hl": [
+      "analysis",
+      "geometry",
+      "lp_support",
+      "text_formalization",
+      "final_assembly"
+    ]
+  },
   "source_nodes": {
     "candle:Library/binomial.ml": {
       "bytes": 18352,
