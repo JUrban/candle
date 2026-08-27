@@ -159,7 +159,7 @@
     },
     {
       "id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
-      "status": "minimized_fix_identified",
+      "status": "source_fix_load_pass_fingerprint_uncompared",
       "priority": "P0",
       "category": "source_syntax_compatibility",
       "summary": "OCaml accepts a trailing semicolon in a parenthesized argument expression while Candle rejects the enclosing module phrase",
@@ -192,13 +192,19 @@
       },
       "selected_remedy": {
         "kind": "source_normalization",
-        "description": "import the existing one-token source correction; no parser extension"
+        "description": "import the existing one-token source correction; no parser extension",
+        "integration_commit": "6ce6fc1"
+      },
+      "source_validation": {
+        "artifact": "candle/compatibility/e_is_transcendental_target_observation.json",
+        "status": "pass",
+        "total_elapsed_seconds": 256.5075027057901,
+        "fingerprint_status": "observed_uncompared",
+        "fingerprint_value_path": "Finale.TRANSCENDENTAL_E"
       },
       "regression_requirement": "minimal OCaml/Candle differential remains documented; normalized target loads; TRANSCENDENTAL_E and assumptions match approved fingerprints",
       "remaining_evidence": [
-        "clean normalized e_is_transcendental load",
-        "observed theorem and assumption fingerprint",
-        "approved reference comparison"
+        "approved reference comparison for the observed theorem and assumption fingerprint"
       ]
     }
   ]

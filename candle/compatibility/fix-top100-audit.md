@@ -106,6 +106,11 @@ name passes. The minimized OCaml/Candle differential instead identifies the
 trailing semicolon after `ll5` inside that module: OCaml 4.14.1 accepts it and
 compiled Candle rejects the whole enclosing phrase. This exactly matches the
 one-token correction in `badbd63`; no parser extension is selected.
+The exact correction was imported as `6ce6fc1`, after which a clean isolated
+target run passed in 256.5 seconds. The intended theorem is module-scoped as
+`Finale.TRANSCENDENTAL_E`, so the runner now requests that safe qualified value
+path. The resulting structural identity has zero hypotheses and three global
+axioms, but remains `observed_uncompared` pending an approved reference.
 
 ## Integration sequence
 

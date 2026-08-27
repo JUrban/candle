@@ -340,6 +340,16 @@ BASELINE_OBSERVATIONS = {
         "log_active_seconds_approx": 246.7,
         "peak_rss_kib": None,
         "anchor_candidate": "badbd63",
+        "isolated_source_validation": {
+            "source_normalization_commit": "6ce6fc1",
+            "status": "pass",
+            "fingerprint_status": "observed_uncompared",
+            "fingerprint_value_path": "Finale.TRANSCENDENTAL_E",
+            "artifact": (
+                "candle/compatibility/"
+                "e_is_transcendental_target_observation.json"
+            ),
+        },
         "evidence": {
             "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
             "candle_executable_sha256": (

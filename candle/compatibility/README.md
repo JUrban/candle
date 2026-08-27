@@ -74,3 +74,7 @@ enclosing module phrase. Its diagnostic points at `module Pm_eqn4_rhs`, but
 accepted without the interior semicolon. The selected remedy is therefore the
 one-token source normalization from `badbd63`, not a module-parser change.
 `trailing_semicolon_observation.json` preserves both compiled-Candle runs.
+After that normalization, `e_is_transcendental_target_observation.json`
+records a clean target pass and the structural identity requested through the
+actual module-scoped value `Finale.TRANSCENDENTAL_E`. Its fingerprint remains
+`observed_uncompared`, not reference-approved.
