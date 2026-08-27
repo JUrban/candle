@@ -61,6 +61,17 @@ narrow fail-closed normalization design, but lexical non-use is not proof
 against reflection or external invocation; compiled reference and final
 fingerprint gates remain mandatory.
 
+The loader action contract separately freezes all 434 loading-syntax sites.
+There are 422 complete standalone phrases and 12 embedded occurrences.  The
+standalone set includes 144 literal `flyspeck_needs` calls, whose post-success
+state neutralization is observably different from ordinary `needs`; the
+embedded set contains the version conditional, optional serialization path,
+generated digest loader, and loader-function definitions/drivers.  Only a
+complete standalone top-level phrase can be handled as a boot action.  A token
+at the start of a physical line can still be inside a conditional or function,
+so executing it lexically can select both branches.  Embedded calls require
+ordinary verified evaluation or an exact hash-bound normalization.
+
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries
 OCaml `Digest.file`-compatible MD5 values for 398 selected source nodes: every

@@ -533,10 +533,22 @@ def scan_load_calls(source: str) -> list[dict[str, object]]:
         prefix = clean[max(0, match.start() - 24):match.start()]
         if DEFINITION_PREFIX_RE.search(prefix):
             continue
+        previous_phrase_end = mask.rfind(";;", 0, match.start())
+        phrase_prefix = mask[previous_phrase_end + 2:match.start()]
+        syntax_position = (
+            "standalone-phrase"
+            if phrase_prefix.strip() == ""
+            else "embedded-expression"
+        )
         literal, end = _call_argument(clean, match.end())
         line = clean.count("\n", 0, match.start()) + 1
         if literal is not None:
-            calls.append({"kind": kind, "line": line, "literal": literal})
+            calls.append({
+                "kind": kind,
+                "line": line,
+                "literal": literal,
+                "syntax_position": syntax_position,
+            })
         else:
             expression_end = clean.find(";;", match.end())
             if expression_end < 0:
@@ -544,7 +556,12 @@ def scan_load_calls(source: str) -> list[dict[str, object]]:
             if expression_end < 0:
                 expression_end = min(len(clean), match.end() + 160)
             expression = " ".join(clean[match.start():expression_end].split())[:160]
-            calls.append({"kind": kind, "line": line, "expression": expression})
+            calls.append({
+                "kind": kind,
+                "line": line,
+                "expression": expression,
+                "syntax_position": syntax_position,
+            })
     return calls
 
 
@@ -1212,6 +1229,21 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         for identifier in sorted(TOPLEVEL_CONSUMER_IDENTIFIERS)
     }
     typed_theorem_lookup_occurrences = sum(typed_theorem_lookup_counts.values())
+    dependency_kind_status_counts: dict[tuple[str, str], int] = {}
+    dependency_position_counts: dict[tuple[str, str], int] = {}
+    for node in nodes.values():
+        for dependency in node["dependencies"]:
+            key = (str(dependency["kind"]), str(dependency["status"]))
+            dependency_kind_status_counts[key] = (
+                dependency_kind_status_counts.get(key, 0) + 1
+            )
+            position_key = (
+                str(dependency["kind"]), str(dependency["syntax_position"]),
+            )
+            dependency_position_counts[position_key] = (
+                dependency_position_counts.get(position_key, 0) + 1
+            )
+    loader_action_site_count = sum(dependency_kind_status_counts.values())
     build_strata, source_node_strata = _build_strata_contract(
         sequence, build_roots, nodes, edges, bootstrap, loader_source,
     )
@@ -1545,6 +1577,65 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     "fingerprint gates remain mandatory"
                 ),
             },
+        },
+        "loader_action_contract": {
+            "scope": "all loading syntax in the reachable direct-source graph",
+            "activation_status": "blocked-exact-token-actions-not-integrated",
+            "source_site_count": loader_action_site_count,
+            "site_counts": [
+                {"kind": kind, "status": status, "count": count}
+                for (kind, status), count
+                in sorted(dependency_kind_status_counts.items())
+            ],
+            "syntax_position_counts": [
+                {"kind": kind, "position": position, "count": count}
+                for (kind, position), count
+                in sorted(dependency_position_counts.items())
+            ],
+            "generated_static_root_directives": len(sequence),
+            "recognition_policy": (
+                "a source directive is recognized only when it is the complete "
+                "standalone top-level phrase and has its exact literal grammar; "
+                "an identifier in a definition, conditional, function body, "
+                "argument, or other expression is ordinary source syntax"
+            ),
+            "embedded_expression_policy": (
+                "embedded loading calls require ordinary verified evaluation or "
+                "an exact hash-bound normalization that preserves the pinned "
+                "branch and call semantics; the boot scanner must not execute "
+                "both sides of a conditional"
+            ),
+            "required_actions": {
+                "#load": (
+                    "activate only an exact allowlisted static library; unknown, "
+                    "inactive, or malformed directives abort"
+                ),
+                "#use": "evaluate the literal source even if previously loaded",
+                "loads": "evaluate the literal source even if previously loaded",
+                "needs": "evaluate once and skip an already-loaded source",
+                "loadt": "evaluate even if previously loaded",
+                "flyspeck_needs": (
+                    "if new, evaluate in place and neutralize state exactly once "
+                    "after success; if already loaded, do neither"
+                ),
+                "#flyspeck_needs": (
+                    "enforce the generated index, stratum, selected source key, "
+                    "source hash, and root order, then apply flyspeck_needs semantics"
+                ),
+                "reneeds": "evaluate even if previously loaded, without neutralization",
+            },
+            "known_current_boot_defect": (
+                "the baseline boot scanner treats any level-zero needs/loads/#use "
+                "token as a directive, including a token inside a definition or "
+                "expression; promotion requires exact start recognition"
+            ),
+            "forbidden_shortcuts": [
+                "blanket directive erasure",
+                "successful no-op source load",
+                "neutralization before or after failed evaluation",
+                "neutralization for a duplicate skip",
+                "treating loads/loadt/reneeds as duplicate-skipping needs",
+            ],
         },
         "final_target": {
             "source": final_target.key,
