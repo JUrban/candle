@@ -15,14 +15,22 @@ Two suites are available:
   * REGRESSION - a small subset, run by default.
   * TOP100     - the full "Top 100 theorems" set (from holtest.mk's
                  GREAT_100_THEOREMS), run with --top100.
+
+Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
+to preserve the complete per-test table and exact source/executable identity.
 """
 import sys
 import os
 import time
 import argparse
+import hashlib
+import json
+import subprocess
 import tempfile
+import threading
 import concurrent.futures
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 
@@ -268,6 +276,71 @@ class CandleREPL:
 
 
 # ---------------------------------------------------------------------------
+# Resource sampling
+# ---------------------------------------------------------------------------
+
+class ProcessTreeSampler:
+    """Sample RSS for a process and all of its descendants on Linux."""
+
+    def __init__(self, root_pid, interval=0.25):
+        self.root_pid = root_pid
+        self.interval = interval
+        self.peak_process_rss_kib = 0
+        self.peak_tree_rss_kib = 0
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    @staticmethod
+    def _process_snapshot():
+        parents = {}
+        rss = {}
+        page_kib = os.sysconf("SC_PAGE_SIZE") // 1024
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdigit():
+                continue
+            try:
+                pid = int(entry.name)
+                stat = (entry / "stat").read_text(encoding="utf-8")
+                fields = stat[stat.rfind(")") + 2:].split()
+                parents[pid] = int(fields[1])
+                statm = (entry / "statm").read_text(encoding="utf-8").split()
+                rss[pid] = int(statm[1]) * page_kib
+            except (FileNotFoundError, PermissionError, ValueError, IndexError):
+                continue
+        return parents, rss
+
+    def _sample(self):
+        parents, rss = self._process_snapshot()
+        tree = {self.root_pid}
+        changed = True
+        while changed:
+            changed = False
+            for pid, parent in parents.items():
+                if parent in tree and pid not in tree:
+                    tree.add(pid)
+                    changed = True
+        live_rss = [rss[pid] for pid in tree if pid in rss]
+        if live_rss:
+            self.peak_process_rss_kib = max(
+                self.peak_process_rss_kib, max(live_rss))
+            self.peak_tree_rss_kib = max(
+                self.peak_tree_rss_kib, sum(live_rss))
+
+    def _run(self):
+        self._sample()
+        while not self._stop.wait(self.interval):
+            self._sample()
+
+    def start(self):
+        self._thread.start()
+
+    def stop(self):
+        self._stop.set()
+        self._thread.join()
+        self._sample()
+
+
+# ---------------------------------------------------------------------------
 # Test result and runner
 # ---------------------------------------------------------------------------
 
@@ -277,6 +350,8 @@ class TestResult:
     status: TestStatus
     hol_elapsed: float = 0.0
     test_elapsed: float = 0.0
+    peak_process_rss_kib: int = 0
+    peak_tree_rss_kib: int = 0
     error_message: str = ""
     log_path: str = ""
 
@@ -303,11 +378,15 @@ def run_test(test, test_timeout, env=None):
     logfile = os.fdopen(fd, "w")
 
     repl = None
+    sampler = None
+    result = None
     start = None          # set once Candle is booted; marks the start of hol.ml load
     hol_elapsed = 0.0
     test_elapsed = 0.0
     try:
         repl = CandleREPL(logfile=logfile, env=env)
+        sampler = ProcessTreeSampler(repl.process.pid)
+        sampler.start()
 
         start = time.perf_counter()
         repl.load("hol.ml", timeout=test_timeout)
@@ -317,8 +396,8 @@ def run_test(test, test_timeout, env=None):
             repl.load(f, timeout=test_timeout)
         test_elapsed = time.perf_counter() - start - hol_elapsed
 
-        return TestResult(test.name, TestStatus.PASS, hol_elapsed, test_elapsed,
-                          log_path=log_path)
+        result = TestResult(test.name, TestStatus.PASS, hol_elapsed, test_elapsed,
+                            log_path=log_path)
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         # A test must never crash the runner: record any failure and move on.
@@ -331,13 +410,20 @@ def run_test(test, test_timeout, env=None):
         status = (TestStatus.TIMEOUT
                   if isinstance(e, pexpect.TIMEOUT) or "Timeout" in str(e)
                   else TestStatus.FAIL)
-        return TestResult(test.name, status, hol_elapsed, test_elapsed,
-                          error_message=_format_error(repl, e), log_path=log_path)
+        result = TestResult(test.name, status, hol_elapsed, test_elapsed,
+                            error_message=_format_error(repl, e),
+                            log_path=log_path)
 
     finally:
+        if sampler is not None:
+            sampler.stop()
+            if result is not None:
+                result.peak_process_rss_kib = sampler.peak_process_rss_kib
+                result.peak_tree_rss_kib = sampler.peak_tree_rss_kib
         if repl is not None:
             repl.kill()
         logfile.close()
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -354,12 +440,15 @@ class Reporter:
     @staticmethod
     def print_summary(results, wall):
         print()
-        print(f"{'Test':<40} {'Status':>6} {'Time':>9}")
-        print("-" * 58)
+        print(f"{'Test':<40} {'Status':>6} {'Time':>9} {'Peak RSS':>12}")
+        print("-" * 71)
         for r in results:
             sym = Reporter.STATUS_SYMBOLS[r.status]
-            print(f"{r.name:<40} {sym:>6} {f'{r.total:.1f}s':>9}")
-        print("-" * 58)
+            peak_rss = f"{r.peak_process_rss_kib / 1024:.1f} MiB"
+            print(
+                f"{r.name:<40} {sym:>6} {f'{r.total:.1f}s':>9} "
+                f"{peak_rss:>12}")
+        print("-" * 71)
 
         counts = {}
         for s in TestStatus:
@@ -387,6 +476,57 @@ class Reporter:
                     msg += f" — {r.error_message}"
                 print(msg)
                 print(f"    log: {r.log_path}")
+
+    @staticmethod
+    def write_json(results, wall, path, suite, jobs, test_timeout, tests):
+        executable = CANDLE_ROOT / "candle" / "build" / "cake"
+        executable_sha256 = hashlib.sha256(executable.read_bytes()).hexdigest()
+        git_head = subprocess.check_output(
+            ["git", "-C", str(CANDLE_ROOT), "rev-parse", "HEAD"],
+            text=True,
+        ).strip()
+        git_status = subprocess.check_output(
+            ["git", "-C", str(CANDLE_ROOT), "status", "--short"],
+            text=True,
+        ).splitlines()
+        files_by_name = {test.name: list(test.files) for test in tests}
+        counts = {
+            status.value: sum(result.status == status for result in results)
+            for status in TestStatus
+        }
+        payload = {
+            "schema": 1,
+            "generated_utc": datetime.now(timezone.utc).isoformat(),
+            "suite": suite,
+            "test_count": len(results),
+            "jobs": jobs,
+            "test_timeout_seconds": test_timeout,
+            "wall_seconds": wall,
+            "sum_test_seconds": sum(result.total for result in results),
+            "counts": counts,
+            "candle_root": str(CANDLE_ROOT),
+            "candle_git_head": git_head,
+            "candle_git_status": git_status,
+            "candle_executable": str(executable.resolve()),
+            "candle_executable_sha256": executable_sha256,
+            "results": [
+                {
+                    "name": result.name,
+                    "files": files_by_name[result.name],
+                    "status": result.status.value,
+                    "hol_elapsed_seconds": result.hol_elapsed,
+                    "test_elapsed_seconds": result.test_elapsed,
+                    "total_elapsed_seconds": result.total,
+                    "peak_process_rss_kib": result.peak_process_rss_kib,
+                    "peak_tree_rss_kib": result.peak_tree_rss_kib,
+                    "error_message": result.error_message,
+                    "log_path": result.log_path,
+                }
+                for result in results
+            ],
+        }
+        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        print(f"Machine-readable report: {path}")
 
 
 # ---------------------------------------------------------------------------
@@ -474,18 +614,25 @@ def main():
         "--timeout", type=int, default=600,
         help="Timeout in seconds for each #use load, including hol.ml (default: 600)",
     )
+    parser.add_argument(
+        "--json-report", type=Path,
+        help="write a machine-readable result and resource report",
+    )
 
     args = parser.parse_args()
 
     if args.test:
         tests = [BY_NAME.get(name, _t(name)) for name in args.test]
         running_top100 = False
+        suite_name = "selected"
     elif args.top100:
         tests = TOP100
         running_top100 = True
+        suite_name = "top100"
     else:
         tests = REGRESSION
         running_top100 = False
+        suite_name = "regression"
 
     if args.list:
         for t in tests:
@@ -507,6 +654,10 @@ def main():
 
     results, wall = run_suite(tests, jobs, args.timeout, child_env)
     Reporter.print_summary(results, wall)
+    if args.json_report:
+        Reporter.write_json(
+            results, wall, args.json_report, suite_name, jobs, args.timeout,
+            tests)
 
     unexpected = [r for r in results if r.status in (TestStatus.FAIL, TestStatus.TIMEOUT)]
     sys.exit(1 if unexpected else 0)
