@@ -128,6 +128,8 @@ preload and 1,216,768 KiB maximum RSS.
 
 ## Open boundaries exposed by this slice
 
+- verified Dopen integration against the generated 3,180-site, 234-file
+  declaration-open corpus contract rather than only a synthetic fixture;
 - directory existence, directory enumeration, and directory-type queries;
 - a formal link between the source `Digest` binding and CakeML's verified MD5
   theory/program;

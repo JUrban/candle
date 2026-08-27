@@ -35,6 +35,15 @@ propagated through every selected dependency edge; all 400 source nodes must
 have at least one membership.  These are load/checkpoint labels, not a claim
 that a shared dependency belongs to only one mathematical subject.
 
+The generated `dopen_corpus_contract` separately freezes every declaration
+open in that exact graph.  It contains 3,180 occurrences across 234 Flyspeck
+files and 193 module names; all selected paths are simple, none use `open!`,
+and a canonical site digest binds source, line, module path, path form, and
+warning-suppression flag.  Earliest-stratum counts are recorded for all eight
+strata.  Local let-open and parenthesized local-open expressions are explicitly
+outside this Dopen declaration contract.  This is inventory for the G2 gate,
+not proof that a synthetic open test closes the corpus.
+
 `flyspeck_full_build.ml` is generated from the same 297-entry sequence.  Each
 entry carries its index, stratum, manifest-selected source key, and source
 SHA-256 beside an explicit `#flyspeck_needs` directive.  Entries whose source

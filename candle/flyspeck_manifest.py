@@ -29,6 +29,10 @@ SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
 DIRECTIVE_RE = re.compile(r"#\s*(flyspeck_loadt|flyspeck_needs|use|load)\b")
+MODULE_PATH = r"[A-Z][A-Za-z0-9_']*(?:\s*\.\s*[A-Z][A-Za-z0-9_']*)*"
+OPEN_DECLARATION_RE = re.compile(
+    r"\bopen(?P<override>!)?\s+(?P<path>" + MODULE_PATH + r")\b"
+)
 BUILD_SEQUENCE_RE = re.compile(r"\blet\s+build_sequence_full\s*=\s*\[")
 DEFINITION_PREFIX_RE = re.compile(r"(?:\blet|\band)\s+(?:rec\s+)?$")
 STATIC_RUNTIME_LIBRARIES = {
@@ -623,6 +627,25 @@ def scan_identifier_uses(source: str, identifiers: set[str]) -> list[dict[str, o
     ]
 
 
+def scan_open_declarations(source: str) -> list[dict[str, object]]:
+    """Inventory declaration opens, excluding local [let open M in]."""
+    clean = strip_ocaml_comments(source)
+    mask = _code_mask(clean)
+    declarations: list[dict[str, object]] = []
+    for match in OPEN_DECLARATION_RE.finditer(mask):
+        prefix = mask[:match.start()].rstrip()
+        if re.search(r"\blet$", prefix):
+            continue
+        path = re.sub(r"\s*\.\s*", ".", match.group("path"))
+        declarations.append({
+            "line": clean.count("\n", 0, match.start()) + 1,
+            "module_path": path,
+            "path_form": "dotted" if "." in path else "simple",
+            "override_warning_suppression": bool(match.group("override")),
+        })
+    return declarations
+
+
 def scan_opened_module_uses(
     source: str, module_exports: dict[str, set[str]],
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
@@ -957,6 +980,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     qualified_compatibility_uses: list[dict[str, object]] = []
     opened_compatibility_uses: list[dict[str, object]] = []
     compatibility_module_opens: list[dict[str, object]] = []
+    declaration_opens: list[dict[str, object]] = []
     toplevel_interface_uses: list[dict[str, object]] = []
     toplevel_consumer_uses: list[dict[str, object]] = []
     normalization_nonuse_uses: list[dict[str, object]] = []
@@ -1002,6 +1026,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ))
             if typed_count:
                 typed_theorem_lookup_counts[ref.key] = typed_count
+        for declaration in scan_open_declarations(text):
+            declaration_opens.append({"source": ref.key, **declaration})
         opens, opened_uses = scan_opened_module_uses(text, all_opened_exports)
         for entry in opens:
             target = (
@@ -1354,6 +1380,31 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     build_strata, source_node_strata = _build_strata_contract(
         sequence, build_roots, nodes, edges, bootstrap, loader_source,
     )
+    sorted_declaration_opens = sorted(
+        declaration_opens,
+        key=lambda entry: (
+            str(entry["source"]), int(entry["line"]),
+            str(entry["module_path"]),
+        ),
+    )
+    declaration_open_site_bytes = json.dumps(
+        sorted_declaration_opens,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    declaration_open_strata: list[dict[str, object]] = []
+    for stratum in BUILD_STRATA:
+        name = str(stratum["name"])
+        sites = [
+            entry for entry in sorted_declaration_opens
+            if source_node_strata[str(entry["source"])][0] == name
+        ]
+        declaration_open_strata.append({
+            "name": name,
+            "occurrence_count": len(sites),
+            "source_file_count": len({str(entry["source"]) for entry in sites}),
+            "module_path_count": len({str(entry["module_path"]) for entry in sites}),
+        })
     full_build_program = _render_full_build_program(
         sequence, build_roots, nodes, build_strata,
     )
@@ -1860,6 +1911,43 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         },
         "source_node_count": len(nodes),
         "source_edge_count": sum(len(targets) for targets in edges.values()),
+        "dopen_corpus_contract": {
+            "scope": "declaration opens in the reachable direct-source full-build graph",
+            "activation_status": "inventory-complete-pending-verified-dopen",
+            "required_gate": (
+                "the verified inference stack must build and a real corpus-derived "
+                "open-dependent compiled Candle slice must match pinned OCaml/HOL "
+                "Light reference fingerprints"
+            ),
+            "exclusions": (
+                "local let-open and parenthesized local-open expressions are separate "
+                "frontend forms and are not Dopen declarations"
+            ),
+            "occurrence_count": len(sorted_declaration_opens),
+            "source_file_count": len({
+                str(entry["source"]) for entry in sorted_declaration_opens
+            }),
+            "module_path_count": len({
+                str(entry["module_path"]) for entry in sorted_declaration_opens
+            }),
+            "path_form_counts": {
+                form: sum(
+                    entry["path_form"] == form
+                    for entry in sorted_declaration_opens
+                )
+                for form in ("simple", "dotted")
+            },
+            "override_warning_suppression_count": sum(
+                bool(entry["override_warning_suppression"])
+                for entry in sorted_declaration_opens
+            ),
+            "site_digest_format": (
+                "SHA-256 of canonical compact sorted JSON records with source, line, "
+                "module_path, path_form, and override_warning_suppression"
+            ),
+            "site_sha256": hashlib.sha256(declaration_open_site_bytes).hexdigest(),
+            "earliest_stratum_counts": declaration_open_strata,
+        },
         "source_node_strata": {
             key: source_node_strata[key] for key in sorted(source_node_strata)
         },

@@ -125,6 +125,32 @@ class SyntaxTests(unittest.TestCase):
             {"lexical-reviewed-not-compiler-proved"},
         )
 
+    def test_declaration_open_scanner_excludes_local_open(self):
+        source = '''
+          open A;;
+          open! Outer . Inner;;
+          let open Local in value;;
+          let text = "open Hidden";;
+          (* open Commented *)
+        '''
+        self.assertEqual(
+            flyspeck_manifest.scan_open_declarations(source),
+            [
+                {
+                    "line": 2,
+                    "module_path": "A",
+                    "path_form": "simple",
+                    "override_warning_suppression": False,
+                },
+                {
+                    "line": 3,
+                    "module_path": "Outer.Inner",
+                    "path_form": "dotted",
+                    "override_warning_suppression": True,
+                },
+            ],
+        )
+
     def test_resolution_precedence_and_path_policy(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -213,6 +239,36 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn(
             "final_assembly",
             memberships["candle:candle/flyspeck_l2_target.ml"],
+        )
+
+    def test_dopen_corpus_contract_is_exact_and_stratified(self):
+        contract = self.payload["dopen_corpus_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "inventory-complete-pending-verified-dopen",
+        )
+        self.assertEqual(contract["occurrence_count"], 3180)
+        self.assertEqual(contract["source_file_count"], 234)
+        self.assertEqual(contract["module_path_count"], 193)
+        self.assertEqual(
+            contract["path_form_counts"], {"simple": 3180, "dotted": 0},
+        )
+        self.assertEqual(contract["override_warning_suppression_count"], 0)
+        self.assertEqual(
+            contract["site_sha256"],
+            "bce30814051df12ea23c14f2918a55e6b839b72760fd58b8996e32f1c05bf282",
+        )
+        strata = contract["earliest_stratum_counts"]
+        self.assertEqual(
+            [entry["name"] for entry in strata],
+            [entry["name"] for entry in self.payload["build_strata"]],
+        )
+        self.assertEqual(
+            [entry["occurrence_count"] for entry in strata],
+            [29, 22, 13, 35, 841, 177, 2048, 15],
+        )
+        self.assertEqual(
+            sum(entry["occurrence_count"] for entry in strata), 3180,
         )
 
     def test_static_full_build_program_is_exact_and_fail_closed(self):
