@@ -342,6 +342,40 @@ class GeneratedManifestTests(unittest.TestCase):
             if member != "t":
                 self.assertRegex(source, rf"\blet(?:\s+rec)?\s+{member}\b")
 
+    def test_toplevel_interface_contract_is_exact_and_fail_closed(self):
+        contract = self.payload["toplevel_interface_contract"]
+        self.assertEqual(contract["activation_status"], "blocked-no-dummy-or-no-op")
+        self.assertIn("dummy return", contract["policy"])
+        uses = contract["qualified_uses"]
+        self.assertEqual(len(uses), 133)
+        self.assertEqual(
+            {module: sum(use["module"] == module for use in uses)
+             for module in {use["module"] for use in uses}},
+            {"Format": 106, "Lexing": 5, "Obj": 3, "Toploop": 19},
+        )
+        self.assertEqual(
+            contract["unbound_members"]["Format"],
+            ["formatter_of_buffer", "pp_set_margin", "sprintf", "std_formatter"],
+        )
+        self.assertEqual(contract["unbound_members"]["Lexing"], ["from_string"])
+        self.assertEqual(contract["unbound_members"]["Obj"], ["magic"])
+        self.assertEqual(
+            contract["unbound_members"]["Toploop"],
+            [
+                "String", "execute_phrase", "getvalue", "parse_toplevel_phrase",
+                "parse_use_file", "toplevel_env", "use_file", "use_silently",
+            ],
+        )
+        selection = contract["conditional_source_selection"]
+        self.assertEqual(selection["pinned_ocaml_version"], "4.14.1")
+        self.assertTrue(selection["selected"].endswith("update_database_400.ml"))
+        self.assertTrue(selection["unselected"].endswith("update_database_310.ml"))
+        payloads = contract["dynamic_source_payloads"]
+        self.assertEqual([payload["line"] for payload in payloads], [60, 134, 186, 193])
+        for payload in payloads:
+            self.assertIn(payload["source"], self.payload["source_nodes"])
+            self.assertGreater(payload["line"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()

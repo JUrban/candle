@@ -41,6 +41,46 @@ STATIC_RUNTIME_MEMBERS = {
 OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
     "Digest": {"compare", "file", "string", "t", "to_hex"},
 }
+TOPLEVEL_INTERFACE_MODULES = {"Format", "Lexing", "Obj", "Toploop"}
+TOPLEVEL_INTERFACE_SOURCE_MEMBERS = {
+    "Format": {
+        "close_box", "formatter", "open_box", "open_hbox", "open_hvbox",
+        "open_vbox", "pp_close_box", "pp_get_max_boxes", "pp_open_box",
+        "pp_open_hbox", "pp_open_hvbox", "pp_open_vbox", "pp_print_as",
+        "pp_print_break", "pp_print_newline", "pp_print_space",
+        "pp_print_string", "pp_set_max_boxes", "print_break", "print_flush",
+        "print_newline", "print_space", "print_string", "set_margin",
+        "set_max_boxes",
+    },
+    "Lexing": set(),
+    "Obj": set(),
+    "Toploop": set(),
+}
+# These are source-program constructors passed to [exec] in the pinned 4.x
+# update-database branch.  Ordinary qualified-use scanning intentionally masks
+# strings, so the dynamic program boundary needs a separate explicit contract.
+DYNAMIC_TOPLEVEL_PAYLOADS = (
+    {
+        "source": "flyspeck:text_formalization/general/update_database_400.ml",
+        "line": 60,
+        "purpose": "declare version-dependent type_expr family",
+    },
+    {
+        "source": "flyspeck:text_formalization/general/update_database_400.ml",
+        "line": 134,
+        "purpose": "declare version-dependent env_t record",
+    },
+    {
+        "source": "flyspeck:text_formalization/general/update_database_400.ml",
+        "line": 186,
+        "purpose": "evaluate a theorem identifier into buf__",
+    },
+    {
+        "source": "flyspeck:text_formalization/general/update_database_400.ml",
+        "line": 193,
+        "purpose": "declare update_database with top-level environment enumeration",
+    },
+)
 # Complete OCaml Str names that can be conservatively attributed after
 # [open Str].  Qualified use scanning does not need this list because it
 # records every member following [Str.].  There is no reachable [open Unix].
@@ -580,6 +620,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     qualified_compatibility_uses: list[dict[str, object]] = []
     opened_compatibility_uses: list[dict[str, object]] = []
     compatibility_module_opens: list[dict[str, object]] = []
+    toplevel_interface_uses: list[dict[str, object]] = []
     runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
     compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
     all_opened_exports = {
@@ -599,14 +640,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         except ValueError as error:
             raise ValueError(f"{ref.key}: {error}") from error
         for use in scan_qualified_module_uses(
-            text, runtime_modules | compatibility_modules,
+            text,
+            runtime_modules | compatibility_modules | TOPLEVEL_INTERFACE_MODULES,
         ):
-            target = (
-                qualified_runtime_uses
-                if use["module"] in runtime_modules
-                else qualified_compatibility_uses
-            )
-            target.append({"source": ref.key, **use})
+            if use["module"] in TOPLEVEL_INTERFACE_MODULES:
+                toplevel_interface_uses.append({"source": ref.key, **use})
+            else:
+                target = (
+                    qualified_runtime_uses
+                    if use["module"] in runtime_modules
+                    else qualified_compatibility_uses
+                )
+                target.append({"source": ref.key, **use})
         opens, opened_uses = scan_opened_module_uses(text, all_opened_exports)
         for entry in opens:
             target = (
@@ -733,6 +778,21 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         for use in all_compatibility_uses
         if use["member"] not in OCAML_COMPATIBILITY_SUPPORTED_MEMBERS[str(use["module"])]
     ]
+    toplevel_selected_members = {
+        module: sorted({
+            str(use["member"])
+            for use in toplevel_interface_uses
+            if use["module"] == module
+        })
+        for module in sorted(TOPLEVEL_INTERFACE_MODULES)
+    }
+    toplevel_unbound_members = {
+        module: sorted(
+            set(toplevel_selected_members[module])
+            - TOPLEVEL_INTERFACE_SOURCE_MEMBERS[module]
+        )
+        for module in sorted(TOPLEVEL_INTERFACE_MODULES)
+    }
     diagnostics = {
         "unresolved_build_roots": unresolved_roots,
         "dynamic_dependencies": sum(
@@ -793,6 +853,22 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "bytes": path.stat().st_size,
             "sha256": _sha256(path),
         })
+    for payload in DYNAMIC_TOPLEVEL_PAYLOADS:
+        source_key = str(payload["source"])
+        if source_key not in nodes:
+            raise ValueError(f"dynamic top-level payload source not selected: {source_key}")
+        source_lines = resolver.path(
+            SourceRef(*source_key.split(":", 1))
+        ).read_text(encoding="utf-8", errors="surrogateescape").splitlines()
+        line_number = int(payload["line"])
+        if line_number < 1 or line_number > len(source_lines):
+            raise ValueError(
+                f"dynamic top-level payload line out of range: {source_key}:{line_number}"
+            )
+        if "exec" not in source_lines[line_number - 1]:
+            raise ValueError(
+                f"dynamic top-level payload site drifted: {source_key}:{line_number}"
+            )
     return {
         "schema": SCHEMA,
         "claim": "G6 source inventory only; not loader execution evidence",
@@ -951,6 +1027,51 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     str(entry["source"]), int(entry["line"]),
                     str(entry["module"]), str(entry["member"]),
                 ),
+            ),
+        },
+        "toplevel_interface_contract": {
+            "scope": "reachable direct-source full-build graph only",
+            "activation_status": "blocked-no-dummy-or-no-op",
+            "policy": (
+                "Toploop and dynamically evaluated source are correctness-relevant; "
+                "a dummy return, silent skip, unchecked Obj.magic, or successful "
+                "no-op use_file is forbidden"
+            ),
+            "qualified_uses": sorted(
+                toplevel_interface_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
+            "selected_members": toplevel_selected_members,
+            "current_source_members": {
+                module: sorted(members)
+                for module, members in sorted(
+                    TOPLEVEL_INTERFACE_SOURCE_MEMBERS.items()
+                )
+            },
+            "unbound_members": toplevel_unbound_members,
+            "conditional_source_selection": {
+                "source": "flyspeck:text_formalization/general/serialization.hl",
+                "selector": "ocaml_version() matches Str.regexp \"Ocaml 4.\"",
+                "pinned_ocaml_version": "4.14.1",
+                "selected": (
+                    "flyspeck:text_formalization/general/update_database_400.ml"
+                ),
+                "unselected": (
+                    "flyspeck:text_formalization/general/update_database_310.ml"
+                ),
+                "graph_limit": (
+                    "the conservative dependency graph contains both literal "
+                    "branches; only the selected branch is an execution claim"
+                ),
+            },
+            "dynamic_source_payloads": list(DYNAMIC_TOPLEVEL_PAYLOADS),
+            "dynamic_payload_policy": (
+                "string bodies are masked by ordinary capability scanning and "
+                "therefore require an explicit typed registry transformation or "
+                "verified dynamic-evaluation contract before activation"
             ),
         },
         "final_target": {

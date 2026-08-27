@@ -10639,5 +10639,946 @@
       }
     ],
     "scope": "reachable direct-source full-build graph only"
+  },
+  "toplevel_interface_contract": {
+    "activation_status": "blocked-no-dummy-or-no-op",
+    "conditional_source_selection": {
+      "graph_limit": "the conservative dependency graph contains both literal branches; only the selected branch is an execution claim",
+      "pinned_ocaml_version": "4.14.1",
+      "selected": "flyspeck:text_formalization/general/update_database_400.ml",
+      "selector": "ocaml_version() matches Str.regexp \"Ocaml 4.\"",
+      "source": "flyspeck:text_formalization/general/serialization.hl",
+      "unselected": "flyspeck:text_formalization/general/update_database_310.ml"
+    },
+    "current_source_members": {
+      "Format": [
+        "close_box",
+        "formatter",
+        "open_box",
+        "open_hbox",
+        "open_hvbox",
+        "open_vbox",
+        "pp_close_box",
+        "pp_get_max_boxes",
+        "pp_open_box",
+        "pp_open_hbox",
+        "pp_open_hvbox",
+        "pp_open_vbox",
+        "pp_print_as",
+        "pp_print_break",
+        "pp_print_newline",
+        "pp_print_space",
+        "pp_print_string",
+        "pp_set_max_boxes",
+        "print_break",
+        "print_flush",
+        "print_newline",
+        "print_space",
+        "print_string",
+        "set_margin",
+        "set_max_boxes"
+      ],
+      "Lexing": [],
+      "Obj": [],
+      "Toploop": []
+    },
+    "dynamic_payload_policy": "string bodies are masked by ordinary capability scanning and therefore require an explicit typed registry transformation or verified dynamic-evaluation contract before activation",
+    "dynamic_source_payloads": [
+      {
+        "line": 60,
+        "purpose": "declare version-dependent type_expr family",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 134,
+        "purpose": "declare version-dependent env_t record",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 186,
+        "purpose": "evaluate a theorem identifier into buf__",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 193,
+        "purpose": "declare update_database with top-level environment enumeration",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      }
+    ],
+    "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op use_file is forbidden",
+    "qualified_uses": [
+      {
+        "line": 604,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 605,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 218,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 220,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 486,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 487,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 507,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 508,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 566,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 567,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:grobner.ml"
+      },
+      {
+        "line": 442,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:lib.ml"
+      },
+      {
+        "line": 442,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:lib.ml"
+      },
+      {
+        "line": 455,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 458,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 460,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 461,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 467,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 470,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 472,
+        "member": "print_string",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 473,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "candle:meson.ml"
+      },
+      {
+        "line": 4095,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4098,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4104,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4105,
+        "member": "open_vbox",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4106,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4108,
+        "member": "close_box",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4110,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 110,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 111,
+        "member": "set_margin",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 112,
+        "member": "pp_print_as",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 113,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 114,
+        "member": "pp_print_break",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 115,
+        "member": "pp_print_space",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 116,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 118,
+        "member": "pp_open_box",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 119,
+        "member": "pp_open_hbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 120,
+        "member": "pp_open_vbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 121,
+        "member": "pp_open_hvbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 122,
+        "member": "pp_close_box",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 124,
+        "member": "pp_get_max_boxes",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 125,
+        "member": "pp_set_max_boxes",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 126,
+        "member": "set_max_boxes",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 128,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 129,
+        "member": "print_space",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 131,
+        "member": "open_box",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 132,
+        "member": "open_hbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 133,
+        "member": "open_vbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 134,
+        "member": "open_hvbox",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 135,
+        "member": "close_box",
+        "module": "Format",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 768,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 769,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 777,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 778,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 788,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 789,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 791,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 797,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 799,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 802,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 805,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 806,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 813,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 813,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 820,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 173,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 227,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+      },
+      {
+        "line": 302,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 302,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 302,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 127,
+        "member": "sprintf",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 136,
+        "member": "sprintf",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 426,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 426,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 426,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 852,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 852,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 1059,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 1059,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 1062,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 45,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 45,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 45,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 723,
+        "member": "from_string",
+        "module": "Lexing",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 724,
+        "member": "parse_toplevel_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 726,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 726,
+        "member": "execute_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 746,
+        "member": "from_string",
+        "module": "Lexing",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 747,
+        "member": "parse_toplevel_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 750,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 750,
+        "member": "execute_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 60,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 90,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 90,
+        "member": "use_file",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 91,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 92,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 130,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 137,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 140,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 196,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 206,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 210,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 15,
+        "member": "formatter_of_buffer",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 16,
+        "member": "pp_set_margin",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 19,
+        "member": "execute_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 20,
+        "member": "from_string",
+        "module": "Lexing",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 20,
+        "member": "parse_toplevel_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 24,
+        "member": "parse_use_file",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 25,
+        "member": "parse_use_file",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 26,
+        "member": "String",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 26,
+        "member": "use_silently",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 27,
+        "member": "parse_use_file",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+      },
+      {
+        "line": 25,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/hol_pervasives.hl"
+      },
+      {
+        "line": 416,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 416,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 452,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 27,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 27,
+        "member": "execute_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 28,
+        "member": "from_string",
+        "module": "Lexing",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 28,
+        "member": "parse_toplevel_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 172,
+        "member": "magic",
+        "module": "Obj",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 172,
+        "member": "getvalue",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 205,
+        "member": "magic",
+        "module": "Obj",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 205,
+        "member": "toplevel_env",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 27,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 27,
+        "member": "execute_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 28,
+        "member": "from_string",
+        "module": "Lexing",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 28,
+        "member": "parse_toplevel_phrase",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 187,
+        "member": "magic",
+        "module": "Obj",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 187,
+        "member": "getvalue",
+        "module": "Toploop",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "line": 1927,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1928,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      }
+    ],
+    "scope": "reachable direct-source full-build graph only",
+    "selected_members": {
+      "Format": [
+        "close_box",
+        "formatter",
+        "formatter_of_buffer",
+        "open_box",
+        "open_hbox",
+        "open_hvbox",
+        "open_vbox",
+        "pp_close_box",
+        "pp_get_max_boxes",
+        "pp_open_box",
+        "pp_open_hbox",
+        "pp_open_hvbox",
+        "pp_open_vbox",
+        "pp_print_as",
+        "pp_print_break",
+        "pp_print_newline",
+        "pp_print_space",
+        "pp_print_string",
+        "pp_set_margin",
+        "pp_set_max_boxes",
+        "print_break",
+        "print_flush",
+        "print_newline",
+        "print_space",
+        "print_string",
+        "set_margin",
+        "set_max_boxes",
+        "sprintf",
+        "std_formatter"
+      ],
+      "Lexing": [
+        "from_string"
+      ],
+      "Obj": [
+        "magic"
+      ],
+      "Toploop": [
+        "String",
+        "execute_phrase",
+        "getvalue",
+        "parse_toplevel_phrase",
+        "parse_use_file",
+        "toplevel_env",
+        "use_file",
+        "use_silently"
+      ]
+    },
+    "unbound_members": {
+      "Format": [
+        "formatter_of_buffer",
+        "pp_set_margin",
+        "sprintf",
+        "std_formatter"
+      ],
+      "Lexing": [
+        "from_string"
+      ],
+      "Obj": [
+        "magic"
+      ],
+      "Toploop": [
+        "String",
+        "execute_phrase",
+        "getvalue",
+        "parse_toplevel_phrase",
+        "parse_use_file",
+        "toplevel_env",
+        "use_file",
+        "use_silently"
+      ]
+    }
   }
 }
