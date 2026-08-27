@@ -360,10 +360,24 @@ let print_monomial m = Format.print_string(string_of_monomial m);;
 
 let print_poly m = Format.print_string(string_of_poly m);;
 
+(* Candle does not execute OCaml toplevel printer directives.
 #install_printer print_vector;;
 #install_printer print_matrix;;
 #install_printer print_monomial;;
 #install_printer print_poly;;
+*)
+
+(* Candle's REPL discovers pretty-valued pp_* bindings instead of executing
+   OCaml toplevel directives.  Keep the original unit-returning print_*
+   functions above intact for source calls, and expose equivalent display-only
+   adapters under distinct names. *)
+let pp_vector v = Pretty_printer.token (string_of_vector 0 20 v);;
+
+let pp_matrix m = Pretty_printer.token (string_of_matrix 20 m);;
+
+let pp_monomial m = Pretty_printer.token (string_of_monomial m);;
+
+let pp_poly p = Pretty_printer.token (string_of_poly p);;
 
 (* ------------------------------------------------------------------------- *)
 (* Conversion from HOL term.                                                 *)
