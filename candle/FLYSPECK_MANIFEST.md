@@ -44,11 +44,15 @@ With `full` selected, `test_flyspeck_loader_frontier.sh` now proves that the
 compiled path passes the former manifest-environment, ordinary-file,
 `Filename.concat`, and standard `load_path` frontiers.  It reaches the exact
 direct source file and stops at `build/strictbuild.hl:21`, where Candle does not
-yet recognize `#load "unix.cma";;`.  The pinned direct corpus has exactly 17
-standalone `#load` directives: ten `unix.cma`, five `str.cma`, and two
-`nums.cma`.  The next frontend slice must accept only this declared static
-library set (or record an exact mechanical normalization) and must fail on
-unknown libraries.  A generic no-op would violate the no-silent-fallback rule.
+yet recognize `#load "unix.cma";;`.  The pinned repository has exactly 17
+standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
+Only six are in the recursively reached full-build graph: three `unix.cma` and
+three `str.cma`; no `nums.cma` site is reachable.  The manifest's static-library
+contract records those six sites plus 41 source-located qualified uses: 19
+`Unix` uses over seven members and 22 `Str` uses over five members.  It is
+explicitly inactive until semantically adequate static bindings are evidenced.
+Unknown libraries are promotion-blocking diagnostics, and directive erasure or
+a generic no-op is forbidden.
 
 `Sys.file_exists` in this slice deliberately forwards to CakeML's verified
 TextIO-backed ordinary-file predicate.  OCaml-compatible directory existence,
@@ -60,7 +64,9 @@ This artifact is deliberately not loader-execution evidence.  In particular,
 two generated-runtime contracts remain visible:
 
 - `candle/build/insulate.ml` must be generated from the pinned compiler's
-  `types.txt` by the pinned `insulate.py` recipe; and
+  `types.txt` by the pinned `insulate.py` recipe.  It remains a generated
+  contract even when an ignored local build happens to contain the file, so
+  the source manifest is independent of worktree build state; and
 - Flyspeck serialization writes and reloads a temporary theorem-digest module,
   which needs a versioned, atomic generated-input/checkpoint lifecycle.
 

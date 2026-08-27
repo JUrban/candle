@@ -39,6 +39,37 @@ class SyntaxTests(unittest.TestCase):
             ],
         )
 
+    def test_qualified_runtime_use_scanner_ignores_data_and_comments(self):
+        source = '''
+          Unix.gettimeofday ();;
+          let r = Str.regexp "x";;
+          (* Unix.system "ignored";; *)
+          let s = "Str.split";;
+          let theorem = `Unix.mkdir /\\ Str.string_match`;;
+        '''
+        self.assertEqual(
+            flyspeck_manifest.scan_qualified_module_uses(source, {"Str", "Unix"}),
+            [
+                {"line": 2, "module": "Unix", "member": "gettimeofday"},
+                {"line": 3, "module": "Str", "member": "regexp"},
+            ],
+        )
+
+    def test_unknown_runtime_library_blocks_promotion(self):
+        diagnostics = {
+            key: [] for key in flyspeck_manifest.PROMOTION_EMPTY_DIAGNOSTICS
+        }
+        diagnostics.update({
+            key: 0 for key in flyspeck_manifest.PROMOTION_ZERO_DIAGNOSTICS
+        })
+        diagnostics["unsupported_runtime_libraries"] = [
+            {"source": "flyspeck:x.ml", "line": 1, "library": "evil.cma"},
+        ]
+        self.assertEqual(
+            flyspeck_manifest.promotion_blockers(diagnostics),
+            ["unsupported_runtime_libraries"],
+        )
+
     def test_resolution_precedence_and_path_policy(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -81,6 +112,7 @@ class GeneratedManifestTests(unittest.TestCase):
         for key in (
             "unresolved_build_roots",
             "cycles",
+            "unsupported_runtime_libraries",
         ):
             self.assertEqual(diagnostics[key], [])
         for key in (
@@ -108,7 +140,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(len(contracts), 2)
         self.assertEqual(
             {contract["status"] for contract in contracts},
-            {"generated-missing", "generated-runtime"},
+            {"generated-contract", "generated-runtime"},
         )
         self.assertEqual(
             {contract["source"] for contract in contracts},
@@ -117,6 +149,7 @@ class GeneratedManifestTests(unittest.TestCase):
                 "flyspeck:text_formalization/general/serialization.hl",
             },
         )
+        self.assertNotIn("candle:candle/build/insulate.ml", self.payload["source_nodes"])
 
     def test_final_target_is_direct_source_only(self):
         target = self.payload["final_target"]
@@ -131,6 +164,13 @@ class GeneratedManifestTests(unittest.TestCase):
         loader = self.payload["loader"]
         self.assertEqual(loader["source"], "candle:candle/flyspeck_loader.ml")
         self.assertEqual(loader["required_build_mode"], "full")
+        self.assertEqual(
+            loader["configuration_bindings"],
+            [
+                "candle_hollight_root", "candle_flyspeck_root",
+                "candle_flyspeck_build_mode",
+            ],
+        )
         source = Path(__file__).with_name("flyspeck_loader.ml").read_text(encoding="utf-8")
         self.assertIn('candle_flyspeck_build_mode must be full', source)
         self.assertIn('needs "build/strictbuild.hl"', source)
@@ -138,6 +178,36 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
         for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
             self.assertNotIn(forbidden, source)
+
+    def test_static_library_contract_is_exact_and_inactive(self):
+        contract = self.payload["static_library_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "blocked-pending-static-binding-evidence",
+        )
+        self.assertIn("no-op is forbidden", contract["directive_policy"])
+        self.assertEqual(
+            contract["library_modules"],
+            {"str.cma": "Str", "unix.cma": "Unix"},
+        )
+        directives = contract["directives"]
+        self.assertEqual(len(directives), 6)
+        self.assertEqual(
+            {directive["library"] for directive in directives},
+            {"str.cma", "unix.cma"},
+        )
+        self.assertEqual(
+            {directive["library"]: sum(d["library"] == directive["library"] for d in directives)
+             for directive in directives},
+            {"str.cma": 3, "unix.cma": 3},
+        )
+        uses = contract["qualified_uses"]
+        self.assertTrue(uses)
+        self.assertEqual({use["module"] for use in uses}, {"Str", "Unix"})
+        self.assertEqual({use["library"] for use in uses}, {"str.cma", "unix.cma"})
+        for entry in directives + uses:
+            self.assertRegex(entry["source"], r"^(candle|flyspeck):")
+            self.assertGreater(entry["line"], 0)
 
 
 if __name__ == "__main__":

@@ -25,6 +25,21 @@ LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
 DIRECTIVE_RE = re.compile(r"#\s*(use|load)\b")
 BUILD_SEQUENCE_RE = re.compile(r"\blet\s+build_sequence_full\s*=\s*\[")
 DEFINITION_PREFIX_RE = re.compile(r"(?:\blet|\band)\s+(?:rec\s+)?$")
+STATIC_RUNTIME_LIBRARIES = {
+    "str.cma": "Str",
+    "unix.cma": "Unix",
+}
+PROMOTION_EMPTY_DIAGNOSTICS = (
+    "unresolved_build_roots",
+    "cycles",
+    "unsupported_runtime_libraries",
+)
+PROMOTION_ZERO_DIAGNOSTICS = (
+    "dynamic_dependencies",
+    "missing_dependencies",
+    "ambiguous_dependencies",
+    "forbidden_dependencies",
+)
 GENERATED_INPUT_GLOBS = (
     "formal_lp/glpk/binary/easy*",
     "formal_lp/glpk/binary/hard*",
@@ -42,7 +57,7 @@ KNOWN_GENERATED_DEPENDENCIES = {
     },
 }
 MANUAL_DYNAMIC_REVIEWS = {
-    ("candle:candle/flyspeck_loader.ml", 36, "flyspeck_needs"): {
+    ("candle:candle/flyspeck_loader.ml", 51, "flyspeck_needs"): {
         "status": "root-driver",
         "reason": "maps the separately extracted authoritative full build sequence",
     },
@@ -352,6 +367,36 @@ def scan_load_calls(source: str) -> list[dict[str, object]]:
     return calls
 
 
+def scan_qualified_module_uses(source: str, modules: set[str]) -> list[dict[str, object]]:
+    """Inventory qualified module members in executable OCaml source regions."""
+    if not modules:
+        return []
+    clean = strip_ocaml_comments(source)
+    mask = _code_mask(clean)
+    qualified = re.compile(
+        r"\b(" + "|".join(re.escape(module) for module in sorted(modules))
+        + r")\.([A-Za-z_][A-Za-z0-9_']*)\b"
+    )
+    return [
+        {
+            "line": clean.count("\n", 0, match.start()) + 1,
+            "module": match.group(1),
+            "member": match.group(2),
+        }
+        for match in qualified.finditer(mask)
+    ]
+
+
+def promotion_blockers(diagnostics: dict[str, object]) -> list[str]:
+    blockers = [
+        key for key in PROMOTION_EMPTY_DIAGNOSTICS if diagnostics.get(key) != []
+    ]
+    blockers.extend(
+        key for key in PROMOTION_ZERO_DIAGNOSTICS if diagnostics.get(key) != 0
+    )
+    return blockers
+
+
 class Resolver:
     def __init__(self, candle_root: Path, flyspeck_root: Path):
         self.candle_root = candle_root.resolve()
@@ -458,6 +503,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     pending = list(dict.fromkeys(roots))
     nodes: dict[str, dict[str, object]] = {}
     edges: dict[str, list[str]] = {}
+    static_library_directives: list[dict[str, object]] = []
+    qualified_runtime_uses: list[dict[str, object]] = []
     while pending:
         ref = pending.pop(0)
         if ref.key in nodes:
@@ -470,6 +517,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             calls = scan_load_calls(text)
         except ValueError as error:
             raise ValueError(f"{ref.key}: {error}") from error
+        for use in scan_qualified_module_uses(text, set(STATIC_RUNTIME_LIBRARIES.values())):
+            qualified_runtime_uses.append({"source": ref.key, **use})
         for call in calls:
             dependency = dict(call)
             literal = call.get("literal")
@@ -493,16 +542,22 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         dependency["selected_targets"] = selected_targets
             elif call["kind"] == "#load":
                 dependency["status"] = "runtime-library"
+                static_library_directives.append({
+                    "source": ref.key,
+                    "line": call["line"],
+                    "library": literal,
+                })
+            elif literal in KNOWN_GENERATED_DEPENDENCIES:
+                dependency.update(
+                    status="generated-contract",
+                    generation=KNOWN_GENERATED_DEPENDENCIES[literal],
+                )
             else:
                 matches, error = resolver.resolve(literal)
                 if error:
                     dependency.update(status="forbidden", error=error)
                 elif not matches:
-                    generated = KNOWN_GENERATED_DEPENDENCIES.get(literal)
-                    if generated is None:
-                        dependency["status"] = "missing"
-                    else:
-                        dependency.update(status="generated-missing", generation=generated)
+                    dependency["status"] = "missing"
                 else:
                     selected = matches[0]
                     dependency.update(
@@ -542,6 +597,11 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "sha256": _sha256(path),
         })
 
+    unsupported_runtime_libraries = [
+        directive
+        for directive in static_library_directives
+        if directive["library"] not in STATIC_RUNTIME_LIBRARIES
+    ]
     diagnostics = {
         "unresolved_build_roots": unresolved_roots,
         "dynamic_dependencies": sum(
@@ -563,7 +623,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             1
             for node in nodes.values()
             for dep in node["dependencies"]
-            if dep["status"] == "generated-missing"
+            if dep["status"] == "generated-contract"
         ),
         "ambiguous_dependencies": sum(
             1 for node in nodes.values() for dep in node["dependencies"] if dep["status"] == "ambiguous"
@@ -571,6 +631,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "forbidden_dependencies": sum(
             1 for node in nodes.values() for dep in node["dependencies"] if dep["status"] == "forbidden"
         ),
+        "unsupported_runtime_libraries": unsupported_runtime_libraries,
         "cycles": _cycles(edges),
     }
     sequence_positions: dict[str, list[int]] = {}
@@ -584,7 +645,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     generated_dependency_contracts = []
     for source_key, node in sorted(nodes.items()):
         for dependency in node["dependencies"]:
-            if dependency["status"] not in {"generated-missing", "generated-runtime"}:
+            if dependency["status"] not in {"generated-contract", "generated-runtime"}:
                 continue
             generated_dependency_contracts.append({
                 "source": source_key,
@@ -621,9 +682,41 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "source": loader_source.key,
             "required_build_mode": "full",
             "configuration_bindings": [
-                "candle_flyspeck_root", "candle_flyspeck_build_mode",
+                "candle_hollight_root", "candle_flyspeck_root",
+                "candle_flyspeck_build_mode",
             ],
             "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK",
+        },
+        "static_library_contract": {
+            "scope": "reachable direct-source full-build graph only",
+            "activation_status": "blocked-pending-static-binding-evidence",
+            "directive_policy": (
+                "recognize only the listed libraries; reject every other #load; "
+                "directive erasure or no-op is forbidden until all listed module "
+                "members have semantically adequate static Candle bindings"
+            ),
+            "library_modules": STATIC_RUNTIME_LIBRARIES,
+            "directives": sorted(
+                static_library_directives,
+                key=lambda entry: (str(entry["source"]), int(entry["line"])),
+            ),
+            "qualified_uses": sorted(
+                (
+                    {
+                        **use,
+                        "library": next(
+                            library
+                            for library, module in STATIC_RUNTIME_LIBRARIES.items()
+                            if module == use["module"]
+                        ),
+                    }
+                    for use in qualified_runtime_uses
+                ),
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
         },
         "final_target": {
             "source": final_target.key,
@@ -659,6 +752,9 @@ def main() -> None:
     elif not manifest_path.is_file() or manifest_path.read_text(encoding="utf-8") != rendered:
         raise SystemExit(f"stale manifest: run {Path(__file__).name} --write")
     payload = json.loads(rendered)
+    blockers = promotion_blockers(payload["diagnostics"])
+    if blockers:
+        raise SystemExit("manifest promotion blocked by: " + ", ".join(blockers))
     print(
         f"manifest ok: {payload['build_sequence_count']} roots, "
         f"{payload['source_node_count']} source nodes, "

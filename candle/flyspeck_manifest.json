@@ -2146,7 +2146,8 @@
     "generated_dependencies": 1,
     "missing_dependencies": 0,
     "reviewed_dynamic_dependencies": 17,
-    "unresolved_build_roots": []
+    "unresolved_build_roots": [],
+    "unsupported_runtime_libraries": []
   },
   "final_target": {
     "imported_premises": [
@@ -2167,7 +2168,7 @@
       "line": 23,
       "literal": "candle/build/insulate.ml",
       "source": "candle:hol_lib.ml",
-      "status": "generated-missing"
+      "status": "generated-contract"
     },
     {
       "expression": "needs digest_file",
@@ -2441,6 +2442,7 @@
   ],
   "loader": {
     "configuration_bindings": [
+      "candle_hollight_root",
       "candle_flyspeck_root",
       "candle_flyspeck_build_mode"
     ],
@@ -2458,7 +2460,7 @@
     }
   },
   "schema": 1,
-  "source_edge_count": 419,
+  "source_edge_count": 420,
   "source_node_count": 399,
   "source_nodes": {
     "candle:Library/binomial.ml": {
@@ -3396,11 +3398,21 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 1725,
+      "bytes": 2439,
       "dependencies": [
         {
+          "kind": "#use",
+          "line": 13,
+          "literal": "hol.ml",
+          "matches": [
+            "candle:hol.ml"
+          ],
+          "selected": "candle:hol.ml",
+          "status": "resolved"
+        },
+        {
           "kind": "needs",
-          "line": 33,
+          "line": 48,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -3411,13 +3423,13 @@
         {
           "expression": "flyspeck_needs source; source) Build.build_sequence_full",
           "kind": "flyspeck_needs",
-          "line": 36,
+          "line": 51,
           "reason": "maps the separately extracted authoritative full build sequence",
           "status": "root-driver"
         },
         {
           "kind": "needs",
-          "line": 43,
+          "line": 58,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -3428,7 +3440,7 @@
       ],
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "f12519ef9d171147f660e6a27a0ae3ff6d0e584e0eb8d3cdac7ff301d3cea560"
+      "sha256": "a92f5dbd3fd423fbdd37401f59f7e5bb75bb5cd366424a48cd47f23bd7ca9a4f"
     },
     "candle:candle/kernel.ml": {
       "bytes": 5795,
@@ -3445,11 +3457,11 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 10590,
+      "bytes": 13564,
       "dependencies": [],
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "9ff891fdfffbbf9a8cd57fc9c5a7258b69befbb276ea3113d82ae6780f29baf4"
+      "sha256": "03ee2b422b7fd6f7277f163ca81803e31651bd2f325f213f04f07b13fb74f601"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -3660,7 +3672,7 @@
           "kind": "loads",
           "line": 23,
           "literal": "candle/build/insulate.ml",
-          "status": "generated-missing"
+          "status": "generated-contract"
         },
         {
           "kind": "loads",
@@ -4168,11 +4180,11 @@
       "sha256": "fe847817174ca56d9bb6c57a775b257d996beff3af3e6c4ea1a3fd54e0ae8ca3"
     },
     "candle:hol_loader.ml": {
-      "bytes": 914,
+      "bytes": 1188,
       "dependencies": [],
       "path": "hol_loader.ml",
       "repository": "candle",
-      "sha256": "6a665a4a4ef4abe056b3477c4e8ed4cd2a2be2ae0ed171a6ec499deb1d77407c"
+      "sha256": "29aad7a914bc45eebc7cc4adf064f9b09a77331af799ef9549c04d5a8bc23f3f"
     },
     "candle:impconv.ml": {
       "bytes": 67607,
@@ -9755,5 +9767,335 @@
       "repository": "flyspeck",
       "sha256": "a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c"
     }
+  },
+  "static_library_contract": {
+    "activation_status": "blocked-pending-static-binding-evidence",
+    "directive_policy": "recognize only the listed libraries; reject every other #load; directive erasure or no-op is forbidden until all listed module members have semantically adequate static Candle bindings",
+    "directives": [
+      {
+        "library": "unix.cma",
+        "line": 7,
+        "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 40,
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 3,
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 1,
+        "source": "flyspeck:load_flyspeck.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 21,
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 22,
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      }
+    ],
+    "library_modules": {
+      "str.cma": "Str",
+      "unix.cma": "Unix"
+    },
+    "qualified_uses": [
+      {
+        "library": "unix.cma",
+        "line": 43,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 48,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 141,
+        "member": "open_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 143,
+        "member": "close_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 152,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 152,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 153,
+        "member": "global_replace",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 153,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 200,
+        "member": "open_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 205,
+        "member": "close_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 209,
+        "member": "open_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 211,
+        "member": "close_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 232,
+        "member": "open_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 236,
+        "member": "close_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 243,
+        "member": "open_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 246,
+        "member": "close_process",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 137,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 108,
+        "member": "mkdir",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 90,
+        "member": "first_chars",
+        "module": "Str",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 65,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 67,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 7,
+        "member": "putenv",
+        "module": "Unix",
+        "source": "flyspeck:load_flyspeck.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 8,
+        "member": "putenv",
+        "module": "Unix",
+        "source": "flyspeck:load_flyspeck.ml"
+      },
+      {
+        "library": "unix.cma",
+        "line": 44,
+        "member": "open_process_in",
+        "module": "Unix",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "library": "unix.cma",
+        "line": 47,
+        "member": "close_process_in",
+        "module": "Unix",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 20,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 20,
+        "member": "string_match",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 109,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 109,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 173,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 173,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 301,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 301,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 281,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 282,
+        "member": "string_match",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 306,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 307,
+        "member": "string_match",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      {
+        "library": "str.cma",
+        "line": 975,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/nonlinear/break_case_exec.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 975,
+        "member": "string_match",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/nonlinear/break_case_exec.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 141,
+        "member": "regexp",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/nonlinear/merge_ineq.hl"
+      },
+      {
+        "library": "str.cma",
+        "line": 141,
+        "member": "split",
+        "module": "Str",
+        "source": "flyspeck:text_formalization/nonlinear/merge_ineq.hl"
+      }
+    ],
+    "scope": "reachable direct-source full-build graph only"
   }
 }
