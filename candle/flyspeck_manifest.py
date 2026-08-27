@@ -1677,10 +1677,28 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     ),
                 },
                 "unix.cma": {
-                    "status": "startup-metadata-only-explicit-fail-otherwise",
+                    "status": (
+                        "startup-metadata-and-zero-telemetry-explicit-fail-otherwise"
+                    ),
                     "members": sorted(STATIC_RUNTIME_MEMBERS["Unix"]),
                     "source": "candle:candle/ocaml.ml",
                     "deterministic_process_inputs": deterministic_process_inputs,
+                    "telemetry_policy": (
+                        "gettimeofday returns deterministic Float.zero; exact "
+                        "selected consumers use elapsed values only for reports, "
+                        "and the external release runner owns wall/RSS telemetry"
+                    ),
+                    "telemetry_uses": [
+                        entry for entry in sorted(
+                            qualified_runtime_contract_uses,
+                            key=lambda item: (
+                                str(item["source"]), int(item["line"]),
+                                str(item["module"]), str(item["member"]),
+                            ),
+                        )
+                        if entry["module"] == "Unix"
+                        and entry["member"] == "gettimeofday"
+                    ],
                     "gate": "candle:candle/test_unix_metadata.sh",
                 },
             },

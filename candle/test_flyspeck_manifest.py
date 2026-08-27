@@ -647,7 +647,7 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertEqual(
             evidence["unix.cma"]["status"],
-            "startup-metadata-only-explicit-fail-otherwise",
+            "startup-metadata-and-zero-telemetry-explicit-fail-otherwise",
         )
         source = Path(__file__).with_name("ocaml.ml").read_text(encoding="utf-8")
         self.assertIn("module Str = struct", source)
@@ -687,6 +687,44 @@ class GeneratedManifestTests(unittest.TestCase):
                 },
             ],
         )
+        self.assertIn(
+            "gettimeofday returns deterministic Float.zero",
+            evidence["unix.cma"]["telemetry_policy"],
+        )
+        self.assertEqual(
+            evidence["unix.cma"]["telemetry_uses"],
+            [
+                {
+                    "source": "flyspeck:formal_ineqs/misc/misc_functions.hl",
+                    "line": 43,
+                    "module": "Unix",
+                    "member": "gettimeofday",
+                    "library": "unix.cma",
+                },
+                {
+                    "source": "flyspeck:formal_ineqs/misc/misc_functions.hl",
+                    "line": 48,
+                    "module": "Unix",
+                    "member": "gettimeofday",
+                    "library": "unix.cma",
+                },
+                {
+                    "source": "flyspeck:formal_lp/hypermap/verify_all.hl",
+                    "line": 65,
+                    "module": "Unix",
+                    "member": "gettimeofday",
+                    "library": "unix.cma",
+                },
+                {
+                    "source": "flyspeck:formal_lp/hypermap/verify_all.hl",
+                    "line": 67,
+                    "module": "Unix",
+                    "member": "gettimeofday",
+                    "library": "unix.cma",
+                },
+            ],
+        )
+        self.assertIn("let gettimeofday () =\n    Float.zero", source)
 
     def test_digest_compatibility_contract_is_exact_and_source_backed(self):
         contract = self.payload["ocaml_compatibility_contract"]

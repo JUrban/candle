@@ -29,4 +29,4 @@ if rg -q 'EXCEPTION:|Parsing failed|ERROR:|Undefined variable:' \
   exit 1
 fi
 
-printf 'PASS: Unix startup metadata is deterministic and process access fails closed\n'
+printf 'PASS: Unix metadata/telemetry is deterministic and process/filesystem access fails closed\n'

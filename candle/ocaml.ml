@@ -719,7 +719,15 @@ end;;
 (* Direct Flyspeck uses [Unix.open_process_in] during strictbuild startup and
    reporting to obtain metadata from [date] and [whoami].  The release path
    substitutes manifest-hashed text files for those nondeterministic shell
-   commands.  No ambient process execution is exposed.  Other selected Unix
+   commands.  No ambient process execution is exposed.
+
+   The four selected [Unix.gettimeofday] calls measure load-time self-tests or
+   LP verification and use their differences only as reported telemetry.  The
+   proof-producing functions and their results do not depend on the clock.
+   Return a deterministic zero timestamp so those computations execute without
+   adding a clock FFI; wall/RSS timing belongs to the authenticated external
+   runner.  This is a selected-route telemetry substitution, not a general
+   implementation of OCaml wall-clock semantics.  Other selected Unix
    operations stay fail-closed until their sandbox/refinement obligations are
    implemented. *)
 let candle_unix_manifest_process_inputs =
@@ -751,7 +759,7 @@ module Unix = struct
     failwith "Unix.close_process: unavailable without an opened sandboxed process"
 
   let gettimeofday () =
-    failwith "Unix.gettimeofday: disabled pending clock contract"
+    Float.zero
 
   let mkdir path mode =
     failwith ("Unix.mkdir: disabled pending filesystem contract: " ^ path)

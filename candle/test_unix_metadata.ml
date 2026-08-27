@@ -33,14 +33,26 @@ if Buffer.contents candle_unix_buffer <> "" then
 let candle_unix_rejects_command =
   try let _ = Unix.open_process_in "sh -c date" in false
   with Failure _ -> true;;
-let candle_unix_rejects_clock =
-  try let _ = Unix.gettimeofday () in false
+let candle_unix_zero_clock =
+  Float.compare (Unix.gettimeofday ()) Float.zero = 0;;
+let candle_unix_timed_result, candle_unix_timed_zero =
+  let start = Unix.gettimeofday () in
+  let result = 6 * 7 in
+  let finish = Unix.gettimeofday () in
+  result, Float.compare (finish -. start) Float.zero = 0;;
+let candle_unix_rejects_process =
+  try let _ = Unix.open_process "true" in false
+  with Failure _ -> true;;
+let candle_unix_rejects_mkdir =
+  try let _ = Unix.mkdir "candle-forbidden-directory" 0o777 in false
   with Failure _ -> true;;
 let candle_sys_rejects_command =
   try let _ = Sys.command "true" in false
   with Failure _ -> true;;
 
-if not candle_unix_rejects_command || not candle_unix_rejects_clock ||
+if not candle_unix_rejects_command || not candle_unix_zero_clock ||
+   candle_unix_timed_result <> 42 || not candle_unix_timed_zero ||
+   not candle_unix_rejects_process || not candle_unix_rejects_mkdir ||
    not candle_sys_rejects_command then
   failwith "Unix fail-closed contract mismatch";;
 

@@ -3190,8 +3190,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "23ca318c41145e16325670672537b658",
-    "generated_source_sha256": "300f6a4fd580418721d151d6d5c594fbce765d9cbbf97f2610346028164edc98",
+    "generated_source_md5": "bbf86c97f90944a70f0d0347e9dac05b",
+    "generated_source_sha256": "4ee2ad10e2f7f8ae81f971d350bd32c99697afb499ba1d60a93781f4f6ca4630",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -9309,10 +9309,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "60f1e09681b546ed33253d5e09cdfddc",
+      "md5": "a6ccf445c48e653209871a13323d3218",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "9e9eff9c5a7f06876860595751772d5702311e70812f691623e86afdcbf51a6b"
+      "sha256": "1e6ec466f94009c542d6167ad1137afcbc75d438904483d1c1d4cd6283ac1849"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -9339,12 +9339,12 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 29854,
+      "bytes": 30316,
       "dependencies": [],
-      "md5": "634640bcf77b493aa757378c84c76a4e",
+      "md5": "f3bd0be05fd084b346fd0da78b121550",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "8f0cc6ac14200fe491649f9c6502df8fee4550dd849ec228d8a46ab9cc8959ef"
+      "sha256": "86fb4288b714cf69883c984432d5bb9e161d39ddb0c06653f1c5a529f8e769f3"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -16839,7 +16839,38 @@
           "open_process_in"
         ],
         "source": "candle:candle/ocaml.ml",
-        "status": "startup-metadata-only-explicit-fail-otherwise"
+        "status": "startup-metadata-and-zero-telemetry-explicit-fail-otherwise",
+        "telemetry_policy": "gettimeofday returns deterministic Float.zero; exact selected consumers use elapsed values only for reports, and the external release runner owns wall/RSS telemetry",
+        "telemetry_uses": [
+          {
+            "library": "unix.cma",
+            "line": 43,
+            "member": "gettimeofday",
+            "module": "Unix",
+            "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+          },
+          {
+            "library": "unix.cma",
+            "line": 48,
+            "member": "gettimeofday",
+            "module": "Unix",
+            "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+          },
+          {
+            "library": "unix.cma",
+            "line": 65,
+            "member": "gettimeofday",
+            "module": "Unix",
+            "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+          },
+          {
+            "library": "unix.cma",
+            "line": 67,
+            "member": "gettimeofday",
+            "module": "Unix",
+            "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+          }
+        ]
       }
     },
     "capability_uses": [
