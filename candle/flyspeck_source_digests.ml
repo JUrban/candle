@@ -45,7 +45,7 @@ let candle_flyspeck_source_digests = [
   ("candle","candle/flyspeck_l2_target.ml","aa726b6da79aae93e638b8a8233bf48b");
   ("candle","candle/flyspeck_source_integrity.ml","54b69b40c435b4b184a6ea88586f45b6");
   ("candle","candle/kernel.ml","3276edeece3d38ea84bf44a85d5fac30");
-  ("candle","candle/nums.ml","22b5aacb7249864dd766c2d0b0d95fbd");
+  ("candle","candle/nums.ml","d7010e4c6e3a3d16d2ff02baec9a97b9");
   ("candle","candle/ocaml.ml","17c52bb024ed4744db54f4424ef3066b");
   ("candle","candle/pretty.ml","08098e03af2e6ef0df226482d168288c");
   ("candle","canon.ml","9d6436c2e35b90c8834c698a181301f7");
@@ -66,7 +66,7 @@ let candle_flyspeck_source_digests = [
   ("candle","int.ml","ace80cde3d6ce4e735ed559d2249b360");
   ("candle","itab.ml","a21722c7ab2fa8f33857f3b3ae218ce2");
   ("candle","iterate.ml","2509aac4d54183ae36878672adba7de5");
-  ("candle","lib.ml","8b921f20b5d78223843e97a5b2edd36f");
+  ("candle","lib.ml","c69216874dd036245265a89594624b15");
   ("candle","lists.ml","676ea3dd37f469c97e2bb902fe8de7d2");
   ("candle","meson.ml","e87109fec8872e30863ec56d0b4e9311");
   ("candle","metis.ml","8a508f7bdeb51686002e7d802ff8152f");

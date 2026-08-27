@@ -3198,8 +3198,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "95907c7c39b82a246c321ebf49b75b3b",
-    "generated_source_sha256": "59d62c666c1f427c43e569d82b2bfea23babf4fcc61635f17cd767725c69a470",
+    "generated_source_md5": "6464bfaff378cb8c9b13627c0e9561de",
+    "generated_source_sha256": "76bb4583e0050d54e7d37ab9360b212088e829a8b2b529d31329a552037987a4",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -9317,10 +9317,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a4d64cccdcd9268934b67444313965f5",
+      "md5": "d3799d18913fc82c244612f5bb99fcc1",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0c643ea7a2b4e4caa1fde29665b9bfed7c670237f05f4e378506054069084447"
+      "sha256": "eacdf15fee92abdd9daf268030f0e1a4fe27eefbc915fe4c6271da7ef7df2434"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -9339,12 +9339,12 @@
       "sha256": "6ef26962e67f7e5e647074af8864800b5765a51c792ac58eaf3d6352f688c206"
     },
     "candle:candle/nums.ml": {
-      "bytes": 7095,
+      "bytes": 8392,
       "dependencies": [],
-      "md5": "22b5aacb7249864dd766c2d0b0d95fbd",
+      "md5": "d7010e4c6e3a3d16d2ff02baec9a97b9",
       "path": "candle/nums.ml",
       "repository": "candle",
-      "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
+      "sha256": "72ca1663e4a4077b9681bcb5988fb83fc102195e0b0fdfd84691b5e6a336e253"
     },
     "candle:candle/ocaml.ml": {
       "bytes": 30791,
@@ -10273,12 +10273,12 @@
       "sha256": "b1e672b3df89c7faec552914ddbc7298ed25c104e42fbfb2c536dd68aea73347"
     },
     "candle:lib.ml": {
-      "bytes": 32543,
+      "bytes": 33100,
       "dependencies": [],
-      "md5": "8b921f20b5d78223843e97a5b2edd36f",
+      "md5": "c69216874dd036245265a89594624b15",
       "path": "lib.ml",
       "repository": "candle",
-      "sha256": "1e5718d9721793d16dcd516f8ac63e56f1bbd659dae761479746ba55b8691dc0"
+      "sha256": "09140219becaa5dc07b54f6b1300e45da5737f9ca710ad8fc32b28696c1c8e82"
     },
     "candle:lists.ml": {
       "bytes": 38791,
