@@ -21,11 +21,11 @@ class FingerprintPlumbingTest(unittest.TestCase):
     def test_structural_records_become_compact_hashes(self):
         fields = [
             regression.FINGERPRINT_MARKER,
-            "THM",
-            "theorem-serialization",
-            "hypothesis-serialization",
-            "conclusion-serialization",
-            "axiom-serialization",
+            b"THM".hex(),
+            b"theorem-serialization".hex(),
+            b"hypothesis-serialization".hex(),
+            b"conclusion-serialization".hex(),
+            b"axiom-serialization".hex(),
             "2",
             "3",
         ]
@@ -48,6 +48,29 @@ class FingerprintPlumbingTest(unittest.TestCase):
         self.assertEqual(
             record["theorem_sha256"],
             hashlib.sha256(b"theorem-serialization").hexdigest())
+
+    def test_malformed_wire_encoding_fails_closed(self):
+        fields = [
+            regression.FINGERPRINT_MARKER,
+            "THM",  # not hexadecimal
+            b"theorem".hex(),
+            b"hypotheses".hex(),
+            b"conclusion".hex(),
+            b"axioms".hex(),
+            "0",
+            "0",
+        ]
+        with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", delete=False) as logfile:
+            logfile.write("\t".join(fields) + "\n")
+            path = Path(logfile.name)
+        try:
+            with self.assertRaisesRegex(
+                    regression.LoadFailure, "malformed hexadecimal"):
+                regression._read_fingerprint_records(
+                    path, ("THM",), "audited")
+        finally:
+            path.unlink()
 
     def test_missing_record_is_not_a_load_success_fingerprint(self):
         with tempfile.NamedTemporaryFile(

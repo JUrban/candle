@@ -324,8 +324,15 @@ def _fingerprint_request_source(theorem_names):
     return "\n".join(lines) + "\n"
 
 
+def _decode_fingerprint_hex(field, label):
+    """Decode one fail-closed lowercase-hex wire field."""
+    if not re.fullmatch(r"(?:[0-9a-f]{2})*", field):
+        raise LoadFailure(f"malformed hexadecimal fingerprint field: {label}")
+    return bytes.fromhex(field)
+
+
 def _identity_sha256(serialized):
-    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+    return hashlib.sha256(serialized).hexdigest()
 
 
 def _read_fingerprint_records(log_path, theorem_names, mapping_status):
@@ -339,10 +346,20 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status):
             raise LoadFailure(
                 f"malformed {FINGERPRINT_MARKER} record with "
                 f"{len(fields)} fields")
-        (_, name, theorem, hypotheses, conclusion, assumptions,
+        (_, name_hex, theorem_hex, hypotheses_hex, conclusion_hex,
+         assumptions_hex,
          hypothesis_count, assumption_count) = fields
+        name_bytes = _decode_fingerprint_hex(name_hex, "name")
+        try:
+            name = name_bytes.decode("ascii")
+        except UnicodeDecodeError as error:
+            raise LoadFailure("non-ASCII theorem name in fingerprint") from error
         if name in records:
             raise LoadFailure(f"duplicate theorem fingerprint: {name}")
+        theorem = _decode_fingerprint_hex(theorem_hex, "theorem")
+        hypotheses = _decode_fingerprint_hex(hypotheses_hex, "hypotheses")
+        conclusion = _decode_fingerprint_hex(conclusion_hex, "conclusion")
+        assumptions = _decode_fingerprint_hex(assumptions_hex, "assumptions")
         try:
             parsed_hypothesis_count = int(hypothesis_count)
             parsed_assumption_count = int(assumption_count)
