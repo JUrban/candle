@@ -209,7 +209,7 @@
     },
     {
       "id": "CANDLE-OCAML-NUM-ROUNDING-001",
-      "status": "differential_pass_target_pending",
+      "status": "differential_pass_target_advanced",
       "priority": "P0",
       "category": "numeric_runtime",
       "summary": "Candle's Num subset lacks round_num and ceiling_num and truncates negative rational floor and negative powers incorrectly",
@@ -262,6 +262,13 @@
         "candle_execution": "fresh compiled-Candle process loading the modified hol.ml source tree",
         "excluded_boundary": "zero to a negative power: reference infinity versus deliberate Candle zero-denominator failure"
       },
+      "target_validation": {
+        "status": "advanced_to_next_compatibility_frontier",
+        "target": "100/ceva",
+        "artifact": "candle/compatibility/sos_finite_func_observation.json",
+        "next_frontier": "Examples/sos.ml mapa finite-function comparator",
+        "total_elapsed_seconds": 1558.3893307922408
+      },
       "proof_obligation": "all selected positive, negative, half-boundary, and reciprocal cases match the OCaml 4.14.1 HOL Light layer; the unselected zero-to-negative-power infinity boundary and downstream SOS changes remain explicit exclusions",
       "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",
       "remaining_evidence": [
@@ -272,7 +279,7 @@
     },
     {
       "id": "CANDLE-HOLLIGHT-SOS-FINITE-FUNC-001",
-      "status": "differential_pass_target_pending",
+      "status": "differential_pass_frontier_confirmed_target_patch_pending",
       "priority": "P0",
       "category": "source_representation_compatibility",
       "summary": "HOL Light SOS relies on polymorphic finite-function keys while Candle's finite-function representation requires explicit key comparators",
@@ -283,9 +290,12 @@
         "comparison": "reference polymorphic comparison and canonical graph behavior"
       },
       "candle_observation": {
-        "outcome": "static_source_api_mismatch",
-        "diagnostic": "Examples/sos.ml supplies bare undefined values and graph calls to Candle's comparator-parameterized func API",
-        "target_confirmation": "pending completion of the isolated post-Num 100/ceva rerun"
+        "outcome": "reproduced_post_num_target_failure",
+        "diagnostic": "100/ceva reaches let mapa f (d,v) after the Num remedy and reports a type mismatch because bare undefined is a comparator-parameterized constructor in Candle",
+        "artifact": "candle/compatibility/sos_finite_func_observation.json",
+        "report_sha256": "d1bbcd91b683b53d25ab7e2cd4c1f2ec768a2fa25528b1e7c1d2f08769a88a30",
+        "total_elapsed_seconds": 1558.3893307922408,
+        "peak_tree_rss_kib": 1280440
       },
       "affected_targets": [
         "100/ceva",
@@ -322,7 +332,6 @@
       "proof_obligation": "the selected explicit comparators reproduce the six reference observations without adding general polymorphic comparison; later SOS representation, printer, float, value-restriction, filesystem, and solver boundaries remain excluded",
       "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",
       "remaining_evidence": [
-        "post-Num 100/ceva failure confirmation",
         "clean 100/ceva and 100/thales loads",
         "separate review of the remaining Examples/sos.ml changes",
         "approved target theorem and assumption fingerprints"

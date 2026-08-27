@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-HOLLIGHT-SOS-FINITE-FUNC-001",
+  "generated_utc": "2026-08-27T22:06:03.171762+00:00",
+  "target": "100/ceva",
+  "baseline": {
+    "candle_git_head": "0c1644e0f2a4f46eb3e0e84b1945a655cc8fd961",
+    "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+    "numeric_remedy_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd"
+  },
+  "result": {
+    "status": "FAIL",
+    "frontier": "Examples/sos.ml mapa finite-function comparator",
+    "last_value": "element",
+    "diagnostic": "Type mismatch at let mapa f (d,v): bare undefined is a comparator-parameterized constructor in Candle",
+    "total_elapsed_seconds": 1558.3893307922408,
+    "peak_tree_rss_kib": 1280440,
+    "fingerprints": null
+  },
+  "evidence": {
+    "machine_report": "/project/flyspeck-candle-runs/v13-ceva-num/report.json",
+    "machine_report_sha256": "d1bbcd91b683b53d25ab7e2cd4c1f2ec768a2fa25528b1e7c1d2f08769a88a30",
+    "target_log": "/tmp/candle-100_ceva-2vbljf8u.log",
+    "target_log_sha256": "f5b78efd0d31fa427b61190ea5dced4660e6162a04bf7d5f172295a8d482adeb"
+  },
+  "selected_remedy": {
+    "branch": "codex/flyspeck-v13-sos-func",
+    "commit": "eefc4c4909605475731aa9e73198fdff463c963c",
+    "differential_case_count": 6,
+    "target_validation": "pending isolated post-patch load"
+  },
+  "claim_boundary": "The numeric remedy advanced the real source target to this finite-function frontier; neither that advancement nor the comparator differential is a clean target pass or fingerprint match."
+}

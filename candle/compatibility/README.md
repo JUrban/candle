@@ -120,3 +120,10 @@ polynomial-style key, and map/fold behavior.  Both pinned OCaml 4.14.1/HOL
 Light and a fresh compiled-Candle process pass.  This remains a differential
 sub-gate until the affected source targets load and their theorem/assumption
 fingerprints are approved.
+
+The isolated post-Num `100/ceva` rerun confirms the expected boundary in the
+real source target: it reaches `let mapa f (d,v)` and fails because bare
+`undefined` is comparator-parameterized in Candle.  The machine report and
+resource observation are pinned in `sos_finite_func_observation.json`.  This
+also advances the Num entry beyond its original failure, but it does not make
+Ceva a pass; the comparator remedy still needs a clean target run.
