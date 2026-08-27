@@ -223,6 +223,7 @@ BASELINE_OBSERVATIONS = {
         "status": "fail",
         "phase": "dependency_elaboration",
         "compatibility_category": "polymorphic comparison",
+        "ledger_id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
         "diagnostic": (
             "SEMIRING_NORMALIZERS_CONV comparator inferred as term -> term -> bool "
             "where int -> int -> bool was expected"

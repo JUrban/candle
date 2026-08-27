@@ -107,6 +107,50 @@
         "clean constructible load",
         "constructible theorem and assumption fingerprints"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
+      "status": "minimized_fix_identified",
+      "priority": "P0",
+      "category": "source_type_compatibility",
+      "summary": "Bare OCaml comparison is polymorphic, while Candle resolves bare (<) to integer comparison",
+      "minimal_reproducer": "candle/compatibility/oracles/polymorphic_comparison.ml",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "outcome": "accepted",
+        "binding_type": "(int list -> int list -> bool)"
+      },
+      "candle_observation": {
+        "outcome": "type_error",
+        "diagnostic": "expected int list -> int list -> bool but received int -> int -> bool",
+        "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+        "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61"
+      },
+      "affected_targets": [
+        "100/cubic"
+      ],
+      "affected_source_locations": [
+        "Complex/complexnumbers.ml:720",
+        "Complex/complexnumbers.ml:860"
+      ],
+      "existing_fix": {
+        "repository": "HOL-Light/candle",
+        "branch": "origin/fix-top100",
+        "commit": "5c445655c5dc7e57fba416c0bf19bf9279107d96",
+        "present_in_audited_master": false,
+        "description": "use the explicit Term.(<) ordering at both term-comparator call sites"
+      },
+      "selected_remedy": {
+        "kind": "source_normalization",
+        "description": "import only the two explicit Term.(<) call-site changes",
+        "broad_polymorphic_compare_added": false
+      },
+      "regression_requirement": "minimal differential remains documented; Complex/complexnumbers.ml and 100/cubic load; cubic theorem and assumptions match approved fingerprints",
+      "remaining_evidence": [
+        "targeted load of the normalized Complex/complexnumbers.ml dependency",
+        "clean cubic load",
+        "cubic theorem and assumption fingerprints"
+      ]
     }
   ]
 }

@@ -16,7 +16,7 @@ not from `fix-top100`, and likewise contain none of the eight commits.
 
 | Commit | Corpus slice | Compatibility class | Integration assessment |
 | --- | --- | --- | --- |
-| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; small source normalization, missing oracle and fingerprints. |
+| `5c44565` | `100/cubic` | polymorphic comparison | Explicit `Term.(<)` calls; minimized OCaml/Candle oracle confirms this is a narrow source normalization. Target reload and fingerprints remain missing. |
 | `badbd63` | `100/e_is_transcendental` | source syntax | Removes a stray semicolon inside a call; source correction rather than a runtime feature. |
 | `02ed7f7` | `100/heron` | polymorphic comparison | Supplies `Term.(<)` to `setify`; small source normalization, missing fingerprints. |
 | `1bfc727` | `100/piseries` | numerics and value restriction | Adds `round_num`, `ceiling_num`, changes negative rational floor behavior, and adds a type annotation. Needs OCaml boundary tests before promotion. |
@@ -78,7 +78,12 @@ and four failures through target 18. In addition to `bertrand-primerecip` and
 `100/constructible.ml:115`, and `cubic` failed in
 `Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
 `SEMIRING_NORMALIZERS_CONV` received Candle's incompatible inferred type. The
-latter maps directly to the small `Term.(<)` normalization in `5c44565`; the
+latter maps directly to the small `Term.(<)` normalization in `5c44565`.
+`CANDLE-OCAML-POLYMORPHIC-COMPARISON-001` independently reproduces the boundary:
+OCaml accepts bare `(<)` at an `int list -> int list -> bool` context, whereas
+Candle fixes the bare operator at `int -> int -> bool`. Thus the approved
+direction is the two explicit term-comparator call sites, not adding general
+polymorphic comparison to Candle. The
 former is not covered by the eight audited anchor commits, but it is already
 fixed in the audited CakeML source base by `c26aa71d2b1`. That upstream commit
 explicitly cites `100/constructible.ml`, and its regression was part of the

@@ -54,3 +54,11 @@ compiled Candle reports a lexer error. No new parser implementation is needed:
 the audited CakeML source already contains `c26aa71d2b1`, including a parser
 regression specifically citing `100/constructible.ml`. The remaining gate is an
 isolated Candle rebuild followed by the minimal oracle and clean target load.
+
+`oracles/polymorphic_comparison.ml` minimizes
+`CANDLE-OCAML-POLYMORPHIC-COMPARISON-001`. OCaml uses polymorphic bare `(<)` and
+accepts it where an `int list -> int list -> bool` comparator is required;
+Candle's compatibility environment resolves the same spelling to the integer
+operator and reports a type mismatch. The `cubic` failure needs term ordering,
+so the selected remedy is the existing two-site `Term.(<)` source normalization
+from `5c44565`, not a general polymorphic-comparison implementation.
