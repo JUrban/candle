@@ -2251,7 +2251,8 @@
       "line": 69,
       "literal": "candle/flyspeck_source_digests.ml",
       "source": "candle:candle/flyspeck_loader.ml",
-      "status": "generated-contract"
+      "status": "generated-contract",
+      "syntax_position": "standalone-phrase"
     },
     {
       "generation": {
@@ -2263,7 +2264,8 @@
       "line": 23,
       "literal": "candle/build/insulate.ml",
       "source": "candle:hol_lib.ml",
-      "status": "generated-contract"
+      "status": "generated-contract",
+      "syntax_position": "standalone-phrase"
     },
     {
       "expression": "needs digest_file",
@@ -2272,7 +2274,8 @@
       "open_gate": "versioned generated-input/checkpoint schema and atomic lifecycle",
       "reason": "digest_file is a temporary theorem-digest module written by save_all",
       "source": "flyspeck:text_formalization/general/serialization.hl",
-      "status": "generated-runtime"
+      "status": "generated-runtime",
+      "syntax_position": "embedded-expression"
     }
   ],
   "generated_inputs": [
@@ -2544,6 +2547,151 @@
     "required_build_mode": "full",
     "source": "candle:candle/flyspeck_loader.ml",
     "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK"
+  },
+  "loader_action_contract": {
+    "activation_status": "blocked-exact-token-actions-not-integrated",
+    "embedded_expression_policy": "embedded loading calls require ordinary verified evaluation or an exact hash-bound normalization that preserves the pinned branch and call semantics; the boot scanner must not execute both sides of a conditional",
+    "forbidden_shortcuts": [
+      "blanket directive erasure",
+      "successful no-op source load",
+      "neutralization before or after failed evaluation",
+      "neutralization for a duplicate skip",
+      "treating loads/loadt/reneeds as duplicate-skipping needs"
+    ],
+    "generated_static_root_directives": 297,
+    "known_current_boot_defect": "the baseline boot scanner treats any level-zero needs/loads/#use token as a directive, including a token inside a definition or expression; promotion requires exact start recognition",
+    "recognition_policy": "a source directive is recognized only when it is the complete standalone top-level phrase and has its exact literal grammar; an identifier in a definition, conditional, function body, argument, or other expression is ordinary source syntax",
+    "required_actions": {
+      "#flyspeck_needs": "enforce the generated index, stratum, selected source key, source hash, and root order, then apply flyspeck_needs semantics",
+      "#load": "activate only an exact allowlisted static library; unknown, inactive, or malformed directives abort",
+      "#use": "evaluate the literal source even if previously loaded",
+      "flyspeck_needs": "if new, evaluate in place and neutralize state exactly once after success; if already loaded, do neither",
+      "loads": "evaluate the literal source even if previously loaded",
+      "loadt": "evaluate even if previously loaded",
+      "needs": "evaluate once and skip an already-loaded source",
+      "reneeds": "evaluate even if previously loaded, without neutralization"
+    },
+    "scope": "all loading syntax in the reachable direct-source graph",
+    "site_counts": [
+      {
+        "count": 5,
+        "kind": "#load",
+        "status": "runtime-library"
+      },
+      {
+        "count": 1,
+        "kind": "#use",
+        "status": "resolved"
+      },
+      {
+        "count": 144,
+        "kind": "flyspeck_needs",
+        "status": "resolved"
+      },
+      {
+        "count": 4,
+        "kind": "flyspeck_needs",
+        "status": "root-driver"
+      },
+      {
+        "count": 1,
+        "kind": "loads",
+        "status": "generated-contract"
+      },
+      {
+        "count": 53,
+        "kind": "loads",
+        "status": "resolved"
+      },
+      {
+        "count": 3,
+        "kind": "loadt",
+        "status": "loader-definition"
+      },
+      {
+        "count": 3,
+        "kind": "loadt",
+        "status": "resolved-dynamic"
+      },
+      {
+        "count": 1,
+        "kind": "needs",
+        "status": "generated-contract"
+      },
+      {
+        "count": 1,
+        "kind": "needs",
+        "status": "generated-runtime"
+      },
+      {
+        "count": 214,
+        "kind": "needs",
+        "status": "resolved"
+      },
+      {
+        "count": 3,
+        "kind": "needs",
+        "status": "resolved-dynamic"
+      },
+      {
+        "count": 1,
+        "kind": "reneeds",
+        "status": "function-alias"
+      }
+    ],
+    "source_site_count": 434,
+    "syntax_position_counts": [
+      {
+        "count": 5,
+        "kind": "#load",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 1,
+        "kind": "#use",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 4,
+        "kind": "flyspeck_needs",
+        "position": "embedded-expression"
+      },
+      {
+        "count": 144,
+        "kind": "flyspeck_needs",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 54,
+        "kind": "loads",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 3,
+        "kind": "loadt",
+        "position": "embedded-expression"
+      },
+      {
+        "count": 3,
+        "kind": "loadt",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 4,
+        "kind": "needs",
+        "position": "embedded-expression"
+      },
+      {
+        "count": 215,
+        "kind": "needs",
+        "position": "standalone-phrase"
+      },
+      {
+        "count": 1,
+        "kind": "reneeds",
+        "position": "embedded-expression"
+      }
+    ]
   },
   "ocaml_compatibility_contract": {
     "activation_status": "partial-source-bindings",
@@ -4355,7 +4503,8 @@
             "candle:Library/wo.ml"
           ],
           "selected": "candle:Library/wo.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6b3f85bbc4f8dcb3d0f8ee48d8d7c0db",
@@ -4390,7 +4539,8 @@
             "candle:Library/frag.ml"
           ],
           "selected": "candle:Library/frag.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4400,7 +4550,8 @@
             "candle:Library/card.ml"
           ],
           "selected": "candle:Library/card.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4410,7 +4561,8 @@
             "candle:Library/prime.ml"
           ],
           "selected": "candle:Library/prime.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "603b01fbb9a20727f8459dd6b35e05d3",
@@ -4437,7 +4589,8 @@
             "candle:Library/card.ml"
           ],
           "selected": "candle:Library/card.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "60f3088986284c22fe66a7fcba7814d9",
@@ -4496,7 +4649,8 @@
             "candle:Library/floor.ml"
           ],
           "selected": "candle:Library/floor.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4506,7 +4660,8 @@
             "candle:Library/iter.ml"
           ],
           "selected": "candle:Library/iter.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4516,7 +4671,8 @@
             "candle:Multivariate/integration.ml"
           ],
           "selected": "candle:Multivariate/integration.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4526,7 +4682,8 @@
             "candle:Multivariate/complexes.ml"
           ],
           "selected": "candle:Multivariate/complexes.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "731315433dd17cf5b0665a8520632b85",
@@ -4545,7 +4702,8 @@
             "candle:Multivariate/convex.ml"
           ],
           "selected": "candle:Multivariate/convex.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6ff8cfb248b9121ea6010fdde736d70f",
@@ -4564,7 +4722,8 @@
             "candle:Multivariate/topology.ml"
           ],
           "selected": "candle:Multivariate/topology.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "9137afedbce4d9c4af472de5b7c0bcda",
@@ -4583,7 +4742,8 @@
             "candle:Multivariate/topology.ml"
           ],
           "selected": "candle:Multivariate/topology.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "3a066dfe2bcdd6bd65f565bb98287037",
@@ -4602,7 +4762,8 @@
             "candle:Multivariate/homology.ml"
           ],
           "selected": "candle:Multivariate/homology.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4612,7 +4773,8 @@
             "candle:Multivariate/polytope.ml"
           ],
           "selected": "candle:Multivariate/polytope.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c8468e88c169416ede5a2b7307a77421",
@@ -4631,7 +4793,8 @@
             "candle:Multivariate/degree.ml"
           ],
           "selected": "candle:Multivariate/degree.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2a2207f94b2667a6fdef2bada0df315f",
@@ -4650,7 +4813,8 @@
             "candle:Multivariate/vectors.ml"
           ],
           "selected": "candle:Multivariate/vectors.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4660,7 +4824,8 @@
             "candle:Library/permutations.ml"
           ],
           "selected": "candle:Library/permutations.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4670,7 +4835,8 @@
             "candle:Library/floor.ml"
           ],
           "selected": "candle:Library/floor.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4680,7 +4846,8 @@
             "candle:Library/products.ml"
           ],
           "selected": "candle:Library/products.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7f783d936844868305b3a40f95e8588a",
@@ -4699,7 +4866,8 @@
             "candle:Multivariate/polytope.ml"
           ],
           "selected": "candle:Multivariate/polytope.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4709,7 +4877,8 @@
             "candle:Multivariate/realanalysis.ml"
           ],
           "selected": "candle:Multivariate/realanalysis.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4719,7 +4888,8 @@
             "candle:Multivariate/geom.ml"
           ],
           "selected": "candle:Multivariate/geom.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4729,7 +4899,8 @@
             "candle:Multivariate/cross.ml"
           ],
           "selected": "candle:Multivariate/cross.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7ef09eebdee9e6aef2953cf40182ee93",
@@ -4748,7 +4919,8 @@
             "candle:Multivariate/realanalysis.ml"
           ],
           "selected": "candle:Multivariate/realanalysis.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "cc81743b038c36bb0be7726f7a315f97",
@@ -4767,7 +4939,8 @@
             "candle:Library/frag.ml"
           ],
           "selected": "candle:Library/frag.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4777,7 +4950,8 @@
             "candle:Library/grouptheory.ml"
           ],
           "selected": "candle:Library/grouptheory.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4787,7 +4961,8 @@
             "candle:Multivariate/metric.ml"
           ],
           "selected": "candle:Multivariate/metric.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8a40e93072d9f910c8cabe867a9ae6c0",
@@ -4806,7 +4981,8 @@
             "candle:Library/products.ml"
           ],
           "selected": "candle:Library/products.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4816,7 +4992,8 @@
             "candle:Library/floor.ml"
           ],
           "selected": "candle:Library/floor.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4826,7 +5003,8 @@
             "candle:Multivariate/derivatives.ml"
           ],
           "selected": "candle:Multivariate/derivatives.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c40e435d5417b71a6845c2abd1d045df",
@@ -4845,7 +5023,8 @@
             "candle:Library/card.ml"
           ],
           "selected": "candle:Library/card.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4855,7 +5034,8 @@
             "candle:Library/permutations.ml"
           ],
           "selected": "candle:Library/permutations.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4865,7 +5045,8 @@
             "candle:Multivariate/integration.ml"
           ],
           "selected": "candle:Multivariate/integration.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4875,7 +5056,8 @@
             "candle:Multivariate/determinants.ml"
           ],
           "selected": "candle:Multivariate/determinants.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "947cba2afb2bb8f90de25cc621e0465e",
@@ -4894,7 +5076,8 @@
             "candle:Library/products.ml"
           ],
           "selected": "candle:Library/products.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4904,7 +5087,8 @@
             "candle:Multivariate/misc.ml"
           ],
           "selected": "candle:Multivariate/misc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4914,7 +5098,8 @@
             "candle:Library/iter.ml"
           ],
           "selected": "candle:Library/iter.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4891bb3d7c5573247eb60e5a74b36f1e",
@@ -4933,7 +5118,8 @@
             "candle:Library/card.ml"
           ],
           "selected": "candle:Library/card.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4943,7 +5129,8 @@
             "candle:Library/floor.ml"
           ],
           "selected": "candle:Library/floor.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5fdf3d56a234a7ab95a502fcfff92b90",
@@ -4962,7 +5149,8 @@
             "candle:Multivariate/homology.ml"
           ],
           "selected": "candle:Multivariate/homology.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -4972,7 +5160,8 @@
             "candle:Multivariate/convex.ml"
           ],
           "selected": "candle:Multivariate/convex.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f0dd9639a3d175aaa8bb87d30aa1f3d0",
@@ -4991,7 +5180,8 @@
             "candle:Multivariate/paths.ml"
           ],
           "selected": "candle:Multivariate/paths.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "deaca7b75f2d0fecfaf43a705616363d",
@@ -5010,7 +5200,8 @@
             "candle:Library/binomial.ml"
           ],
           "selected": "candle:Library/binomial.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5020,7 +5211,8 @@
             "candle:Multivariate/polytope.ml"
           ],
           "selected": "candle:Multivariate/polytope.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5030,7 +5222,8 @@
             "candle:Multivariate/measure.ml"
           ],
           "selected": "candle:Multivariate/measure.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5040,7 +5233,8 @@
             "candle:Multivariate/transcendentals.ml"
           ],
           "selected": "candle:Multivariate/transcendentals.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "219d9dc1a3a54ef5ad7ae8f4164b7162",
@@ -5059,7 +5253,8 @@
             "candle:Library/card.ml"
           ],
           "selected": "candle:Library/card.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5069,7 +5264,8 @@
             "candle:Library/iter.ml"
           ],
           "selected": "candle:Library/iter.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5079,7 +5275,8 @@
             "candle:Multivariate/metric.ml"
           ],
           "selected": "candle:Multivariate/metric.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5089,7 +5286,8 @@
             "candle:Multivariate/determinants.ml"
           ],
           "selected": "candle:Multivariate/determinants.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "826340d20c51ef9873b95ef7162f4c5d",
@@ -5108,7 +5306,8 @@
             "candle:Multivariate/measure.ml"
           ],
           "selected": "candle:Multivariate/measure.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5118,7 +5317,8 @@
             "candle:Multivariate/canal.ml"
           ],
           "selected": "candle:Multivariate/canal.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2d30866f02f0582f44173cbd4aaf3283",
@@ -5137,7 +5337,8 @@
             "candle:Library/matroids.ml"
           ],
           "selected": "candle:Library/matroids.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5147,7 +5348,8 @@
             "candle:Multivariate/misc.ml"
           ],
           "selected": "candle:Multivariate/misc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c5c46ab5c741e6f65871407be15ec878",
@@ -5174,7 +5376,8 @@
             "candle:recursion.ml"
           ],
           "selected": "candle:recursion.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "e20d4aaf6843a163c635a757a8d4e662",
@@ -5193,7 +5396,8 @@
             "candle:candle/kernel.ml"
           ],
           "selected": "candle:candle/kernel.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f2b4786e415473d998c852897ee119e2",
@@ -5220,7 +5424,8 @@
             "candle:equal.ml"
           ],
           "selected": "candle:equal.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "fedf8ecec80404f61bb9468219baa702",
@@ -5239,7 +5444,8 @@
             "candle:realax.ml"
           ],
           "selected": "candle:realax.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "0b5301c4b14547be874bbaffbc5538d5",
@@ -5258,7 +5464,8 @@
             "candle:wf.ml"
           ],
           "selected": "candle:wf.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "9f415aa0a5149a2407ac7e0d6edfc5ae",
@@ -5277,7 +5484,8 @@
             "candle:real.ml"
           ],
           "selected": "candle:real.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d0f2c98da9cae7368370438c479de848",
@@ -5296,7 +5504,8 @@
             "candle:define.ml"
           ],
           "selected": "candle:define.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f52e74193a5c4f0357d8e1aa977f5bc5",
@@ -5323,7 +5532,8 @@
             "candle:hol.ml"
           ],
           "selected": "candle:hol.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "generation": {
@@ -5334,7 +5544,8 @@
           "kind": "needs",
           "line": 69,
           "literal": "candle/flyspeck_source_digests.ml",
-          "status": "generated-contract"
+          "status": "generated-contract",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5344,7 +5555,8 @@
             "candle:candle/flyspeck_source_integrity.ml"
           ],
           "selected": "candle:candle/flyspeck_source_integrity.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -5354,14 +5566,16 @@
             "flyspeck:text_formalization/build/strictbuild.hl"
           ],
           "selected": "flyspeck:text_formalization/build/strictbuild.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "expression": "flyspeck_needs source; source) Build.build_sequence_full",
           "kind": "flyspeck_needs",
           "line": 89,
           "reason": "maps the separately extracted authoritative full build sequence",
-          "status": "root-driver"
+          "status": "root-driver",
+          "syntax_position": "embedded-expression"
         },
         {
           "kind": "needs",
@@ -5371,7 +5585,8 @@
             "candle:candle/flyspeck_l2_target.ml"
           ],
           "selected": "candle:candle/flyspeck_l2_target.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "fec2433e39a3872664e00a51b183c42f",
@@ -5430,7 +5645,8 @@
             "candle:trivia.ml"
           ],
           "selected": "candle:trivia.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "9d6436c2e35b90c8834c698a181301f7",
@@ -5449,7 +5665,8 @@
             "candle:iterate.ml"
           ],
           "selected": "candle:iterate.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "881b868ae13b2d2a76123514cc446726",
@@ -5468,7 +5685,8 @@
             "candle:ind_defs.ml"
           ],
           "selected": "candle:ind_defs.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "0ac980ca36907efede4790c6eebf26d8",
@@ -5487,7 +5705,8 @@
             "candle:pair.ml"
           ],
           "selected": "candle:pair.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "1af536e52c38de969e87159a20e13d84",
@@ -5506,7 +5725,8 @@
             "candle:cart.ml"
           ],
           "selected": "candle:cart.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "3ae15ccc4b787958ceeeb4a90b34c944",
@@ -5525,7 +5745,8 @@
             "candle:bool.ml"
           ],
           "selected": "candle:bool.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "e6bceb5c8500232234dad331be7663e6",
@@ -5544,7 +5765,8 @@
             "candle:printer.ml"
           ],
           "selected": "candle:printer.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "bce510f0eb09730b69d83700739b5620",
@@ -5563,7 +5785,8 @@
             "candle:meson.ml"
           ],
           "selected": "candle:meson.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c7ac17ae36c1eaa6d0934fb254592e95",
@@ -5582,7 +5805,8 @@
             "candle:normalizer.ml"
           ],
           "selected": "candle:normalizer.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "161ecf9c25d12eb5a9357f7c4d3ccf3b",
@@ -5601,7 +5825,8 @@
             "candle:hol_loader.ml"
           ],
           "selected": "candle:hol_loader.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5611,7 +5836,8 @@
             "candle:hol_lib.ml"
           ],
           "selected": "candle:hol_lib.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c1e00e30f8dbeecf20bc0e28d91305df",
@@ -5631,7 +5857,8 @@
           "kind": "loads",
           "line": 23,
           "literal": "candle/build/insulate.ml",
-          "status": "generated-contract"
+          "status": "generated-contract",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5641,7 +5868,8 @@
             "candle:candle/nums.ml"
           ],
           "selected": "candle:candle/nums.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5651,7 +5879,8 @@
             "candle:candle/pretty.ml"
           ],
           "selected": "candle:candle/pretty.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5661,7 +5890,8 @@
             "candle:candle/ocaml.ml"
           ],
           "selected": "candle:candle/ocaml.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5671,7 +5901,8 @@
             "candle:system.ml"
           ],
           "selected": "candle:system.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5681,7 +5912,8 @@
             "candle:bignum_num.ml"
           ],
           "selected": "candle:bignum_num.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5691,7 +5923,8 @@
             "candle:lib.ml"
           ],
           "selected": "candle:lib.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5701,7 +5934,8 @@
             "candle:candle/kernel.ml"
           ],
           "selected": "candle:candle/kernel.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5711,7 +5945,8 @@
             "candle:basics.ml"
           ],
           "selected": "candle:basics.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5721,7 +5956,8 @@
             "candle:nets.ml"
           ],
           "selected": "candle:nets.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5731,7 +5967,8 @@
             "candle:printer.ml"
           ],
           "selected": "candle:printer.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5741,7 +5978,8 @@
             "candle:preterm.ml"
           ],
           "selected": "candle:preterm.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5751,7 +5989,8 @@
             "candle:parser.ml"
           ],
           "selected": "candle:parser.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5761,7 +6000,8 @@
             "candle:equal.ml"
           ],
           "selected": "candle:equal.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5771,7 +6011,8 @@
             "candle:bool.ml"
           ],
           "selected": "candle:bool.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5781,7 +6022,8 @@
             "candle:drule.ml"
           ],
           "selected": "candle:drule.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5791,7 +6033,8 @@
             "candle:tactics.ml"
           ],
           "selected": "candle:tactics.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5801,7 +6044,8 @@
             "candle:itab.ml"
           ],
           "selected": "candle:itab.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5811,7 +6055,8 @@
             "candle:simp.ml"
           ],
           "selected": "candle:simp.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5821,7 +6066,8 @@
             "candle:theorems.ml"
           ],
           "selected": "candle:theorems.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5831,7 +6077,8 @@
             "candle:ind_defs.ml"
           ],
           "selected": "candle:ind_defs.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5841,7 +6088,8 @@
             "candle:class.ml"
           ],
           "selected": "candle:class.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5851,7 +6099,8 @@
             "candle:trivia.ml"
           ],
           "selected": "candle:trivia.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5861,7 +6110,8 @@
             "candle:canon.ml"
           ],
           "selected": "candle:canon.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5871,7 +6121,8 @@
             "candle:meson.ml"
           ],
           "selected": "candle:meson.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5881,7 +6132,8 @@
             "candle:firstorder.ml"
           ],
           "selected": "candle:firstorder.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5891,7 +6143,8 @@
             "candle:metis.ml"
           ],
           "selected": "candle:metis.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5901,7 +6154,8 @@
             "candle:quot.ml"
           ],
           "selected": "candle:quot.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5911,7 +6165,8 @@
             "candle:impconv.ml"
           ],
           "selected": "candle:impconv.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5921,7 +6176,8 @@
             "candle:pair.ml"
           ],
           "selected": "candle:pair.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5931,7 +6187,8 @@
             "candle:compute.ml"
           ],
           "selected": "candle:compute.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5941,7 +6198,8 @@
             "candle:nums.ml"
           ],
           "selected": "candle:nums.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5951,7 +6209,8 @@
             "candle:recursion.ml"
           ],
           "selected": "candle:recursion.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5961,7 +6220,8 @@
             "candle:arith.ml"
           ],
           "selected": "candle:arith.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5971,7 +6231,8 @@
             "candle:wf.ml"
           ],
           "selected": "candle:wf.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5981,7 +6242,8 @@
             "candle:calc_num.ml"
           ],
           "selected": "candle:calc_num.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -5991,7 +6253,8 @@
             "candle:normalizer.ml"
           ],
           "selected": "candle:normalizer.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6001,7 +6264,8 @@
             "candle:grobner.ml"
           ],
           "selected": "candle:grobner.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6011,7 +6275,8 @@
             "candle:ind_types.ml"
           ],
           "selected": "candle:ind_types.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6021,7 +6286,8 @@
             "candle:lists.ml"
           ],
           "selected": "candle:lists.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6031,7 +6297,8 @@
             "candle:realax.ml"
           ],
           "selected": "candle:realax.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6041,7 +6308,8 @@
             "candle:calc_int.ml"
           ],
           "selected": "candle:calc_int.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6051,7 +6319,8 @@
             "candle:realarith.ml"
           ],
           "selected": "candle:realarith.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6061,7 +6330,8 @@
             "candle:real.ml"
           ],
           "selected": "candle:real.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6071,7 +6341,8 @@
             "candle:calc_rat.ml"
           ],
           "selected": "candle:calc_rat.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6081,7 +6352,8 @@
             "candle:int.ml"
           ],
           "selected": "candle:int.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6091,7 +6363,8 @@
             "candle:sets.ml"
           ],
           "selected": "candle:sets.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6101,7 +6374,8 @@
             "candle:iterate.ml"
           ],
           "selected": "candle:iterate.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6111,7 +6385,8 @@
             "candle:cart.ml"
           ],
           "selected": "candle:cart.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6121,7 +6396,8 @@
             "candle:define.ml"
           ],
           "selected": "candle:define.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "loads",
@@ -6131,7 +6407,8 @@
             "candle:candle/compute.ml"
           ],
           "selected": "candle:candle/compute.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d0d3b0c04ca0729c4b3b64fa00e9fab9",
@@ -6158,7 +6435,8 @@
             "candle:quot.ml"
           ],
           "selected": "candle:quot.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "654718c12f07ac86fb137d903e7f97a7",
@@ -6177,7 +6455,8 @@
             "candle:theorems.ml"
           ],
           "selected": "candle:theorems.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f2998dbc42594245ea89b579b6aefa94",
@@ -6196,7 +6475,8 @@
             "candle:grobner.ml"
           ],
           "selected": "candle:grobner.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5526373388e46283f251e6600004614b",
@@ -6215,7 +6495,8 @@
             "candle:calc_rat.ml"
           ],
           "selected": "candle:calc_rat.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ace80cde3d6ce4e735ed559d2249b360",
@@ -6234,7 +6515,8 @@
             "candle:tactics.ml"
           ],
           "selected": "candle:tactics.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a21722c7ab2fa8f33857f3b3ae218ce2",
@@ -6253,7 +6535,8 @@
             "candle:sets.ml"
           ],
           "selected": "candle:sets.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2509aac4d54183ae36878672adba7de5",
@@ -6280,7 +6563,8 @@
             "candle:ind_types.ml"
           ],
           "selected": "candle:ind_types.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "676ea3dd37f469c97e2bb902fe8de7d2",
@@ -6299,7 +6583,8 @@
             "candle:canon.ml"
           ],
           "selected": "candle:canon.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "e87109fec8872e30863ec56d0b4e9311",
@@ -6318,7 +6603,8 @@
             "candle:firstorder.ml"
           ],
           "selected": "candle:firstorder.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8a508f7bdeb51686002e7d802ff8152f",
@@ -6337,7 +6623,8 @@
             "candle:basics.ml"
           ],
           "selected": "candle:basics.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c973fe7157a4efe10d4b487790abcf49",
@@ -6356,7 +6643,8 @@
             "candle:calc_num.ml"
           ],
           "selected": "candle:calc_num.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "24a0a7a8129832d635286e363d57094c",
@@ -6375,7 +6663,8 @@
             "candle:compute.ml"
           ],
           "selected": "candle:compute.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2b214213639cd86bcf99a09951830619",
@@ -6394,7 +6683,8 @@
             "candle:impconv.ml"
           ],
           "selected": "candle:impconv.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "965e14b94f7820e498ffd73908f5894a",
@@ -6413,7 +6703,8 @@
             "candle:preterm.ml"
           ],
           "selected": "candle:preterm.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "1e2bf0b5e7505d9eb606eca211596259",
@@ -6432,7 +6723,8 @@
             "candle:printer.ml"
           ],
           "selected": "candle:printer.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "78719ecaedb7b06b9797d12c4c9fb390",
@@ -6451,7 +6743,8 @@
             "candle:nets.ml"
           ],
           "selected": "candle:nets.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d05608a7e018b24e509b59e18f60b5cf",
@@ -6470,7 +6763,8 @@
             "candle:metis.ml"
           ],
           "selected": "candle:metis.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8bef603115c963e7cd36e8ca03a42569",
@@ -6489,7 +6783,8 @@
             "candle:realarith.ml"
           ],
           "selected": "candle:realarith.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f053a14def65d36ebeaa8e6ed14547c7",
@@ -6508,7 +6803,8 @@
             "candle:calc_int.ml"
           ],
           "selected": "candle:calc_int.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "abe13f0a3414a8ab680817f3f7424799",
@@ -6527,7 +6823,8 @@
             "candle:lists.ml"
           ],
           "selected": "candle:lists.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "80e2f07214f95c3349a5e0c4df96335f",
@@ -6546,7 +6843,8 @@
             "candle:nums.ml"
           ],
           "selected": "candle:nums.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c4d3b68656a54867e83e7e38c046c80c",
@@ -6565,7 +6863,8 @@
             "candle:int.ml"
           ],
           "selected": "candle:int.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2d148d4d44ba98e66cc0638c319cf116",
@@ -6584,7 +6883,8 @@
             "candle:itab.ml"
           ],
           "selected": "candle:itab.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c5828eba03a147feda42801b0c6ad55a",
@@ -6611,7 +6911,8 @@
             "candle:drule.ml"
           ],
           "selected": "candle:drule.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "901a3ac9742edc434a25bbe19efa7c15",
@@ -6630,7 +6931,8 @@
             "candle:simp.ml"
           ],
           "selected": "candle:simp.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "18a695721c226c4f2d9e755141b77cad",
@@ -6649,7 +6951,8 @@
             "candle:class.ml"
           ],
           "selected": "candle:class.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5a52bb7853b896162b70e8558db4d82f",
@@ -6668,7 +6971,8 @@
             "candle:arith.ml"
           ],
           "selected": "candle:arith.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "9fbcbdc5239e9db9d947ec74300f1895",
@@ -6695,7 +6999,8 @@
             "flyspeck:formal_ineqs/arith_options.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith_options.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6705,7 +7010,8 @@
             "flyspeck:formal_ineqs/arith/arith_num.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith/arith_num.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8c3b8e939f223e79a2baec71b8da943b",
@@ -6724,7 +7030,8 @@
             "flyspeck:formal_ineqs/arith_options.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith_options.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6734,7 +7041,8 @@
             "flyspeck:formal_ineqs/arith/arith_cache.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith/arith_cache.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "30cde9ae3a30b4c9b964eab4b168faf6",
@@ -6753,7 +7061,8 @@
             "flyspeck:formal_ineqs/misc/misc_functions.hl"
           ],
           "selected": "flyspeck:formal_ineqs/misc/misc_functions.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6763,7 +7072,8 @@
             "flyspeck:formal_ineqs/misc/misc_vars.hl"
           ],
           "selected": "flyspeck:formal_ineqs/misc/misc_vars.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6773,7 +7083,8 @@
             "flyspeck:formal_ineqs/arith_options.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith_options.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ef7d86273cbd40c834ed4ba562406c97",
@@ -6796,7 +7107,8 @@
           "kind": "#load",
           "line": 7,
           "literal": "unix.cma",
-          "status": "runtime-library"
+          "status": "runtime-library",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a84948477d7b296691135c2c6d3b9caa",
@@ -6827,7 +7139,8 @@
           "kind": "#load",
           "line": 40,
           "literal": "str.cma",
-          "status": "runtime-library"
+          "status": "runtime-library",
+          "syntax_position": "standalone-phrase"
         },
         {
           "expression": "needs (Filename.concat glpk_dir \"glpk_link.ml\")",
@@ -6838,6 +7151,7 @@
             "flyspeck:formal_lp/glpk/glpk_link.ml"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "../formal_lp/glpk/glpk_link.ml"
           ]
@@ -6851,6 +7165,7 @@
             "flyspeck:formal_graph/archive/archive_all.ml"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "../formal_graph/archive/archive_all.ml"
           ]
@@ -6872,7 +7187,8 @@
             "flyspeck:formal_ineqs/arith_options.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith_options.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6882,7 +7198,8 @@
             "flyspeck:formal_ineqs/arith/arith_nat.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith/arith_nat.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "3ac8a2bb4b90288c7f2258d826459fc8",
@@ -6909,7 +7226,8 @@
             "flyspeck:formal_lp/hypermap/arith_link.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/arith_link.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6919,7 +7237,8 @@
             "flyspeck:formal_ineqs/misc/misc_vars.hl"
           ],
           "selected": "flyspeck:formal_ineqs/misc/misc_vars.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6929,7 +7248,8 @@
             "flyspeck:jHOLLight/Examples/seq-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/seq-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5fcdc740f5d562d28330134545ef7d55",
@@ -6944,7 +7264,8 @@
           "kind": "#load",
           "line": 3,
           "literal": "str.cma",
-          "status": "runtime-library"
+          "status": "runtime-library",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6954,7 +7275,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6964,7 +7286,8 @@
             "flyspeck:formal_lp/hypermap/computations/list_conversions2.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/computations/list_conversions2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -6974,7 +7297,8 @@
             "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5b8b4004c748fa3b28fced024682976e",
@@ -6993,7 +7317,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7003,7 +7328,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "56e50f93b43823a728916521e08073e2",
@@ -7022,7 +7348,8 @@
             "flyspeck:formal_lp/ineqs/constants_approx.hl"
           ],
           "selected": "flyspeck:formal_lp/ineqs/constants_approx.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "944805609f92c426e3d450f2a3af94f2",
@@ -7041,7 +7368,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7051,7 +7379,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7061,7 +7390,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7071,7 +7401,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7081,7 +7412,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7091,7 +7423,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "13fdb278d512e1a91a9da3b68b4d3ce8",
@@ -7118,7 +7451,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7128,7 +7462,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8780a0bb4aae7c764547cefe0ce819c8",
@@ -7147,7 +7482,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ea8c71cd8bb8fbcb36793e5b56f110a9",
@@ -7166,7 +7502,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a0a8d2e0dc44dea53c9e772e900dbb19",
@@ -7185,7 +7522,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7195,7 +7533,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7205,7 +7544,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7215,7 +7555,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7225,7 +7566,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7235,7 +7577,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7245,7 +7588,8 @@
             "flyspeck:formal_lp/hypermap/arith_link.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/arith_link.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "15e00378926ac9ab62fb69a449447290",
@@ -7272,7 +7616,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7282,7 +7627,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7292,7 +7638,8 @@
             "flyspeck:formal_lp/ineqs/constants_approx.hl"
           ],
           "selected": "flyspeck:formal_lp/ineqs/constants_approx.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7302,7 +7649,8 @@
             "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "fc6f81287dabf85b8b0bdbb74964f89f",
@@ -7321,7 +7669,8 @@
             "flyspeck:text_formalization/local/lp_details.hl"
           ],
           "selected": "flyspeck:text_formalization/local/lp_details.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7331,7 +7680,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7341,7 +7691,8 @@
             "flyspeck:formal_lp/ineqs/delta_ineq.hl"
           ],
           "selected": "flyspeck:formal_lp/ineqs/delta_ineq.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4065801dafd2605369bbebfddce2da56",
@@ -7360,7 +7711,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7370,7 +7722,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7380,7 +7733,8 @@
             "flyspeck:text_formalization/local/lp_details.hl"
           ],
           "selected": "flyspeck:text_formalization/local/lp_details.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7d8a5d6324d9e66be13f57f7f2b4d719",
@@ -7399,7 +7753,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7409,7 +7764,8 @@
             "flyspeck:text_formalization/local/RNSYJXM-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/local/RNSYJXM-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7419,7 +7775,8 @@
             "flyspeck:text_formalization/local/polar_fan.hl"
           ],
           "selected": "flyspeck:text_formalization/local/polar_fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6e621097a89dee73f50d0d434016a951",
@@ -7446,7 +7803,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7456,7 +7814,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7466,7 +7825,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7476,7 +7836,8 @@
             "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7486,7 +7847,8 @@
             "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7496,7 +7858,8 @@
             "flyspeck:formal_lp/hypermap/computations/informal_computations.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/computations/informal_computations.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7506,7 +7869,8 @@
             "flyspeck:formal_lp/more_arith/prove_lp.hl"
           ],
           "selected": "flyspeck:formal_lp/more_arith/prove_lp.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
@@ -7525,7 +7889,8 @@
             "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7535,7 +7900,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "741a530d6bbecade212ef90f2b49d4c3",
@@ -7554,7 +7920,8 @@
             "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7564,7 +7931,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7574,7 +7942,8 @@
             "flyspeck:text_formalization/fan/hypermap_and_fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_and_fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7584,7 +7953,8 @@
             "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "fcf4d799667144fb1746b3dba64e09da",
@@ -7603,7 +7973,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7613,7 +7984,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f1d45c77e52e572b438d66c027fe218e",
@@ -7632,7 +8004,8 @@
             "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
@@ -7651,7 +8024,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7661,7 +8035,8 @@
             "flyspeck:text_formalization/tame/tame_general.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_general.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "41f269bf1a08067e9ed7894e347ad13e",
@@ -7680,7 +8055,8 @@
             "flyspeck:text_formalization/tame/Inequalities.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/Inequalities.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ca62c08415045711579198db551481f3",
@@ -7699,7 +8075,8 @@
             "flyspeck:formal_lp/hypermap/arith_link.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/arith_link.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7709,7 +8086,8 @@
             "flyspeck:formal_ineqs/arith/arith_nat.hl"
           ],
           "selected": "flyspeck:formal_ineqs/arith/arith_nat.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7719,7 +8097,8 @@
             "flyspeck:formal_ineqs/misc/misc_functions.hl"
           ],
           "selected": "flyspeck:formal_ineqs/misc/misc_functions.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7729,7 +8108,8 @@
             "flyspeck:formal_ineqs/misc/misc_vars.hl"
           ],
           "selected": "flyspeck:formal_ineqs/misc/misc_vars.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "bef5fb3880e9c68663f1784d0098ff3f",
@@ -7756,7 +8136,8 @@
             "flyspeck:formal_lp/more_arith/lin_f.hl"
           ],
           "selected": "flyspeck:formal_lp/more_arith/lin_f.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7766,7 +8147,8 @@
             "flyspeck:formal_lp/more_arith/arith_int.hl"
           ],
           "selected": "flyspeck:formal_lp/more_arith/arith_int.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "5d1df4a2ed982e72abbcd995250d0dae",
@@ -7785,7 +8167,8 @@
             "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d1a7050f8094a198ec34f5f598098013",
@@ -7804,7 +8187,8 @@
             "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "fd2e0f4fee2f6ccce2652d7d67f07547",
@@ -7831,7 +8215,8 @@
             "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7640ffbcb69db54453c7d4edba3c3c10",
@@ -7870,13 +8255,15 @@
           "kind": "#load",
           "line": 21,
           "literal": "unix.cma",
-          "status": "runtime-library"
+          "status": "runtime-library",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "#load",
           "line": 22,
           "literal": "str.cma",
-          "status": "runtime-library"
+          "status": "runtime-library",
+          "syntax_position": "standalone-phrase"
         },
         {
           "expression": "loadt (flyspeckpath \"general/parser_verbose.hl\")",
@@ -7887,6 +8274,7 @@
             "flyspeck:text_formalization/general/parser_verbose.hl"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "general/parser_verbose.hl"
           ]
@@ -7900,6 +8288,7 @@
             "flyspeck:text_formalization/general/debug.hl"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "general/debug.hl"
           ]
@@ -7912,7 +8301,8 @@
             "candle:Library/rstc.ml"
           ],
           "selected": "candle:Library/rstc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7922,7 +8312,8 @@
             "candle:Rqe/num_calc_simp.ml"
           ],
           "selected": "candle:Rqe/num_calc_simp.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7932,7 +8323,8 @@
             "flyspeck:text_formalization/general/hol-library.hl"
           ],
           "selected": "flyspeck:text_formalization/general/hol-library.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7942,7 +8334,8 @@
             "flyspeck:text_formalization/general/print_types.hl"
           ],
           "selected": "flyspeck:text_formalization/general/print_types.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7952,7 +8345,8 @@
             "flyspeck:text_formalization/general/hol_pervasives.hl"
           ],
           "selected": "flyspeck:text_formalization/general/hol_pervasives.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7962,7 +8356,8 @@
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/general/prove_by_refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -7972,14 +8367,16 @@
             "flyspeck:text_formalization/build/build.hl"
           ],
           "selected": "flyspeck:text_formalization/build/build.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "expression": "loadt s in let _ = Format.print_string(\"File \\\"\"^s'^\"\\\" -successfully loaded\\n\") in ()",
           "kind": "loadt",
           "line": 139,
           "reason": "implementation of the literal needs wrapper; not an invocation",
-          "status": "loader-definition"
+          "status": "loader-definition",
+          "syntax_position": "embedded-expression"
         },
         {
           "kind": "needs",
@@ -7989,7 +8386,8 @@
             "flyspeck:text_formalization/build/use_serialization.hl"
           ],
           "selected": "flyspeck:text_formalization/build/use_serialization.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "embedded-expression"
         },
         {
           "kind": "needs",
@@ -7999,7 +8397,8 @@
             "candle:Multivariate/flyspeck.ml"
           ],
           "selected": "candle:Multivariate/flyspeck.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "expression": "loadt (flyspeckpath \"general/state_manager.hl\")",
@@ -8010,6 +8409,7 @@
             "flyspeck:text_formalization/general/state_manager.hl"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "general/state_manager.hl"
           ]
@@ -8019,35 +8419,40 @@
           "kind": "loadt",
           "line": 168,
           "reason": "definition of reneeds; call targets are reviewed at invocations",
-          "status": "loader-definition"
+          "status": "loader-definition",
+          "syntax_position": "embedded-expression"
         },
         {
           "expression": "reneeds",
           "kind": "reneeds",
           "line": 169,
           "reason": "rflyspeck_needs aliases reneeds without invoking it",
-          "status": "function-alias"
+          "status": "function-alias",
+          "syntax_position": "embedded-expression"
         },
         {
           "expression": "flyspeck_needs Build.build_sequence_main_statement in \"full load completed\") with Failure t -> t in let oc = open_out_gen [Open_append;Open_text] 436 (flyspeckp",
           "kind": "flyspeck_needs",
           "line": 246,
           "reason": "maps the separately extracted main build sequence",
-          "status": "root-driver"
+          "status": "root-driver",
+          "syntax_position": "embedded-expression"
         },
         {
           "expression": "flyspeck_needs build_list in \"full load completed\") with Failure t -> t in build_report s",
           "kind": "flyspeck_needs",
           "line": 253,
           "reason": "do_build argument is constrained by the loader build-mode manifest",
-          "status": "root-driver"
+          "status": "root-driver",
+          "syntax_position": "embedded-expression"
         },
         {
           "expression": "flyspeck_needs s; s) !build_list in let unloaded = filter(not o already_loaded) !build_list in (loaded,unloaded)",
           "kind": "flyspeck_needs",
           "line": 276,
           "reason": "maps a loader-selected build list; no independent source target",
-          "status": "root-driver"
+          "status": "root-driver",
+          "syntax_position": "embedded-expression"
         }
       ],
       "md5": "7d1e3729a05042883713cda2c9fad1f1",
@@ -8066,7 +8471,8 @@
             "flyspeck:text_formalization/general/theorem_digest.hl"
           ],
           "selected": "flyspeck:text_formalization/general/theorem_digest.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -8076,7 +8482,8 @@
             "flyspeck:text_formalization/general/serialization.hl"
           ],
           "selected": "flyspeck:text_formalization/general/serialization.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6d23759572859f7d680be34d18bc1090",
@@ -8119,7 +8526,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "213fb3eaaf96e71864fac3fa35d28f0b",
@@ -8138,7 +8546,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8148,7 +8557,8 @@
             "flyspeck:text_formalization/volume/vol1.hl"
           ],
           "selected": "flyspeck:text_formalization/volume/vol1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8158,7 +8568,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "12125d35745578bc44ffb7432d8da34c",
@@ -8185,7 +8596,8 @@
             "flyspeck:text_formalization/fan/fan_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8195,7 +8607,8 @@
             "flyspeck:text_formalization/fan/fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8205,7 +8618,8 @@
             "flyspeck:text_formalization/fan/topology.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/topology.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8215,7 +8629,8 @@
             "flyspeck:text_formalization/fan/fan_misc.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_misc.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "316cbd6144b1e7ff66fcc44017f67d53",
@@ -8234,7 +8649,8 @@
             "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "81706738bb565ae12b56b765f6b21e66",
@@ -8253,7 +8669,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8263,7 +8680,8 @@
             "flyspeck:text_formalization/fan/fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8273,7 +8691,8 @@
             "flyspeck:text_formalization/fan/topology.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/topology.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8283,7 +8702,8 @@
             "flyspeck:text_formalization/fan/fan_misc.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_misc.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "34135764010212af328e17528aa146b5",
@@ -8310,7 +8730,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8320,7 +8741,8 @@
             "flyspeck:text_formalization/fan/fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "3ec9c942091325b364069d10eac064f7",
@@ -8364,6 +8786,7 @@
             "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
           ],
           "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase",
           "targets": [
             "general/flyspeck_eval_4.14.hl"
           ]
@@ -8398,7 +8821,8 @@
           "kind": "loadt",
           "line": 25,
           "reason": "implementation of Hol_pervasives.needs; not an invocation",
-          "status": "loader-definition"
+          "status": "loader-definition",
+          "syntax_position": "embedded-expression"
         }
       ],
       "md5": "5917b805cae8737b5dd296e2a91613b0",
@@ -8457,7 +8881,8 @@
             "flyspeck:text_formalization/general/theorem_digest.hl"
           ],
           "selected": "flyspeck:text_formalization/general/theorem_digest.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -8467,7 +8892,8 @@
             "flyspeck:text_formalization/general/theorem_nonlinear_digest.hl"
           ],
           "selected": "flyspeck:text_formalization/general/theorem_nonlinear_digest.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -8477,7 +8903,8 @@
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/general/prove_by_refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -8487,7 +8914,8 @@
             "flyspeck:text_formalization/general/update_database_400.ml"
           ],
           "selected": "flyspeck:text_formalization/general/update_database_400.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "embedded-expression"
         },
         {
           "kind": "needs",
@@ -8497,7 +8925,8 @@
             "flyspeck:text_formalization/general/update_database_310.ml"
           ],
           "selected": "flyspeck:text_formalization/general/update_database_310.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "embedded-expression"
         },
         {
           "expression": "needs digest_file",
@@ -8505,7 +8934,8 @@
           "line": 499,
           "open_gate": "versioned generated-input/checkpoint schema and atomic lifecycle",
           "reason": "digest_file is a temporary theorem-digest module written by save_all",
-          "status": "generated-runtime"
+          "status": "generated-runtime",
+          "syntax_position": "embedded-expression"
         }
       ],
       "md5": "9228eaf6a96159d9f59fea40fcc2a12f",
@@ -8548,7 +8978,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "43ca2cc905e6ec45649c2b219fbdad88",
@@ -8631,7 +9062,8 @@
             "flyspeck:text_formalization/jordan/taylor_atn.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/taylor_atn.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "e36847771cb33f2fed6b451d74bd38d3",
@@ -8746,7 +9178,8 @@
             "flyspeck:text_formalization/leg/AFF_SGN_TAC.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/AFF_SGN_TAC.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "52aefe98a707207538742ad26b63a3aa",
@@ -8781,7 +9214,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8791,7 +9225,8 @@
             "flyspeck:text_formalization/leg/geomdetail.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/geomdetail.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8801,7 +9236,8 @@
             "flyspeck:text_formalization/leg/affprops.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/affprops.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8811,7 +9247,8 @@
             "flyspeck:text_formalization/leg/cayleyR_def.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/cayleyR_def.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "2ad75dd712b5aa2f7d4cfa49b841ed98",
@@ -8830,7 +9267,8 @@
             "flyspeck:text_formalization/leg/cayleyR_def.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/cayleyR_def.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -8840,7 +9278,8 @@
             "flyspeck:text_formalization/leg/collect_geom.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/collect_geom.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "bfbe7e25e992200c6101115ff8c45273",
@@ -8859,7 +9298,8 @@
             "flyspeck:text_formalization/leg/muR_def.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/muR_def.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c5a6f804b481eb1bb2fb6b64b8de584a",
@@ -8878,7 +9318,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c0ee5e42dcb674e4b173cf0711e371a6",
@@ -8897,7 +9338,8 @@
             "flyspeck:text_formalization/leg/cayleyR_def.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/cayleyR_def.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "77ef36b0addc062456e3ffaacef1fac0",
@@ -9092,7 +9534,8 @@
             "flyspeck:text_formalization/local/LVDUCXU.hl"
           ],
           "selected": "flyspeck:text_formalization/local/LVDUCXU.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ecd8158d0d6eb9d5f4a4cc339f8cfe5f",
@@ -9127,7 +9570,8 @@
             "flyspeck:text_formalization/fan/planarity.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/planarity.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9137,7 +9581,8 @@
             "flyspeck:text_formalization/local/WRGCVDR.hl"
           ],
           "selected": "flyspeck:text_formalization/local/WRGCVDR.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "20f510b18f24fcf53226bd786b6dd0b8",
@@ -9244,7 +9689,8 @@
             "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ef3d644bab01c801cc9c154b8d7f77a1",
@@ -9439,7 +9885,8 @@
             "flyspeck:text_formalization/local/LDURDPN.hl"
           ],
           "selected": "flyspeck:text_formalization/local/LDURDPN.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4aaa29b2a1125f638ca39419cd2cf008",
@@ -9506,7 +9953,8 @@
             "flyspeck:text_formalization/local/appendix.hl"
           ],
           "selected": "flyspeck:text_formalization/local/appendix.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7195d292ce7c6fce5396f83b96d3c5f8",
@@ -9525,7 +9973,8 @@
             "flyspeck:text_formalization/nonlinear/prep.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/prep.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9535,7 +9984,8 @@
             "flyspeck:text_formalization/nonlinear/break_case_type.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/break_case_type.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9545,7 +9995,8 @@
             "flyspeck:text_formalization/nonlinear/break_case_log.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/break_case_log.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "736fb16a1dab5f13102fdb185a0a1c08",
@@ -9604,7 +10055,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9614,7 +10066,8 @@
             "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4603172e71db7ee1ff945a337932a900",
@@ -9649,7 +10102,8 @@
             "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "99065b4fef591cab34175bd2952ef60c",
@@ -9668,7 +10122,8 @@
             "flyspeck:text_formalization/general/serialization.hl"
           ],
           "selected": "flyspeck:text_formalization/general/serialization.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9678,7 +10133,8 @@
             "flyspeck:text_formalization/nonlinear/prep.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/prep.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9688,7 +10144,8 @@
             "flyspeck:text_formalization/nonlinear/break_case_type.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/break_case_type.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9698,7 +10155,8 @@
             "flyspeck:text_formalization/nonlinear/break_case_log.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/break_case_log.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9708,7 +10166,8 @@
             "flyspeck:text_formalization/nonlinear/break_case_exec.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d80256e5d423dadbde8f58f6ff5cbc81",
@@ -9791,7 +10250,8 @@
             "flyspeck:text_formalization/packing/marchal1.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/marchal1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "04c1aed65b7ba288f34858ce833a8a9a",
@@ -9914,7 +10374,8 @@
             "flyspeck:text_formalization/packing/pack3.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack3.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -9924,7 +10385,8 @@
             "flyspeck:text_formalization/fan/hypermap_and_fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_and_fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7b7aab6f44ae53aa45a3ca097c32b26a",
@@ -9983,7 +10445,8 @@
             "flyspeck:text_formalization/general/hales_tactic.hl"
           ],
           "selected": "flyspeck:text_formalization/general/hales_tactic.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8dd1646a0a9f3f90dcb1932213cd4c02",
@@ -10010,7 +10473,8 @@
             "flyspeck:text_formalization/jordan/refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10020,7 +10484,8 @@
             "flyspeck:text_formalization/jordan/hash_term.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/hash_term.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10030,7 +10495,8 @@
             "flyspeck:text_formalization/jordan/parse_ext_override_interface.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/parse_ext_override_interface.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10040,7 +10506,8 @@
             "flyspeck:text_formalization/jordan/real_ext.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/real_ext.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10050,7 +10517,8 @@
             "flyspeck:text_formalization/jordan/lib_ext.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/lib_ext.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10060,7 +10528,8 @@
             "flyspeck:text_formalization/jordan/tactics_jordan.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/tactics_jordan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10070,7 +10539,8 @@
             "flyspeck:text_formalization/jordan/num_ext_nabs.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/num_ext_nabs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10080,7 +10550,8 @@
             "flyspeck:text_formalization/jordan/taylor_atn.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/taylor_atn.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10090,7 +10561,8 @@
             "flyspeck:text_formalization/jordan/float.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/float.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10100,7 +10572,8 @@
             "flyspeck:text_formalization/jordan/flyspeck_constants.hl"
           ],
           "selected": "flyspeck:text_formalization/jordan/flyspeck_constants.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10110,7 +10583,8 @@
             "flyspeck:text_formalization/general/vukhacky_tactics.hl"
           ],
           "selected": "flyspeck:text_formalization/general/vukhacky_tactics.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10120,7 +10594,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10130,7 +10605,8 @@
             "flyspeck:text_formalization/packing/pack_concl.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_concl.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ae395c006bf55146eab9244bc15e4065",
@@ -10181,7 +10657,8 @@
             "flyspeck:text_formalization/general/hales_tactic.hl"
           ],
           "selected": "flyspeck:text_formalization/general/hales_tactic.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "02e7c3f2ee9134b6d5e225d183438bd6",
@@ -10232,7 +10709,8 @@
             "flyspeck:text_formalization/general/vukhacky_tactics.hl"
           ],
           "selected": "flyspeck:text_formalization/general/vukhacky_tactics.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10242,7 +10720,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10252,7 +10731,8 @@
             "flyspeck:text_formalization/packing/pack_concl.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_concl.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10262,7 +10742,8 @@
             "flyspeck:text_formalization/packing/pack1.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10272,7 +10753,8 @@
             "flyspeck:text_formalization/packing/Rogers.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/Rogers.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c8876f4e47310fd7e7e7037ca53430f7",
@@ -10307,7 +10789,8 @@
             "flyspeck:text_formalization/volume/vol1.hl"
           ],
           "selected": "flyspeck:text_formalization/volume/vol1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7c7eb954180e585530ff5e4a1e7bc005",
@@ -10326,7 +10809,8 @@
             "flyspeck:text_formalization/packing/pack1.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a869acde3b6fec5ffbf9c419b168726a",
@@ -10345,7 +10829,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10355,7 +10840,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10365,7 +10851,8 @@
             "flyspeck:text_formalization/packing/pack2.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8755f623fe4d4d49a99f207195071431",
@@ -10392,7 +10879,8 @@
             "flyspeck:text_formalization/volume/vol1.hl"
           ],
           "selected": "flyspeck:text_formalization/volume/vol1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8932a5a9f7c6ed302d2ad5cc714047f3",
@@ -10531,7 +11019,8 @@
             "flyspeck:text_formalization/tame/tame_general.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_general.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10541,7 +11030,8 @@
             "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "141511fa8d990b6d75e132ec2ab0ada6",
@@ -10560,7 +11050,8 @@
             "flyspeck:text_formalization/tame/CKQOWSA_4.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/CKQOWSA_4.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10570,7 +11061,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10580,7 +11072,8 @@
             "flyspeck:text_formalization/packing/pack2.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "598a4e429e16035e83d64c759d760e57",
@@ -10599,7 +11092,8 @@
             "flyspeck:text_formalization/fan/fan_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10609,7 +11103,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10619,7 +11114,8 @@
             "flyspeck:text_formalization/tame/Inequalities.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/Inequalities.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4d2a53c4c07f6b6bd8faef71a673f9ad",
@@ -10638,7 +11134,8 @@
             "flyspeck:text_formalization/tame/CKQOWSA_3.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/CKQOWSA_3.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "0db9cbb2c24929ab93ad587e48447192",
@@ -10657,7 +11154,8 @@
             "flyspeck:text_formalization/tame/tame_general.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_general.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10667,7 +11165,8 @@
             "flyspeck:text_formalization/tame/arc_properties.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/arc_properties.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ec7f79f9b131ccb2b592d29919dfe155",
@@ -10718,7 +11217,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10728,7 +11228,8 @@
             "flyspeck:text_formalization/fan/fan_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10738,7 +11239,8 @@
             "flyspeck:text_formalization/fan/planarity.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/planarity.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10748,7 +11250,8 @@
             "flyspeck:text_formalization/leg/geomdetail.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/geomdetail.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10758,7 +11261,8 @@
             "flyspeck:text_formalization/packing/pack2.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10768,7 +11272,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10778,7 +11283,8 @@
             "flyspeck:text_formalization/trigonometry/trig1.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10788,7 +11294,8 @@
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/general/prove_by_refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10798,7 +11305,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "cd33163b6a2f92932442f73d2b078a58",
@@ -10825,7 +11333,8 @@
             "flyspeck:text_formalization/tame/tame_general.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_general.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4df1d5e9fa6fb5e14701c9bcefcc2ea7",
@@ -10844,7 +11353,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10854,7 +11364,8 @@
             "flyspeck:text_formalization/trigonometry/trig3.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig3.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -10864,7 +11375,8 @@
             "flyspeck:text_formalization/nonlinear/ineq.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/ineq.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "32e850f39c74cb9d2bdb3ca1073335d5",
@@ -10891,7 +11403,8 @@
             "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -10901,7 +11414,8 @@
             "flyspeck:text_formalization/tame/tame_general.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_general.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "3666d8b01c6cf0a750ca9aeadc2e9633",
@@ -11032,7 +11546,8 @@
             "candle:Library/rstc.ml"
           ],
           "selected": "candle:Library/rstc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11042,7 +11557,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11052,7 +11568,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11062,7 +11579,8 @@
             "flyspeck:text_formalization/tame/more_tame_concl.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/more_tame_concl.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6b9310974fe4c12c822cf7158e36d209",
@@ -11081,7 +11599,8 @@
             "flyspeck:text_formalization/trigonometry/trig3.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig3.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11091,7 +11610,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "e3e3aa993cb6688f7a9385e38a1269e5",
@@ -11126,7 +11646,8 @@
             "flyspeck:formal_graph/archive/archive_all.ml"
           ],
           "selected": "flyspeck:formal_graph/archive/archive_all.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11136,7 +11657,8 @@
             "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "addad4737eae64fe6109ed9ffc8f66ee",
@@ -11163,7 +11685,8 @@
             "flyspeck:formal_lp/hypermap/verify_all.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/verify_all.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11173,7 +11696,8 @@
             "flyspeck:text_formalization/tame/good_list_archive.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/good_list_archive.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "75fb7f0449759cd3592569426d4e66b4",
@@ -11208,7 +11732,8 @@
             "candle:Library/rstc.ml"
           ],
           "selected": "candle:Library/rstc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11218,7 +11743,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11228,7 +11754,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "498ba69ac64c487df1d8af7cf7a5a4da",
@@ -11255,7 +11782,8 @@
             "candle:Library/rstc.ml"
           ],
           "selected": "candle:Library/rstc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11265,7 +11793,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11275,7 +11804,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11285,7 +11815,8 @@
             "flyspeck:text_formalization/tame/more_tame_concl.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/more_tame_concl.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11295,7 +11826,8 @@
             "flyspeck:text_formalization/tame/tame_defs2.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d1316112b3c584c82acff9da1d913815",
@@ -11338,7 +11870,8 @@
             "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "74e5cdfb818f96e3f57020139a60384e",
@@ -11357,7 +11890,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11367,7 +11901,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11377,7 +11912,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11387,7 +11923,8 @@
             "flyspeck:text_formalization/tame/CDTETAT.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/CDTETAT.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ce6b3e418f47b97c6dbffcb393b8dec7",
@@ -11406,7 +11943,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11416,7 +11954,8 @@
             "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11426,7 +11965,8 @@
             "flyspeck:text_formalization/tame/CDTETAT.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/CDTETAT.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "needs",
@@ -11436,7 +11976,8 @@
             "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "6af2845ac8e8bad6e67cc37b80b74b14",
@@ -11455,7 +11996,8 @@
             "flyspeck:jHOLLight/Examples/seq-compiled.hl"
           ],
           "selected": "flyspeck:jHOLLight/Examples/seq-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11465,7 +12007,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "f00a156079d48de69eeb5019895450ac",
@@ -11484,7 +12027,8 @@
             "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "edbad154c9e983ede3fd670b3a3b5c4a",
@@ -11503,7 +12047,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "c7c363d83b5f13577416f18f2eae1004",
@@ -11522,7 +12067,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11532,7 +12078,8 @@
             "flyspeck:text_formalization/fan/fan_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11542,7 +12089,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11552,7 +12100,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a7f59d01dc46324f1f2a1f984a965fa5",
@@ -11571,7 +12120,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11581,7 +12131,8 @@
             "flyspeck:text_formalization/fan/fan_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/fan_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11591,7 +12142,8 @@
             "flyspeck:text_formalization/packing/pack_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/packing/pack_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "9e8816b9fb31182de27260791b8b4e2e",
@@ -11610,7 +12162,8 @@
             "candle:Library/rstc.ml"
           ],
           "selected": "candle:Library/rstc.ml",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11620,7 +12173,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11630,7 +12184,8 @@
             "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
           ],
           "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "ba9cc8cf75be2bf65a05e438c4bf2d46",
@@ -11649,7 +12204,8 @@
             "flyspeck:text_formalization/leg/collect_geom.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/collect_geom.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11659,7 +12215,8 @@
             "flyspeck:text_formalization/trigonometry/trig3.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig3.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11669,7 +12226,8 @@
             "flyspeck:text_formalization/nonlinear/ineq.hl"
           ],
           "selected": "flyspeck:text_formalization/nonlinear/ineq.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11679,7 +12237,8 @@
             "flyspeck:text_formalization/fan/hypermap_and_fan.hl"
           ],
           "selected": "flyspeck:text_formalization/fan/hypermap_and_fan.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11689,7 +12248,8 @@
             "flyspeck:text_formalization/tame/CKQOWSA.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/CKQOWSA.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11699,7 +12259,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "42c2ef177836872d3d825f71281e0d22",
@@ -11726,7 +12287,8 @@
             "flyspeck:text_formalization/hypermap/hypermap.hl"
           ],
           "selected": "flyspeck:text_formalization/hypermap/hypermap.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11736,7 +12298,8 @@
             "flyspeck:text_formalization/tame/tame_defs.hl"
           ],
           "selected": "flyspeck:text_formalization/tame/tame_defs.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "a3303d9098b011a06aa3deeb0969612e",
@@ -11771,7 +12334,8 @@
             "flyspeck:text_formalization/trigonometry/delta_x.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/delta_x.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "319d851e533a0b2e5ec6515db41bf47d",
@@ -11790,7 +12354,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11800,7 +12365,8 @@
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/general/prove_by_refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11810,7 +12376,8 @@
             "flyspeck:text_formalization/trigonometry/trig1.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11820,7 +12387,8 @@
             "flyspeck:text_formalization/trigonometry/trig2.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11830,7 +12398,8 @@
             "flyspeck:text_formalization/trigonometry/delta_x.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/delta_x.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11840,7 +12409,8 @@
             "flyspeck:text_formalization/trigonometry/euler_complement.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/euler_complement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11850,7 +12420,8 @@
             "flyspeck:text_formalization/trigonometry/euler_multivariate.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/euler_multivariate.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "d657dd0705e571b6a15c21e374ffac9e",
@@ -11869,7 +12440,8 @@
             "flyspeck:text_formalization/trigonometry/euler_complement.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/euler_complement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "33c78e0b8dfa75c62651b88331580f79",
@@ -11888,7 +12460,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "90265e5c09a18b5df82f41d595995f37",
@@ -11907,7 +12480,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11917,7 +12491,8 @@
             "flyspeck:text_formalization/leg/collect_geom.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/collect_geom.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11927,7 +12502,8 @@
             "flyspeck:text_formalization/trigonometry/trig1.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "7feae83a4f4e307ce14e8e6d532755e6",
@@ -11946,7 +12522,8 @@
             "flyspeck:text_formalization/general/sphere.hl"
           ],
           "selected": "flyspeck:text_formalization/general/sphere.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11956,7 +12533,8 @@
             "flyspeck:text_formalization/leg/enclosed_def.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/enclosed_def.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11966,7 +12544,8 @@
             "flyspeck:text_formalization/leg/collect_geom.hl"
           ],
           "selected": "flyspeck:text_formalization/leg/collect_geom.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11976,7 +12555,8 @@
             "flyspeck:text_formalization/trigonometry/trig1.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig1.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         },
         {
           "kind": "flyspeck_needs",
@@ -11986,7 +12566,8 @@
             "flyspeck:text_formalization/trigonometry/trig2.hl"
           ],
           "selected": "flyspeck:text_formalization/trigonometry/trig2.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "8ae723f10d97cdd1ccd1ab9d4ea2720a",
@@ -12005,7 +12586,8 @@
             "flyspeck:text_formalization/general/prove_by_refinement.hl"
           ],
           "selected": "flyspeck:text_formalization/general/prove_by_refinement.hl",
-          "status": "resolved"
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
         }
       ],
       "md5": "4a4132df62866774bc1a888e654a06bf",

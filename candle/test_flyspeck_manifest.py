@@ -25,6 +25,7 @@ class SyntaxTests(unittest.TestCase):
           needs (Filename.concat root "c.hl");;
           #use "d.ml";;
           #load "unix.cma";;
+          if enabled then needs "e.ml";;
           (* loads "ignored.ml";; *)
         '''
         calls = flyspeck_manifest.scan_load_calls(source)
@@ -36,6 +37,15 @@ class SyntaxTests(unittest.TestCase):
                 ("needs", None),
                 ("#use", "d.ml"),
                 ("#load", "unix.cma"),
+                ("needs", "e.ml"),
+            ],
+        )
+        self.assertEqual(
+            [call["syntax_position"] for call in calls],
+            [
+                "standalone-phrase", "standalone-phrase",
+                "standalone-phrase", "standalone-phrase",
+                "standalone-phrase", "embedded-expression",
             ],
         )
 
@@ -547,6 +557,40 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(typed["source_files"], 22)
         self.assertIn("does not call Toploop", typed["distinction"])
         self.assertIn("not a proof", consumers["assurance_limit"])
+
+    def test_loader_action_contract_preserves_distinct_semantics(self):
+        contract = self.payload["loader_action_contract"]
+        self.assertEqual(
+            contract["activation_status"],
+            "blocked-exact-token-actions-not-integrated",
+        )
+        self.assertEqual(contract["source_site_count"], 434)
+        self.assertEqual(contract["generated_static_root_directives"], 297)
+        self.assertEqual(
+            {
+                (entry["kind"], entry["position"]): entry["count"]
+                for entry in contract["syntax_position_counts"]
+            },
+            {
+                ("#load", "standalone-phrase"): 5,
+                ("#use", "standalone-phrase"): 1,
+                ("flyspeck_needs", "embedded-expression"): 4,
+                ("flyspeck_needs", "standalone-phrase"): 144,
+                ("loads", "standalone-phrase"): 54,
+                ("loadt", "embedded-expression"): 3,
+                ("loadt", "standalone-phrase"): 3,
+                ("needs", "embedded-expression"): 4,
+                ("needs", "standalone-phrase"): 215,
+                ("reneeds", "embedded-expression"): 1,
+            },
+        )
+        actions = contract["required_actions"]
+        self.assertIn("neutralize state exactly once", actions["flyspeck_needs"])
+        self.assertIn("do neither", actions["flyspeck_needs"])
+        self.assertIn("generated index", actions["#flyspeck_needs"])
+        self.assertNotEqual(actions["loads"], actions["needs"])
+        self.assertIn("both sides", contract["embedded_expression_policy"])
+        self.assertIn("definition or expression", contract["known_current_boot_defect"])
 
 
 if __name__ == "__main__":
