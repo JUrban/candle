@@ -16437,7 +16437,8 @@
       "candle:candle/test_check_flyspeck_normalized_identity.py",
       "candle:candle/test_flyspeck_identity_normalization.sh",
       "candle:candle/test_flyspeck_immediate_normalization.sh",
-      "candle:candle/test_flyspeck_needs_directive.sh"
+      "candle:candle/test_flyspeck_needs_directive.sh",
+      "candle:candle/test_flyspeck_parser_orpattern_normalization.sh"
     ],
     "input_policy": "authenticate the pinned original source before applying an exact ordered replacement sequence whose every anchor must occur once",
     "output_policy": "authenticate the normalized byte count, MD5, and SHA-256 before parsing or evaluating the result",

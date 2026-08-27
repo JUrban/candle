@@ -274,6 +274,10 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
         self.assertIn("qmap", contract["scope_limit"])
+        self.assertIn(
+            "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
+            contract["gates"],
+        )
         contract_path = Path(__file__).with_name("flyspeck_normalizations.json")
         self.assertEqual(
             flyspeck_normalize.contract_sha256(contract_path),
