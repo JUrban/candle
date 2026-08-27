@@ -23,10 +23,14 @@ if rg -q 'basis_ffi\.c\.patch|chdir_to_root\.ml' \
   exit 1
 fi
 log=$(mktemp /tmp/candle-flyspeck-loader-frontier.XXXXXX.log)
+preserved_log=${CANDLE_FLYSPECK_FRONTIER_LOG:-}
 cleanup() {
   result=$?
   if [[ $result -ne 0 && -f "$log" ]]; then
     tail -n 80 "$log" >&2
+  fi
+  if [[ -n "$preserved_log" && -f "$log" ]]; then
+    cp -- "$log" "$preserved_log"
   fi
   find "$log" -maxdepth 0 -type f -delete 2>/dev/null || true
 }
