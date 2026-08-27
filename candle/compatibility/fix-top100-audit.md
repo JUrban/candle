@@ -72,8 +72,8 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later reached target 19 of 65 with 14 load-only passes
-and four failures through target 18. In addition to `bertrand-primerecip` and
+The same clean baseline later completed target 19 of 65 with 15 load-only
+passes and four failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
 `Complex/complexnumbers.ml:720` because the unqualified comparison supplied to
@@ -92,9 +92,10 @@ former is not covered by the eight audited anchor commits, but it is already
 fixed in the audited CakeML source base by `c26aa71d2b1`. That upstream commit
 explicitly cites `100/constructible.ml`, and its regression was part of the
 green `camlTestsTheory` build; the pinned compiled Candle simply predates it.
-`cubedissection` passed after approximately 63 minutes of active log time,
-under the recorded inactivity-only/unbounded-wall policy; that pass remains
-provisional because no theorem or assumption fingerprint was captured.
+`cubedissection` passed after approximately 63 minutes of active log time and
+`desargues` passed after approximately 23 minutes under the recorded
+inactivity-only/unbounded-wall policy. Both passes remain provisional because
+no theorem or assumption fingerprint was captured.
 
 ## Integration sequence
 
