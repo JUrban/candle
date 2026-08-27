@@ -72,7 +72,7 @@ unfolding step; its rerun is pending a shared-HOL handoff. The rebuilt-Candle
 IEEE differential, end-to-end rejection run, performance comparison, clean
 target load, and fingerprints therefore remain missing.
 
-The same clean baseline later completed target 24 of 65 with 19 load-only
+The same clean baseline later completed target 25 of 65 with 20 load-only
 passes and five failures. In addition to `bertrand-primerecip` and
 `ceva`, `constructible` failed on the multiline `define_type` string at
 `100/constructible.ml:115`, and `cubic` failed in
@@ -111,6 +111,8 @@ target run passed in 256.5 seconds. The intended theorem is module-scoped as
 `Finale.TRANSCENDENTAL_E`, so the runner now requests that safe qualified value
 path. The resulting structural identity has zero hypotheses and three global
 axioms, but remains `observed_uncompared` pending an approved reference.
+The valid live baseline then continued: `euler` passed after approximately 2.6
+minutes. That result remains provisional load-only evidence.
 
 ## Integration sequence
 
