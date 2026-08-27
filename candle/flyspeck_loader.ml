@@ -1,8 +1,9 @@
 (* Manifest-rooted direct Flyspeck source loader, initial full-build slice.
    The manifest launcher must first bind [candle_hollight_root],
-   [candle_flyspeck_root], and [candle_flyspeck_build_mode].  The loader turns
-   these hashed source-level inputs into the small environment allowlist used
-   by Flyspeck; it does not inherit ambient host variables. *)
+   [candle_flyspeck_root], [candle_flyspeck_overlay_root], and
+   [candle_flyspeck_build_mode].  The loader turns these hashed source-level
+   inputs into the small environment allowlist used by Flyspeck; it does not
+   inherit ambient host variables. *)
 
 if candle_flyspeck_build_mode <> "full" then
   failwith "candle_flyspeck_build_mode must be full";;
@@ -58,7 +59,7 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "552a21f448e866a7f8fcd49ce8908c2f" then
+     "795a2a1a28ab69e7a4ec8cf4b4d24dce" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
@@ -69,8 +70,63 @@ if not (Sys.file_exists candle_flyspeck_full_build_program) ||
 needs "candle/flyspeck_source_digests.ml";;
 needs "candle/flyspeck_source_integrity.ml";;
 
-candle_flyspeck_verify_sources 398 candle_hollight_root candle_flyspeck_root
+candle_flyspeck_verify_sources 399 candle_hollight_root candle_flyspeck_root
   candle_flyspeck_source_digests;;
+
+let candle_flyspeck_source_identity (source_root,source,digest) =
+  let root =
+    if source_root = "candle" then candle_hollight_root
+    else if source_root = "flyspeck" then candle_flyspeck_root
+    else failwith ("unknown Flyspeck source root: " ^ source_root) in
+  let original = Filename.concat root source in
+  original,(Filename.basename original,digest);;
+
+Cakeml.configureSourceIdentities
+  (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
+
+(* The host-side normalizer may materialize only these five outputs in a
+   separate tree.  The outer release manifest authenticates size and SHA-256;
+   this process independently checks OCaml-compatible MD5 before registering
+   exact original-path -> normalized-path substitutions.  The overlay root is
+   never put on [load_path], so an extra output cannot shadow a pinned source. *)
+let candle_flyspeck_normalized_sources =
+  [(Filename.concat candle_flyspeck_text_root "build/strictbuild.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/build/strictbuild.hl",
+    "51253a91dd74008e0a19415874dbf6f0");
+   (Filename.concat candle_flyspeck_text_root "general/lib.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/lib.hl",
+    "3bc47551633759af22a39bcb4e1be8e5");
+   (Filename.concat candle_flyspeck_text_root "general/print_types.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/print_types.hl",
+    "221e52fdf51a79f1910c55a9ba886be3");
+   (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/tactics_jordan.hl",
+    "e2076c132f1901e8e9dab2b1ed3cf02a");
+   (Filename.concat candle_flyspeck_text_root
+      "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+    "fddf2accd2071d09095166ff7af885c7")];;
+
+if List.length candle_flyspeck_normalized_sources <> 5 then
+  failwith "incomplete Flyspeck normalized source table";;
+
+let candle_flyspeck_verify_normalized_source (_,path,expected) =
+  if not (Sys.file_exists path) then
+    failwith ("missing normalized Flyspeck source: " ^ path)
+  else if Digest.to_hex (Digest.file path) <> expected then
+    failwith ("normalized Flyspeck source digest mismatch: " ^ path);;
+
+List.iter candle_flyspeck_verify_normalized_source
+  candle_flyspeck_normalized_sources;;
+
+Cakeml.configureNormalizationOverlay
+  (map (fun (original,normalized,_) -> original,normalized)
+       candle_flyspeck_normalized_sources);;
 
 candle_configure_manifest_process_inputs
   candle_flyspeck_date_input candle_flyspeck_user_input;;
@@ -85,13 +141,11 @@ List.iter candle_flyspeck_add_load_path
 
 needs "build/strictbuild.hl";;
 
-let candle_flyspeck_loaded_sources =
-  map (fun source -> flyspeck_needs source; source)
-    Build.build_sequence_full;;
-
-if List.length candle_flyspeck_loaded_sources <>
-   List.length Build.build_sequence_full then
-  failwith "incomplete Flyspeck full source sequence";;
+(* This authenticated generated program contains the exact 297 manifest roots
+   as #flyspeck_needs actions.  A source error or neutralization error flushes
+   the remaining driver and therefore prevents every following phrase and the
+   final success marker from executing. *)
+needs "candle/flyspeck_full_build.ml";;
 
 needs "candle/flyspeck_l2_target.ml";;
 

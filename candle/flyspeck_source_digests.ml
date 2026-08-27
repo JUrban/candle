@@ -41,6 +41,7 @@ let candle_flyspeck_source_digests = [
   ("candle","calc_num.ml","9f415aa0a5149a2407ac7e0d6edfc5ae");
   ("candle","calc_rat.ml","d0f2c98da9cae7368370438c479de848");
   ("candle","candle/compute.ml","f52e74193a5c4f0357d8e1aa977f5bc5");
+  ("candle","candle/flyspeck_full_build.ml","fa440c6eae11574a55adab1f881fd834");
   ("candle","candle/flyspeck_l2_target.ml","aa726b6da79aae93e638b8a8233bf48b");
   ("candle","candle/flyspeck_source_integrity.ml","54b69b40c435b4b184a6ea88586f45b6");
   ("candle","candle/kernel.ml","3276edeece3d38ea84bf44a85d5fac30");
@@ -58,7 +59,7 @@ let candle_flyspeck_source_digests = [
   ("candle","grobner.ml","161ecf9c25d12eb5a9357f7c4d3ccf3b");
   ("candle","hol.ml","c1e00e30f8dbeecf20bc0e28d91305df");
   ("candle","hol_lib.ml","d0d3b0c04ca0729c4b3b64fa00e9fab9");
-  ("candle","hol_loader.ml","b765c1ee53493c13660422bbaec54317");
+  ("candle","hol_loader.ml","3610346100253eb5e354eb0963fe3b79");
   ("candle","impconv.ml","654718c12f07ac86fb137d903e7f97a7");
   ("candle","ind_defs.ml","f2998dbc42594245ea89b579b6aefa94");
   ("candle","ind_types.ml","5526373388e46283f251e6600004614b");

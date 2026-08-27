@@ -17,10 +17,10 @@ python3 candle/flyspeck_manifest.py \
 ```
 
 The current pinned inventory contains 297 ordered build entries (287 unique),
-399 recursively reached source nodes, 418 selected dependency edges, and 42
+400 recursively reached source nodes, 706 selected dependency edges, and 42
 hashed LP/archive/nonlinear inputs.  There are no unresolved build roots,
 unreviewed dynamic loads, missing ordinary sources, path escapes, ambiguous
-loads, or detected cycles.  Fifteen non-literal call sites have explicit
+loads, or detected cycles.  Fourteen non-literal call sites have explicit
 source-and-line reviews; the selected OCaml-version branch is pinned to 4.14.
 The manifest also pins `flyspeck_l2_target.ml`, the direct Candle theorem glue
 for `Candle_flyspeck_l2.tame_imp_kepler_conjecture`; that file has no trace
@@ -31,7 +31,7 @@ checkpoint strata: base, arithmetic, nonlinear support, analysis, geometry,
 LP support, text formalization, and final assembly.  Each stratum records its
 exact inclusive indexes, boundary paths, entry count, and a digest over the
 ordered resolved roots and their source hashes.  Stratum membership is
-propagated through every selected dependency edge; all 399 source nodes must
+propagated through every selected dependency edge; all 400 source nodes must
 have at least one membership.  These are load/checkpoint labels, not a claim
 that a shared dependency belongs to only one mathematical subject.
 
@@ -39,20 +39,23 @@ that a shared dependency belongs to only one mathematical subject.
 entry carries its index, stratum, manifest-selected source key, and source
 SHA-256 beside an explicit `#flyspeck_needs` directive.  Entries whose source
 is normalized also record the exact normalization id and output SHA-256.  The
-directive is intentionally fail-closed today.  Its required future loader
-action evaluates a new authenticated source once, requires a true result,
-calls `State_manager.neutralize_state` once, and records success only after
-both steps return normally; an already-loaded duplicate does neither.  An
-evaluator false result, evaluation exception, or neutralization exception
-aborts the one-shot release before later targets or a success marker.  This is
-exact for accepted and already-loaded observations and intentionally stronger
-than the pinned helper's unsafe failure recovery.  Unknown, malformed,
-reordered, unresolved, or hash-mismatched entries also abort.  The direct
-loader authenticates the generated program's MD5 before `strictbuild`; its
-SHA-256 remains an outer release-manifest pin.  Authentication does not
-activate the directive.
+directive is now an exact boot action.  The loader installs a once-only table
+of manifest-authenticated original paths and their standard HOL Light
+basename/MD5 identities.  A new source resolves through the original load
+path, selects only an exactly registered normalization, evaluates once,
+commits its logical source identity, and calls
+`State_manager.neutralize_state` once.  The completion marker is reached only
+after all of those steps return normally; an already-loaded duplicate performs
+neither evaluation nor neutralization.  An unauthenticated source, evaluator
+failure, or neutralization exception flushes the loaded driver before any
+later target or success marker.  This is exact for accepted and duplicate
+observations and intentionally stronger than the pinned helper's unsafe
+failure recovery.  Unknown, malformed, reordered, unresolved, or
+hash-mismatched entries also abort.  The direct loader authenticates the
+generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
+release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement four
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement five
 site-specific source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -65,7 +68,12 @@ claimed.  Accordingly,
 `PROJECT-POINTER-S3-UNSUPPRESS-001` replaces its identity-sensitive binding by
 an explicit failure.  `PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
-fingerprints must still validate its selected calls.  Each original file,
+fingerprints must still validate its selected calls.
+`PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces only strictbuild's dynamic
+`Toploop.use_file` wrapper with an explicit failure: the authenticated
+`#flyspeck_needs` driver is the selected production loader, and any missed
+runtime call to the legacy wrapper therefore aborts rather than silently
+succeeding.  Each original file,
 each ordered unique anchor, and each final output size/MD5/SHA-256 is
 authenticated.  Commit, path, input hash, anchor count, order, or output drift
 aborts; no blanket rewrite is authorized.  The host tests and pinned-source
@@ -89,9 +97,11 @@ only the oracle samples.  The compiled Candle oracle separately confirms that
 the normalized branch is accepted and selects the expected cases.  Runtime
 application of all recorded patches is still pending integration with the exact
 compiled source loader.  The allocation refinements also retain compiled,
-performance, and final-fingerprint gates, so the manifest status remains
-`ready-pending-compiled-loader-integration` and this work alone advances no S
-milestone.
+performance, and final-fingerprint gates.  Runtime application is now wired
+through the authenticated static source action: the manifest and compiled boot
+select the exact five-file overlay, but the complete-run status remains
+`exact-overlay-selection-active-pending-full-run`; this work alone advances no
+S milestone.
 
 The top-level interface contract also inventories the small set of Flyspeck
 identifiers that could consume compiler reflection.  The selected graph has
@@ -106,9 +116,11 @@ narrow fail-closed normalization design, but lexical non-use is not proof
 against reflection or external invocation; compiled reference and final
 fingerprint gates remain mandatory.
 
-The loader action contract separately freezes all 434 loading-syntax sites.
-There are 422 complete standalone phrases and 12 embedded occurrences.  The
-standalone set includes 144 literal `flyspeck_needs` calls, whose post-success
+The loader action contract separately freezes all 731 loading-syntax sites.
+It distinguishes 297 generated standalone `#flyspeck_needs` actions from the
+434 source-language loading sites.  The source set has 422 complete standalone
+phrases and 12 embedded occurrences, including 144 literal `flyspeck_needs`
+calls, whose post-success
 state neutralization is observably different from ordinary `needs`; the
 embedded set contains the version conditional, optional serialization path,
 generated digest loader, and loader-function definitions/drivers.  Only a
@@ -119,7 +131,7 @@ ordinary verified evaluation or an exact hash-bound normalization.
 
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
 known generated dependency rather than a self-hashed graph node.  It carries
-OCaml `Digest.file`-compatible MD5 values for 398 selected source nodes: every
+OCaml `Digest.file`-compatible MD5 values for 399 selected source nodes: every
 node except the executing loader.  The loader embeds and checks the generated
 program's MD5 before executing it, while the JSON manifest and generated
 program remain SHA-256-pinned externally.  `flyspeck_loader.ml` executes the
@@ -129,16 +141,17 @@ on-disk source corruption before the Flyspeck build, but `hol.ml` and the
 loader necessarily begin executing before the preflight and remain
 launcher/authentication obligations.
 
-`flyspeck_loader.ml` is the initial enforcing loader slice.  In a clean Candle
+`flyspeck_loader.ml` is the enforcing static-source loader slice.  In a clean Candle
 process it first fails closed unless the mode is `full`, then loads the pinned
 Candle/HOL source stack itself.  The launcher supplies the Candle and Flyspeck
 roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
-ordinary marker files, installs only the manifest load paths, runs the complete
-authoritative build sequence, and then loads the direct target.  It does not
-yet execute the generated static sequence or implement versioned checkpoints,
-so it is not execution acceptance evidence.  Its current source preflight
+ordinary marker files, installs only the manifest load paths, authenticates and
+registers the five exact normalization outputs, executes the generated static
+sequence through `#flyspeck_needs`, and then loads the direct target.  It does
+not yet complete that sequence or implement versioned checkpoints, so it is
+frontier evidence rather than S2/S3 acceptance.  Its current source preflight
 checks all selected source nodes except the already-executing loader; the
 outer release lock authenticates that loader and the generated contracts.
 
@@ -147,9 +160,11 @@ The fail-closed ordering is exercised against a compiled Candle executable by
 exception without reaching filesystem compatibility or the success marker.
 With `full` selected, `test_flyspeck_loader_frontier.sh` now proves that the
 compiled path passes the former manifest-environment, ordinary-file,
-`Filename.concat`, and standard `load_path` frontiers.  It reaches the exact
-direct source file and stops at `build/strictbuild.hl:21`, where Candle does not
-yet recognize `#load "unix.cma";;`.  The pinned repository has exactly 17
+`Filename`, standard `load_path`, logical source-identity, digest-preflight,
+overlay-selection, static-library, metadata, `Toploop`, `loaded_files`, and
+`file_on_path` frontiers.  It selects the normalized strictbuild and stops at
+the first standalone dynamic-argument `loadt` phrase at original source line
+103.  The pinned repository has exactly 17
 standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
 Only five are in the enforcing loader's recursively reached full-build graph:
 two `unix.cma` and three `str.cma`; no `nums.cma` site is reachable.  The

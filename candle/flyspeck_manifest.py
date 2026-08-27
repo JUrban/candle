@@ -28,7 +28,7 @@ SOURCE_NORMALIZATION_CONTRACT = "candle/flyspeck_normalizations.json"
 SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
-DIRECTIVE_RE = re.compile(r"#\s*(use|load)\b")
+DIRECTIVE_RE = re.compile(r"#\s*(flyspeck_needs|use|load)\b")
 BUILD_SEQUENCE_RE = re.compile(r"\blet\s+build_sequence_full\s*=\s*\[")
 DEFINITION_PREFIX_RE = re.compile(r"(?:\blet|\band)\s+(?:rec\s+)?$")
 STATIC_RUNTIME_LIBRARIES = {
@@ -125,8 +125,10 @@ TOPLEVEL_CONSUMER_SITE_REVIEWS = (
     ("flyspeck:text_formalization/general/update_database_400.ml", 332, "theorems", "deferred-body", "selected-4.x"),
     ("flyspeck:text_formalization/general/update_database_400.ml", 338, "update_database", "top-level-call", "selected-4.x"),
 )
-NORMALIZATION_NONUSE_IDENTIFIERS = {"qmap", "unsuppress"}
+NORMALIZATION_NONUSE_IDENTIFIERS = {"qmap", "unsuppress", "use_file_b"}
 NORMALIZATION_NONUSE_SITE_REVIEWS = (
+    ("flyspeck:text_formalization/build/strictbuild.hl", 86, "use_file_b", "definition"),
+    ("flyspeck:text_formalization/build/strictbuild.hl", 97, "use_file_b", "deferred-body"),
     ("flyspeck:text_formalization/general/lib.hl", 474, "qmap", "definition"),
     ("flyspeck:text_formalization/general/lib.hl", 476, "qmap", "recursive-body"),
     ("flyspeck:text_formalization/general/print_types.hl", 21, "unsuppress", "signature"),
@@ -534,10 +536,17 @@ def _call_argument(clean: str, index: int) -> tuple[str | None, int]:
 def scan_load_calls(source: str) -> list[dict[str, object]]:
     clean = strip_ocaml_comments(source)
     mask = _code_mask(clean)
+    directive_matches = list(DIRECTIVE_RE.finditer(mask))
     matches: list[tuple[re.Match[str], str]] = [
         (match, match.group(1)) for match in LOAD_RE.finditer(mask)
+        if not any(
+            directive.start() <= match.start() < directive.end()
+            for directive in directive_matches
+        )
     ]
-    matches.extend((match, f"#{match.group(1)}") for match in DIRECTIVE_RE.finditer(mask))
+    matches.extend(
+        (match, f"#{match.group(1)}") for match in directive_matches
+    )
     calls: list[dict[str, object]] = []
     for match, kind in sorted(matches, key=lambda item: item[0].start()):
         prefix = clean[max(0, match.start() - 24):match.start()]
@@ -1383,7 +1392,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         ),
         "build_strata": build_strata,
         "static_full_build_contract": {
-            "activation_status": "generated-fail-closed-pending-loader-action",
+            "activation_status": "exact-action-and-overlay-active-pending-full-run",
             "generated_source": f"candle:{FULL_BUILD_PROGRAM}",
             "generated_source_sha256": hashlib.sha256(
                 full_build_program_bytes
@@ -1431,12 +1440,21 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "neutralization"
             ),
             "open_gate": (
-                "the generated program is not executed until the compiled Candle "
-                "loader implements and tests the exact action"
+                "a complete selected run, dynamic non-use observations, and exact "
+                "semantic fingerprints remain open"
             ),
         },
         "source_normalization_contract": {
-            "activation_status": "ready-pending-compiled-loader-integration",
+            "activation_status": "exact-overlay-selection-active-pending-full-run",
+            "runtime_selection_source": (
+                "cakeml:candle/prover/candle_boot.ml@a0303d78 and "
+                "candle:candle/flyspeck_loader.ml"
+            ),
+            "runtime_selection_policy": (
+                "after the original-source preflight, authenticate each normalized "
+                "MD5 and install one exact original-path to output-path mapping; "
+                "never add the overlay directory to load_path"
+            ),
             "contract_source": f"candle:{SOURCE_NORMALIZATION_CONTRACT}",
             "contract_sha256": flyspeck_normalize.contract_sha256(
                 normalization_path
@@ -1454,8 +1472,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     ),
                 ),
                 "policy": (
-                    "only signature, definition, and recursive-body occurrences "
-                    "are allowed; any caller occurrence aborts regeneration"
+                    "only the exact reviewed signature, definition, recursive-body, "
+                    "and deferred-body occurrences are allowed; any occurrence drift "
+                    "aborts regeneration"
                 ),
             },
             "input_policy": (
@@ -1472,9 +1491,10 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "blanket rewrites are forbidden"
             ),
             "scope_limit": (
-                "the rules are site-specific; qmap and unsuppress are selected-"
-                "graph non-use refinements that fail closed on any call, and "
-                "compiled/fingerprint/performance gates remain open"
+                "the rules are site-specific; qmap, unsuppress, and strictbuild's "
+                "use_file_b are selected-static-route non-use refinements that fail "
+                "closed on any call, and compiled/fingerprint/performance gates "
+                "remain open"
             ),
             "reference_implementation": {
                 "repository": "https://github.com/ocaml/ocaml.git",
@@ -1493,6 +1513,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_check_flyspeck_normalized_identity.py",
                 "candle:candle/test_flyspeck_identity_normalization.sh",
                 "candle:candle/test_flyspeck_immediate_normalization.sh",
+                "candle:candle/test_flyspeck_needs_directive.sh",
             ],
             "performance_probe": (
                 "candle:candle/flyspeck_identity_benchmark.ml"
@@ -1504,7 +1525,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "required_build_mode": "full",
             "configuration_bindings": [
                 "candle_hollight_root", "candle_flyspeck_root",
-                "candle_flyspeck_build_mode",
+                "candle_flyspeck_overlay_root", "candle_flyspeck_build_mode",
             ],
             "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK",
         },
@@ -1762,7 +1783,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         },
         "loader_action_contract": {
             "scope": "all loading syntax in the reachable direct-source graph",
-            "activation_status": "blocked-exact-token-actions-not-integrated",
+            "activation_status": "partial-exact-static-actions-active",
+            "static_action_source": "cakeml:candle/prover/candle_boot.ml@a0303d78",
+            "static_action_gate": "candle:candle/test_flyspeck_needs_directive.sh",
             "source_site_count": loader_action_site_count,
             "site_counts": [
                 {"kind": kind, "status": status, "count": count}
@@ -1810,9 +1833,11 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "reneeds": "evaluate even if previously loaded, without neutralization",
             },
             "known_current_boot_defect": (
-                "the baseline boot scanner treats any level-zero needs/loads/#use "
+                "ordinary needs/loads/#use recognition still treats any level-zero "
                 "token as a directive, including a token inside a definition or "
-                "expression; promotion requires exact start recognition"
+                "expression; #load and #flyspeck_needs have exact phrase-start "
+                "recognition, but promotion still requires closing the ordinary "
+                "directive boundary"
             ),
             "forbidden_shortcuts": [
                 "blanket directive erasure",

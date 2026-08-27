@@ -26,6 +26,7 @@ class SyntaxTests(unittest.TestCase):
           needs (Filename.concat root "c.hl");;
           #use "d.ml";;
           #load "unix.cma";;
+          #flyspeck_needs "root.hl";;
           if enabled then needs "e.ml";;
           (* loads "ignored.ml";; *)
         '''
@@ -38,6 +39,7 @@ class SyntaxTests(unittest.TestCase):
                 ("needs", None),
                 ("#use", "d.ml"),
                 ("#load", "unix.cma"),
+                ("#flyspeck_needs", "root.hl"),
                 ("needs", "e.ml"),
             ],
         )
@@ -46,7 +48,8 @@ class SyntaxTests(unittest.TestCase):
             [
                 "standalone-phrase", "standalone-phrase",
                 "standalone-phrase", "standalone-phrase",
-                "standalone-phrase", "embedded-expression",
+                "standalone-phrase", "standalone-phrase",
+                "embedded-expression",
             ],
         )
 
@@ -154,8 +157,8 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(self.payload["build_sequence_count"], 297)
         self.assertEqual(self.payload["build_sequence_unique_count"], 287)
         self.assertEqual(len(self.payload["build_sequence_roots"]), 297)
-        self.assertEqual(self.payload["source_node_count"], 399)
-        self.assertEqual(self.payload["source_edge_count"], 418)
+        self.assertEqual(self.payload["source_node_count"], 400)
+        self.assertEqual(self.payload["source_edge_count"], 706)
         self.assertNotIn("flyspeck:load_flyspeck.ml", self.payload["source_nodes"])
         self.assertEqual(
             self.payload["bootstrap_roots"],
@@ -214,7 +217,7 @@ class GeneratedManifestTests(unittest.TestCase):
         contract = self.payload["static_full_build_contract"]
         self.assertEqual(
             contract["activation_status"],
-            "generated-fail-closed-pending-loader-action",
+            "exact-action-and-overlay-active-pending-full-run",
         )
         self.assertEqual(contract["directive"], "#flyspeck_needs")
         self.assertEqual(contract["entry_count"], 297)
@@ -262,11 +265,12 @@ class GeneratedManifestTests(unittest.TestCase):
         contract = self.payload["source_normalization_contract"]
         self.assertEqual(
             contract["activation_status"],
-            "ready-pending-compiled-loader-integration",
+            "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 4)
+        self.assertEqual(contract["entry_count"], 5)
         self.assertIn("every anchor must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
+        self.assertIn("never add the overlay", contract["runtime_selection_policy"])
         self.assertIn("qmap", contract["scope_limit"])
         contract_path = Path(__file__).with_name("flyspeck_normalizations.json")
         self.assertEqual(
@@ -302,20 +306,24 @@ class GeneratedManifestTests(unittest.TestCase):
             entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]["operations"][0]["after"],
         )
         non_use = contract["selected_graph_non_use_bindings"]
-        self.assertEqual(non_use["identifiers"], ["qmap", "unsuppress"])
+        self.assertEqual(
+            non_use["identifiers"], ["qmap", "unsuppress", "use_file_b"],
+        )
         self.assertEqual(
             [
                 (site["identifier"], site["role"])
                 for site in non_use["reviewed_occurrences"]
             ],
             [
+                ("use_file_b", "definition"),
+                ("use_file_b", "deferred-body"),
                 ("qmap", "definition"),
                 ("qmap", "recursive-body"),
                 ("unsuppress", "signature"),
                 ("unsuppress", "definition"),
             ],
         )
-        self.assertIn("any caller occurrence aborts", non_use["policy"])
+        self.assertIn("any occurrence drift aborts", non_use["policy"])
         self.assertIn(
             "candle:candle/test_flyspeck_identity_normalization.sh",
             contract["gates"],
@@ -342,7 +350,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "forbidden_dependencies",
         ):
             self.assertEqual(diagnostics[key], 0)
-        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 15)
+        self.assertEqual(diagnostics["reviewed_dynamic_dependencies"], 14)
         self.assertEqual(diagnostics["generated_dependencies"], 2)
 
     def test_manifest_has_no_absolute_source_identity(self):
@@ -390,6 +398,7 @@ class GeneratedManifestTests(unittest.TestCase):
             loader["configuration_bindings"],
             [
                 "candle_hollight_root", "candle_flyspeck_root",
+                "candle_flyspeck_overlay_root",
                 "candle_flyspeck_build_mode",
             ],
         )
@@ -397,7 +406,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('candle_flyspeck_build_mode must be full', source)
         self.assertIn('needs "build/strictbuild.hl"', source)
         self.assertIn('needs "candle/flyspeck_source_digests.ml"', source)
-        self.assertIn("candle_flyspeck_verify_sources 398", source)
+        self.assertIn("candle_flyspeck_verify_sources 399", source)
         self.assertIn(
             self.payload["source_digest_contract"]["generated_source_md5"],
             source,
@@ -407,7 +416,8 @@ class GeneratedManifestTests(unittest.TestCase):
             source,
         )
         self.assertIn("static full-build program authentication failed", source)
-        self.assertIn("Build.build_sequence_full", source)
+        self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
+        self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
         for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
             self.assertNotIn(forbidden, source)
@@ -570,13 +580,13 @@ class GeneratedManifestTests(unittest.TestCase):
             ["file", "string", "t", "to_hex"],
         )
         uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 19)
+        self.assertEqual(len(uses), 21)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 9, "string": 2, "t": 3, "to_hex": 5},
+            {"file": 10, "string": 2, "t": 3, "to_hex": 6},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")
@@ -652,9 +662,9 @@ class GeneratedManifestTests(unittest.TestCase):
         contract = self.payload["loader_action_contract"]
         self.assertEqual(
             contract["activation_status"],
-            "blocked-exact-token-actions-not-integrated",
+            "partial-exact-static-actions-active",
         )
-        self.assertEqual(contract["source_site_count"], 434)
+        self.assertEqual(contract["source_site_count"], 731)
         self.assertEqual(contract["generated_static_root_directives"], 297)
         self.assertEqual(
             {
@@ -663,14 +673,15 @@ class GeneratedManifestTests(unittest.TestCase):
             },
             {
                 ("#load", "standalone-phrase"): 5,
+                ("#flyspeck_needs", "standalone-phrase"): 297,
                 ("#use", "standalone-phrase"): 1,
-                ("flyspeck_needs", "embedded-expression"): 4,
+                ("flyspeck_needs", "embedded-expression"): 3,
                 ("flyspeck_needs", "standalone-phrase"): 144,
                 ("loads", "standalone-phrase"): 54,
                 ("loadt", "embedded-expression"): 3,
                 ("loadt", "standalone-phrase"): 3,
                 ("needs", "embedded-expression"): 4,
-                ("needs", "standalone-phrase"): 215,
+                ("needs", "standalone-phrase"): 216,
                 ("reneeds", "embedded-expression"): 1,
             },
         )
@@ -678,6 +689,10 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("neutralize state exactly once", actions["flyspeck_needs"])
         self.assertIn("do neither", actions["flyspeck_needs"])
         self.assertIn("generated index", actions["#flyspeck_needs"])
+        self.assertEqual(
+            contract["static_action_gate"],
+            "candle:candle/test_flyspeck_needs_directive.sh",
+        )
         self.assertNotEqual(actions["loads"], actions["needs"])
         self.assertIn("both sides", contract["embedded_expression_policy"])
         self.assertIn("definition or expression", contract["known_current_boot_defect"])

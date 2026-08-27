@@ -9,7 +9,8 @@ loader.  It is not S1/S2/S3 acceptance evidence.
 - compiled Candle executable SHA-256:
   `d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3`;
 - the loader is invoked once in a clean process with explicit Candle root,
-  Flyspeck root, and `full` build mode;
+  Flyspeck root, authenticated normalization-overlay root, and `full` build
+  mode;
 - ambient `HOLLIGHT_DIR`, `FLYSPECK_DIR`, and serialization variables are not
   read.
 
@@ -26,24 +27,41 @@ loader.  It is not S1/S2/S3 acceptance evidence.
    operations found in the direct corpus.
 6. HOL Light's standard `load_path` name aliases `Cakeml.loadPath`; there is one
    reference and no copied loader state.
+7. The manifest-authenticated original path/basename/MD5 table is installed
+   once; an unknown action or reconfiguration fails before source evaluation.
+8. HOL Light's logical `loaded_files`, `hol_expand_directory`, and
+   `file_on_path` names are bound before the rest of HOL loads.  Resolution uses
+   only ordinary files below explicit load roots; ambient `.` resolution fails
+   closed.
+9. The five authenticated normalization outputs are checked independently by
+   MD5, registered as exact original-to-output mappings, and never added as a
+   shadowing load root.
 
 ## Current exact frontier
 
-The clean full-mode run reaches the original pinned
+The clean full-mode run selects the authenticated normalized output for pinned
 `text_formalization/build/strictbuild.hl` and reports:
 
 ```text
+- Selecting normalized source .../build/strictbuild.hl -> .../build/strictbuild.hl
 - Selecting statically linked library unix.cma (module Unix)
 - Selecting statically linked library str.cma (module Str)
-ERROR: Undefined variable: Toploop.use_file at line 7
+val use_file_b = <fun>: string -> bool
+val load_on_path_b = <fun>: string list -> string -> bool
+val loadb = <fun>: string -> bool
+ERROR: Undefined variable: loadt at line 5
 ```
 
-The failing definition starts at source line 86 and calls
-`Toploop.use_file Format.std_formatter s` at source line 90; the diagnostic's
-line 7 is relative to that submitted declaration.  Before the failure,
-strictbuild evaluates its exact Unix metadata path and binds `load_date` to the
-manifest input `1970-01-01T00:00:00Z\n`.  No dummy or no-op `Toploop` binding is
-installed.
+The first failing standalone phrase is
+`loadt (flyspeckpath "general/parser_verbose.hl");;` at original source line
+103; the diagnostic's line 5 includes the preceding comment/newlines in the
+submitted phrase.  Before the failure, strictbuild evaluates its exact Unix
+metadata path and binds `load_date` to the manifest input
+`1970-01-01T00:00:00Z\n`.  The exact hash-bound strictbuild normalization has
+replaced the legacy `Toploop.use_file` wrapper with an explicit failure, while
+the manifest action is the selected production loader.  No dummy or no-op
+`Toploop` binding is installed, and reaching the `loadt` phrase demonstrates
+that the normalized definition itself compiled.
 
 The repository contains 17 standalone directives: ten `unix.cma`, five
 `str.cma`, and two `nums.cma`.  The enforcing loader graph contains only five:
@@ -96,16 +114,22 @@ preload and 1,216,768 KiB maximum RSS.
   theory/program;
 - sandbox/refinement contracts for non-metadata process calls, clock access,
   and directory creation;
-- a verified, transactional replacement for `Toploop.use_file`; a dummy or
-  successful no-op loader is forbidden;
-- complete source-library resolution and manifest digest enforcement.
+- exact normalization of the three selected standalone dynamic-argument
+  `loadt` phrases, plus fail-closed treatment of legacy dynamic loader helpers;
+- proof that the ordinary `needs`/`loads` boot scanner accepts only complete
+  phrase-start directives (its historical embedded-expression behavior remains
+  an explicit defect);
+- complete direct sequence execution, checkpoints, and semantic fingerprints.
 
 Reproduce the two current compiled gates with:
 
 ```sh
 candle/test_flyspeck_loader_guard.sh ./candle.sh /path/to/flyspeck
 candle/test_static_load_directive.sh ./candle.sh
-candle/test_flyspeck_loader_frontier.sh ./candle.sh /path/to/flyspeck
+candle/test_flyspeck_needs_directive.sh
+candle/test_filename_compat.sh
+candle/test_flyspeck_loader_frontier.sh \
+  ./candle.sh /path/to/flyspeck /path/to/materialized-overlay
 candle/test_str_compat.sh
 candle/test_unix_metadata.sh
 candle/test_digest_compat.sh

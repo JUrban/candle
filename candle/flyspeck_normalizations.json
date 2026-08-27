@@ -114,6 +114,27 @@
       ],
       "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged.",
       "scope_limit": "The rule is specific to relabel_bound_conv and its fresh-name consumer; it does not authorize replacing physical identity by structural equality elsewhere. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
+      "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
+      "path": "text_formalization/build/strictbuild.hl",
+      "source_sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a",
+      "source_md5": "7d1e3729a05042883713cda2c9fad1f1",
+      "normalized_sha256": "e47dcc238750e2cfe338821724d8287e1ee86b7d1d89b7cb737a49d3825d00ef",
+      "normalized_md5": "51253a91dd74008e0a19415874dbf6f0",
+      "normalized_bytes": 9259,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 86,
+          "before": "let use_file_b s =\n  if not(Sys.file_exists s) \n  then (report (\"File not found \"^s); false)\n  else \n    (Toploop.use_file Format.std_formatter s) || \n      (Format.print_string(\"Error in included file \"^s);\n       Format.print_newline(); false);;",
+          "after": "let use_file_b (s:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic use_file_b is disabled by the static manifest: \"^s);;"
+        }
+      ],
+      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. No selected accepted action calls strictbuild's dynamic use_file_b chain. The normalized binding fails explicitly if that non-use assumption is wrong; no Toploop shim or successful no-op is installed.",
+      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file compatibility. The full run must prove the binding is not called; source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
     }
   ]
 }
