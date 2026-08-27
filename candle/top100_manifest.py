@@ -313,6 +313,21 @@ def build_manifest():
             "baseline": "hol.ml",
             "isolation": "fresh Candle process per target",
             "cache_policy": "no theorem-state reuse between targets",
+            "recorded_live_baseline_timeout_policy": {
+                "boot_inactivity_timeout_seconds": 30,
+                "load_inactivity_timeout_seconds": 1800,
+                "inactivity_resets_on": (
+                    "each recognized Loading, val, or Finished progress event"
+                ),
+                "total_wall_timeout_seconds": None,
+                "wall_policy": "unbounded",
+                "note": (
+                    "The live runner left boot at pexpect's 30-second default. "
+                    "Its --timeout 1800 applied to every subsequent expect "
+                    "wait, so progress reset the load inactivity clock and no "
+                    "total per-target deadline applied."
+                ),
+            },
         },
         "target_count": len(targets),
         "covered_source_count": len(covered_sources),

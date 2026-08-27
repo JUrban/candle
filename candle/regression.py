@@ -18,6 +18,11 @@ Two suites are available:
 
 Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
 to preserve the complete per-test table and exact source/executable identity.
+
+Timeouts have two independent meanings.  The inactivity timeout is reset by
+each recognized REPL progress event.  An optional total wall timeout is an
+absolute per-target deadline from process spawn through fingerprint capture;
+progress never extends it.
 """
 import sys
 import os
@@ -59,6 +64,47 @@ class BootFailure(Exception):
 
 class LoadFailure(Exception):
     """Loading a file failed."""
+
+
+class RunnerTimeout(Exception):
+    """Base class for an explicitly classified runner timeout."""
+
+
+class InactivityTimeout(RunnerTimeout):
+    """No recognized REPL progress arrived within the inactivity limit."""
+
+
+class WallTimeout(RunnerTimeout):
+    """The total process/target wall deadline expired."""
+
+
+def _effective_expect_timeout(inactivity_timeout, wall_deadline, now=None):
+    """Return (pexpect timeout, wall-limited) without extending wall time."""
+    if inactivity_timeout <= 0:
+        raise ValueError("inactivity timeout must be positive")
+    if wall_deadline is None:
+        return float(inactivity_timeout), False
+    if now is None:
+        now = time.monotonic()
+    wall_remaining = wall_deadline - now
+    if wall_remaining <= 0:
+        raise WallTimeout("total wall deadline expired")
+    if wall_remaining <= inactivity_timeout:
+        return wall_remaining, True
+    return float(inactivity_timeout), False
+
+
+def _timeout_policy(inactivity_timeout, wall_timeout):
+    """Return the machine-readable timeout contract used by a suite run."""
+    return {
+        "inactivity_timeout_seconds": inactivity_timeout,
+        "inactivity_resets_on": (
+            "each recognized Loading, val, or Finished progress event"),
+        "inactivity_scope": "each REPL expect wait, including initial boot",
+        "total_wall_timeout_seconds": wall_timeout,
+        "total_wall_scope": "process spawn through fingerprint capture",
+        "progress_extends_total_wall_deadline": False,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -139,8 +185,10 @@ BY_NAME = {t.name: t for t in TOP100}
 # ---------------------------------------------------------------------------
 
 class CandleREPL:
-    def __init__(self, logfile, env=None):
+    def __init__(self, logfile, inactivity_timeout, wall_deadline, env=None):
         self._logfile = logfile
+        self.inactivity_timeout = inactivity_timeout
+        self.wall_deadline = wall_deadline
         self.load_stack = []
         self.last_val = None
 
@@ -157,28 +205,34 @@ class CandleREPL:
 
         try:
             self._check_boot()
-        except BootFailure:
+        except (BootFailure, RunnerTimeout):
             self.kill()
             raise
 
     def _check_boot(self):
+        timeout, wall_limited = _effective_expect_timeout(
+            self.inactivity_timeout, self.wall_deadline)
         try:
             index = self.process.expect([
                 r'\n# ',
                 r'\n(ERROR: .+)',
                 pexpect.TIMEOUT,
                 pexpect.EOF,
-            ])
+            ], timeout=timeout)
         except Exception as e:
             raise BootFailure from e
 
-        if index != 0:
-            reasons = {
-                1: str(self._get_match(1)),
-                2: "Timeout",
-                3: "Process exited unexpectedly",
-            }
-            raise BootFailure(reasons[index])
+        if index == 0:
+            return
+        if index == 1:
+            raise BootFailure(str(self._get_match(1)))
+        if index == 2:
+            if wall_limited:
+                raise WallTimeout("total wall deadline expired while booting")
+            raise InactivityTimeout("no REPL output while booting")
+        if index == 3:
+            raise BootFailure("Process exited unexpectedly")
+        assert False, "Unreachable: unexpected boot pattern"
 
     def _get_match(self, idx):
         return self.process.match.group(idx)
@@ -186,7 +240,9 @@ class CandleREPL:
     def load_stack_str(self):
         return f"[while loading: {' > '.join(self.load_stack)}]"
 
-    def _check_output(self, timeout):
+    def _check_output(self):
+        timeout, wall_limited = _effective_expect_timeout(
+            self.inactivity_timeout, self.wall_deadline)
         try:
             index = self.process.expect([
                 r'\n\- Loading (\S+)',
@@ -215,18 +271,22 @@ class CandleREPL:
                 assert finished == expected, (
                     f"Expected to finish loading {expected}. Actual: {finished}")
             case 6:
-                raise LoadFailure("Timeout waiting for output")
+                if wall_limited:
+                    raise WallTimeout(
+                        "total wall deadline expired while loading")
+                raise InactivityTimeout(
+                    "no recognized REPL progress while loading")
             case 7:
                 raise LoadFailure("Process exited unexpectedly")
             case _:
                 assert False, "Unreachable: Did you add a new case in _check_output?"
 
-    def load(self, file, timeout):
+    def load(self, file):
         self.process.sendline(f'#use "{file}";;')
-        self._check_output(timeout=timeout)
+        self._check_output()
 
         while self.load_stack:
-            self._check_output(timeout=timeout)
+            self._check_output()
 
     def kill(self):
         # No criu restore anymore, so there is no detached process group to
@@ -391,6 +451,7 @@ class ProcessTreeSampler:
 class TestResult:
     name: str
     status: TestStatus
+    boot_elapsed: float = 0.0
     hol_elapsed: float = 0.0
     test_elapsed: float = 0.0
     fingerprint_elapsed: float = 0.0
@@ -399,10 +460,12 @@ class TestResult:
     error_message: str = ""
     log_path: str = ""
     fingerprints: dict | None = None
+    timeout_kind: str | None = None
 
     @property
     def total(self):
-        return self.hol_elapsed + self.test_elapsed + self.fingerprint_elapsed
+        return (self.boot_elapsed + self.hol_elapsed + self.test_elapsed
+                + self.fingerprint_elapsed)
 
 
 def _format_error(repl, exc):
@@ -416,8 +479,8 @@ def _format_error(repl, exc):
     return err
 
 
-def run_test(test, test_timeout, env=None):
-    """Run a single test in a fresh Candle process. Never raises."""
+def run_test(test, inactivity_timeout, wall_timeout=None, env=None):
+    """Run one fresh process with distinct inactivity and total wall limits."""
     safe_name = test.name.replace("/", "_")
     fd, log_path = tempfile.mkstemp(prefix=f"candle-{safe_name}-", suffix=".log")
     logfile = os.fdopen(fd, "w")
@@ -426,34 +489,40 @@ def run_test(test, test_timeout, env=None):
     sampler = None
     result = None
     start = None          # set once Candle is booted; marks the start of hol.ml load
+    run_started = time.perf_counter()
+    wall_deadline = (time.monotonic() + wall_timeout
+                     if wall_timeout is not None else None)
+    boot_elapsed = 0.0
     hol_elapsed = 0.0
     test_elapsed = 0.0
     fingerprint_elapsed = 0.0
     request_path = None
     try:
-        repl = CandleREPL(logfile=logfile, env=env)
+        repl = CandleREPL(
+            logfile=logfile, inactivity_timeout=inactivity_timeout,
+            wall_deadline=wall_deadline, env=env)
+        boot_elapsed = time.perf_counter() - run_started
         sampler = ProcessTreeSampler(repl.process.pid)
         sampler.start()
 
         start = time.perf_counter()
-        repl.load("hol.ml", timeout=test_timeout)
+        repl.load("hol.ml")
         hol_elapsed = time.perf_counter() - start
 
         for f in test.files:
-            repl.load(f, timeout=test_timeout)
+            repl.load(f)
         test_elapsed = time.perf_counter() - start - hol_elapsed
 
         fingerprints = None
         if test.fingerprint_theorems:
             fingerprint_start = time.perf_counter()
-            repl.load(FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix(),
-                      timeout=test_timeout)
+            repl.load(FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix())
             request_fd, request_path = tempfile.mkstemp(
                 prefix=f"candle-{safe_name}-fingerprints-", suffix=".ml")
             with os.fdopen(request_fd, "w", encoding="utf-8") as request_file:
                 request_file.write(
                     _fingerprint_request_source(test.fingerprint_theorems))
-            repl.load(request_path, timeout=test_timeout)
+            repl.load(request_path)
             logfile.flush()
             fingerprints = _read_fingerprint_records(
                 log_path, test.fingerprint_theorems,
@@ -461,7 +530,8 @@ def run_test(test, test_timeout, env=None):
             fingerprint_elapsed = time.perf_counter() - fingerprint_start
 
         result = TestResult(
-            test.name, TestStatus.PASS, hol_elapsed=hol_elapsed,
+            test.name, TestStatus.PASS, boot_elapsed=boot_elapsed,
+            hol_elapsed=hol_elapsed,
             test_elapsed=test_elapsed,
             fingerprint_elapsed=fingerprint_elapsed, log_path=log_path,
             fingerprints=fingerprints)
@@ -469,6 +539,8 @@ def run_test(test, test_timeout, env=None):
     except Exception as e:  # pylint: disable=broad-exception-caught
         # A test must never crash the runner: record any failure and move on.
         # Attribute elapsed time to whichever phase we failed in.
+        if not boot_elapsed:
+            boot_elapsed = time.perf_counter() - run_started
         if start is not None:
             if hol_elapsed:
                 elapsed_after_hol = time.perf_counter() - start - hol_elapsed
@@ -478,14 +550,19 @@ def run_test(test, test_timeout, env=None):
                     test_elapsed = elapsed_after_hol
             else:
                 hol_elapsed = time.perf_counter() - start
-        status = (TestStatus.TIMEOUT
-                  if isinstance(e, pexpect.TIMEOUT) or "Timeout" in str(e)
-                  else TestStatus.FAIL)
+        is_timeout = isinstance(e, (pexpect.TIMEOUT, RunnerTimeout))
+        status = TestStatus.TIMEOUT if is_timeout else TestStatus.FAIL
+        timeout_kind = (
+            "wall" if isinstance(e, WallTimeout) else
+            "inactivity" if isinstance(e, (InactivityTimeout, pexpect.TIMEOUT))
+            else None)
         result = TestResult(
-            test.name, status, hol_elapsed=hol_elapsed,
+            test.name, status, boot_elapsed=boot_elapsed,
+            hol_elapsed=hol_elapsed,
             test_elapsed=test_elapsed,
             fingerprint_elapsed=fingerprint_elapsed,
-            error_message=_format_error(repl, e), log_path=log_path)
+            error_message=_format_error(repl, e), log_path=log_path,
+            timeout_kind=timeout_kind)
 
     finally:
         if sampler is not None:
@@ -511,6 +588,26 @@ class Reporter:
         TestStatus.FAIL:    "FAIL",
         TestStatus.TIMEOUT: "TIME",
     }
+
+    @staticmethod
+    def result_record(result, files):
+        """Return one deterministic machine-readable result row."""
+        return {
+            "name": result.name,
+            "files": list(files),
+            "status": result.status.value,
+            "timeout_kind": result.timeout_kind,
+            "boot_elapsed_seconds": result.boot_elapsed,
+            "hol_elapsed_seconds": result.hol_elapsed,
+            "test_elapsed_seconds": result.test_elapsed,
+            "fingerprint_elapsed_seconds": result.fingerprint_elapsed,
+            "total_elapsed_seconds": result.total,
+            "peak_process_rss_kib": result.peak_process_rss_kib,
+            "peak_tree_rss_kib": result.peak_tree_rss_kib,
+            "error_message": result.error_message,
+            "log_path": result.log_path,
+            "fingerprints": result.fingerprints,
+        }
 
     @staticmethod
     def print_summary(results, wall):
@@ -553,7 +650,8 @@ class Reporter:
                 print(f"    log: {r.log_path}")
 
     @staticmethod
-    def write_json(results, wall, path, suite, jobs, test_timeout, tests):
+    def write_json(results, wall, path, suite, jobs, inactivity_timeout,
+                   wall_timeout, tests):
         executable = CANDLE_ROOT / "candle" / "build" / "cake"
         executable_sha256 = hashlib.sha256(executable.read_bytes()).hexdigest()
         git_head = subprocess.check_output(
@@ -570,12 +668,13 @@ class Reporter:
             for status in TestStatus
         }
         payload = {
-            "schema": 2,
+            "schema": 3,
             "generated_utc": datetime.now(timezone.utc).isoformat(),
             "suite": suite,
             "test_count": len(results),
             "jobs": jobs,
-            "test_timeout_seconds": test_timeout,
+            "timeout_policy": _timeout_policy(
+                inactivity_timeout, wall_timeout),
             "wall_seconds": wall,
             "sum_test_seconds": sum(result.total for result in results),
             "counts": counts,
@@ -590,20 +689,7 @@ class Reporter:
                 "expected_identity_source": "top100_manifest.json",
             },
             "results": [
-                {
-                    "name": result.name,
-                    "files": files_by_name[result.name],
-                    "status": result.status.value,
-                    "hol_elapsed_seconds": result.hol_elapsed,
-                    "test_elapsed_seconds": result.test_elapsed,
-                    "fingerprint_elapsed_seconds": result.fingerprint_elapsed,
-                    "total_elapsed_seconds": result.total,
-                    "peak_process_rss_kib": result.peak_process_rss_kib,
-                    "peak_tree_rss_kib": result.peak_tree_rss_kib,
-                    "error_message": result.error_message,
-                    "log_path": result.log_path,
-                    "fingerprints": result.fingerprints,
-                }
+                Reporter.result_record(result, files_by_name[result.name])
                 for result in results
             ],
         }
@@ -639,9 +725,13 @@ def cap_jobs_for_heap(jobs, heap_mb):
     return max(1, min(jobs, avail // heap_mb))
 
 
-def run_suite(tests, jobs, test_timeout, env=None):
+def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None):
     total = len(tests)
     print(f"Running {total} test(s) with {jobs} parallel worker(s).")
+    wall_description = (f"{wall_timeout:g}s" if wall_timeout is not None
+                        else "unbounded")
+    print(f"Timeouts: {inactivity_timeout:g}s inactivity; "
+          f"{wall_description} total wall per target.")
     print("Logs: /tmp/candle-<test>-*.log\n")
 
     results = []
@@ -649,7 +739,12 @@ def run_suite(tests, jobs, test_timeout, env=None):
     wall_start = time.perf_counter()
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as ex:
-        futures = {ex.submit(run_test, t, test_timeout, env): t for t in tests}
+        futures = {
+            ex.submit(
+                run_test, t, inactivity_timeout,
+                wall_timeout=wall_timeout, env=env): t
+            for t in tests
+        }
         try:
             for fut in concurrent.futures.as_completed(futures):
                 r = fut.result()
@@ -693,8 +788,17 @@ def main():
         help="Number of parallel workers (default: CPU count - 1)",
     )
     parser.add_argument(
-        "--timeout", type=int, default=600,
-        help="Timeout in seconds for each #use load, including hol.ml (default: 600)",
+        "--timeout", "--inactivity-timeout", dest="inactivity_timeout",
+        type=float, default=600,
+        help=("seconds without a recognized REPL progress event before a "
+              "target times out; --timeout is retained as an alias "
+              "(default: 600)"),
+    )
+    parser.add_argument(
+        "--wall-timeout", type=float, default=0,
+        help=("total seconds per target from process spawn through "
+              "fingerprints, unaffected by progress; 0 is unbounded "
+              "(default: 0)"),
     )
     parser.add_argument(
         "--json-report", type=Path,
@@ -702,6 +806,14 @@ def main():
     )
 
     args = parser.parse_args()
+
+    if args.jobs <= 0:
+        parser.error("--jobs must be positive")
+    if args.inactivity_timeout <= 0:
+        parser.error("--inactivity-timeout must be positive")
+    if args.wall_timeout < 0:
+        parser.error("--wall-timeout must be non-negative")
+    wall_timeout = args.wall_timeout or None
 
     if args.test:
         tests = [BY_NAME.get(name, _t(name)) for name in args.test]
@@ -734,12 +846,14 @@ def main():
             print(f"Capping workers {args.jobs} -> {jobs}: {TOP100_HEAP_MB} MB heap "
                   f"x {args.jobs} workers exceeds available RAM.")
 
-    results, wall = run_suite(tests, jobs, args.timeout, child_env)
+    results, wall = run_suite(
+        tests, jobs, args.inactivity_timeout,
+        wall_timeout=wall_timeout, env=child_env)
     Reporter.print_summary(results, wall)
     if args.json_report:
         Reporter.write_json(
-            results, wall, args.json_report, suite_name, jobs, args.timeout,
-            tests)
+            results, wall, args.json_report, suite_name, jobs,
+            args.inactivity_timeout, wall_timeout, tests)
 
     unexpected = [r for r in results if r.status in (TestStatus.FAIL, TestStatus.TIMEOUT)]
     sys.exit(1 if unexpected else 0)
