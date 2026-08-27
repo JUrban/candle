@@ -45,6 +45,17 @@ let candle_flyspeck_require_source path =
 
 List.iter candle_flyspeck_require_source candle_flyspeck_required_sources;;
 
+(* This generated program is SHA-256-pinned by the outer release manifest.  Its
+   OCaml-compatible MD5 values are checked in-process before any Flyspeck build
+   source is evaluated.  [hol.ml] and this loader necessarily start before the
+   preflight, so the release launcher must still authenticate the executable
+   and these bootstrap sources. *)
+needs "candle/flyspeck_source_digests.ml";;
+needs "candle/flyspeck_source_integrity.ml";;
+
+candle_flyspeck_verify_sources 399 candle_hollight_root candle_flyspeck_root
+  candle_flyspeck_source_digests;;
+
 candle_configure_manifest_process_inputs
   candle_flyspeck_date_input candle_flyspeck_user_input;;
 
