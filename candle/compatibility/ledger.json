@@ -4,7 +4,7 @@
   "entries": [
     {
       "id": "CANDLE-OCAML-FLOAT-LITERAL-001",
-      "status": "open",
+      "status": "implementation_under_test",
       "priority": "P0",
       "category": "syntax_and_numeric_runtime",
       "summary": "Candle rejects OCaml float literals before elaboration",
@@ -28,15 +28,36 @@
         "100/bertrand.ml:19",
         "100/bertrand.ml:20",
         "100/bertrand.ml:21",
-        "100/bertrand.ml:31"
+        "100/bertrand.ml:31",
+        "100/bertrand.ml:1149",
+        "100/bertrand.ml:1151"
       ],
       "anchor_workaround": {
         "commit": "dceb27dee4f390b46ee4a5df31d18774f2867328",
         "description": "replace integral float literals with float_of_int and the zero literal with Float.zero"
       },
-      "candidate_remedy": "mechanically normalize the used integral float literals, or add verified literal support",
-      "proof_obligation": "normalization preserves OCaml IEEE-754 values for every rewritten literal and comparisons retain OCaml behavior",
-      "regression_requirement": "OCaml/Candle differential test plus successful clean bertrand-primerecip load and theorem fingerprints"
+      "historical_parser_support": {
+        "added_by": "ac939d167",
+        "removed_by": "1f10b21e",
+        "removal_reason": "runtime Double.fromString conversion was too expensive when every literal used the formatting/parsing FFI path"
+      },
+      "selected_remedy": {
+        "cakeml_branch": "codex/flyspeck-v13-float-literals",
+        "description": "restore the retained FloatT grammar path and lower each normalized decimal lexeme to Option.valOf (Double.fromString lexeme)",
+        "supported_subset": "decimal points, decimal exponents, and separator underscores already recognized and normalized by scan_float_or_int",
+        "excluded_syntax": "hexadecimal float literals",
+        "new_ffi": false,
+        "trust_and_performance_boundary": "uses the existing double_fromString basis FFI once per literal at evaluation time; no frexp, byte-packing shim, or catch-all FFI dispatch is imported"
+      },
+      "proof_obligation": "CakeML grammar and conversion theories build; every accepted oracle literal produces exactly the OCaml 4.14.1 IEEE-754 word; every negative oracle is rejected; the existing Double.fromString FFI remains the explicit parsing trust boundary",
+      "regression_oracle": "candle/compatibility/test_float_literals.py with candle/compatibility/float_literal_cases.json",
+      "regression_requirement": "targeted CakeML parser proof build, OCaml/Candle differential test, successful clean bertrand-primerecip load, and populated theorem plus assumption fingerprints",
+      "remaining_evidence": [
+        "targeted camlTestsTheory proof build",
+        "rebuilt Candle differential execution",
+        "clean bertrand-primerecip load",
+        "bertrand theorem and assumption fingerprints"
+      ]
     }
   ]
 }

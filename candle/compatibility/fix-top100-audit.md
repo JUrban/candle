@@ -48,7 +48,12 @@ the target declaration is elaborated: Candle rejects the first OCaml float
 literal in `num_of_float`. The minimized difference is ledger entry
 `CANDLE-OCAML-FLOAT-LITERAL-001`. OCaml 4.14.1 accepts the one-line reproducer;
 the pinned compiled Candle reports a parse failure. The anchor's float rewrite
-is a candidate normalization, not yet closed evidence.
+is not being imported: it combines the syntax workaround with broad float/byte
+FFI. The smaller implementation under test restores CakeML's retained decimal
+float token to the parser and lowers through the existing `Double.fromString`
+operation. Exact reference words and negative parses are pinned in
+`float_literal_cases.json`. This adds no FFI, but the CakeML proof build,
+rebuilt-Candle differential, clean target load, and fingerprints are missing.
 
 ## Integration sequence
 
