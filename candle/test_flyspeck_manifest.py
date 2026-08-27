@@ -55,6 +55,24 @@ class SyntaxTests(unittest.TestCase):
             ],
         )
 
+    def test_identifier_scanner_ignores_data_and_comments(self):
+        source = '''
+          let use_arg_then x = x;;
+          update_database ();;
+          (* search_thml use_arg_then *)
+          let s = "update_database search";;
+          let theorem = `search_thml`;;
+        '''
+        self.assertEqual(
+            flyspeck_manifest.scan_identifier_uses(
+                source, {"search_thml", "update_database", "use_arg_then"},
+            ),
+            [
+                {"line": 2, "identifier": "use_arg_then"},
+                {"line": 3, "identifier": "update_database"},
+            ],
+        )
+
     def test_unknown_runtime_library_blocks_promotion(self):
         diagnostics = {
             key: [] for key in flyspeck_manifest.PROMOTION_EMPTY_DIAGNOSTICS
@@ -504,6 +522,31 @@ class GeneratedManifestTests(unittest.TestCase):
         for payload in payloads:
             self.assertIn(payload["source"], self.payload["source_nodes"])
             self.assertGreater(payload["line"], 0)
+        consumers = contract["consumer_inventory"]
+        self.assertEqual(len(consumers["reviewed_occurrences"]), 20)
+        self.assertEqual(
+            consumers["identifier_counts"],
+            {
+                "eval_command": 1,
+                "save_all_theorems": 1,
+                "search": 2,
+                "search_thml": 4,
+                "test_id_thm": 1,
+                "theorems": 4,
+                "update_database": 6,
+                "use_arg_then": 1,
+            },
+        )
+        active = consumers["selected_active_site"]
+        self.assertTrue(active["source"].endswith("update_database_400.ml"))
+        self.assertEqual(active["line"], 338)
+        self.assertEqual(active["identifier"], "update_database")
+        typed = consumers["typed_theorem_lookup"]
+        self.assertEqual(typed["identifier"], "use_arg_then2")
+        self.assertEqual(typed["occurrences"], 23810)
+        self.assertEqual(typed["source_files"], 22)
+        self.assertIn("does not call Toploop", typed["distinction"])
+        self.assertIn("not a proof", consumers["assurance_limit"])
 
 
 if __name__ == "__main__":

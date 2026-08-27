@@ -12772,6 +12772,270 @@
       "source": "flyspeck:text_formalization/general/serialization.hl",
       "unselected": "flyspeck:text_formalization/general/update_database_310.ml"
     },
+    "consumer_inventory": {
+      "assurance_limit": "lexical non-use is necessary evidence for a narrow normalization, not a proof against reflection, constructed names, or an external caller; compiled reference and final fingerprint gates remain mandatory",
+      "definition_only_selected_graph": [
+        "eval_command",
+        "save_all_theorems",
+        "test_id_thm",
+        "use_arg_then"
+      ],
+      "identifier_counts": {
+        "eval_command": 1,
+        "save_all_theorems": 1,
+        "search": 2,
+        "search_thml": 4,
+        "test_id_thm": 1,
+        "theorems": 4,
+        "update_database": 6,
+        "use_arg_then": 1
+      },
+      "reviewed_occurrences": [
+        {
+          "branch": "common",
+          "identifier": "test_id_thm",
+          "line": 721,
+          "role": "definition",
+          "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+        },
+        {
+          "branch": "common",
+          "identifier": "use_arg_then",
+          "line": 733,
+          "role": "definition",
+          "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+        },
+        {
+          "branch": "common",
+          "identifier": "eval_command",
+          "line": 13,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+        },
+        {
+          "branch": "common",
+          "identifier": "save_all_theorems",
+          "line": 519,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/serialization.hl"
+        },
+        {
+          "branch": "common",
+          "identifier": "update_database",
+          "line": 520,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/serialization.hl"
+        },
+        {
+          "branch": "common",
+          "identifier": "theorems",
+          "line": 521,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/serialization.hl"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "update_database",
+          "line": 177,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "theorems",
+          "line": 209,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "search_thml",
+          "line": 255,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "update_database",
+          "line": 300,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "search",
+          "line": 307,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "search_thml",
+          "line": 307,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "theorems",
+          "line": 307,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "unselected-3.x",
+          "identifier": "update_database",
+          "line": 313,
+          "role": "top-level-call",
+          "source": "flyspeck:text_formalization/general/update_database_310.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "search_thml",
+          "line": 280,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "update_database",
+          "line": 325,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "search",
+          "line": 332,
+          "role": "definition",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "search_thml",
+          "line": 332,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "theorems",
+          "line": 332,
+          "role": "deferred-body",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        },
+        {
+          "branch": "selected-4.x",
+          "identifier": "update_database",
+          "line": 338,
+          "role": "top-level-call",
+          "source": "flyspeck:text_formalization/general/update_database_400.ml"
+        }
+      ],
+      "scope": "exact identifiers in reachable Flyspeck source, outside comments, strings, and HOL quotations",
+      "selected_active_site": {
+        "effect": "load-time compiler-environment enumeration and theorem database replacement",
+        "identifier": "update_database",
+        "line": 338,
+        "source": "flyspeck:text_formalization/general/update_database_400.ml"
+      },
+      "typed_theorem_lookup": {
+        "by_source": [
+          {
+            "occurrences": 267,
+            "source": "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl"
+          },
+          {
+            "occurrences": 229,
+            "source": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl"
+          },
+          {
+            "occurrences": 2450,
+            "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
+          },
+          {
+            "occurrences": 1502,
+            "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl"
+          },
+          {
+            "occurrences": 226,
+            "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl"
+          },
+          {
+            "occurrences": 2276,
+            "source": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
+          },
+          {
+            "occurrences": 1686,
+            "source": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl"
+          },
+          {
+            "occurrences": 1186,
+            "source": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl"
+          },
+          {
+            "occurrences": 1633,
+            "source": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
+          },
+          {
+            "occurrences": 2679,
+            "source": "flyspeck:jHOLLight/Examples/seq-compiled.hl"
+          },
+          {
+            "occurrences": 139,
+            "source": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl"
+          },
+          {
+            "occurrences": 94,
+            "source": "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl"
+          },
+          {
+            "occurrences": 1036,
+            "source": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl"
+          },
+          {
+            "occurrences": 1,
+            "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+          },
+          {
+            "occurrences": 886,
+            "source": "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl"
+          },
+          {
+            "occurrences": 449,
+            "source": "flyspeck:text_formalization/local/RNSYJXM-compiled.hl"
+          },
+          {
+            "occurrences": 2895,
+            "source": "flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl"
+          },
+          {
+            "occurrences": 854,
+            "source": "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl"
+          },
+          {
+            "occurrences": 133,
+            "source": "flyspeck:text_formalization/tame/ssreflect/MQMSMAB-compiled.hl"
+          },
+          {
+            "occurrences": 1733,
+            "source": "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl"
+          },
+          {
+            "occurrences": 684,
+            "source": "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl"
+          },
+          {
+            "occurrences": 772,
+            "source": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl"
+          }
+        ],
+        "distinction": "use_arg_then2 receives an explicit theorem fallback and does not call Toploop; it must not be conflated with the definition-only use_arg_then",
+        "identifier": "use_arg_then2",
+        "occurrences": 23810,
+        "source_files": 22
+      }
+    },
     "current_source_members": {
       "Format": [
         "close_box",

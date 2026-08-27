@@ -84,6 +84,44 @@ DYNAMIC_TOPLEVEL_PAYLOADS = (
         "purpose": "declare update_database with top-level environment enumeration",
     },
 )
+# Small, correctness-relevant Flyspeck identifiers around the compiler
+# top-level boundary.  Unlike qualified-module scanning, this inventory is
+# deliberately restricted to Flyspeck source: names such as [search] also
+# occur in unrelated Candle implementations.  Every occurrence is reviewed
+# below so source drift cannot silently turn a definition-only helper into an
+# active consumer.
+TOPLEVEL_CONSUMER_IDENTIFIERS = {
+    "eval_command", "save_all_theorems", "search", "search_thml",
+    "test_id_thm", "theorems", "update_database", "use_arg_then",
+}
+TYPED_THEOREM_LOOKUP_IDENTIFIER = "use_arg_then2"
+TOPLEVEL_CONSUMER_SITE_REVIEWS = (
+    # Common selected sources whose Toploop-backed bindings have no other
+    # lexical reference in the selected graph.
+    ("flyspeck:jHOLLight/caml/ssreflect.hl", 721, "test_id_thm", "definition", "common"),
+    ("flyspeck:jHOLLight/caml/ssreflect.hl", 733, "use_arg_then", "definition", "common"),
+    ("flyspeck:text_formalization/general/flyspeck_eval_4.14.hl", 13, "eval_command", "definition", "common"),
+    ("flyspeck:text_formalization/general/serialization.hl", 519, "save_all_theorems", "definition", "common"),
+    ("flyspeck:text_formalization/general/serialization.hl", 520, "update_database", "deferred-body", "common"),
+    ("flyspeck:text_formalization/general/serialization.hl", 521, "theorems", "deferred-body", "common"),
+    # Conservative graph member selected only by the OCaml 3.x branch.
+    ("flyspeck:text_formalization/general/update_database_310.ml", 177, "update_database", "definition", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 209, "theorems", "deferred-body", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 255, "search_thml", "definition", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 300, "update_database", "deferred-body", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 307, "search", "definition", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 307, "search_thml", "deferred-body", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 307, "theorems", "deferred-body", "unselected-3.x"),
+    ("flyspeck:text_formalization/general/update_database_310.ml", 313, "update_database", "top-level-call", "unselected-3.x"),
+    # Pinned OCaml 4.14.1 execution branch.  The final call is active while
+    # the search helper's call and database read are deferred in its body.
+    ("flyspeck:text_formalization/general/update_database_400.ml", 280, "search_thml", "definition", "selected-4.x"),
+    ("flyspeck:text_formalization/general/update_database_400.ml", 325, "update_database", "deferred-body", "selected-4.x"),
+    ("flyspeck:text_formalization/general/update_database_400.ml", 332, "search", "definition", "selected-4.x"),
+    ("flyspeck:text_formalization/general/update_database_400.ml", 332, "search_thml", "deferred-body", "selected-4.x"),
+    ("flyspeck:text_formalization/general/update_database_400.ml", 332, "theorems", "deferred-body", "selected-4.x"),
+    ("flyspeck:text_formalization/general/update_database_400.ml", 338, "update_database", "top-level-call", "selected-4.x"),
+)
 # Operational checkpoint strata for the authoritative full sequence.  These
 # names are intentionally contiguous load-order partitions, not claims that a
 # source file has dependencies in only one mathematical area.  Transitive
@@ -530,6 +568,25 @@ def scan_qualified_module_uses(source: str, modules: set[str]) -> list[dict[str,
     ]
 
 
+def scan_identifier_uses(source: str, identifiers: set[str]) -> list[dict[str, object]]:
+    """Inventory exact identifiers outside comments, strings, and HOL quotes."""
+    if not identifiers:
+        return []
+    clean = strip_ocaml_comments(source)
+    mask = _code_mask(clean)
+    identifier_re = re.compile(
+        r"\b(" + "|".join(re.escape(name) for name in sorted(identifiers))
+        + r")\b"
+    )
+    return [
+        {
+            "line": clean.count("\n", 0, match.start()) + 1,
+            "identifier": match.group(1),
+        }
+        for match in identifier_re.finditer(mask)
+    ]
+
+
 def scan_opened_module_uses(
     source: str, module_exports: dict[str, set[str]],
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
@@ -857,6 +914,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     opened_compatibility_uses: list[dict[str, object]] = []
     compatibility_module_opens: list[dict[str, object]] = []
     toplevel_interface_uses: list[dict[str, object]] = []
+    toplevel_consumer_uses: list[dict[str, object]] = []
+    typed_theorem_lookup_counts: dict[str, int] = {}
     runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
     compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
     all_opened_exports = {
@@ -888,6 +947,14 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     else qualified_compatibility_uses
                 )
                 target.append({"source": ref.key, **use})
+        if ref.repository == "flyspeck":
+            for use in scan_identifier_uses(text, TOPLEVEL_CONSUMER_IDENTIFIERS):
+                toplevel_consumer_uses.append({"source": ref.key, **use})
+            typed_count = len(scan_identifier_uses(
+                text, {TYPED_THEOREM_LOOKUP_IDENTIFIER},
+            ))
+            if typed_count:
+                typed_theorem_lookup_counts[ref.key] = typed_count
         opens, opened_uses = scan_opened_module_uses(text, all_opened_exports)
         for entry in opens:
             target = (
@@ -1106,6 +1173,45 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             raise ValueError(
                 f"dynamic top-level payload site drifted: {source_key}:{line_number}"
             )
+    observed_consumer_sites = {
+        (str(use["source"]), int(use["line"]), str(use["identifier"]))
+        for use in toplevel_consumer_uses
+    }
+    reviewed_consumer_sites = {
+        (source, line, identifier)
+        for source, line, identifier, _role, _branch
+        in TOPLEVEL_CONSUMER_SITE_REVIEWS
+    }
+    if len(observed_consumer_sites) != len(toplevel_consumer_uses):
+        raise ValueError("duplicate reviewed top-level consumer site")
+    if observed_consumer_sites != reviewed_consumer_sites:
+        missing = sorted(reviewed_consumer_sites - observed_consumer_sites)
+        unreviewed = sorted(observed_consumer_sites - reviewed_consumer_sites)
+        raise ValueError(
+            "top-level consumer sites drifted: "
+            f"missing={missing}; unreviewed={unreviewed}"
+        )
+    consumer_reviews = {
+        (source, line, identifier): {"role": role, "branch": branch}
+        for source, line, identifier, role, branch
+        in TOPLEVEL_CONSUMER_SITE_REVIEWS
+    }
+    reviewed_consumer_uses = [
+        {
+            **use,
+            **consumer_reviews[
+                (str(use["source"]), int(use["line"]), str(use["identifier"]))
+            ],
+        }
+        for use in toplevel_consumer_uses
+    ]
+    consumer_identifier_counts = {
+        identifier: sum(
+            use["identifier"] == identifier for use in toplevel_consumer_uses
+        )
+        for identifier in sorted(TOPLEVEL_CONSUMER_IDENTIFIERS)
+    }
+    typed_theorem_lookup_occurrences = sum(typed_theorem_lookup_counts.values())
     build_strata, source_node_strata = _build_strata_contract(
         sequence, build_roots, nodes, edges, bootstrap, loader_source,
     )
@@ -1387,6 +1493,58 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "therefore require an explicit typed registry transformation or "
                 "verified dynamic-evaluation contract before activation"
             ),
+            "consumer_inventory": {
+                "scope": (
+                    "exact identifiers in reachable Flyspeck source, outside "
+                    "comments, strings, and HOL quotations"
+                ),
+                "reviewed_occurrences": sorted(
+                    reviewed_consumer_uses,
+                    key=lambda entry: (
+                        str(entry["source"]), int(entry["line"]),
+                        str(entry["identifier"]),
+                    ),
+                ),
+                "identifier_counts": consumer_identifier_counts,
+                "selected_active_site": {
+                    "source": (
+                        "flyspeck:text_formalization/general/"
+                        "update_database_400.ml"
+                    ),
+                    "line": 338,
+                    "identifier": "update_database",
+                    "effect": (
+                        "load-time compiler-environment enumeration and theorem "
+                        "database replacement"
+                    ),
+                },
+                "definition_only_selected_graph": [
+                    "eval_command", "save_all_theorems", "test_id_thm",
+                    "use_arg_then",
+                ],
+                "typed_theorem_lookup": {
+                    "identifier": TYPED_THEOREM_LOOKUP_IDENTIFIER,
+                    "occurrences": typed_theorem_lookup_occurrences,
+                    "source_files": len(typed_theorem_lookup_counts),
+                    "by_source": [
+                        {"source": source, "occurrences": count}
+                        for source, count in sorted(
+                            typed_theorem_lookup_counts.items()
+                        )
+                    ],
+                    "distinction": (
+                        "use_arg_then2 receives an explicit theorem fallback and "
+                        "does not call Toploop; it must not be conflated with the "
+                        "definition-only use_arg_then"
+                    ),
+                },
+                "assurance_limit": (
+                    "lexical non-use is necessary evidence for a narrow "
+                    "normalization, not a proof against reflection, constructed "
+                    "names, or an external caller; compiled reference and final "
+                    "fingerprint gates remain mandatory"
+                ),
+            },
         },
         "final_target": {
             "source": final_target.key,
