@@ -206,6 +206,68 @@
       "remaining_evidence": [
         "approved reference comparison for the observed theorem and assumption fingerprint"
       ]
+    },
+    {
+      "id": "CANDLE-OCAML-NUM-ROUNDING-001",
+      "status": "differential_pass_target_pending",
+      "priority": "P0",
+      "category": "numeric_runtime",
+      "summary": "Candle's Num subset lacks round_num and ceiling_num and truncates negative rational floor and negative powers incorrectly",
+      "minimal_reproducer": "candle/compatibility/num_rational_cases.json",
+      "ocaml_reference": {
+        "version": "4.14.1",
+        "implementation": "the pinned HOL Light bignum_zarith.ml compatibility layer",
+        "rounding_rule": "nearest integer with exact halves away from zero",
+        "floor_rule": "greatest integer not greater than the rational",
+        "ceiling_rule": "least integer not smaller than the rational"
+      },
+      "candle_observation": {
+        "outcome": "missing_bindings_and_semantic_mismatch",
+        "diagnostic": "round_num is undefined in Examples/sos.ml; the old floor_num and power_num produce wrong results for negative inputs",
+        "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+        "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61"
+      },
+      "affected_targets": [
+        "100/ceva",
+        "100/piseries",
+        "100/thales"
+      ],
+      "affected_source_locations": [
+        "Examples/sos.ml:27",
+        "Examples/sos.ml:656",
+        "Examples/machin.ml:487",
+        "Examples/machin.ml:496",
+        "Examples/machin.ml:809",
+        "Examples/machin.ml:816"
+      ],
+      "anchor_candidate": {
+        "rounding_commit": "1bfc727105de8363585989dad23387fb0132d5d5",
+        "negative_power_commit": "7792fc9f3de2470f10085e3bab42fc1c042cf9c4",
+        "excluded_bundle": "218c7c966da7ebdc04e318835e889cc6285469b7",
+        "reason": "the SOS bundle mixes pure rational compatibility with representation rewrites, pretty printing, and process FFI"
+      },
+      "selected_remedy": {
+        "kind": "pure_source_runtime_binding",
+        "description": "implement only exact floor, ceiling, half-away-from-zero round, and reciprocal negative powers using verified Cake.Rat operations",
+        "source": "candle/nums.ml",
+        "new_ffi": false,
+        "process_support": false
+      },
+      "regression_oracle": "candle/compatibility/test_num_rationals.py with candle/compatibility/num_rational_cases.json",
+      "differential_validation": {
+        "status": "pass",
+        "ocaml_version": "4.14.1",
+        "selected_case_count": 15,
+        "candle_execution": "fresh compiled-Candle process loading the modified hol.ml source tree",
+        "excluded_boundary": "zero to a negative power: reference infinity versus deliberate Candle zero-denominator failure"
+      },
+      "proof_obligation": "all selected positive, negative, half-boundary, and reciprocal cases match the OCaml 4.14.1 HOL Light layer; the unselected zero-to-negative-power infinity boundary and downstream SOS changes remain explicit exclusions",
+      "regression_requirement": "reference and compiled-Candle differential pass, then clean affected target loads and approved theorem/assumption fingerprints",
+      "remaining_evidence": [
+        "separate review of the remaining Examples/sos.ml representation changes",
+        "clean ceva, piseries, and thales loads",
+        "approved target theorem and assumption fingerprints"
+      ]
     }
   ]
 }

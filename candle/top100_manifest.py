@@ -169,11 +169,18 @@ BASELINE_OBSERVATIONS = {
         "status": "fail",
         "phase": "dependency_load",
         "compatibility_category": "missing numeric helper",
+        "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
         "diagnostic": "undefined value round_num while loading Examples/sos.ml",
         "first_source_location": "Examples/sos.ml",
         "wall_seconds": 1428.4,
         "peak_rss_kib": None,
         "anchor_candidate": "218c7c9",
+        "isolated_numeric_validation": {
+            "status": "pass",
+            "selected_case_count": 15,
+            "oracle": "candle/compatibility/test_num_rationals.py",
+            "target_status": "pending_remaining_sos_compatibility",
+        },
         "evidence": {
             "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
             "candle_executable_sha256": (

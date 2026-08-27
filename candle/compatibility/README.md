@@ -78,3 +78,22 @@ After that normalization, `e_is_transcendental_target_observation.json`
 records a clean target pass and the structural identity requested through the
 actual module-scoped value `Finale.TRANSCENDENTAL_E`. Its fingerprint remains
 `observed_uncompared`, not reference-approved.
+
+`num_rational_cases.json` isolates the pure Num portion of the `ceva` failure.
+The old `fix-top100` history bundled rounding with broad SOS representation and
+process changes.  The selected remedy instead implements exact rational floor,
+ceiling, half-away-from-zero rounding, and reciprocal negative powers without
+adding FFI.  Run the pinned HOL Light reference cases with:
+
+```sh
+python3 candle/compatibility/test_num_rationals.py \
+  --ocaml /path/to/ocaml-4.14.1/bin/ocaml \
+  --zarith-dir /path/to/ocaml-4.14.1/lib/zarith
+```
+
+Add `--candle-root /path/to/candle` for the compiled-Candle half. A green Num
+oracle does not authorize importing the rest of `Examples/sos.ml`; its finite
+map, printer, float, filesystem, and solver boundaries remain separate work.
+The pinned 15-case OCaml/Candle run passes on this branch. Zero to a negative
+power remains an explicit excluded boundary because the reference Zarith layer
+admits an infinite rational while Candle rejects denominator zero.
