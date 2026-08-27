@@ -312,14 +312,15 @@ class CandleREPL:
 
 FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
 FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint.ml"
-OCAML_BINDING_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_']*$")
+OCAML_VALUE_PATH_RE = re.compile(
+    r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 
 
 def _fingerprint_request_source(theorem_names):
     lines = []
     for name in theorem_names:
-        if not OCAML_BINDING_RE.fullmatch(name):
-            raise ValueError(f"unsafe theorem binding in manifest: {name!r}")
+        if not OCAML_VALUE_PATH_RE.fullmatch(name):
+            raise ValueError(f"unsafe theorem value path in manifest: {name!r}")
         lines.append(f'candle_s1_emit_fingerprint "{name}" {name};;')
     return "\n".join(lines) + "\n"
 

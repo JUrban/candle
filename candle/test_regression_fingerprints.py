@@ -10,11 +10,14 @@ import regression
 
 
 class FingerprintPlumbingTest(unittest.TestCase):
-    def test_request_source_accepts_only_binding_names(self):
+    def test_request_source_accepts_only_safe_value_paths(self):
         self.assertEqual(
-            regression._fingerprint_request_source(("THM", "theorem'")),
+            regression._fingerprint_request_source(
+                ("THM", "theorem'", "Finale.TRANSCENDENTAL_E")),
             ('candle_s1_emit_fingerprint "THM" THM;;\n'
-             'candle_s1_emit_fingerprint "theorem\'" theorem\';;\n'))
+             'candle_s1_emit_fingerprint "theorem\'" theorem\';;\n'
+             'candle_s1_emit_fingerprint "Finale.TRANSCENDENTAL_E" '
+             'Finale.TRANSCENDENTAL_E;;\n'))
         with self.assertRaises(ValueError):
             regression._fingerprint_request_source(("THM; failwith",))
 

@@ -1198,7 +1198,7 @@
         "100/e_is_transcendental.ml"
       ],
       "load_file_sha256": {
-        "100/e_is_transcendental.ml": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839"
+        "100/e_is_transcendental.ml": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0"
       },
       "direct_needs": [
         "Library/binomial.ml",
@@ -1218,12 +1218,18 @@
         "review_note": null,
         "theorems": [
           {
-            "name": "TRANSCENDENTAL_E",
+            "name": "Finale.TRANSCENDENTAL_E",
             "resolved_declaration": {
               "path": "100/e_is_transcendental.ml",
               "line": 2903
             },
-            "shadowed_declarations": []
+            "shadowed_declarations": [],
+            "qualified_references": [
+              {
+                "path": "100/e_is_transcendental.ml",
+                "line": 2910
+              }
+            ]
           }
         ],
         "identity_contract": {

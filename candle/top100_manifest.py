@@ -57,7 +57,7 @@ TARGET_THEOREMS = {
     "100/dirichlet": ["DIRICHLET"],
     "100/div3": ["DIVISIBILITY_BY_3"],
     "100/divharmonic": ["HARMONIC_DIVERGES"],
-    "100/e_is_transcendental": ["TRANSCENDENTAL_E"],
+    "100/e_is_transcendental": ["Finale.TRANSCENDENTAL_E"],
     "100/euler": ["EULER_PARTITION_THEOREM"],
     "100/feuerbach": ["FEUERBACH"],
     "100/fourier": [
@@ -409,15 +409,31 @@ def _theorem_request(target, load_files):
 
     theorems = []
     for name in requested_names:
-        occurrences = declarations.get(name, [])
+        declaration_name = name.rsplit(".", 1)[-1]
+        occurrences = declarations.get(declaration_name, [])
         if not occurrences:
             raise ValueError(
                 f"{target}: requested theorem binding is absent: {name}")
-        theorems.append({
+        theorem = {
             "name": name,
             "resolved_declaration": occurrences[-1],
             "shadowed_declarations": occurrences[:-1],
-        })
+        }
+        if "." in name:
+            references = []
+            reference_re = re.compile(rf"(?<![A-Za-z0-9_']){re.escape(name)}"
+                                      rf"(?![A-Za-z0-9_'])")
+            for path in load_files:
+                source = (ROOT / path).read_text(encoding="utf-8")
+                references.extend({
+                    "path": path,
+                    "line": source.count("\n", 0, match.start()) + 1,
+                } for match in reference_re.finditer(source))
+            if not references:
+                raise ValueError(
+                    f"{target}: qualified theorem is never referenced: {name}")
+            theorem["qualified_references"] = references
+        theorems.append(theorem)
 
     review_note = MANUAL_REVIEW_MAPPINGS.get(target)
     return {
