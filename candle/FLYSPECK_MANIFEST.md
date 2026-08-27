@@ -69,11 +69,14 @@ claimed.  Accordingly,
 an explicit failure.  `PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
 fingerprints must still validate its selected calls.
-`PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces only strictbuild's dynamic
-`Toploop.use_file` wrapper with an explicit failure: the authenticated
-`#flyspeck_needs` driver is the selected production loader, and any missed
-runtime call to the legacy wrapper therefore aborts rather than silently
-succeeding.  Each original file,
+`PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces strictbuild's dynamic
+`Toploop.use_file`, `needs`, and `reneeds` helper bindings with explicit
+failures and converts its three standalone `loadt` phrases to exact
+`#flyspeck_loadt` actions.  Each action evaluates on every occurrence, commits
+the authenticated logical identity only after success, and never neutralizes
+state.  The authenticated `#flyspeck_needs` driver remains the selected
+production loader, and any missed runtime helper call therefore aborts rather
+than silently succeeding.  Each original file,
 each ordered unique anchor, and each final output size/MD5/SHA-256 is
 authenticated.  Commit, path, input hash, anchor count, order, or output drift
 aborts; no blanket rewrite is authorized.  The host tests and pinned-source
@@ -124,9 +127,10 @@ calls, whose post-success
 state neutralization is observably different from ordinary `needs`; the
 embedded set contains the version conditional, optional serialization path,
 generated digest loader, and loader-function definitions/drivers.  Only a
-complete standalone top-level phrase can be handled as a boot action.  A token
-at the start of a physical line can still be inside a conditional or function,
-so executing it lexically can select both branches.  Embedded calls require
+complete standalone top-level phrase can be handled as a boot action.  The
+compiled boot now enforces that exact boundary for ordinary `needs`, `loads`,
+and `#use` as well as the two Flyspeck-specific actions; its EOF regression also
+preserves a final declaration without trailing `;;`.  Embedded calls require
 ordinary verified evaluation or an exact hash-bound normalization.
 
 `flyspeck_source_digests.ml` is generated alongside the JSON manifest and is a
@@ -162,9 +166,11 @@ With `full` selected, `test_flyspeck_loader_frontier.sh` now proves that the
 compiled path passes the former manifest-environment, ordinary-file,
 `Filename`, standard `load_path`, logical source-identity, digest-preflight,
 overlay-selection, static-library, metadata, `Toploop`, `loaded_files`, and
-`file_on_path` frontiers.  It selects the normalized strictbuild and stops at
-the first standalone dynamic-argument `loadt` phrase at original source line
-103.  The pinned repository has exactly 17
+`file_on_path`, phrase-boundary, loaded-file EOF, and strictbuild `loadt`
+frontiers.  It selects the normalized strictbuild and stops inside
+`general/parser_verbose.hl` at the local let-binding or-pattern on original
+source line 86.  The failed action commits no identity and emits no completion
+marker.  The pinned repository has exactly 17
 standalone directives: ten `unix.cma`, five `str.cma`, and two `nums.cma`.
 Only five are in the enforcing loader's recursively reached full-build graph:
 two `unix.cma` and three `str.cma`; no `nums.cma` site is reachable.  The
@@ -210,8 +216,8 @@ The overall directive status is therefore
 `exact-static-link-selection-active-member-compatibility-partial`, not a claim
 of complete `unix.cma` behavior.
 
-The selected graph also has 17 executable qualified `Digest` occurrences:
-eight `file`, three type `t`, two `string`, and four `to_hex`; it has no
+The selected graph also has 21 executable qualified `Digest` occurrences:
+ten `file`, three type `t`, two `string`, and six `to_hex`; it has no
 `open Digest`.  `ocaml.ml` supplies these operations with a pure MD5
 implementation and no hashing FFI.  `test_digest_compat.sh` differentially
 checks OCaml 4.14.1 across deterministic binary inputs of every length from 0

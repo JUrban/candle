@@ -121,9 +121,9 @@
       "path": "text_formalization/build/strictbuild.hl",
       "source_sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a",
       "source_md5": "7d1e3729a05042883713cda2c9fad1f1",
-      "normalized_sha256": "e47dcc238750e2cfe338821724d8287e1ee86b7d1d89b7cb737a49d3825d00ef",
-      "normalized_md5": "51253a91dd74008e0a19415874dbf6f0",
-      "normalized_bytes": 9259,
+      "normalized_sha256": "e8678c01ebb0ddcd647b0155f05caee931be482161f1d34319c1c6cb3fdf74c3",
+      "normalized_md5": "35aa60993c762f45e08e7145e9da2bad",
+      "normalized_bytes": 9134,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-FAIL-CLOSED",
@@ -131,10 +131,38 @@
           "line": 86,
           "before": "let use_file_b s =\n  if not(Sys.file_exists s) \n  then (report (\"File not found \"^s); false)\n  else \n    (Toploop.use_file Format.std_formatter s) || \n      (Format.print_string(\"Error in included file \"^s);\n       Format.print_newline(); false);;",
           "after": "let use_file_b (s:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic use_file_b is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-DEBUG-LOADT-ACTIONS",
+          "kind": "exact_bytes_replace_once",
+          "line": 103,
+          "before": "loadt (flyspeckpath \"general/parser_verbose.hl\");;\nloadt (flyspeckpath \"general/debug.hl\");;",
+          "after": "#flyspeck_loadt \"general/parser_verbose.hl\";;\n#flyspeck_loadt \"general/debug.hl\";;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-NEEDS-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 133,
+          "before": "let needs s =\n  let s' = file_on_path (!load_path) s in\n  let fileid = (Filename.basename s',Digest.file s') in\n  if List.mem fileid (!loaded_files)\n  then Format.print_string(\"File \\\"\"^s^\"\\\" already loaded\\n\") \n  else \n    let _ = loadt s in\n    let _ = Format.print_string(\"File \\\"\"^s'^\"\\\" -successfully loaded\\n\") in\n      ();;",
+          "after": "let needs (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild needs is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-STATE-MANAGER-LOADT-ACTION",
+          "kind": "exact_bytes_replace_once",
+          "line": 167,
+          "before": "loadt (flyspeckpath \"general/state_manager.hl\");;",
+          "after": "#flyspeck_loadt \"general/state_manager.hl\";;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-RENEEDS-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 168,
+          "before": "let reneeds s = loadt (flyspeckpath s);;",
+          "after": "let reneeds (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild reneeds is disabled by the static manifest: \"^s);;"
         }
       ],
-      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. No selected accepted action calls strictbuild's dynamic use_file_b chain. The normalized binding fails explicitly if that non-use assumption is wrong; no Toploop shim or successful no-op is installed.",
-      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file compatibility. The full run must prove the binding is not called; source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, or reneeds chains; their normalized bindings fail explicitly if that assumption is wrong. No Toploop shim or successful no-op is installed.",
+      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file or dynamic loadt compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
     }
   ]
 }

@@ -37,31 +37,40 @@ loader.  It is not S1/S2/S3 acceptance evidence.
    MD5, registered as exact original-to-output mappings, and never added as a
    shadowing load root.
 
-## Current exact frontier
+## Closed strictbuild loading frontiers
 
 The clean full-mode run selects the authenticated normalized output for pinned
-`text_formalization/build/strictbuild.hl` and reports:
+`text_formalization/build/strictbuild.hl`.  Exact `#flyspeck_loadt` actions now
+replace the three selected standalone dynamic-argument phrases.  Unlike
+`#flyspeck_needs`, each occurrence evaluates even when repeated, commits the
+authenticated logical identity after success, and does not neutralize state.
+The legacy dynamic `needs` and `reneeds` bindings fail explicitly if called.
+
+The ordinary `needs`/`loads`/`#use` scanner now recognizes a directive only at
+an exact phrase start.  A compiled fixture proves identifiers inside a
+definition and false conditional remain ordinary source syntax, while a
+phrase-start directive still loads.  Loaded-file EOF also terminates a final
+declaration without requiring `;;`; the parent action resumes at a fresh phrase
+boundary.
+
+## Current exact frontier
+
+After passing the former `loadt` boundary, the direct run reports:
 
 ```text
-- Selecting normalized source .../build/strictbuild.hl -> .../build/strictbuild.hl
-- Selecting statically linked library unix.cma (module Unix)
-- Selecting statically linked library str.cma (module Str)
-val use_file_b = <fun>: string -> bool
-val load_on_path_b = <fun>: string list -> string -> bool
-val loadb = <fun>: string -> bool
-ERROR: Undefined variable: loadt at line 5
+- Loading .../text_formalization/general/parser_verbose.hl
+Or-patterns are not allowed in let (rec) bindings
+Parsing failed at line 90
 ```
 
-The first failing standalone phrase is
-`loadt (flyspeckpath "general/parser_verbose.hl");;` at original source line
-103; the diagnostic's line 5 includes the preceding comment/newlines in the
-submitted phrase.  Before the failure, strictbuild evaluates its exact Unix
+The first unsupported source form is the `("="|"<=>")` or-pattern in the
+argument of local `pdest_eq` at original `general/parser_verbose.hl:86`.
+Because evaluation fails, the loadt action reaches neither its logical-identity
+commit nor its completion marker, and strictbuild does not continue to
+`general/debug.hl`.  Before the failure, strictbuild evaluates its exact Unix
 metadata path and binds `load_date` to the manifest input
-`1970-01-01T00:00:00Z\n`.  The exact hash-bound strictbuild normalization has
-replaced the legacy `Toploop.use_file` wrapper with an explicit failure, while
-the manifest action is the selected production loader.  No dummy or no-op
-`Toploop` binding is installed, and reaching the `loadt` phrase demonstrates
-that the normalized definition itself compiled.
+`1970-01-01T00:00:00Z\n`.  No dummy or no-op `Toploop` or `loadt` binding is
+installed.
 
 The repository contains 17 standalone directives: ten `unix.cma`, five
 `str.cma`, and two `nums.cma`.  The enforcing loader graph contains only five:
@@ -96,7 +105,7 @@ This does not cover indirect command helpers elsewhere in the source graph or
 general Unix process, clock, and directory semantics.  Those paths remain
 explicitly fail-closed.
 
-The separate OCaml-compatibility ledger records 13 selected `Digest` uses over
+The separate OCaml-compatibility ledger records 21 selected `Digest` uses over
 `file`, `string`, `to_hex`, and type `t`, with no `open Digest`.  A pure
 source implementation matches OCaml 4.14.1 on binary and padding-boundary
 vectors at every length from 0 through 130, multi-block input, file hashing,
@@ -114,11 +123,9 @@ preload and 1,216,768 KiB maximum RSS.
   theory/program;
 - sandbox/refinement contracts for non-metadata process calls, clock access,
   and directory creation;
-- exact normalization of the three selected standalone dynamic-argument
-  `loadt` phrases, plus fail-closed treatment of legacy dynamic loader helpers;
-- proof that the ordinary `needs`/`loads` boot scanner accepts only complete
-  phrase-start directives (its historical embedded-expression behavior remains
-  an explicit defect);
+- an exact semantics-backed remedy for the selected parser or-pattern and all
+  later source-language frontiers;
+- dynamic non-use proof for strictbuild's fail-closed legacy loader helpers;
 - complete direct sequence execution, checkpoints, and semantic fingerprints.
 
 Reproduce the two current compiled gates with:

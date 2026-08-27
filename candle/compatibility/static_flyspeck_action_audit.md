@@ -32,11 +32,12 @@ selection explicit in the log.
 
 ## Narrow Toploop decision
 
-`PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces only strictbuild's legacy
-`Toploop.use_file` wrapper with an explicit failure.  The selected production
-route is the authenticated static driver above.  No `Toploop` module, dummy
-return value, or swallowed source error is introduced.  Any missed runtime
-call to `use_file_b` therefore aborts.
+`PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces strictbuild's legacy
+`Toploop.use_file` wrapper and dynamic helper bindings with explicit failures,
+and converts its three standalone `loadt` phrases to exact authenticated
+actions.  The selected production route is the authenticated static driver
+above.  No `Toploop` module, dummy return value, or swallowed source error is
+introduced.  Any missed runtime call to a disabled helper therefore aborts.
 
 This is narrower than a general transactional `Toploop.use_file` compatibility
 engine.  Such an engine remains a fallback only if a selected source use cannot
@@ -44,14 +45,14 @@ be represented by an exact manifest action or documented normalization.
 
 ## Exact tested pins
 
-- CakeML action branch: `a0303d78e230a4d1fe8615f4571abd1235be677e`;
+- CakeML action branch: `0e749990546e2c8108851360585667a8e173f48c`;
 - CakeML `candle_boot.ml` SHA-256:
-  `2ffea9afb9d3fefb5039be313da1929b191d720fb15c1fcbbd41c26d9293f2e8`;
-- runtime boot artifact: the exact 33,875-byte source prefix plus the existing
+  `ec202123865b131038b7038dc2c8191f67d816146b8d063b9590f346c317b8b3`;
+- runtime boot artifact: the exact 37,472-byte source prefix plus the existing
   615-byte Candle working-directory suffix, SHA-256
-  `1584a0019586bc7be33df844dcaa76a61c85e3efa860da8b73581932cee68270`;
+  `c19c392bc76e969b3a34a59932f2ee67f4b781ab707b75259c57a8b551ded675`;
 - normalization contract SHA-256:
-  `8ab1778d840f8d3a3c9a03257c88306ae7e440a9786059c669ce7af9ae026ad7`;
+  `f356deaafcaf066eb8060f1475dd8a1ab51d2b500f99b2679622c03cd24682c1`;
 - generated static driver SHA-256:
   `44ae6acc8b43e9408694f64457e0c1fe8b481865abc9afdd2921fcf981094b4a`.
 
@@ -64,7 +65,8 @@ candle/test_flyspeck_needs_directive.sh
 ```
 
 They cover OCaml 4.14.1 filename edge cases; accepted and duplicate source
-actions; once-only source-identity configuration; rejection before evaluation
+actions; always-evaluate/no-neutralize loadt actions; ordinary phrase and
+loaded-file EOF boundaries; once-only source-identity configuration; rejection before evaluation
 when identities are absent; evaluation and neutralization failure; malformed
 mid-phrase actions; exact overlay selection; and overlay reconfiguration
 rejection.
@@ -72,15 +74,15 @@ rejection.
 ## Direct frontier
 
 The clean direct run log has SHA-256
-`6c98ef4f7bb41ee9857ab69074a5a8aae3ac970f11291e4e8d043cdff041e922`.
+`3fcb0af0578513fe030e66fa162abc0fcbbc8bcada97a91d4a05aca7873aa6b0`.
 It proves selection of the normalized strictbuild, both static libraries, exact
-metadata, the fail-closed legacy `use_file_b`, and working
-`loaded_files`/`file_on_path`/`load_on_path_b` definitions.  It stops at the
-first selected standalone dynamic-argument `loadt` phrase at original
-strictbuild line 103.
+metadata, fail-closed legacy helpers, corrected phrase/EOF boundaries, and
+activation of the first loadt action.  It stops inside
+`general/parser_verbose.hl` at the selected let-binding or-pattern; the failed
+action has no logical-identity commit or completion marker.
 
-Open gates include the exact `loadt` normalization, all later source
-frontiers, ordinary directive phrase-start repair, theorem/assumption
+Open gates include the parser or-pattern and all later source frontiers,
+theorem/assumption
 fingerprints, performance, checkpoints, mutation tests for every materialized
 output, and two clean matching full runs plus a resume run.  Consequently no S
 milestone advances here.

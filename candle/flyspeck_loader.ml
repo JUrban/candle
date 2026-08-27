@@ -93,7 +93,7 @@ let candle_flyspeck_normalized_sources =
   [(Filename.concat candle_flyspeck_text_root "build/strictbuild.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/build/strictbuild.hl",
-    "51253a91dd74008e0a19415874dbf6f0");
+    "35aa60993c762f45e08e7145e9da2bad");
    (Filename.concat candle_flyspeck_text_root "general/lib.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/lib.hl",

@@ -34,17 +34,19 @@ rg -Fq -- '- Selecting normalized source' "$log"
 rg -Fq 'val loaded_files = <ref>: (string * string) list ref' "$log"
 rg -Fq 'val file_on_path = <fun>: string list -> string -> string' "$log"
 rg -Fq 'val load_on_path_b = <fun>: string list -> string -> bool' "$log"
-rg -Fq 'ERROR: Undefined variable: loadt at line 5' "$log"
+rg -Fq -- '- Loading '"$flyspeck_root"'/text_formalization/general/parser_verbose.hl' "$log"
+rg -Fq 'Or-patterns are not allowed in let (rec) bindings' "$log"
+rg -Fq 'Parsing failed at line 90' "$log"
 if rg -q 'Parsing failed at line 23|Static #load rejected|No such file: .*\.cma' "$log"; then
   tail -n 60 "$log" >&2
   exit 1
 fi
-if rg -q 'Undefined variable: (Sys\.(configure_manifest_environment|file_exists)|Filename\.concat|load_path|file_on_path|loaded_files|Toploop\.use_file)' "$log"; then
+if rg -q 'Undefined variable: (Sys\.(configure_manifest_environment|file_exists)|Filename\.concat|load_path|loadt|file_on_path|loaded_files|Toploop\.use_file)' "$log"; then
   tail -n 60 "$log" >&2
   exit 1
 fi
-if rg -q 'CANDLE_FLYSPECK_DIRECT_FULL_OK|build/strictbuild\.hl.*successfully loaded' "$log"; then
+if rg -q 'CANDLE_FLYSPECK_DIRECT_FULL_OK|build/strictbuild\.hl.*successfully loaded|- Flyspeck source action complete: general/parser_verbose\.hl' "$log"; then
   tail -n 40 "$log" >&2
   exit 1
 fi
-printf 'EXPECTED GAP: full loader stops at strictbuild dynamic loadt\n'
+printf 'EXPECTED GAP: full loader stops at parser_verbose let or-pattern\n'

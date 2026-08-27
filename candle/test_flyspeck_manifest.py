@@ -27,6 +27,7 @@ class SyntaxTests(unittest.TestCase):
           #use "d.ml";;
           #load "unix.cma";;
           #flyspeck_needs "root.hl";;
+          #flyspeck_loadt "always.hl";;
           if enabled then needs "e.ml";;
           (* loads "ignored.ml";; *)
         '''
@@ -40,6 +41,7 @@ class SyntaxTests(unittest.TestCase):
                 ("#use", "d.ml"),
                 ("#load", "unix.cma"),
                 ("#flyspeck_needs", "root.hl"),
+                ("#flyspeck_loadt", "always.hl"),
                 ("needs", "e.ml"),
             ],
         )
@@ -48,7 +50,7 @@ class SyntaxTests(unittest.TestCase):
             [
                 "standalone-phrase", "standalone-phrase",
                 "standalone-phrase", "standalone-phrase",
-                "standalone-phrase", "standalone-phrase",
+                "standalone-phrase", "standalone-phrase", "standalone-phrase",
                 "embedded-expression",
             ],
         )
@@ -695,7 +697,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertNotEqual(actions["loads"], actions["needs"])
         self.assertIn("both sides", contract["embedded_expression_policy"])
-        self.assertIn("definition or expression", contract["known_current_boot_defect"])
+        self.assertIn(
+            "exact phrase-start", contract["ordinary_directive_boundary_status"]
+        )
+        self.assertIn("never neutralize", actions["#flyspeck_loadt"])
 
 
 if __name__ == "__main__":

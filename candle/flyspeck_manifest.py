@@ -28,7 +28,7 @@ SOURCE_NORMALIZATION_CONTRACT = "candle/flyspeck_normalizations.json"
 SOURCE_DIGEST_EXCLUSIONS = {"candle:candle/flyspeck_loader.ml"}
 LOAD_NAMES = ("needs", "loads", "loadt", "flyspeck_needs", "rflyspeck_needs", "reneeds")
 LOAD_RE = re.compile(r"\b(" + "|".join(LOAD_NAMES) + r")\b")
-DIRECTIVE_RE = re.compile(r"#\s*(flyspeck_needs|use|load)\b")
+DIRECTIVE_RE = re.compile(r"#\s*(flyspeck_loadt|flyspeck_needs|use|load)\b")
 BUILD_SEQUENCE_RE = re.compile(r"\blet\s+build_sequence_full\s*=\s*\[")
 DEFINITION_PREFIX_RE = re.compile(r"(?:\blet|\band)\s+(?:rec\s+)?$")
 STATIC_RUNTIME_LIBRARIES = {
@@ -1447,7 +1447,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "source_normalization_contract": {
             "activation_status": "exact-overlay-selection-active-pending-full-run",
             "runtime_selection_source": (
-                "cakeml:candle/prover/candle_boot.ml@a0303d78 and "
+                "cakeml:candle/prover/candle_boot.ml@0e749990 and "
                 "candle:candle/flyspeck_loader.ml"
             ),
             "runtime_selection_policy": (
@@ -1784,7 +1784,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         "loader_action_contract": {
             "scope": "all loading syntax in the reachable direct-source graph",
             "activation_status": "partial-exact-static-actions-active",
-            "static_action_source": "cakeml:candle/prover/candle_boot.ml@a0303d78",
+            "static_action_source": "cakeml:candle/prover/candle_boot.ml@0e749990",
             "static_action_gate": "candle:candle/test_flyspeck_needs_directive.sh",
             "source_site_count": loader_action_site_count,
             "site_counts": [
@@ -1830,14 +1830,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     "source hash, and root order, then apply the accepted-run-exact, "
                     "fail-closed flyspeck_needs refinement"
                 ),
+                "#flyspeck_loadt": (
+                    "authenticate the exact source identity, evaluate on every "
+                    "occurrence, commit that logical identity after success even "
+                    "when repeated, and never neutralize state"
+                ),
                 "reneeds": "evaluate even if previously loaded, without neutralization",
             },
-            "known_current_boot_defect": (
-                "ordinary needs/loads/#use recognition still treats any level-zero "
-                "token as a directive, including a token inside a definition or "
-                "expression; #load and #flyspeck_needs have exact phrase-start "
-                "recognition, but promotion still requires closing the ordinary "
-                "directive boundary"
+            "ordinary_directive_boundary_status": (
+                "compiled exact phrase-start recognition is active for ordinary "
+                "needs, loads, and #use as well as #load, #flyspeck_needs, and "
+                "#flyspeck_loadt; needs/loads identifiers inside definitions, "
+                "conditionals, and function bodies remain ordinary source syntax"
             ),
             "forbidden_shortcuts": [
                 "blanket directive erasure",

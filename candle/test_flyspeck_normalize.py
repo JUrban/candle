@@ -110,12 +110,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             strictbuild["operations"][0]["after"]
         ))
         self.assertNotIn("Toploop", strictbuild["operations"][0]["after"])
+        self.assertIn("#flyspeck_loadt", strictbuild["operations"][1]["after"])
+        self.assertIn("dynamic strictbuild needs is disabled", (
+            strictbuild["operations"][2]["after"]
+        ))
+        self.assertIn("#flyspeck_loadt", strictbuild["operations"][3]["after"])
+        self.assertIn("dynamic strictbuild reneeds is disabled", (
+            strictbuild["operations"][4]["after"]
+        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 9)
+        self.assertEqual(len(operation_ids), 13)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
