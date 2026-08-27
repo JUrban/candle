@@ -2212,7 +2212,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
-                "proof_hol4_commit": "427496c4b6d9796b0d02167715ac7412f5f83a44",
+                "proof_hol4_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
             },
             "required_gate": (
                 "rebuild the x64-64 compiler from the pinned verified integration, "
