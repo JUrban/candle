@@ -2145,6 +2145,7 @@
     "missing_dependencies": 0,
     "reviewed_dynamic_dependencies": 15,
     "unresolved_build_roots": [],
+    "unsupported_compatibility_members": [],
     "unsupported_runtime_libraries": [],
     "unsupported_runtime_members": []
   },
@@ -2448,6 +2449,199 @@
     "required_build_mode": "full",
     "source": "candle:candle/flyspeck_loader.ml",
     "success_marker": "CANDLE_FLYSPECK_DIRECT_FULL_OK"
+  },
+  "ocaml_compatibility_contract": {
+    "activation_status": "partial-source-bindings",
+    "binding_evidence": {
+      "Digest": {
+        "assurance_limit": "differentially tested but not yet formally linked to CakeML's existing verified md5Theory/md5Prog",
+        "gate": "candle:candle/test_digest_compat.sh",
+        "oracle": "OCaml 4.14.1 Digest",
+        "source": "candle:candle/ocaml.ml",
+        "status": "pure-source-differential-gate"
+      }
+    },
+    "capability_uses": [
+      {
+        "line": 107,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 351,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 96,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 128,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 135,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 173,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 190,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 190,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 23,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/hol_pervasives.hl"
+      },
+      {
+        "line": 268,
+        "member": "string",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 268,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 438,
+        "member": "string",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 438,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      }
+    ],
+    "module_opens": [],
+    "opened_module_uses": [],
+    "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
+    "qualified_uses": [
+      {
+        "line": 107,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 351,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 96,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 128,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 135,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 173,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 190,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 190,
+        "member": "t",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 23,
+        "member": "file",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/hol_pervasives.hl"
+      },
+      {
+        "line": 268,
+        "member": "string",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 268,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 438,
+        "member": "string",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 438,
+        "member": "to_hex",
+        "module": "Digest",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      }
+    ],
+    "scope": "reachable direct-source full-build graph only",
+    "selected_members": {
+      "Digest": [
+        "file",
+        "string",
+        "t",
+        "to_hex"
+      ]
+    },
+    "supported_members": {
+      "Digest": [
+        "compare",
+        "file",
+        "string",
+        "t",
+        "to_hex"
+      ]
+    }
   },
   "repositories": {
     "candle": {
@@ -3456,11 +3650,11 @@
       "sha256": "be5ce39bd864b5939c54fa9302d628a1e82ff3ac85055ee9d9d9c94ba841d83a"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 25620,
+      "bytes": 30308,
       "dependencies": [],
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "56d204bb36562199360729b1a1e8118a9b5f60f761056209f1cd8de4f73d2b17"
+      "sha256": "f99553d5ad59c8aa8d997e5702ba43b3df3852dea4f1b593214f99081f22d3ce"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,

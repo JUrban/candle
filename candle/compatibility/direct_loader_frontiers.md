@@ -72,11 +72,22 @@ This does not cover indirect command helpers elsewhere in the source graph or
 general Unix process, clock, and directory semantics.  Those paths remain
 explicitly fail-closed, and the library contract remains inactive.
 
+The separate OCaml-compatibility ledger records 13 selected `Digest` uses over
+`file`, `string`, `to_hex`, and type `t`, with no `open Digest`.  A pure
+source implementation matches OCaml 4.14.1 on binary and padding-boundary
+vectors at every length from 0 through 130, multi-block input, file hashing,
+and invalid hexadecimal conversion;
+it adds no host hashing FFI.  The differential result is not yet a formal link
+to CakeML's existing verified `md5Theory`/`md5Prog`, so that assurance boundary
+remains explicit.  A single informational probe of the largest selected source
+file (9,099,782 bytes) matches the host MD5 in 9.12 seconds including Candle
+preload and 1,216,768 KiB maximum RSS.
+
 ## Open boundaries exposed by this slice
 
 - directory existence, directory enumeration, and directory-type queries;
-- exact `Digest`/MD5 behavior used by duplicate tracking, serialization, and
-  LP output checks;
+- a formal link between the source `Digest` binding and CakeML's verified MD5
+  theory/program;
 - sandbox/refinement contracts for non-metadata process calls, clock access,
   and directory creation;
 - complete source-library resolution and manifest digest enforcement.
@@ -88,4 +99,5 @@ candle/test_flyspeck_loader_guard.sh ./candle.sh /path/to/flyspeck
 candle/test_flyspeck_loader_frontier.sh ./candle.sh /path/to/flyspeck
 candle/test_str_compat.sh
 candle/test_unix_metadata.sh
+candle/test_digest_compat.sh
 ```

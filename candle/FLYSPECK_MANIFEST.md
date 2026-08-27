@@ -87,6 +87,19 @@ clock, or directory behavior.  The other selected operations fail explicitly,
 so the overall library status is still
 `blocked-pending-static-binding-evidence`.
 
+The selected graph also has 13 executable qualified `Digest` occurrences:
+six `file`, three type `t`, two `string`, and two `to_hex`; it has no
+`open Digest`.  `ocaml.ml` supplies these operations with a pure MD5
+implementation and no hashing FFI.  `test_digest_compat.sh` differentially
+checks OCaml 4.14.1 across deterministic binary inputs of every length from 0
+through 130 bytes, explicit 55/56/64/65-byte padding boundaries, a 1,000-byte
+multi-block string, a file, and invalid `to_hex` input.  CakeML
+already contains a verified `md5Theory`/`md5Prog`, but this source binding is
+not yet formally linked to it; the manifest records that assurance limit.  An
+informational largest-selected-file probe hashes the 9,099,782-byte
+`archive_all.ml` correctly in 9.12 seconds including Candle preload, at
+1,216,768 KiB maximum RSS on the development machine.
+
 `Sys.file_exists` in this slice deliberately forwards to CakeML's verified
 TextIO-backed ordinary-file predicate.  OCaml-compatible directory existence,
 `Sys.is_directory`, and `Sys.readdir` remain open and require the versioned,

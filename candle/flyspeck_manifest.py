@@ -38,6 +38,9 @@ STATIC_RUNTIME_MEMBERS = {
         "open_process", "open_process_in",
     },
 }
+OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
+    "Digest": {"compare", "file", "string", "t", "to_hex"},
+}
 # Complete OCaml Str names that can be conservatively attributed after
 # [open Str].  Qualified use scanning does not need this list because it
 # records every member following [Str.].  There is no reachable [open Unix].
@@ -59,6 +62,7 @@ PROMOTION_EMPTY_DIAGNOSTICS = (
     "cycles",
     "unsupported_runtime_libraries",
     "unsupported_runtime_members",
+    "unsupported_compatibility_members",
 )
 PROMOTION_ZERO_DIAGNOSTICS = (
     "dynamic_dependencies",
@@ -573,6 +577,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     qualified_runtime_uses: list[dict[str, object]] = []
     opened_runtime_uses: list[dict[str, object]] = []
     runtime_module_opens: list[dict[str, object]] = []
+    qualified_compatibility_uses: list[dict[str, object]] = []
+    opened_compatibility_uses: list[dict[str, object]] = []
+    compatibility_module_opens: list[dict[str, object]] = []
+    runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
+    compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
+    all_opened_exports = {
+        **OPENED_MODULE_EXPORTS,
+        **OCAML_COMPATIBILITY_SUPPORTED_MEMBERS,
+    }
     while pending:
         ref = pending.pop(0)
         if ref.key in nodes:
@@ -585,11 +598,30 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             calls = scan_load_calls(text)
         except ValueError as error:
             raise ValueError(f"{ref.key}: {error}") from error
-        for use in scan_qualified_module_uses(text, set(STATIC_RUNTIME_LIBRARIES.values())):
-            qualified_runtime_uses.append({"source": ref.key, **use})
-        opens, opened_uses = scan_opened_module_uses(text, OPENED_MODULE_EXPORTS)
-        runtime_module_opens.extend({"source": ref.key, **entry} for entry in opens)
-        opened_runtime_uses.extend({"source": ref.key, **entry} for entry in opened_uses)
+        for use in scan_qualified_module_uses(
+            text, runtime_modules | compatibility_modules,
+        ):
+            target = (
+                qualified_runtime_uses
+                if use["module"] in runtime_modules
+                else qualified_compatibility_uses
+            )
+            target.append({"source": ref.key, **use})
+        opens, opened_uses = scan_opened_module_uses(text, all_opened_exports)
+        for entry in opens:
+            target = (
+                runtime_module_opens
+                if entry["module"] in runtime_modules
+                else compatibility_module_opens
+            )
+            target.append({"source": ref.key, **entry})
+        for entry in opened_uses:
+            target = (
+                opened_runtime_uses
+                if entry["module"] in runtime_modules
+                else opened_compatibility_uses
+            )
+            target.append({"source": ref.key, **entry})
         for call in calls:
             dependency = dict(call)
             literal = call.get("literal")
@@ -695,6 +727,12 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         for use in all_runtime_uses
         if use["member"] not in STATIC_RUNTIME_MEMBERS[str(use["module"])]
     ]
+    all_compatibility_uses = qualified_compatibility_uses + opened_compatibility_uses
+    unsupported_compatibility_members = [
+        use
+        for use in all_compatibility_uses
+        if use["member"] not in OCAML_COMPATIBILITY_SUPPORTED_MEMBERS[str(use["module"])]
+    ]
     diagnostics = {
         "unresolved_build_roots": unresolved_roots,
         "dynamic_dependencies": sum(
@@ -726,6 +764,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         ),
         "unsupported_runtime_libraries": unsupported_runtime_libraries,
         "unsupported_runtime_members": unsupported_runtime_members,
+        "unsupported_compatibility_members": unsupported_compatibility_members,
         "cycles": _cycles(edges),
     }
     sequence_positions: dict[str, list[int]] = {}
@@ -851,6 +890,63 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ),
             "capability_uses": sorted(
                 all_runtime_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
+        },
+        "ocaml_compatibility_contract": {
+            "scope": "reachable direct-source full-build graph only",
+            "activation_status": "partial-source-bindings",
+            "supported_members": {
+                module: sorted(members)
+                for module, members in OCAML_COMPATIBILITY_SUPPORTED_MEMBERS.items()
+            },
+            "selected_members": {
+                module: sorted({
+                    str(use["member"])
+                    for use in all_compatibility_uses
+                    if use["module"] == module
+                })
+                for module in OCAML_COMPATIBILITY_SUPPORTED_MEMBERS
+            },
+            "binding_evidence": {
+                "Digest": {
+                    "status": "pure-source-differential-gate",
+                    "source": "candle:candle/ocaml.ml",
+                    "oracle": "OCaml 4.14.1 Digest",
+                    "gate": "candle:candle/test_digest_compat.sh",
+                    "assurance_limit": (
+                        "differentially tested but not yet formally linked to "
+                        "CakeML's existing verified md5Theory/md5Prog"
+                    ),
+                },
+            },
+            "opened_use_attribution": (
+                "conservative lexical candidates after a source open; exact "
+                "sites require review and are not compiler name-resolution proof"
+            ),
+            "qualified_uses": sorted(
+                qualified_compatibility_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
+            "module_opens": sorted(
+                compatibility_module_opens,
+                key=lambda entry: (str(entry["source"]), int(entry["line"])),
+            ),
+            "opened_module_uses": sorted(
+                opened_compatibility_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["module"]), str(entry["member"]),
+                ),
+            ),
+            "capability_uses": sorted(
+                all_compatibility_uses,
                 key=lambda entry: (
                     str(entry["source"]), int(entry["line"]),
                     str(entry["module"]), str(entry["member"]),

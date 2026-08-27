@@ -201,6 +201,122 @@ module Buffer = struct
     buffer := []
 end;;
 
+(* Pure source-level MD5 for the selected OCaml [Digest] surface.  This avoids
+   adding a host hashing FFI.  The implementation uses virtual MD5 padding, so
+   [Digest.string] does not allocate a second padded copy of its input. *)
+module Digest = struct
+  type t = string
+
+  let md5_mask value = value land 0xffffffff
+  let md5_add left right = md5_mask (left + right)
+  let md5_rotate_left value count =
+    md5_mask ((value lsl count) lor (value lsr (32 - count)))
+
+  let md5_shifts = Cake.Array.fromList
+    [7; 12; 17; 22; 7; 12; 17; 22; 7; 12; 17; 22; 7; 12; 17; 22;
+     5; 9; 14; 20; 5; 9; 14; 20; 5; 9; 14; 20; 5; 9; 14; 20;
+     4; 11; 16; 23; 4; 11; 16; 23; 4; 11; 16; 23; 4; 11; 16; 23;
+     6; 10; 15; 21; 6; 10; 15; 21; 6; 10; 15; 21; 6; 10; 15; 21]
+
+  let md5_constants = Cake.Array.fromList
+    [0xd76aa478; 0xe8c7b756; 0x242070db; 0xc1bdceee;
+     0xf57c0faf; 0x4787c62a; 0xa8304613; 0xfd469501;
+     0x698098d8; 0x8b44f7af; 0xffff5bb1; 0x895cd7be;
+     0x6b901122; 0xfd987193; 0xa679438e; 0x49b40821;
+     0xf61e2562; 0xc040b340; 0x265e5a51; 0xe9b6c7aa;
+     0xd62f105d; 0x02441453; 0xd8a1e681; 0xe7d3fbc8;
+     0x21e1cde6; 0xc33707d6; 0xf4d50d87; 0x455a14ed;
+     0xa9e3e905; 0xfcefa3f8; 0x676f02d9; 0x8d2a4c8a;
+     0xfffa3942; 0x8771f681; 0x6d9d6122; 0xfde5380c;
+     0xa4beea44; 0x4bdecfa9; 0xf6bb4b60; 0xbebfbc70;
+     0x289b7ec6; 0xeaa127fa; 0xd4ef3085; 0x04881d05;
+     0xd9d4d039; 0xe6db99e5; 0x1fa27cf8; 0xc4ac5665;
+     0xf4292244; 0x432aff97; 0xab9423a7; 0xfc93a039;
+     0x655b59c3; 0x8f0ccc92; 0xffeff47d; 0x85845dd1;
+     0x6fa87e4f; 0xfe2ce6e0; 0xa3014314; 0x4e0811a1;
+     0xf7537e82; 0xbd3af235; 0x2ad7d2bb; 0xeb86d391]
+
+  let md5_word byte_at block word_index =
+    let offset = block + (4 * word_index) in
+    byte_at offset lor
+    (byte_at (offset + 1) lsl 8) lor
+    (byte_at (offset + 2) lsl 16) lor
+    (byte_at (offset + 3) lsl 24)
+
+  let md5_transform byte_at block (a0, b0, c0, d0) =
+    let rec rounds index a b c d =
+      if index = 64 then
+        (md5_add a0 a, md5_add b0 b, md5_add c0 c, md5_add d0 d)
+      else
+        let (mixed, word_index) =
+          if index < 16 then
+            ((b land c) lor ((lnot b) land d), index)
+          else if index < 32 then
+            ((d land b) lor ((lnot d) land c), (5 * index + 1) mod 16)
+          else if index < 48 then
+            (b lxor c lxor d, (3 * index + 5) mod 16)
+          else
+            (c lxor (b lor (lnot d)), (7 * index) mod 16) in
+        let sum = md5_mask
+          (a + md5_mask mixed + md5_word byte_at block word_index +
+           Cake.Array.sub md5_constants index) in
+        let next_b = md5_add b
+          (md5_rotate_left sum (Cake.Array.sub md5_shifts index)) in
+        rounds (index + 1) d next_b b c in
+    rounds 0 a0 b0 c0 d0
+
+  let md5_raw source =
+    let source_length = String.length source in
+    let total_length = ((source_length + 72) / 64) * 64 in
+    let bit_length = source_length * 8 in
+    let length_offset = total_length - 8 in
+    let byte_at index =
+      if index < source_length then Char.code (String.get source index)
+      else if index = source_length then 128
+      else if index < length_offset then 0
+      else (bit_length lsr (8 * (index - length_offset))) land 255 in
+    let rec blocks offset state =
+      if offset = total_length then state
+      else blocks (offset + 64) (md5_transform byte_at offset state) in
+    let (a, b, c, d) =
+      blocks 0 (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476) in
+    let pack_word word =
+      String.concat ""
+        [String.make 1 (Char.chr (word land 255));
+         String.make 1 (Char.chr ((word lsr 8) land 255));
+         String.make 1 (Char.chr ((word lsr 16) land 255));
+         String.make 1 (Char.chr ((word lsr 24) land 255))] in
+    String.concat "" [pack_word a; pack_word b; pack_word c; pack_word d]
+
+  let string source = md5_raw source
+
+  let file path =
+    let channel = open_in path in
+    try
+      let contents = Text_io.inputAll channel in
+      close_in channel;
+      string contents
+    with error ->
+      close_in channel;
+      raise error
+
+  let to_hex digest =
+    if String.length digest <> 16 then invalid_arg "Digest.to_hex"
+    else
+      let digits = "0123456789abcdef" in
+      let byte_to_hex value =
+        let byte = Char.code value in
+        String.concat ""
+          [String.make 1 (String.get digits (byte / 16));
+           String.make 1 (String.get digits (byte mod 16))] in
+      let rec encode index result =
+        if index < 0 then String.concat "" result
+        else encode (index - 1) (byte_to_hex (String.get digest index) :: result) in
+      encode 15 []
+
+  let compare left right = String.compare left right
+end;;
+
 (* A source-level compatibility implementation for the exact [Str] surface in
    the direct Flyspeck full-build graph.  This is deliberately pure: accepting
    [str.cma] must not turn into a host dynamic-loader or FFI capability.

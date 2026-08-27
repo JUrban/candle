@@ -143,6 +143,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "cycles",
             "unsupported_runtime_libraries",
             "unsupported_runtime_members",
+            "unsupported_compatibility_members",
         ):
             self.assertEqual(diagnostics[key], [])
         for key in (
@@ -309,6 +310,37 @@ class GeneratedManifestTests(unittest.TestCase):
                 },
             ],
         )
+
+    def test_digest_compatibility_contract_is_exact_and_source_backed(self):
+        contract = self.payload["ocaml_compatibility_contract"]
+        self.assertEqual(contract["activation_status"], "partial-source-bindings")
+        self.assertEqual(
+            contract["supported_members"]["Digest"],
+            ["compare", "file", "string", "t", "to_hex"],
+        )
+        self.assertEqual(
+            contract["selected_members"]["Digest"],
+            ["file", "string", "t", "to_hex"],
+        )
+        uses = contract["qualified_uses"]
+        self.assertEqual(len(uses), 13)
+        self.assertEqual(contract["opened_module_uses"], [])
+        self.assertEqual(contract["module_opens"], [])
+        self.assertEqual(
+            {member: sum(use["member"] == member for use in uses)
+             for member in {use["member"] for use in uses}},
+            {"file": 6, "string": 2, "t": 3, "to_hex": 2},
+        )
+        evidence = contract["binding_evidence"]["Digest"]
+        self.assertEqual(evidence["status"], "pure-source-differential-gate")
+        self.assertEqual(evidence["source"], "candle:candle/ocaml.ml")
+        self.assertEqual(evidence["gate"], "candle:candle/test_digest_compat.sh")
+        self.assertIn("not yet formally linked", evidence["assurance_limit"])
+        source = Path(__file__).with_name("ocaml.ml").read_text(encoding="utf-8")
+        self.assertIn("module Digest = struct", source)
+        for member in contract["supported_members"]["Digest"]:
+            if member != "t":
+                self.assertRegex(source, rf"\blet(?:\s+rec)?\s+{member}\b")
 
 
 if __name__ == "__main__":
