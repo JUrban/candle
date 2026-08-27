@@ -19,10 +19,130 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = Path(__file__).with_suffix(".json")
 AUDITED_BASE_COMMIT = "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d"
 NEEDS_RE = re.compile(r'^\s*needs\s*"([^"]+)"\s*;;', re.MULTILINE)
+LET_BINDING_RE = re.compile(
+    r"^[ \t]*let[ \t]+([A-Za-z][A-Za-z0-9_']*)[ \t]*=", re.MULTILINE)
 
 # holtest.mk uses one synthetic target for an ordered two-file session.
 SPECIAL_LOAD_FILES = {
     "100/bertrand-primerecip": ["100/bertrand.ml", "100/primerecip.ml"],
+}
+
+# Named results requested after each clean load.  This is a source audit, not
+# an expected fingerprint table: until a pinned reference run supplies exact
+# identities, the manifest continues to report fingerprints as missing.  A
+# few broad or repeatedly shadowed source files have an explicit manual-review
+# note rather than pretending that their proposed result set is final.
+TARGET_THEOREMS = {
+    "100/arithmetic_geometric_mean": ["AGM", "AGM_ROOT"],
+    "100/arithmetic": ["ARITHMETIC_PROGRESSION"],
+    "100/ballot": ["BALLOT"],
+    "100/bernoulli": ["SUM_OF_POWERS"],
+    "100/bertrand-primerecip": ["BERTRAND", "PRIMERECIP_DIVERGES"],
+    "100/birthday": ["BIRTHDAY_THM", "BIRTHDAY_THM_EXPLICIT"],
+    "100/buffon": ["BUFFON_GENERAL", "BUFFON_SHORT", "BUFFON_LONG"],
+    "100/cantor": ["CANTOR"],
+    "100/cayley_hamilton": ["CAYLEY_HAMILTON"],
+    "100/ceva": ["CEVA"],
+    "100/circle": ["AREA_CBALL", "AREA_BALL"],
+    "100/chords": ["SEGMENT_CHORDS"],
+    "100/combinations": [
+        "NUMBER_OF_COMBINATIONS", "NUMBER_OF_COMBINATIONS_EXPLICIT"],
+    "100/constructible": ["DOUBLE_THE_CUBE", "TRISECT_60_DEGREES"],
+    "100/cosine": ["LAW_OF_COSINES"],
+    "100/cubedissection": ["ONLY_TRIVIAL_CUBE_DISSECTION"],
+    "100/cubic": ["CUBIC"],
+    "100/derangements": ["THE_DERANGEMENTS_FORMULA"],
+    "100/desargues": ["DESARGUES_DIRECT"],
+    "100/descartes": ["DESCARTES_RULE_OF_SIGNS"],
+    "100/dirichlet": ["DIRICHLET"],
+    "100/div3": ["DIVISIBILITY_BY_3"],
+    "100/divharmonic": ["HARMONIC_DIVERGES"],
+    "100/e_is_transcendental": ["TRANSCENDENTAL_E"],
+    "100/euler": ["EULER_PARTITION_THEOREM"],
+    "100/feuerbach": ["FEUERBACH"],
+    "100/fourier": [
+        "FOURIER_SERIES_L2",
+        "FOURIER_DINI_TEST",
+        "FOURIER_JORDAN_BOUNDED_VARIATION",
+        "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE",
+    ],
+    "100/four_squares": ["SUM_OF_TWO_SQUARES", "LAGRANGE_NUM"],
+    "100/friendship": ["FRIENDSHIP"],
+    "100/fta": ["FTA"],
+    "100/gcd": ["EGCD"],
+    "100/green": ["GREEN_THEOREM_CURL"],
+    "100/heron": ["HERON"],
+    "100/isoperimetric": ["ISOPERIMETRIC_THEOREM"],
+    "100/inclusion_exclusion": [
+        "INCLUSION_EXCLUSION_USUAL", "INCLUSION_EXCLUSION_MOBIUS"],
+    "100/independence": [
+        "TARSKI_AXIOM_1_NONEUCLIDEAN",
+        "TARSKI_AXIOM_2_NONEUCLIDEAN",
+        "TARSKI_AXIOM_3_NONEUCLIDEAN",
+        "TARSKI_AXIOM_4_NONEUCLIDEAN",
+        "TARSKI_AXIOM_5_NONEUCLIDEAN",
+        "TARSKI_AXIOM_6_NONEUCLIDEAN",
+        "TARSKI_AXIOM_7_NONEUCLIDEAN",
+        "TARSKI_AXIOM_8_NONEUCLIDEAN",
+        "TARSKI_AXIOM_9_NONEUCLIDEAN",
+        "NOT_TARSKI_AXIOM_10_NONEUCLIDEAN",
+        "TARSKI_AXIOM_11_NONEUCLIDEAN",
+    ],
+    "100/isosceles": [
+        "ISOSCELES_TRIANGLE_THEOREM", "ISOSCELES_TRIANGLE_CONVERSE"],
+    "100/konigsberg": ["KOENIGSBERG"],
+    "100/lagrange": ["GROUP_LAGRANGE"],
+    "100/leibniz": ["LEIBNIZ_PI"],
+    "100/lhopital": ["LHOPITAL"],
+    "100/liouville": ["TRANSCENDENTAL_LIOUVILLE"],
+    "100/minkowski": ["MINKOWSKI"],
+    "100/morley": ["MORLEY"],
+    "100/pascal": ["PASCAL"],
+    "100/perfect": ["PERFECT_EUCLID", "PERFECT_EULER"],
+    "100/pick": ["PICK"],
+    "100/piseries": ["EULER_HARMONIC_SUM"],
+    "100/platonic": ["PLATONIC_SOLIDS"],
+    "100/pnt": ["PNT"],
+    "100/polyhedron": ["EULER_RELATION"],
+    "100/ptolemy": ["PTOLEMY"],
+    "100/pythagoras": ["PYTHAGORAS"],
+    "100/quartic": ["QUARTIC_CASES"],
+    "100/ramsey": ["RAMSEY"],
+    "100/ratcountable": ["COUNTABLE_RATIONALS", "DENUMERABLE_RATIONALS"],
+    "100/realsuncountable": ["UNCOUNTABLE_REALS"],
+    "100/reciprocity": ["RECIPROCITY_LEGENDRE"],
+    "100/stirling": ["STIRLING"],
+    "100/subsequence": ["ERDOS_SZEKERES"],
+    "100/thales": ["THALES"],
+    "100/transcendence": [
+        "e_is_irrational",
+        "e_is_transcendental",
+        "pi_is_transcendental",
+        "transcendental_if_exp_nonzero_algebraic",
+        "zero_sum_algebraic_exp_algebraic",
+    ],
+    "100/triangular": ["TRIANGLE_FINITE_SUM", "TRIANGLE_CONVERGES'"],
+    "100/two_squares": ["SUM_OF_TWO_SQUARES"],
+    "100/wilson": ["WILSON", "WILSON_EQ"],
+}
+
+MANUAL_REVIEW_MAPPINGS = {
+    "100/cantor": (
+        "CANTOR is rebound to a different formulation; the request resolves "
+        "to the last declaration, but the acceptance formulation needs review"
+    ),
+    "100/fourier": (
+        "the broad source contains L2, Dini, Jordan, and Fejer results; the "
+        "four proposed named results need an approved Great-100 boundary"
+    ),
+    "100/piseries": (
+        "EULER_HARMONIC_SUM is the apparent named pi-series result, but the "
+        "file also exposes substantial tan/cot series results"
+    ),
+    "100/quartic": (
+        "QUARTIC_CASES is rebound three times; the request resolves to the "
+        "last automatic proof, pending acceptance review"
+    ),
 }
 
 # Observations are evidence, not acceptance-policy exceptions.  Keep expected
@@ -88,8 +208,56 @@ def _direct_needs(load_files):
     return dependencies
 
 
+def _theorem_request(target, load_files):
+    """Resolve every requested OCaml binding in target load order."""
+    requested_names = TARGET_THEOREMS.get(target)
+    if not requested_names:
+        raise ValueError(f"{target}: no named theorem request")
+
+    declarations = {}
+    for path in load_files:
+        source = (ROOT / path).read_text(encoding="utf-8")
+        for match in LET_BINDING_RE.finditer(source):
+            name = match.group(1)
+            declarations.setdefault(name, []).append({
+                "path": path,
+                "line": source.count("\n", 0, match.start()) + 1,
+            })
+
+    theorems = []
+    for name in requested_names:
+        occurrences = declarations.get(name, [])
+        if not occurrences:
+            raise ValueError(
+                f"{target}: requested theorem binding is absent: {name}")
+        theorems.append({
+            "name": name,
+            "resolved_declaration": occurrences[-1],
+            "shadowed_declarations": occurrences[:-1],
+        })
+
+    review_note = MANUAL_REVIEW_MAPPINGS.get(target)
+    return {
+        "mapping_status": "manual_review" if review_note else "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": review_note,
+        "theorems": theorems,
+        "identity_contract": {
+            "theorem": "canonical structural theorem serialization",
+            "hypotheses": "canonical sorted structural term serializations",
+            "assumptions": "canonical sorted global HOL axiom serializations",
+        },
+        "expected_identities": None,
+    }
+
+
 def build_manifest():
     names = _great_100_targets((ROOT / "holtest.mk").read_text(encoding="utf-8"))
+    unknown_mapping_targets = set(TARGET_THEOREMS) - set(names)
+    if unknown_mapping_targets:
+        raise ValueError(
+            "named theorem requests are not Great 100 targets: "
+            + ", ".join(sorted(unknown_mapping_targets)))
     targets = []
     covered_sources = set()
     for name in names:
@@ -109,6 +277,7 @@ def build_manifest():
             "direct_needs": _direct_needs(load_files),
             "expected_status": "pass",
             "skip": None,
+            "fingerprint_request": _theorem_request(name, load_files),
             "fingerprints": {
                 "status": fingerprint_status,
                 "theorems": None,

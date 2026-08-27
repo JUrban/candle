@@ -25,6 +25,7 @@ import time
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import tempfile
 import threading
@@ -75,6 +76,8 @@ class Test:
     """A named test, defined by the file(s) it loads (in order) on top of hol.ml."""
     name: str
     files: tuple
+    fingerprint_theorems: tuple = ()
+    fingerprint_mapping_status: str | None = None
 
 
 def _t(name, *files):
@@ -109,8 +112,17 @@ def _load_top100_manifest():
         raise ValueError(f"Great 100 target_count does not match targets: {path}")
     if any(target.get("skip") is not None for target in targets):
         raise ValueError(f"Great 100 manifest contains a skipped target: {path}")
-    return [Test(target["name"], tuple(target["load_files"]))
-            for target in targets]
+    tests = []
+    for target in targets:
+        request = target.get("fingerprint_request")
+        if not request:
+            raise ValueError(
+                f"Great 100 target has no fingerprint request: {target['name']}")
+        theorem_names = tuple(item["name"] for item in request["theorems"])
+        tests.append(Test(
+            target["name"], tuple(target["load_files"]), theorem_names,
+            request["mapping_status"]))
+    return tests
 
 
 # The machine-readable manifest is generated from GREAT_100_THEOREMS and also
@@ -224,6 +236,86 @@ class CandleREPL:
 
 
 # ---------------------------------------------------------------------------
+# Canonical theorem fingerprint requests
+# ---------------------------------------------------------------------------
+
+FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
+FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint.ml"
+OCAML_BINDING_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_']*$")
+
+
+def _fingerprint_request_source(theorem_names):
+    lines = []
+    for name in theorem_names:
+        if not OCAML_BINDING_RE.fullmatch(name):
+            raise ValueError(f"unsafe theorem binding in manifest: {name!r}")
+        lines.append(f'candle_s1_emit_fingerprint "{name}" {name};;')
+    return "\n".join(lines) + "\n"
+
+
+def _identity_sha256(serialized):
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _read_fingerprint_records(log_path, theorem_names, mapping_status):
+    """Parse structural identities emitted by candle/fingerprint.ml."""
+    records = {}
+    for line in Path(log_path).read_text(encoding="utf-8").splitlines():
+        if not line.startswith(FINGERPRINT_MARKER + "\t"):
+            continue
+        fields = line.split("\t")
+        if len(fields) != 8:
+            raise LoadFailure(
+                f"malformed {FINGERPRINT_MARKER} record with "
+                f"{len(fields)} fields")
+        (_, name, theorem, hypotheses, conclusion, assumptions,
+         hypothesis_count, assumption_count) = fields
+        if name in records:
+            raise LoadFailure(f"duplicate theorem fingerprint: {name}")
+        try:
+            parsed_hypothesis_count = int(hypothesis_count)
+            parsed_assumption_count = int(assumption_count)
+        except ValueError as error:
+            raise LoadFailure(
+                f"non-numeric fingerprint count for {name}") from error
+        records[name] = {
+            "name": name,
+            "theorem_sha256": _identity_sha256(theorem),
+            "hypotheses_sha256": _identity_sha256(hypotheses),
+            "conclusion_sha256": _identity_sha256(conclusion),
+            "global_axioms_sha256": _identity_sha256(assumptions),
+            "hypothesis_count": parsed_hypothesis_count,
+            "global_axiom_count": parsed_assumption_count,
+        }
+
+    expected = list(theorem_names)
+    missing = [name for name in expected if name not in records]
+    unexpected = [name for name in records if name not in expected]
+    if missing or unexpected:
+        raise LoadFailure(
+            "fingerprint request mismatch: "
+            f"missing={missing}, unexpected={unexpected}")
+
+    axiom_identities = {
+        (record["global_axioms_sha256"], record["global_axiom_count"])
+        for record in records.values()
+    }
+    if len(axiom_identities) != 1:
+        raise LoadFailure("global axiom identity changed between theorem requests")
+
+    return {
+        "status": "observed_uncompared",
+        "mapping_status": mapping_status,
+        "expected_identities_present": False,
+        "serializer": {
+            "path": FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix(),
+            "sha256": hashlib.sha256(FINGERPRINT_HELPER.read_bytes()).hexdigest(),
+        },
+        "theorems": [records[name] for name in expected],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Resource sampling
 # ---------------------------------------------------------------------------
 
@@ -301,14 +393,16 @@ class TestResult:
     status: TestStatus
     hol_elapsed: float = 0.0
     test_elapsed: float = 0.0
+    fingerprint_elapsed: float = 0.0
     peak_process_rss_kib: int = 0
     peak_tree_rss_kib: int = 0
     error_message: str = ""
     log_path: str = ""
+    fingerprints: dict | None = None
 
     @property
     def total(self):
-        return self.hol_elapsed + self.test_elapsed
+        return self.hol_elapsed + self.test_elapsed + self.fingerprint_elapsed
 
 
 def _format_error(repl, exc):
@@ -334,6 +428,8 @@ def run_test(test, test_timeout, env=None):
     start = None          # set once Candle is booted; marks the start of hol.ml load
     hol_elapsed = 0.0
     test_elapsed = 0.0
+    fingerprint_elapsed = 0.0
+    request_path = None
     try:
         repl = CandleREPL(logfile=logfile, env=env)
         sampler = ProcessTreeSampler(repl.process.pid)
@@ -347,23 +443,49 @@ def run_test(test, test_timeout, env=None):
             repl.load(f, timeout=test_timeout)
         test_elapsed = time.perf_counter() - start - hol_elapsed
 
-        result = TestResult(test.name, TestStatus.PASS, hol_elapsed, test_elapsed,
-                            log_path=log_path)
+        fingerprints = None
+        if test.fingerprint_theorems:
+            fingerprint_start = time.perf_counter()
+            repl.load(FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix(),
+                      timeout=test_timeout)
+            request_fd, request_path = tempfile.mkstemp(
+                prefix=f"candle-{safe_name}-fingerprints-", suffix=".ml")
+            with os.fdopen(request_fd, "w", encoding="utf-8") as request_file:
+                request_file.write(
+                    _fingerprint_request_source(test.fingerprint_theorems))
+            repl.load(request_path, timeout=test_timeout)
+            logfile.flush()
+            fingerprints = _read_fingerprint_records(
+                log_path, test.fingerprint_theorems,
+                test.fingerprint_mapping_status)
+            fingerprint_elapsed = time.perf_counter() - fingerprint_start
+
+        result = TestResult(
+            test.name, TestStatus.PASS, hol_elapsed=hol_elapsed,
+            test_elapsed=test_elapsed,
+            fingerprint_elapsed=fingerprint_elapsed, log_path=log_path,
+            fingerprints=fingerprints)
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         # A test must never crash the runner: record any failure and move on.
         # Attribute elapsed time to whichever phase we failed in.
         if start is not None:
             if hol_elapsed:
-                test_elapsed = time.perf_counter() - start - hol_elapsed
+                elapsed_after_hol = time.perf_counter() - start - hol_elapsed
+                if test_elapsed:
+                    fingerprint_elapsed = elapsed_after_hol - test_elapsed
+                else:
+                    test_elapsed = elapsed_after_hol
             else:
                 hol_elapsed = time.perf_counter() - start
         status = (TestStatus.TIMEOUT
                   if isinstance(e, pexpect.TIMEOUT) or "Timeout" in str(e)
                   else TestStatus.FAIL)
-        result = TestResult(test.name, status, hol_elapsed, test_elapsed,
-                            error_message=_format_error(repl, e),
-                            log_path=log_path)
+        result = TestResult(
+            test.name, status, hol_elapsed=hol_elapsed,
+            test_elapsed=test_elapsed,
+            fingerprint_elapsed=fingerprint_elapsed,
+            error_message=_format_error(repl, e), log_path=log_path)
 
     finally:
         if sampler is not None:
@@ -374,6 +496,8 @@ def run_test(test, test_timeout, env=None):
         if repl is not None:
             repl.kill()
         logfile.close()
+        if request_path is not None:
+            Path(request_path).unlink(missing_ok=True)
     return result
 
 
@@ -446,7 +570,7 @@ class Reporter:
             for status in TestStatus
         }
         payload = {
-            "schema": 1,
+            "schema": 2,
             "generated_utc": datetime.now(timezone.utc).isoformat(),
             "suite": suite,
             "test_count": len(results),
@@ -460,6 +584,11 @@ class Reporter:
             "candle_git_status": git_status,
             "candle_executable": str(executable.resolve()),
             "candle_executable_sha256": executable_sha256,
+            "fingerprint_contract": {
+                "serializer": "candle/fingerprint.ml structural v1",
+                "load_pass_is_fingerprint_match": False,
+                "expected_identity_source": "top100_manifest.json",
+            },
             "results": [
                 {
                     "name": result.name,
@@ -467,11 +596,13 @@ class Reporter:
                     "status": result.status.value,
                     "hol_elapsed_seconds": result.hol_elapsed,
                     "test_elapsed_seconds": result.test_elapsed,
+                    "fingerprint_elapsed_seconds": result.fingerprint_elapsed,
                     "total_elapsed_seconds": result.total,
                     "peak_process_rss_kib": result.peak_process_rss_kib,
                     "peak_tree_rss_kib": result.peak_tree_rss_kib,
                     "error_message": result.error_message,
                     "log_path": result.log_path,
+                    "fingerprints": result.fingerprints,
                 }
                 for result in results
             ],

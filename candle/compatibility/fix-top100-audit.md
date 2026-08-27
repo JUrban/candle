@@ -42,6 +42,15 @@ The runner's prior success condition was only “all requested files finished
 loading.” It captured no canonical theorem or assumption fingerprint. Thus all
 65 target fingerprint records begin as missing, even where a load passes.
 
+The manifest now resolves 97 proposed named result bindings across all 65
+ordered target sessions. It records shadowed declarations and the binding that
+is actually visible after the load. Four broad or repeatedly rebound targets
+(`cantor`, `fourier`, `piseries`, and `quartic`) remain explicit manual-review
+mappings. The runner can request structural theorem, conclusion, sorted
+hypothesis, and sorted global-axiom identities after a load, but no expected
+reference hashes are populated yet. An observed identity is therefore reported
+as `observed_uncompared`, never as a fingerprint match.
+
 The clean compiled-Candle baseline observed
 `100/bertrand-primerecip` fail after 212.6 seconds. The failure occurs before
 the target declaration is elaborated: Candle rejects the first OCaml float

@@ -38,10 +38,29 @@ class Top100ManifestTest(unittest.TestCase):
 
     def test_missing_s1_evidence_is_not_misreported_as_success(self):
         for target in self.manifest["targets"]:
+            request = target["fingerprint_request"]
+            self.assertTrue(request["theorems"])
+            self.assertIsNone(request["expected_identities"])
             self.assertIn(target["fingerprints"]["status"],
                           {"missing", "not_reached"})
             self.assertIsNone(target["fingerprints"]["theorems"])
             self.assertIsNone(target["fingerprints"]["assumptions"])
+
+    def test_all_named_results_resolve_and_manual_review_is_explicit(self):
+        manual = {}
+        for target in self.manifest["targets"]:
+            request = target["fingerprint_request"]
+            for theorem in request["theorems"]:
+                declaration = theorem["resolved_declaration"]
+                self.assertIn(declaration["path"], target["load_files"])
+                self.assertGreater(declaration["line"], 0)
+            if request["mapping_status"] == "manual_review":
+                self.assertTrue(request["review_note"])
+                manual[target["name"]] = request["review_note"]
+            else:
+                self.assertEqual(request["mapping_status"], "audited")
+                self.assertIsNone(request["review_note"])
+        self.assertEqual(set(manual), set(top100_manifest.MANUAL_REVIEW_MAPPINGS))
 
     def test_observed_failure_links_to_minimized_ledger_entry(self):
         targets = {target["name"]: target for target in self.manifest["targets"]}
