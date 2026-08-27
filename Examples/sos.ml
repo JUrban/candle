@@ -432,11 +432,17 @@ let sdpa_of_vector (v:vector) =
 (* String for block diagonal matrix numbered k.                              *)
 (* ------------------------------------------------------------------------- *)
 
+let _int_triple_cmp (a,b,c) (x,y,z) =
+  let first = Int.compare a x in
+  if first <> 0 then first else
+  let second = Int.compare b y in
+  if second <> 0 then second else Int.compare c z;;
+
 let sdpa_of_blockdiagonal k m =
   let pfx = string_of_int k ^" " in
   let ents =
     foldl (fun a (b,i,j) c -> if i > j then a else ((b,i,j),c)::a) [] m in
-  let entss = sort (increasing fst) ents in
+  let entss = sort (increasing_by _int_triple_cmp fst) ents in
   itlist (fun ((b,i,j),c) a ->
      pfx ^ string_of_int b ^ " " ^ string_of_int i ^ " " ^ string_of_int j ^
      " " ^ decimalize 20 c ^ "\n" ^ a) entss "";;
@@ -449,7 +455,8 @@ let sdpa_of_matrix k (m:matrix) =
   let pfx = string_of_int k ^ " 1 " in
   let ms = foldr (fun (i,j) c a -> if i > j then a else ((i,j),c)::a)
                  (snd m) [] in
-  let mss = sort (increasing fst) ms in
+  let mss = sort
+    (increasing_by (Pair.compare Int.compare Int.compare) fst) ms in
   itlist (fun ((i,j),c) a ->
      pfx ^ string_of_int i ^ " " ^ string_of_int j ^
      " " ^ decimalize 20 c ^ "\n" ^ a) mss "";;

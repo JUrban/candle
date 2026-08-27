@@ -537,6 +537,11 @@ let increasing f x y = compare (f x) (f y) < 0;;
 let decreasing f x y = compare (f x) (f y) > 0;;
 *)
 
+(* Candle deliberately has no general polymorphic [compare]. Keep the
+   explicit-comparator variant separate so source adaptations do not change
+   the arity of HOL Light's conventional [increasing] helper. *)
+let increasing_by cmp f x y = cmp (f x) (f y) < 0;;
+
 (* ------------------------------------------------------------------------- *)
 (* Polymorphic finite partial functions via Patricia trees.                  *)
 (*                                                                           *)
