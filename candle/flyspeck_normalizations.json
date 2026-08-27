@@ -116,6 +116,27 @@
       "scope_limit": "The rule is specific to relabel_bound_conv and its fresh-name consumer; it does not authorize replacing physical identity by structural equality elsewhere. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
     },
     {
+      "id": "PROJECT-MODULE-S3-SET-MAKE-001",
+      "source_key": "flyspeck:text_formalization/general/serialization.hl",
+      "path": "text_formalization/general/serialization.hl",
+      "source_sha256": "fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed",
+      "source_md5": "9228eaf6a96159d9f59fea40fcc2a12f",
+      "normalized_sha256": "062139c28e400951aaab8436298fecdcdb1c5a76b19ec3e19fa65f6fce3915ea",
+      "normalized_md5": "6d3501717892b247f1f9809cfa2d87f5",
+      "normalized_bytes": 26580,
+      "operations": [
+        {
+          "id": "PROJECT-MODULE-S3-SET-MAKE-001-EXPLICIT-STRING-SET",
+          "kind": "exact_bytes_replace_once",
+          "line": 34,
+          "before": "module  String_compare : Set.OrderedType with type t = string = struct\n  type t = string;;\n  let  compare (t1:string) (t2:string) = Stdlib.compare (t1) (t2);;\nend;;\n\nmodule St = Set.Make(String_compare);;",
+          "after": "module St = struct\n  type elt = string;;\n  type t = string list;;\n  let empty = [];;\n  let rec mem value values =\n    match values with\n      [] -> false\n    | head::tail -> value = head || mem value tail;;\n  let add value values =\n    if mem value values then values else value::values;;\nend;;"
+        }
+      ],
+      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph.",
+      "scope_limit": "This is not general functor or Set.Make support. It is confined to the pinned Serialization.St module and the exact selected empty/add/mem use set. Any new St operation, representation observation, source drift, or selected functor application reopens the module compatibility gate."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",

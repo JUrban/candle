@@ -1579,7 +1579,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "the rules are site-specific; qmap, unsuppress, and strictbuild's "
                 "use_file_b are selected-static-route non-use refinements that fail "
                 "closed on any call; the LP rules require the exact prepared-input "
-                "contract and static 39-file inventory; compiled, fingerprint, and "
+                "contract and static 39-file inventory; the Serialization.St rule "
+                "implements only the exact selected empty/add/mem observations; "
+                "compiled, fingerprint, and "
                 "performance gates remain open"
             ),
             "reference_implementation": {
@@ -1601,6 +1603,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_immediate_normalization.sh",
                 "candle:candle/test_flyspeck_needs_directive.sh",
                 "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
+                "candle:candle/test_flyspeck_set_make_normalization.sh",
             ],
             "performance_probe": (
                 "candle:candle/flyspeck_identity_benchmark.ml"

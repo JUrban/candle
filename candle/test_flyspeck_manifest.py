@@ -326,13 +326,17 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 9)
+        self.assertEqual(contract["entry_count"], 10)
         self.assertIn("every anchor must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
         self.assertIn("qmap", contract["scope_limit"])
         self.assertIn(
             "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_flyspeck_set_make_normalization.sh",
             contract["gates"],
         )
         contract_path = Path(__file__).with_name("flyspeck_normalizations.json")

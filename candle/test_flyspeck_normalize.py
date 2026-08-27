@@ -91,7 +91,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 9)
+        self.assertEqual(len(self.contract["entries"]), 10)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -105,6 +105,11 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("failwith", unsuppress["operations"][0]["after"])
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertIn("not (y = x)", relabel["operations"][0]["after"])
+        set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
+        self.assertEqual(set_make["operations"][0]["line"], 34)
+        self.assertIn("type t = string list", set_make["operations"][0]["after"])
+        self.assertNotIn("Set.Make", set_make["operations"][0]["after"])
+        self.assertIn("only through empty, add, and mem", set_make["semantic_rule"])
         strictbuild = entries["PROJECT-TOPLOOP-S3-USE-FILE-B-001"]
         self.assertIn("dynamic use_file_b is disabled", (
             strictbuild["operations"][0]["after"]
@@ -159,7 +164,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 19)
+        self.assertEqual(len(operation_ids), 20)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
