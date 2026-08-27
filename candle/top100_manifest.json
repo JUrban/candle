@@ -1360,7 +1360,18 @@
         "theorems": null,
         "assumptions": null
       },
-      "baseline_observation": null
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 1560.6,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
     },
     {
       "name": "100/fourier",
