@@ -201,6 +201,7 @@ def validate_plan(
             "generated_inputs": len(derived_validated["generated_bindings"]),
             "actions": len(derived_audit["actions"]),
             "boundaries": len(derived_plan["boundaries"]),
+            "diagnostic_cutpoints": len(derived_plan["diagnostic_cutpoints"]),
         },
     }
     require(materialization == expected_materialization,
@@ -362,7 +363,15 @@ def validate_plan(
 
     boundaries = plan.get("boundaries")
     require(isinstance(boundaries, list) and len(boundaries) == 8, "boundary set mismatch")
-    selected = [entry for entry in boundaries if entry.get("boundary_id") == boundary_id]
+    diagnostics = plan.get("diagnostic_cutpoints")
+    require(isinstance(diagnostics, list) and len(diagnostics) == 2,
+            "diagnostic cutpoint set mismatch")
+    require(all(entry.get("diagnostic_only") is True for entry in diagnostics),
+            "diagnostic cutpoint classification mismatch")
+    selected = [
+        entry for entry in boundaries + diagnostics
+        if entry.get("boundary_id") == boundary_id
+    ]
     require(len(selected) == 1, f"unknown or duplicate boundary: {boundary_id}")
     boundary = selected[0]
     count = boundary.get("completed_action_count")
@@ -399,6 +408,7 @@ def validate_plan(
         "prefix_record": prefix_record,
         "harness_records": harness_records,
         "boundary": boundary,
+        "diagnostic_only": boundary.get("diagnostic_only") is True,
         "actions": action_runtime,
         "source_runtime": source_runtime,
         "normalized_runtime": normalized_runtime,
@@ -1005,6 +1015,7 @@ def run_attempt(
         "state": "running",
         "started_utc": started,
         "boundary_id": boundary_id,
+        "diagnostic_only": prepared["diagnostic_only"],
         "attempt_nonce": nonce,
         "action_count": len(prepared["actions"]),
         "timeout_seconds": timeout_seconds,
@@ -1157,7 +1168,8 @@ def main() -> None:
         arguments.max_address_space_gib, arguments.max_output_file_gib,
     )
     print(
-        f"compiled stratum PASS: {receipt['boundary_id']} "
+        f"compiled {'diagnostic prefix' if receipt['diagnostic_only'] else 'stratum'} PASS: "
+        f"{receipt['boundary_id']} "
         f"({receipt['action_count']} actions); not S2/S3 without semantic fingerprints"
     )
 

@@ -11,6 +11,11 @@ deterministic `date`/`whoami` inputs, and the selected prefix.  The config also
 provides the exact ordered 39-certificate list required by normalized
 `verify_all.hl`.
 
+In addition to the eight stratum boundaries, the plan exposes diagnostic
+cutpoints `d0-diagnostic-through-002` and
+`d1-diagnostic-through-018`.  They use the same snapshot, action-ledger, and
+receipt validation, but do not claim that the base stratum completed.
+
 The runner inserts one pinned ledger-checker phrase immediately after each
 exact `#flyspeck_needs` directive.  It adds no theorem or axiom.  For each action the
 checker requires the exact next index and logical identity, then requires the

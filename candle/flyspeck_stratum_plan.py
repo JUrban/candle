@@ -417,6 +417,48 @@ def boundary_records(audit: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[
     return records, prefixes
 
 
+def diagnostic_records(audit: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, bytes]]:
+    """Return small exact cumulative cutpoints for rebuilt-binary diagnosis."""
+    actions = audit["actions"]
+    driver = audit["driver"]
+    offsets = audit["action_offsets"]
+    records: list[dict[str, Any]] = []
+    prefixes: dict[str, bytes] = {}
+    for number, end in enumerate((2, 18)):
+        count = end + 1
+        filename = f"prefix-d{number}-diagnostic-through-{end:03d}.ml"
+        prefix = driver[:offsets[end]]
+        require(prefix.count(b"\n#flyspeck_needs ") == count,
+                f"diagnostic prefix directive count drift: {end}")
+        prefixes[filename] = prefix
+        records.append({
+            "boundary_id": f"d{number}-diagnostic-through-{end:03d}",
+            "diagnostic_only": True,
+            "stratum": actions[end]["stratum"],
+            "stratum_start_index": 0,
+            "stratum_end_index": end,
+            "completed_action_count": count,
+            "last_action": actions[end],
+            "next_action_index": count,
+            "next_stratum": actions[count]["stratum"],
+            "cumulative_action_sha256": canonical_sha256(actions[:count]),
+            "cumulative_prefix": {
+                "path": filename,
+                "bytes": len(prefix),
+                "md5": hashlib.md5(prefix, usedforsecurity=False).hexdigest(),
+                "sha256": hashlib.sha256(prefix).hexdigest(),
+            },
+            "restart_mode": "fresh-process-replay-from-action-0",
+            "suffix_launch_authorized": False,
+            "process_state_checkpoint": "not-captured",
+            "assurance_limit": (
+                "rebuilt-binary compatibility diagnostic only; not a completed "
+                "roadmap stratum and not S2/S3 evidence"
+            ),
+        })
+    return records, prefixes
+
+
 def make_plan(
     expected_candle_base: str,
     audit: dict[str, Any],
@@ -424,6 +466,10 @@ def make_plan(
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     manifest = audit["manifest"]
     boundaries, prefixes = boundary_records(audit)
+    diagnostic_cutpoints, diagnostic_prefixes = diagnostic_records(audit)
+    require(not set(prefixes).intersection(diagnostic_prefixes),
+            "diagnostic prefix filename collision")
+    prefixes.update(diagnostic_prefixes)
     contract = manifest["static_full_build_contract"]
     plan = {
         "schema": 1,
@@ -472,6 +518,7 @@ def make_plan(
         "actions": audit["actions"],
         "stratum_policy": manifest["build_strata_policy"],
         "boundaries": boundaries,
+        "diagnostic_cutpoints": diagnostic_cutpoints,
         "resume_contract": {
             "supported_mode": "fresh-process cumulative replay",
             "instruction": (
@@ -539,6 +586,17 @@ def materialize(
             }
             for entry in plan["boundaries"]
         ],
+        "diagnostic_cutpoints": [
+            {
+                "boundary_id": entry["boundary_id"],
+                "prefix_path": entry["cumulative_prefix"]["path"],
+                "prefix_sha256": entry["cumulative_prefix"]["sha256"],
+                "state": "not-started",
+                "attempt_receipt": None,
+                "s2_s3_evidence": False,
+            }
+            for entry in plan["diagnostic_cutpoints"]
+        ],
     }
     host_materialization = {
         "schema": 1,
@@ -557,6 +615,7 @@ def materialize(
             "generated_inputs": len(validated["generated_bindings"]),
             "actions": len(audit["actions"]),
             "boundaries": len(plan["boundaries"]),
+            "diagnostic_cutpoints": len(plan["diagnostic_cutpoints"]),
         },
     }
 
@@ -579,6 +638,7 @@ def materialize(
         "plan_sha256": plan_sha256,
         "action_count": len(audit["actions"]),
         "boundary_count": len(plan["boundaries"]),
+        "diagnostic_cutpoint_count": len(plan["diagnostic_cutpoints"]),
         "source_count": len(validated["source_bindings"]),
         "generated_input_count": len(validated["generated_bindings"]),
     }
@@ -600,7 +660,9 @@ def main() -> None:
     )
     print(
         f"stratum plan {result['plan_sha256']}: {result['action_count']} actions, "
-        f"{result['boundary_count']} cumulative boundaries; host-only, not S2/S3 evidence"
+        f"{result['boundary_count']} cumulative boundaries and "
+        f"{result['diagnostic_cutpoint_count']} diagnostic cutpoints; "
+        "host-only, not S2/S3 evidence"
     )
 
 

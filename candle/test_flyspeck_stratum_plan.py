@@ -48,6 +48,23 @@ class StratumPlanTests(unittest.TestCase):
                 r"^[0-9a-f]{64}$",
             )
 
+    def test_diagnostic_cutpoints_are_exact_cumulative_prefixes(self) -> None:
+        records, prefixes = subject.diagnostic_records(self.audit)
+        self.assertEqual([entry["completed_action_count"] for entry in records], [3, 19])
+        self.assertEqual(
+            [entry["boundary_id"] for entry in records],
+            ["d0-diagnostic-through-002", "d1-diagnostic-through-018"],
+        )
+        for entry in records:
+            self.assertTrue(entry["diagnostic_only"])
+            self.assertIn("not S2/S3", entry["assurance_limit"])
+            prefix = prefixes[entry["cumulative_prefix"]["path"]]
+            self.assertTrue(self.audit["driver"].startswith(prefix))
+            self.assertEqual(
+                prefix.count(b"\n#flyspeck_needs "),
+                entry["completed_action_count"],
+            )
+
     def test_ordered_stratum_digest_rejects_mutation(self) -> None:
         manifest = copy.deepcopy(self.audit["manifest"])
         manifest["build_sequence_roots"][0]["target"] = "general/not-the-root.hl"
@@ -73,6 +90,7 @@ class StratumPlanTests(unittest.TestCase):
         self.assertFalse(plan["resume_contract"]["saved_process_or_kernel_state"])
         self.assertFalse(plan["resume_contract"]["suffix_only_programs_emitted"])
         self.assertFalse(plan["resume_contract"]["checkpoint_replay_claim"])
+        self.assertEqual(len(plan["diagnostic_cutpoints"]), 2)
         self.assertEqual(plan["evidence_boundary"]["host_plan_or_schedule"],
                          "not S2/S3 evidence")
 

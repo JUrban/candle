@@ -1,8 +1,10 @@
 # Direct Flyspeck stratum/prefix plan
 
 `flyspeck_stratum_plan.py` turns the manifest's eight contiguous strata into
-eight **cumulative** `#flyspeck_needs` programs.  It is a deterministic,
-fail-closed host planner, not a Candle runner or checkpoint implementation.
+eight **cumulative** `#flyspeck_needs` programs.  It also emits two smaller
+diagnostic cumulative prefixes through actions 2 and 18 for rebuilt-binary
+compatibility triage.  It is a deterministic, fail-closed host planner, not a
+Candle runner or checkpoint implementation.
 
 The strata retain the exact 297-entry order from `flyspeck_full_build.ml`:
 
@@ -22,6 +24,11 @@ independent dependency unit.  The planner emits no suffix programs.  To retry
 or advance to a boundary in a new process, a scheduler must select that
 boundary's authenticated cumulative prefix and replay it from action 0.  The
 metadata does not serialize, restore, or attest CakeML process or kernel state.
+
+The `d0-diagnostic-through-002` and `d1-diagnostic-through-018` cutpoints are
+not roadmap strata.  They run through the same authenticated runtime and exact
+outer-action ledger checks, but their receipts remain compatibility diagnostics
+and have `s2_s3_evidence` set to false.
 
 For the integration input audited here, materialize with:
 

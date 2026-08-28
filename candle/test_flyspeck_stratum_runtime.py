@@ -110,6 +110,7 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_exact_boundary_fingerprint_requests(self) -> None:
         self.assertEqual(subject.fingerprint_requests("00-base-through-029"), [])
+        self.assertEqual(subject.fingerprint_requests("d1-diagnostic-through-018"), [])
         self.assertEqual(
             subject.fingerprint_requests("05-lp_support-through-184"),
             ["Linear_programming_results.linear_programming_results_th"],
