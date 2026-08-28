@@ -139,9 +139,13 @@ requires every journal to equal its in-memory scenario, rehashes each exact
 ordinary `transcripts/{scenario}.log` against that scenario's transcript
 binding, and requires persisted report semantics to equal the returned report.
 A persistent mutation becomes a failed attempt rather than merely appearing in
-the final inventory.  The receipt inventory is then collected once and its
-report, attempt, journal, and transcript records must equal those verified
-bindings before that exact inventory is placed in the receipt.
+the final inventory.  The receipt inventory is then collected once and must
+exactly equal the closed set of every retained `path`/`bytes`/`sha256` binding
+in the report: report, attempt, journals, transcripts, gate configuration,
+generated-input receipt and each `inputs.outputs` file, controller/Python/
+pexpect sources and objects, linked runtime/provenance archive, and performance
+source archive.  Missing, changed, extra, symlink, or non-ordinary entries fail
+closed before that validated inventory is placed in the receipt.
 
 The retained trust-boundary record explicitly excludes hostile same-UID
 transient mutation.  Pre/postflight hashes detect persistent changes, but a

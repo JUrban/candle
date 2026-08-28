@@ -473,7 +473,10 @@ class FloatPerformanceGateTests(unittest.TestCase):
                     )
 
     def test_success_receipt_rejects_persistent_evidence_mutations(self):
-        for target in ("attempt", "scenario", "transcript", "report"):
+        for target in (
+            "attempt", "scenario", "transcript", "report", "config",
+            "generated", "controller", "symlink", "extra",
+        ):
             with self.subTest(target=target), \
                     tempfile.TemporaryDirectory() as temporary:
                 evidence = Path(temporary)
@@ -510,9 +513,29 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         "path": path.name,
                         **generator.file_record(path),
                     }
+                config_path = evidence / "gate-config.json"
+                gate._write_json(config_path, {"schema": 1})
+                generated_dir = evidence / "generated"
+                generated_dir.mkdir()
+                generated_path = generated_dir / "generated-source.ml"
+                generated_path.write_text(
+                    "let corpus_case = 1.0;;\n", encoding="utf-8",
+                )
+                controller_dir = evidence / "provenance" / "python"
+                controller_dir.mkdir(parents=True)
+                controller_path = controller_dir / "controller.py"
+                controller_path.write_text(
+                    "# retained controller source\n", encoding="utf-8",
+                )
                 report = {
                     "schema": 1,
                     "kind": "flyspeck-float-performance-gate",
+                    "inputs": {
+                        "outputs": {
+                            generated_path.name:
+                                generator.file_record(generated_path),
+                        },
+                    },
                     "scenarios": scenarios,
                     "evidence": {
                         "attempt": {
@@ -520,6 +543,16 @@ class FloatPerformanceGateTests(unittest.TestCase):
                             **generator.file_record(attempt_path),
                         },
                         "scenario_journals": journal_records,
+                        "gate_config": {
+                            "path": config_path.name,
+                            **generator.file_record(config_path),
+                        },
+                        "controller_execution": {
+                            "local_sources": [{
+                                "path": "provenance/python/controller.py",
+                                **generator.file_record(controller_path),
+                            }],
+                        },
                     },
                 }
                 report_path = evidence / "report.json"
@@ -549,17 +582,47 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         "mutated transcript\n", encoding="utf-8",
                     )
                     pattern = "scenario call_time transcript content hash changed"
-                else:
+                elif target == "report":
                     mutated_report = dict(report)
                     mutated_report["mutated"] = True
                     gate._write_json(report_path, mutated_report)
                     pattern = "persisted report semantics changed"
-                with self.assertRaisesRegex(gate.GateError, pattern):
+                elif target == "config":
+                    gate._write_json(config_path, {"schema": 2})
+                    pattern = None
+                elif target == "generated":
+                    generated_path.write_text(
+                        "let corpus_case = 2.0;;\n", encoding="utf-8",
+                    )
+                    pattern = None
+                elif target == "controller":
+                    controller_path.write_text(
+                        "# mutated retained controller source\n",
+                        encoding="utf-8",
+                    )
+                    pattern = None
+                elif target == "symlink":
+                    config_path.unlink()
+                    config_path.symlink_to(generated_path)
+                    pattern = None
+                else:
+                    (evidence / "unbound-evidence.txt").write_text(
+                        "not report-bound\n", encoding="utf-8",
+                    )
+                    pattern = None
+                if pattern is None:
                     gate._verify_completed_success_evidence(
                         evidence, expected_report,
                     )
+                else:
+                    with self.assertRaisesRegex(gate.GateError, pattern):
+                        gate._verify_completed_success_evidence(
+                            evidence, expected_report,
+                        )
                 with self.assertRaisesRegex(
-                        gate.GateError, "success inventory"):
+                        gate.GateError,
+                        "success inventory|evidence inventory contains a symlink",
+                ):
                     gate._validate_success_inventory(
                         expected_report, report_record,
                         gate._evidence_inventory(evidence),

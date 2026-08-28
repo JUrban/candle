@@ -1699,9 +1699,68 @@ def _run_attempt(
 def _evidence_inventory(evidence_dir: Path) -> dict[str, Any]:
     inventory = {}
     for path in sorted(evidence_dir.rglob("*")):
-        if path.is_file() and not path.is_symlink() and path.name != "receipt.json":
-            inventory[str(path.relative_to(evidence_dir))] = inputs.file_record(path)
+        relative = path.relative_to(evidence_dir)
+        require(not path.is_symlink(),
+                f"evidence inventory contains a symlink: {path}")
+        if path.is_file() and relative != Path("receipt.json"):
+            inventory[str(relative)] = inputs.file_record(path)
+        else:
+            require(path.is_dir() or relative == Path("receipt.json"),
+                    f"evidence inventory contains a non-ordinary entry: {path}")
     return inventory
+
+
+def _expected_success_inventory(
+    report: dict[str, Any],
+    report_record: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Construct the closed file inventory from all report-bound records."""
+
+    expected = {"report.json": report_record}
+
+    def add(record: dict[str, Any], label: str) -> None:
+        path_string = record.get("path")
+        require(isinstance(path_string, str) and path_string,
+                f"{label} has no evidence path")
+        path = Path(path_string)
+        require(not path.is_absolute() and ".." not in path.parts and
+                path.as_posix() == path_string and path_string != ".",
+                f"{label} evidence path is not canonical")
+        value = {
+            field: record.get(field) for field in ("bytes", "sha256")
+        }
+        require(type(value["bytes"]) is int and value["bytes"] >= 0 and
+                isinstance(value["sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", value["sha256"]) is not None,
+                f"{label} evidence content record is malformed")
+        require(path_string not in expected,
+                f"duplicate report-bound evidence path: {path_string}")
+        expected[path_string] = value
+
+    def visit(value: Any, label: str) -> None:
+        if isinstance(value, dict):
+            if all(field in value for field in ("path", "bytes", "sha256")):
+                add(value, label)
+            for key, child in value.items():
+                visit(child, f"{label}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                visit(child, f"{label}[{index}]")
+
+    visit(report, "report")
+    outputs = report["inputs"]["outputs"]
+    require(isinstance(outputs, dict) and outputs,
+            "generated output record set is empty or malformed")
+    for name, record in sorted(outputs.items()):
+        require(isinstance(name, str) and Path(name).name == name and
+                Path(name).as_posix() == name,
+                f"generated output name is not canonical: {name}")
+        require(isinstance(record, dict) and
+                set(record) == {"bytes", "sha256"},
+                f"generated output record is malformed: {name}")
+        add({"path": f"generated/{name}", **record},
+            f"generated output {name}")
+    return expected
 
 
 def _validate_success_inventory(
@@ -1709,25 +1768,18 @@ def _validate_success_inventory(
     report_record: dict[str, Any],
     inventory: dict[str, dict[str, Any]],
 ) -> None:
-    """Cross-bind receipt inventory to the just-verified success records."""
+    """Require the receipt inventory to equal every report-bound file."""
 
-    require(inventory.get("report.json") == report_record,
-            "success inventory report record differs from verified report")
-    attempt = report["evidence"]["attempt"]
-    require(inventory.get(attempt["path"]) == {
-        field: attempt[field] for field in ("bytes", "sha256")
-    }, "success inventory attempt record differs from report binding")
-    for name, record in sorted(
-        report["evidence"]["scenario_journals"].items()
-    ):
-        require(inventory.get(record["path"]) == {
-            field: record[field] for field in ("bytes", "sha256")
-        }, f"success inventory scenario {name} differs from report binding")
-    for name, scenario in sorted(report["scenarios"].items()):
-        transcript = scenario["transcript"]
-        require(inventory.get(transcript["path"]) == {
-            field: transcript[field] for field in ("bytes", "sha256")
-        }, f"success inventory transcript {name} differs from scenario binding")
+    expected = _expected_success_inventory(report, report_record)
+    missing = sorted(set(expected) - set(inventory))
+    unexpected = sorted(set(inventory) - set(expected))
+    changed = sorted(
+        path for path in set(expected) & set(inventory)
+        if expected[path] != inventory[path]
+    )
+    require(not missing and not unexpected and not changed,
+            "success inventory differs from complete report bindings: "
+            f"missing={missing}, unexpected={unexpected}, changed={changed}")
 
 
 def _failure_postflight(
