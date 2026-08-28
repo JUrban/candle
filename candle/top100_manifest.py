@@ -145,6 +145,12 @@ MANUAL_REVIEW_MAPPINGS = {
     ),
 }
 
+# Approved reference identities belong here only after a pinned, independently
+# reviewed reference run.  Each value has exactly ``serializer_sha256`` and an
+# ordered ``theorems`` list in the format emitted by regression.py.  Keeping
+# this empty makes every current observation explicitly incomparable.
+EXPECTED_IDENTITIES = {}
+
 # Observations are evidence, not acceptance-policy exceptions.  Keep expected
 # status "pass" and link failures to a minimized compatibility-ledger entry.
 BASELINE_OBSERVATIONS = {
@@ -604,6 +610,11 @@ def build_manifest():
         raise ValueError(
             "named theorem requests are not Great 100 targets: "
             + ", ".join(sorted(unknown_mapping_targets)))
+    unknown_expected_targets = set(EXPECTED_IDENTITIES) - set(names)
+    if unknown_expected_targets:
+        raise ValueError(
+            "expected identities are not Great 100 targets: "
+            + ", ".join(sorted(unknown_expected_targets)))
     targets = []
     covered_sources = set()
     for name in names:
@@ -627,7 +638,10 @@ def build_manifest():
             "direct_needs": _direct_needs(load_files),
             "expected_status": "pass",
             "skip": None,
-            "fingerprint_request": _theorem_request(name, load_files),
+            "fingerprint_request": {
+                **_theorem_request(name, load_files),
+                "expected_identities": EXPECTED_IDENTITIES.get(name),
+            },
             "fingerprints": {
                 "status": fingerprint_status,
                 "theorems": None,

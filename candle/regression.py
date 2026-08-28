@@ -125,6 +125,7 @@ class Test:
     files: tuple
     fingerprint_theorems: tuple = ()
     fingerprint_mapping_status: str | None = None
+    fingerprint_expected_identities: dict | None = None
 
 
 def _t(name, *files):
@@ -168,7 +169,7 @@ def _load_top100_manifest():
         theorem_names = tuple(item["name"] for item in request["theorems"])
         tests.append(Test(
             target["name"], tuple(target["load_files"]), theorem_names,
-            request["mapping_status"]))
+            request["mapping_status"], request.get("expected_identities")))
     return tests
 
 
@@ -336,7 +337,25 @@ def _identity_sha256(serialized):
     return hashlib.sha256(serialized).hexdigest()
 
 
-def _read_fingerprint_records(log_path, theorem_names, mapping_status):
+def _match_expected_identities(records, expected_identities, serializer_sha256,
+                               mapping_status):
+    """Fail closed unless every approved structural identity matches exactly."""
+    if expected_identities is None:
+        return "observed_uncompared", False
+    if mapping_status != "audited":
+        raise LoadFailure(
+            "expected fingerprints cannot approve a manual-review mapping")
+    if set(expected_identities) != {"serializer_sha256", "theorems"}:
+        raise LoadFailure("malformed expected fingerprint identity object")
+    if expected_identities["serializer_sha256"] != serializer_sha256:
+        raise LoadFailure("expected fingerprint serializer identity mismatch")
+    if expected_identities["theorems"] != records:
+        raise LoadFailure("observed theorem or global-axiom fingerprint mismatch")
+    return "matched", True
+
+
+def _read_fingerprint_records(log_path, theorem_names, mapping_status,
+                              expected_identities=None):
     """Parse structural identities emitted by candle/fingerprint.ml."""
     records = {}
     for line in Path(log_path).read_text(encoding="utf-8").splitlines():
@@ -392,15 +411,19 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status):
     if len(axiom_identities) != 1:
         raise LoadFailure("global axiom identity changed between theorem requests")
 
+    serializer_sha256 = hashlib.sha256(FINGERPRINT_HELPER.read_bytes()).hexdigest()
+    ordered_records = [records[name] for name in expected]
+    status, expected_present = _match_expected_identities(
+        ordered_records, expected_identities, serializer_sha256, mapping_status)
     return {
-        "status": "observed_uncompared",
+        "status": status,
         "mapping_status": mapping_status,
-        "expected_identities_present": False,
+        "expected_identities_present": expected_present,
         "serializer": {
             "path": FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix(),
-            "sha256": hashlib.sha256(FINGERPRINT_HELPER.read_bytes()).hexdigest(),
+            "sha256": serializer_sha256,
         },
-        "theorems": [records[name] for name in expected],
+        "theorems": ordered_records,
     }
 
 
@@ -555,7 +578,8 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None):
             logfile.flush()
             fingerprints = _read_fingerprint_records(
                 log_path, test.fingerprint_theorems,
-                test.fingerprint_mapping_status)
+                test.fingerprint_mapping_status,
+                test.fingerprint_expected_identities)
             fingerprint_elapsed = time.perf_counter() - fingerprint_start
 
         result = TestResult(
@@ -639,6 +663,38 @@ class Reporter:
         }
 
     @staticmethod
+    def s1_evidence_summary(results, tests, suite):
+        """Summarize S1 closure without treating a load-only pass as evidence."""
+        matched = 0
+        observed_uncompared = 0
+        missing = len(tests) - len(results)
+        for result in results:
+            status = ((result.fingerprints or {}).get("status")
+                      if result.status is TestStatus.PASS else None)
+            if status == "matched":
+                matched += 1
+            elif status == "observed_uncompared":
+                observed_uncompared += 1
+            else:
+                missing += 1
+        expected_count = sum(
+            test.fingerprint_expected_identities is not None for test in tests)
+        manual_review_count = sum(
+            test.fingerprint_mapping_status == "manual_review" for test in tests)
+        return {
+            "requested_target_count": len(tests),
+            "reported_target_count": len(results),
+            "expected_identity_target_count": expected_count,
+            "manual_review_mapping_target_count": manual_review_count,
+            "matched_target_count": matched,
+            "observed_uncompared_target_count": observed_uncompared,
+            "missing_or_failed_fingerprint_target_count": missing,
+            "suite_closed": (
+                suite == "top100" and len(results) == len(tests)
+                and matched == len(tests) and manual_review_count == 0),
+        }
+
+    @staticmethod
     def print_summary(results, wall):
         print()
         print(f"{'Test':<40} {'Status':>6} {'Time':>9} {'Peak RSS':>12}")
@@ -716,7 +772,10 @@ class Reporter:
                 "serializer": "candle/fingerprint.ml structural v1",
                 "load_pass_is_fingerprint_match": False,
                 "expected_identity_source": "top100_manifest.json",
+                "expected_mismatch_result": "FAIL",
             },
+            "s1_evidence": Reporter.s1_evidence_summary(
+                results, tests, suite),
             "results": [
                 Reporter.result_record(result, files_by_name[result.name])
                 for result in results
