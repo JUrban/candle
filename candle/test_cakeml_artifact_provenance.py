@@ -15,7 +15,7 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         pins = subject.expected_pins(candle_root)
         self.assertEqual(
             pins["cakeml_commit"],
-            "936219bbc3021fa20418d62e85155f2d0092b9f9",
+            "0c170aa374ec178e5db8a9fe9276244ed7e0dcf7",
         )
         self.assertEqual(
             pins["hol4_commit"],
