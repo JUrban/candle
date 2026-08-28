@@ -8,8 +8,9 @@ test file(s). There is no checkpointing (no criu/DMTCP, no sudo): running one
 process per test, up to -j at a time, is what hides the cost of reloading
 hol.ml for every test.
 
-The Candle REPL transcript for each test is written to its own temporary log
-file under /tmp (via tempfile.mkstemp), e.g. /tmp/candle-100_arithmetic-XXXX.log.
+The Candle REPL transcript for each test is written to its own log.  Without a
+report or explicit --log-dir this remains a temporary file under /tmp.  A JSON
+report retains logs in a sibling directory by default.
 
 Two suites are available:
   * REGRESSION - a small subset, run by default.
@@ -17,7 +18,8 @@ Two suites are available:
                  GREAT_100_THEOREMS), run with --top100.
 
 Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
-to preserve the complete per-test table and exact source/executable identity.
+to preserve the complete per-test table, exact source/executable identity, and
+per-target logs.  --log-dir can select a different persistent log directory.
 
 Timeouts have two independent meanings.  The inactivity timeout is reset by
 each complete REPL output line.  An optional total wall timeout is an
@@ -544,11 +546,22 @@ def _format_error(repl, exc):
     return err
 
 
-def run_test(test, inactivity_timeout, wall_timeout=None, env=None):
+def _open_test_log(safe_name, log_dir=None):
+    """Create a unique test log, optionally in a persistent directory."""
+    if log_dir is not None:
+        log_dir = Path(log_dir)
+        log_dir.mkdir(parents=True, exist_ok=True)
+    fd, path = tempfile.mkstemp(
+        prefix=f"candle-{safe_name}-", suffix=".log",
+        dir=str(log_dir) if log_dir is not None else None)
+    return os.fdopen(fd, "w"), str(Path(path).resolve())
+
+
+def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
+             log_dir=None):
     """Run one fresh process with distinct inactivity and total wall limits."""
     safe_name = test.name.replace("/", "_")
-    fd, log_path = tempfile.mkstemp(prefix=f"candle-{safe_name}-", suffix=".log")
-    logfile = os.fdopen(fd, "w")
+    logfile, log_path = _open_test_log(safe_name, log_dir)
 
     repl = None
     sampler = None
@@ -749,7 +762,7 @@ class Reporter:
 
     @staticmethod
     def write_json(results, wall, path, suite, jobs, inactivity_timeout,
-                   wall_timeout, tests):
+                   wall_timeout, tests, log_dir):
         executable = CANDLE_ROOT / "candle" / "build" / "cake"
         executable_sha256 = hashlib.sha256(executable.read_bytes()).hexdigest()
         git_head = subprocess.check_output(
@@ -781,6 +794,7 @@ class Reporter:
             "candle_git_status": git_status,
             "candle_executable": str(executable.resolve()),
             "candle_executable_sha256": executable_sha256,
+            "log_directory": str(Path(log_dir).resolve()),
             "fingerprint_contract": {
                 "serializer": "candle/fingerprint.ml structural v1",
                 "load_pass_is_fingerprint_match": False,
@@ -826,14 +840,17 @@ def cap_jobs_for_heap(jobs, heap_mb):
     return max(1, min(jobs, avail // heap_mb))
 
 
-def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None):
+def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
+              log_dir=None):
     total = len(tests)
     print(f"Running {total} test(s) with {jobs} parallel worker(s).")
     wall_description = (f"{wall_timeout:g}s" if wall_timeout is not None
                         else "unbounded")
     print(f"Timeouts: {inactivity_timeout:g}s inactivity; "
           f"{wall_description} total wall per target.")
-    print("Logs: /tmp/candle-<test>-*.log\n")
+    log_description = (str(Path(log_dir).resolve()) if log_dir is not None
+                       else "/tmp/candle-<test>-*.log")
+    print(f"Logs: {log_description}\n")
 
     results = []
     done = 0
@@ -843,7 +860,7 @@ def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None):
         futures = {
             ex.submit(
                 run_test, t, inactivity_timeout,
-                wall_timeout=wall_timeout, env=env): t
+                wall_timeout=wall_timeout, env=env, log_dir=log_dir): t
             for t in tests
         }
         try:
@@ -905,6 +922,11 @@ def main():
         "--json-report", type=Path,
         help="write a machine-readable result and resource report",
     )
+    parser.add_argument(
+        "--log-dir", type=Path,
+        help=("retain per-target logs in this directory; with --json-report, "
+              "the default is a sibling <report-stem>-logs directory"),
+    )
 
     args = parser.parse_args()
 
@@ -947,14 +969,18 @@ def main():
             print(f"Capping workers {args.jobs} -> {jobs}: {TOP100_HEAP_MB} MB heap "
                   f"x {args.jobs} workers exceeds available RAM.")
 
+    log_dir = args.log_dir
+    if log_dir is None and args.json_report is not None:
+        log_dir = args.json_report.parent / f"{args.json_report.stem}-logs"
+
     results, wall = run_suite(
         tests, jobs, args.inactivity_timeout,
-        wall_timeout=wall_timeout, env=child_env)
+        wall_timeout=wall_timeout, env=child_env, log_dir=log_dir)
     Reporter.print_summary(results, wall)
     if args.json_report:
         Reporter.write_json(
             results, wall, args.json_report, suite_name, jobs,
-            args.inactivity_timeout, wall_timeout, tests)
+            args.inactivity_timeout, wall_timeout, tests, log_dir)
 
     unexpected = [r for r in results if r.status in (TestStatus.FAIL, TestStatus.TIMEOUT)]
     sys.exit(1 if unexpected else 0)

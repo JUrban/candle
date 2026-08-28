@@ -2,6 +2,8 @@
 """Unit tests for process-tree resource sampling."""
 
 import errno
+from pathlib import Path
+import tempfile
 import unittest
 from unittest import mock
 
@@ -37,6 +39,19 @@ class _FakeProc:
 
 
 class ProcessTreeSamplerTest(unittest.TestCase):
+    def test_explicit_log_directory_is_created_and_used(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log_dir = Path(directory) / "persistent-logs"
+            logfile, log_path = regression._open_test_log(
+                "100_target", log_dir)
+            try:
+                logfile.write("evidence\n")
+            finally:
+                logfile.close()
+            path = Path(log_path)
+            self.assertEqual(path.parent, log_dir.resolve())
+            self.assertEqual(path.read_text(encoding="utf-8"), "evidence\n")
+
     def test_vanished_processes_are_an_ordinary_snapshot_race(self):
         vanished = ProcessLookupError(errno.ESRCH, "process vanished")
         entries = [
