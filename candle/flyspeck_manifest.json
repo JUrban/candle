@@ -3175,25 +3175,25 @@
         "source": "candle:lists.ml"
       },
       {
-        "line": 5978,
+        "line": 5983,
         "member": "make",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5988,
+        "line": 5993,
         "member": "get",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5994,
+        "line": 5999,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 6005,
+        "line": 6010,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
@@ -5130,25 +5130,25 @@
         "source": "candle:lists.ml"
       },
       {
-        "line": 5978,
+        "line": 5983,
         "member": "make",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5988,
+        "line": 5993,
         "member": "get",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5994,
+        "line": 5999,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 6005,
+        "line": 6010,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
@@ -7002,8 +7002,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "32ff14536b22b6ed09f64faf4e1645e6",
-    "generated_source_sha256": "fecab8f91c7c38836f7eadc73b2aae8b64256f58b5ccca4e94903d84fc89a2d6",
+    "generated_source_md5": "f87a9a3f7ed42149eb0c4d9c25898c6d",
+    "generated_source_sha256": "917b6f7989cf8b17d3564d34c4f4f3a636af7ea84541a27271a32ea8b254e1dc",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -13121,10 +13121,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "60a463cb178b8fe9a134d8f2e9b8c576",
+      "md5": "21fbe1dccc6970fc9acc18f693e04ac9",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "4d7547f84560c164b69850922c8691fa6109317d3d6284d2a42a099ad6766f77"
+      "sha256": "4cdf0258b7b7af3b255d1fe9a607cd2f69480986f75620c2ab1b3adb788b22bb"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -14125,7 +14125,7 @@
       "sha256": "b94b489b7bb95552cf9c3737dff8bad55b26f01f47c0359501facd95b4b2d41f"
     },
     "candle:metis.ml": {
-      "bytes": 343744,
+      "bytes": 343995,
       "dependencies": [
         {
           "kind": "needs",
@@ -14139,10 +14139,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "8a508f7bdeb51686002e7d802ff8152f",
+      "md5": "4295844d17da434e96f1835f81f93829",
       "path": "metis.ml",
       "repository": "candle",
-      "sha256": "2f5aeaf875085728dfa7fab89c13319167a861104252add838b279fba2895cc3"
+      "sha256": "caef5e5f29d4e5e8301c35b5df1fa5eef5dc83fb25d66ae12dd1e70c3351066e"
     },
     "candle:nets.ml": {
       "bytes": 4726,
@@ -22390,43 +22390,43 @@
         "source": "candle:meson.ml"
       },
       {
-        "line": 4095,
+        "line": 4100,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
-        "line": 4098,
+        "line": 4103,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
-        "line": 4104,
+        "line": 4109,
         "member": "print_break",
-        "module": "Format",
-        "source": "candle:metis.ml"
-      },
-      {
-        "line": 4105,
-        "member": "open_vbox",
-        "module": "Format",
-        "source": "candle:metis.ml"
-      },
-      {
-        "line": 4106,
-        "member": "print_break",
-        "module": "Format",
-        "source": "candle:metis.ml"
-      },
-      {
-        "line": 4108,
-        "member": "close_box",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
         "line": 4110,
+        "member": "open_vbox",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4111,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4113,
+        "member": "close_box",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4115,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"

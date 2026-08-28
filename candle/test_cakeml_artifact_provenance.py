@@ -57,6 +57,30 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ProvenanceError, "ambiguous"):
                 subject.version_details(executable)
 
+    def test_elf_dynamic_closure_pins_loaded_libc(self) -> None:
+        executable = Path("/bin/true")
+        closure = subject.elf_dynamic_closure(executable)
+        self.assertEqual(
+            closure["policy"],
+            "ldd_resolved_absolute_paths_and_content_v1",
+        )
+        self.assertTrue(closure["files"])
+        self.assertTrue(any(
+            Path(path).name.startswith("libc.so")
+            for path in closure["files"]
+        ))
+        subject.validate_elf_dynamic_closure(executable, closure)
+
+    def test_elf_dynamic_closure_rejects_tampered_record(self) -> None:
+        executable = Path("/bin/true")
+        closure = subject.elf_dynamic_closure(executable)
+        path = next(iter(closure["files"]))
+        closure["files"][path]["sha256"] = "0" * 64
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "closure mismatch",
+        ):
+            subject.validate_elf_dynamic_closure(executable, closure)
+
 
 if __name__ == "__main__":
     unittest.main()

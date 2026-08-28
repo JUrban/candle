@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -106,6 +107,63 @@ def version_details(executable: Path) -> tuple[str, str, str]:
     require(len(cake_lines) == 1 and len(hol_lines) == 1,
             "linked compiler version identity missing or ambiguous")
     return cake_lines[0], hol_lines[0], output
+
+
+def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
+    """Pin the host ELF objects selected for this executable by ldd."""
+    executable = executable.resolve()
+    require(executable.is_file(), f"missing ELF executable: {executable}")
+    require(executable.read_bytes()[:4] == b"\x7fELF",
+            f"runtime executable is not ELF: {executable}")
+    try:
+        observed = subprocess.run(
+            ["/usr/bin/ldd", str(executable)], check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            timeout=30,
+        ).stdout
+    except (OSError, subprocess.SubprocessError) as error:
+        raise ProvenanceError(
+            f"could not inspect ELF dependencies: {executable}") from error
+    require("not found" not in observed,
+            f"unresolved ELF dependency for {executable}")
+
+    absolute_path = re.compile(r"(?:=>\s+)?(/[^\s(]+)\s+\(")
+    virtual_object = re.compile(r"([^\s]+)\s+\(0x[0-9a-fA-F]+\)")
+    files: dict[str, dict[str, Any]] = {}
+    virtual_objects: set[str] = set()
+    for raw_line in observed.splitlines():
+        line = raw_line.strip()
+        if not line or line == "statically linked":
+            continue
+        match = absolute_path.search(line)
+        if match:
+            path = Path(match.group(1)).resolve(strict=True)
+            files[str(path)] = file_record(path)
+            continue
+        match = virtual_object.fullmatch(line)
+        require(match is not None,
+                f"unrecognized ldd output for {executable}: {line}")
+        virtual_objects.add(match.group(1))
+    require(files, f"ELF dependency closure is empty: {executable}")
+    return {
+        "policy": "ldd_resolved_absolute_paths_and_content_v1",
+        "files": {path: files[path] for path in sorted(files)},
+        "virtual_objects": sorted(virtual_objects),
+    }
+
+
+def validate_elf_dynamic_closure(
+    executable: Path,
+    record: dict[str, Any],
+) -> None:
+    require(isinstance(record, dict), "malformed ELF dependency closure")
+    require(set(record) == {"policy", "files", "virtual_objects"},
+            "malformed ELF dependency closure")
+    require(record["policy"] ==
+            "ldd_resolved_absolute_paths_and_content_v1",
+            "unsupported ELF dependency policy")
+    observed = elf_dynamic_closure(executable)
+    require(observed == record, "ELF dependency closure mismatch")
 
 
 def record_bootstrap(
@@ -220,7 +278,7 @@ def record_linked(
     require(hol_commit == bootstrap["hol4_commit"],
             "linked compiler HOL4 revision mismatch")
     record = {
-        "schema": 1,
+        "schema": 2,
         "kind": "candle-linked-pinned-cakeml",
         "candle_commit": candle_head,
         "cakeml_commit": cake_commit,
@@ -230,6 +288,7 @@ def record_linked(
         "bootstrap_record_path": str(bootstrap_record_path),
         "cake_patch": file_record(candle_root / "candle/cake.S.patch"),
         "outputs": {name: file_record(build_dir / name) for name in LINKED_OUTPUTS},
+        "runtime_elf_closure": elf_dynamic_closure(build_dir / "cake"),
         "version_output_sha256": hashlib.sha256(version_output.encode()).hexdigest(),
     }
     output_path = output_path.resolve()
@@ -243,7 +302,7 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     candle_root = candle_root.resolve()
     record_path = candle_root / LINKED_RECORD_RELATIVE
     record = load_object(record_path)
-    require(record.get("schema") == 1, "unsupported linked provenance schema")
+    require(record.get("schema") == 2, "unsupported linked provenance schema")
     require(record.get("kind") == "candle-linked-pinned-cakeml",
             "wrong linked provenance kind")
     candle_head = record.get("candle_commit")
@@ -267,6 +326,9 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     build_dir = candle_root / "candle/build"
     for name in LINKED_OUTPUTS:
         validate_file_record(build_dir / name, outputs[name], f"linked {name}")
+    validate_elf_dynamic_closure(
+        build_dir / "cake", record.get("runtime_elf_closure", {}),
+    )
     cake_commit, hol_commit, version_output = version_details(build_dir / "cake")
     require(cake_commit == pins["cakeml_commit"], "runtime CakeML revision mismatch")
     require(hol_commit == pins["hol4_commit"], "runtime HOL4 revision mismatch")

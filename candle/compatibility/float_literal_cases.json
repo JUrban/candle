@@ -6,7 +6,7 @@
     "version": "4.14.1",
     "bit_observation": "Int64.bits_of_float printed as an unsigned 64-bit integer"
   },
-  "supported_subset": "decimal literals accepted by CakeML's existing scan_float_or_int lexer, including decimal points, exponents, and separator underscores",
+  "supported_subset": "decimal literals accepted by CakeML's existing scan_float_or_int lexer and converted by Double.fromString without ERANGE, including the pinned decimal points, exponents, and separator underscores",
   "out_of_scope": [
     {
       "syntax": "hexadecimal floating-point literals such as 0x1.0p0",
@@ -17,6 +17,20 @@
     {
       "id": "hexadecimal_float",
       "literal": "0x1.0p0"
+    }
+  ],
+  "runtime_divergence_cases": [
+    {
+      "id": "overflow_to_infinity",
+      "literal": "1e309",
+      "ocaml_expected_word64_decimal": "9218868437227405312",
+      "candle_expected": "Option.valOf raises because Double.fromString maps ERANGE to None"
+    },
+    {
+      "id": "underflow_to_zero",
+      "literal": "1e-4000",
+      "ocaml_expected_word64_decimal": "0",
+      "candle_expected": "Option.valOf raises because Double.fromString maps ERANGE to None"
     }
   ],
   "positive_cases": [

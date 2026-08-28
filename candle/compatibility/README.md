@@ -15,12 +15,13 @@ operation. It adds no FFI command. Because that lowering is expressed as
 exactly those two global functions while stubbing the remainder of both
 CakeML modules. This is required for literals parsed after `hol.ml` loads the
 insulation layer. Since `metis.ml` later replaces the global `Option` module,
-its compatibility module also preserves only `valOf`. The differential gate
+its compatibility module also preserves `valOf`. The differential gate
 loads the complete `hol.ml` stack before checking the literal corpus, so later
 module shadowing cannot silently invalidate the parser runtime.
 
-`float_literal_cases.json` defines the supported decimal subset and pins exact
-OCaml 4.14.1 IEEE-754 words as well as invalid parses. Run the reference side:
+`float_literal_cases.json` defines the supported non-ERANGE decimal subset and
+pins exact OCaml 4.14.1 IEEE-754 words as well as invalid parses. Run the
+reference side:
 
 ```sh
 python3 candle/compatibility/test_float_literals.py
@@ -38,7 +39,16 @@ is explicitly out of scope because CakeML's retained scanner is decimal-only
 and the audited Great 100 slice contains no hexadecimal float literal. The
 compiled-Candle half explicitly requires the representative hexadecimal form
 to remain rejected, checks that invalid `Double.fromString` returns `None`, and
-checks that `Option.valOf None` raises after insulation.
+checks that `Option.valOf None` raises after insulation. The bridge uses host
+`strtod` and maps `ERANGE` to `None`; consequently the gate also records the
+intentional current divergence for decimal overflow (`1e309`) and underflow
+(`1e-4000`), which OCaml maps to infinity and zero. Those forms are not in the
+claimed subset.
+
+The linked-artifact provenance also pins the resolved ELF loader, libc, and
+libm contents used by the executable, because the conversion depends on host
+`strtod` behavior.
+
 `float_literal_progress.json` records the completed proof build without treating
 it as runtime evidence. `benchmark_float_literals.py` measures representative
 compiled-Candle load time for integer controls, explicit `Double.fromString`,

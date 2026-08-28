@@ -69,7 +69,7 @@ let candle_flyspeck_source_digests = [
   ("candle","lib.ml","c69216874dd036245265a89594624b15");
   ("candle","lists.ml","676ea3dd37f469c97e2bb902fe8de7d2");
   ("candle","meson.ml","e87109fec8872e30863ec56d0b4e9311");
-  ("candle","metis.ml","8a508f7bdeb51686002e7d802ff8152f");
+  ("candle","metis.ml","4295844d17da434e96f1835f81f93829");
   ("candle","nets.ml","c973fe7157a4efe10d4b487790abcf49");
   ("candle","normalizer.ml","24a0a7a8129832d635286e363d57094c");
   ("candle","nums.ml","2b214213639cd86bcf99a09951830619");

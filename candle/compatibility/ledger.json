@@ -46,7 +46,7 @@
         "cakeml_commit": "8ef793fd847595366e711ada0d2cc1a520622b95",
         "parser_commit": "30e014bd9cfd80b356f4718124cdbeed0409c10e",
         "description": "restore the retained FloatT grammar path and lower each normalized decimal lexeme to Option.valOf (Double.fromString lexeme)",
-        "supported_subset": "decimal points, decimal exponents, and separator underscores already recognized and normalized by scan_float_or_int",
+        "supported_subset": "decimal points, decimal exponents, and separator underscores recognized and normalized by scan_float_or_int whose normalized values Double.fromString converts without ERANGE",
         "excluded_syntax": "hexadecimal float literals",
         "new_ffi": false,
         "trust_and_performance_boundary": "uses the existing double_fromString basis FFI once per literal at evaluation time; no frexp, byte-packing shim, or catch-all FFI dispatch is imported"

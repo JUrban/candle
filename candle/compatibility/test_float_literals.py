@@ -54,7 +54,13 @@ def check_ocaml(payload, ocamlc):
             "  Printf.printf \"%s=%Lu\\n\" id (Int64.bits_of_float value)",
             ";;",
         ]
-        for case in payload["positive_cases"]:
+        reference_cases = payload["positive_cases"] + [
+            {**case,
+             "expected_word64_decimal":
+                 case["ocaml_expected_word64_decimal"]}
+            for case in payload["runtime_divergence_cases"]
+        ]
+        for case in reference_cases:
             positive_program.append(
                 f'print_bits "{case["id"]}" ({case["literal"]});;')
         positive_source.write_text("\n".join(positive_program) + "\n",
@@ -73,7 +79,7 @@ def check_ocaml(payload, ocamlc):
                            for line in observed.stdout.splitlines())
         expected_bits = {
             case["id"]: case["expected_word64_decimal"]
-            for case in payload["positive_cases"]
+            for case in reference_cases
         }
         if actual_bits != expected_bits:
             raise AssertionError(
@@ -94,7 +100,9 @@ def check_ocaml(payload, ocamlc):
 
     print(f"OCaml {actual_version}: "
           f'{len(payload["positive_cases"])} positive values and '
-          f'{len(payload["negative_cases"])} negative parses PASS')
+          f'{len(payload["negative_cases"])} negative parses plus '
+          f'{len(payload["runtime_divergence_cases"])} runtime-boundary '
+          'references PASS')
 
 
 def _candle_positive_source(payload):
@@ -118,8 +126,16 @@ def _candle_positive_source(payload):
          'let _ = Option.valOf None in false with _ -> true;;'),
         ('let () = if candle_float_valof_none_raises then () else '
          'failwith "Option.valOf None";;'),
-        "let candle_float_differential_passed = true;;",
     ])
+    for case in payload["runtime_divergence_cases"]:
+        binding = f'candle_float_{case["id"]}_raises'
+        lines.extend([
+            (f'let {binding} = try let _ = {case["literal"]} in false '
+             'with _ -> true;;'),
+            (f'let () = if {binding} then () else failwith '
+             f'"runtime boundary: {case["id"]}";;'),
+        ])
+    lines.append("let candle_float_differential_passed = true;;")
     return "\n".join(lines) + "\n"
 
 
@@ -161,7 +177,21 @@ def check_candle(payload, candle_root, timeout):
             str(launcher), encoding="utf-8", logfile=transcript,
             cwd=str(root), env=os.environ.copy())
         _expect_prompt(process, timeout)
-        process.sendline('#use "hol.ml";;')
+        process.send('#use "hol.ml";;\n'
+                     'let candle_hol_load_complete = '
+                     '(check_axioms (); true);;\n')
+        index = process.expect([
+            r"\nval candle_hol_load_complete = true",
+            r"\n(ERROR: .+)",
+            r"\n(Parsing failed)",
+            r"\n(EXCEPTION: .+)",
+            pexpect.TIMEOUT,
+            pexpect.EOF,
+        ], timeout=timeout)
+        if index != 0:
+            detail = (process.match.group(1) if index in (1, 2, 3)
+                      else "timeout" if index == 4 else "unexpected EOF")
+            raise AssertionError(f"Candle hol.ml load failed: {detail}")
         _expect_prompt(process, timeout)
         with tempfile.TemporaryDirectory(prefix="candle-float-source-") as tmp:
             source = Path(tmp) / "positive.ml"
@@ -222,6 +252,7 @@ def check_candle(payload, candle_root, timeout):
                         f'Candle accepted excluded case {case["id"]}: '
                         f'{detail}')
                 _expect_prompt(process, timeout)
+
         passed = True
     except Exception as error:
         transcript.flush()
@@ -236,7 +267,9 @@ def check_candle(payload, candle_root, timeout):
 
     print(f"Candle: {len(payload['positive_cases'])} positive values, "
           f"{len(payload['negative_cases'])} negative parses, and "
-          f"{len(payload['candle_excluded_cases'])} excluded forms PASS")
+          f"{len(payload['candle_excluded_cases'])} excluded forms plus "
+          f"{len(payload['runtime_divergence_cases'])} declared runtime "
+          "boundaries PASS")
 
 
 def main():
