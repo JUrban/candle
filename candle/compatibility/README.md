@@ -14,8 +14,10 @@ operation. It adds no FFI command. Because that lowering is expressed as
 `Option.valOf (Double.fromString ...)`, the generated insulation layer retains
 exactly those two global functions while stubbing the remainder of both
 CakeML modules. This is required for literals parsed after `hol.ml` loads the
-insulation layer; the differential gate therefore loads `insulate.ml` before
-checking the literal corpus.
+insulation layer. Since `metis.ml` later replaces the global `Option` module,
+its compatibility module also preserves only `valOf`. The differential gate
+loads the complete `hol.ml` stack before checking the literal corpus, so later
+module shadowing cannot silently invalidate the parser runtime.
 
 `float_literal_cases.json` defines the supported decimal subset and pins exact
 OCaml 4.14.1 IEEE-754 words as well as invalid parses. Run the reference side:

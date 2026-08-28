@@ -37,6 +37,23 @@ class InsulateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Option.valOf"):
             insulate.generate_ocaml_bindings(bindings)
 
+    def test_missing_parser_runtime_module_fails_closed(self):
+        bindings = {
+            "Double": [{"func_name": "fromString", "param_count": 1}],
+        }
+
+        with self.assertRaisesRegex(ValueError, "missing Option module"):
+            insulate.generate_ocaml_bindings(bindings)
+
+    def test_parser_runtime_arity_drift_fails_closed(self):
+        bindings = {
+            "Double": [{"func_name": "fromString", "param_count": 2}],
+            "Option": [{"func_name": "valOf", "param_count": 1}],
+        }
+
+        with self.assertRaisesRegex(ValueError, "unexpected arity"):
+            insulate.generate_ocaml_bindings(bindings)
+
 
 if __name__ == "__main__":
     unittest.main()

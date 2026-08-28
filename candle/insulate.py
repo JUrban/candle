@@ -50,8 +50,8 @@ MODULE_TYPES = {
 # those two functions available after insulation; all other functions remain
 # accessible solely through Cake.
 PARSER_RUNTIME_BINDINGS = {
-    'Double': ('fromString',),
-    'Option': ('valOf',),
+    'Double': (('fromString', 1),),
+    'Option': (('valOf', 1),),
 }
 
 
@@ -165,6 +165,28 @@ def emit_function_binding(lines, indent, target_module, binding_info):
             f"{target_module}.{func_name} {params}")
 
 
+def parser_runtime_binding(bindings, module_name, function_name,
+                           expected_parameters):
+    """Return one exact compiler-runtime binding or fail closed."""
+    if module_name not in bindings:
+        raise ValueError(
+            f"missing {module_name} module required by parser runtime")
+    matches = [
+        binding_info
+        for binding_info in bindings[module_name]
+        if binding_info['func_name'] == function_name
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected one {module_name}.{function_name} binding for parser "
+            "runtime")
+    if matches[0]['param_count'] != expected_parameters:
+        raise ValueError(
+            f"unexpected arity for parser runtime binding "
+            f"{module_name}.{function_name}")
+    return matches[0]
+
+
 def generate_ocaml_bindings(bindings):
     """Generate OCaml code for the Cake module and restricted module stubs."""
     lines = []
@@ -208,27 +230,28 @@ def generate_ocaml_bindings(bindings):
     lines.append("")
 
     for ocaml_module_name in module_names:
-        parser_names = PARSER_RUNTIME_BINDINGS.get(ocaml_module_name, ())
-        if ocaml_module_name in MODULE_TYPES or parser_names:
+        parser_bindings = PARSER_RUNTIME_BINDINGS.get(ocaml_module_name, ())
+        if ocaml_module_name in MODULE_TYPES or parser_bindings:
             lines.append(f"module {ocaml_module_name} = struct")
             for entry in MODULE_TYPES.get(ocaml_module_name, ()):
                 params_str, type_name = format_type_entry(entry)
                 lines.append(f"  type {params_str}{type_name} = {params_str}Cake.{ocaml_module_name}.{type_name}")
-            for parser_name in parser_names:
-                matches = [
-                    binding_info
-                    for binding_info in bindings[ocaml_module_name]
-                    if binding_info['func_name'] == parser_name
-                ]
-                if len(matches) != 1:
-                    raise ValueError(
-                        f"expected one {ocaml_module_name}.{parser_name} "
-                        "binding for parser runtime")
+            for parser_name, expected_parameters in parser_bindings:
+                binding_info = parser_runtime_binding(
+                    bindings, ocaml_module_name, parser_name,
+                    expected_parameters)
                 emit_function_binding(
-                    lines, "  ", f"Cake.{ocaml_module_name}", matches[0])
+                    lines, "  ", f"Cake.{ocaml_module_name}", binding_info)
             lines.append("end;;")
         else:
             lines.append(f"module {ocaml_module_name} = struct end;;")
+
+    # Required modules absent from types.txt do not appear in module_names, so
+    # validate the complete closed allowlist separately as well.
+    for module_name, parser_bindings in PARSER_RUNTIME_BINDINGS.items():
+        for parser_name, expected_parameters in parser_bindings:
+            parser_runtime_binding(
+                bindings, module_name, parser_name, expected_parameters)
 
     lines.append("")
     lines.append("(* End of generated section *)")
