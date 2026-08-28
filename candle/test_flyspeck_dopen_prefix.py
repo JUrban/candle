@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import hashlib
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import flyspeck_dopen_prefix as subject
 
 
