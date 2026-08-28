@@ -52,6 +52,100 @@ class FingerprintPlumbingTest(unittest.TestCase):
             record["theorem_sha256"],
             hashlib.sha256(b"theorem-serialization").hexdigest())
 
+    def test_exact_approved_identity_becomes_a_match(self):
+        fields = [
+            regression.FINGERPRINT_MARKER,
+            b"THM".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"conclusion".hex(), b"axioms".hex(), "0", "3",
+        ]
+        with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", delete=False) as logfile:
+            logfile.write("\t".join(fields) + "\n")
+            path = Path(logfile.name)
+        serializer_sha256 = hashlib.sha256(
+            regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
+        record = {
+            "name": "THM",
+            "theorem_sha256": hashlib.sha256(b"theorem").hexdigest(),
+            "hypotheses_sha256": hashlib.sha256(b"hypotheses").hexdigest(),
+            "conclusion_sha256": hashlib.sha256(b"conclusion").hexdigest(),
+            "global_axioms_sha256": hashlib.sha256(b"axioms").hexdigest(),
+            "hypothesis_count": 0,
+            "global_axiom_count": 3,
+        }
+        try:
+            report = regression._read_fingerprint_records(
+                path, ("THM",), "audited", {
+                    "serializer_sha256": serializer_sha256,
+                    "theorems": [record],
+                })
+        finally:
+            path.unlink()
+        self.assertEqual(report["status"], "matched")
+        self.assertTrue(report["expected_identities_present"])
+
+    def test_expected_identity_mismatch_fails_closed(self):
+        fields = [
+            regression.FINGERPRINT_MARKER,
+            b"THM".hex(), b"observed".hex(), b"hypotheses".hex(),
+            b"conclusion".hex(), b"axioms".hex(), "0", "3",
+        ]
+        with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", delete=False) as logfile:
+            logfile.write("\t".join(fields) + "\n")
+            path = Path(logfile.name)
+        serializer_sha256 = hashlib.sha256(
+            regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
+        try:
+            with self.assertRaisesRegex(
+                    regression.LoadFailure, "fingerprint mismatch"):
+                regression._read_fingerprint_records(
+                    path, ("THM",), "audited", {
+                        "serializer_sha256": serializer_sha256,
+                        "theorems": [],
+                    })
+        finally:
+            path.unlink()
+
+    def test_manual_review_mapping_cannot_be_approved(self):
+        with self.assertRaisesRegex(
+                regression.LoadFailure, "manual-review mapping"):
+            regression._match_expected_identities(
+                [], {"serializer_sha256": "0" * 64, "theorems": []},
+                "0" * 64, "manual_review")
+
+    def test_report_summary_never_counts_load_only_as_s1(self):
+        tests = [
+            regression.Test("matched", (), ("A",), "audited", {"x": 1}),
+            regression.Test("observed", (), ("B",), "audited", None),
+            regression.Test("failed", (), ("C",), "audited", None),
+            regression.Test("review", (), ("D",), "manual_review", None),
+        ]
+        results = [
+            regression.TestResult(
+                "matched", regression.TestStatus.PASS,
+                fingerprints={"status": "matched"}),
+            regression.TestResult(
+                "observed", regression.TestStatus.PASS,
+                fingerprints={"status": "observed_uncompared"}),
+            regression.TestResult("failed", regression.TestStatus.FAIL),
+            regression.TestResult("review", regression.TestStatus.PASS),
+        ]
+        summary = regression.Reporter.s1_evidence_summary(
+            results, tests, "top100")
+        self.assertEqual(summary["expected_identity_target_count"], 1)
+        self.assertEqual(summary["manual_review_mapping_target_count"], 1)
+        self.assertEqual(summary["matched_target_count"], 1)
+        self.assertEqual(summary["observed_uncompared_target_count"], 1)
+        self.assertEqual(summary["missing_or_failed_fingerprint_target_count"], 2)
+        self.assertFalse(summary["suite_closed"])
+
+        partial = regression.Reporter.s1_evidence_summary(
+            results[:1], tests, "top100")
+        self.assertEqual(
+            partial["missing_or_failed_fingerprint_target_count"], 3)
+        self.assertFalse(partial["suite_closed"])
+
     def test_malformed_wire_encoding_fails_closed(self):
         fields = [
             regression.FINGERPRINT_MARKER,
