@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 import reference_fingerprints as reference
 import regression
@@ -88,11 +89,20 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     reference.CollectionError, "differs from manifest"):
                 reference.build_plan(
                     "100/gcd", root, launcher, runtime, ocamlc, NONCE)
-        with self.assertRaisesRegex(
-                reference.CollectionError, "manual-review"):
-            reference.build_plan(
-                "100/cantor", "/missing", "/missing", "/missing",
-                "/missing", NONCE)
+        manual_target = {
+            "fingerprint_request": {
+                "mapping_status": "manual_review",
+                "expected_identities": None,
+            },
+        }
+        with mock.patch.object(
+                reference, "_target_from_manifest",
+                return_value=({}, manual_target)):
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "manual-review"):
+                reference.build_plan(
+                    "manual-fixture", "/missing", "/missing", "/missing",
+                    "/missing", NONCE)
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {

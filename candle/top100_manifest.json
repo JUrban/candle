@@ -388,9 +388,9 @@
       "expected_status": "pass",
       "skip": null,
       "fingerprint_request": {
-        "mapping_status": "manual_review",
-        "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "the original Great-100 file named the proper set-cardinality result CANTOR at line 25; later variants commit f83edb4 appended and shadowed it with the no-surjection result at line 62, and pinned source does not select which historical formulation is the acceptance boundary",
+        "mapping_status": "audited",
+        "mapping_basis": "the acceptance boundary is the pinned post-load environment, so the final visible CANTOR binding at line 62 controls; the shadowed line-25 cardinality formulation remains recorded but is not addressable after the ordered source load",
+        "review_note": null,
         "theorems": [
           {
             "name": "CANTOR",
@@ -1395,9 +1395,9 @@
       "expected_status": "pass",
       "skip": null,
       "fingerprint_request": {
-        "mapping_status": "manual_review",
-        "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "the source independently headlines L2 convergence, Dini's test, Jordan bounded-variation convergence, and Fejer Cesaro summability; it never designates one result or the proposed four-result set as the canonical Great-100 boundary",
+        "mapping_status": "audited",
+        "mapping_basis": "the broad source has no singular result alias, so acceptance conservatively requires all four independently headlined culmination results: L2 convergence, Dini, Jordan bounded variation, and Fejer Cesaro summability",
+        "review_note": null,
         "theorems": [
           {
             "name": "FOURIER_SERIES_L2",
@@ -1446,7 +1446,7 @@
       },
       "baseline_observation": {
         "status": "pass",
-        "evidence_scope": "load_only; theorem mapping is manual-review and theorem plus assumption fingerprints remain missing",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
         "log_active_seconds_approx": 3977.2,
         "peak_rss_kib": null,
         "timeout_policy": "1800-second inactivity deadline; no total wall deadline",

@@ -1,10 +1,10 @@
-# Great 100 manual mapping audit
+# Great 100 theorem mapping audit
 
 Pinned-source audit performed 2026-08-28. This audit selects theorem value
 boundaries only; it does not provide expected identities or turn a load pass
 into S1 evidence.
 
-## `100/cantor`: remains manual review
+## `100/cantor`: audited final post-load binding
 
 The initial Great-100 source called the proper arbitrary-set cardinality result
 at line 25 `CANTOR`:
@@ -16,13 +16,15 @@ add Cantor variants, appended a second `CANTOR` at current line 62:
 
 `!f:A->(A->bool). ~(!s. ?x. f x = s)`.
 
-The second binding shadows the historical Great-100 binding. Although the
-statements express related forms of Cantor's theorem, structural fingerprints
-are different and the original value is no longer addressable after the load.
-Pinned source does not say whether historical continuity or the final visible
-binding controls acceptance. The mapping therefore remains `manual_review`.
+The second binding shadows the historical Great-100 binding. The statements
+have different structural fingerprints, and the original value is no longer
+addressable after the ordered source load. S1 checks execution of the pinned
+source and its resulting environment, not a reconstructed historical file.
+The deterministic acceptance rule is therefore the final visible `CANTOR`
+binding at line 62. The line-25 declaration remains recorded as shadowed, and
+the mapping is `audited` without claiming that the two statements are equal.
 
-## `100/fourier`: remains manual review
+## `100/fourier`: audited conservative four-result boundary
 
 The source independently headlines and proves at least four materially
 different candidate results:
@@ -35,10 +37,12 @@ different candidate results:
   for continuous periodic functions.
 
 The file title says “basics of Fourier series,” and the section comments name
-each result, but no comment designates one theorem—or the proposed four-theorem
-set—as the canonical Great-100 boundary. These statements are not mere proof
-rebindings of one identity. The proposed set remains explicit but
-`manual_review` pending an external acceptance decision.
+each result, but no comment designates a singular theorem alias. Selecting only
+one would make the boundary arbitrary. The project therefore uses the
+conservative conjunctive rule: every independently headlined culmination
+result above must match its approved reference identity. Requiring all four
+can only make acceptance stricter than choosing one, and the explicit set is
+now `audited`.
 
 ## `100/piseries`: audited
 

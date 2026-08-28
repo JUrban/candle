@@ -126,11 +126,12 @@ class Top100ManifestTest(unittest.TestCase):
         self.assertNotEqual(statements[0], statements[1])
         self.assertEqual(statements[1], statements[2])
 
-    def test_cantor_and_fourier_ambiguities_remain_fail_closed(self):
+    def test_cantor_and_fourier_boundaries_are_conservatively_audited(self):
         targets = {target["name"]: target for target in self.manifest["targets"]}
         cantor = targets["100/cantor"]["fingerprint_request"]
-        self.assertEqual(cantor["mapping_status"], "manual_review")
-        self.assertIn("f83edb4", cantor["review_note"])
+        self.assertEqual(cantor["mapping_status"], "audited")
+        self.assertIsNone(cantor["review_note"])
+        self.assertIn("post-load environment", cantor["mapping_basis"])
         self.assertEqual(
             [item["line"] for item in cantor["theorems"][0][
                 "shadowed_declarations"]], [25])
@@ -138,8 +139,9 @@ class Top100ManifestTest(unittest.TestCase):
             cantor["theorems"][0]["resolved_declaration"]["line"], 62)
 
         fourier = targets["100/fourier"]["fingerprint_request"]
-        self.assertEqual(fourier["mapping_status"], "manual_review")
-        self.assertIn("never designates", fourier["review_note"])
+        self.assertEqual(fourier["mapping_status"], "audited")
+        self.assertIsNone(fourier["review_note"])
+        self.assertIn("all four", fourier["mapping_basis"])
         self.assertEqual(
             [item["name"] for item in fourier["theorems"]],
             ["FOURIER_SERIES_L2", "FOURIER_DINI_TEST",
