@@ -3,7 +3,8 @@
 
 The input is a materialized plan produced by ``flyspeck_stratum_plan.py``.
 Every attempt starts a fresh process, reauthenticates the linked CakeML
-artifact and all plan inputs, and writes an immutable attempt directory.  A
+artifact and all plan inputs, and writes an authenticated read-only runtime
+snapshot plus an append-only-by-convention attempt directory.  A
 successful receipt proves only that the selected source actions completed; it
 does not become S2/S3 evidence without the separately specified semantic
 fingerprints.
@@ -17,12 +18,15 @@ import hashlib
 import json
 import os
 import re
+import secrets
+import shutil
 import signal
 import subprocess
 from pathlib import Path
 from typing import Any
 
 import cakeml_artifact_provenance
+import flyspeck_stratum_plan
 
 
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
@@ -64,6 +68,12 @@ def json_bytes(value: Any) -> bytes:
     return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode()
 
 
+def atomic_write_json(path: Path, value: Any) -> None:
+    temporary = path.with_name(f"{path.name}.tmp.{os.getpid()}")
+    temporary.write_bytes(json_bytes(value))
+    os.replace(temporary, path)
+
+
 def hash_file(path: Path) -> dict[str, Any]:
     sha256 = hashlib.sha256()
     md5 = hashlib.md5(usedforsecurity=False)
@@ -94,18 +104,6 @@ def git_output(root: Path, *arguments: str) -> str:
         ).stdout.strip()
     except subprocess.CalledProcessError as error:
         raise ContractError(f"git check failed for {root}: {error.stderr.strip()}") from error
-
-
-def validate_clean_descendant(root: Path, ancestor: str, label: str) -> str:
-    head = git_output(root, "rev-parse", "HEAD")
-    result = subprocess.run(
-        ["git", "-C", str(root), "merge-base", "--is-ancestor", ancestor, head],
-        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
-    )
-    require(result.returncode == 0, f"{label} head is not descended from {ancestor}")
-    require(not git_output(root, "status", "--porcelain", "--untracked-files=all"),
-            f"{label} root is not clean")
-    return head
 
 
 def validate_clean_exact(root: Path, head: str, label: str) -> None:
@@ -160,12 +158,59 @@ def validate_plan(
 
     repositories = plan.get("repositories")
     require(isinstance(repositories, dict), "missing plan repository bindings")
-    candle_head = validate_clean_descendant(
-        candle_root, repositories["candle_materialization_head"], "Candle",
-    )
+    candle_head = repositories.get("candle_materialization_head")
+    require(isinstance(candle_head, str), "missing materialized Candle head")
+    validate_clean_exact(candle_root, candle_head, "Candle")
     require(candle_head == linked_record.get("candle_commit"),
             "linked executable does not bind the current Candle head")
     validate_clean_exact(flyspeck_root, repositories["flyspeck_commit"], "Flyspeck")
+
+    # Do not trust a self-consistent plan.  Reconstruct its complete semantic
+    # projection from the pinned manifest and full driver, revalidate all host
+    # roots, then require exact object and prefix equality.
+    expected_base = repositories.get("candle_integration_base")
+    require(isinstance(expected_base, str), "missing Candle integration base")
+    derived_audit = flyspeck_stratum_plan.audit_manifest(candle_root)
+    derived_validated = flyspeck_stratum_plan.validate_inputs(
+        candle_root, expected_base, flyspeck_root, overlay_root,
+        generated_root, derived_audit,
+    )
+    derived_plan, derived_prefixes = flyspeck_stratum_plan.make_plan(
+        expected_base, derived_audit, derived_validated,
+    )
+    require(plan == derived_plan,
+            "stored stratum plan differs from independently reconstructed plan")
+    expected_materialization = {
+        "schema": 1,
+        "claim": "host path and validation receipt only; not S2/S3 evidence",
+        "plan_sha256": plan_hash["sha256"],
+        "planner_source_sha256": hash_file(
+            candle_root / "candle/flyspeck_stratum_plan.py"
+        )["sha256"],
+        "host_roots": {
+            "candle": str(candle_root),
+            "flyspeck": str(flyspeck_root),
+            "normalization_overlay": str(overlay_root),
+            "generated_inputs": str(generated_root),
+        },
+        "validated_counts": {
+            "source_nodes": len(derived_validated["source_bindings"]),
+            "normalization_outputs": len(derived_validated["normalization_bindings"]),
+            "generated_inputs": len(derived_validated["generated_bindings"]),
+            "actions": len(derived_audit["actions"]),
+            "boundaries": len(derived_plan["boundaries"]),
+        },
+    }
+    require(materialization == expected_materialization,
+            "stored host materialization differs from independent reconstruction")
+    for filename, content in derived_prefixes.items():
+        relative = Path(filename)
+        require(not relative.is_absolute() and ".." not in relative.parts,
+                f"unsafe derived prefix path: {filename}")
+        path = plan_root / relative
+        require(path.is_file() and not path.is_symlink(),
+                f"missing ordinary derived prefix: {path}")
+        require(path.read_bytes() == content, f"derived prefix bytes mismatch: {filename}")
 
     manifest_path = candle_root / MANIFEST_RELATIVE
     manifest = load_object(manifest_path, "Flyspeck manifest")
@@ -173,10 +218,6 @@ def validate_plan(
             "runtime manifest digest mismatch")
     require(manifest["repositories"]["flyspeck"]["commit"] == repositories["flyspeck_commit"],
             "runtime manifest Flyspeck pin mismatch")
-
-    planner_source = candle_root / "candle/flyspeck_stratum_plan.py"
-    require(hash_file(planner_source)["sha256"] == materialization.get("planner_source_sha256"),
-            "planner source digest drift after materialization")
 
     source_graph = plan.get("source_graph")
     require(isinstance(source_graph, dict), "missing source graph")
@@ -187,20 +228,29 @@ def validate_plan(
     require(canonical_sha256(source_bindings) == source_graph.get("ordered_binding_sha256"),
             "source binding order digest mismatch")
     source_by_key: dict[str, dict[str, Any]] = {}
+    source_runtime: list[dict[str, Any]] = []
     for binding in source_bindings:
         key = binding.get("key")
         require(isinstance(key, str) and key not in source_by_key, "duplicate source binding")
-        validate_file(resolve_source(binding, candle_root, flyspeck_root), binding,
+        source_path = resolve_source(binding, candle_root, flyspeck_root)
+        validate_file(source_path, binding,
                       f"source binding {key}")
         source_by_key[key] = binding
+        source_runtime.append({**binding, "absolute": str(source_path)})
 
     digest_contract = manifest.get("source_digest_contract")
     require(isinstance(digest_contract, dict), "missing source digest contract")
     require(digest_contract.get("entry_count") == 399, "source digest count drift")
-    validate_file(candle_root / SOURCE_DIGEST_RELATIVE, {
+    source_digest_record = validate_file(candle_root / SOURCE_DIGEST_RELATIVE, {
         "sha256": digest_contract["generated_source_sha256"],
         "md5": digest_contract["generated_source_md5"],
     }, "source digest program")
+    harness_records = {
+        SOURCE_DIGEST_RELATIVE.as_posix(): source_digest_record,
+    }
+    for relative in (SETUP_RELATIVE, CHECK_RELATIVE, FINGERPRINT_RELATIVE,
+                     L2_TARGET_RELATIVE):
+        harness_records[relative.as_posix()] = hash_file(candle_root / relative)
 
     normalization = plan.get("normalization_overlay")
     require(isinstance(normalization, dict), "missing normalization overlay")
@@ -222,7 +272,12 @@ def validate_plan(
             "md5": binding["normalized_md5"],
         }, f"normalized source {binding['path']}")
         normalized_runtime.append({
-            "original": str(source), "output": str(output), "md5": binding["normalized_md5"],
+            "relative": binding["path"],
+            "original_relative": source_by_key[source_key]["path"],
+            "original": str(source), "output": str(output),
+            "bytes": binding["normalized_bytes"],
+            "sha256": binding["normalized_sha256"],
+            "md5": binding["normalized_md5"],
         })
     validate_file(overlay_root / NORMALIZATION_RECEIPT, {
         "sha256": normalization["receipt_sha256"],
@@ -241,10 +296,30 @@ def validate_plan(
         root = generated_root if binding["class"] == "lp-certificate-prepared" else flyspeck_root
         source = root / binding["path"]
         observed = validate_file(source, binding, f"generated input {binding['path']}")
-        generated_runtime.append({"path": str(source), "md5": observed["md5"]})
+        generated_runtime.append({
+            "class": binding["class"], "relative": binding["path"],
+            "path": str(source), **observed,
+        })
     validate_file(generated_root / GENERATED_RECEIPT, {
         "sha256": generated["receipt_sha256"],
     }, "generated-input receipt")
+    expected_certificate_basenames = manifest["lp_archive_preparation_contract"][
+        "runtime_certificate_basenames"
+    ]
+    certificate_by_basename: dict[str, dict[str, str]] = {}
+    for item in generated_runtime:
+        if item["class"] not in ("lp-certificate", "lp-certificate-prepared"):
+            continue
+        basename = Path(item["relative"]).name
+        require(basename not in certificate_by_basename,
+                f"duplicate LP certificate basename: {basename}")
+        certificate_by_basename[basename] = item
+    require(list(certificate_by_basename) == expected_certificate_basenames,
+            "LP certificate basename order/set mismatch")
+    lp_certificate_runtime = [
+        certificate_by_basename[basename] for basename in expected_certificate_basenames
+    ]
+    require(len(lp_certificate_runtime) == 39, "LP certificate runtime count mismatch")
 
     process_records = manifest["static_library_contract"]["binding_evidence"]["unix.cma"][
         "deterministic_process_inputs"
@@ -257,7 +332,10 @@ def validate_plan(
         require(source_key.startswith("candle:"), "unexpected process-input root")
         source = candle_root / source_key.removeprefix("candle:")
         observed = validate_file(source, record, f"process input {record['command']}")
-        process_runtime.append({"path": str(source), "md5": observed["md5"]})
+        process_runtime.append({
+            "relative": source_key.removeprefix("candle:"),
+            "path": str(source), **observed,
+        })
 
     actions = plan.get("actions")
     require(isinstance(actions, list), "missing stratum actions")
@@ -305,10 +383,13 @@ def validate_plan(
         "generated_root": generated_root,
         "prefix_path": prefix_path,
         "prefix_record": prefix_record,
+        "harness_records": harness_records,
         "boundary": boundary,
         "actions": action_runtime,
+        "source_runtime": source_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
+        "lp_certificate_runtime": lp_certificate_runtime,
         "process_runtime": process_runtime,
     }
 
@@ -318,8 +399,10 @@ def ocaml_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]]) -> bytes:
-    """Insert one output-only completion phrase after every exact action."""
+def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]], nonce: str) -> bytes:
+    """Insert one theorem-state-neutral ledger check after every exact action."""
+    require(re.fullmatch(r"[0-9a-f]{32}", nonce) is not None,
+            "attempt nonce must be 128-bit lowercase hex")
     try:
         lines = prefix.decode("utf-8").splitlines(keepends=True)
     except UnicodeDecodeError as error:
@@ -333,10 +416,17 @@ def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]]) -> bytes:
             expected = f"#flyspeck_needs {json.dumps(actions[action_index]['target'])};;"
             require(line.rstrip("\r\n") == expected, f"prefix directive drift: {action_index}")
             marker = (
-                f"{ACTION_PREFIX} {action_index:03d} "
+                f"{ACTION_PREFIX} {nonce} {action_index:03d} "
                 f"{actions[action_index]['source_sha256']}"
             )
-            output.append(f"print_endline {ocaml_string(marker)};;\n")
+            identity = (
+                f"({ocaml_string(actions[action_index]['identity_basename'])},"
+                f"{ocaml_string(actions[action_index]['identity_md5'])})"
+            )
+            output.append(
+                "candle_flyspeck_stratum_commit_action "
+                f"{action_index} {identity} {ocaml_string(marker)};;\n"
+            )
             action_index += 1
     require(action_index == len(actions), "prefix contains too few actions")
     return "".join(output).encode()
@@ -362,6 +452,7 @@ def write_postlude(
     candle_root: Path,
     boundary_id: str,
     theorem_names: list[str],
+    nonce: str,
 ) -> None:
     lines = ["(* Generated theorem-observation postlude; not an approval record. *)"]
     if boundary_id.startswith("07-"):
@@ -372,7 +463,10 @@ def write_postlude(
             require(SAFE_VALUE_PATH.fullmatch(name) is not None,
                     f"unsafe theorem value path: {name}")
             lines.append(f"candle_s1_emit_fingerprint {ocaml_string(name)} {name};;")
-        marker = f"{FINGERPRINT_SUCCESS_MARKER} {boundary_id} {len(theorem_names)}"
+        marker = (
+            f"{FINGERPRINT_SUCCESS_MARKER} {nonce} {boundary_id} "
+            f"{len(theorem_names)}"
+        )
         lines.append(f"print_endline {ocaml_string(marker)};;")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -396,6 +490,7 @@ def write_config(
         'let candle_flyspeck_build_mode = "stratum-runtime";;',
         f"let candle_flyspeck_stratum_boundary = {string(prepared['boundary']['boundary_id'])};;",
         f"let candle_flyspeck_stratum_action_count = {len(prepared['actions'])};;",
+        f"let candle_flyspeck_stratum_attempt_nonce = {string(prepared['attempt_nonce'])};;",
         f"let candle_flyspeck_stratum_program = {string(execution_program)};;",
         f"let candle_flyspeck_stratum_program_md5 = {string(execution_md5)};;",
         "let candle_flyspeck_stratum_normalized_sources = [",
@@ -410,6 +505,12 @@ def write_config(
     ])
     for item in prepared["generated_runtime"]:
         lines.append(f"  ({string(item['path'])},{string(item['md5'])});")
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_lp_certificate_files = [",
+    ])
+    for item in prepared["lp_certificate_runtime"]:
+        lines.append(f"  {string(item['path'])};")
     lines.extend([
         "];;",
         "let candle_flyspeck_stratum_process_inputs = [",
@@ -500,25 +601,29 @@ def validate_log(
     log: str,
     actions: list[dict[str, Any]],
     boundary_id: str,
+    nonce: str,
     theorem_names: list[str] | None = None,
 ) -> None:
     theorem_names = theorem_names or []
-    require(log.count(PREFLIGHT_MARKER) == 1, "missing or duplicate stratum preflight marker")
-    positions = [log.index(PREFLIGHT_MARKER)]
+    lines = log.splitlines()
+
+    def exact_position(marker: str, label: str) -> int:
+        positions = [index for index, line in enumerate(lines) if line == marker]
+        require(len(positions) == 1, f"missing or duplicate {label} marker")
+        return positions[0]
+
+    preflight = f"{PREFLIGHT_MARKER} {nonce}"
+    positions = [exact_position(preflight, "stratum preflight")]
     for index, action in enumerate(actions):
-        marker = f"{ACTION_PREFIX} {index:03d} {action['source_sha256']}"
-        require(log.count(marker) == 1, f"missing or duplicate action marker: {index}")
-        positions.append(log.index(marker))
-    final = f"{SUCCESS_MARKER} {boundary_id} {len(actions)}"
-    require(log.count(final) == 1, "missing or duplicate boundary success marker")
-    positions.append(log.index(final))
+        marker = f"{ACTION_PREFIX} {nonce} {index:03d} {action['source_sha256']}"
+        positions.append(exact_position(marker, f"action {index}"))
+    final = f"{SUCCESS_MARKER} {nonce} {boundary_id} {len(actions)}"
+    positions.append(exact_position(final, "boundary success"))
     if theorem_names:
         fingerprint_final = (
-            f"{FINGERPRINT_SUCCESS_MARKER} {boundary_id} {len(theorem_names)}"
+            f"{FINGERPRINT_SUCCESS_MARKER} {nonce} {boundary_id} {len(theorem_names)}"
         )
-        require(log.count(fingerprint_final) == 1,
-                "missing or duplicate fingerprint success marker")
-        positions.append(log.index(fingerprint_final))
+        positions.append(exact_position(fingerprint_final, "fingerprint success"))
     require(positions == sorted(positions), "stratum markers are out of order")
     require(not re.search(r"^(?:ERROR|EXCEPTION):|Parsing failed", log, re.MULTILINE),
             "compiled stratum log contains a top-level error")
@@ -526,6 +631,242 @@ def validate_log(
 
 def utc_now() -> str:
     return dt.datetime.now(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def safe_relative(value: str, label: str) -> Path:
+    relative = Path(value)
+    require(not relative.is_absolute() and ".." not in relative.parts,
+            f"unsafe {label} path: {value}")
+    return relative
+
+
+def snapshot_copy(
+    source: Path,
+    root: Path,
+    relative_value: str,
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    relative = safe_relative(relative_value, "snapshot")
+    require(source.is_file() and not source.is_symlink(),
+            f"snapshot source is not an ordinary file: {source}")
+    destination = root / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists():
+        require(destination.is_file() and not destination.is_symlink(),
+                f"snapshot destination collision: {destination}")
+        require(hash_file(destination) == hash_file(source),
+                f"non-identical snapshot destination collision: {destination}")
+    else:
+        shutil.copyfile(source, destination)
+    destination.chmod(0o444)
+    observed = {"path": relative.as_posix(), **hash_file(destination)}
+    for field in ("bytes", "sha256", "md5"):
+        if field in expected:
+            require(observed[field] == expected[field],
+                    f"snapshot {field} mismatch: {destination}")
+    return observed
+
+
+def create_runtime_snapshot(
+    output_root: Path,
+    candle_root: Path,
+    prepared: dict[str, Any],
+    linked: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Copy every runtime-consumed byte into one disjoint read-only tree."""
+    snapshot_root = output_root / "snapshot"
+    candle_snapshot = snapshot_root / "candle"
+    flyspeck_snapshot = snapshot_root / "flyspeck"
+    overlay_snapshot = snapshot_root / "overlay"
+    generated_snapshot = snapshot_root / "generated"
+    records_by_path: dict[str, dict[str, Any]] = {}
+
+    def add_record(prefix: str, classification: str,
+                   record: dict[str, Any]) -> None:
+        snapshot_relative = safe_relative(
+            (Path(prefix) / record["path"]).as_posix(), "snapshot record",
+        ).as_posix()
+        candidate = {
+            "path": snapshot_relative,
+            "bytes": record["bytes"],
+            "sha256": record["sha256"],
+            "md5": record["md5"],
+            "classes": [classification],
+        }
+        previous = records_by_path.get(snapshot_relative)
+        if previous is None:
+            records_by_path[snapshot_relative] = candidate
+        else:
+            require(
+                all(previous[field] == candidate[field]
+                    for field in ("bytes", "sha256", "md5")),
+                f"non-identical snapshot record collision: {snapshot_relative}",
+            )
+            if classification not in previous["classes"]:
+                previous["classes"].append(classification)
+
+    for binding in prepared["source_runtime"]:
+        destination_root = candle_snapshot if binding["repository"] == "candle" else flyspeck_snapshot
+        record = snapshot_copy(
+            Path(binding["absolute"]), destination_root, binding["path"], binding,
+        )
+        add_record(binding["repository"], f"source:{binding['repository']}", record)
+
+    for relative in (SOURCE_DIGEST_RELATIVE, SETUP_RELATIVE, CHECK_RELATIVE,
+                     FINGERPRINT_RELATIVE, L2_TARGET_RELATIVE):
+        record = snapshot_copy(
+            candle_root / relative, candle_snapshot, relative.as_posix(),
+            prepared["harness_records"][relative.as_posix()],
+        )
+        add_record("candle", "runtime-harness", record)
+
+    linked_outputs = linked.get("outputs")
+    require(isinstance(linked_outputs, dict), "missing linked output records")
+    for name, expected in sorted(linked_outputs.items()):
+        source = candle_root / "candle/build" / name
+        validate_file(source, expected, f"linked snapshot input {name}")
+        record = snapshot_copy(
+            source, candle_snapshot, f"candle/build/{name}", expected,
+        )
+        add_record("candle", "linked-runtime", record)
+    # The executable reads these two files relative to its process cwd.
+    for name in ("config_enc_str.txt", "candle_boot.ml"):
+        record = snapshot_copy(
+            candle_root / "candle/build" / name, candle_snapshot, name,
+            linked_outputs[name],
+        )
+        add_record("candle", "linked-root-input", record)
+    cake_snapshot = candle_snapshot / "candle/build/cake"
+    cake_snapshot.chmod(0o555)
+
+    normalized_runtime = []
+    for item in prepared["normalized_runtime"]:
+        output_record = snapshot_copy(
+            Path(item["output"]), overlay_snapshot, item["relative"], item,
+        )
+        add_record("overlay", "normalized", output_record)
+        normalized_runtime.append({
+            **item,
+            "original": str(flyspeck_snapshot / item["original_relative"]),
+            "output": str(overlay_snapshot / item["relative"]),
+        })
+
+    generated_runtime = []
+    for item in prepared["generated_runtime"]:
+        destination_root = (
+            generated_snapshot
+            if item["class"] == "lp-certificate-prepared"
+            else flyspeck_snapshot
+        )
+        record = snapshot_copy(
+            Path(item["path"]), destination_root, item["relative"], item,
+        )
+        prefix = "generated" if item["class"] == "lp-certificate-prepared" else "flyspeck"
+        add_record(prefix, f"generated:{item['class']}", record)
+        generated_runtime.append({
+            **item, "path": str(destination_root / item["relative"]),
+        })
+    generated_by_relative = {item["relative"]: item for item in generated_runtime}
+    lp_certificate_runtime = [
+        generated_by_relative[item["relative"]]
+        for item in prepared["lp_certificate_runtime"]
+    ]
+
+    process_runtime = []
+    for item in prepared["process_runtime"]:
+        record = snapshot_copy(
+            Path(item["path"]), candle_snapshot, item["relative"], item,
+        )
+        add_record("candle", "process-input", record)
+        process_runtime.append({
+            **item, "path": str(candle_snapshot / item["relative"]),
+        })
+
+    prefix_relative = safe_relative(
+        prepared["prefix_record"]["path"], "selected cumulative prefix",
+    )
+    prefix_snapshot = snapshot_root / "plan"
+    prefix_copy_record = snapshot_copy(
+        prepared["prefix_path"], prefix_snapshot, prefix_relative.as_posix(),
+        prepared["prefix_record"],
+    )
+    add_record("plan", "authenticated-prefix", prefix_copy_record)
+
+    for directory in sorted(
+        (path for path in snapshot_root.rglob("*") if path.is_dir()),
+        key=lambda path: len(path.parts), reverse=True,
+    ):
+        directory.chmod(0o555)
+    snapshot_root.chmod(0o555)
+
+    runtime = {
+        **prepared,
+        "candle_runtime_root": candle_snapshot,
+        "flyspeck_root": flyspeck_snapshot,
+        "overlay_root": overlay_snapshot,
+        "generated_root": generated_snapshot,
+        "normalized_runtime": normalized_runtime,
+        "generated_runtime": generated_runtime,
+        "lp_certificate_runtime": lp_certificate_runtime,
+        "process_runtime": process_runtime,
+        "cake_runtime": cake_snapshot,
+        "prefix_path": prefix_snapshot / prefix_relative,
+    }
+    records = list(records_by_path.values())
+    snapshot_record = {
+        "schema": 1,
+        "kind": "candle-flyspeck-attempt-local-runtime-snapshot",
+        "file_count": len(records),
+        "ordered_file_sha256": canonical_sha256(records),
+        "files": records,
+        "roots": {
+            "candle": str(candle_snapshot),
+            "flyspeck": str(flyspeck_snapshot),
+            "normalization_overlay": str(overlay_snapshot),
+            "generated_inputs": str(generated_snapshot),
+        },
+        "files_read_only": True,
+        "directories_read_only": True,
+    }
+    return runtime, snapshot_record
+
+
+def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> None:
+    snapshot_root = output_root / "snapshot"
+    records = snapshot.get("files")
+    require(isinstance(records, list), "missing snapshot file records")
+    require(snapshot.get("file_count") == len(records), "snapshot file count mismatch")
+    require(canonical_sha256(records) == snapshot.get("ordered_file_sha256"),
+            "snapshot ordered-file digest mismatch")
+    for record in records:
+        path = snapshot_root / record["path"]
+        validate_file(path, record,
+                      f"runtime snapshot {record['path']}")
+        require(path.stat().st_mode & 0o222 == 0,
+                f"runtime snapshot file is writable: {record['path']}")
+    for directory in [snapshot_root, *(
+        path for path in snapshot_root.rglob("*") if path.is_dir()
+    )]:
+        require(directory.stat().st_mode & 0o222 == 0,
+                f"runtime snapshot directory is writable: {directory}")
+
+
+def terminate_process_group(process: subprocess.Popen[bytes]) -> int:
+    """Idempotently terminate and reap a fresh-session attempt process."""
+    if process.poll() is not None:
+        return process.returncode
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except ProcessLookupError:
+        pass
+    try:
+        return process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        return process.wait()
 
 
 def run_attempt(
@@ -550,29 +891,66 @@ def run_attempt(
     require(timeout_seconds > 0, "timeout must be positive")
     require(not output_root.exists(), f"attempt output already exists: {output_root}")
     require(output_root.parent.is_dir(), f"attempt parent does not exist: {output_root.parent}")
+    for label, input_root in (
+        ("Candle", candle_root), ("plan", plan_root),
+        ("Flyspeck", prepared["flyspeck_root"]),
+        ("normalization overlay", prepared["overlay_root"]),
+        ("generated inputs", prepared["generated_root"]),
+    ):
+        require(
+            output_root != input_root and not output_root.is_relative_to(input_root),
+            f"attempt output must be disjoint from {label} root",
+        )
     output_root.mkdir()
-    program_path = output_root / "instrumented-prefix.ml"
-    config_path = output_root / "runtime-config.ml"
-    stdin_path = output_root / "stdin.ml"
-    postlude_path = output_root / "postlude.ml"
+    runtime_prepared, snapshot_record = create_runtime_snapshot(
+        output_root, candle_root, prepared, linked,
+    )
+    snapshot_record_path = output_root / "snapshot.json"
+    atomic_write_json(snapshot_record_path, snapshot_record)
+
+    control_root = output_root / "control"
+    control_root.mkdir()
+    program_path = control_root / "instrumented-prefix.ml"
+    config_path = control_root / "runtime-config.ml"
+    stdin_path = control_root / "stdin.ml"
+    postlude_path = control_root / "postlude.ml"
     log_path = output_root / "candle.log"
     attempt_path = output_root / "attempt.json"
     receipt_path = output_root / "receipt.json"
 
-    program = instrument_prefix(prepared["prefix_path"].read_bytes(), prepared["actions"])
+    nonce = secrets.token_hex(16)
+    runtime_prepared["attempt_nonce"] = nonce
+    program = instrument_prefix(
+        runtime_prepared["prefix_path"].read_bytes(), prepared["actions"], nonce,
+    )
     program_path.write_bytes(program)
     program_record = hash_file(program_path)
-    write_config(config_path, candle_root, prepared, program_path, program_record["md5"])
+    runtime_candle_root = runtime_prepared["candle_runtime_root"]
+    write_config(
+        config_path, runtime_candle_root, runtime_prepared,
+        program_path, program_record["md5"],
+    )
     theorem_names = fingerprint_requests(boundary_id)
-    write_postlude(postlude_path, candle_root, boundary_id, theorem_names)
+    write_postlude(
+        postlude_path, runtime_candle_root, boundary_id, theorem_names, nonce,
+    )
     stdin_path.write_text(
         f"#use {ocaml_string(str(config_path))};;\n"
-        f"#use {ocaml_string(str(candle_root / SETUP_RELATIVE))};;\n"
+        f"#use {ocaml_string(str(runtime_candle_root / SETUP_RELATIVE))};;\n"
         f"#use {ocaml_string(str(program_path))};;\n"
-        f"#use {ocaml_string(str(candle_root / CHECK_RELATIVE))};;\n"
+        f"#use {ocaml_string(str(runtime_candle_root / CHECK_RELATIVE))};;\n"
         f"#use {ocaml_string(str(postlude_path))};;\n",
         encoding="utf-8",
     )
+    control_records = {
+        "instrumented_prefix": hash_file(program_path),
+        "runtime_config": hash_file(config_path),
+        "stdin": hash_file(stdin_path),
+        "postlude": hash_file(postlude_path),
+    }
+    for path in (program_path, config_path, stdin_path, postlude_path):
+        path.chmod(0o444)
+    control_root.chmod(0o555)
 
     started = utc_now()
     attempt = {
@@ -582,6 +960,7 @@ def run_attempt(
         "state": "running",
         "started_utc": started,
         "boundary_id": boundary_id,
+        "attempt_nonce": nonce,
         "action_count": len(prepared["actions"]),
         "timeout_seconds": timeout_seconds,
         "fresh_process_replay_from_action_zero": True,
@@ -591,56 +970,82 @@ def run_attempt(
             "host_materialization": prepared["materialization_record"],
             "manifest": prepared["manifest_record"],
             "linked_provenance": prepared["linked_record"],
+            "runtime_snapshot": hash_file(snapshot_record_path),
             "authenticated_prefix": prepared["prefix_record"],
-            "instrumented_prefix": program_record,
-            "runtime_config": hash_file(config_path),
-            "stdin": hash_file(stdin_path),
-            "postlude": hash_file(postlude_path),
-            "setup": hash_file(candle_root / SETUP_RELATIVE),
-            "check": hash_file(candle_root / CHECK_RELATIVE),
-            "fingerprint_serializer": hash_file(candle_root / FINGERPRINT_RELATIVE),
-            "l2_target": hash_file(candle_root / L2_TARGET_RELATIVE),
+            **control_records,
+            "setup": hash_file(runtime_candle_root / SETUP_RELATIVE),
+            "check": hash_file(runtime_candle_root / CHECK_RELATIVE),
+            "fingerprint_serializer": hash_file(
+                runtime_candle_root / FINGERPRINT_RELATIVE
+            ),
+            "l2_target": hash_file(runtime_candle_root / L2_TARGET_RELATIVE),
         },
         "repositories": {
             "candle": prepared["candle_head"],
             "flyspeck": prepared["plan"]["repositories"]["flyspeck_commit"],
         },
     }
-    attempt_path.write_bytes(json_bytes(attempt))
+    atomic_write_json(attempt_path, attempt)
 
-    command = ["/usr/bin/time", "-v", str(candle_script)]
+    command = ["/usr/bin/time", "-v", str(runtime_prepared["cake_runtime"]), "--candle"]
     timed_out = False
     exit_code: int | None = None
-    with stdin_path.open("rb") as stdin, log_path.open("wb") as log:
-        process = subprocess.Popen(
-            command, cwd=candle_root, stdin=stdin, stdout=log,
-            stderr=subprocess.STDOUT, start_new_session=True,
-        )
-        try:
-            exit_code = process.wait(timeout=timeout_seconds)
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            os.killpg(process.pid, signal.SIGTERM)
+    execution_error: BaseException | None = None
+    process: subprocess.Popen[bytes] | None = None
+    previous_sigterm = signal.getsignal(signal.SIGTERM)
+
+    def interrupted(signum: int, _frame: Any) -> None:
+        raise InterruptedError(f"compiled stratum interrupted by signal {signum}")
+
+    signal.signal(signal.SIGTERM, interrupted)
+    try:
+        with stdin_path.open("rb") as stdin, log_path.open("wb") as log:
+            process = subprocess.Popen(
+                command, cwd=runtime_candle_root, stdin=stdin, stdout=log,
+                stderr=subprocess.STDOUT, start_new_session=True,
+            )
             try:
-                exit_code = process.wait(timeout=10)
+                exit_code = process.wait(timeout=timeout_seconds)
             except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                exit_code = process.wait()
+                timed_out = True
+                exit_code = terminate_process_group(process)
+    except BaseException as error:
+        execution_error = error
+    finally:
+        signal.signal(signal.SIGTERM, previous_sigterm)
+        if process is not None and process.poll() is None:
+            exit_code = terminate_process_group(process)
 
     finished = utc_now()
     log_record = hash_file(log_path)
     validation_error: str | None = None
     fingerprints: dict[str, Any] | None = None
+    postflight_reauthenticated = False
     try:
+        require(execution_error is None,
+                f"compiled stratum execution failed: {execution_error}")
         require(not timed_out, "compiled stratum attempt timed out")
         require(exit_code == 0, f"compiled stratum process exited {exit_code}")
+        post_linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+        validate_plan(candle_root, post_linked, plan_root, boundary_id)
+        validate_file(snapshot_record_path, attempt["inputs"]["runtime_snapshot"],
+                      "runtime snapshot record")
+        validate_runtime_snapshot(snapshot_record, output_root)
+        for label, path in (
+            ("instrumented_prefix", program_path),
+            ("runtime_config", config_path),
+            ("stdin", stdin_path),
+            ("postlude", postlude_path),
+        ):
+            validate_file(path, control_records[label], f"attempt control {label}")
+        postflight_reauthenticated = True
         validate_log(
             log_path.read_text(encoding="utf-8", errors="replace"),
-            prepared["actions"], boundary_id, theorem_names,
+            prepared["actions"], boundary_id, nonce, theorem_names,
         )
         fingerprints = parse_fingerprints(
             log_path.read_text(encoding="utf-8", errors="replace"),
-            theorem_names, candle_root / FINGERPRINT_RELATIVE,
+            theorem_names, runtime_candle_root / FINGERPRINT_RELATIVE,
         )
     except ContractError as error:
         validation_error = str(error)
@@ -657,8 +1062,9 @@ def run_attempt(
         "semantic_fingerprints": fingerprints,
         "s2_s3_evidence": False,
         "validation_error": validation_error,
+        "postflight_reauthenticated": postflight_reauthenticated,
     }
-    receipt_path.write_bytes(json_bytes(receipt))
+    atomic_write_json(receipt_path, receipt)
     if validation_error is not None:
         raise ContractError(validation_error)
     return receipt

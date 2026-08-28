@@ -391,53 +391,81 @@
       "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
     },
     {
-      "id": "PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001",
+      "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
       "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
       "path": "text_formalization/nonlinear/break_case_exec.hl",
       "source_sha256": "e20b303d586f51f771afa3ad48f7c40fa275b6e88888554ed10b52794abfbced",
       "source_md5": "736fb16a1dab5f13102fdb185a0a1c08",
-      "normalized_sha256": "20ddb8a5a0610fb5920de48349f14bdc31a91465564d5d85b3ba4fadb2a5deec",
-      "normalized_md5": "fb5f44d6e3575004283b074cd999a2c9",
-      "normalized_bytes": 61979,
+      "normalized_sha256": "79346ceabbfcd0bf1f166579a1eeae3b62e03a03baa2b0f460efb4dc311efe63",
+      "normalized_md5": "877814cc08f081a8a25d6dfbc64aba1e",
+      "normalized_bytes": 62100,
       "operations": [
         {
-          "id": "PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001-FAIL-CLOSED",
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-PARAMETER-COUNT",
           "kind": "exact_bytes_replace_once",
           "line": 1649,
           "before": "List.length all_parameters = 23242;;",
           "after": "List.length all_parameters = 23242 ||\n  failwith \"nonlinear all_parameters count mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-LEAF-COUNTER",
+          "kind": "exact_bytes_replace_once",
+          "line": 1693,
+          "before": "let rec prove_iargs tm = \n  let (_,[x;d;f]) = strip_comb tm in\n",
+          "after": "let candle_nonlinear_iarg_leaf_visits = ref 0;;\n\nlet rec prove_iargs tm = \n  let (_,[x;d;f]) = strip_comb tm in\n"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-LEAF-VISIT",
+          "kind": "exact_bytes_replace_once",
+          "line": 1702,
+          "before": "      | Iarg_leaf _ -> ASSUME tm\n",
+          "after": "      | Iarg_leaf _ ->\n          let _ = incr candle_nonlinear_iarg_leaf_visits in\n            ASSUME tm\n"
         }
       ],
-      "semantic_rule": "The existing comparison still evaluates once and returns true on the pinned accepted route. A count other than 23,242 now raises Failure before get_nth or nonlinear proof reconstruction can be treated as a completed action.",
-      "scope_limit": "The guarded list is the pre-setify diagnostic work-unit list. This count is only a partition-shape regression guard: it does not prove category disjointness, multiplicity, leaf coverage, successful reconstruction, or theorem provenance, and count-preserving mutations remain possible. Exact source/input hashes and compiled proof/fingerprint gates remain mandatory."
+      "semantic_rule": "The existing 23,242 comparison still evaluates once and now fails closed. The recursive proof-tree reconstruction also increments one private counter at every Iarg_leaf branch, immediately before the unchanged ASSUME operation. The final assembly normalization requires exactly the 7,479 leaf constructors authenticated by break_case_log.hl to have been visited.",
+      "scope_limit": "The 23,242 pre-setify diagnostic list remains only a partition-shape guard. The 7,479 visit gate establishes complete traversal of the pinned serialized Iarg leaf corpus only when combined with the fatal caught-failure gates, the authenticated case-log hash, final theorem fingerprints, and clean compiled execution; it does not independently bind proof history or exclude a count-preserving source mutation."
     },
     {
-      "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001",
+      "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001",
       "source_key": "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
       "path": "text_formalization/nonlinear/mk_all_ineq.hl",
       "source_sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11",
       "source_md5": "d80256e5d423dadbde8f58f6ff5cbc81",
-      "normalized_sha256": "f24f418351f52214a3c257aba2ef40622f90ebd8fe088e5ed41352c4900f176f",
-      "normalized_md5": "ef86ebdb0875d68a8229685efaacfe67",
-      "normalized_bytes": 14587,
+      "normalized_sha256": "404aa6a9252dcf790703b0cb8d1a1b6f61af623276d2a794ba02bfa26a4d5a1c",
+      "normalized_md5": "44f7f8842ee7bf2d2aeca90d5a1d2d94",
+      "normalized_bytes": 14841,
       "operations": [
         {
-          "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001-SURFACE-FAIL-CLOSED",
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-SURFACE-DIGEST",
           "kind": "exact_bytes_replace_once",
           "line": 49,
           "before": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\";;",
           "after": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\" ||\n  failwith \"the_nonlinear_inequalities surface digest mismatch\";;"
         },
         {
-          "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001-THEOREM-FAIL-CLOSED",
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-IMPLICATION-TRUTH",
+          "kind": "exact_bytes_replace_once",
+          "line": 335,
+          "before": "let exec_results = exec();;",
+          "after": "let exec_results = exec();;\n\nlet _ =\n  filter (fun (_,t) -> t = TRUTH) exec_results = [] ||\n  failwith \"failed nonlinear implication reconstruction\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-PREP-AND-LEAVES",
+          "kind": "exact_bytes_replace_once",
+          "line": 364,
+          "before": "let _ = \n  filter  (fun (_,t) -> t = TRUTH) prep_nonlinear_thml = [] ||\n   failwith \"failed prep cases\";;",
+          "after": "let _ = \n  filter  (fun (_,t) -> t = TRUTH) prep_nonlinear_thml = [] ||\n   failwith \"failed prep cases\";;\n\nlet _ =\n  !Break_case_exec.candle_nonlinear_iarg_leaf_visits = 7479 ||\n  failwith \"nonlinear serialized leaf coverage mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-THEOREM-DIGEST",
           "kind": "exact_bytes_replace_once",
           "line": 412,
           "before": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\";;",
           "after": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\" ||\n  failwith \"the_nonlinear_inequalities theorem digest mismatch\";;"
         }
       ],
-      "semantic_rule": "Both existing comparisons still evaluate once, retain bool type, and return true for the pinned accepted digests. A mismatch in the cheap assumed-theorem surface or the final canonical theorem surface now raises Failure before the containing source action can complete.",
-      "scope_limit": "simple_digest_thm is an MD5 surface fingerprint of serialized hypotheses and conclusion with deserialization hypotheses filtered. These checks do not bind proof or definition history, input coverage, leaf multiplicity, axioms, or generated-input provenance. Full compiled reconstruction, exact structural fingerprints, coverage evidence, and two-run reproducibility remain required."
+      "semantic_rule": "Both existing digest comparisons remain fatal. In addition, every caught Failure in the nonlinear implication reconstruction and the serialized prep reconstruction must leave no TRUTH sentinel, and the complete prep traversal must visit exactly 7,479 authenticated Iarg leaves before final theorem construction can continue.",
+      "scope_limit": "The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required."
     }
   ]
 }

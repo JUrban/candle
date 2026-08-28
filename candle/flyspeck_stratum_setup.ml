@@ -66,6 +66,9 @@ List.iter
      candle_flyspeck_stratum_verify_md5 "generated input" path digest)
   candle_flyspeck_stratum_generated_inputs;;
 
+if List.length candle_flyspeck_lp_certificate_files <> 39 then
+  failwith "incomplete Flyspeck LP certificate runtime list";;
+
 let candle_flyspeck_stratum_date_input,
     candle_flyspeck_stratum_user_input =
   match candle_flyspeck_stratum_process_inputs with
@@ -99,4 +102,32 @@ if List.length candle_flyspeck_stratum_action_identities <>
      candle_flyspeck_stratum_action_count then
   failwith "Flyspeck stratum action identity count mismatch";;
 
-print_endline "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK";;
+let candle_flyspeck_stratum_previous_loaded_files = ref !loaded_files;;
+let candle_flyspeck_stratum_action_events =
+  ref ([]:(int * (string * string) * string) list);;
+
+let candle_flyspeck_stratum_commit_action index expected_identity marker =
+  if index <> List.length !candle_flyspeck_stratum_action_events then
+    failwith "Flyspeck stratum action event index mismatch"
+  else if List.nth candle_flyspeck_stratum_action_identities index <>
+          expected_identity then
+    failwith "Flyspeck stratum action event identity mismatch"
+  else
+    let previous = !candle_flyspeck_stratum_previous_loaded_files in
+    let current = !loaded_files in
+    let outcome =
+      if current = previous then
+        if List.mem expected_identity previous then "skip-ledger"
+        else "skip-loader-cache"
+      else if not (List.mem expected_identity previous) &&
+              current = expected_identity :: previous then "load"
+      else failwith "Flyspeck action has an unexpected loader identity delta" in
+    candle_flyspeck_stratum_action_events :=
+      (index,expected_identity,outcome) ::
+      !candle_flyspeck_stratum_action_events;
+    candle_flyspeck_stratum_previous_loaded_files := current;
+    print_endline marker;;
+
+print_endline
+  ("CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK " ^
+   candle_flyspeck_stratum_attempt_nonce);;

@@ -1,27 +1,47 @@
 # Compiled cumulative Flyspeck stratum runner
 
-`flyspeck_stratum_runtime.py` consumes an immutable output of
+`flyspeck_stratum_runtime.py` consumes a materialized output of
 `flyspeck_stratum_plan.py` and starts one selected cumulative prefix in a fresh
-compiled Candle process.  It first validates the linked CakeML provenance.  It
-then rechecks the clean repository revisions, the exact plan and
-materialization hashes, all 400 source nodes, all 16 normalization outputs,
-all 43 generated inputs, deterministic `date`/`whoami` inputs, and the selected
-prefix.
+compiled Candle process.  It first validates the linked CakeML provenance.
+It independently reconstructs the plan and every prefix from the pinned
+manifest/full driver rather than trusting plan-supplied self-digests, then
+requires exact equality and rechecks the clean repository revisions, all 400
+source nodes, all 16 normalization outputs, all 43 generated inputs,
+deterministic `date`/`whoami` inputs, and the selected prefix.  The config also
+provides the exact ordered 39-certificate list required by normalized
+`verify_all.hl`.
 
-The runner inserts one `print_endline` phrase immediately after each exact
-`#flyspeck_needs` directive.  This instrumentation changes output only.  A
-marker is therefore reachable only after that action has either completed or
-made the authenticated already-loaded observation.  The boundary check also
-requires no pending source identity and requires every selected logical source
-identity to be present in HOL Light's loaded-file ledger.  The host accepts an
-attempt only when every exact marker appears once in order, the final boundary
-marker appears once, no top-level error is present, and the process exits zero.
+The runner inserts one pinned ledger-checker phrase immediately after each
+exact `#flyspeck_needs` directive.  It adds no theorem or axiom.  For each action the
+checker requires the exact next index and logical identity, then requires the
+CakeML logical-source ledger either to remain exactly unchanged for a loader
+skip or to become exactly the expected identity consed onto the previous
+ledger for a load.  Any other delta fails before the marker is printed.  The
+boundary check requires the complete ordered action-event ledger and no pending
+source identity.  Every event line contains a fresh 128-bit attempt nonce and
+must match the exact line grammar; quoted source text and prefixed or suffixed
+strings cannot satisfy the parser.  The host accepts an attempt only when every
+exact marker appears once in order, the final boundary marker appears once, no
+top-level error is present, and the process exits zero.
+
+Before generating the control program, the runner copies every runtime source,
+normalization, generated input, deterministic process input, linked CakeML
+output, harness file, and selected cumulative prefix into a disjoint attempt-
+local snapshot.  Every copied byte must match the independently reconstructed
+plan or linked provenance, duplicate paths must be byte-identical, and the
+snapshot inventory is content-addressed.  Snapshot files and directories and
+the generated control inputs are made read-only.  The compiled process reads
+only these attempt-local paths.  The runner then rehashes the complete snapshot
+and all control inputs and reauthenticates the original repositories, plan, and
+linked executable after the process exits.
 
 Each run writes the generated config, instrumented prefix, standard input,
 fingerprint postlude, combined log, initial `attempt.json`, and final
 `receipt.json` into a new output directory.  Failed and timed-out runs also
-retain a receipt.  A retry is always a fresh cumulative replay from action
-zero; no process-state checkpoint or suffix-only continuation is claimed.
+retain a receipt once process launch has begun.  Process groups are terminated
+and reaped on timeout, interruption, or runner exceptions, and receipt writes
+are atomic.  A retry is always a fresh cumulative replay from action zero; no
+process-state checkpoint or suffix-only continuation is claimed.
 
 The LP-support and later boundaries emit the canonical structural identity of
 `Linear_programming_results.linear_programming_results_th`.  At the final
@@ -44,3 +64,14 @@ python3 candle/flyspeck_stratum_runtime.py \
 A successful source-action receipt is not by itself S2 or S3 evidence.  Those
 claims additionally require the approved semantic fingerprints and the exact
 coverage/assumption checks specified by the release contract.
+
+The read-only content-addressed snapshot closes ordinary mutable-input races,
+and the action checker now distinguishes each outer action's exact logical-
+ledger load or skip transition.  It is still not a loader-owned trace of the
+internal physical-path cache and does not expose every ordinary nested
+`needs`/`loads` event.  Filesystem modes also are not a kernel-level immutable
+snapshot against a hostile same-UID process that can change and later restore
+them.  Consequently a successful receipt remains diagnostic and
+`s2_s3_evidence` stays false pending approved semantic identities and the
+release coverage gates.  Resource high-water and log/disk caps remain an
+external supervisor responsibility in this revision.

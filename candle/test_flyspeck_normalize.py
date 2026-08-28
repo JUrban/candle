@@ -204,22 +204,36 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("duplicate LP result id", exact_lp_after)
         self.assertIn("length ths <> length archive_const_ids", exact_lp_after)
         self.assertNotIn("map (fun (id, th) -> Hashtbl.add", exact_lp_after)
-        nonlinear_count = entries["PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001"]
-        self.assertEqual(nonlinear_count["operations"][0]["line"], 1649)
-        self.assertIn("23242 ||", nonlinear_count["operations"][0]["after"])
-        self.assertIn("partition-shape", nonlinear_count["scope_limit"])
-        nonlinear_digests = entries["PROJECT-NONLINEAR-S3-DIGEST-GATES-001"]
+        nonlinear_coverage = entries[
+            "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001"
+        ]
+        self.assertEqual(
+            [operation["line"] for operation in nonlinear_coverage["operations"]],
+            [1649, 1693, 1702],
+        )
+        nonlinear_coverage_after = "".join(
+            operation["after"] for operation in nonlinear_coverage["operations"]
+        )
+        self.assertIn("23242 ||", nonlinear_coverage_after)
+        self.assertIn("candle_nonlinear_iarg_leaf_visits", nonlinear_coverage_after)
+        self.assertIn("incr candle_nonlinear_iarg_leaf_visits", nonlinear_coverage_after)
+        self.assertIn("partition-shape", nonlinear_coverage["scope_limit"])
+        nonlinear_digests = entries[
+            "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001"
+        ]
         self.assertEqual(
             [operation["line"] for operation in nonlinear_digests["operations"]],
-            [49, 412],
+            [49, 335, 364, 412],
         )
         nonlinear_after = "".join(
             operation["after"] for operation in nonlinear_digests["operations"]
         )
         self.assertIn("1f054717131cf915bd8cc95ab7b645c3", nonlinear_after)
         self.assertIn("e607b9e5e7f4c495236c6546d6889963", nonlinear_after)
-        self.assertEqual(nonlinear_after.count("||\n  failwith"), 2)
-        self.assertIn("do not bind proof or definition history", (
+        self.assertIn("filter (fun (_,t) -> t = TRUTH) exec_results = []", nonlinear_after)
+        self.assertIn("candle_nonlinear_iarg_leaf_visits = 7479", nonlinear_after)
+        self.assertEqual(nonlinear_after.count("||\n  failwith"), 4)
+        self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
         ))
         operation_ids = [
@@ -227,7 +241,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 29)
+        self.assertEqual(len(operation_ids), 33)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
