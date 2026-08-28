@@ -29,17 +29,96 @@ import flyspeck_float_corpus
 
 ORACLE_SOURCE = HERE / "ocaml_float_token_oracle.ml"
 EXPECTED_ORACLE_SHA256 = (
-    "915b89f64fc2d48c71e966d55f2d8b36440ee5efd49ca06d55c3afb012e6f8e2"
+    "353ceff1f34f233c1c37fa31785cd43425e2bc21febc0c8692d8fd391797911f"
 )
+EXPECTED_OCAML_WHERE = Path("/usr/lib/ocaml")
+EXPECTED_TOOLCHAIN = {
+    "ocamlc": {
+        "path": "/usr/bin/ocamlc.opt",
+        "bytes": 9289608,
+        "sha256":
+            "84825ef63ded23b445acd4ef399e1bb0a11081976da4741e1033c8569eaa2bd6",
+    },
+    "ocamlcommon.cma": {
+        "path": "/usr/lib/ocaml/compiler-libs/ocamlcommon.cma",
+        "bytes": 18084797,
+        "sha256":
+            "27ae12edbd6afcab7b5c1edb7faba6f0d2e9828c40d075cd422bec885816b07b",
+    },
+    "lexer.cmi": {
+        "path": "/usr/lib/ocaml/compiler-libs/lexer.cmi",
+        "bytes": 3049,
+        "sha256":
+            "ebe9f2a1c034bd74ede609bb1e8dbceef2828674af086841a4e852b243e469b1",
+    },
+    "parser.cmi": {
+        "path": "/usr/lib/ocaml/compiler-libs/parser.cmi",
+        "bytes": 18374,
+        "sha256":
+            "9b65fd945cb41b9d2f8ca208d765e882041e6fbdcb127bbfef48a576bee122c7",
+    },
+}
 
 
 def _environment() -> dict[str, str]:
     return {"LC_ALL": "C", "PATH": "/usr/bin:/bin"}
 
 
-def compile_oracle(ocamlc: str, output_root: Path) -> Path:
+def validate_toolchain(ocamlc: str) -> dict[str, Any]:
+    executable_string = shutil.which(ocamlc, path="/usr/bin:/bin")
+    flyspeck_float_corpus.require(
+        executable_string is not None, f"cannot resolve OCaml compiler: {ocamlc}",
+    )
+    executable = Path(executable_string).resolve(strict=True)
     version = subprocess.run(
-        [ocamlc, "-version"], check=False, stdout=subprocess.PIPE,
+        [str(executable), "-version"], check=False, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True, env=_environment(),
+    )
+    flyspeck_float_corpus.require(
+        version.returncode == 0,
+        f"cannot execute OCaml compiler: {version.stderr.strip()}",
+    )
+    flyspeck_float_corpus.require(
+        version.stdout.strip() == flyspeck_float_corpus.EXPECTED_OCAML_VERSION,
+        f"OCaml lexer version mismatch: {version.stdout.strip()}",
+    )
+    where = subprocess.run(
+        [str(executable), "-where"], check=False, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, text=True, env=_environment(),
+    )
+    flyspeck_float_corpus.require(
+        where.returncode == 0 and
+        Path(where.stdout.strip()).resolve(strict=True) == EXPECTED_OCAML_WHERE,
+        "OCaml standard-library root differs from the pinned lexer toolchain",
+    )
+    observed = {}
+    for label, expected in EXPECTED_TOOLCHAIN.items():
+        path = executable if label == "ocamlc" else Path(expected["path"])
+        record = flyspeck_float_corpus.file_record(path)
+        projection = {field: record[field] for field in ("bytes", "sha256")}
+        flyspeck_float_corpus.require(
+            str(path) == expected["path"] and projection == {
+                field: expected[field] for field in ("bytes", "sha256")
+            },
+            f"OCaml lexer toolchain identity mismatch: {label}",
+        )
+        observed[label] = {"path": str(path), **projection}
+    return {
+        "ocaml_version": version.stdout.strip(),
+        "ocaml_where": str(EXPECTED_OCAML_WHERE),
+        "files": observed,
+    }
+
+
+def compile_oracle(
+    ocamlc: str,
+    output_root: Path,
+    toolchain: dict[str, Any] | None = None,
+) -> Path:
+    toolchain = validate_toolchain(ocamlc) if toolchain is None else toolchain
+    version = subprocess.run(
+        [toolchain["files"]["ocamlc"]["path"], "-version"],
+        check=False, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, text=True, env=_environment(),
     )
     flyspeck_float_corpus.require(
@@ -59,7 +138,8 @@ def compile_oracle(ocamlc: str, output_root: Path) -> Path:
     shutil.copyfile(ORACLE_SOURCE, copied_source)
     executable = output_root / "ocaml_float_token_oracle"
     compiled = subprocess.run(
-        [ocamlc, "-I", "+compiler-libs", "ocamlcommon.cma",
+        [toolchain["files"]["ocamlc"]["path"],
+         "-I", "+compiler-libs", "ocamlcommon.cma",
          copied_source.name, "-o", str(executable)],
         cwd=str(output_root), check=False, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, text=True, env=_environment(),
@@ -72,10 +152,11 @@ def compile_oracle(ocamlc: str, output_root: Path) -> Path:
     return executable
 
 
-def oracle_sites(
+def oracle_observation(
     runtime_sources: list[dict[str, Any]],
     ocamlc: str,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    toolchain = validate_toolchain(ocamlc)
     records = []
     for source in runtime_sources:
         key = source["key"]
@@ -89,7 +170,7 @@ def oracle_sites(
     with tempfile.TemporaryDirectory(
         prefix="candle-ocaml-float-lexer-"
     ) as tmp:
-        executable = compile_oracle(ocamlc, Path(tmp))
+        executable = compile_oracle(ocamlc, Path(tmp), toolchain)
         observed = subprocess.run(
             [str(executable)], input=oracle_input, check=False,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
@@ -130,7 +211,54 @@ def oracle_sites(
     sites.sort(key=lambda site: (
         site["source"], site["line"], site["column"], site["literal"]
     ))
+    return sites, toolchain
+
+
+def oracle_sites(
+    runtime_sources: list[dict[str, Any]],
+    ocamlc: str,
+) -> list[dict[str, Any]]:
+    sites, _toolchain = oracle_observation(runtime_sources, ocamlc)
     return sites
+
+
+def snapshot_runtime_sources(
+    runtime_sources: list[dict[str, Any]],
+    output_root: Path,
+) -> list[dict[str, Any]]:
+    """Copy the once-authenticated bytes used by both independent scanners."""
+
+    flyspeck_float_corpus.require(
+        output_root.is_dir() and not any(output_root.iterdir()),
+        "independent lexer snapshot directory must be new and empty",
+    )
+    snapshots = []
+    for index, source in enumerate(runtime_sources):
+        original = Path(source["runtime_path"])
+        flyspeck_float_corpus.require(
+            original.is_file() and not original.is_symlink(),
+            f"independent lexer source is not ordinary: {source['key']}",
+        )
+        before = flyspeck_float_corpus.file_record(original)
+        flyspeck_float_corpus.require(
+            before["sha256"] == source["runtime_sha256"],
+            f"independent lexer source changed before snapshot: {source['key']}",
+        )
+        destination = output_root / f"source-{index:03d}.ml"
+        shutil.copyfile(original, destination)
+        copied = flyspeck_float_corpus.file_record(destination)
+        after = flyspeck_float_corpus.file_record(original)
+        flyspeck_float_corpus.require(
+            copied == before and after == before,
+            f"independent lexer source changed during snapshot: {source['key']}",
+        )
+        destination.chmod(0o444)
+        snapshots.append({
+            **source,
+            "runtime_path": destination,
+            "runtime_snapshot": copied,
+        })
+    return snapshots
 
 
 def validate_completeness(
@@ -141,7 +269,7 @@ def validate_completeness(
 ) -> dict[str, Any]:
     """Validate the committed inventory without invoking its Python scanner."""
     flyspeck_float_corpus.validate_artifact_shape(artifact)
-    sites = oracle_sites(runtime_sources, ocamlc)
+    sites, toolchain = oracle_observation(runtime_sources, ocamlc)
     strata = [record["name"] for record in manifest["build_strata"]]
     stratum_rank = {name: index for index, name in enumerate(strata)}
     for site in sites:
@@ -227,6 +355,11 @@ def validate_completeness(
         "site_record_sha256": site_digest,
         "unique_spelling_sha256":
             flyspeck_float_corpus.canonical_sha256(unique),
+        "oracle_source": {
+            "path": str(ORACLE_SOURCE),
+            **flyspeck_float_corpus.file_record(ORACLE_SOURCE),
+        },
+        "toolchain": toolchain,
     }
 
 
@@ -247,9 +380,15 @@ def main() -> int:
     artifact = flyspeck_float_corpus.load_object(
         artifact_path, "float-corpus artifact"
     )
-    result = validate_completeness(
-        manifest, runtime_sources, artifact, arguments.ocamlc
-    )
+    with tempfile.TemporaryDirectory(
+        prefix="candle-float-completeness-snapshot-"
+    ) as temporary:
+        snapshots = snapshot_runtime_sources(
+            runtime_sources, Path(temporary),
+        )
+        result = validate_completeness(
+            manifest, snapshots, artifact, arguments.ocamlc
+        )
     print(
         "Independent OCaml lexer completeness PASS: "
         f"{result['occurrence_count']} occurrences, "

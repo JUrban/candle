@@ -45,16 +45,21 @@ decimal grammar and excludes nested comments, strings, and HOL backtick
 quotations. Before scanning, it authenticates all 400 original manifest nodes,
 the exact schema-2 normalization receipt, and all 18 normalized outputs.
 
-An independent completeness gate then lexes the same authenticated runtime
-sources with the actual OCaml 4.14.1 compiler-libs lexer. It requires an exact
-match of site records (including locations), spellings, counts, and file
-projections. OCaml's lexer, rather than the Python scanner, classifies comments,
+An independent completeness gate snapshots the authenticated runtime bytes
+once and lexes those read-only copies with the OCaml 4.14.1 compiler-libs
+lexer; the Python inventory regeneration uses the identical snapshot. It
+requires an exact match of site records (including locations), spellings,
+counts, and file projections. The gate pins the resolved `ocamlc.opt`,
+`ocamlcommon.cma`, `lexer.cmi`, and `parser.cmi` byte identities in addition to
+the compiler version and exact oracle source. OCaml's lexer, rather than the
+Python scanner, classifies comments,
 strings, character literals, identifiers, numeric forms, and suffixes. A small
 separate quotation skipper starts only when OCaml emits `BACKQUOTE`, because HOL
 quotation bodies are not OCaml syntax. Recovery for source forms rejected by
 stock OCaml (such as Flyspeck's `0in`) is permitted only when the rejected token
-cannot be a potential float; malformed potential floats fail closed. Run this
-host completeness check directly with:
+cannot be a potential float; malformed potential floats fail closed. Paired
+backticks containing an OCaml `;;` phrase boundary are rejected as ambiguous
+with polymorphic variants. Run this host completeness check directly with:
 
 ```sh
 /usr/bin/python3 -I candle/compatibility/check_flyspeck_float_completeness.py \
@@ -98,7 +103,8 @@ graph loaded, that its theorems have approved fingerprints, or S2/S3.
 After the second command creates its running-attempt record, it retains the
 exact generated source, complete transcript, final receipt, runtime
 environment, child resources, committed corpus artifact, linked/bootstrap
-provenance, bootstrap log, exact runtime ELF objects, and pre/postflight
+provenance, bootstrap log, exact runtime ELF objects, the independent
+completeness result, oracle source, exact OCaml toolchain files, and pre/postflight
 linked-artifact identities in the new evidence directory; failures after that
 boundary are retained as well.  Host regeneration, dependency, and linked
 preflight failures occur before attempt creation and are reported without

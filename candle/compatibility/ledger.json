@@ -63,6 +63,8 @@
         "unique_spelling_sha256": "174fe9827e0e52fbe7e4d2f5303a56996321070921bd0d0cecbca790bf04caa2",
         "independent_completeness_gate": "candle/compatibility/check_flyspeck_float_completeness.py using the pinned candle/compatibility/ocaml_float_token_oracle.ml",
         "independent_completeness_result": "OCaml 4.14.1 compiler-libs Lexer exactly matches all site records, source locations, spelling and file projections",
+        "independent_site_record_sha256": "8045b4d356ba9adfc6bb0e6e5d7bdafaf1fdffb14392a0a89af175f34a341c4e",
+        "independent_input_policy": "both scanners consume one read-only authenticated source snapshot; the exact oracle, ocamlc.opt, ocamlcommon.cma, lexer.cmi, and parser.cmi bytes are pinned and retained by compiled attempts",
         "reference_result": "all OCaml 4.14.1 Word64 observations pinned; all match C-locale host strtod without ERANGE",
         "status": "authenticated_two_lexer_host_reference_pass_not_compiled_candle_evidence"
       },

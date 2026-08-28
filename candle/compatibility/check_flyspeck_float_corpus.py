@@ -17,6 +17,7 @@ from pathlib import Path
 import resource
 import shutil
 import sys
+import tempfile
 from typing import Any
 
 
@@ -39,25 +40,36 @@ def authenticated_artifact(
     overlay_root: Path,
     ocamlc: str,
     artifact_path: Path,
-) -> dict:
+) -> tuple[dict, dict[str, Any]]:
     manifest, runtime_sources = flyspeck_float_corpus.validate_inputs(
         candle_root, flyspeck_root, overlay_root
     )
-    scan = flyspeck_float_corpus.scan_corpus(manifest, runtime_sources)
-    generated = flyspeck_float_corpus.make_artifact(manifest, scan, ocamlc)
-    flyspeck_float_corpus.validate_artifact_shape(generated)
-    expected = flyspeck_float_corpus.load_object(
-        artifact_path, "float-corpus artifact"
-    )
-    flyspeck_float_corpus.validate_artifact_shape(expected)
-    flyspeck_float_corpus.require(
-        flyspeck_float_corpus.json_bytes(generated) == artifact_path.read_bytes(),
-        "float-corpus artifact differs from authenticated regeneration",
-    )
-    check_flyspeck_float_completeness.validate_completeness(
-        manifest, runtime_sources, expected, ocamlc
-    )
-    return expected
+    with tempfile.TemporaryDirectory(
+        prefix="candle-float-corpus-snapshot-"
+    ) as temporary:
+        snapshots = (
+            check_flyspeck_float_completeness.snapshot_runtime_sources(
+                runtime_sources, Path(temporary),
+            )
+        )
+        scan = flyspeck_float_corpus.scan_corpus(manifest, snapshots)
+        generated = flyspeck_float_corpus.make_artifact(manifest, scan, ocamlc)
+        flyspeck_float_corpus.validate_artifact_shape(generated)
+        expected = flyspeck_float_corpus.load_object(
+            artifact_path, "float-corpus artifact"
+        )
+        flyspeck_float_corpus.validate_artifact_shape(expected)
+        flyspeck_float_corpus.require(
+            flyspeck_float_corpus.json_bytes(generated) ==
+            artifact_path.read_bytes(),
+            "float-corpus artifact differs from authenticated regeneration",
+        )
+        completeness = (
+            check_flyspeck_float_completeness.validate_completeness(
+                manifest, snapshots, expected, ocamlc,
+            )
+        )
+    return expected, completeness
 
 
 def candle_source(payload: dict, chunk_size: int = CHUNK_SIZE) -> str:
@@ -186,6 +198,7 @@ def check_candle(
     timeout: int,
     evidence_root: Path,
     artifact_path: Path,
+    completeness: dict[str, Any],
 ) -> dict[str, Any]:
     try:
         import pexpect
@@ -228,6 +241,35 @@ def check_candle(
         ) == payload,
         "archived float-corpus artifact differs from executed payload",
     )
+    completeness_path = evidence_root / "independent-completeness.json"
+    _write_json(completeness_path, completeness)
+    completeness_record = flyspeck_float_corpus.file_record(completeness_path)
+    flyspeck_float_corpus.require(
+        flyspeck_float_corpus.load_object(
+            completeness_path, "independent completeness result"
+        ) == completeness,
+        "retained independent completeness result changed on write",
+    )
+    completeness_path.chmod(0o444)
+    oracle_record = completeness["oracle_source"]
+    oracle_archive = archive_root / "ocaml_float_token_oracle.ml"
+    oracle_archive_record = _archive_file(
+        Path(oracle_record["path"]), oracle_archive,
+        {field: oracle_record[field]
+         for field in ("bytes", "md5", "sha256")},
+    )
+    toolchain_archive_records = []
+    for label, record in sorted(completeness["toolchain"]["files"].items()):
+        destination = archive_root / "ocaml-toolchain" / label
+        toolchain_archive_records.append({
+            "label": label,
+            "source_path": record["path"],
+            "path": str(destination.relative_to(evidence_root)),
+            **_archive_file(
+                Path(record["path"]), destination,
+                {field: record[field] for field in ("bytes", "sha256")},
+            ),
+        })
     linked_record_path = (
         candle_root / cakeml_artifact_provenance.LINKED_RECORD_RELATIVE
     )
@@ -290,6 +332,15 @@ def check_candle(
                 "path": str(artifact_archive.relative_to(evidence_root)),
                 **artifact_archive_record,
             },
+            "independent_completeness": {
+                "path": str(completeness_path.relative_to(evidence_root)),
+                **completeness_record,
+            },
+            "independent_oracle_source": {
+                "path": str(oracle_archive.relative_to(evidence_root)),
+                **oracle_archive_record,
+            },
+            "independent_ocaml_toolchain": toolchain_archive_records,
             "generated_source": flyspeck_float_corpus.file_record(source_path),
             "linked_provenance": {
                 "path": str(linked_archive.relative_to(evidence_root)),
@@ -396,7 +447,8 @@ def check_candle(
             source_path, attempt["inputs"]["generated_source"],
             "retained float-corpus source",
         )
-        for label in ("artifact", "linked_provenance",
+        for label in ("artifact", "independent_completeness",
+                      "independent_oracle_source", "linked_provenance",
                       "bootstrap_provenance", "bootstrap_log"):
             archived = attempt["inputs"][label]
             flyspeck_float_corpus.validate_record(
@@ -404,6 +456,19 @@ def check_candle(
                 {field: archived[field] for field in ("bytes", "md5", "sha256")},
                 f"retained {label}",
             )
+        for archived in attempt["inputs"]["independent_ocaml_toolchain"]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field]
+                 for field in ("bytes", "md5", "sha256")},
+                f"retained OCaml toolchain {archived['label']}",
+            )
+        flyspeck_float_corpus.require(
+            flyspeck_float_corpus.load_object(
+                completeness_path, "retained independent completeness result"
+            ) == completeness,
+            "retained independent completeness semantics changed",
+        )
         for archived in attempt["inputs"]["runtime_elf_objects"]:
             flyspeck_float_corpus.validate_record(
                 evidence_root / archived["path"],
@@ -457,13 +522,13 @@ def main() -> int:
     candle_root = arguments.candle_root.resolve()
     artifact_path = (arguments.artifact.resolve() if arguments.artifact else
                      candle_root / flyspeck_float_corpus.ARTIFACT_RELATIVE)
-    payload = authenticated_artifact(
+    payload, completeness = authenticated_artifact(
         candle_root, arguments.flyspeck_root.resolve(),
         arguments.overlay_root.resolve(), arguments.ocamlc, artifact_path,
     )
     check_candle(
         payload, candle_root, arguments.timeout, arguments.write,
-        artifact_path,
+        artifact_path, completeness,
     )
     print(
         "Compiled Candle Flyspeck decimal-float corpus PASS: "

@@ -2,6 +2,7 @@
 """Focused tests for the independent OCaml-lexer completeness check."""
 
 from pathlib import Path
+import stat
 import sys
 import tempfile
 import unittest
@@ -71,7 +72,14 @@ class IndependentFloatCompletenessTests(unittest.TestCase):
             flyspeck_float_corpus.CorpusError,
             "unterminated HOL backtick quotation",
         ):
-            self.oracle(b"let term = `#2.0 + #3.0;;\n")
+            self.oracle(b"let term = `#2.0 + #3.0\n")
+
+    def test_paired_polymorphic_variants_cannot_hide_later_float(self):
+        with self.assertRaisesRegex(
+            flyspeck_float_corpus.CorpusError,
+            "ambiguous paired backticks",
+        ):
+            self.oracle(b"let a = `Foo;; let x = 2.0;; let b = `Bar;;\n")
 
     def test_completeness_checker_does_not_call_python_token_scanner(self):
         implementation = Path(subject.__file__).read_text(encoding="utf-8")
@@ -80,6 +88,33 @@ class IndependentFloatCompletenessTests(unittest.TestCase):
         oracle = subject.ORACLE_SOURCE.read_text(encoding="utf-8")
         self.assertIn("Lexer.token", oracle)
         self.assertIn("Parser.FLOAT", oracle)
+
+    def test_runtime_snapshot_is_byte_exact_and_read_only(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "source.hl"
+            output = root / "snapshot"
+            source.write_bytes(b"let x = 2.0;;\n")
+            output.mkdir()
+            source_record = flyspeck_float_corpus.file_record(source)
+            snapshots = subject.snapshot_runtime_sources([{
+                "key": "fixture:source.hl",
+                "runtime_path": source,
+                "runtime_sha256": source_record["sha256"],
+            }], output)
+            retained = snapshots[0]["runtime_path"]
+            self.assertEqual(retained.read_bytes(), source.read_bytes())
+            self.assertEqual(snapshots[0]["runtime_snapshot"], source_record)
+            self.assertEqual(stat.S_IMODE(retained.stat().st_mode), 0o444)
+
+    def test_ocaml_lexer_toolchain_is_exactly_pinned(self):
+        observed = subject.validate_toolchain("/usr/bin/ocamlc")
+        self.assertEqual(observed["ocaml_version"], "4.14.1")
+        self.assertEqual(set(observed["files"]),
+                         set(subject.EXPECTED_TOOLCHAIN))
+        for label, expected in subject.EXPECTED_TOOLCHAIN.items():
+            with self.subTest(label=label):
+                self.assertEqual(observed["files"][label], expected)
 
 
 if __name__ == "__main__":

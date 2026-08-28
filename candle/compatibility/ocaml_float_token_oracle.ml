@@ -5,7 +5,8 @@
    numeric syntax, and source locations.  When that lexer returns BACKQUOTE in
    code, this helper advances the same lexbuf to the paired closing backtick:
    quotation bodies contain HOL operators that are not OCaml tokens.  Floats
-   in those term-language bodies are omitted. *)
+   in those term-language bodies are omitted.  A phrase terminator inside a
+   paired span is rejected as ambiguous with two OCaml polymorphic variants. *)
 
 let fail key lexbuf message =
   let position = Lexing.lexeme_start_p lexbuf in
@@ -16,6 +17,7 @@ let fail key lexbuf message =
 ;;
 
 let skip_hol_quotation key (lexbuf : Lexing.lexbuf) =
+  let previous_semicolon = ref false in
   let rec skip () =
     if lexbuf.lex_curr_pos >= lexbuf.lex_buffer_len then
       fail key lexbuf "unterminated HOL backtick quotation"
@@ -31,7 +33,13 @@ let skip_hol_quotation key (lexbuf : Lexing.lexbuf) =
            pos_cnum = position.pos_cnum + 1}
         else
           {position with pos_cnum = position.pos_cnum + 1};
-      if character <> '`' then skip ()
+      if character <> '`' then begin
+        if character = ';' && !previous_semicolon then
+          fail key lexbuf
+            "ambiguous paired backticks contain an OCaml phrase terminator";
+        previous_semicolon := character = ';';
+        skip ()
+      end
   in
   skip ()
 ;;

@@ -94,6 +94,10 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
             "check_flyspeck_float_completeness.validate_completeness(",
             implementation,
         )
+        self.assertIn(
+            "snapshot_runtime_sources(", implementation,
+        )
+        self.assertIn("independent_ocaml_toolchain", implementation)
 
 
 if __name__ == "__main__":
