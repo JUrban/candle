@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "e321ace652d99cd574dfa3b9fc512201" then
+     "47470c0065e4529d24fb3d31de17e38e" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "ae887e2178b05532cea07f1ba116eef1" then
+     "86c0caaae534fdff085d9e361c34ded6" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,7 +156,7 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer may materialize only these fourteen outputs in a
+(* The host-side normalizer may materialize only these sixteen outputs in a
    separate tree.  The outer release manifest authenticates size and SHA-256;
    this process independently checks OCaml-compatible MD5 before registering
    exact original-path -> normalized-path substitutions.  The overlay root is
@@ -222,9 +222,19 @@ let candle_flyspeck_normalized_sources =
       "tame/linear_programming_results.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/linear_programming_results.hl",
-    "873d319b17157a5f244f40d18450eacd")];;
+    "873d319b17157a5f244f40d18450eacd");
+   (Filename.concat candle_flyspeck_text_root
+      "nonlinear/break_case_exec.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/nonlinear/break_case_exec.hl",
+    "fb5f44d6e3575004283b074cd999a2c9");
+   (Filename.concat candle_flyspeck_text_root
+      "nonlinear/mk_all_ineq.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/nonlinear/mk_all_ineq.hl",
+    "ef86ebdb0875d68a8229685efaacfe67")];;
 
-if List.length candle_flyspeck_normalized_sources <> 14 then
+if List.length candle_flyspeck_normalized_sources <> 16 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

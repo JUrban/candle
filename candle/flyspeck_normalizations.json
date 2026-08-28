@@ -389,6 +389,55 @@
       ],
       "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification.",
       "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
+    },
+    {
+      "id": "PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
+      "path": "text_formalization/nonlinear/break_case_exec.hl",
+      "source_sha256": "e20b303d586f51f771afa3ad48f7c40fa275b6e88888554ed10b52794abfbced",
+      "source_md5": "736fb16a1dab5f13102fdb185a0a1c08",
+      "normalized_sha256": "20ddb8a5a0610fb5920de48349f14bdc31a91465564d5d85b3ba4fadb2a5deec",
+      "normalized_md5": "fb5f44d6e3575004283b074cd999a2c9",
+      "normalized_bytes": 61979,
+      "operations": [
+        {
+          "id": "PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 1649,
+          "before": "List.length all_parameters = 23242;;",
+          "after": "List.length all_parameters = 23242 ||\n  failwith \"nonlinear all_parameters count mismatch\";;"
+        }
+      ],
+      "semantic_rule": "The existing comparison still evaluates once and returns true on the pinned accepted route. A count other than 23,242 now raises Failure before get_nth or nonlinear proof reconstruction can be treated as a completed action.",
+      "scope_limit": "The guarded list is the pre-setify diagnostic work-unit list. This count is only a partition-shape regression guard: it does not prove category disjointness, multiplicity, leaf coverage, successful reconstruction, or theorem provenance, and count-preserving mutations remain possible. Exact source/input hashes and compiled proof/fingerprint gates remain mandatory."
+    },
+    {
+      "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
+      "path": "text_formalization/nonlinear/mk_all_ineq.hl",
+      "source_sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11",
+      "source_md5": "d80256e5d423dadbde8f58f6ff5cbc81",
+      "normalized_sha256": "f24f418351f52214a3c257aba2ef40622f90ebd8fe088e5ed41352c4900f176f",
+      "normalized_md5": "ef86ebdb0875d68a8229685efaacfe67",
+      "normalized_bytes": 14587,
+      "operations": [
+        {
+          "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001-SURFACE-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 49,
+          "before": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\";;",
+          "after": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\" ||\n  failwith \"the_nonlinear_inequalities surface digest mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-DIGEST-GATES-001-THEOREM-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 412,
+          "before": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\";;",
+          "after": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\" ||\n  failwith \"the_nonlinear_inequalities theorem digest mismatch\";;"
+        }
+      ],
+      "semantic_rule": "Both existing comparisons still evaluate once, retain bool type, and return true for the pinned accepted digests. A mismatch in the cheap assumed-theorem surface or the final canonical theorem surface now raises Failure before the containing source action can complete.",
+      "scope_limit": "simple_digest_thm is an MD5 surface fingerprint of serialized hypotheses and conclusion with deserialization hypotheses filtered. These checks do not bind proof or definition history, input coverage, leaf multiplicity, axioms, or generated-input provenance. Full compiled reconstruction, exact structural fingerprints, coverage evidence, and two-run reproducibility remain required."
     }
   ]
 }

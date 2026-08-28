@@ -37,7 +37,7 @@ python3 candle/flyspeck_stratum_plan.py \
 
 The command requires a clean Candle descendant of the exact integration base,
 an exact clean Flyspeck revision, and authenticates all 400
-selected source nodes, all 14 normalized outputs and their receipt, all 43
+selected source nodes, all 16 normalized outputs and their receipt, all 43
 generated inputs and the prepared-archive receipt, the manifest, and the exact
 full-build driver.  Descendant commits cannot silently change a selected input:
 the byte checks still use the base manifest's individual hashes.  Output

@@ -114,7 +114,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 14)
+        self.assertEqual(len(self.contract["entries"]), 16)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -204,12 +204,30 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("duplicate LP result id", exact_lp_after)
         self.assertIn("length ths <> length archive_const_ids", exact_lp_after)
         self.assertNotIn("map (fun (id, th) -> Hashtbl.add", exact_lp_after)
+        nonlinear_count = entries["PROJECT-NONLINEAR-S3-PARAMETER-COUNT-001"]
+        self.assertEqual(nonlinear_count["operations"][0]["line"], 1649)
+        self.assertIn("23242 ||", nonlinear_count["operations"][0]["after"])
+        self.assertIn("partition-shape", nonlinear_count["scope_limit"])
+        nonlinear_digests = entries["PROJECT-NONLINEAR-S3-DIGEST-GATES-001"]
+        self.assertEqual(
+            [operation["line"] for operation in nonlinear_digests["operations"]],
+            [49, 412],
+        )
+        nonlinear_after = "".join(
+            operation["after"] for operation in nonlinear_digests["operations"]
+        )
+        self.assertIn("1f054717131cf915bd8cc95ab7b645c3", nonlinear_after)
+        self.assertIn("e607b9e5e7f4c495236c6546d6889963", nonlinear_after)
+        self.assertEqual(nonlinear_after.count("||\n  failwith"), 2)
+        self.assertIn("do not bind proof or definition history", (
+            nonlinear_digests["scope_limit"]
+        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 26)
+        self.assertEqual(len(operation_ids), 29)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

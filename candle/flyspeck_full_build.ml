@@ -610,5 +610,5 @@
 #flyspeck_needs "general/the_kepler_conjecture.hl";;
 (* 295 selected=flyspeck:text_formalization/general/serialization.hl sha256=fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed normalization=PROJECT-MODULE-S3-SET-MAKE-001 normalized_sha256=93343a90863d775f0a09257859553aacb7ad5b885ed95f21517ba0402ce253a3 *)
 #flyspeck_needs "general/serialization.hl";;
-(* 296 selected=flyspeck:text_formalization/nonlinear/mk_all_ineq.hl sha256=99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11 *)
+(* 296 selected=flyspeck:text_formalization/nonlinear/mk_all_ineq.hl sha256=99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11 normalization=PROJECT-NONLINEAR-S3-DIGEST-GATES-001 normalized_sha256=f24f418351f52214a3c257aba2ef40622f90ebd8fe088e5ed41352c4900f176f *)
 #flyspeck_needs "nonlinear/mk_all_ineq.hl";;
