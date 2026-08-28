@@ -275,6 +275,160 @@ class FloatPerformanceGateTests(unittest.TestCase):
                                return_value=(parents, rss)):
             self.assertEqual(gate.ProcessTreeSampler.tree_rss(100), (120, 600))
 
+    def test_process_rss_missing_root_fails_closed(self):
+        with mock.patch.object(gate.ProcessTreeSampler, "_snapshot",
+                               return_value=({}, {})):
+            with self.assertRaisesRegex(gate.GateError, "lost root process"):
+                gate.ProcessTreeSampler.tree_rss(100)
+
+    def test_rss_sampler_thread_failure_is_propagated(self):
+        sampler = gate.ProcessTreeSampler(100, interval=0.001)
+        with mock.patch.object(gate.ProcessTreeSampler, "_snapshot",
+                               side_effect=OSError("unavailable procfs")):
+            sampler.start()
+            with self.assertRaisesRegex(
+                    gate.GateError, "RSS sampler thread failed.*unavailable"):
+                sampler.stop()
+
+    def test_rss_sampler_requires_initial_and_final_root_samples(self):
+        parents = {100: 1, 101: 100}
+        rss = {100: 120, 101: 30}
+        sampler = gate.ProcessTreeSampler(100, interval=60.0)
+        with mock.patch.object(gate.ProcessTreeSampler, "_snapshot",
+                               return_value=(parents, rss)):
+            sampler.start()
+            sampler.stop()
+        self.assertGreaterEqual(sampler.sample_count, 2)
+        self.assertEqual(sampler.peak_process_rss_kib, 120)
+        self.assertEqual(sampler.peak_tree_rss_kib, 150)
+
+    def test_controller_uses_captured_sources_and_pinned_runtime(self):
+        for module in (gate.inputs, gate.provenance, gate.runtime_lock):
+            source = module.__candle_source_bytes__
+            self.assertEqual(
+                module.__candle_source_sha256__, hashlib.sha256(source).hexdigest()
+            )
+            self.assertEqual(Path(module.__file__).read_bytes(), source)
+        self.assertEqual(gate.python_startup_flags(),
+                         gate.EXPECTED_PYTHON_STARTUP_FLAGS)
+        self.assertEqual(gate.python_startup_options(),
+                         gate.EXPECTED_PYTHON_STARTUP_OPTIONS)
+        self.assertEqual(gate.validate_python_runtime(),
+                         gate.EXPECTED_PYTHON_RUNTIME)
+        implementation = inspect.getsource(gate._run_attempt)
+        self.assertIn("collect_controller_execution", implementation)
+        self.assertIn("_archive_controller_execution", implementation)
+        self.assertIn("_verify_controller_execution", implementation)
+        self.assertIn("require_direct_script_startup",
+                      inspect.getsource(gate.main))
+
+    def test_pexpect_loads_only_from_retained_pinned_sources(self):
+        prefixes = ("pexpect", "ptyprocess")
+        self.assertFalse(any(
+            name == prefix or name.startswith(prefix + ".")
+            for name in sys.modules for prefix in prefixes
+        ))
+        try:
+            with tempfile.TemporaryDirectory() as temporary:
+                snapshot = Path(temporary) / "python-packages"
+                module, observed = gate.load_pexpect_from_pinned_sources(snapshot)
+                self.assertTrue(
+                    Path(module.__file__).resolve().is_relative_to(snapshot)
+                )
+                self.assertEqual(set(observed),
+                                 set(gate.EXPECTED_PEXPECT_SOURCES))
+                for name, record in observed.items():
+                    self.assertEqual(
+                        {field: record[field] for field in ("bytes", "sha256")},
+                        {field: gate.EXPECTED_PEXPECT_SOURCES[name][field]
+                         for field in ("bytes", "sha256")},
+                    )
+        finally:
+            for name in list(sys.modules):
+                if any(name == prefix or name.startswith(prefix + ".")
+                       for prefix in prefixes):
+                    sys.modules.pop(name, None)
+
+    def test_controller_archive_retains_all_execution_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "evidence"
+            evidence.mkdir()
+            executable = root / "python"
+            elf = root / "libpython.so"
+            executable.write_bytes(b"python")
+            elf.write_bytes(b"elf")
+            pexpect_source = (
+                evidence / "provenance/python-packages/pexpect/__init__.py"
+            )
+            pexpect_source.parent.mkdir(parents=True)
+            pexpect_source.write_bytes(b"pexpect")
+            controller_source = b"print('controller')\n"
+            controller = {
+                "direct_script_startup": {},
+                "python_startup_flags": {},
+                "python_startup_options": {},
+                "initial_top_level_compilation_in_host_trust_boundary": True,
+                "local_sources": {
+                    "runner.py": {
+                        "source_path": "/source/runner.py",
+                        "source_bytes": controller_source,
+                        "execution_binding": "captured",
+                        **gate.data_record(controller_source),
+                    },
+                },
+                "commit_binding": {
+                    "candle_commit": "a" * 40,
+                    "sources": {"runner.py": {"repository_path": "runner.py"}},
+                },
+                "python_runtime": {
+                    "execution_binding": "/proc/self/exe",
+                    "version": "test",
+                    "executable": {
+                        "path": str(executable),
+                        **generator.file_record(executable),
+                    },
+                    "elf_closure": {
+                        "policy": "test",
+                        "files": {str(elf): generator.file_record(elf)},
+                        "roles": {},
+                        "virtual_objects": [],
+                    },
+                },
+                "trust_boundary": gate.TRUST_BOUNDARY,
+            }
+            archived = gate._archive_controller_execution(
+                evidence, controller, {
+                    "pexpect": {
+                        "path": str(pexpect_source),
+                        **generator.file_record(pexpect_source),
+                    },
+                },
+            )
+            self.assertEqual(archived["trust_boundary"], gate.TRUST_BOUNDARY)
+            self.assertEqual(len(archived["local_sources"]), 1)
+            self.assertEqual(len(archived["python_runtime"]["elf_objects"]), 1)
+            self.assertEqual(len(archived["pexpect_sources"]), 1)
+            for record in (
+                archived["local_sources"] +
+                archived["python_runtime"]["elf_objects"] +
+                archived["pexpect_sources"]
+            ):
+                self.assertTrue((evidence / record["path"]).is_file())
+            with mock.patch.object(gate, "collect_controller_execution",
+                                   return_value=controller):
+                gate._verify_controller_execution(
+                    Path("/unused"), evidence, controller, archived,
+                )
+                retained = evidence / archived["local_sources"][0]["path"]
+                retained.chmod(0o644)
+                retained.write_bytes(b"mutated")
+                with self.assertRaisesRegex(
+                        gate.GateError, "controller source changed"):
+                    gate._verify_controller_execution(
+                        Path("/unused"), evidence, controller, archived,
+                    )
+
     def test_successful_session_requires_clean_exit(self):
         source = inspect.getsource(gate._run_one)
         self.assertIn("session.finish()", source)
@@ -387,6 +541,7 @@ class FloatPerformanceGateTests(unittest.TestCase):
         self.assertIn("_verify_generated_inputs", source)
         self.assertIn("_verify_linked_runtime_archive", source)
         self.assertIn("_verify_performance_source_archive", source)
+        self.assertIn("_verify_controller_execution", source)
 
     def test_linked_runtime_archive_retains_and_rehashes_exact_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:

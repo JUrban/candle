@@ -60,6 +60,19 @@ manifest pin, verified CakeML/HOL4 coordinates, executable, generated boot
 inputs, launcher aliases, and ELF dependency closure.  It then launches only
 that tree's authenticated `candle.sh` with the fixed runtime environment.
 
+The controller must be invoked directly from its checked-out `.py` source by
+the documented `/usr/bin/python3 -I -S` command.  It executes the generator,
+runtime-lock, and linked-provenance modules from captured source bytes without
+consulting bytecode caches, requires those bytes and the runner's startup bytes
+to be ordinary `H` index entries equal to blobs of the linked Candle commit,
+and checks the isolated Python startup flags.  It pins the executing Python
+image through `/proc/self/exe` and its base ELF closure.  Before importing
+`pexpect`, it copies the complete pinned `pexpect`/`ptyprocess` source set into
+the evidence directory, imports only from that retained snapshot through a new
+empty bytecode-cache prefix, and checks the exact loaded module set.  The
+captured controller sources, Python image/ELF objects, and package snapshot are
+retained and rehashed after all sessions.
+
 Every one of the three measured sessions must:
 
 1. reach the initial Candle prompt;
@@ -80,6 +93,11 @@ Process-tree RSS is a sum and can double-count shared pages.  Fresh processes
 prevent the large retained `break_data` value from contaminating either loop
 comparison.  Successful sessions send EOF and require zero exit status and no
 terminating signal; forced termination is reserved for failed sessions.
+The sampler requires the root process in every snapshot, positive root RSS, a
+tree value at least as large as the root, at least one initial and one final
+sample, and a clean sampler-thread completion.  Root loss, invalid samples, or
+any sampler-thread exception fail the attempt; zero or partial RSS cannot be
+reported as a complete observation.
 
 Optional elapsed and ratio ceilings can turn a reviewed baseline into an
 explicit regression threshold.  When no ceiling is supplied, the gate checks
@@ -97,11 +115,14 @@ On a completed run, the user-selected evidence directory is never temporary.
 It retains the generated histogram and both generated loop sources, their
 content-addressed input receipt, the exact linked-provenance JSON, its durable
 bootstrap record and successful build log, the exact loader/libc/libm object
-bytes, the exact gate configuration and fixed runtime environment, three
+bytes, the four captured local controller sources and their commit-blob
+bindings, the Python image/base ELF closure, the pinned `pexpect` source
+snapshot, the exact gate configuration and fixed runtime environment, three
 complete session transcripts, and `report.json` with elapsed/RSS observations
-and hashes.  The runner revalidates the linked record, pinned Flyspeck
-manifest/source, all generated inputs, and every archived runtime-provenance
-input after the sessions.  Each successful scenario is journaled immediately.
+and hashes.  The runner revalidates its controller identity, the linked record,
+pinned Flyspeck manifest/source, all generated inputs, and every archived
+controller/runtime-provenance input after the sessions.  Each successful
+scenario is journaled immediately.
 After attempt creation, a later failure atomically produces a `receipt.json`
 with the error, completed scenario measurements, any malformed-journal hashes,
 feasible linked/source postflight, and a content inventory of all retained
@@ -109,6 +130,15 @@ files.  An I/O failure that prevents that receipt is reported explicitly
 alongside the original gate error.  The linked-record revalidation is the same
 fail-closed check used by `cakeml_artifact_provenance.py check-linked`; the
 report records all of these postflights.
+
+The retained trust-boundary record explicitly excludes hostile same-UID
+transient mutation.  Pre/postflight hashes detect persistent changes, but a
+hostile process with the same UID could replace a source or runtime pathname
+only while it is being consumed and restore it before postflight.  The initial
+top-level Python compilation, kernel, vDSO, frozen/built-in modules, and the
+entire standard library are likewise outside a hermetic claim.  Run release
+evidence on a dedicated machine/account without concurrent writers; a sealed
+runtime/source snapshot remains the stronger future execution model.
 
 ## Commands
 
@@ -126,7 +156,7 @@ Run the compiled performance gate into a new, user-selected evidence
 directory:
 
 ```text
-/usr/bin/python3 -I candle/compatibility/run_flyspeck_float_performance_gate.py \
+/usr/bin/python3 -I -S candle/compatibility/run_flyspeck_float_performance_gate.py \
   --candle-root /path/to/provenance-bound/candle \
   --flyspeck-root /path/to/pinned/flyspeck \
   --evidence-dir /path/to/results/flyspeck-float-performance-attempt-001 \
@@ -135,8 +165,10 @@ directory:
 
 The evidence directory must not already exist and cannot be inside either
 source tree.  Successful output contains `attempt.json`, `gate-config.json`,
-`provenance/`, `sources/`, `generated/`, `transcripts/`, per-scenario journals,
-`report.json`, and `receipt.json`.
+`provenance/` (including controller, Python-runtime, and pinned package
+snapshots), `sources/`, `generated/`, `transcripts/`, per-scenario journals,
+`report.json`, and `receipt.json`.  Controller/package validation failures that
+occur before `attempt.json` is created do not claim a retained attempt.
 
 Reviewed thresholds, when available, are passed explicitly with
 `--max-break-case-seconds`, `--max-call-time-seconds`, and

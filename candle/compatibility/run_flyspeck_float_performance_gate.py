@@ -16,29 +16,222 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
-import importlib.util
+import importlib
 import json
 import math
 import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
+import tempfile
 import threading
 import time
-from types import ModuleType
+import types
 from typing import Any
 
-import pexpect
-
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parent))
-import generate_flyspeck_float_performance as inputs
-import runtime_lock
+RUNNER_SOURCE_BYTES = Path(__file__).read_bytes()
+
+
+def _load_local_source(name: str, path: Path):
+    """Execute exact local source bytes without consulting bytecode caches."""
+
+    source = path.read_bytes()
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        if (getattr(existing, "__candle_source_sha256__", None) !=
+                source_sha256 or
+                Path(getattr(existing, "__file__", "")).resolve() != path):
+            raise RuntimeError(f"untrusted preloaded local module: {name}")
+        return existing
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
+    sys.modules[name] = module
+    try:
+        exec(compile(source, str(path), "exec", dont_inherit=True),
+             module.__dict__)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    return module
+
+
+# Private names prevent a preloaded module in an embedding process from
+# satisfying the exact-source execution contract.
+inputs = _load_local_source(
+    "_candle_float_performance_inputs",
+    HERE / "generate_flyspeck_float_performance.py",
+)
+runtime_lock = _load_local_source(
+    "_candle_float_performance_runtime_lock",
+    HERE.parent / "runtime_lock.py",
+)
+provenance = _load_local_source(
+    "_candle_float_performance_provenance",
+    HERE.parent / "cakeml_artifact_provenance.py",
+)
+
+# Loaded only after its complete pinned source set has been copied into the
+# retained evidence directory.  This deliberately has no ambient import.
+pexpect: types.ModuleType | None = None
 
 
 CLAIM = "performance observation only; not semantic, S2, or S3 evidence"
+TRUST_BOUNDARY = {
+    "hostile_same_uid_transient_mutation_excluded": True,
+    "detail": (
+        "pre/postflight hashes detect persistent mutation, but do not exclude "
+        "a hostile same-UID process that transiently replaces source or runtime "
+        "paths and restores them before postflight"
+    ),
+}
+
+EXPECTED_PYTHON_RUNTIME = {
+    "execution_binding": "/proc/self/exe",
+    "version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "executable": {
+        "path": "/usr/bin/python3.12",
+        "bytes": 8020928,
+        "sha256":
+            "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
+    },
+    "elf_closure": {
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "files": {
+            "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
+                "bytes": 236616,
+                "sha256":
+                    "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+            },
+            "/lib/x86_64-linux-gnu/libc.so.6": {
+                "bytes": 2125328,
+                "sha256":
+                    "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161",
+            },
+            "/lib/x86_64-linux-gnu/libexpat.so.1.9.1": {
+                "bytes": 174336,
+                "sha256":
+                    "c42ff317838b4b4639e2ea801905f0317177c6df7e31b2f0d0240e3c3ac0cfde",
+            },
+            "/lib/x86_64-linux-gnu/libm.so.6": {
+                "bytes": 952616,
+                "sha256":
+                    "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91",
+            },
+            "/lib/x86_64-linux-gnu/libz.so.1.3": {
+                "bytes": 113000,
+                "sha256":
+                    "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286",
+            },
+        },
+        "roles": {
+            "ld-linux-x86-64.so.2":
+                "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "libc.so.6": "/lib/x86_64-linux-gnu/libc.so.6",
+            "libexpat.so.1": "/lib/x86_64-linux-gnu/libexpat.so.1.9.1",
+            "libm.so.6": "/lib/x86_64-linux-gnu/libm.so.6",
+            "libz.so.1": "/lib/x86_64-linux-gnu/libz.so.1.3",
+        },
+        "virtual_objects": ["linux-vdso.so.1"],
+    },
+}
+EXPECTED_PEXPECT_SOURCES = {
+    "pexpect": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/__init__.py",
+        "bytes": 4089,
+        "sha256":
+            "4ae418ce9571a73a8bc19d5febca2fe53bdccbc42ffde0f5fcdcae4880e26da5",
+    },
+    "pexpect.exceptions": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/exceptions.py",
+        "bytes": 1068,
+        "sha256":
+            "03d0b53d66c17368fd00abe7bfb5243c26b08454c419899e50b5b4bf06ccbd74",
+    },
+    "pexpect.expect": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/expect.py",
+        "bytes": 13827,
+        "sha256":
+            "28ab419b1d8c61afb20c4ef5e5794751c96829ee677410f7e7d6b83985570fce",
+    },
+    "pexpect.pty_spawn": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/pty_spawn.py",
+        "bytes": 37382,
+        "sha256":
+            "67281262c767549e5a73188d33d80bbcbad3d8056a83026f6c370f693c71bfd1",
+    },
+    "pexpect.run": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/run.py",
+        "bytes": 6629,
+        "sha256":
+            "3e44c0fc818e1f32d52bcf6d548ce92c9ec8da300d379a3b183707e64d4bcbc7",
+    },
+    "pexpect.spawnbase": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/spawnbase.py",
+        "bytes": 21685,
+        "sha256":
+            "493864410db9c22480fbbbaabde2f785b912f059cb1407e4fa25e05f63ad398f",
+    },
+    "pexpect.utils": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/utils.py",
+        "bytes": 6019,
+        "sha256":
+            "d63221cd4ede06f637a5b5b72d9a09842394d8a5aa82dcb91e043a541608a795",
+    },
+    "ptyprocess": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/__init__.py",
+        "bytes": 138,
+        "sha256":
+            "b27f96ff59cd453b883a2d9a0841d52f4eb009525c47e2ce65d8295f3c05b935",
+    },
+    "ptyprocess.ptyprocess": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/ptyprocess.py",
+        "bytes": 31686,
+        "sha256":
+            "b24dac536236d98ca5d60537163166a562f7078de8d0aa86ddddc223caf436af",
+    },
+    "ptyprocess.util": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/util.py",
+        "bytes": 2785,
+        "sha256":
+            "ad001d0d165fa0e88e9fabf2916b61d3023a145280a7b689b4149db7e28159d5",
+    },
+}
+EXPECTED_PYTHON_STARTUP_FLAGS = {
+    "debug": 0,
+    "inspect": 0,
+    "interactive": 0,
+    "optimize": 0,
+    "dont_write_bytecode": 0,
+    "no_user_site": 1,
+    "no_site": 1,
+    "ignore_environment": 1,
+    "verbose": 0,
+    "bytes_warning": 0,
+    "quiet": 0,
+    "hash_randomization": 1,
+    "isolated": 1,
+    "dev_mode": False,
+    "utf8_mode": 0,
+    "warn_default_encoding": 0,
+    "safe_path": True,
+    "int_max_str_digits": 4300,
+}
+EXPECTED_PYTHON_STARTUP_OPTIONS = {
+    "xoptions": {},
+    "warnoptions": [],
+    "stdio_write_through": {
+        "stdin": False,
+        "stdout": False,
+        "stderr": False,
+    },
+}
 
 
 class GateError(RuntimeError):
@@ -58,18 +251,247 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _load_provenance_module(candle_root: Path) -> ModuleType:
-    path = candle_root / "candle/cakeml_artifact_provenance.py"
-    require(path.is_file() and not path.is_symlink(),
-            f"missing ordinary artifact provenance checker: {path}")
-    spec = importlib.util.spec_from_file_location(
-        "_candle_float_performance_provenance", path,
-    )
-    require(spec is not None and spec.loader is not None,
-            "could not load artifact provenance checker")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+def data_record(value: bytes) -> dict[str, Any]:
+    return {
+        "bytes": len(value),
+        "sha256": hashlib.sha256(value).hexdigest(),
+    }
+
+
+def python_startup_flags() -> dict[str, Any]:
+    return {
+        name: getattr(sys.flags, name)
+        for name in EXPECTED_PYTHON_STARTUP_FLAGS
+    }
+
+
+def python_startup_options() -> dict[str, Any]:
+    return {
+        "xoptions": dict(sys._xoptions),
+        "warnoptions": list(sys.warnoptions),
+        "stdio_write_through": {
+            "stdin": sys.stdin.write_through,
+            "stdout": sys.stdout.write_through,
+            "stderr": sys.stderr.write_through,
+        },
+    }
+
+
+def require_direct_script_startup() -> dict[str, Any]:
+    """Require the documented isolated, direct-source Python invocation."""
+
+    source = Path(__file__).resolve()
+    argv0 = Path(sys.argv[0]).resolve()
+    try:
+        compile(RUNNER_SOURCE_BYTES, str(source), "exec", dont_inherit=True)
+    except (SyntaxError, UnicodeError, ValueError) as error:
+        raise GateError("performance runner startup bytes are not source") from error
+    record = {
+        "module_name": __name__,
+        "spec_is_none": __spec__ is None,
+        "cached_is_none": globals().get("__cached__") is None,
+        "argv0": str(argv0),
+        "source_path": str(source),
+    }
+    require(record == {
+        "module_name": "__main__",
+        "spec_is_none": True,
+        "cached_is_none": True,
+        "argv0": str(source),
+        "source_path": str(source),
+    }, "performance runner must execute directly from its .py source")
+    require(python_startup_flags() == EXPECTED_PYTHON_STARTUP_FLAGS,
+            "performance runner Python startup flags mismatch; use python3 -I -S")
+    require(python_startup_options() == EXPECTED_PYTHON_STARTUP_OPTIONS,
+            "performance runner Python startup options mismatch")
+    return record
+
+
+def validate_python_runtime() -> dict[str, Any]:
+    process_executable = Path("/proc/self/exe")
+    require(process_executable.is_symlink(),
+            "cannot bind the executing Python image through /proc/self/exe")
+    executable = process_executable.resolve(strict=True)
+    require(Path(sys.executable).resolve(strict=True) == executable,
+            "Python executable metadata differs from the running image")
+    executable_record = inputs.file_record(executable)
+    observed = {
+        "execution_binding": "/proc/self/exe",
+        "version": sys.version,
+        "executable": {
+            "path": str(executable),
+            **executable_record,
+        },
+        "elf_closure": provenance.elf_dynamic_closure(executable),
+    }
+    require(observed == EXPECTED_PYTHON_RUNTIME,
+            "performance runner Python runtime identity mismatch")
+    return observed
+
+
+def local_python_modules() -> tuple[types.ModuleType, ...]:
+    return inputs, provenance, runtime_lock
+
+
+def _git_bytes(root: Path, *arguments: str) -> bytes:
+    try:
+        return subprocess.run(
+            provenance.git_command(root, *arguments), check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env=provenance.git_environment(),
+        ).stdout
+    except subprocess.CalledProcessError as error:
+        raise GateError(
+            "Git byte check failed: " +
+            error.stderr.decode(errors="replace").strip()
+        ) from error
+
+
+def collect_controller_execution(
+    candle_root: Path, candle_commit: str,
+) -> dict[str, Any]:
+    """Bind executed controller sources, Python, and startup to one commit."""
+
+    expected_root = HERE.parent.parent.resolve()
+    require(candle_root == expected_root,
+            "performance runner must execute from the supplied Candle root")
+    direct_startup = require_direct_script_startup()
+    sources: dict[str, dict[str, Any]] = {}
+    for module in local_python_modules():
+        path = Path(module.__file__).resolve()
+        source = module.__candle_source_bytes__
+        record = data_record(source)
+        require(inputs.file_record(path) == record and
+                module.__candle_source_sha256__ == record["sha256"],
+                f"executed local source identity mismatch: {path.name}")
+        sources[path.name] = {
+            "source_path": str(path),
+            "source_bytes": source,
+            "execution_binding": "compiled-from-captured-source-bytes",
+            **record,
+        }
+    runner = Path(__file__).resolve()
+    runner_record = data_record(RUNNER_SOURCE_BYTES)
+    require(runner == HERE / runner.name and
+            inputs.file_record(runner) == runner_record,
+            "top-level performance runner changed after startup capture")
+    sources[runner.name] = {
+        "source_path": str(runner),
+        "source_bytes": RUNNER_SOURCE_BYTES,
+        "execution_binding": "startup-captured-after-initial-compilation",
+        **runner_record,
+    }
+    require(set(sources) == {
+        "cakeml_artifact_provenance.py",
+        "generate_flyspeck_float_performance.py",
+        "run_flyspeck_float_performance_gate.py",
+        "runtime_lock.py",
+    }, "unexpected performance controller source set")
+    commit_binding = {}
+    for label, record in sorted(sources.items()):
+        path = Path(record["source_path"])
+        relative = path.relative_to(candle_root).as_posix()
+        index = provenance.git_output(
+            candle_root, "ls-files", "-v", "--", relative,
+        )
+        require(index == f"H {relative}",
+                f"controller source has special index flags: {relative}")
+        blob = _git_bytes(
+            candle_root, "cat-file", "blob", f"{candle_commit}:{relative}",
+        )
+        require(blob == record["source_bytes"],
+                f"executed controller source differs from commit: {relative}")
+        commit_binding[label] = {
+            "repository_path": relative,
+            "index_tag": "H",
+            **data_record(blob),
+        }
+    return {
+        "direct_script_startup": direct_startup,
+        "python_startup_flags": python_startup_flags(),
+        "python_startup_options": python_startup_options(),
+        "initial_top_level_compilation_in_host_trust_boundary": True,
+        "local_sources": sources,
+        "commit_binding": {
+            "candle_commit": candle_commit,
+            "sources": commit_binding,
+        },
+        "python_runtime": validate_python_runtime(),
+        "trust_boundary": TRUST_BOUNDARY,
+    }
+
+
+def load_pexpect_from_pinned_sources(snapshot_root: Path):
+    """Copy and import only the complete pinned pexpect/ptyprocess sources."""
+
+    prefixes = ("pexpect", "ptyprocess")
+    require(not any(
+        name == prefix or name.startswith(prefix + ".")
+        for name in sys.modules for prefix in prefixes
+    ), "pexpect/ptyprocess were loaded before isolated source validation")
+    require(not snapshot_root.exists() and not snapshot_root.is_symlink(),
+            "pexpect source snapshot must be a new path")
+    snapshot_root.mkdir(parents=True)
+    for name, expected in sorted(EXPECTED_PEXPECT_SOURCES.items()):
+        source = Path(expected["path"])
+        observed = inputs.file_record(source)
+        require(observed == {
+            field: expected[field] for field in ("bytes", "sha256")
+        }, f"pexpect source changed before snapshot: {name}")
+        parts = name.split(".")
+        destination = (
+            snapshot_root / parts[0] /
+            ("__init__.py" if len(parts) == 1 else f"{parts[-1]}.py")
+        )
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+        require(inputs.file_record(destination) == observed,
+                f"pexpect source changed during snapshot: {name}")
+        destination.chmod(0o444)
+    with tempfile.TemporaryDirectory(
+        prefix="candle-performance-empty-python-cache-"
+    ) as temporary:
+        previous_prefix = sys.pycache_prefix
+        previous_dont_write = sys.dont_write_bytecode
+        sys.pycache_prefix = temporary
+        sys.dont_write_bytecode = True
+        sys.path.insert(0, str(snapshot_root))
+        try:
+            module = importlib.import_module("pexpect")
+            loaded_names = {
+                name for name in sys.modules
+                if any(name == prefix or name.startswith(prefix + ".")
+                       for prefix in prefixes)
+            }
+            require(loaded_names == set(EXPECTED_PEXPECT_SOURCES),
+                    "unexpected pexpect/ptyprocess module set")
+            observed = {}
+            cache_root = Path(temporary)
+            for name in sorted(loaded_names):
+                loaded = sys.modules[name]
+                source = Path(loaded.__file__).resolve(strict=True)
+                cached = Path(loaded.__cached__).resolve()
+                require(cached.is_relative_to(cache_root) and
+                        source.is_relative_to(snapshot_root) and
+                        source.suffix == ".py",
+                        f"Python package did not load from snapshot: {name}")
+                observed[name] = {
+                    "path": str(source),
+                    **inputs.file_record(source),
+                }
+            require(all(
+                {field: observed[name][field]
+                 for field in ("bytes", "sha256")} ==
+                {field: expected[field]
+                 for field in ("bytes", "sha256")}
+                for name, expected in EXPECTED_PEXPECT_SOURCES.items()
+            ), "pexpect/ptyprocess source identity mismatch")
+        finally:
+            if sys.path[0] == str(snapshot_root):
+                sys.path.pop(0)
+            sys.pycache_prefix = previous_prefix
+            sys.dont_write_bytecode = previous_dont_write
+    return module, observed
 
 
 class ProcessTreeSampler:
@@ -80,6 +502,8 @@ class ProcessTreeSampler:
         self.interval = interval
         self.peak_process_rss_kib = 0
         self.peak_tree_rss_kib = 0
+        self.sample_count = 0
+        self._error: BaseException | None = None
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
@@ -116,21 +540,28 @@ class ProcessTreeSampler:
                 if parent in tree and pid not in tree:
                     tree.add(pid)
                     changed = True
-        if root_pid not in rss:
-            return 0, 0
+        require(root_pid in rss,
+                f"RSS sampler lost root process {root_pid}")
         return rss[root_pid], sum(rss[pid] for pid in tree if pid in rss)
 
     def _sample(self) -> None:
         process_rss, tree_rss = self.tree_rss(self.root_pid)
+        require(process_rss > 0 and tree_rss >= process_rss,
+                f"invalid RSS sample for root process {self.root_pid}")
         self.peak_process_rss_kib = max(
             self.peak_process_rss_kib, process_rss,
         )
         self.peak_tree_rss_kib = max(self.peak_tree_rss_kib, tree_rss)
+        self.sample_count += 1
 
     def _run(self) -> None:
-        self._sample()
-        while not self._stop.wait(self.interval):
+        try:
             self._sample()
+            while not self._stop.wait(self.interval):
+                self._sample()
+        except BaseException as error:
+            self._error = error
+            self._stop.set()
 
     def start(self) -> None:
         self._thread.start()
@@ -138,7 +569,14 @@ class ProcessTreeSampler:
     def stop(self) -> None:
         self._stop.set()
         self._thread.join()
+        if self._error is not None:
+            raise GateError(
+                "RSS sampler thread failed: "
+                f"{type(self._error).__name__}: {self._error}"
+            ) from self._error
         self._sample()
+        require(self.sample_count >= 2,
+                "RSS sampler did not retain initial and final samples")
 
 
 class CandleSession:
@@ -151,6 +589,8 @@ class CandleSession:
         transcript_path: Path,
         inactivity_timeout: float,
     ):
+        require(pexpect is not None,
+                "pinned pexpect snapshot was not loaded")
         self.root = candle_root
         self.inactivity_timeout = inactivity_timeout
         self.transcript = transcript_path.open("w", encoding="utf-8")
@@ -332,6 +772,9 @@ def _measure_load(
             "tree sum can double-count shared pages"
         ),
         "rss_sampling_interval_seconds": sampler.interval,
+        "rss_sample_count": sampler.sample_count,
+        "rss_root_present_all_samples": True,
+        "rss_sampler_thread_completed": True,
         "rss_before_process_kib": before_process,
         "rss_before_tree_kib": before_tree,
         "peak_process_rss_kib": sampler.peak_process_rss_kib,
@@ -517,6 +960,138 @@ def _archive_file(
     }
 
 
+def _archive_bytes(
+    value: bytes,
+    destination: Path,
+    evidence_dir: Path,
+) -> dict[str, Any]:
+    require(not destination.exists() and not destination.is_symlink(),
+            f"refusing to replace controller evidence: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(value)
+    observed = inputs.file_record(destination)
+    require(observed == data_record(value),
+            f"controller evidence changed on write: {destination}")
+    destination.chmod(0o444)
+    return {
+        "path": str(destination.relative_to(evidence_dir)),
+        **observed,
+    }
+
+
+def _archive_controller_execution(
+    evidence_dir: Path,
+    controller: dict[str, Any],
+    pexpect_sources: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    archive_root = evidence_dir / "provenance"
+    local_sources = []
+    commit_sources = controller["commit_binding"]["sources"]
+    for label, source in sorted(controller["local_sources"].items()):
+        destination = archive_root / "python" / label
+        local_sources.append({
+            "label": label,
+            "source_path": source["source_path"],
+            "execution_binding": source["execution_binding"],
+            "commit_binding": commit_sources[label],
+            **_archive_bytes(
+                source["source_bytes"], destination, evidence_dir,
+            ),
+        })
+
+    python_runtime = controller["python_runtime"]
+    executable = python_runtime["executable"]
+    executable_archive = _archive_file(
+        Path(executable["path"]),
+        archive_root / "python-runtime" / Path(executable["path"]).name,
+        evidence_dir,
+        {field: executable[field] for field in ("bytes", "sha256")},
+    )
+    elf_objects = []
+    for source_string, expected in sorted(
+        python_runtime["elf_closure"]["files"].items()
+    ):
+        source = Path(source_string)
+        destination = (
+            archive_root / "python-runtime-elf" /
+            f"{expected['sha256'][:16]}-{source.name}"
+        )
+        elf_objects.append({
+            "source_path": source_string,
+            **_archive_file(
+                source, destination, evidence_dir, expected,
+            ),
+        })
+
+    retained_pexpect = []
+    for label, source in sorted(pexpect_sources.items()):
+        path = Path(source["path"])
+        record = inputs.file_record(path)
+        retained_pexpect.append({
+            "label": label,
+            "source_path": EXPECTED_PEXPECT_SOURCES[label]["path"],
+            "execution_binding": "imported-from-retained-source-snapshot",
+            "path": str(path.relative_to(evidence_dir)),
+            **record,
+        })
+
+    return {
+        "direct_script_startup": controller["direct_script_startup"],
+        "python_startup_flags": controller["python_startup_flags"],
+        "python_startup_options": controller["python_startup_options"],
+        "initial_top_level_compilation_in_host_trust_boundary":
+            controller["initial_top_level_compilation_in_host_trust_boundary"],
+        "commit_binding": {
+            "candle_commit": controller["commit_binding"]["candle_commit"],
+        },
+        "local_sources": local_sources,
+        "python_runtime": {
+            "execution_binding": python_runtime["execution_binding"],
+            "version": python_runtime["version"],
+            "executable": {
+                "source_path": executable["path"],
+                **executable_archive,
+            },
+            "elf_policy": python_runtime["elf_closure"]["policy"],
+            "elf_roles": python_runtime["elf_closure"]["roles"],
+            "virtual_objects": python_runtime["elf_closure"]["virtual_objects"],
+            "elf_objects": elf_objects,
+        },
+        "pexpect_sources": retained_pexpect,
+        "trust_boundary": controller["trust_boundary"],
+    }
+
+
+def _verify_controller_execution(
+    candle_root: Path,
+    evidence_dir: Path,
+    controller: dict[str, Any],
+    archived: dict[str, Any],
+) -> None:
+    observed = collect_controller_execution(
+        candle_root, controller["commit_binding"]["candle_commit"],
+    )
+    require(observed == controller,
+            "performance controller execution identity changed")
+    for record in archived["local_sources"]:
+        require(inputs.file_record(evidence_dir / record["path"]) == {
+            field: record[field] for field in ("bytes", "sha256")
+        }, f"retained controller source changed: {record['label']}")
+    python_runtime = archived["python_runtime"]
+    executable = python_runtime["executable"]
+    require(inputs.file_record(evidence_dir / executable["path"]) == {
+        field: executable[field] for field in ("bytes", "sha256")
+    }, "retained Python executable changed")
+    for record in python_runtime["elf_objects"]:
+        require(inputs.file_record(evidence_dir / record["path"]) == {
+            field: record[field] for field in ("bytes", "sha256")
+        }, f"retained Python ELF object changed: {record['path']}")
+    for record in archived["pexpect_sources"]:
+        require(inputs.file_record(evidence_dir / record["path"]) == {
+            field: record[field] for field in ("bytes", "sha256")
+        }, f"retained pexpect source changed: {record['label']}")
+
+
 def _archive_linked_runtime(
     candle_root: Path,
     evidence_dir: Path,
@@ -695,11 +1270,12 @@ def _run_attempt(
     arguments: argparse.Namespace,
     runtime_lock_handle: runtime_lock.BuildLock,
 ) -> dict[str, Any]:
+    global pexpect
+
     candle_root = arguments.candle_root.resolve()
     flyspeck_root = arguments.flyspeck_root.resolve()
     evidence_dir = arguments.evidence_dir.resolve()
 
-    provenance = _load_provenance_module(candle_root)
     try:
         linked = provenance.validate_linked_record(candle_root)
         runtime_environment = provenance.runtime_environment({
@@ -707,11 +1283,20 @@ def _run_attempt(
         })
     except Exception as error:  # provenance package owns its exception type
         raise GateError(f"linked Candle provenance failed: {error}") from error
+    controller = collect_controller_execution(
+        candle_root, linked["candle_commit"],
+    )
     launcher = candle_root / "candle.sh"
     require(launcher.is_file() and os.access(launcher, os.X_OK),
             f"authenticated Candle launcher is unavailable: {launcher}")
     generated_dir, transcript_dir, output_path = _create_evidence_layout(
         evidence_dir, candle_root, flyspeck_root,
+    )
+    pexpect, pexpect_sources = load_pexpect_from_pinned_sources(
+        evidence_dir / "provenance/python-packages",
+    )
+    archived_controller = _archive_controller_execution(
+        evidence_dir, controller, pexpect_sources,
     )
     attempt_path = evidence_dir / "attempt.json"
     attempt = {
@@ -722,6 +1307,8 @@ def _run_attempt(
         "started_utc": _utc_now(),
         "runtime_environment": runtime_environment,
         "runtime_lock": runtime_lock_handle.record,
+        "controller_execution": archived_controller,
+        "trust_boundary": TRUST_BOUNDARY,
         "repositories": {
             "candle": linked["candle_commit"],
             "cakeml": linked["cakeml_commit"],
@@ -768,6 +1355,7 @@ def _run_attempt(
                 arguments.max_call_to_hoisted_ratio,
         },
         "runtime_environment": runtime_environment,
+        "trust_boundary": TRUST_BOUNDARY,
         "linked_provenance_source": str(linked_record_path),
         "linked_provenance_sha256": sha256_file(linked_record_path),
     }
@@ -808,6 +1396,9 @@ def _run_attempt(
         ) from error
     require(linked_postflight == linked,
             "linked Candle provenance record changed during the run")
+    _verify_controller_execution(
+        candle_root, evidence_dir, controller, archived_controller,
+    )
     _verify_linked_runtime_archive(evidence_dir, archived_runtime, linked)
     _verify_performance_source_archive(
         evidence_dir, archived_sources, linked,
@@ -840,6 +1431,7 @@ def _run_attempt(
         "outcome": outcome,
         "performance_accepted": False,
         "reviewed_acceptance_contract": None,
+        "trust_boundary": TRUST_BOUNDARY,
         "candle": {
             "root": str(candle_root),
             "commit": linked["candle_commit"],
@@ -860,6 +1452,7 @@ def _run_attempt(
                 **config_record,
             },
             "linked_runtime_archive": archived_runtime,
+            "controller_execution": archived_controller,
             "performance_source_archive": archived_sources,
             "generated_input_receipt": {
                 "path": str(
@@ -881,6 +1474,7 @@ def _run_attempt(
             "linked_provenance_revalidated": True,
             "linked_provenance_unchanged": True,
             "linked_runtime_archive_rehashed": True,
+            "controller_execution_revalidated": True,
             "performance_source_archive_rehashed": True,
             "flyspeck_manifest_source_revalidated": True,
             "generated_inputs_rehashed": True,
@@ -930,9 +1524,9 @@ def _failure_postflight(
     if linked_archive.is_file() and not linked_archive.is_symlink():
         try:
             archived = json.loads(linked_archive.read_text(encoding="utf-8"))
-            current = _load_provenance_module(
+            current = provenance.validate_linked_record(
                 arguments.candle_root.resolve()
-            ).validate_linked_record(arguments.candle_root.resolve())
+            )
             result["linked_provenance_valid"] = True
             result["linked_provenance_unchanged"] = current == archived
         except Exception as error:
@@ -1065,6 +1659,7 @@ def _positive_float(value: str) -> float:
 
 
 def main() -> None:
+    require_direct_script_startup()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candle-root", type=Path, required=True)
     parser.add_argument("--flyspeck-root", type=Path, required=True)
