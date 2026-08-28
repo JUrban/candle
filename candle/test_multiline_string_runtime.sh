@@ -27,14 +27,12 @@ trap cleanup EXIT
   cd -- "$(dirname -- "$candle_script")"
   timeout 300 "$candle_script" >"$log" 2>&1 <<EOF
 #use "$script_dir/compatibility/oracles/multiline_string.ml";;
-let () =
-  if candle_multiline_string = "alpha" ^ "\n" ^ "beta"
-  then print_endline "CANDLE_MULTILINE_STRING_OK"
-  else failwith "multiline string mismatch";;
+let candle_multiline_string_runtime_ok =
+  candle_multiline_string = "alpha" ^ "\n" ^ "beta";;
 EOF
 )
 
-rg -q '^CANDLE_MULTILINE_STRING_OK$' "$log"
+rg -q '^# *val candle_multiline_string_runtime_ok = true: bool$' "$log"
 if rg -q 'LEXER ERROR|Parsing failed|^ERROR:|^EXCEPTION:' "$log"; then
   exit 1
 fi

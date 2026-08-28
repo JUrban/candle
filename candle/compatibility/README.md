@@ -33,7 +33,10 @@ python3 candle/compatibility/test_float_literals.py --candle-root /path/to/candl
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax
 is explicitly out of scope because CakeML's retained scanner is decimal-only
-and the audited Great 100 slice contains no hexadecimal float literal.
+and the audited Great 100 slice contains no hexadecimal float literal. The
+compiled-Candle half explicitly requires the representative hexadecimal form
+to remain rejected, checks that invalid `Double.fromString` returns `None`, and
+checks that `Option.valOf None` raises after insulation.
 `float_literal_progress.json` records the completed proof build without treating
 it as runtime evidence. `benchmark_float_literals.py` measures representative
 compiled-Candle load time for integer controls, explicit `Double.fromString`,

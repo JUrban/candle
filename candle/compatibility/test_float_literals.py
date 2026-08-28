@@ -108,7 +108,18 @@ def _candle_positive_source(payload):
              f'= {expected} then () else failwith '
              f'"float bits: {case["id"]}";;'),
         ])
-    lines.append("let candle_float_differential_passed = true;;")
+    lines.extend([
+        ('let candle_float_invalid_string_none = '
+         'match Double.fromString "not-a-float" with '
+         'None -> true | Some _ -> false;;'),
+        ('let () = if candle_float_invalid_string_none then () else '
+         'failwith "Double.fromString invalid input";;'),
+        ('let candle_float_valof_none_raises = try '
+         'let _ = Option.valOf None in false with _ -> true;;'),
+        ('let () = if candle_float_valof_none_raises then () else '
+         'failwith "Option.valOf None";;'),
+        "let candle_float_differential_passed = true;;",
+    ])
     return "\n".join(lines) + "\n"
 
 
@@ -191,6 +202,26 @@ def check_candle(payload, candle_root, timeout):
                         f'Candle negative case {case["id"]} did not produce '
                         f'a parse failure: {detail}')
                 _expect_prompt(process, timeout)
+
+            for case in payload["candle_excluded_cases"]:
+                process.sendline(
+                    f'let candle_excluded_float = {case["literal"]};;')
+                index = process.expect([
+                    r"\nParsing failed",
+                    r"\nval candle_excluded_float =",
+                    r"\n(ERROR: .+)",
+                    r"\n(EXCEPTION: .+)",
+                    pexpect.TIMEOUT,
+                    pexpect.EOF,
+                ], timeout=timeout)
+                if index != 0:
+                    detail = ("accepted" if index == 1 else
+                              process.match.group(1) if index in (2, 3) else
+                              "timeout" if index == 4 else "unexpected EOF")
+                    raise AssertionError(
+                        f'Candle accepted excluded case {case["id"]}: '
+                        f'{detail}')
+                _expect_prompt(process, timeout)
         passed = True
     except Exception as error:
         transcript.flush()
@@ -203,8 +234,9 @@ def check_candle(payload, candle_root, timeout):
         if passed:
             transcript_path.unlink()
 
-    print(f"Candle: {len(payload['positive_cases'])} positive values and "
-          f"{len(payload['negative_cases'])} negative parses PASS")
+    print(f"Candle: {len(payload['positive_cases'])} positive values, "
+          f"{len(payload['negative_cases'])} negative parses, and "
+          f"{len(payload['candle_excluded_cases'])} excluded forms PASS")
 
 
 def main():

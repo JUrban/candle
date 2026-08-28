@@ -13,6 +13,12 @@
       "reason": "the retained CakeML decimal scanner does not recognize them and no such literal occurs in the audited Great 100 source slice"
     }
   ],
+  "candle_excluded_cases": [
+    {
+      "id": "hexadecimal_float",
+      "literal": "0x1.0p0"
+    }
+  ],
   "positive_cases": [
     {
       "id": "zero",
