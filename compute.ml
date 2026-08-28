@@ -337,7 +337,8 @@ let partition_skip skip args =
 type compset =
     Rws of (string, (db * int option) ref) Hashtbl.t;;
 
-let empty_rws () = Rws (Hashtbl.create 100 String.hash String.compare);;
+let empty_rws () =
+  Rws (Hashtbl.create_ordered 100 String.hash String.compare);;
 
 let assoc_clause (Rws rws) cst =
   try Hashtbl.find rws cst

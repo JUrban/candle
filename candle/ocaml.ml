@@ -81,9 +81,52 @@ module Float = struct
   let of_string s = match Cake.Double.fromString s with
     | None -> failwith "Float.of_string"
     | Some x -> x
+
+  (* OCaml [frexp] is exactly a decomposition of the IEEE-754 encoding.  Use
+     CakeML's proved field extractors/reconstructor instead of a host FFI.
+     Normal results have magnitude in [0.5,1); zero retains its sign; and
+     infinities/NaNs are returned unchanged with exponent zero. *)
+  let frexp value =
+    let exponent = Cake.Word64.toInt (Cake.Double.exponent value) in
+    let significand = Cake.Word64.toInt (Cake.Double.significand value) in
+    let sign = Cake.Double.sign value in
+    if exponent = 0 then
+      if significand = 0 then value, 0
+      else
+        let rec highest_bit index bits =
+          if bits < 2 then index else highest_bit (index + 1) (bits / 2) in
+        let rec power_two exponent accumulator =
+          if exponent = 0 then accumulator
+          else power_two (exponent - 1) (2 * accumulator) in
+        let bit = highest_bit 0 significand in
+        let normalized =
+          significand * power_two (52 - bit) 1 - power_two 52 1 in
+        (Cake.Double.construct sign (Cake.Word64.fromInt 1022)
+           (Cake.Word64.fromInt normalized),
+         bit - 1073)
+    else if exponent = 2047 then value, 0
+    else
+      (Cake.Double.construct sign (Cake.Word64.fromInt 1022)
+         (Cake.Double.significand value),
+       exponent - 1022)
 end;;
 
+let frexp = Float.frexp;;
+
 type float = Float.float;;
+
+(* Selected Flyspeck sources qualify the ordinary OCaml I/O and square-root
+   operations through [Stdlib].  Deliberately omit polymorphic [compare]: each
+   selected comparison must be normalized to a type-specific comparator. *)
+module Stdlib = struct
+  let open_in = open_in
+  let open_out = open_out
+  let input_line = input_line
+  let close_in = close_in
+  let close_out = close_out
+  let output_string = output_string
+  let sqrt = Float.sqrt
+end;;
 
 module List = struct
   let fold_left f init xs = Cake.List.foldl (fun x y -> f y x) init xs
@@ -547,6 +590,9 @@ end;;
 
 module Array = struct
   let make n x = Cake.Array.array n x
+  let init n f =
+    if n < 0 then invalid_arg "Array.init"
+    else Cake.Array.tabulate n f
   let length a = Cake.Array.length a
   let set a n x = try Cake.Array.update a n x
     with Subscript -> raise (Invalid_argument "Array.set")
@@ -628,18 +674,86 @@ module Random = struct
 end;;
 
 module Hashtbl = struct
-  type ('a, 'b) t = ('a, 'b) Cake.Hashtable.hashtable
-  (* Note that we additionally need to pass in hash and order to create *)
-  let create size hash order =
-    Cake.Hashtable.empty size hash (Candle.int_to_ordering order)
-  let find tbl x =
-    match Cake.Hashtable.lookup tbl x with
-    | None -> raise Not_found
-    | Some y -> y
-  let replace tbl x y = Cake.Hashtable.insert tbl x y
-  let remove tbl x = Cake.Hashtable.delete tbl x
-  let fold f tbl init =
-    Cake.List.foldl (fun (x,y) acc -> f x y acc) init (Cake.Hashtable.toAscList tbl)
+  (* CakeML intentionally has no polymorphic hash or ordering operation.  The
+     unary OCaml constructor therefore uses an equality-backed association
+     list.  Performance-sensitive Candle code can opt into the proved CakeML
+     hashtable with explicit hash/order functions via [create_ordered]. *)
+  type ('a, 'b) t =
+    Linear of (('a * 'b) list ref)
+  | Ordered of (('a, 'b) Cake.Hashtable.hashtable);;
+
+  let create capacity =
+    if capacity < 0 then invalid_arg "Hashtbl.create"
+    else Linear (ref [])
+
+  let create_ordered size hash order =
+    if size < 0 then invalid_arg "Hashtbl.create_ordered"
+    else Ordered
+      (Cake.Hashtable.empty size hash (Candle.int_to_ordering order))
+
+  let rec find_linear key entries =
+    match entries with
+      [] -> raise Not_found
+    | (entry_key, value)::rest ->
+        if entry_key = key then value else find_linear key rest
+
+  let find table key =
+    match table with
+      Linear entries -> find_linear key !entries
+    | Ordered ordered ->
+        (match Cake.Hashtable.lookup ordered key with
+           None -> raise Not_found
+         | Some value -> value)
+
+  let mem table key =
+    try let _ = find table key in true with Not_found -> false
+
+  let add table key value =
+    match table with
+      Linear entries -> entries := (key, value) :: !entries
+    | Ordered ordered -> Cake.Hashtable.insert ordered key value
+
+  let rec replace_linear key value entries =
+    match entries with
+      [] -> [key, value]
+    | (entry_key, entry_value)::rest ->
+        if entry_key = key then (key, value)::rest
+        else (entry_key, entry_value)::replace_linear key value rest
+
+  let replace table key value =
+    match table with
+      Linear entries -> entries := replace_linear key value !entries
+    | Ordered ordered -> Cake.Hashtable.insert ordered key value
+
+  let rec remove_linear key entries =
+    match entries with
+      [] -> []
+    | (entry_key, value)::rest ->
+        if entry_key = key then rest
+        else (entry_key, value)::remove_linear key rest
+
+  let remove table key =
+    match table with
+      Linear entries -> entries := remove_linear key !entries
+    | Ordered ordered -> Cake.Hashtable.delete ordered key
+
+  let clear table =
+    match table with
+      Linear entries -> entries := []
+    | Ordered ordered -> Cake.Hashtable.clear ordered
+
+  let length table =
+    match table with
+      Linear entries -> Cake.List.length !entries
+    | Ordered ordered ->
+        Cake.List.length (Cake.Hashtable.toAscList ordered)
+
+  let fold f table init =
+    let entries =
+      match table with
+        Linear linear -> !linear
+      | Ordered ordered -> Cake.Hashtable.toAscList ordered in
+    Cake.List.foldl (fun (key,value) acc -> f key value acc) init entries
 end;;
 
 module Bytes = struct
@@ -715,6 +829,7 @@ module Sys = struct
      suffix makes it explicit that this is Candle, while preserving the OCaml
      version probes used by Flyspeck. *)
   let ocaml_version = "4.14.1-candle"
+  let word_size = 64
 
   let remove (s: string) = print "TODO Sys.remove (noop)\n"
   let command (s: string) =
@@ -722,6 +837,13 @@ module Sys = struct
   let time () =
     print_endline "TODO Sys.time (always returns 0)";
     Float.zero;;
+end;;
+
+(* The selected [compact] calls are performance hints.  Keep them deterministic
+   and free of a new runtime/host inspection FFI.  The record-valued [Gc.stat]
+   telemetry is removed by an exact, hash-bound selected-source normalization. *)
+module Gc = struct
+  let compact () = ();;
 end;;
 
 (* Direct Flyspeck uses [Unix.open_process_in] during strictbuild startup and
