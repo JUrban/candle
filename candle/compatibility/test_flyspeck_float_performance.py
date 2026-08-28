@@ -301,6 +301,18 @@ class FloatPerformanceGateTests(unittest.TestCase):
         self.assertGreaterEqual(sampler.sample_count, 2)
         self.assertEqual(sampler.peak_process_rss_kib, 120)
         self.assertEqual(sampler.peak_tree_rss_kib, 150)
+        self.assertIsNotNone(sampler.coverage)
+        self.assertLessEqual(
+            sampler.coverage["maximum_observed_gap_seconds"],
+            sampler.coverage["maximum_allowed_gap_seconds"],
+        )
+
+    def test_rss_sampler_rejects_starved_long_window(self):
+        with self.assertRaisesRegex(
+                gate.GateError, "cadence exceeded maximum allowed gap"):
+            gate.ProcessTreeSampler.coverage_record(
+                0.05, 0.0, [0.01, 2.0],
+            )
 
     def test_controller_uses_captured_sources_and_pinned_runtime(self):
         for module in (gate.inputs, gate.provenance, gate.runtime_lock):
@@ -422,6 +434,21 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 },
             )
             self.assertEqual(archived["trust_boundary"], gate.TRUST_BOUNDARY)
+            self.assertTrue(
+                archived["trust_boundary"][
+                    "assumes_no_hostile_same_uid_transient_mutation"
+                ]
+            )
+            self.assertIn(
+                "/usr/bin/git",
+                archived["trust_boundary"]["host_program_assumptions"],
+            )
+            self.assertIn(
+                "shared resolved Python image",
+                archived["trust_boundary"]["host_program_assumptions"][
+                    "/usr/bin/python3"
+                ],
+            )
             self.assertEqual(len(archived["local_sources"]), 1)
             self.assertEqual(len(archived["python_runtime"]["elf_objects"]), 1)
             self.assertEqual(len(archived["pexpect_sources"]), 1)
@@ -443,6 +470,83 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         gate.GateError, "controller source changed"):
                     gate._verify_controller_execution(
                         Path("/unused"), evidence, controller, archived,
+                    )
+
+    def test_success_receipt_rejects_persistent_json_mutations(self):
+        for target in ("attempt", "scenario", "report"):
+            with self.subTest(target=target), \
+                    tempfile.TemporaryDirectory() as temporary:
+                evidence = Path(temporary)
+                attempt = {
+                    "schema": 1,
+                    "kind": "flyspeck-float-performance-attempt",
+                    "state": "running",
+                    "started_utc": "2026-01-01T00:00:00+00:00",
+                }
+                attempt_path = evidence / "attempt.json"
+                gate._write_json(attempt_path, attempt)
+                scenarios = {
+                    name: {"outcome": "pass", "elapsed_seconds": index + 1.0}
+                    for index, name in enumerate(
+                        ("call_time", "hoisted", "break_case_log")
+                    )
+                }
+                journal_records = {}
+                for name, scenario in scenarios.items():
+                    path = evidence / f"scenario-{name}.json"
+                    gate._write_json(path, scenario)
+                    journal_records[name] = {
+                        "path": path.name,
+                        **generator.file_record(path),
+                    }
+                report = {
+                    "schema": 1,
+                    "kind": "flyspeck-float-performance-gate",
+                    "scenarios": scenarios,
+                    "evidence": {
+                        "attempt": {
+                            "path": attempt_path.name,
+                            **generator.file_record(attempt_path),
+                        },
+                        "scenario_journals": journal_records,
+                    },
+                }
+                report_path = evidence / "report.json"
+                gate._write_json(report_path, report)
+                expected_report = json.loads(json.dumps(report))
+                _, report_record = gate._verify_completed_success_evidence(
+                    evidence, expected_report,
+                )
+                gate._validate_success_inventory(
+                    expected_report, report_record,
+                    gate._evidence_inventory(evidence),
+                )
+                if target == "attempt":
+                    attempt["mutated"] = True
+                    gate._write_json(attempt_path, attempt)
+                    pattern = "attempt record content hash changed"
+                elif target == "scenario":
+                    mutated_scenario = dict(scenarios["call_time"])
+                    mutated_scenario["elapsed_seconds"] = 99.0
+                    gate._write_json(
+                        evidence / "scenario-call_time.json",
+                        mutated_scenario,
+                    )
+                    pattern = "scenario journal call_time semantics changed"
+                else:
+                    mutated_report = dict(report)
+                    mutated_report["mutated"] = True
+                    gate._write_json(report_path, mutated_report)
+                    pattern = "persisted report semantics changed"
+                with self.assertRaisesRegex(gate.GateError, pattern):
+                    gate._verify_completed_success_evidence(
+                        evidence, expected_report,
+                    )
+                with self.assertRaisesRegex(
+                        gate.GateError, "success inventory"):
+                    gate._validate_success_inventory(
+                        expected_report, report_record,
+                        gate._evidence_inventory(evidence),
                     )
 
     def test_successful_session_requires_clean_exit(self):
@@ -558,6 +662,8 @@ class FloatPerformanceGateTests(unittest.TestCase):
         self.assertIn("_verify_linked_runtime_archive", source)
         self.assertIn("_verify_performance_source_archive", source)
         self.assertIn("_verify_controller_execution", source)
+        self.assertIn("_verify_completed_success_evidence",
+                      inspect.getsource(gate.run))
 
     def test_linked_runtime_archive_retains_and_rehashes_exact_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:

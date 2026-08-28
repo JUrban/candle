@@ -95,9 +95,12 @@ comparison.  Successful sessions send EOF and require zero exit status and no
 terminating signal; forced termination is reserved for failed sessions.
 The sampler requires the root process in every snapshot, positive root RSS, a
 tree value at least as large as the root, at least one initial and one final
-sample, and a clean sampler-thread completion.  Root loss, invalid samples, or
-any sampler-thread exception fail the attempt; zero or partial RSS cannot be
-reported as a complete observation.
+sample, a maximum inter-sample gap no larger than 250 ms or four requested
+sampling intervals (whichever is larger), duration-derived minimum coverage,
+and a clean sampler-thread completion.  Root loss, invalid samples, starvation,
+or any sampler-thread exception fail the attempt; zero or partial RSS cannot
+be reported as a complete observation.  The report retains the sample count,
+window, observed/allowed maximum gaps, and minimum required count.
 
 Optional elapsed and ratio ceilings can turn a reviewed baseline into an
 explicit regression threshold.  When no ceiling is supplied, the gate checks
@@ -129,7 +132,15 @@ feasible linked/source postflight, and a content inventory of all retained
 files.  An I/O failure that prevents that receipt is reported explicitly
 alongside the original gate error.  The linked-record revalidation is the same
 fail-closed check used by `cakeml_artifact_provenance.py check-linked`; the
-report records all of these postflights.
+report records all of these postflights.  Before a completed receipt is
+created, the runner rereads `attempt.json`, all three scenario journals, and
+`report.json`; it requires the attempt/journal hashes retained in the report,
+requires every journal to equal its in-memory scenario, and requires persisted
+report semantics to equal the returned report.  A persistent mutation becomes
+a failed attempt rather than merely appearing in the final inventory.  The
+receipt inventory is then collected once and its report, attempt, and journal
+records must equal those verified bindings before that exact inventory is
+placed in the receipt.
 
 The retained trust-boundary record explicitly excludes hostile same-UID
 transient mutation.  Pre/postflight hashes detect persistent changes, but a
@@ -139,6 +150,14 @@ top-level Python compilation, kernel, vDSO, frozen/built-in modules, and the
 entire standard library are likewise outside a hermetic claim.  Run release
 evidence on a dedicated machine/account without concurrent writers; a sealed
 runtime/source snapshot remains the stronger future execution model.
+The record also explicitly states the host-program trust assumptions used by
+validation and the launcher: `/usr/bin/git`, `readelf`, `ldd`, `patch`, and the
+launcher's `/bin/bash`, `/usr/bin/env`, `flock`, `python3`, `readlink`, and
+`stat`.  Their output is checked against content-bound artifacts where the
+corresponding validator does so, but these invocations are not independently
+execution-bound.  In particular, the controller's resolved running Python
+image and base ELF closure are archived and revalidated, while the separate
+`candle.sh` `/usr/bin/python3` check-linked invocation is not separately bound.
 
 ## Commands
 

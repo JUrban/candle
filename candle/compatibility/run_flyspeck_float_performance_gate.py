@@ -84,11 +84,29 @@ pexpect: types.ModuleType | None = None
 
 CLAIM = "performance observation only; not semantic, S2, or S3 evidence"
 TRUST_BOUNDARY = {
-    "hostile_same_uid_transient_mutation_excluded": True,
+    "assumes_no_hostile_same_uid_transient_mutation": True,
+    "assumes_listed_host_program_boundaries_are_trusted": True,
+    "host_program_assumptions": {
+        "/bin/bash": "candle.sh privileged shell interpreter",
+        "/usr/bin/env": "candle.sh clean-environment launcher",
+        "/usr/bin/flock": "candle.sh shared build lock",
+        "/usr/bin/git": "controller repository and commit-blob validation",
+        "/usr/bin/ldd": "controller ELF dependency discovery",
+        "/usr/bin/patch": "linked CakeML patch-derivation replay",
+        "/usr/bin/python3": (
+            "candle.sh linked-record validator invocation is not separately "
+            "execution-bound; the controller's shared resolved Python image "
+            "and base ELF closure are archived"
+        ),
+        "/usr/bin/readelf": "controller ELF dynamic-tag validation",
+        "/usr/bin/readlink": "candle.sh path and runtime-alias resolution",
+        "/usr/bin/stat": "candle.sh build-lock inode validation",
+    },
     "detail": (
         "pre/postflight hashes detect persistent mutation, but do not exclude "
         "a hostile same-UID process that transiently replaces source or runtime "
-        "paths and restores them before postflight"
+        "paths and restores them before postflight; listed host-program roles "
+        "have the explicit retention and execution-binding limits stated above"
     ),
 }
 
@@ -503,6 +521,9 @@ class ProcessTreeSampler:
         self.peak_process_rss_kib = 0
         self.peak_tree_rss_kib = 0
         self.sample_count = 0
+        self.sample_times: list[float] = []
+        self.started_monotonic: float | None = None
+        self.coverage: dict[str, Any] | None = None
         self._error: BaseException | None = None
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
@@ -553,6 +574,39 @@ class ProcessTreeSampler:
         )
         self.peak_tree_rss_kib = max(self.peak_tree_rss_kib, tree_rss)
         self.sample_count += 1
+        self.sample_times.append(time.monotonic())
+
+    @staticmethod
+    def coverage_record(
+        interval: float,
+        started: float,
+        sample_times: list[float],
+    ) -> dict[str, Any]:
+        require(interval > 0, "RSS sampling interval is not positive")
+        require(len(sample_times) >= 2,
+                "RSS sampler did not retain initial and final samples")
+        points = [started, *sample_times]
+        require(all(later >= earlier
+                    for earlier, later in zip(points, points[1:])),
+                "RSS sample timestamps are not monotonic")
+        gaps = [later - earlier
+                for earlier, later in zip(points, points[1:])]
+        duration = sample_times[-1] - started
+        maximum_allowed_gap = max(0.25, interval * 4.0)
+        maximum_observed_gap = max(gaps)
+        minimum_sample_count = max(
+            2, math.ceil(duration / maximum_allowed_gap),
+        )
+        require(maximum_observed_gap <= maximum_allowed_gap,
+                "RSS sampling cadence exceeded maximum allowed gap")
+        require(len(sample_times) >= minimum_sample_count,
+                "RSS sampling coverage has too few samples for its duration")
+        return {
+            "window_seconds": duration,
+            "maximum_observed_gap_seconds": maximum_observed_gap,
+            "maximum_allowed_gap_seconds": maximum_allowed_gap,
+            "minimum_required_sample_count": minimum_sample_count,
+        }
 
     def _run(self) -> None:
         try:
@@ -564,6 +618,7 @@ class ProcessTreeSampler:
             self._stop.set()
 
     def start(self) -> None:
+        self.started_monotonic = time.monotonic()
         self._thread.start()
 
     def stop(self) -> None:
@@ -575,8 +630,11 @@ class ProcessTreeSampler:
                 f"{type(self._error).__name__}: {self._error}"
             ) from self._error
         self._sample()
-        require(self.sample_count >= 2,
-                "RSS sampler did not retain initial and final samples")
+        require(self.started_monotonic is not None,
+                "RSS sampler has no start boundary")
+        self.coverage = self.coverage_record(
+            self.interval, self.started_monotonic, self.sample_times,
+        )
 
 
 class CandleSession:
@@ -764,6 +822,8 @@ def _measure_load(
     after_process, after_tree = ProcessTreeSampler.tree_rss(
         session.process.pid,
     )
+    require(sampler.coverage is not None,
+            "RSS sampler coverage witness is missing")
     return {
         "elapsed_seconds": elapsed,
         "rss_scope": (
@@ -775,6 +835,13 @@ def _measure_load(
         "rss_sample_count": sampler.sample_count,
         "rss_root_present_all_samples": True,
         "rss_sampler_thread_completed": True,
+        "rss_sampling_window_seconds": sampler.coverage["window_seconds"],
+        "rss_maximum_observed_gap_seconds":
+            sampler.coverage["maximum_observed_gap_seconds"],
+        "rss_maximum_allowed_gap_seconds":
+            sampler.coverage["maximum_allowed_gap_seconds"],
+        "rss_minimum_required_sample_count":
+            sampler.coverage["minimum_required_sample_count"],
         "rss_before_process_kib": before_process,
         "rss_before_tree_kib": before_tree,
         "peak_process_rss_kib": sampler.peak_process_rss_kib,
@@ -1266,6 +1333,90 @@ def _verify_generated_inputs(
                 f"generated performance input changed during the run: {name}")
 
 
+def _verify_json_evidence(
+    path: Path,
+    expected_value: dict[str, Any],
+    expected_record: dict[str, Any] | None,
+    label: str,
+) -> dict[str, Any]:
+    require(path.is_file() and not path.is_symlink(),
+            f"{label} is not an ordinary file")
+    try:
+        observed_value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise GateError(f"cannot reread {label}: {error}") from error
+    require(observed_value == expected_value,
+            f"{label} semantics changed after persistence")
+    observed_record = inputs.file_record(path)
+    if expected_record is not None:
+        require(observed_record == expected_record,
+                f"{label} content hash changed after persistence")
+    return observed_record
+
+
+def _verify_scenario_journals(
+    evidence_dir: Path,
+    scenarios: dict[str, dict[str, Any]],
+    expected_records: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, dict[str, Any]]:
+    require(set(scenarios) == {"call_time", "hoisted", "break_case_log"},
+            "completed scenario set is not exact")
+    if expected_records is not None:
+        require(set(expected_records) == set(scenarios),
+                "scenario-journal evidence set is not exact")
+    records = {}
+    for name, scenario in sorted(scenarios.items()):
+        path = evidence_dir / f"scenario-{name}.json"
+        if expected_records is not None:
+            require(expected_records[name].get("path") == path.name,
+                    f"scenario journal {name} evidence path is not canonical")
+        record = _verify_json_evidence(
+            path, scenario,
+            ({field: expected_records[name][field]
+              for field in ("bytes", "sha256")}
+             if expected_records is not None else None),
+            f"scenario journal {name}",
+        )
+        records[name] = {
+            "path": str(path.relative_to(evidence_dir)),
+            **record,
+        }
+    return records
+
+
+def _verify_completed_success_evidence(
+    evidence_dir: Path,
+    report: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Rebind every success journal immediately before receipt creation."""
+
+    report_record = _verify_json_evidence(
+        evidence_dir / "report.json", report, None, "persisted report",
+    )
+    attempt_evidence = report["evidence"]["attempt"]
+    require(attempt_evidence.get("path") == "attempt.json",
+            "attempt evidence path is not canonical")
+    attempt_path = evidence_dir / attempt_evidence["path"]
+    require(attempt_path.is_file() and not attempt_path.is_symlink(),
+            "attempt record is not an ordinary file")
+    try:
+        attempt = json.loads(attempt_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise GateError(f"cannot reread attempt record: {error}") from error
+    require(isinstance(attempt, dict) and attempt.get("schema") == 1 and
+            attempt.get("kind") == "flyspeck-float-performance-attempt" and
+            attempt.get("state") == "running",
+            "attempt record semantics changed after persistence")
+    require(inputs.file_record(attempt_path) == {
+        field: attempt_evidence[field] for field in ("bytes", "sha256")
+    }, "attempt record content hash changed after persistence")
+    _verify_scenario_journals(
+        evidence_dir, report["scenarios"],
+        report["evidence"]["scenario_journals"],
+    )
+    return attempt, report_record
+
+
 def _run_attempt(
     arguments: argparse.Namespace,
     runtime_lock_handle: runtime_lock.BuildLock,
@@ -1329,6 +1480,7 @@ def _run_attempt(
     }
     _write_json(attempt_path, attempt)
     attempt_path.chmod(0o444)
+    attempt_record = inputs.file_record(attempt_path)
     linked_record_path = (
         candle_root / "candle/build/cakeml-build-provenance.json"
     )
@@ -1412,6 +1564,12 @@ def _run_attempt(
     _verify_generated_inputs(generated_dir, receipt)
     require(inputs.file_record(config_path) == config_record,
             "performance gate configuration changed during the run")
+    _verify_json_evidence(
+        attempt_path, attempt, attempt_record, "attempt record",
+    )
+    scenario_journal_records = _verify_scenario_journals(
+        evidence_dir, scenarios,
+    )
 
     ratio = (scenarios["call_time"]["elapsed_seconds"] /
              scenarios["hoisted"]["elapsed_seconds"])
@@ -1447,6 +1605,11 @@ def _run_attempt(
         "scenarios": scenarios,
         "evidence": {
             "directory": str(evidence_dir),
+            "attempt": {
+                "path": str(attempt_path.relative_to(evidence_dir)),
+                **attempt_record,
+            },
+            "scenario_journals": scenario_journal_records,
             "gate_config": {
                 "path": str(config_path.relative_to(evidence_dir)),
                 **config_record,
@@ -1502,6 +1665,9 @@ def _run_attempt(
     }
     _write_json(output_path, report)
     output_path.chmod(0o444)
+    _verify_json_evidence(
+        output_path, report, None, "persisted report",
+    )
     if failures:
         raise GateError("; ".join(failures) + f"; report: {output_path}")
     return report
@@ -1513,6 +1679,27 @@ def _evidence_inventory(evidence_dir: Path) -> dict[str, Any]:
         if path.is_file() and not path.is_symlink() and path.name != "receipt.json":
             inventory[str(path.relative_to(evidence_dir))] = inputs.file_record(path)
     return inventory
+
+
+def _validate_success_inventory(
+    report: dict[str, Any],
+    report_record: dict[str, Any],
+    inventory: dict[str, dict[str, Any]],
+) -> None:
+    """Cross-bind receipt inventory to the just-verified success records."""
+
+    require(inventory.get("report.json") == report_record,
+            "success inventory report record differs from verified report")
+    attempt = report["evidence"]["attempt"]
+    require(inventory.get(attempt["path"]) == {
+        field: attempt[field] for field in ("bytes", "sha256")
+    }, "success inventory attempt record differs from report binding")
+    for name, record in sorted(
+        report["evidence"]["scenario_journals"].items()
+    ):
+        require(inventory.get(record["path"]) == {
+            field: record[field] for field in ("bytes", "sha256")
+        }, f"success inventory scenario {name} differs from report binding")
 
 
 def _failure_postflight(
@@ -1576,6 +1763,13 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
     )
     try:
         report = _run_attempt(arguments, runtime_lock_handle)
+        success_attempt, success_report_record = (
+            _verify_completed_success_evidence(evidence_dir, report)
+        )
+        success_inventory = _evidence_inventory(evidence_dir)
+        _validate_success_inventory(
+            report, success_report_record, success_inventory,
+        )
     except BaseException as error:
         attempt_path = evidence_dir / "attempt.json"
         if attempt_path.is_file() and not attempt_path.is_symlink():
@@ -1639,12 +1833,10 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         "kind": "flyspeck-float-performance-receipt",
         "claim": CLAIM,
         "state": "completed",
-        "started_utc": json.loads(
-            (evidence_dir / "attempt.json").read_text(encoding="utf-8")
-        )["started_utc"],
+        "started_utc": success_attempt["started_utc"],
         "finished_utc": _utc_now(),
-        "report": inputs.file_record(evidence_dir / "report.json"),
-        "evidence_inventory": _evidence_inventory(evidence_dir),
+        "report": success_report_record,
+        "evidence_inventory": success_inventory,
     }
     _write_json(receipt_path, receipt)
     receipt_path.chmod(0o444)
