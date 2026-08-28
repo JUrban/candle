@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import copy
+import hashlib
 import sys
 import unittest
 from pathlib import Path
@@ -85,6 +86,57 @@ class StratumRuntimeTests(unittest.TestCase):
         ])
         with self.assertRaisesRegex(subject.ContractError, "top-level error"):
             subject.validate_log(log, self.actions, boundary)
+
+    def test_exact_boundary_fingerprint_requests(self) -> None:
+        self.assertEqual(subject.fingerprint_requests("00-base-through-029"), [])
+        self.assertEqual(
+            subject.fingerprint_requests("05-lp_support-through-184"),
+            ["Linear_programming_results.linear_programming_results_th"],
+        )
+        final = subject.fingerprint_requests("07-final_assembly-through-296")
+        self.assertEqual(len(final), 4)
+        self.assertEqual(final[-1], "Candle_flyspeck_l2.tame_imp_kepler_conjecture")
+
+    def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
+        name = "Linear_programming_results.linear_programming_results_th"
+        fields = [
+            subject.FINGERPRINT_MARKER,
+            name.encode().hex(),
+            b"theorem".hex(), b"hypotheses".hex(), b"conclusion".hex(),
+            b"axioms".hex(), "0", "3",
+        ]
+        report = subject.parse_fingerprints(
+            "\t".join(fields), [name], Path(subject.__file__).resolve(),
+        )
+        self.assertEqual(report["status"], "observed_uncompared")
+        self.assertFalse(report["approved_reference_present"])
+        self.assertEqual(
+            report["theorems"][0]["theorem_sha256"],
+            hashlib.sha256(b"theorem").hexdigest(),
+        )
+        bad = fields.copy()
+        bad[-1] = "4"
+        with self.assertRaisesRegex(subject.ContractError, "global axiom count"):
+            subject.parse_fingerprints(
+                "\t".join(bad), [name], Path(subject.__file__).resolve(),
+            )
+
+    def test_fingerprint_boundary_requires_terminal_marker(self) -> None:
+        boundary = "05-lp_support-through-184"
+        theorem_names = subject.fingerprint_requests(boundary)
+        source_log = "\n".join([
+            subject.PREFLIGHT_MARKER,
+            f"{subject.ACTION_PREFIX} 000 {'1' * 64}",
+            f"{subject.ACTION_PREFIX} 001 {'2' * 64}",
+            f"{subject.SUCCESS_MARKER} {boundary} 2",
+        ])
+        with self.assertRaisesRegex(subject.ContractError, "fingerprint success marker"):
+            subject.validate_log(source_log, self.actions, boundary, theorem_names)
+        subject.validate_log(
+            source_log + "\n" +
+            f"{subject.FINGERPRINT_SUCCESS_MARKER} {boundary} 1",
+            self.actions, boundary, theorem_names,
+        )
 
 
 if __name__ == "__main__":

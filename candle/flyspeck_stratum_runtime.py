@@ -29,6 +29,8 @@ MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 SOURCE_DIGEST_RELATIVE = Path("candle/flyspeck_source_digests.ml")
 SETUP_RELATIVE = Path("candle/flyspeck_stratum_setup.ml")
 CHECK_RELATIVE = Path("candle/flyspeck_stratum_check.ml")
+FINGERPRINT_RELATIVE = Path("candle/fingerprint.ml")
+L2_TARGET_RELATIVE = Path("candle/flyspeck_l2_target.ml")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
@@ -36,6 +38,9 @@ CHUNK_BYTES = 1024 * 1024
 ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
 PREFLIGHT_MARKER = "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK"
 SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
+FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
+FINGERPRINT_SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_FINGERPRINTS_OK"
+SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 
 
 class ContractError(ValueError):
@@ -337,6 +342,41 @@ def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]]) -> bytes:
     return "".join(output).encode()
 
 
+def fingerprint_requests(boundary_id: str) -> list[str]:
+    """Return ordered candidate identities available at an exact boundary."""
+    boundary_number = boundary_id.split("-", 1)[0]
+    if boundary_number in ("05", "06"):
+        return ["Linear_programming_results.linear_programming_results_th"]
+    if boundary_number == "07":
+        return [
+            "Linear_programming_results.linear_programming_results_th",
+            "Mk_all_ineq.the_nonlinear_inequalities",
+            "The_kepler_conjecture.tame_nonlinear_imp_kepler_conjecture",
+            "Candle_flyspeck_l2.tame_imp_kepler_conjecture",
+        ]
+    return []
+
+
+def write_postlude(
+    path: Path,
+    candle_root: Path,
+    boundary_id: str,
+    theorem_names: list[str],
+) -> None:
+    lines = ["(* Generated theorem-observation postlude; not an approval record. *)"]
+    if boundary_id.startswith("07-"):
+        lines.append(f"#use {ocaml_string(str(candle_root / L2_TARGET_RELATIVE))};;")
+    if theorem_names:
+        lines.append(f"#use {ocaml_string(str(candle_root / FINGERPRINT_RELATIVE))};;")
+        for name in theorem_names:
+            require(SAFE_VALUE_PATH.fullmatch(name) is not None,
+                    f"unsafe theorem value path: {name}")
+            lines.append(f"candle_s1_emit_fingerprint {ocaml_string(name)} {name};;")
+        marker = f"{FINGERPRINT_SUCCESS_MARKER} {boundary_id} {len(theorem_names)}"
+        lines.append(f"print_endline {ocaml_string(marker)};;")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def write_config(
     path: Path,
     candle_root: Path,
@@ -391,7 +431,78 @@ def write_config(
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def validate_log(log: str, actions: list[dict[str, Any]], boundary_id: str) -> None:
+def parse_fingerprints(log: str, theorem_names: list[str], serializer: Path) -> dict[str, Any]:
+    records: dict[str, dict[str, Any]] = {}
+    for line in log.splitlines():
+        if not line.startswith(FINGERPRINT_MARKER + "\t"):
+            continue
+        fields = line.split("\t")
+        require(len(fields) == 8, f"malformed {FINGERPRINT_MARKER} record")
+        (_, name_hex, theorem_hex, hypotheses_hex, conclusion_hex,
+         axioms_hex, hypothesis_count, axiom_count) = fields
+
+        def decode(field: str, label: str) -> bytes:
+            require(re.fullmatch(r"(?:[0-9a-f]{2})*", field) is not None,
+                    f"malformed fingerprint hex: {label}")
+            return bytes.fromhex(field)
+
+        try:
+            name = decode(name_hex, "name").decode("ascii")
+        except UnicodeDecodeError as error:
+            raise ContractError("non-ASCII theorem fingerprint name") from error
+        require(name not in records, f"duplicate theorem fingerprint: {name}")
+        try:
+            parsed_hypotheses = int(hypothesis_count)
+            parsed_axioms = int(axiom_count)
+        except ValueError as error:
+            raise ContractError(f"non-numeric fingerprint count: {name}") from error
+        record = {
+            "name": name,
+            "theorem_sha256": hashlib.sha256(decode(theorem_hex, "theorem")).hexdigest(),
+            "hypotheses_sha256": hashlib.sha256(
+                decode(hypotheses_hex, "hypotheses")
+            ).hexdigest(),
+            "conclusion_sha256": hashlib.sha256(
+                decode(conclusion_hex, "conclusion")
+            ).hexdigest(),
+            "global_axioms_sha256": hashlib.sha256(
+                decode(axioms_hex, "global axioms")
+            ).hexdigest(),
+            "hypothesis_count": parsed_hypotheses,
+            "global_axiom_count": parsed_axioms,
+        }
+        records[name] = record
+
+    require(list(records) == theorem_names,
+            f"fingerprint request mismatch: expected {theorem_names}, got {list(records)}")
+    axiom_identities = {
+        (record["global_axioms_sha256"], record["global_axiom_count"])
+        for record in records.values()
+    }
+    require(len(axiom_identities) <= 1, "global axiom identity changed between fingerprints")
+    for record in records.values():
+        require(record["hypothesis_count"] == 0,
+                f"unexpected theorem hypotheses: {record['name']}")
+        require(record["global_axiom_count"] == 3,
+                f"unexpected global axiom count: {record['name']}")
+    return {
+        "status": "observed_uncompared" if theorem_names else "not_requested",
+        "approved_reference_present": False,
+        "serializer": {
+            "path": FINGERPRINT_RELATIVE.as_posix(),
+            "sha256": hash_file(serializer)["sha256"],
+        } if theorem_names else None,
+        "theorems": [records[name] for name in theorem_names],
+    }
+
+
+def validate_log(
+    log: str,
+    actions: list[dict[str, Any]],
+    boundary_id: str,
+    theorem_names: list[str] | None = None,
+) -> None:
+    theorem_names = theorem_names or []
     require(log.count(PREFLIGHT_MARKER) == 1, "missing or duplicate stratum preflight marker")
     positions = [log.index(PREFLIGHT_MARKER)]
     for index, action in enumerate(actions):
@@ -401,6 +512,13 @@ def validate_log(log: str, actions: list[dict[str, Any]], boundary_id: str) -> N
     final = f"{SUCCESS_MARKER} {boundary_id} {len(actions)}"
     require(log.count(final) == 1, "missing or duplicate boundary success marker")
     positions.append(log.index(final))
+    if theorem_names:
+        fingerprint_final = (
+            f"{FINGERPRINT_SUCCESS_MARKER} {boundary_id} {len(theorem_names)}"
+        )
+        require(log.count(fingerprint_final) == 1,
+                "missing or duplicate fingerprint success marker")
+        positions.append(log.index(fingerprint_final))
     require(positions == sorted(positions), "stratum markers are out of order")
     require(not re.search(r"^(?:ERROR|EXCEPTION):|Parsing failed", log, re.MULTILINE),
             "compiled stratum log contains a top-level error")
@@ -436,6 +554,7 @@ def run_attempt(
     program_path = output_root / "instrumented-prefix.ml"
     config_path = output_root / "runtime-config.ml"
     stdin_path = output_root / "stdin.ml"
+    postlude_path = output_root / "postlude.ml"
     log_path = output_root / "candle.log"
     attempt_path = output_root / "attempt.json"
     receipt_path = output_root / "receipt.json"
@@ -444,11 +563,14 @@ def run_attempt(
     program_path.write_bytes(program)
     program_record = hash_file(program_path)
     write_config(config_path, candle_root, prepared, program_path, program_record["md5"])
+    theorem_names = fingerprint_requests(boundary_id)
+    write_postlude(postlude_path, candle_root, boundary_id, theorem_names)
     stdin_path.write_text(
         f"#use {ocaml_string(str(config_path))};;\n"
         f"#use {ocaml_string(str(candle_root / SETUP_RELATIVE))};;\n"
         f"#use {ocaml_string(str(program_path))};;\n"
-        f"#use {ocaml_string(str(candle_root / CHECK_RELATIVE))};;\n",
+        f"#use {ocaml_string(str(candle_root / CHECK_RELATIVE))};;\n"
+        f"#use {ocaml_string(str(postlude_path))};;\n",
         encoding="utf-8",
     )
 
@@ -473,8 +595,11 @@ def run_attempt(
             "instrumented_prefix": program_record,
             "runtime_config": hash_file(config_path),
             "stdin": hash_file(stdin_path),
+            "postlude": hash_file(postlude_path),
             "setup": hash_file(candle_root / SETUP_RELATIVE),
             "check": hash_file(candle_root / CHECK_RELATIVE),
+            "fingerprint_serializer": hash_file(candle_root / FINGERPRINT_RELATIVE),
+            "l2_target": hash_file(candle_root / L2_TARGET_RELATIVE),
         },
         "repositories": {
             "candle": prepared["candle_head"],
@@ -505,12 +630,17 @@ def run_attempt(
     finished = utc_now()
     log_record = hash_file(log_path)
     validation_error: str | None = None
+    fingerprints: dict[str, Any] | None = None
     try:
         require(not timed_out, "compiled stratum attempt timed out")
         require(exit_code == 0, f"compiled stratum process exited {exit_code}")
         validate_log(
             log_path.read_text(encoding="utf-8", errors="replace"),
-            prepared["actions"], boundary_id,
+            prepared["actions"], boundary_id, theorem_names,
+        )
+        fingerprints = parse_fingerprints(
+            log_path.read_text(encoding="utf-8", errors="replace"),
+            theorem_names, candle_root / FINGERPRINT_RELATIVE,
         )
     except ContractError as error:
         validation_error = str(error)
@@ -524,7 +654,7 @@ def run_attempt(
         "command": command,
         "log": log_record,
         "action_markers_validated": len(prepared["actions"]) if validation_error is None else 0,
-        "semantic_fingerprints": None,
+        "semantic_fingerprints": fingerprints,
         "s2_s3_evidence": False,
         "validation_error": validation_error,
     }

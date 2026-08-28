@@ -18,10 +18,18 @@ attempt only when every exact marker appears once in order, the final boundary
 marker appears once, no top-level error is present, and the process exits zero.
 
 Each run writes the generated config, instrumented prefix, standard input,
-combined log, initial `attempt.json`, and final `receipt.json` into a new output
-directory.  Failed and timed-out runs also retain a receipt.  A retry is always
-a fresh cumulative replay from action zero; no process-state checkpoint or
-suffix-only continuation is claimed.
+fingerprint postlude, combined log, initial `attempt.json`, and final
+`receipt.json` into a new output directory.  Failed and timed-out runs also
+retain a receipt.  A retry is always a fresh cumulative replay from action
+zero; no process-state checkpoint or suffix-only continuation is claimed.
+
+The LP-support and later boundaries emit the canonical structural identity of
+`Linear_programming_results.linear_programming_results_th`.  At the final
+boundary, the postlude additionally loads the pinned Candle L2 target and emits
+identities for the nonlinear theorem, Flyspeck implication, and final Candle
+implication.  Every observed theorem must have zero hypotheses and the global
+axiom count must be three.  Until independently approved reference identities
+are installed, receipts label these records `observed_uncompared`.
 
 Example (after a linked verified binary exists):
 
