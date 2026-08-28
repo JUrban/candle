@@ -390,7 +390,7 @@
       "fingerprint_request": {
         "mapping_status": "manual_review",
         "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "CANTOR is rebound to a different formulation; the request resolves to the last declaration, but the acceptance formulation needs review",
+        "review_note": "the original Great-100 file named the proper set-cardinality result CANTOR at line 25; later variants commit f83edb4 appended and shadowed it with the no-surjection result at line 62, and pinned source does not select which historical formulation is the acceptance boundary",
         "theorems": [
           {
             "name": "CANTOR",
@@ -1397,7 +1397,7 @@
       "fingerprint_request": {
         "mapping_status": "manual_review",
         "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "the broad source contains L2, Dini, Jordan, and Fejer results; the four proposed named results need an approved Great-100 boundary",
+        "review_note": "the source independently headlines L2 convergence, Dini's test, Jordan bounded-variation convergence, and Fejer Cesaro summability; it never designates one result or the proposed four-result set as the canonical Great-100 boundary",
         "theorems": [
           {
             "name": "FOURIER_SERIES_L2",
@@ -2471,9 +2471,9 @@
       "expected_status": "pass",
       "skip": null,
       "fingerprint_request": {
-        "mapping_status": "manual_review",
-        "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "EULER_HARMONIC_SUM is the apparent named pi-series result, but the file also exposes substantial tan/cot series results",
+        "mapping_status": "audited",
+        "mapping_basis": "the source section 'Isolate the most famous special case' immediately binds EULER_HARMONIC_SUM, uniquely identifying the intended named result",
+        "review_note": null,
         "theorems": [
           {
             "name": "EULER_HARMONIC_SUM",
@@ -2727,9 +2727,9 @@
       "expected_status": "pass",
       "skip": null,
       "fingerprint_request": {
-        "mapping_status": "manual_review",
-        "mapping_basis": "named result declarations in ordered load files",
-        "review_note": "QUARTIC_CASES is rebound three times; the request resolves to the last automatic proof, pending acceptance review",
+        "mapping_status": "audited",
+        "mapping_basis": "the final visible QUARTIC_CASES is labeled 'the automatic proof' and has exactly the same theorem statement as the preceding iff-form QUARTIC_CASES; the last rebinding changes only the proof",
+        "review_note": null,
         "theorems": [
           {
             "name": "QUARTIC_CASES",

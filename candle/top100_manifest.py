@@ -128,20 +128,28 @@ TARGET_THEOREMS = {
 
 MANUAL_REVIEW_MAPPINGS = {
     "100/cantor": (
-        "CANTOR is rebound to a different formulation; the request resolves "
-        "to the last declaration, but the acceptance formulation needs review"
+        "the original Great-100 file named the proper set-cardinality result "
+        "CANTOR at line 25; later variants commit f83edb4 appended and shadowed "
+        "it with the no-surjection result at line 62, and pinned source does not "
+        "select which historical formulation is the acceptance boundary"
     ),
     "100/fourier": (
-        "the broad source contains L2, Dini, Jordan, and Fejer results; the "
-        "four proposed named results need an approved Great-100 boundary"
+        "the source independently headlines L2 convergence, Dini's test, "
+        "Jordan bounded-variation convergence, and Fejer Cesaro summability; "
+        "it never designates one result or the proposed four-result set as the "
+        "canonical Great-100 boundary"
     ),
+}
+
+AUDITED_MAPPING_RATIONALES = {
     "100/piseries": (
-        "EULER_HARMONIC_SUM is the apparent named pi-series result, but the "
-        "file also exposes substantial tan/cot series results"
+        "the source section 'Isolate the most famous special case' immediately "
+        "binds EULER_HARMONIC_SUM, uniquely identifying the intended named result"
     ),
     "100/quartic": (
-        "QUARTIC_CASES is rebound three times; the request resolves to the "
-        "last automatic proof, pending acceptance review"
+        "the final visible QUARTIC_CASES is labeled 'the automatic proof' and "
+        "has exactly the same theorem statement as the preceding iff-form "
+        "QUARTIC_CASES; the last rebinding changes only the proof"
     ),
 }
 
@@ -591,7 +599,8 @@ def _theorem_request(target, load_files):
     review_note = MANUAL_REVIEW_MAPPINGS.get(target)
     return {
         "mapping_status": "manual_review" if review_note else "audited",
-        "mapping_basis": "named result declarations in ordered load files",
+        "mapping_basis": AUDITED_MAPPING_RATIONALES.get(
+            target, "named result declarations in ordered load files"),
         "review_note": review_note,
         "theorems": theorems,
         "identity_contract": {
