@@ -16,8 +16,10 @@ Two suites are available:
   * TOP100     - the full "Top 100 theorems" set (from holtest.mk's
                  GREAT_100_THEOREMS), run with --top100.
 
-Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
-to preserve the complete per-test table and exact source/executable identity.
+Each result includes wall time and sampled peak RSS.  ``--timeout`` is an
+output-inactivity limit: any complete diagnostic/progress line refreshes it.
+Pass --json-report PATH to preserve the complete per-test table and exact
+source/executable identity.
 """
 import sys
 import os
@@ -227,39 +229,52 @@ class CandleREPL:
         return f"[while loading: {' > '.join(self.load_stack)}]"
 
     def _check_output(self, timeout):
-        try:
-            index = self.process.expect([
-                r'\n\- Loading (\S+)',
-                r'\nval (\w+) =',
-                r'\n(ERROR: .+)',
-                r'\n(Parsing failed)',
-                r'\n(EXCEPTION: .+)',
-                r'\n\- Finished loading (\S+)',
-                pexpect.TIMEOUT,
-                pexpect.EOF,
-            ], timeout=timeout)
-        except Exception as e:
-            raise LoadFailure from e
+        while True:
+            try:
+                index = self.process.expect([
+                    r'(?:^|\n)\- Loading (\S+)',
+                    r'(?:^|\n)val (\w+) =',
+                    r'(?:^|\n)(ERROR: .+)',
+                    r'(?:^|\n)(Parsing failed)',
+                    r'(?:^|\n)(EXCEPTION: .+)',
+                    r'(?:^|\n)\- Finished loading (\S+)',
+                    # Keep this after every semantic sentinel.  pexpect picks
+                    # the first pattern at an equal match position, so this
+                    # consumes only otherwise-unclassified complete lines.
+                    # Calling expect again makes --timeout an inactivity
+                    # limit while bounding unmatched progress in its buffer.
+                    r'(?:^|\n)[^\n]*\n',
+                    pexpect.TIMEOUT,
+                    pexpect.EOF,
+                ], timeout=timeout)
+            except Exception as e:
+                raise LoadFailure from e
 
-        match index:
-            case 0:
-                dependency = self._get_match(1)
-                self.load_stack.append(dependency)
-            case 1:
-                self.last_val = self._get_match(1)
-            case 2 | 3 | 4:
-                raise LoadFailure(self._get_match(1))
-            case 5:
-                finished = self._get_match(1)
-                expected = self.load_stack.pop()
-                assert finished == expected, (
-                    f"Expected to finish loading {expected}. Actual: {finished}")
-            case 6:
-                raise LoadFailure("Timeout waiting for output")
-            case 7:
-                raise LoadFailure("Process exited unexpectedly")
-            case _:
-                assert False, "Unreachable: Did you add a new case in _check_output?"
+            match index:
+                case 0:
+                    dependency = self._get_match(1)
+                    self.load_stack.append(dependency)
+                    return
+                case 1:
+                    self.last_val = self._get_match(1)
+                    return
+                case 2 | 3 | 4:
+                    raise LoadFailure(self._get_match(1))
+                case 5:
+                    finished = self._get_match(1)
+                    expected = self.load_stack.pop()
+                    assert finished == expected, (
+                        f"Expected to finish loading {expected}. Actual: {finished}")
+                    return
+                case 6:
+                    continue
+                case 7:
+                    raise LoadFailure("Timeout waiting for output")
+                case 8:
+                    raise LoadFailure("Process exited unexpectedly")
+                case _:
+                    assert False, (
+                        "Unreachable: Did you add a new case in _check_output?")
 
     def load(self, file, timeout):
         self.process.sendline(f'#use "{file}";;')
@@ -501,6 +516,7 @@ class Reporter:
             "test_count": len(results),
             "jobs": jobs,
             "test_timeout_seconds": test_timeout,
+            "timeout_semantics": "per_output_inactivity",
             "wall_seconds": wall,
             "sum_test_seconds": sum(result.total for result in results),
             "counts": counts,
@@ -612,7 +628,8 @@ def main():
     )
     parser.add_argument(
         "--timeout", type=int, default=600,
-        help="Timeout in seconds for each #use load, including hol.ml (default: 600)",
+        help=("Maximum output inactivity in seconds for each #use load, "
+              "including hol.ml (default: 600)"),
     )
     parser.add_argument(
         "--json-report", type=Path,
