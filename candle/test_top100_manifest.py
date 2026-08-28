@@ -2,6 +2,7 @@
 """Static, single-core tests for the Great 100 inventory contract."""
 
 import json
+import re
 import unittest
 
 import top100_manifest
@@ -84,6 +85,66 @@ class Top100ManifestTest(unittest.TestCase):
         self.assertIn(
             {"path": "100/e_is_transcendental.ml", "line": 2910},
             theorem["qualified_references"])
+
+    def test_piseries_mapping_is_source_designated(self):
+        target = next(target for target in self.manifest["targets"]
+                      if target["name"] == "100/piseries")
+        request = target["fingerprint_request"]
+        self.assertEqual(request["mapping_status"], "audited")
+        self.assertIn("most famous special case", request["mapping_basis"])
+        self.assertEqual(
+            request["theorems"], [{
+                "name": "EULER_HARMONIC_SUM",
+                "resolved_declaration": {
+                    "path": "100/piseries.ml", "line": 2699},
+                "shadowed_declarations": [],
+            }])
+        source = (top100_manifest.ROOT / "100/piseries.ml").read_text()
+        self.assertRegex(
+            source,
+            r"Isolate the most famous special case[\s\S]*?"
+            r"let EULER_HARMONIC_SUM = mk_harmonic 2;;")
+
+    def test_quartic_final_rebinding_preserves_theorem_statement(self):
+        target = next(target for target in self.manifest["targets"]
+                      if target["name"] == "100/quartic")
+        request = target["fingerprint_request"]
+        self.assertEqual(request["mapping_status"], "audited")
+        self.assertIn("changes only the proof", request["mapping_basis"])
+        theorem = request["theorems"][0]
+        self.assertEqual(
+            theorem["resolved_declaration"],
+            {"path": "100/quartic.ml", "line": 186})
+        self.assertEqual(
+            theorem["shadowed_declarations"],
+            [{"path": "100/quartic.ml", "line": 140},
+             {"path": "100/quartic.ml", "line": 163}])
+        source = (top100_manifest.ROOT / "100/quartic.ml").read_text()
+        statements = re.findall(
+            r"let QUARTIC_CASES = prove\n \(`(.*?)`,\n", source, re.DOTALL)
+        self.assertEqual(len(statements), 3)
+        self.assertNotEqual(statements[0], statements[1])
+        self.assertEqual(statements[1], statements[2])
+
+    def test_cantor_and_fourier_ambiguities_remain_fail_closed(self):
+        targets = {target["name"]: target for target in self.manifest["targets"]}
+        cantor = targets["100/cantor"]["fingerprint_request"]
+        self.assertEqual(cantor["mapping_status"], "manual_review")
+        self.assertIn("f83edb4", cantor["review_note"])
+        self.assertEqual(
+            [item["line"] for item in cantor["theorems"][0][
+                "shadowed_declarations"]], [25])
+        self.assertEqual(
+            cantor["theorems"][0]["resolved_declaration"]["line"], 62)
+
+        fourier = targets["100/fourier"]["fingerprint_request"]
+        self.assertEqual(fourier["mapping_status"], "manual_review")
+        self.assertIn("never designates", fourier["review_note"])
+        self.assertEqual(
+            [item["name"] for item in fourier["theorems"]],
+            ["FOURIER_SERIES_L2", "FOURIER_DINI_TEST",
+             "FOURIER_JORDAN_BOUNDED_VARIATION",
+             "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE"])
 
 
 if __name__ == "__main__":
