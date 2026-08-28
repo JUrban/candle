@@ -16,16 +16,20 @@ import flyspeck_float_corpus
 
 
 class IndependentFloatCompletenessTests(unittest.TestCase):
-    def oracle(self, source: bytes):
+    def observation(self, source: bytes):
         with tempfile.TemporaryDirectory(
             prefix="independent-float-fixture-"
         ) as tmp:
             path = Path(tmp) / "fixture.ml"
             path.write_bytes(source)
-            return subject.oracle_sites([{
+            return subject.oracle_observation([{
                 "key": "fixture:test.ml",
                 "runtime_path": path,
             }], "/usr/bin/ocamlc")
+
+    def oracle(self, source: bytes):
+        sites, _toolchain, _quotations = self.observation(source)
+        return sites
 
     def test_ocaml_lexer_owns_context_and_numeric_classification(self):
         observed = self.oracle(
@@ -81,10 +85,24 @@ class IndependentFloatCompletenessTests(unittest.TestCase):
         ):
             self.oracle(b"let a = `Foo;; let x = 2.0;; let b = `Bar;;\n")
 
+    def test_variant_tuple_is_outside_selected_backtick_dialect(self):
+        sites, _toolchain, quotations = self.observation(
+            b"let pair = (`Foo 2.0, `Bar);;\n"
+        )
+        self.assertEqual(sites, [])
+        self.assertEqual(len(quotations), 1)
+        with self.assertRaisesRegex(
+            flyspeck_float_corpus.CorpusError,
+            "backtick dialect contract mismatch",
+        ):
+            subject.selected_quotation_dialect(quotations)
+
     def test_completeness_checker_does_not_call_python_token_scanner(self):
         implementation = Path(subject.__file__).read_text(encoding="utf-8")
         self.assertNotIn("scan_source(", implementation)
         self.assertNotIn("scan_corpus(", implementation)
+        self.assertIn("postflight independent runtime snapshot", implementation)
+        self.assertIn("toolchain changed during independent", implementation)
         oracle = subject.ORACLE_SOURCE.read_text(encoding="utf-8")
         self.assertIn("Lexer.token", oracle)
         self.assertIn("Parser.FLOAT", oracle)
@@ -115,6 +133,23 @@ class IndependentFloatCompletenessTests(unittest.TestCase):
         for label, expected in subject.EXPECTED_TOOLCHAIN.items():
             with self.subTest(label=label):
                 self.assertEqual(observed["files"][label], expected)
+
+    def test_compiled_oracle_bytecode_is_reproducibly_pinned(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            executable = subject.compile_oracle(
+                "/usr/bin/ocamlc", Path(temporary)
+            )
+            self.assertEqual(
+                flyspeck_float_corpus.file_record(executable),
+                subject.EXPECTED_COMPILED_ORACLE,
+            )
+            for name, expected in subject.EXPECTED_COMPILED_OBJECTS.items():
+                self.assertEqual(
+                    flyspeck_float_corpus.file_record(
+                        Path(temporary) / name
+                    ),
+                    expected,
+                )
 
 
 if __name__ == "__main__":

@@ -12,26 +12,299 @@ from __future__ import annotations
 import argparse
 import collections
 import datetime as dt
+import hashlib
+import importlib
 import json
 from pathlib import Path
 import resource
 import shutil
 import sys
 import tempfile
+import types
 from typing import Any
 
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parent))
 
-import cakeml_artifact_provenance
-import check_flyspeck_float_completeness
-import flyspeck_float_corpus
-import runtime_lock
+
+def _load_local_source(name: str, path: Path):
+    """Execute an exact local .py source without consulting bytecode caches."""
+    source = path.read_bytes()
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        if (getattr(existing, "__candle_source_sha256__", None) !=
+                source_sha256 or
+                Path(getattr(existing, "__file__", "")).resolve() != path):
+            raise RuntimeError(f"untrusted preloaded local module: {name}")
+        return existing
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    sys.modules[name] = module
+    try:
+        exec(compile(source, str(path), "exec", dont_inherit=True),
+             module.__dict__)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    return module
+
+
+flyspeck_float_corpus = _load_local_source(
+    "flyspeck_float_corpus", HERE / "flyspeck_float_corpus.py"
+)
+cakeml_artifact_provenance = _load_local_source(
+    "cakeml_artifact_provenance", HERE.parent / "cakeml_artifact_provenance.py"
+)
+runtime_lock = _load_local_source(
+    "runtime_lock", HERE.parent / "runtime_lock.py"
+)
+check_flyspeck_float_completeness = _load_local_source(
+    "check_flyspeck_float_completeness",
+    HERE / "check_flyspeck_float_completeness.py",
+)
 
 
 CHUNK_SIZE = 100
+EXPECTED_PYTHON_RUNTIME = {
+    "execution_binding": "/proc/self/exe",
+    "version": (
+        "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]"
+    ),
+    "executable": {
+        "path": "/usr/bin/python3.12",
+        "bytes": 8020928,
+        "sha256":
+            "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
+    },
+    "elf_closure": {
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "files": {
+            "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
+                "bytes": 236616,
+                "sha256":
+                    "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+            },
+            "/lib/x86_64-linux-gnu/libc.so.6": {
+                "bytes": 2125328,
+                "sha256":
+                    "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161",
+            },
+            "/lib/x86_64-linux-gnu/libexpat.so.1.9.1": {
+                "bytes": 174336,
+                "sha256":
+                    "c42ff317838b4b4639e2ea801905f0317177c6df7e31b2f0d0240e3c3ac0cfde",
+            },
+            "/lib/x86_64-linux-gnu/libm.so.6": {
+                "bytes": 952616,
+                "sha256":
+                    "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91",
+            },
+            "/lib/x86_64-linux-gnu/libz.so.1.3": {
+                "bytes": 113000,
+                "sha256":
+                    "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286",
+            },
+        },
+        "roles": {
+            "ld-linux-x86-64.so.2":
+                "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "libc.so.6": "/lib/x86_64-linux-gnu/libc.so.6",
+            "libexpat.so.1": "/lib/x86_64-linux-gnu/libexpat.so.1.9.1",
+            "libm.so.6": "/lib/x86_64-linux-gnu/libm.so.6",
+            "libz.so.1": "/lib/x86_64-linux-gnu/libz.so.1.3",
+        },
+        "virtual_objects": ["linux-vdso.so.1"],
+    },
+}
+EXPECTED_PEXPECT_SOURCES = {
+    "pexpect": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/__init__.py",
+        "bytes": 4089,
+        "sha256":
+            "4ae418ce9571a73a8bc19d5febca2fe53bdccbc42ffde0f5fcdcae4880e26da5",
+    },
+    "pexpect.exceptions": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/exceptions.py",
+        "bytes": 1068,
+        "sha256":
+            "03d0b53d66c17368fd00abe7bfb5243c26b08454c419899e50b5b4bf06ccbd74",
+    },
+    "pexpect.expect": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/expect.py",
+        "bytes": 13827,
+        "sha256":
+            "28ab419b1d8c61afb20c4ef5e5794751c96829ee677410f7e7d6b83985570fce",
+    },
+    "pexpect.pty_spawn": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/pty_spawn.py",
+        "bytes": 37382,
+        "sha256":
+            "67281262c767549e5a73188d33d80bbcbad3d8056a83026f6c370f693c71bfd1",
+    },
+    "pexpect.run": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/run.py",
+        "bytes": 6629,
+        "sha256":
+            "3e44c0fc818e1f32d52bcf6d548ce92c9ec8da300d379a3b183707e64d4bcbc7",
+    },
+    "pexpect.spawnbase": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/spawnbase.py",
+        "bytes": 21685,
+        "sha256":
+            "493864410db9c22480fbbbaabde2f785b912f059cb1407e4fa25e05f63ad398f",
+    },
+    "pexpect.utils": {
+        "path": "/usr/lib/python3/dist-packages/pexpect/utils.py",
+        "bytes": 6019,
+        "sha256":
+            "d63221cd4ede06f637a5b5b72d9a09842394d8a5aa82dcb91e043a541608a795",
+    },
+    "ptyprocess": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/__init__.py",
+        "bytes": 138,
+        "sha256":
+            "b27f96ff59cd453b883a2d9a0841d52f4eb009525c47e2ce65d8295f3c05b935",
+    },
+    "ptyprocess.ptyprocess": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/ptyprocess.py",
+        "bytes": 31686,
+        "sha256":
+            "b24dac536236d98ca5d60537163166a562f7078de8d0aa86ddddc223caf436af",
+    },
+    "ptyprocess.util": {
+        "path": "/usr/lib/python3/dist-packages/ptyprocess/util.py",
+        "bytes": 2785,
+        "sha256":
+            "ad001d0d165fa0e88e9fabf2916b61d3023a145280a7b689b4149db7e28159d5",
+    },
+}
+
+
+def validate_python_runtime() -> dict[str, Any]:
+    process_executable = Path("/proc/self/exe")
+    flyspeck_float_corpus.require(
+        process_executable.is_symlink(),
+        "cannot bind the executing Python image through /proc/self/exe",
+    )
+    executable = process_executable.resolve(strict=True)
+    flyspeck_float_corpus.require(
+        Path(sys.executable).resolve(strict=True) == executable,
+        "Python executable metadata differs from the running image",
+    )
+    executable_record = flyspeck_float_corpus.file_record(executable)
+    observed = {
+        "execution_binding": "/proc/self/exe",
+        "version": sys.version,
+        "executable": {
+            "path": str(executable),
+            "bytes": executable_record["bytes"],
+            "sha256": executable_record["sha256"],
+        },
+        "elf_closure":
+            cakeml_artifact_provenance.elf_dynamic_closure(executable),
+    }
+    flyspeck_float_corpus.require(
+        observed == EXPECTED_PYTHON_RUNTIME,
+        "compiled corpus Python runtime identity mismatch",
+    )
+    return observed
+
+
+def load_pexpect_from_pinned_sources():
+    prefixes = ("pexpect", "ptyprocess")
+    flyspeck_float_corpus.require(
+        not any(
+            name == prefix or name.startswith(prefix + ".")
+            for name in sys.modules for prefix in prefixes
+        ),
+        "pexpect/ptyprocess were loaded before isolated source validation",
+    )
+    with tempfile.TemporaryDirectory(
+        prefix="candle-empty-python-cache-"
+    ) as temporary:
+        previous_prefix = sys.pycache_prefix
+        previous_dont_write = sys.dont_write_bytecode
+        sys.pycache_prefix = temporary
+        sys.dont_write_bytecode = True
+        try:
+            pexpect = importlib.import_module("pexpect")
+            loaded_names = {
+                name for name in sys.modules
+                if any(
+                    name == prefix or name.startswith(prefix + ".")
+                    for prefix in prefixes
+                )
+            }
+            flyspeck_float_corpus.require(
+                loaded_names == set(EXPECTED_PEXPECT_SOURCES),
+                "unexpected pexpect/ptyprocess module set",
+            )
+            observed = {}
+            cache_root = Path(temporary)
+            for name in sorted(loaded_names):
+                module = sys.modules[name]
+                source = Path(module.__file__).resolve(strict=True)
+                cached = Path(module.__cached__).resolve()
+                flyspeck_float_corpus.require(
+                    cached.is_relative_to(cache_root) and
+                    source.suffix == ".py",
+                    f"Python package did not load from isolated source: {name}",
+                )
+                record = flyspeck_float_corpus.file_record(source)
+                observed[name] = {
+                    "path": str(source),
+                    "bytes": record["bytes"],
+                    "sha256": record["sha256"],
+                }
+            flyspeck_float_corpus.require(
+                observed == EXPECTED_PEXPECT_SOURCES,
+                "pexpect/ptyprocess source identity mismatch",
+            )
+        finally:
+            sys.pycache_prefix = previous_prefix
+            sys.dont_write_bytecode = previous_dont_write
+    return pexpect, observed
+
+
+def local_python_source_records(
+    completeness: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    records = dict(completeness["python_sources"])
+    for module in (
+        cakeml_artifact_provenance,
+        check_flyspeck_float_completeness,
+        flyspeck_float_corpus,
+        runtime_lock,
+    ):
+        path = Path(module.__file__).resolve()
+        record = {
+            "path": str(path),
+            **flyspeck_float_corpus.file_record(path),
+        }
+        flyspeck_float_corpus.require(
+            module.__candle_source_sha256__ == record["sha256"],
+            f"executed local Python source changed: {path.name}",
+        )
+        records[path.name] = record
+    runner = Path(__file__).resolve()
+    records[runner.name] = {
+        "path": str(runner),
+        **flyspeck_float_corpus.file_record(runner),
+    }
+    flyspeck_float_corpus.require(
+        set(records) == {
+            "cakeml_artifact_provenance.py",
+            "check_flyspeck_float_completeness.py",
+            "check_flyspeck_float_corpus.py",
+            "flyspeck_float_corpus.py",
+            "runtime_lock.py",
+        },
+        "unexpected local Python orchestration source set",
+    )
+    return records
 
 
 def authenticated_artifact(
@@ -41,6 +314,7 @@ def authenticated_artifact(
     ocamlc: str,
     artifact_path: Path,
 ) -> tuple[dict, dict[str, Any]]:
+    python_runtime = validate_python_runtime()
     manifest, runtime_sources = flyspeck_float_corpus.validate_inputs(
         candle_root, flyspeck_root, overlay_root
     )
@@ -69,6 +343,10 @@ def authenticated_artifact(
                 manifest, snapshots, expected, ocamlc,
             )
         )
+    flyspeck_float_corpus.require(
+        validate_python_runtime() == python_runtime,
+        "Python runtime changed during corpus authentication",
+    )
     return expected, completeness
 
 
@@ -201,9 +479,12 @@ def check_candle(
     completeness: dict[str, Any],
 ) -> dict[str, Any]:
     try:
-        import pexpect
-    except ImportError as error:
-        raise RuntimeError("compiled float corpus gate requires pexpect") from error
+        python_runtime = validate_python_runtime()
+        pexpect, pexpect_sources = load_pexpect_from_pinned_sources()
+    except (ImportError, flyspeck_float_corpus.CorpusError) as error:
+        raise RuntimeError(
+            "compiled float corpus gate requires pinned Python/pexpect"
+        ) from error
 
     candle_root = candle_root.resolve()
     runtime_lock_handle = runtime_lock.acquire_build_lock(candle_root)
@@ -261,6 +542,53 @@ def check_candle(
         {field: oracle_record[field]
          for field in ("bytes", "md5", "sha256")},
     )
+    python_source_archive_records = []
+    python_sources = local_python_source_records(completeness)
+    for label, record in sorted(python_sources.items()):
+        destination = archive_root / "python" / label
+        python_source_archive_records.append({
+            "label": label,
+            "source_path": record["path"],
+            "path": str(destination.relative_to(evidence_root)),
+            **_archive_file(
+                Path(record["path"]), destination,
+                {field: record[field]
+                 for field in ("bytes", "md5", "sha256")},
+            ),
+        })
+    python_executable_record = python_runtime["executable"]
+    python_executable_archive = archive_root / "python-runtime" / "python3.12"
+    python_executable_archive_record = _archive_file(
+        Path(python_executable_record["path"]), python_executable_archive,
+        {field: python_executable_record[field]
+         for field in ("bytes", "sha256")},
+    )
+    python_elf_archive_records = []
+    for path_string, expected in sorted(
+        python_runtime["elf_closure"]["files"].items()
+    ):
+        source = Path(path_string)
+        destination = (
+            archive_root / "python-runtime-elf" /
+            f"{expected['sha256'][:16]}-{source.name}"
+        )
+        python_elf_archive_records.append({
+            "source_path": path_string,
+            "path": str(destination.relative_to(evidence_root)),
+            **_archive_file(source, destination, expected),
+        })
+    pexpect_archive_records = []
+    for label, record in sorted(pexpect_sources.items()):
+        destination = archive_root / "python-packages" / f"{label}.py"
+        pexpect_archive_records.append({
+            "label": label,
+            "source_path": record["path"],
+            "path": str(destination.relative_to(evidence_root)),
+            **_archive_file(
+                Path(record["path"]), destination,
+                {field: record[field] for field in ("bytes", "sha256")},
+            ),
+        })
     toolchain_archive_records = []
     for label, record in sorted(completeness["toolchain"]["files"].items()):
         destination = archive_root / "ocaml-toolchain" / label
@@ -273,6 +601,46 @@ def check_candle(
                 {field: record[field] for field in ("bytes", "sha256")},
             ),
         })
+    with tempfile.TemporaryDirectory(
+        prefix="candle-retained-ocaml-float-oracle-"
+    ) as temporary:
+        observed_toolchain = (
+            check_flyspeck_float_completeness.validate_toolchain(
+                completeness["toolchain"]["files"]["ocamlc"]["path"]
+            )
+        )
+        flyspeck_float_corpus.require(
+            observed_toolchain == {
+                field: completeness["toolchain"][field]
+                for field in (
+                    "ocaml_version", "ocaml_where", "files", "loader_alias"
+                )
+            },
+            "retained oracle compilation toolchain changed",
+        )
+        compiled_oracle = (
+            check_flyspeck_float_completeness.compile_oracle(
+                completeness["toolchain"]["files"]["ocamlc"]["path"],
+                Path(temporary), observed_toolchain,
+            )
+        )
+        compiled_oracle_archive = (
+            archive_root / "ocaml_float_token_oracle.byte"
+        )
+        compiled_oracle_archive_record = _archive_file(
+            compiled_oracle, compiled_oracle_archive,
+            completeness["toolchain"]["compiled_oracle"],
+        )
+        compiled_object_archive_records = []
+        for name, expected in sorted(
+            completeness["toolchain"]["compiled_objects"].items()
+        ):
+            destination = archive_root / "ocaml-compile-outputs" / name
+            compiled_object_archive_records.append({
+                "name": name,
+                "path": str(destination.relative_to(evidence_root)),
+                **_archive_file(Path(temporary) / name, destination, expected),
+            })
     linked_record_path = (
         candle_root / cakeml_artifact_provenance.LINKED_RECORD_RELATIVE
     )
@@ -343,7 +711,32 @@ def check_candle(
                 "path": str(oracle_archive.relative_to(evidence_root)),
                 **oracle_archive_record,
             },
+            "independent_oracle_binary": {
+                "path": str(
+                    compiled_oracle_archive.relative_to(evidence_root)
+                ),
+                **compiled_oracle_archive_record,
+            },
             "independent_ocaml_toolchain": toolchain_archive_records,
+            "independent_oracle_compile_outputs":
+                compiled_object_archive_records,
+            "independent_python_sources": python_source_archive_records,
+            "python_runtime": {
+                "execution_binding": python_runtime["execution_binding"],
+                "version": python_runtime["version"],
+                "executable": {
+                    "path": str(
+                        python_executable_archive.relative_to(evidence_root)
+                    ),
+                    **python_executable_archive_record,
+                },
+                "elf_policy": python_runtime["elf_closure"]["policy"],
+                "elf_roles": python_runtime["elf_closure"]["roles"],
+                "virtual_elf_objects":
+                    python_runtime["elf_closure"]["virtual_objects"],
+                "elf_objects": python_elf_archive_records,
+            },
+            "pexpect_sources": pexpect_archive_records,
             "generated_source": flyspeck_float_corpus.file_record(source_path),
             "linked_provenance": {
                 "path": str(linked_archive.relative_to(evidence_root)),
@@ -446,12 +839,17 @@ def check_candle(
         flyspeck_float_corpus.require(
             post_linked == linked, "linked provenance changed during corpus gate",
         )
+        flyspeck_float_corpus.require(
+            validate_python_runtime() == python_runtime,
+            "Python runtime changed during compiled corpus gate",
+        )
         flyspeck_float_corpus.validate_record(
             source_path, attempt["inputs"]["generated_source"],
             "retained float-corpus source",
         )
         for label in ("artifact", "independent_completeness",
-                      "independent_oracle_source", "linked_provenance",
+                      "independent_oracle_source",
+                      "independent_oracle_binary", "linked_provenance",
                       "bootstrap_provenance", "bootstrap_log"):
             archived = attempt["inputs"][label]
             flyspeck_float_corpus.validate_record(
@@ -465,6 +863,44 @@ def check_candle(
                 {field: archived[field]
                  for field in ("bytes", "md5", "sha256")},
                 f"retained OCaml toolchain {archived['label']}",
+            )
+        for archived in attempt["inputs"]["independent_python_sources"]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field]
+                 for field in ("bytes", "md5", "sha256")},
+                f"retained Python source {archived['label']}",
+            )
+        python_runtime_input = attempt["inputs"]["python_runtime"]
+        archived_python = python_runtime_input["executable"]
+        flyspeck_float_corpus.validate_record(
+            evidence_root / archived_python["path"],
+            {field: archived_python[field]
+             for field in ("bytes", "md5", "sha256")},
+            "retained Python executable",
+        )
+        for archived in python_runtime_input["elf_objects"]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field]
+                 for field in ("bytes", "md5", "sha256")},
+                "retained Python ELF object",
+            )
+        for archived in attempt["inputs"]["pexpect_sources"]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field]
+                 for field in ("bytes", "md5", "sha256")},
+                f"retained pexpect source {archived['label']}",
+            )
+        for archived in attempt["inputs"][
+            "independent_oracle_compile_outputs"
+        ]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field]
+                 for field in ("bytes", "md5", "sha256")},
+                f"retained oracle compile output {archived['name']}",
             )
         flyspeck_float_corpus.require(
             flyspeck_float_corpus.load_object(

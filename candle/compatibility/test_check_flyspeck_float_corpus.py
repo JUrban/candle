@@ -2,9 +2,11 @@
 """Static tests for the compiled direct-corpus decimal-float gate."""
 
 import collections
+import hashlib
 import inspect
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -94,10 +96,68 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
             "check_flyspeck_float_completeness.validate_completeness(",
             implementation,
         )
-        self.assertIn(
-            "snapshot_runtime_sources(", implementation,
-        )
+        self.assertIn("snapshot_runtime_sources(", implementation)
         self.assertIn("independent_ocaml_toolchain", implementation)
+        self.assertIn("independent_oracle_binary", implementation)
+        self.assertIn("independent_oracle_compile_outputs", implementation)
+        self.assertIn("independent_python_sources", implementation)
+        self.assertIn(
+            '"execution_binding": python_runtime["execution_binding"]',
+            implementation,
+        )
+        self.assertIn(
+            "check_flyspeck_float_completeness.compile_oracle(",
+            implementation,
+        )
+
+    def test_local_python_evidence_set_is_exact(self):
+        completeness_sources = {
+            label: {
+                "path": str(path),
+                **corpus.file_record(path),
+            }
+            for label, path in (
+                checker.check_flyspeck_float_completeness
+                .PYTHON_SOURCE_PATHS.items()
+            )
+        }
+        observed = checker.local_python_source_records({
+            "python_sources": completeness_sources,
+        })
+        self.assertEqual(set(observed), {
+            "cakeml_artifact_provenance.py",
+            "check_flyspeck_float_completeness.py",
+            "check_flyspeck_float_corpus.py",
+            "flyspeck_float_corpus.py",
+            "runtime_lock.py",
+        })
+        for module in (
+            checker.cakeml_artifact_provenance,
+            checker.check_flyspeck_float_completeness,
+            checker.flyspeck_float_corpus,
+            checker.runtime_lock,
+        ):
+            self.assertEqual(
+                module.__candle_source_sha256__,
+                hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest(),
+            )
+
+    def test_python_and_pexpect_execution_sources_are_pinned(self):
+        script = (
+            "import sys; "
+            f"sys.path.insert(0, {str(HERE)!r}); "
+            "import check_flyspeck_float_corpus as c; "
+            "assert c.validate_python_runtime() == c.EXPECTED_PYTHON_RUNTIME; "
+            "p, sources = c.load_pexpect_from_pinned_sources(); "
+            "assert sources == c.EXPECTED_PEXPECT_SOURCES; "
+            "print('PINNED_PYTHON_PEXPECT_PASS')"
+        )
+        completed = subprocess.run(
+            ["/usr/bin/python3", "-I", "-c", script], check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        )
+        self.assertEqual(completed.stdout.strip(),
+                         "PINNED_PYTHON_PEXPECT_PASS")
 
 
 if __name__ == "__main__":

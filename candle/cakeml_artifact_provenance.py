@@ -111,6 +111,10 @@ def runtime_environment(
     environment: dict[str, str] | None = None,
 ) -> dict[str, str]:
     """Return the fixed locale environment allowed for linked execution."""
+    require(
+        not os.path.lexists("/etc/ld.so.preload"),
+        "system-wide dynamic-loader preload is outside the runtime model",
+    )
     source = os.environ if environment is None else environment
     forbidden_names = {"BASH_ENV", "ENV", "GLIBC_TUNABLES"}
     forbidden = sorted(name for name in source

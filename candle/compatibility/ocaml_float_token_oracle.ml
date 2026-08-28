@@ -5,8 +5,11 @@
    numeric syntax, and source locations.  When that lexer returns BACKQUOTE in
    code, this helper advances the same lexbuf to the paired closing backtick:
    quotation bodies contain HOL operators that are not OCaml tokens.  Floats
-   in those term-language bodies are omitted.  A phrase terminator inside a
-   paired span is rejected as ambiguous with two OCaml polymorphic variants. *)
+   in those term-language bodies are omitted.  Every skipped span is reported
+   with exact byte/line/column endpoints so the selected-source dialect can be
+   authenticated independently of the float projection.  A phrase terminator
+   inside a paired span is rejected as ambiguous with two OCaml polymorphic
+   variants. *)
 
 let fail key lexbuf message =
   let position = Lexing.lexeme_start_p lexbuf in
@@ -33,7 +36,9 @@ let skip_hol_quotation key (lexbuf : Lexing.lexbuf) =
            pos_cnum = position.pos_cnum + 1}
         else
           {position with pos_cnum = position.pos_cnum + 1};
-      if character <> '`' then begin
+      if character = '`' then
+        position
+      else begin
         if character = ';' && !previous_semicolon then
           fail key lexbuf
             "ambiguous paired backticks contain an OCaml phrase terminator";
@@ -122,14 +127,20 @@ let scan key path =
     | None -> loop ()
     | Some Parser.EOF -> ()
     | Some Parser.BACKQUOTE ->
-        skip_hol_quotation key lexbuf;
+        let opening = Lexing.lexeme_start_p lexbuf in
+        let closing = skip_hol_quotation key lexbuf in
+        Printf.printf "Q\t%s\t%d\t%d\t%d\t%d\t%d\t%d\n"
+          key opening.pos_lnum
+          (opening.pos_cnum - opening.pos_bol + 1) opening.pos_cnum
+          closing.pos_lnum
+          (closing.pos_cnum - closing.pos_bol + 1) closing.pos_cnum;
         loop ()
     | Some (Parser.FLOAT (_, Some suffix)) ->
         fail key lexbuf
           (Printf.sprintf "float suffix %C is outside the Candle grammar" suffix)
     | Some (Parser.FLOAT (_, None)) ->
         let position = Lexing.lexeme_start_p lexbuf in
-        Printf.printf "%s\t%d\t%d\t%s\n"
+        Printf.printf "F\t%s\t%d\t%d\t%s\n"
           key position.pos_lnum
           (position.pos_cnum - position.pos_bol + 1)
           (Lexing.lexeme lexbuf);
