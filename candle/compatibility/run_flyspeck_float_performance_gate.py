@@ -871,7 +871,9 @@ def _run_attempt(
                     generated_dir / "flyspeck_float_performance_inputs.json"
                 ),
             },
-            "transcript_directory": str(transcript_dir),
+            "transcript_directory": str(
+                transcript_dir.relative_to(evidence_dir)
+            ),
         },
         "postflight": {
             "all_session_check_axioms": True,

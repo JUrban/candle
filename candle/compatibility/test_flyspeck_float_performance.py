@@ -257,6 +257,7 @@ class FloatPerformanceGateTests(unittest.TestCase):
         source = inspect.getsource(gate._run_attempt)
         self.assertIn('"performance_accepted": False', source)
         self.assertIn('"reviewed_acceptance_contract": None', source)
+        self.assertIn("transcript_dir.relative_to(evidence_dir)", source)
 
     def test_rss_scope_does_not_claim_attribution(self):
         self.assertIn("includes full-HOL baseline",
