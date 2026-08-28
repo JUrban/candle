@@ -14,13 +14,13 @@ Dopen; this is not a synthetic module smoke test.
 
 ## Exact pins and roots
 
-- CakeML integration: `936219bbc3021fa20418d62e85155f2d0092b9f9`;
+- CakeML integration: `0c170aa374ec178e5db8a9fe9276244ed7e0dcf7`;
 - HOL4 proof build: `a390cbabd3a4521bab4ee20281e3e42933a8a3ae`;
 - direct Flyspeck: `1ce0353008eba83d3c76ae9a25c3c242e4802d53`;
 - normalization contract SHA-256:
-  `ee96d0327a611074817ae2e458f8013880cad6f1c059fa9b9481b4c3060d48ad`;
+  `ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08`;
 - current authenticated overlay root:
-  `/project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074`;
+  `/project/flyspeck-candle-runs/v13-normalized-overlay-f7dac3a-ac925270`;
 - prepared `hard_7.dat` SHA-256:
   `0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526`;
 - current authenticated generated-input root:
@@ -45,16 +45,16 @@ python3 candle/cakeml_artifact_provenance.py record-bootstrap \
   --candle-root . \
   --cakeml-root /project/worktrees/cakeml-flyspeck-v13-integration \
   --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \
-  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.log \
-  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.json
+  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.log \
+  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.json
 CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh \
   /project/worktrees/cakeml-flyspeck-v13-integration \
-  /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.json
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.json
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \
   /project/worktrees/flyspeck-v13-source \
-  /project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074 \
+  /project/flyspeck-candle-runs/v13-normalized-overlay-f7dac3a-ac925270 \
   /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6
 ```
 
