@@ -6,7 +6,7 @@
     "version": "4.14.1",
     "bit_observation": "Int64.bits_of_float printed as an unsigned 64-bit integer"
   },
-  "supported_subset": "the ten exact positive_cases spellings below, covering pinned decimal points, exponents, separator underscores, signed zero, and a subnormal; broader non-ERANGE decimal support remains implementation intent pending corpus execution evidence",
+  "supported_subset": "the ten exact positive_cases spellings below, covering decimal points, exponents, separator underscores, zero, and a small normal value; broader non-ERANGE decimal support remains implementation intent pending corpus execution evidence",
   "out_of_scope": [
     {
       "syntax": "hexadecimal floating-point literals such as 0x1.0p0",

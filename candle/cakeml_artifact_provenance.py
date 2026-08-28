@@ -39,6 +39,7 @@ CANDLE_ELF_OBJECTS = {
     "libm.so.6",
 }
 CANDLE_ELF_VIRTUAL_OBJECTS = ["linux-vdso.so.1"]
+ROOT_RUNTIME_ALIASES = ("config_enc_str.txt", "candle_boot.ml")
 
 
 class ProvenanceError(ValueError):
@@ -78,8 +79,9 @@ def load_object(path: Path) -> dict[str, Any]:
 
 def git_output(root: Path, *arguments: str) -> str:
     return subprocess.run(
-        ["git", "-C", str(root), *arguments], check=True,
+        ["/usr/bin/git", "-C", str(root), *arguments], check=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        env=runtime_environment(),
     ).stdout.strip()
 
 
@@ -95,15 +97,34 @@ def runtime_environment(
 ) -> dict[str, str]:
     """Return the fixed locale environment allowed for linked execution."""
     source = os.environ if environment is None else environment
-    forbidden = sorted(
-        name for name in source
-        if name.startswith("LD_") or name == "GLIBC_TUNABLES"
-    )
+    forbidden_names = {"BASH_ENV", "ENV", "GLIBC_TUNABLES"}
+    forbidden = sorted(name for name in source
+                       if name.startswith("LD_") or name in forbidden_names)
     require(not forbidden,
             "forbidden dynamic-loader environment: " + ", ".join(forbidden))
-    result = dict(source)
-    result["LC_ALL"] = "C"
+    result = {"LC_ALL": "C", "PATH": "/usr/bin:/bin"}
+    for name in ("CML_HEAP_SIZE", "CML_STACK_SIZE"):
+        if name in source:
+            require(re.fullmatch(r"[1-9][0-9]*", source[name]) is not None,
+                    f"invalid CakeML runtime size: {name}")
+            result[name] = source[name]
     return result
+
+
+def validate_root_runtime_aliases(
+    candle_root: Path,
+    outputs: dict[str, Any],
+) -> None:
+    build_dir = candle_root / "candle/build"
+    for name in ROOT_RUNTIME_ALIASES:
+        alias = candle_root / name
+        expected_target = Path("candle/build") / name
+        require(alias.is_symlink(), f"runtime alias is not a symlink: {alias}")
+        require(Path(os.readlink(alias)) == expected_target,
+                f"runtime alias target mismatch: {alias}")
+        require(alias.resolve(strict=True) == (build_dir / name).resolve(strict=True),
+                f"runtime alias resolution mismatch: {alias}")
+        validate_file_record(alias, outputs[name], f"runtime alias {name}")
 
 
 def expected_pins(candle_root: Path) -> dict[str, str]:
@@ -162,6 +183,7 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
     absolute_path = re.compile(r"(?:=>\s+)?(/[^\s(]+)\s+\(")
     virtual_object = re.compile(r"([^\s]+)\s+\(0x[0-9a-fA-F]+\)")
     files: dict[str, dict[str, Any]] = {}
+    roles: dict[str, str] = {}
     virtual_objects: set[str] = set()
     for raw_line in observed.splitlines():
         line = raw_line.strip()
@@ -170,6 +192,15 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
         match = absolute_path.search(line)
         if match:
             path = Path(match.group(1)).resolve(strict=True)
+            if "=>" in line:
+                role = line.split("=>", 1)[0].strip()
+            else:
+                role = path.name
+            require(role and not any(character.isspace() for character in role),
+                    f"malformed ELF dependency role for {executable}: {line}")
+            require(role not in roles,
+                    f"duplicate ELF dependency role for {executable}: {role}")
+            roles[role] = str(path)
             files[str(path)] = file_record(path)
             continue
         match = virtual_object.fullmatch(line)
@@ -178,18 +209,25 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
         virtual_objects.add(match.group(1))
     require(files, f"ELF dependency closure is empty: {executable}")
     return {
-        "policy": "ldd_resolved_absolute_paths_and_content_v1",
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
         "files": {path: files[path] for path in sorted(files)},
+        "roles": {role: roles[role] for role in sorted(roles)},
         "virtual_objects": sorted(virtual_objects),
     }
 
 
 def validate_candle_elf_policy(record: dict[str, Any]) -> None:
     files = record.get("files")
+    roles = record.get("roles")
     virtual_objects = record.get("virtual_objects")
     require(isinstance(files, dict), "malformed Candle ELF file closure")
-    require({Path(path).name for path in files} == CANDLE_ELF_OBJECTS,
+    require(isinstance(roles, dict), "malformed Candle ELF role closure")
+    require(len(files) == len(CANDLE_ELF_OBJECTS),
+            "unexpected Candle ELF dependency object count")
+    require(set(roles) == CANDLE_ELF_OBJECTS,
             "unexpected Candle ELF dependency roles")
+    require(set(roles.values()) == set(files),
+            "Candle ELF roles do not bind the exact object closure")
     require(virtual_objects == CANDLE_ELF_VIRTUAL_OBJECTS,
             "unexpected Candle virtual ELF objects")
 
@@ -199,10 +237,10 @@ def validate_elf_dynamic_closure(
     record: dict[str, Any],
 ) -> None:
     require(isinstance(record, dict), "malformed ELF dependency closure")
-    require(set(record) == {"policy", "files", "virtual_objects"},
+    require(set(record) == {"policy", "files", "roles", "virtual_objects"},
             "malformed ELF dependency closure")
     require(record["policy"] ==
-            "ldd_resolved_absolute_paths_and_content_v1",
+            "ldd_roles_resolved_absolute_paths_and_content_v2",
             "unsupported ELF dependency policy")
     observed = elf_dynamic_closure(executable)
     require(observed == record, "ELF dependency closure mismatch")
@@ -369,6 +407,7 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     build_dir = candle_root / "candle/build"
     for name in LINKED_OUTPUTS:
         validate_file_record(build_dir / name, outputs[name], f"linked {name}")
+    validate_root_runtime_aliases(candle_root, outputs)
     validate_elf_dynamic_closure(
         build_dir / "cake", record.get("runtime_elf_closure", {}),
     )

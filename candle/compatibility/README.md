@@ -48,15 +48,19 @@ claimed subset.
 
 The linked-artifact provenance also pins the resolved ELF loader, libc, and
 libm contents used by the executable, because the conversion depends on host
-`strtod` behavior. Promotable gates reject loader-control environment
-variables, fix `LC_ALL=C`, require the exact three dependency roles, and archive
-the record and object bytes in each direct-attempt snapshot. This does not claim
+`strtod` behavior. Promotable gates use a fixed `/usr/bin:/bin` path and C
+locale, preserve only validated decimal CakeML heap/stack sizes, reject loader
+and noninteractive-shell injection variables, require the exact three
+dependency roles, and archive the record and object bytes in each
+direct-attempt snapshot. This does not claim
 to pin the kernel, vDSO implementation, CPU/IFUNC choice, NSS/gconv inputs, or
 libraries opened later with `dlopen`; a fixed runtime image remains the stronger
 release option if those affect an observed result.
 
-The repository launcher runs the linked-provenance validator before every
-ordinary Candle session. Standalone compatibility scripts therefore cannot
+The privileged-mode repository launcher uses absolute isolated Python and runs
+the linked-provenance validator before every ordinary Candle session. It also
+requires the root boot/config aliases to be the exact relative symlinks whose
+resolved bytes appear in the record. Standalone compatibility scripts cannot
 report a compiled PASS against a dirty tree, an obsolete record schema, or a
 different executable. The direct stratum runner bypasses the launcher only
 after performing its stronger original-plus-snapshot preflight itself.

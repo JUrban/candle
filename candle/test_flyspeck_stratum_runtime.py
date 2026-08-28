@@ -243,6 +243,21 @@ class StratumRuntimeTests(unittest.TestCase):
                 candle, subject.LINKED_RECORD_RELATIVE,
                 json.dumps({"schema": 2}).encode(),
             )
+            bootstrap_log, bootstrap_log_record = write(
+                root, "bootstrap.log", b"verified bootstrap transcript",
+            )
+            bootstrap_record_value = {
+                "schema": 1,
+                "bootstrap_log": {
+                    "path": str(bootstrap_log),
+                    "bytes": bootstrap_log_record["bytes"],
+                    "sha256": bootstrap_log_record["sha256"],
+                },
+            }
+            bootstrap_record, bootstrap_record_digest = write(
+                root, "bootstrap-record.json",
+                json.dumps(bootstrap_record_value).encode(),
+            )
             runtime_object, runtime_object_record = write(
                 root, "libc.so.6", b"runtime object",
             )
@@ -281,6 +296,8 @@ class StratumRuntimeTests(unittest.TestCase):
             runtime, snapshot = subject.create_runtime_snapshot(
                 output, candle, prepared, {
                     "outputs": linked_outputs,
+                    "bootstrap_record_path": str(bootstrap_record),
+                    "bootstrap_record": bootstrap_record_digest,
                     "runtime_elf_closure": {
                         "files": {
                             str(runtime_object): runtime_object_record,
@@ -310,6 +327,29 @@ class StratumRuntimeTests(unittest.TestCase):
                 and item["classes"] == ["archived-runtime-elf"]
                 for item in snapshot["files"]
             ))
+            self.assertTrue(any(
+                item["path"] == "provenance/bootstrap-record.json"
+                and item["classes"] == ["bootstrap-provenance-record"]
+                for item in snapshot["files"]
+            ))
+            self.assertTrue(any(
+                item["path"] == "provenance/bootstrap.log"
+                and item["classes"] == ["bootstrap-proof-log"]
+                for item in snapshot["files"]
+            ))
+
+            snapshot_root = output / "snapshot"
+            snapshot_root.chmod(0o755)
+            extra = snapshot_root / "unrecorded"
+            extra.write_bytes(b"not in the closure")
+            with self.assertRaisesRegex(subject.ContractError, "unrecorded.*files"):
+                subject.validate_runtime_snapshot(snapshot, output)
+            extra.unlink()
+            extra.mkdir()
+            with self.assertRaisesRegex(subject.ContractError, "unrecorded.*directories"):
+                subject.validate_runtime_snapshot(snapshot, output)
+            extra.rmdir()
+            snapshot_root.chmod(0o555)
 
             snapshot_source = output / "snapshot/flyspeck/source.ml"
             snapshot_source.chmod(0o644)

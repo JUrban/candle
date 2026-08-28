@@ -62,9 +62,10 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         closure = subject.elf_dynamic_closure(executable)
         self.assertEqual(
             closure["policy"],
-            "ldd_resolved_absolute_paths_and_content_v1",
+            "ldd_roles_resolved_absolute_paths_and_content_v2",
         )
         self.assertTrue(closure["files"])
+        self.assertEqual(set(closure["roles"].values()), set(closure["files"]))
         self.assertTrue(any(
             Path(path).name.startswith("libc.so")
             for path in closure["files"]
@@ -97,10 +98,52 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             "C",
         )
 
+    def test_runtime_environment_allows_only_decimal_cakeml_sizes(self) -> None:
+        environment = subject.runtime_environment({
+            "CML_HEAP_SIZE": "6000",
+            "CML_STACK_SIZE": "512",
+            "HOME": "/not-forwarded",
+        })
+        self.assertEqual(environment, {
+            "CML_HEAP_SIZE": "6000",
+            "CML_STACK_SIZE": "512",
+            "LC_ALL": "C",
+            "PATH": "/usr/bin:/bin",
+        })
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "invalid CakeML runtime size",
+        ):
+            subject.runtime_environment({"CML_HEAP_SIZE": "6G"})
+
+    def test_root_runtime_aliases_are_exact_relative_links(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            build = root / "candle/build"
+            build.mkdir(parents=True)
+            outputs = {}
+            for name in subject.ROOT_RUNTIME_ALIASES:
+                target = build / name
+                target.write_text(name, encoding="utf-8")
+                outputs[name] = subject.file_record(target)
+                (root / name).symlink_to(Path("candle/build") / name)
+            subject.validate_root_runtime_aliases(root, outputs)
+            alias = root / subject.ROOT_RUNTIME_ALIASES[0]
+            alias.unlink()
+            alias.symlink_to(build / subject.ROOT_RUNTIME_ALIASES[0])
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "alias target mismatch",
+            ):
+                subject.validate_root_runtime_aliases(root, outputs)
+
     def test_candle_elf_policy_rejects_extra_object(self) -> None:
         closure = {
+            "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
             "files": {
                 f"/runtime/{name}": {"bytes": 1, "sha256": "0" * 64}
+                for name in subject.CANDLE_ELF_OBJECTS
+            },
+            "roles": {
+                name: f"/runtime/{name}"
                 for name in subject.CANDLE_ELF_OBJECTS
             },
             "virtual_objects": list(subject.CANDLE_ELF_VIRTUAL_OBJECTS),
@@ -110,7 +153,28 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             "bytes": 1, "sha256": "1" * 64,
         }
         with self.assertRaisesRegex(
-            subject.ProvenanceError, "unexpected.*dependency roles",
+            subject.ProvenanceError, "dependency object count",
+        ):
+            subject.validate_candle_elf_policy(closure)
+
+    def test_candle_elf_policy_rejects_duplicate_basename_extra_object(self) -> None:
+        closure = {
+            "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+            "files": {
+                f"/runtime/{name}": {"bytes": 1, "sha256": "0" * 64}
+                for name in subject.CANDLE_ELF_OBJECTS
+            },
+            "roles": {
+                name: f"/runtime/{name}"
+                for name in subject.CANDLE_ELF_OBJECTS
+            },
+            "virtual_objects": list(subject.CANDLE_ELF_VIRTUAL_OBJECTS),
+        }
+        closure["files"]["/injected/libc.so.6"] = {
+            "bytes": 1, "sha256": "1" * 64,
+        }
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "dependency object count",
         ):
             subject.validate_candle_elf_policy(closure)
 

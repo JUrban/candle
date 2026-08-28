@@ -101,8 +101,9 @@ def load_object(path: Path, label: str) -> dict[str, Any]:
 def git_output(root: Path, *arguments: str) -> str:
     try:
         return subprocess.run(
-            ["git", "-C", str(root), *arguments], check=True,
+            ["/usr/bin/git", "-C", str(root), *arguments], check=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            env=cakeml_artifact_provenance.runtime_environment(),
         ).stdout.strip()
     except subprocess.CalledProcessError as error:
         raise ContractError(f"git check failed for {root}: {error.stderr.strip()}") from error
@@ -774,6 +775,40 @@ def create_runtime_snapshot(
     )
     add_record("candle", "linked-provenance-record", record)
 
+    bootstrap_record_source = Path(linked.get("bootstrap_record_path", ""))
+    bootstrap_record_expected = linked.get("bootstrap_record")
+    require(isinstance(bootstrap_record_expected, dict),
+            "missing linked bootstrap record")
+    validate_file(
+        bootstrap_record_source, bootstrap_record_expected,
+        "linked bootstrap record snapshot input",
+    )
+    bootstrap = load_object(bootstrap_record_source, "linked bootstrap record")
+    bootstrap_record_snapshot = snapshot_root / "provenance/bootstrap-record.json"
+    record = snapshot_copy(
+        bootstrap_record_source, snapshot_root / "provenance",
+        "bootstrap-record.json", bootstrap_record_expected,
+    )
+    add_record("provenance", "bootstrap-provenance-record", record)
+    bootstrap_log = bootstrap.get("bootstrap_log")
+    require(isinstance(bootstrap_log, dict) and
+            set(bootstrap_log) == {"path", "bytes", "sha256"},
+            "malformed linked bootstrap log record")
+    bootstrap_log_source = Path(bootstrap_log["path"])
+    bootstrap_log_expected = {
+        field: bootstrap_log[field] for field in ("bytes", "sha256")
+    }
+    validate_file(
+        bootstrap_log_source, bootstrap_log_expected,
+        "linked bootstrap log snapshot input",
+    )
+    bootstrap_log_snapshot = snapshot_root / "provenance/bootstrap.log"
+    record = snapshot_copy(
+        bootstrap_log_source, snapshot_root / "provenance", "bootstrap.log",
+        bootstrap_log_expected,
+    )
+    add_record("provenance", "bootstrap-proof-log", record)
+
     closure = linked.get("runtime_elf_closure")
     require(isinstance(closure, dict), "missing linked ELF closure")
     closure_files = closure.get("files")
@@ -858,6 +893,8 @@ def create_runtime_snapshot(
         "process_runtime": process_runtime,
         "cake_runtime": cake_snapshot,
         "linked_record_snapshot": linked_record_snapshot,
+        "bootstrap_record_snapshot": bootstrap_record_snapshot,
+        "bootstrap_log_snapshot": bootstrap_log_snapshot,
         "prefix_path": prefix_snapshot / prefix_relative,
     }
     records = list(records_by_path.values())
@@ -886,15 +923,44 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
     require(snapshot.get("file_count") == len(records), "snapshot file count mismatch")
     require(canonical_sha256(records) == snapshot.get("ordered_file_sha256"),
             "snapshot ordered-file digest mismatch")
+    expected_files: set[str] = set()
+    expected_directories = {"."}
     for record in records:
-        path = snapshot_root / record["path"]
+        relative = safe_relative(record.get("path", ""), "snapshot file record")
+        relative_string = relative.as_posix()
+        require(relative_string not in expected_files,
+                f"duplicate runtime snapshot record: {relative_string}")
+        expected_files.add(relative_string)
+        expected_directories.update(
+            parent.as_posix() for parent in relative.parents
+            if parent != Path(".")
+        )
+        path = snapshot_root / relative
         validate_file(path, record,
-                      f"runtime snapshot {record['path']}")
+                      f"runtime snapshot {relative_string}")
         require(path.stat().st_mode & 0o222 == 0,
-                f"runtime snapshot file is writable: {record['path']}")
-    for directory in [snapshot_root, *(
-        path for path in snapshot_root.rglob("*") if path.is_dir()
-    )]:
+                f"runtime snapshot file is writable: {relative_string}")
+    observed_files: set[str] = set()
+    observed_directories = {"."}
+    for path in snapshot_root.rglob("*"):
+        relative_string = path.relative_to(snapshot_root).as_posix()
+        require(not path.is_symlink(),
+                f"runtime snapshot contains a symlink: {relative_string}")
+        if path.is_file():
+            observed_files.add(relative_string)
+        elif path.is_dir():
+            observed_directories.add(relative_string)
+        else:
+            raise ContractError(
+                f"runtime snapshot contains a special file: {relative_string}"
+            )
+    require(observed_files == expected_files,
+            "runtime snapshot contains unrecorded or missing files")
+    require(observed_directories == expected_directories,
+            "runtime snapshot contains unrecorded or missing directories")
+    for relative_string in sorted(observed_directories):
+        directory = (snapshot_root if relative_string == "." else
+                     snapshot_root / relative_string)
         require(directory.stat().st_mode & 0o222 == 0,
                 f"runtime snapshot directory is writable: {directory}")
 
@@ -1061,7 +1127,8 @@ def run_attempt(
         "fresh_process_replay_from_action_zero": True,
         "process_state_checkpoint": None,
         "runtime_environment_policy": (
-            "LC_ALL=C; reject LD_* and GLIBC_TUNABLES"
+            "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
+            "BASH_ENV, and ENV"
         ),
         "inputs": {
             "plan": prepared["plan_record"],
@@ -1070,6 +1137,12 @@ def run_attempt(
             "linked_provenance": prepared["linked_record"],
             "archived_linked_provenance": hash_file(
                 runtime_prepared["linked_record_snapshot"]
+            ),
+            "archived_bootstrap_provenance": hash_file(
+                runtime_prepared["bootstrap_record_snapshot"]
+            ),
+            "archived_bootstrap_log": hash_file(
+                runtime_prepared["bootstrap_log_snapshot"]
             ),
             "runtime_snapshot": hash_file(snapshot_record_path),
             "authenticated_prefix": prepared["prefix_record"],

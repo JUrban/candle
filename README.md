@@ -24,32 +24,32 @@ candle_ in their filenames). The patches are stored under
   [candle_compute.ml](candle_compute.ml) and
   [compute_examples.ml](compute_examples.ml) for examples.
 
-# Requirements and Installation
+# Requirements and Authenticated Installation
 
-Candle requires the CakeML compiler. The latest release of the compiler can be
-found [here](https://github.com/CakeML/cakeml/releases).
+Candle requires an x86_64 Linux machine, a C compiler, make, and the exact
+CakeML and HOL4 revisions pinned by `candle/flyspeck_manifest.json`.  A usable
+authenticated launcher also requires a successful pinned CakeML `cake.S`
+bootstrap record.  The complete commands and fail-closed acceptance conditions
+are documented in
+[candle/compatibility/dopen_direct_acceptance.md](candle/compatibility/dopen_direct_acceptance.md).
+In outline, record the completed bootstrap and then link it locally with:
 
-The CakeML compiler requires a x86_64 Linux machine with a C compiler and make.
-The CakeML compiler assembly stubs need to be modified to work with Candle.
-Please see [build-instructions.sh](build-instructions.sh) for instructions on
-how to do this. You can also run
+    $ /usr/bin/python3 -I candle/cakeml_artifact_provenance.py record-bootstrap ...
+    $ CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh CAKEML_ROOT BOOTSTRAP_RECORD.json
+    $ ./candle.sh
 
-    $ ./build-instructions.sh
-
-from the shell, which will download the CakeML compiler using curl, and patch
-it. After this, you can run Candle by writing either:
-
-    $ ./cake --candle
-
-or:
-
-    $ ./candle
-
-from the shell. Then, load the HOL Light sources by writing:
+`candle.sh` authenticates the clean Candle revision, manifest pins, linked
+compiler, runtime inputs, root aliases, bootstrap record, and exact host ELF
+closure before every session. Then load the HOL Light sources by writing:
 
     #use "hol.ml";;
 
 into the REPL.
+
+The historical [build-instructions.sh](build-instructions.sh) download flow is
+retained only as an upstream development reference.  It does not create the
+bootstrap and linked-provenance records required by `candle.sh`, and therefore
+must not be used to produce a promotable Flyspeck-checking artifact.
 
 # Compatibility and Porting
 
@@ -74,4 +74,3 @@ things that Candle does differently, notably:
   evaluates to false.
 - Expression-level modules and functors are not supported, nor is the 'open'
   declaration.
-

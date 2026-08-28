@@ -40,9 +40,11 @@ Snapshot files and directories and the generated control inputs are made
 read-only.  Before and after execution, the runner resolves the exact snapshot
 executable's ELF closure and requires it to match the archived record; linked
 artifacts with RPATH/RUNPATH or unexpected dependency roles are rejected.  The
-compiled process reads only attempt-local source/input paths under `LC_ALL=C`,
-with `LD_*` and `GLIBC_TUNABLES` forbidden.  It is launched directly, without an
-unrecorded timing wrapper; Python `getrusage` supplies the recorded child
+compiled process reads only attempt-local source/input paths under a minimal
+fixed `PATH` and `LC_ALL=C`; only validated decimal CakeML heap/stack sizes are
+forwarded, while `LD_*`, `GLIBC_TUNABLES`, `BASH_ENV`, and `ENV` are forbidden.
+It is launched directly, without an unrecorded timing wrapper; Python
+`getrusage` supplies the recorded child
 measurements.  The runner then rehashes the complete snapshot and all control
 inputs and reauthenticates the original repositories, plan, and linked
 executable after the process exits.
