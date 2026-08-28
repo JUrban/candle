@@ -252,7 +252,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["verified_cakeml_integration"],
             {
                 "branch": "codex/flyspeck-v13-integration",
-                "commit": "fec48e7d76b7d3b132ef2d420279a5f0655c76f7",
+                "commit": "936219bbc3021fa20418d62e85155f2d0092b9f9",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
@@ -269,6 +269,7 @@ class GeneratedManifestTests(unittest.TestCase):
                     "a336d8493b1ffc81b3a93348c4326d6200cf2d78",
                     "ed49b28052c79abf612642921bff808c16f2332b",
                     "fec48e7d76b7d3b132ef2d420279a5f0655c76f7",
+                    "936219bbc3021fa20418d62e85155f2d0092b9f9",
                 ],
             },
         )
