@@ -32,9 +32,10 @@ authenticated launcher also requires a successful pinned CakeML `cake.S`
 bootstrap record.  The complete commands and fail-closed acceptance conditions
 are documented in
 [candle/compatibility/dopen_direct_acceptance.md](candle/compatibility/dopen_direct_acceptance.md).
-In outline, record the completed bootstrap and then link it locally with:
+In outline, run the canonical sanitized bootstrap controller and then link its
+non-overwritable final record locally:
 
-    $ /usr/bin/python3 -I candle/cakeml_artifact_provenance.py record-bootstrap ...
+    $ /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C /absolute/path/build-local-cakeml-bootstrap.sh CAKEML_ROOT HOL4_ROOT BOOTSTRAP_LOG BOOTSTRAP_PREFLIGHT BOOTSTRAP_RECORD
     $ ./build-local-cakeml.sh CAKEML_ROOT BOOTSTRAP_RECORD.json
     $ ./candle.sh
 
@@ -45,6 +46,23 @@ closure before every session. Then load the HOL Light sources by writing:
     #use "hol.ml";;
 
 into the REPL.
+
+The bootstrap script immediately `exec`s one `/usr/bin/python3 -I -S` process.
+That process writes an immutable preflight before mutation, holds an exclusive
+lock on the exact CakeML checkout inode through atomic final publication,
+archives and removes the exact generated `cake.S`, `config_enc_str.txt`,
+18-target theory-output inventory, their exact make-dependency files, and any
+retry-only `*Script.ui`/`*Script.uo` transients, and runs exactly
+`/usr/bin/time -v HOL_ROOT/bin/Holmake -j1 cake.S`
+in the pinned x64/64 directory under an exact three-variable build environment.
+It preserves and authenticates the tracked `candle_boot.ml`, `basis_ffi.c`, and
+`Makefile` symlinks and their in-repository ordinary targets. On failure it
+does not restore or delete anything: the preimage archive, transcript, and any
+partial outputs remain for inspection, and a retry uses fresh receipt paths.
+All other pre-existing CakeML `.hol/objs` files are fully inventoried and
+content-bound before and after the run. They are explicitly recorded as
+authenticated inputs whose derivation was not independently replayed, rather
+than being implied by the Git revision.
 
 The bootstrap record includes ordinary-file identities for `bin/Holmake`,
 `bin/hol`, and `bin/hol.state`, the two launchers' exact ELF closures, and one
@@ -62,6 +80,10 @@ bound. Kernel/process/filesystem behavior, host-tool dynamic libraries, system
 C headers, GCC internal data, linker scripts, startup objects and archives, and
 the semantics of those exact host inputs remain an explicit trusted boundary.
 The linked JSON record carries the same machine-checkable boundary declaration.
+The controller must be launched through the documented outer `/usr/bin/env -i`.
+Its in-script checks cannot retrospectively authenticate the environment or
+dynamic loader that started that first `env`/Bash process; this pre-controller
+loader interval and hostile same-UID mutation remain explicit trusted limits.
 
 The historical [build-instructions.sh](build-instructions.sh) download flow is
 retained only as an upstream development reference.  It does not create the

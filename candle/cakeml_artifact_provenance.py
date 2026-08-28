@@ -5,16 +5,20 @@ from __future__ import annotations
 
 import argparse
 import copy
+import fcntl
 import hashlib
 import json
 import os
 import re
 import shlex
 import shutil
+import signal
+import stat
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 
 BOOTSTRAP_INPUTS = (
@@ -128,14 +132,16 @@ LINKED_OUTPUTS = (
     "Makefile",
     "types.txt",
     "insulate.ml",
+    "bootstrap-preflight.json",
     "bootstrap-provenance.json",
     "bootstrap.log",
 )
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
-BOOTSTRAP_PROVENANCE_SCHEMA = 2
-LINKED_PROVENANCE_SCHEMA = 3
+BOOTSTRAP_PREFLIGHT_SCHEMA = 1
+BOOTSTRAP_PROVENANCE_SCHEMA = 3
+LINKED_PROVENANCE_SCHEMA = 4
 ELF_DYNAMIC_CLOSURE_POLICY = "ldd_roles_resolved_absolute_paths_and_content_v3"
 ELF_DYNAMIC_CLOSURE_FIELDS = frozenset({
     "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
@@ -148,7 +154,87 @@ CANDLE_ELF_OBJECTS = {
 CANDLE_ELF_VIRTUAL_OBJECTS = ["linux-vdso.so.1"]
 ROOT_RUNTIME_ALIASES = ("config_enc_str.txt", "candle_boot.ml")
 LINKED_BOOTSTRAP_RECORD = "bootstrap-provenance.json"
+LINKED_BOOTSTRAP_PREFLIGHT = "bootstrap-preflight.json"
 LINKED_BOOTSTRAP_LOG = "bootstrap.log"
+BOOTSTRAP_CONTROLLER_SOURCES = (
+    "build-local-cakeml-bootstrap.sh",
+    "candle/cakeml_artifact_provenance.py",
+)
+BOOTSTRAP_CONTROLLER_TOOLS = {
+    "bash": "/bin/bash",
+    "chmod": "/usr/bin/chmod",
+    "env": "/usr/bin/env",
+    "flock": "/usr/bin/flock",
+    "git": "/usr/bin/git",
+    "ldd": "/usr/bin/ldd",
+    "python": "/usr/bin/python3",
+    "readelf": "/usr/bin/readelf",
+    "realpath": "/usr/bin/realpath",
+    "stat": "/usr/bin/stat",
+    "time": "/usr/bin/time",
+}
+BOOTSTRAP_LAUNCH_ELF_TOOLS = ("env", "time")
+BOOTSTRAP_LOG_MARKER = "CANDLE_CAKEML_BOOTSTRAP_CONTROLLER_V1"
+BOOTSTRAP_TARGETS = (
+    "pancake_lexProg",
+    "pancake_parseProg",
+    "reg_allocProg",
+    "inferProg",
+    "explorerProg",
+    "decodeProg",
+    "sexp_parserProg",
+    "basis_defProg",
+    "printingProg",
+    "to_word64Prog",
+    "to_target64Prog",
+    "from_pancake64Prog",
+    "x64Prog",
+    "arm8Prog",
+    "riscvProg",
+    "mipsProg",
+    "compiler64Prog",
+    "x64Bootstrap",
+)
+BOOTSTRAP_TRANSLATION_THEORY_SUFFIXES = (
+    "ui", "uo", "dat", "sig", "sml", "cachekey",
+)
+BOOTSTRAP_FINAL_THEORY_SUFFIXES = ("dat", "sig", "sml", "cachekey")
+BOOTSTRAP_SCRIPT_TRANSIENT_SUFFIXES = ("ui", "uo")
+BOOTSTRAP_DIRECT_GENERATED_OUTPUTS = ("cake.S", "config_enc_str.txt")
+BOOTSTRAP_SYMLINK_INPUTS = {
+    "candle_boot.ml": (
+        "../../../../../candle/prover/candle_boot.ml",
+        "candle/prover/candle_boot.ml",
+    ),
+    "basis_ffi.c": (
+        "../../../../../basis/basis_ffi.c",
+        "basis/basis_ffi.c",
+    ),
+    "Makefile": (
+        "../Makefile",
+        "compiler/bootstrap/compilation/x64/Makefile",
+    ),
+}
+BOOTSTRAP_TRUST_BOUNDARY = {
+    "policy": "canonical_sanitized_bootstrap_controller_boundary_v1",
+    "bound_by_content": [
+        "clean Candle, CakeML, and HOL4 revisions and controller sources",
+        "fixed controller tool paths and resolved executable bytes",
+        "env, time, Holmake, and hol ELF closures plus hol.state bytes",
+        "preflight, exact launch environment/argv/cwd, transcript, and outputs",
+    ],
+    "trusted_not_independently_authenticated": [
+        "the caller environment and dynamic loader before /usr/bin/env and the "
+        "controller interpreter have started; invoke the controller through the "
+        "documented outer /usr/bin/env -i boundary",
+        "kernel process, signal, locking, inode, and filesystem semantics",
+        "dynamic-loader behavior and host libraries of non-launch controller tools",
+        "the semantics of the exact content-bound host and HOL tool binaries",
+        "absence of hostile same-UID transient mutation between guarded observations",
+        "derivation and semantics of content-bound pre-existing CakeML .hol/objs "
+        "ancestor artifacts outside the freshly rebuilt 18-target stratum",
+    ],
+}
 
 
 class ProvenanceError(ValueError):
@@ -174,6 +260,131 @@ def file_record(path: Path, *, allow_symlink: bool = False) -> dict[str, Any]:
     return {"bytes": path.stat().st_size, "sha256": sha256_file(path)}
 
 
+def bytes_record(value: bytes) -> dict[str, Any]:
+    return {"bytes": len(value), "sha256": hashlib.sha256(value).hexdigest()}
+
+
+def _captured_ordinary_file(
+    path: Path,
+) -> tuple[bytes, dict[str, Any], os.stat_result]:
+    """Read one stable named ordinary-file image from one O_NOFOLLOW FD."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError as error:
+        raise ProvenanceError(f"could not capture ordinary file: {path}") from error
+    try:
+        before = os.fstat(descriptor)
+        require(stat.S_ISREG(before.st_mode), f"not an ordinary file: {path}")
+        chunks = []
+        while block := os.read(descriptor, 1024 * 1024):
+            chunks.append(block)
+        after = os.fstat(descriptor)
+        require((before.st_dev, before.st_ino, before.st_size,
+                 before.st_mtime_ns, before.st_ctime_ns) ==
+                (after.st_dev, after.st_ino, after.st_size,
+                 after.st_mtime_ns, after.st_ctime_ns),
+                f"file changed while being captured: {path}")
+        value = b"".join(chunks)
+        require(len(value) == before.st_size,
+                f"short ordinary-file capture: {path}")
+        named = path.stat(follow_symlinks=False)
+        require(stat.S_ISREG(named.st_mode) and
+                (named.st_dev, named.st_ino) == (after.st_dev, after.st_ino),
+                f"file path changed while being captured: {path}")
+        return value, bytes_record(value), after
+    finally:
+        os.close(descriptor)
+
+
+def captured_ordinary_file(path: Path) -> tuple[bytes, dict[str, Any]]:
+    value, record, _ = _captured_ordinary_file(path)
+    return value, record
+
+
+def ordinary_file_identity(path: Path) -> dict[str, Any]:
+    value, record, metadata = _captured_ordinary_file(path)
+    del value
+    return {
+        "device": metadata.st_dev,
+        "inode": metadata.st_ino,
+        "mtime_ns": metadata.st_mtime_ns,
+        "ctime_ns": metadata.st_ctime_ns,
+        **record,
+    }
+
+
+def validate_ordinary_file_identity(
+    path: Path,
+    record: dict[str, Any],
+    label: str,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
+    }, f"malformed {label} identity")
+    require(ordinary_file_identity(path) == record,
+            f"{label} identity mismatch: {path}")
+
+
+def write_new_json(
+    path: Path,
+    value: dict[str, Any],
+    *,
+    before_publish: Callable[[], None] | None = None,
+    after_publish: Callable[[], None] | None = None,
+) -> None:
+    """Create a read-only JSON receipt exactly once."""
+    path = path.absolute()
+    require(path.parent.is_dir() and not path.parent.is_symlink(),
+            f"receipt parent is not an ordinary directory: {path.parent}")
+    payload = (json.dumps(value, indent=2, sort_keys=True) + "\n").encode()
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", dir=path.parent,
+    )
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(descriptor, 0o444)
+        offset = 0
+        while offset < len(payload):
+            offset += os.write(descriptor, payload[offset:])
+        os.fsync(descriptor)
+        if before_publish is not None:
+            before_publish()
+        try:
+            os.link(temporary, path, follow_symlinks=False)
+        except OSError as error:
+            raise ProvenanceError(
+                f"refusing to overwrite receipt: {path}",
+            ) from error
+        if after_publish is not None:
+            try:
+                after_publish()
+            except BaseException:
+                named = path.stat(follow_symlinks=False)
+                source = os.fstat(descriptor)
+                if (named.st_dev, named.st_ino) == (source.st_dev, source.st_ino):
+                    os.unlink(path)
+                raise
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        os.close(descriptor)
+        if os.path.lexists(temporary):
+            os.unlink(temporary)
+
+
+def resolve_new_output(path: Path, label: str) -> Path:
+    require(path.name not in {"", ".", ".."}, f"malformed {label} path")
+    parent = path.parent.resolve(strict=True)
+    require(parent.is_dir() and not parent.is_symlink(),
+            f"{label} parent is not an ordinary directory")
+    result = parent / path.name
+    require(not os.path.lexists(result), f"{label} already exists: {result}")
+    return result
+
+
 def validate_file_record(
     path: Path,
     record: dict[str, Any],
@@ -193,12 +404,30 @@ def load_object(path: Path) -> dict[str, Any]:
     return value
 
 
+def load_captured_object(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    value, identity = captured_ordinary_file(path)
+    try:
+        decoded = json.loads(value.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ProvenanceError(f"malformed captured JSON object: {path}") from error
+    require(isinstance(decoded, dict), f"expected captured JSON object: {path}")
+    return decoded, identity
+
+
 def git_output(root: Path, *arguments: str) -> str:
     return subprocess.run(
         git_command(root, *arguments), check=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         env=git_environment(),
     ).stdout.strip()
+
+
+def git_bytes(root: Path, *arguments: str) -> bytes:
+    return subprocess.run(
+        git_command(root, *arguments), check=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        env=git_environment(),
+    ).stdout
 
 
 def git_command(root: Path, *arguments: str) -> list[str]:
@@ -216,6 +445,115 @@ def validate_git(root: Path, expected_head: str, label: str) -> None:
             f"{label} revision mismatch")
     require(not git_output(root, "status", "--porcelain", "--untracked-files=all"),
             f"{label} worktree is not clean")
+
+
+def committed_source_record(root: Path, relative: str) -> dict[str, Any]:
+    path = root / relative
+    working_bytes, working_record = captured_ordinary_file(path)
+    committed = git_bytes(root, "show", f"HEAD:{relative}")
+    committed_record = bytes_record(committed)
+    require(working_bytes == committed,
+            f"controller source differs from committed bytes: {relative}")
+    return {
+        "repository_path": relative,
+        "path": str(path.resolve(strict=True)),
+        **working_record,
+        "commit_blob": committed_record,
+    }
+
+
+def bootstrap_symlink_input_record(
+    cakeml_root: Path,
+    name: str,
+) -> dict[str, Any]:
+    require(name in BOOTSTRAP_SYMLINK_INPUTS,
+            f"unsupported bootstrap symlink input: {name}")
+    link_text, target_relative = BOOTSTRAP_SYMLINK_INPUTS[name]
+    relative = str(BOOTSTRAP_RELATIVE / name)
+    path = cakeml_root / relative
+    metadata = path.lstat()
+    require(stat.S_ISLNK(metadata.st_mode) and os.readlink(path) == link_text,
+            f"bootstrap input is not the exact tracked symlink: {relative}")
+    committed = git_bytes(cakeml_root, "show", f"HEAD:{relative}")
+    require(committed == link_text.encode(),
+            f"bootstrap symlink differs from its commit blob: {relative}")
+    stage = git_output(cakeml_root, "ls-files", "--stage", "--", relative)
+    fields = stage.split(maxsplit=3)
+    require(len(fields) == 4 and fields[0] == "120000" and
+            fields[2] == "0" and fields[3] == relative and
+            re.fullmatch(r"[0-9a-f]{40}", fields[1]) is not None,
+            f"bootstrap symlink is not an ordinary stage-0 120000 entry: {relative}")
+    target = path.resolve(strict=True)
+    expected_target = (cakeml_root / target_relative).resolve(strict=True)
+    require(target == expected_target and target.is_relative_to(cakeml_root) and
+            target.is_file() and not target.is_symlink(),
+            f"bootstrap symlink target escapes or is not ordinary: {relative}")
+    return {
+        "relative": relative,
+        "path": str(path),
+        "link_text": link_text,
+        "link_identity": {
+            "device": metadata.st_dev,
+            "inode": metadata.st_ino,
+            "mtime_ns": metadata.st_mtime_ns,
+            "ctime_ns": metadata.st_ctime_ns,
+        },
+        "commit_mode": "120000",
+        "commit_blob_oid": fields[1],
+        "commit_blob": bytes_record(committed),
+        "target_relative": target_relative,
+        "target_path": str(target),
+        "target_identity": ordinary_file_identity(target),
+    }
+
+
+def validate_bootstrap_symlink_input_record(
+    record: Any,
+    name: str,
+    cakeml_root: Path,
+    *,
+    require_live: bool,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "relative", "path", "link_text", "link_identity", "commit_mode",
+        "commit_blob_oid", "commit_blob", "target_relative", "target_path",
+        "target_identity",
+    }, f"malformed bootstrap symlink input: {name}")
+    link_text, target_relative = BOOTSTRAP_SYMLINK_INPUTS[name]
+    relative = str(BOOTSTRAP_RELATIVE / name)
+    expected_path = cakeml_root / relative
+    expected_target = cakeml_root / target_relative
+    require(record.get("relative") == relative and
+            record.get("path") == str(expected_path) and
+            record.get("link_text") == link_text and
+            record.get("commit_mode") == "120000" and
+            re.fullmatch(r"[0-9a-f]{40}",
+                         record.get("commit_blob_oid", "")) is not None and
+            record.get("commit_blob") == bytes_record(link_text.encode()) and
+            record.get("target_relative") == target_relative and
+            record.get("target_path") == str(expected_target),
+            f"bootstrap symlink contract mismatch: {name}")
+    link_identity = record.get("link_identity")
+    target_identity = record.get("target_identity")
+    require(isinstance(link_identity, dict) and set(link_identity) == {
+        "device", "inode", "mtime_ns", "ctime_ns",
+    } and isinstance(target_identity, dict) and set(target_identity) == {
+        "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
+    }, f"malformed bootstrap symlink identity: {name}")
+    if require_live:
+        require(record == bootstrap_symlink_input_record(cakeml_root, name),
+                f"bootstrap symlink input changed: {name}")
+
+
+def bootstrap_input_file_record(
+    bootstrap_dir: Path,
+    name: str,
+) -> dict[str, Any]:
+    path = bootstrap_dir / name
+    if name in BOOTSTRAP_SYMLINK_INPUTS:
+        target = path.resolve(strict=True)
+        return captured_ordinary_file(target)[1]
+    return captured_ordinary_file(path)[1]
 
 
 def runtime_environment(
@@ -239,6 +577,130 @@ def runtime_environment(
                     f"invalid CakeML runtime size: {name}")
             result[name] = source[name]
     return result
+
+
+def bootstrap_controller_environment() -> dict[str, str]:
+    """Require the Python controller itself to have an exact minimal environment."""
+    expected = {"LC_ALL": "C", "PATH": "/usr/bin:/bin"}
+    require(dict(os.environ) == expected,
+            "bootstrap controller Python environment is not exact")
+    runtime_environment(os.environ)
+    return expected
+
+
+def python_controller_record(candle_root: Path) -> dict[str, Any]:
+    """Bind the direct isolated Python process interpreting this source file."""
+    controller = (candle_root / "candle/cakeml_artifact_provenance.py").resolve(
+        strict=True,
+    )
+    requested_python = Path(BOOTSTRAP_CONTROLLER_TOOLS["python"])
+    resolved_python = requested_python.resolve(strict=True)
+    proc_executable = Path("/proc/self/exe").resolve(strict=True)
+    require(proc_executable == resolved_python,
+            "bootstrap controller /proc/self/exe is not /usr/bin/python3")
+    require(Path(sys.executable).resolve(strict=True) == resolved_python,
+            "bootstrap controller sys.executable is not /usr/bin/python3")
+    require(__name__ == "__main__" and __spec__ is None and
+            globals().get("__cached__") is None,
+            "bootstrap controller was not executed as a direct script")
+    require(len(sys.argv) >= 2 and Path(sys.argv[0]).resolve(strict=True) == controller,
+            "bootstrap controller argv[0] is not the direct provenance source")
+    expected_flags = {
+        "isolated": 1,
+        "ignore_environment": 1,
+        "no_user_site": 1,
+        "no_site": 1,
+        "safe_path": True,
+        "utf8_mode": 1,
+    }
+    observed_flags = {name: getattr(sys.flags, name) for name in expected_flags}
+    require(observed_flags == expected_flags and sys._xoptions == {} and
+            sys.warnoptions == [],
+            "bootstrap controller Python startup flags are not exact -I defaults")
+    source = committed_source_record(
+        candle_root, "candle/cakeml_artifact_provenance.py",
+    )
+    proc_fields = Path("/proc/self/stat").read_text(encoding="ascii").rstrip()
+    stat_tail = proc_fields.rsplit(")", 1)[1].strip().split()
+    require(len(stat_tail) > 19 and stat_tail[19].isdigit(),
+            "malformed bootstrap controller /proc/self/stat")
+    return {
+        "policy": "direct_usr_bin_python3_isolated_controller_v1",
+        "executable": executable_tool_record(requested_python),
+        "elf_closure": elf_dynamic_closure(requested_python),
+        "proc_self_exe": str(proc_executable),
+        "sys_executable": sys.executable,
+        "sys_version": sys.version,
+        "flags": observed_flags,
+        "xoptions": {},
+        "warnoptions": [],
+        "argv": list(sys.argv),
+        "module": {"name": "__main__", "spec": None, "cached": None},
+        "process": {
+            "pid": os.getpid(),
+            "start_time_ticks": int(stat_tail[19]),
+        },
+        "source": source,
+    }
+
+
+def validate_python_controller_record(
+    record: dict[str, Any],
+    candle_root: Path | None = None,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "executable", "proc_self_exe", "sys_executable",
+        "elf_closure", "sys_version", "flags", "xoptions", "warnoptions", "argv",
+        "module", "process", "source",
+    }, "malformed bootstrap Python controller record")
+    require(record.get("policy") ==
+            "direct_usr_bin_python3_isolated_controller_v1",
+            "unsupported bootstrap Python controller policy")
+    validate_executable_tool_record(
+        record.get("executable"), "bootstrap Python controller",
+    )
+    validate_elf_closure_record(
+        record.get("elf_closure"), "bootstrap Python controller",
+        allowed_dynamic_path_tags={},
+    )
+    flags = record.get("flags")
+    require(flags == {
+        "isolated": 1, "ignore_environment": 1, "no_user_site": 1,
+        "no_site": 1, "safe_path": True, "utf8_mode": 1,
+    } and record.get("xoptions") == {} and record.get("warnoptions") == [] and
+            record.get("module") == {
+                "name": "__main__", "spec": None, "cached": None,
+            } and isinstance(record.get("process"), dict) and
+            set(record["process"]) == {"pid", "start_time_ticks"} and
+            isinstance(record["process"]["pid"], int) and
+            record["process"]["pid"] > 0 and
+            isinstance(record["process"]["start_time_ticks"], int) and
+            record["process"]["start_time_ticks"] > 0 and
+            isinstance(record.get("sys_version"), str) and
+            isinstance(record.get("proc_self_exe"), str) and
+            Path(record["proc_self_exe"]).is_absolute() and
+            isinstance(record.get("sys_executable"), str) and
+            Path(record["sys_executable"]).is_absolute() and
+            isinstance(record.get("argv"), list) and len(record["argv"]) >= 2 and
+            all(isinstance(argument, str) for argument in record["argv"]) and
+            Path(record["argv"][0]).is_absolute(),
+            "malformed bootstrap Python controller semantics")
+    source = record.get("source")
+    require(isinstance(source, dict) and set(source) == {
+        "repository_path", "path", "bytes", "sha256", "commit_blob",
+    } and source.get("repository_path") ==
+            "candle/cakeml_artifact_provenance.py" and
+            {field: source[field] for field in ("bytes", "sha256")} ==
+            source.get("commit_blob"),
+            "malformed bootstrap Python source binding")
+    if candle_root is not None:
+        observed = python_controller_record(candle_root)
+        ignored = {"argv", "process"}
+        require({field: value for field, value in record.items()
+                 if field not in ignored} ==
+                {field: value for field, value in observed.items()
+                 if field not in ignored},
+                "bootstrap Python controller runtime changed after preflight")
 
 
 def git_environment() -> dict[str, str]:
@@ -522,9 +984,831 @@ def validate_hol_runtime_record(
             )
 
 
-def validate_bootstrap_log(log: str, build_command: str) -> None:
+def validate_executable_tool_record(record: dict[str, Any], label: str) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "requested_path", "symlink_target", "resolved_path", "file",
+    }, f"malformed {label} tool record")
+    require(isinstance(record["requested_path"], str) and
+            Path(record["requested_path"]).is_absolute() and
+            (record["symlink_target"] is None or
+             isinstance(record["symlink_target"], str)) and
+            isinstance(record["resolved_path"], str) and
+            Path(record["resolved_path"]).is_absolute(),
+            f"malformed {label} tool path")
+    identity = record["file"]
+    require(isinstance(identity, dict) and
+            set(identity) == {"bytes", "sha256"} and
+            isinstance(identity["bytes"], int) and identity["bytes"] >= 0 and
+            isinstance(identity["sha256"], str) and
+            re.fullmatch(r"[0-9a-f]{64}", identity["sha256"]) is not None,
+            f"malformed {label} tool identity")
+
+
+def bootstrap_host_runtime_record() -> dict[str, Any]:
+    tools = {
+        name: executable_tool_record(Path(path))
+        for name, path in BOOTSTRAP_CONTROLLER_TOOLS.items()
+    }
+    return {
+        "policy": "exact_controller_tools_and_launch_elf_closure_v1",
+        "tools": tools,
+        "launch_elf_closures": {
+            name: elf_dynamic_closure(Path(BOOTSTRAP_CONTROLLER_TOOLS[name]))
+            for name in BOOTSTRAP_LAUNCH_ELF_TOOLS
+        },
+    }
+
+
+def validate_bootstrap_host_runtime_record(
+    record: dict[str, Any],
+    *,
+    require_live: bool,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "tools", "launch_elf_closures",
+    }, "malformed bootstrap host runtime record")
+    require(record.get("policy") ==
+            "exact_controller_tools_and_launch_elf_closure_v1",
+            "unsupported bootstrap host runtime policy")
+    tools = record.get("tools")
+    closures = record.get("launch_elf_closures")
+    require(isinstance(tools, dict) and
+            set(tools) == set(BOOTSTRAP_CONTROLLER_TOOLS),
+            "bootstrap controller tool set mismatch")
+    require(isinstance(closures, dict) and
+            set(closures) == set(BOOTSTRAP_LAUNCH_ELF_TOOLS),
+            "bootstrap launch ELF set mismatch")
+    for name, tool in tools.items():
+        validate_executable_tool_record(tool, f"bootstrap controller {name}")
+    for name, closure in closures.items():
+        validate_elf_closure_record(
+            closure, f"bootstrap launch {name}", allowed_dynamic_path_tags={},
+        )
+    if require_live:
+        require(record == bootstrap_host_runtime_record(),
+                "bootstrap host runtime changed after preflight")
+
+
+def bootstrap_launch(
+    cakeml_root: Path,
+    hol_root: Path,
+    log_path: Path,
+) -> dict[str, Any]:
+    bootstrap_dir = (cakeml_root / BOOTSTRAP_RELATIVE).resolve(strict=True)
+    expected_dir = cakeml_root / BOOTSTRAP_RELATIVE
+    require(bootstrap_dir == expected_dir and
+            bootstrap_dir.is_dir() and not bootstrap_dir.is_symlink(),
+            "bootstrap cwd is not the exact ordinary x64/64 directory")
+    timed_argv = [str(hol_root / "bin/Holmake"), "-j1", "cake.S"]
+    return {
+        "cwd": str(bootstrap_dir),
+        "environment": {
+            "PATH": "/usr/bin:/bin",
+            "LC_ALL": "C",
+            "HOLDIR": str(hol_root),
+        },
+        "time_argv": ["/usr/bin/time", "-v", *timed_argv],
+        "timed_argv": timed_argv,
+        "build_command": " ".join(timed_argv),
+        "log_path": str(log_path),
+    }
+
+
+def bootstrap_log_preamble(preflight: dict[str, Any]) -> str:
+    launch = preflight["launch"]
+    binding = {
+        "cwd": launch["cwd"],
+        "environment": launch["environment"],
+        "time_argv": launch["time_argv"],
+    }
+    return (
+        BOOTSTRAP_LOG_MARKER + "\n" +
+        json.dumps(binding, separators=(",", ":"), sort_keys=True) + "\n"
+    )
+
+
+def _directory_identity(path: Path) -> dict[str, int | str]:
+    metadata = path.stat(follow_symlinks=False)
+    require(stat.S_ISDIR(metadata.st_mode) and not path.is_symlink(),
+            f"lock path is not an ordinary directory: {path}")
+    return {
+        "path": str(path), "device": metadata.st_dev, "inode": metadata.st_ino,
+    }
+
+
+def validate_inherited_directory_lock(path: Path, descriptor: int) -> None:
+    """Require the controller's inherited exclusive lock on this directory."""
+    try:
+        metadata = os.fstat(descriptor)
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as error:
+        raise ProvenanceError("missing inherited bootstrap directory lock") from error
+    observed = _directory_identity(path)
+    require(stat.S_ISDIR(metadata.st_mode) and
+            (metadata.st_dev, metadata.st_ino) ==
+            (observed["device"], observed["inode"]),
+            "inherited bootstrap lock inode mismatch")
+
+
+def _bootstrap_archive_root(preflight_path: Path) -> Path:
+    return preflight_path.with_name(
+        preflight_path.name + ".generated-preimage",
+    )
+
+
+def bootstrap_forced_output_paths(cakeml_root: Path) -> list[tuple[str, Path]]:
+    result = [
+        (
+            f"compiler/bootstrap/compilation/x64/64/{name}",
+            cakeml_root / BOOTSTRAP_RELATIVE / name,
+        )
+        for name in BOOTSTRAP_DIRECT_GENERATED_OUTPUTS
+    ]
+    translation = Path("compiler/bootstrap/translation/.hol/objs")
+    for target in BOOTSTRAP_TARGETS[:-1]:
+        for suffix in BOOTSTRAP_TRANSLATION_THEORY_SUFFIXES:
+            relative = translation / f"{target}Theory.{suffix}"
+            result.append((str(relative), cakeml_root / relative))
+    final_objects = BOOTSTRAP_RELATIVE / ".hol/objs"
+    for suffix in BOOTSTRAP_FINAL_THEORY_SUFFIXES:
+        relative = final_objects / f"x64BootstrapTheory.{suffix}"
+        result.append((str(relative), cakeml_root / relative))
+    require(len(result) == 2 + 17 * 6 + 4,
+            "internal bootstrap forced-output inventory mismatch")
+    require(len({relative for relative, _ in result}) == len(result),
+            "duplicate bootstrap forced-output path")
+    return result
+
+
+def bootstrap_transient_output_paths(cakeml_root: Path) -> list[tuple[str, Path]]:
+    result = []
+    translation = Path("compiler/bootstrap/translation/.hol/objs")
+    for target in BOOTSTRAP_TARGETS[:-1]:
+        for suffix in BOOTSTRAP_SCRIPT_TRANSIENT_SUFFIXES:
+            relative = translation / f"{target}Script.{suffix}"
+            result.append((str(relative), cakeml_root / relative))
+    final_objects = BOOTSTRAP_RELATIVE / ".hol/objs"
+    for suffix in BOOTSTRAP_SCRIPT_TRANSIENT_SUFFIXES:
+        relative = final_objects / f"x64BootstrapScript.{suffix}"
+        result.append((str(relative), cakeml_root / relative))
+    require(len(result) == 18 * 2,
+            "internal bootstrap transient-output inventory mismatch")
+    return result
+
+
+def bootstrap_dependency_output_paths(
+    cakeml_root: Path,
+) -> list[tuple[str, Path]]:
+    result = []
+    translation = Path("compiler/bootstrap/translation/.hol/make-deps")
+    final = BOOTSTRAP_RELATIVE / ".hol/make-deps"
+    for target in BOOTSTRAP_TARGETS[:-1]:
+        for suffix in ("Script.sml.d", "Theory.sig.d", "Theory.sml.d"):
+            relative = translation / f"{target}{suffix}"
+            result.append((str(relative), cakeml_root / relative))
+    for suffix in ("Script.sml.d", "Theory.sig.d", "Theory.sml.d"):
+        relative = final / f"x64Bootstrap{suffix}"
+        result.append((str(relative), cakeml_root / relative))
+    for directory in (translation, final):
+        relative = directory / "lastmaker"
+        result.append((str(relative), cakeml_root / relative))
+    require(len(result) == 18 * 3 + 2,
+            "internal bootstrap dependency-output inventory mismatch")
+    return result
+
+
+def bootstrap_cleanup_output_paths(
+    cakeml_root: Path,
+) -> list[tuple[str, Path, str]]:
+    result = [
+        (relative, path, "ordinary_fresh")
+        for relative, path in bootstrap_forced_output_paths(cakeml_root)
+    ] + [
+        (relative, path, "absent_after_success")
+        for relative, path in bootstrap_transient_output_paths(cakeml_root)
+    ] + [
+        (relative, path, "ordinary_fresh")
+        for relative, path in bootstrap_dependency_output_paths(cakeml_root)
+    ]
+    require(len({relative for relative, _, _ in result}) == len(result),
+            "duplicate bootstrap cleanup-output path")
+    return result
+
+
+def bootstrap_ancestor_artifact_inventory(
+    cakeml_root: Path,
+) -> dict[str, Any]:
+    """Content-bind every pre-existing CakeML .hol/objs file not rebuilt here."""
+    excluded = {
+        str(path) for _, path, _ in bootstrap_cleanup_output_paths(cakeml_root)
+    }
+    entries = []
+    object_directories = sorted(cakeml_root.rglob(".hol/objs"))
+    for object_directory in object_directories:
+        metadata = object_directory.stat(follow_symlinks=False)
+        require(stat.S_ISDIR(metadata.st_mode) and
+                not object_directory.is_symlink(),
+                f"CakeML object directory is not ordinary: {object_directory}")
+        for current, directories, files in os.walk(
+            object_directory, topdown=True, followlinks=False,
+        ):
+            current_path = Path(current)
+            for directory in directories:
+                child = current_path / directory
+                require(not child.is_symlink(),
+                        f"symlink inside CakeML object inventory: {child}")
+            for filename in sorted(files):
+                path = current_path / filename
+                require(not path.is_symlink(),
+                        f"symlink inside CakeML object inventory: {path}")
+                if str(path) in excluded:
+                    continue
+                relative = str(path.relative_to(cakeml_root))
+                entries.append({
+                    "relative": relative,
+                    "path": str(path),
+                    **ordinary_file_identity(path),
+                })
+    entries.sort(key=lambda entry: entry["relative"])
+    require(len({entry["relative"] for entry in entries}) == len(entries),
+            "duplicate CakeML ancestor artifact path")
+    return {
+        "policy": "all_preexisting_cakeml_hol_objs_outside_fresh_stratum_v1",
+        "derivation_claim": "content_bound_not_independently_rebuilt",
+        "entries": entries,
+    }
+
+
+def validate_bootstrap_ancestor_artifact_inventory(
+    record: Any,
+    cakeml_root: Path,
+    *,
+    require_live: bool,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "derivation_claim", "entries",
+    } and record.get("policy") ==
+            "all_preexisting_cakeml_hol_objs_outside_fresh_stratum_v1" and
+            record.get("derivation_claim") ==
+            "content_bound_not_independently_rebuilt" and
+            isinstance(record.get("entries"), list),
+            "malformed CakeML ancestor artifact inventory")
+    excluded = {
+        str(path) for _, path, _ in bootstrap_cleanup_output_paths(cakeml_root)
+    }
+    prior = None
+    for entry in record["entries"]:
+        require(isinstance(entry, dict) and set(entry) == {
+            "relative", "path", "device", "inode", "mtime_ns", "ctime_ns",
+            "bytes", "sha256",
+        } and isinstance(entry["relative"], str) and
+                entry["relative"] > (prior or "") and
+                entry["path"] == str(cakeml_root / entry["relative"]) and
+                "/.hol/objs/" in f"/{entry['relative']}" and
+                entry["path"] not in excluded,
+                "malformed CakeML ancestor artifact entry")
+        prior = entry["relative"]
+    if require_live:
+        require(record == bootstrap_ancestor_artifact_inventory(cakeml_root),
+                "CakeML ancestor artifact inventory changed")
+
+
+def validate_bootstrap_output_path_inventory(
+    record: dict[str, Any],
+    cakeml_root: Path,
+) -> None:
+    """Re-derive every path that the output-preparation command may mutate."""
+    outputs = record["forced_outputs"]
+    receipt_path = Path(record["receipt_path"])
+    require(receipt_path.is_absolute(), "bootstrap receipt path is not absolute")
+    archive_root = _bootstrap_archive_root(receipt_path)
+    require(outputs["preimage_archive_root"] == str(archive_root),
+            "bootstrap preimage archive is not derived from the receipt")
+    expected_paths = bootstrap_cleanup_output_paths(cakeml_root)
+    require([(entry["relative"], entry["path"], entry["postcondition"],
+              entry["preimage_archive_path"])
+             for entry in outputs["entries"]] == [
+                (relative, str(path), postcondition,
+                 str(archive_root / relative))
+                for relative, path, postcondition in expected_paths
+            ], "bootstrap forced-output path inventory mismatch")
+
+
+def record_bootstrap_preflight(
+    candle_root: Path,
+    cakeml_root: Path,
+    hol_root: Path,
+    log_path: Path,
+    final_record_path: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    runtime_environment({})
+    candle_root = candle_root.resolve(strict=True)
+    cakeml_root = cakeml_root.resolve(strict=True)
+    hol_root = hol_root.resolve(strict=True)
+    log_path = resolve_new_output(log_path, "bootstrap log")
+    final_record_path = resolve_new_output(
+        final_record_path, "final bootstrap record",
+    )
+    output_path = resolve_new_output(output_path, "bootstrap preflight")
+    require(len({log_path, final_record_path, output_path}) == 3,
+            "bootstrap receipt paths must be distinct")
+    for receipt in (log_path, final_record_path, output_path):
+        require(not any(receipt.is_relative_to(root)
+                        for root in (candle_root, cakeml_root, hol_root)),
+                "bootstrap receipts must be outside all authenticated worktrees")
+    for path in (candle_root, cakeml_root, hol_root):
+        require(re.fullmatch(r"/[A-Za-z0-9._/+:-]+", str(path)) is not None,
+                f"bootstrap path is not safe for exact GNU-time binding: {path}")
+    pins = expected_pins(candle_root)
+    candle_commit = git_output(candle_root, "rev-parse", "HEAD")
+    validate_git(candle_root, candle_commit, "Candle")
+    validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
+    validate_git(hol_root, pins["hol4_commit"], "HOL4")
+    launch = bootstrap_launch(cakeml_root, hol_root, log_path)
+    archive_root = _bootstrap_archive_root(output_path)
+    require(not os.path.lexists(archive_root),
+            "bootstrap output archive already exists")
+    forced_outputs = []
+    for relative, path, postcondition in bootstrap_cleanup_output_paths(cakeml_root):
+        forced_outputs.append({
+            "relative": relative,
+            "path": str(path),
+            "postcondition": postcondition,
+            "preimage": (ordinary_file_identity(path)
+                         if os.path.lexists(path) else None),
+            "preimage_archive_path": str(archive_root / relative),
+        })
+    symlink_inputs = {
+        name: bootstrap_symlink_input_record(cakeml_root, name)
+        for name in BOOTSTRAP_SYMLINK_INPUTS
+    }
+    python_controller = python_controller_record(candle_root)
+    expected_argv = [
+        str(candle_root / "candle/cakeml_artifact_provenance.py"),
+        "run-bootstrap",
+        "--candle-root", str(candle_root),
+        "--cakeml-root", str(cakeml_root),
+        "--hol-root", str(hol_root),
+        "--bootstrap-log", str(log_path),
+        "--preflight", str(output_path),
+        "--write", str(final_record_path),
+    ]
+    require(python_controller["argv"] == expected_argv,
+            "bootstrap controller argv is not the canonical run command")
+    record = {
+        "schema": BOOTSTRAP_PREFLIGHT_SCHEMA,
+        "kind": "canonical-cakeml-x64-64-bootstrap-preflight",
+        **pins,
+        "candle_commit": candle_commit,
+        "candle_root": str(candle_root),
+        "cakeml_root": str(cakeml_root),
+        "hol4_root": str(hol_root),
+        "receipt_path": str(output_path),
+        "final_record_path": str(final_record_path),
+        "controller_sources": {
+            relative: committed_source_record(candle_root, relative)
+            for relative in BOOTSTRAP_CONTROLLER_SOURCES
+        },
+        "controller_environment": bootstrap_controller_environment(),
+        "python_controller": python_controller,
+        "lock": _directory_identity(cakeml_root),
+        "launch": launch,
+        "forced_outputs": {
+            "policy": "exact_18_target_outputs_dependencies_and_transients_v2",
+            "preimage_archive_root": str(archive_root),
+            "entries": forced_outputs,
+        },
+        "preserved_symlink_inputs": symlink_inputs,
+        "ancestor_artifacts": bootstrap_ancestor_artifact_inventory(cakeml_root),
+        "host_runtime": bootstrap_host_runtime_record(),
+        "hol_runtime": hol_runtime_record(hol_root),
+        "trusted_host_boundary": copy.deepcopy(BOOTSTRAP_TRUST_BOUNDARY),
+    }
+    write_new_json(output_path, record)
+    return record
+
+
+def _validate_bootstrap_preflight_structure(
+    record: dict[str, Any],
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
+        "candle_commit", "candle_root", "cakeml_root", "hol4_root",
+        "receipt_path", "final_record_path", "controller_sources", "lock",
+        "controller_environment", "python_controller", "launch",
+        "forced_outputs", "preserved_symlink_inputs", "ancestor_artifacts",
+        "host_runtime", "hol_runtime", "trusted_host_boundary",
+    }, "malformed bootstrap preflight record")
+    require(record.get("schema") == BOOTSTRAP_PREFLIGHT_SCHEMA,
+            "unsupported bootstrap preflight schema")
+    require(record.get("kind") ==
+            "canonical-cakeml-x64-64-bootstrap-preflight",
+            "wrong bootstrap preflight kind")
+    require(record.get("trusted_host_boundary") == BOOTSTRAP_TRUST_BOUNDARY,
+            "bootstrap trusted host boundary mismatch")
+    sources = record.get("controller_sources")
+    require(isinstance(sources, dict) and
+            set(sources) == set(BOOTSTRAP_CONTROLLER_SOURCES),
+            "bootstrap controller source set mismatch")
+    for relative, source in sources.items():
+        require(isinstance(source, dict) and set(source) == {
+            "repository_path", "path", "bytes", "sha256", "commit_blob",
+        } and source.get("repository_path") == relative and
+                isinstance(source.get("commit_blob"), dict) and
+                set(source["commit_blob"]) == {"bytes", "sha256"} and
+                {field: source[field] for field in ("bytes", "sha256")} ==
+                source["commit_blob"],
+                f"malformed bootstrap controller source: {relative}")
+    require(record.get("controller_environment") == {
+        "LC_ALL": "C", "PATH": "/usr/bin:/bin",
+    }, "malformed bootstrap controller environment")
+    validate_python_controller_record(record.get("python_controller"))
+    lock = record.get("lock")
+    require(isinstance(lock, dict) and set(lock) == {"path", "device", "inode"},
+            "malformed bootstrap lock identity")
+    launch = record.get("launch")
+    require(isinstance(launch, dict) and set(launch) == {
+        "cwd", "environment", "time_argv", "timed_argv", "build_command",
+        "log_path",
+    }, "malformed bootstrap launch record")
+    outputs = record.get("forced_outputs")
+    require(isinstance(outputs, dict) and set(outputs) == {
+        "policy", "preimage_archive_root", "entries",
+    } and outputs.get("policy") ==
+            "exact_18_target_outputs_dependencies_and_transients_v2",
+            "malformed bootstrap forced-output preflight")
+    entries = outputs.get("entries")
+    require(isinstance(entries, list) and
+            len(entries) == 108 + 18 * 2 + 18 * 3 + 2,
+            "bootstrap forced-output inventory size mismatch")
+    for output in entries:
+        require(isinstance(output, dict) and set(output) == {
+            "relative", "path", "postcondition", "preimage",
+            "preimage_archive_path",
+        }, "malformed bootstrap forced-output entry")
+        require(output["postcondition"] in {
+            "ordinary_fresh", "absent_after_success",
+        }, "malformed bootstrap forced-output postcondition")
+        preimage = output.get("preimage")
+        require(preimage is None or
+                (isinstance(preimage, dict) and set(preimage) == {
+                    "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
+                }), "malformed bootstrap forced-output preimage")
+    symlink_inputs = record.get("preserved_symlink_inputs")
+    require(isinstance(symlink_inputs, dict) and
+            set(symlink_inputs) == set(BOOTSTRAP_SYMLINK_INPUTS),
+            "malformed bootstrap preserved symlink-input inventory")
+    for name, symlink_record in symlink_inputs.items():
+        validate_bootstrap_symlink_input_record(
+            symlink_record, name, Path(record["cakeml_root"]),
+            require_live=False,
+        )
+    validate_bootstrap_ancestor_artifact_inventory(
+        record.get("ancestor_artifacts"), Path(record["cakeml_root"]),
+        require_live=False,
+    )
+    validate_bootstrap_host_runtime_record(
+        record.get("host_runtime"), require_live=False,
+    )
+    validate_hol_runtime_record(record.get("hol_runtime"))
+
+
+def validate_bootstrap_preflight(
+    candle_root: Path,
+    cakeml_root: Path,
+    hol_root: Path,
+    record: dict[str, Any],
+    *,
+    phase: str,
+) -> None:
+    require(phase in {"preflight", "post", "retained"},
+            "invalid bootstrap preflight validation phase")
+    _validate_bootstrap_preflight_structure(record)
+    if phase == "retained":
+        for field in ("candle_root", "cakeml_root", "hol4_root",
+                      "receipt_path", "final_record_path"):
+            require(isinstance(record[field], str) and
+                    Path(record[field]).is_absolute(),
+                    f"malformed retained bootstrap path: {field}")
+        roots = tuple(Path(record[field]) for field in (
+            "candle_root", "cakeml_root", "hol4_root",
+        ))
+        for receipt in (Path(record["receipt_path"]),
+                        Path(record["final_record_path"]),
+                        Path(record["launch"]["log_path"])):
+            require(not any(receipt.is_relative_to(root) for root in roots),
+                    "retained bootstrap receipt is inside an authenticated worktree")
+        cakeml_string = record["cakeml_root"]
+        hol_string = record["hol4_root"]
+        expected_cwd = str(Path(cakeml_string) / BOOTSTRAP_RELATIVE)
+        expected_timed = [
+            str(Path(hol_string) / "bin/Holmake"), "-j1", "cake.S",
+        ]
+        launch = record["launch"]
+        require(launch == {
+            "cwd": expected_cwd,
+            "environment": {
+                "PATH": "/usr/bin:/bin", "LC_ALL": "C",
+                "HOLDIR": hol_string,
+            },
+            "time_argv": ["/usr/bin/time", "-v", *expected_timed],
+            "timed_argv": expected_timed,
+            "build_command": " ".join(expected_timed),
+            "log_path": launch["log_path"],
+        } and Path(launch["log_path"]).is_absolute(),
+                "retained bootstrap launch mismatch")
+        validate_bootstrap_output_path_inventory(
+            record, Path(cakeml_string),
+        )
+        for name, symlink_record in record["preserved_symlink_inputs"].items():
+            validate_bootstrap_symlink_input_record(
+                symlink_record, name, Path(cakeml_string), require_live=False,
+            )
+        validate_bootstrap_ancestor_artifact_inventory(
+            record["ancestor_artifacts"], Path(cakeml_string),
+            require_live=False,
+        )
+        require(record["lock"]["path"] == cakeml_string,
+                "retained bootstrap lock path mismatch")
+        return
+    candle_root = candle_root.resolve(strict=True)
+    cakeml_root = cakeml_root.resolve(strict=True)
+    hol_root = hol_root.resolve(strict=True)
+    require(record["candle_root"] == str(candle_root) and
+            record["cakeml_root"] == str(cakeml_root) and
+            record["hol4_root"] == str(hol_root),
+            "bootstrap preflight root mismatch")
+    pins = expected_pins(candle_root)
+    for field, expected in pins.items():
+        require(record.get(field) == expected,
+                f"bootstrap preflight {field} mismatch")
+    require(record["launch"] == bootstrap_launch(
+        cakeml_root, hol_root, Path(record["launch"]["log_path"]),
+    ), "bootstrap preflight launch mismatch")
+    require(record["controller_environment"] ==
+            bootstrap_controller_environment(),
+            "bootstrap controller environment changed after preflight")
+    require(record["lock"] == _directory_identity(cakeml_root),
+            "bootstrap lock directory identity changed")
+    runtime_environment({})
+    validate_git(candle_root, record["candle_commit"], "Candle")
+    validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
+    validate_git(hol_root, pins["hol4_commit"], "HOL4")
+    require(record["controller_sources"] == {
+        relative: committed_source_record(candle_root, relative)
+        for relative in BOOTSTRAP_CONTROLLER_SOURCES
+    }, "bootstrap controller sources changed after preflight")
+    validate_python_controller_record(
+        record["python_controller"], candle_root=candle_root,
+    )
+    validate_bootstrap_host_runtime_record(
+        record["host_runtime"], require_live=True,
+    )
+    validate_hol_runtime_record(record["hol_runtime"], hol_root=hol_root)
+    outputs = record["forced_outputs"]
+    archive_root = Path(outputs["preimage_archive_root"])
+    validate_bootstrap_output_path_inventory(record, cakeml_root)
+    for name, symlink_record in record["preserved_symlink_inputs"].items():
+        validate_bootstrap_symlink_input_record(
+            symlink_record, name, cakeml_root, require_live=True,
+        )
+    validate_bootstrap_ancestor_artifact_inventory(
+        record["ancestor_artifacts"], cakeml_root, require_live=True,
+    )
+    if phase == "preflight":
+        require(not os.path.lexists(record["launch"]["log_path"]) and
+                not os.path.lexists(record["final_record_path"]),
+                "bootstrap output receipt appeared after preflight")
+        for output in outputs["entries"]:
+            target = Path(output["path"])
+            if output["preimage"] is None:
+                require(not os.path.lexists(target),
+                        f"bootstrap output appeared after preflight: {target}")
+            else:
+                validate_ordinary_file_identity(
+                    target, output["preimage"],
+                    f"bootstrap output preimage {output['relative']}",
+                )
+        require(not os.path.lexists(archive_root),
+                "bootstrap transition archive appeared before preparation")
+    else:
+        for output in outputs["entries"]:
+            target = Path(output["path"])
+            archive = Path(output["preimage_archive_path"])
+            if output["preimage"] is None:
+                require(not os.path.lexists(archive),
+                        f"unexpected bootstrap preimage archive: {archive}")
+            else:
+                validate_file_record(
+                    archive,
+                    {field: output["preimage"][field]
+                     for field in ("bytes", "sha256")},
+                    f"bootstrap preimage archive {output['relative']}",
+                )
+            if output["postcondition"] == "absent_after_success":
+                require(not os.path.lexists(target),
+                        f"bootstrap transient survived successful target: {target}")
+            else:
+                require(target.is_file() and not target.is_symlink(),
+                        f"bootstrap did not freshly produce: {target}")
+            if (output["postcondition"] == "ordinary_fresh" and
+                    output["preimage"] is not None):
+                postimage = ordinary_file_identity(target)
+                require(any(postimage[field] != output["preimage"][field]
+                            for field in ("inode", "mtime_ns", "ctime_ns")),
+                        f"bootstrap output was not freshly replaced: {target}")
+
+
+def _write_new_bytes(path: Path, value: bytes, mode: int = 0o644) -> None:
+    require(path.parent.is_dir() and not path.parent.is_symlink(),
+            f"output parent is not an ordinary directory: {path.parent}")
+    try:
+        descriptor = os.open(
+            path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, mode,
+        )
+    except OSError as error:
+        raise ProvenanceError(f"refusing to overwrite output: {path}") from error
+    try:
+        offset = 0
+        while offset < len(value):
+            offset += os.write(descriptor, value[offset:])
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def prepare_bootstrap_output(
+    candle_root: Path,
+    cakeml_root: Path,
+    hol_root: Path,
+    preflight: dict[str, Any],
+) -> None:
+    validate_bootstrap_preflight(
+        candle_root, cakeml_root, hol_root, preflight, phase="preflight",
+    )
+    outputs = preflight["forced_outputs"]
+    archive_root = Path(outputs["preimage_archive_root"])
+    preimages = [entry for entry in outputs["entries"]
+                 if entry["preimage"] is not None]
+    if preimages:
+        try:
+            os.mkdir(archive_root, 0o755)
+        except OSError as error:
+            raise ProvenanceError(
+                "could not exclusively create bootstrap preimage archive",
+            ) from error
+    # Copy and validate every preimage before removing any warm-tree output.
+    for output in preimages:
+        target = Path(output["path"])
+        archive = Path(output["preimage_archive_path"])
+        archive.parent.mkdir(parents=True, exist_ok=True)
+        value, identity = captured_ordinary_file(target)
+        require(identity == {
+            field: output["preimage"][field] for field in ("bytes", "sha256")
+        }, f"bootstrap output changed before archival: {target}")
+        _write_new_bytes(archive, value)
+    for output in preimages:
+        target = Path(output["path"])
+        validate_ordinary_file_identity(
+            target, output["preimage"],
+            f"bootstrap output before removal {output['relative']}",
+        )
+        os.unlink(target)
+    require(not any(os.path.lexists(entry["path"])
+                    for entry in outputs["entries"]),
+            "bootstrap generated outputs could not all be made fresh")
+
+
+def bootstrap_forced_output_transitions(
+    preflight: dict[str, Any],
+) -> list[dict[str, Any]]:
+    transitions = []
+    for output in preflight["forced_outputs"]["entries"]:
+        preimage = output["preimage"]
+        archive = (None if preimage is None else
+                   captured_ordinary_file(
+                       Path(output["preimage_archive_path"]),
+                   )[1])
+        transitions.append({
+            "relative": output["relative"],
+            "postcondition": output["postcondition"],
+            "preimage": copy.deepcopy(preimage),
+            "preimage_archive": archive,
+            "postimage": (
+                None if output["postcondition"] == "absent_after_success"
+                else ordinary_file_identity(Path(output["path"]))
+            ),
+        })
+    return transitions
+
+
+def bootstrap_symlink_input_transitions(
+    preflight: dict[str, Any],
+) -> dict[str, Any]:
+    cakeml_root = Path(preflight["cakeml_root"])
+    return {
+        name: {
+            "preimage": copy.deepcopy(preimage),
+            "postimage": bootstrap_symlink_input_record(cakeml_root, name),
+        }
+        for name, preimage in preflight["preserved_symlink_inputs"].items()
+    }
+
+
+def validate_bootstrap_symlink_input_transitions(
+    preflight: dict[str, Any],
+    transitions: Any,
+    *,
+    require_live: bool,
+) -> None:
+    entries = preflight["preserved_symlink_inputs"]
+    cakeml_root = Path(preflight["cakeml_root"])
+    require(isinstance(transitions, dict) and
+            set(transitions) == set(entries),
+            "malformed bootstrap preserved symlink-input transitions")
+    for name, preimage in entries.items():
+        transition = transitions[name]
+        require(isinstance(transition, dict) and set(transition) == {
+            "preimage", "postimage",
+        } and transition.get("preimage") == preimage,
+                "malformed bootstrap preserved symlink-input transition")
+        validate_bootstrap_symlink_input_record(
+            transition.get("postimage"), name, cakeml_root,
+            require_live=require_live,
+        )
+        postimage = transition["postimage"]
+        require(postimage["link_identity"] == preimage["link_identity"] and
+                postimage["link_text"] == preimage["link_text"] and
+                {field: postimage["target_identity"][field]
+                 for field in ("bytes", "sha256")} ==
+                {field: preimage["target_identity"][field]
+                 for field in ("bytes", "sha256")},
+                f"bootstrap tracked symlink or target content changed: {name}")
+
+
+def validate_bootstrap_forced_output_transitions(
+    preflight: dict[str, Any],
+    transitions: Any,
+    *,
+    require_live: bool,
+) -> None:
+    entries = preflight["forced_outputs"]["entries"]
+    require(isinstance(transitions, list) and len(transitions) == len(entries),
+            "malformed bootstrap forced-output transitions")
+    for output, transition in zip(entries, transitions):
+        require(isinstance(transition, dict) and set(transition) == {
+            "relative", "postcondition", "preimage", "preimage_archive",
+            "postimage",
+        } and transition.get("relative") == output["relative"] and
+                transition.get("postcondition") == output["postcondition"] and
+                transition.get("preimage") == output["preimage"],
+                "malformed bootstrap forced-output transition")
+        postimage = transition.get("postimage")
+        if output["postcondition"] == "absent_after_success":
+            require(postimage is None,
+                    "bootstrap transient unexpectedly has a postimage")
+        else:
+            require(isinstance(postimage, dict) and set(postimage) == {
+                "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
+            }, "malformed bootstrap forced-output postimage")
+        preimage = output["preimage"]
+        archive = transition.get("preimage_archive")
+        if preimage is None:
+            require(archive is None,
+                    "unexpected bootstrap forced-output preimage archive")
+        else:
+            require(isinstance(archive, dict) and
+                    set(archive) == {"bytes", "sha256"} and archive == {
+                        field: preimage[field] for field in ("bytes", "sha256")
+                    }, "malformed bootstrap forced-output preimage archive")
+        if require_live:
+            if output["postcondition"] == "absent_after_success":
+                require(not os.path.lexists(output["path"]),
+                        "bootstrap transient reappeared after success")
+            else:
+                require(ordinary_file_identity(Path(output["path"])) == postimage,
+                        "bootstrap forced-output postimage changed")
+            if preimage is not None:
+                validate_file_record(
+                    Path(output["preimage_archive_path"]), archive,
+                    f"bootstrap preimage archive {output['relative']}",
+                )
+
+
+def validate_bootstrap_log(
+    log: str,
+    build_command: str,
+    *,
+    expected_preamble: str | None = None,
+) -> None:
     """Require one complete trailing GNU-time -v record for the exact build."""
     lines = log.splitlines()
+    if expected_preamble is not None:
+        preamble_lines = expected_preamble.splitlines()
+        require(lines[:len(preamble_lines)] == preamble_lines and
+                lines.count(BOOTSTRAP_LOG_MARKER) == 1,
+                "bootstrap log has wrong or duplicate controller preamble")
     require(len(lines) >= len(GNU_TIME_FOOTER_LABELS),
             "bootstrap log has no complete GNU-time footer")
     footer = lines[-len(GNU_TIME_FOOTER_LABELS):]
@@ -562,16 +1846,22 @@ def validate_bootstrap_log(log: str, build_command: str) -> None:
             "bootstrap log lacks unique cake.S emission evidence")
     require(lines.count('Exporting theory "x64Bootstrap" ... done.') == 1,
             "bootstrap log lacks unique x64Bootstrap export evidence")
-    target_indices = [
-        index for index, line in enumerate(lines)
-        if re.fullmatch(r"Holmake: \[([0-9]+)/\1\] x64Bootstrap", line)
+    target_pattern = re.compile(r"Holmake: \[([0-9]+)/([0-9]+)\] ([A-Za-z0-9_]+)")
+    observed_targets = [
+        (index, int(match.group(1)), int(match.group(2)), match.group(3))
+        for index, line in enumerate(lines)
+        if (match := target_pattern.fullmatch(line)) is not None
     ]
-    require(len(target_indices) == 1,
-            "bootstrap log lacks unique completed x64Bootstrap target evidence")
+    expected_targets = [
+        (index, 18, name) for index, name in enumerate(BOOTSTRAP_TARGETS, 1)
+    ]
+    require([(ordinal, total, name)
+             for _, ordinal, total, name in observed_targets] == expected_targets,
+            "bootstrap log does not prove the exact ordered 18-target rebuild")
     write_index = lines.index("Writing cv to file: cake.S")
     export_index = lines.index('Exporting theory "x64Bootstrap" ... done.')
     footer_index = len(lines) - len(GNU_TIME_FOOTER_LABELS)
-    require(write_index < export_index < target_indices[0] == footer_index - 1,
+    require(write_index < export_index < observed_targets[-1][0] == footer_index - 1,
             "bootstrap completion evidence is not in exact final order")
 
 
@@ -580,40 +1870,87 @@ def record_bootstrap(
     cakeml_root: Path,
     hol_root: Path,
     log_path: Path,
+    preflight_path: Path,
     output_path: Path,
+    *,
+    before_publish: Callable[[], None] | None = None,
+    after_publish: Callable[[], None] | None = None,
 ) -> dict[str, Any]:
-    candle_root = candle_root.resolve()
-    cakeml_root = cakeml_root.resolve()
-    hol_root = hol_root.resolve()
-    log_path = log_path.resolve()
-    output_path = output_path.resolve()
-    pins = expected_pins(candle_root)
-    validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
-    validate_git(hol_root, pins["hol4_commit"], "HOL4")
-    require(log_path.is_file() and not log_path.is_symlink(),
-            "bootstrap log must be an ordinary file")
-    log = log_path.read_text(encoding="utf-8", errors="replace")
-    build_command = f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
-    validate_bootstrap_log(log, build_command)
-    bootstrap_dir = cakeml_root / BOOTSTRAP_RELATIVE
-    inputs = {name: file_record(bootstrap_dir / name) for name in BOOTSTRAP_INPUTS}
+    runtime_environment({})
+    candle_root = candle_root.resolve(strict=True)
+    cakeml_root = cakeml_root.resolve(strict=True)
+    hol_root = hol_root.resolve(strict=True)
+    preflight_path = preflight_path.resolve(strict=True)
+    preflight_bytes, preflight_identity = captured_ordinary_file(preflight_path)
+    try:
+        preflight = json.loads(preflight_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ProvenanceError("malformed captured bootstrap preflight") from error
+    require(isinstance(preflight, dict), "bootstrap preflight is not an object")
+    require(preflight.get("receipt_path") == str(preflight_path),
+            "bootstrap preflight path mismatch")
+    log_path = log_path.resolve(strict=True)
+    require(preflight["launch"]["log_path"] == str(log_path),
+            "bootstrap log path differs from preflight")
+    output_path = output_path.absolute()
+    require(preflight["final_record_path"] == str(output_path) and
+            not os.path.lexists(output_path),
+            "final bootstrap record path differs or already exists")
+    require(preflight.get("python_controller") ==
+            python_controller_record(candle_root),
+            "final bootstrap phase is not the original controller process")
+    validate_bootstrap_preflight(
+        candle_root, cakeml_root, hol_root, preflight, phase="post",
+    )
+    log_bytes, log_identity = captured_ordinary_file(log_path)
+    try:
+        log = log_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ProvenanceError("bootstrap log is not strict UTF-8") from error
+    build_command = preflight["launch"]["build_command"]
+    validate_bootstrap_log(
+        log, build_command,
+        expected_preamble=bootstrap_log_preamble(preflight),
+    )
+    bootstrap_dir = Path(preflight["launch"]["cwd"])
+    inputs = {
+        name: bootstrap_input_file_record(bootstrap_dir, name)
+        for name in BOOTSTRAP_INPUTS
+    }
+    transitions = bootstrap_forced_output_transitions(preflight)
+    symlink_transitions = bootstrap_symlink_input_transitions(preflight)
     record = {
         "schema": BOOTSTRAP_PROVENANCE_SCHEMA,
         "kind": "verified-cakeml-x64-64-bootstrap",
-        **pins,
+        "cakeml_commit": preflight["cakeml_commit"],
+        "hol4_commit": preflight["hol4_commit"],
+        "manifest_sha256": preflight["manifest_sha256"],
+        "candle_commit": preflight["candle_commit"],
+        "candle_root": str(candle_root),
         "cakeml_root": str(cakeml_root),
         "hol4_root": str(hol_root),
         "build_command": build_command,
+        "preflight": {
+            "path": str(preflight_path), **preflight_identity,
+        },
         "bootstrap_log": {
             "path": str(log_path),
-            **file_record(log_path),
+            **log_identity,
         },
         "inputs": inputs,
-        "hol_runtime": hol_runtime_record(hol_root),
+        "host_runtime": copy.deepcopy(preflight["host_runtime"]),
+        "hol_runtime": copy.deepcopy(preflight["hol_runtime"]),
+        "python_controller": copy.deepcopy(preflight["python_controller"]),
+        "controller_environment": copy.deepcopy(
+            preflight["controller_environment"],
+        ),
+        "forced_output_transitions": transitions,
+        "preserved_symlink_input_transitions": symlink_transitions,
     }
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(
-        json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    write_new_json(
+        output_path, record,
+        before_publish=before_publish,
+        after_publish=after_publish,
     )
     return record
 
@@ -629,8 +1966,11 @@ def validate_bootstrap_record(
     record = load_object(record_path)
     require(set(record) == {
         "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
-        "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
-        "hol_runtime",
+        "candle_commit", "candle_root", "cakeml_root", "hol4_root",
+        "build_command", "preflight", "bootstrap_log", "inputs",
+        "host_runtime", "hol_runtime", "python_controller",
+        "controller_environment", "forced_output_transitions",
+        "preserved_symlink_input_transitions",
     }, "malformed bootstrap provenance record")
     require(record.get("schema") == BOOTSTRAP_PROVENANCE_SCHEMA,
             "unsupported bootstrap provenance schema")
@@ -639,33 +1979,75 @@ def validate_bootstrap_record(
     pins = expected_pins(candle_root)
     for field, expected in pins.items():
         require(record.get(field) == expected, f"bootstrap {field} mismatch")
+    require(record.get("candle_root") == str(candle_root),
+            "bootstrap Candle root mismatch")
     require(record.get("cakeml_root") == str(cakeml_root),
             "bootstrap CakeML root mismatch")
     hol_root = Path(record.get("hol4_root", "")).resolve()
-    build_command = f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
+    preflight_record = record.get("preflight")
+    require(isinstance(preflight_record, dict) and
+            set(preflight_record) == {"path", "bytes", "sha256"},
+            "malformed bootstrap preflight identity")
+    preflight_path = Path(preflight_record["path"])
+    preflight_bytes, observed_preflight = captured_ordinary_file(preflight_path)
+    require(observed_preflight == {
+        field: preflight_record[field] for field in ("bytes", "sha256")
+    }, "bootstrap preflight changed")
+    try:
+        preflight = json.loads(preflight_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ProvenanceError("malformed captured bootstrap preflight") from error
+    require(isinstance(preflight, dict) and
+            preflight.get("receipt_path") == str(preflight_path),
+            "bootstrap preflight path/shape mismatch")
+    validate_bootstrap_preflight(
+        candle_root, cakeml_root, hol_root, preflight, phase="post",
+    )
+    require(record.get("candle_commit") == preflight["candle_commit"] and
+            record.get("cakeml_commit") == preflight["cakeml_commit"] and
+            record.get("hol4_commit") == preflight["hol4_commit"] and
+            record.get("manifest_sha256") == preflight["manifest_sha256"],
+            "bootstrap final/preflight pin mismatch")
+    build_command = preflight["launch"]["build_command"]
     require(record.get("build_command") == build_command,
             "bootstrap command record mismatch")
-    validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
-    validate_git(hol_root, pins["hol4_commit"], "HOL4")
     log_record = record.get("bootstrap_log")
     require(isinstance(log_record, dict) and
             set(log_record) == {"path", "bytes", "sha256"},
             "malformed bootstrap log record")
     log_path = Path(log_record["path"])
-    require(not log_path.is_symlink(), "bootstrap log must be an ordinary file")
-    validate_file_record(
-        log_path, {key: log_record[key] for key in ("bytes", "sha256")},
-        "bootstrap log",
+    log_bytes, observed_log = captured_ordinary_file(log_path)
+    require(observed_log == {
+        field: log_record[field] for field in ("bytes", "sha256")
+    }, "bootstrap log changed")
+    try:
+        log = log_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ProvenanceError("bootstrap log is not strict UTF-8") from error
+    validate_bootstrap_log(
+        log, build_command,
+        expected_preamble=bootstrap_log_preamble(preflight),
     )
-    log = log_path.read_text(encoding="utf-8", errors="replace")
-    validate_bootstrap_log(log, build_command)
-    validate_hol_runtime_record(record.get("hol_runtime"), hol_root=hol_root)
+    require(record.get("host_runtime") == preflight["host_runtime"] and
+            record.get("hol_runtime") == preflight["hol_runtime"] and
+            record.get("python_controller") == preflight["python_controller"] and
+            record.get("controller_environment") ==
+            preflight["controller_environment"],
+            "bootstrap final runtime differs from preflight")
     inputs = record.get("inputs")
     require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
             "bootstrap input set mismatch")
     bootstrap_dir = cakeml_root / BOOTSTRAP_RELATIVE
     for name in BOOTSTRAP_INPUTS:
-        validate_file_record(bootstrap_dir / name, inputs[name], f"bootstrap {name}")
+        require(bootstrap_input_file_record(bootstrap_dir, name) == inputs[name],
+                f"bootstrap input provenance mismatch: {name}")
+    validate_bootstrap_forced_output_transitions(
+        preflight, record.get("forced_output_transitions"), require_live=True,
+    )
+    validate_bootstrap_symlink_input_transitions(
+        preflight, record.get("preserved_symlink_input_transitions"),
+        require_live=True,
+    )
     return record
 
 
@@ -675,8 +2057,19 @@ def materialize_linked_bootstrap(
     bootstrap: dict[str, Any],
 ) -> dict[str, Any]:
     """Create relocation-safe authenticated copies of bootstrap evidence."""
+    source_preflight = Path(bootstrap["preflight"]["path"])
     source_log = Path(bootstrap["bootstrap_log"]["path"])
+    local_preflight = build_dir / LINKED_BOOTSTRAP_PREFLIGHT
     local_log = build_dir / LINKED_BOOTSTRAP_LOG
+    require(not local_preflight.is_symlink(),
+            "refusing symlink destination for linked bootstrap preflight")
+    shutil.copyfile(source_preflight, local_preflight)
+    validate_file_record(
+        local_preflight,
+        {field: bootstrap["preflight"][field]
+         for field in ("bytes", "sha256")},
+        "materialized bootstrap preflight",
+    )
     require(not local_log.is_symlink(),
             "refusing symlink destination for linked bootstrap log")
     shutil.copyfile(source_log, local_log)
@@ -689,6 +2082,10 @@ def materialize_linked_bootstrap(
     durable = copy.deepcopy(bootstrap)
     durable["kind"] = "candle-linked-bootstrap-provenance-copy"
     durable["source_bootstrap_record"] = file_record(source_record_path)
+    durable["preflight"] = {
+        "path": LINKED_BOOTSTRAP_PREFLIGHT,
+        **file_record(local_preflight),
+    }
     durable["bootstrap_log"] = {
         "path": LINKED_BOOTSTRAP_LOG,
         **file_record(local_log),
@@ -709,10 +2106,15 @@ def validate_linked_bootstrap_copy(
 ) -> dict[str, Any]:
     """Validate durable bootstrap semantics without external worktree paths."""
     local_record = build_dir / LINKED_BOOTSTRAP_RECORD
+    local_preflight = build_dir / LINKED_BOOTSTRAP_PREFLIGHT
     local_log = build_dir / LINKED_BOOTSTRAP_LOG
     validate_file_record(
         local_record, record.get("bootstrap_record", {}),
         "linked bootstrap provenance copy",
+    )
+    validate_file_record(
+        local_preflight, record.get("bootstrap_preflight", {}),
+        "linked bootstrap preflight copy",
     )
     validate_file_record(
         local_log, record.get("bootstrap_log", {}), "linked bootstrap log copy",
@@ -720,8 +2122,12 @@ def validate_linked_bootstrap_copy(
     bootstrap = load_object(local_record)
     require(set(bootstrap) == {
         "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
-        "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
-        "hol_runtime", "source_bootstrap_record",
+        "candle_commit", "candle_root", "cakeml_root", "hol4_root",
+        "build_command", "preflight", "bootstrap_log", "inputs",
+        "host_runtime", "hol_runtime", "python_controller",
+        "controller_environment", "forced_output_transitions",
+        "preserved_symlink_input_transitions",
+        "source_bootstrap_record",
     }, "malformed linked bootstrap provenance copy")
     require(bootstrap.get("schema") == BOOTSTRAP_PROVENANCE_SCHEMA,
             "unsupported linked bootstrap provenance schema")
@@ -740,7 +2146,25 @@ def validate_linked_bootstrap_copy(
             "malformed linked bootstrap CakeML root")
     require(isinstance(hol4_root, str) and Path(hol4_root).is_absolute(),
             "malformed linked bootstrap HOL4 root")
-    build_command = f"env HOLDIR={hol4_root} {hol4_root}/bin/Holmake -j1 cake.S"
+    preflight_record = bootstrap.get("preflight")
+    require(isinstance(preflight_record, dict) and
+            set(preflight_record) == {"path", "bytes", "sha256"} and
+            preflight_record.get("path") == LINKED_BOOTSTRAP_PREFLIGHT,
+            "malformed linked bootstrap preflight identity")
+    require({field: preflight_record[field] for field in ("bytes", "sha256")} ==
+            record.get("bootstrap_preflight"),
+            "linked bootstrap preflight record mismatch")
+    preflight = load_object(local_preflight)
+    validate_bootstrap_preflight(
+        Path("/retained"), Path("/retained"), Path("/retained"), preflight,
+        phase="retained",
+    )
+    require(preflight.get("cakeml_commit") == bootstrap.get("cakeml_commit") and
+            preflight.get("hol4_commit") == bootstrap.get("hol4_commit") and
+            preflight.get("manifest_sha256") == bootstrap.get("manifest_sha256") and
+            preflight.get("candle_commit") == bootstrap.get("candle_commit"),
+            "linked bootstrap preflight pin mismatch")
+    build_command = preflight["launch"]["build_command"]
     require(bootstrap.get("build_command") == build_command,
             "linked bootstrap command record mismatch")
     source_record = bootstrap.get("source_bootstrap_record")
@@ -755,15 +2179,54 @@ def validate_linked_bootstrap_copy(
     require({field: log_record[field] for field in ("bytes", "sha256")} ==
             record.get("bootstrap_log"),
             "linked bootstrap log record mismatch")
-    log = local_log.read_text(encoding="utf-8", errors="replace")
-    validate_bootstrap_log(log, build_command)
+    log = local_log.read_text(encoding="utf-8", errors="strict")
+    validate_bootstrap_log(
+        log, build_command, expected_preamble=bootstrap_log_preamble(preflight),
+    )
+    validate_bootstrap_host_runtime_record(
+        bootstrap.get("host_runtime"), require_live=False,
+    )
+    require(bootstrap.get("host_runtime") == preflight.get("host_runtime") and
+            bootstrap.get("hol_runtime") == preflight.get("hol_runtime") and
+            bootstrap.get("python_controller") ==
+            preflight.get("python_controller") and
+            bootstrap.get("controller_environment") ==
+            preflight.get("controller_environment"),
+            "linked bootstrap runtime differs from preflight")
     validate_hol_runtime_record(bootstrap.get("hol_runtime"))
+    validate_python_controller_record(bootstrap.get("python_controller"))
+    validate_bootstrap_forced_output_transitions(
+        preflight, bootstrap.get("forced_output_transitions"), require_live=False,
+    )
+    validate_bootstrap_symlink_input_transitions(
+        preflight, bootstrap.get("preserved_symlink_input_transitions"),
+        require_live=False,
+    )
     inputs = bootstrap.get("inputs")
     require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
             "linked bootstrap input set mismatch")
+    direct_transitions = {
+        transition["relative"].rsplit("/", 1)[-1]: transition
+        for transition in bootstrap["forced_output_transitions"]
+        if transition["relative"].rsplit("/", 1)[-1] in
+        BOOTSTRAP_DIRECT_GENERATED_OUTPUTS
+    }
+    require(set(direct_transitions) == set(BOOTSTRAP_DIRECT_GENERATED_OUTPUTS),
+            "linked bootstrap direct-output transition set mismatch")
     for name in BOOTSTRAP_INPUTS:
         source = build_dir / ("cake.S.bootstrap" if name == "cake.S" else name)
         validate_file_record(source, inputs[name], f"linked bootstrap input {name}")
+        if name in direct_transitions:
+            require(inputs[name] == {
+                field: direct_transitions[name]["postimage"][field]
+                for field in ("bytes", "sha256")
+            }, f"linked bootstrap input/transition mismatch: {name}")
+        if name in BOOTSTRAP_SYMLINK_INPUTS:
+            transition = bootstrap["preserved_symlink_input_transitions"][name]
+            require(inputs[name] == {
+                field: transition["postimage"]["target_identity"][field]
+                for field in ("bytes", "sha256")
+            }, f"linked bootstrap symlink target/input mismatch: {name}")
     return bootstrap
 
 
@@ -1195,6 +2658,7 @@ def record_linked(
         "hol4_commit": hol_commit,
         "manifest_sha256": bootstrap["manifest_sha256"],
         "bootstrap_record": file_record(build_dir / LINKED_BOOTSTRAP_RECORD),
+        "bootstrap_preflight": file_record(build_dir / LINKED_BOOTSTRAP_PREFLIGHT),
         "bootstrap_log": file_record(build_dir / LINKED_BOOTSTRAP_LOG),
         "cake_patch": file_record(candle_root / "candle/cake.S.patch"),
         "cake_patch_derivation": patch_derivation,
@@ -1222,7 +2686,8 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     record = load_object(record_path)
     require(set(record) == {
         "schema", "kind", "candle_commit", "cakeml_commit", "hol4_commit",
-        "manifest_sha256", "bootstrap_record", "bootstrap_log", "cake_patch",
+        "manifest_sha256", "bootstrap_record", "bootstrap_preflight",
+        "bootstrap_log", "cake_patch",
         "cake_patch_derivation", "native_link_derivation", "outputs",
         "runtime_elf_closure",
         "version_output_sha256",
@@ -1272,16 +2737,160 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     return record
 
 
+def _write_all(descriptor: int, value: bytes) -> None:
+    offset = 0
+    while offset < len(value):
+        offset += os.write(descriptor, value[offset:])
+
+
+def run_bootstrap(
+    candle_root: Path,
+    cakeml_root: Path,
+    hol_root: Path,
+    log_path: Path,
+    preflight_path: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    """Run the complete canonical bootstrap in this one controller process."""
+    bootstrap_controller_environment()
+    candle_root = candle_root.resolve(strict=True)
+    cakeml_root = cakeml_root.resolve(strict=True)
+    hol_root = hol_root.resolve(strict=True)
+    try:
+        lock_descriptor = os.open(
+            cakeml_root,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+        )
+    except OSError as error:
+        raise ProvenanceError("could not open exact CakeML lock directory") from error
+    log_descriptor: int | None = None
+    child: subprocess.Popen[bytes] | None = None
+    old_handlers: dict[int, Any] = {}
+    received_signal: int | None = None
+    try:
+        try:
+            fcntl.flock(lock_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as error:
+            raise ProvenanceError(
+                "CakeML checkout is already locked by another bootstrap controller",
+            ) from error
+        validate_inherited_directory_lock(cakeml_root, lock_descriptor)
+
+        def handle_signal(signum: int, _frame: Any) -> None:
+            nonlocal received_signal
+            received_signal = signum
+            if child is not None and child.poll() is None:
+                try:
+                    os.killpg(child.pid, signum)
+                except ProcessLookupError:
+                    pass
+
+        for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+            old_handlers[signum] = signal.signal(signum, handle_signal)
+        preflight = record_bootstrap_preflight(
+            candle_root, cakeml_root, hol_root, log_path, output_path,
+            preflight_path,
+        )
+        require(received_signal is None,
+                "bootstrap signal arrived during preflight")
+        log_path = Path(preflight["launch"]["log_path"])
+        try:
+            log_descriptor = os.open(
+                log_path,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                0o600,
+            )
+        except OSError as error:
+            raise ProvenanceError(
+                f"refusing to overwrite bootstrap log: {log_path}",
+            ) from error
+        log_metadata = os.fstat(log_descriptor)
+        named_log = log_path.stat(follow_symlinks=False)
+        require(stat.S_ISREG(log_metadata.st_mode) and
+                (log_metadata.st_dev, log_metadata.st_ino) ==
+                (named_log.st_dev, named_log.st_ino),
+                "bootstrap log path changed during creation")
+        _write_all(log_descriptor, bootstrap_log_preamble(preflight).encode())
+        os.fsync(log_descriptor)
+        prepare_bootstrap_output(
+            candle_root, cakeml_root, hol_root, preflight,
+        )
+        require(received_signal is None,
+                "bootstrap signal arrived during output preparation")
+        child = subprocess.Popen(
+            preflight["launch"]["time_argv"],
+            cwd=preflight["launch"]["cwd"],
+            env=preflight["launch"]["environment"],
+            stdin=subprocess.DEVNULL,
+            stdout=log_descriptor,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        return_code = child.wait()
+        if received_signal is not None:
+            raise ProvenanceError(
+                f"bootstrap controller received signal {received_signal}",
+            )
+        require(return_code == 0,
+                f"canonical bootstrap exited with status {return_code}")
+        os.fsync(log_descriptor)
+        after_log = os.fstat(log_descriptor)
+        named_log = log_path.stat(follow_symlinks=False)
+        require((after_log.st_dev, after_log.st_ino) ==
+                (log_metadata.st_dev, log_metadata.st_ino) ==
+                (named_log.st_dev, named_log.st_ino),
+                "bootstrap log inode changed during proof")
+        os.fchmod(log_descriptor, 0o444)
+        os.close(log_descriptor)
+        log_descriptor = None
+        validate_inherited_directory_lock(cakeml_root, lock_descriptor)
+
+        def require_no_prepublication_signal() -> None:
+            require(received_signal is None,
+                    "bootstrap signal arrived before final receipt publication")
+
+        return record_bootstrap(
+            candle_root, cakeml_root, hol_root, log_path, preflight_path,
+            output_path,
+            before_publish=require_no_prepublication_signal,
+            after_publish=require_no_prepublication_signal,
+        )
+    finally:
+        for signum, handler in old_handlers.items():
+            signal.signal(signum, handler)
+        if child is not None and child.poll() is None:
+            try:
+                os.killpg(child.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            try:
+                child.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                try:
+                    os.killpg(child.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                child.wait()
+        if log_descriptor is not None:
+            try:
+                os.fsync(log_descriptor)
+                os.fchmod(log_descriptor, 0o444)
+            finally:
+                os.close(log_descriptor)
+        os.close(lock_descriptor)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    record_parser = subparsers.add_parser("record-bootstrap")
-    record_parser.add_argument("--candle-root", type=Path, required=True)
-    record_parser.add_argument("--cakeml-root", type=Path, required=True)
-    record_parser.add_argument("--hol-root", type=Path, required=True)
-    record_parser.add_argument("--bootstrap-log", type=Path, required=True)
-    record_parser.add_argument("--write", type=Path, required=True)
+    run_parser = subparsers.add_parser("run-bootstrap")
+    run_parser.add_argument("--candle-root", type=Path, required=True)
+    run_parser.add_argument("--cakeml-root", type=Path, required=True)
+    run_parser.add_argument("--hol-root", type=Path, required=True)
+    run_parser.add_argument("--bootstrap-log", type=Path, required=True)
+    run_parser.add_argument("--preflight", type=Path, required=True)
+    run_parser.add_argument("--write", type=Path, required=True)
 
     check_parser = subparsers.add_parser("check-bootstrap")
     check_parser.add_argument("--candle-root", type=Path, required=True)
@@ -1298,12 +2907,12 @@ def main() -> None:
     runtime_parser.add_argument("--candle-root", type=Path, required=True)
 
     arguments = parser.parse_args()
-    if arguments.command == "record-bootstrap":
-        record_bootstrap(
+    if arguments.command == "run-bootstrap":
+        run_bootstrap(
             arguments.candle_root, arguments.cakeml_root, arguments.hol_root,
-            arguments.bootstrap_log, arguments.write,
+            arguments.bootstrap_log, arguments.preflight, arguments.write,
         )
-        print(f"bootstrap provenance recorded: {arguments.write}")
+        print(f"canonical bootstrap provenance recorded: {arguments.write}")
     elif arguments.command == "check-bootstrap":
         validate_bootstrap_record(
             arguments.candle_root, arguments.cakeml_root, arguments.record,

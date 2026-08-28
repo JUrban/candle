@@ -759,6 +759,11 @@ def check_candle(
         build_dir / cakeml_artifact_provenance.LINKED_BOOTSTRAP_RECORD,
         bootstrap_archive, linked["bootstrap_record"],
     )
+    bootstrap_preflight_archive = archive_root / "bootstrap-preflight.json"
+    bootstrap_preflight_archive_record = _archive_file(
+        build_dir / cakeml_artifact_provenance.LINKED_BOOTSTRAP_PREFLIGHT,
+        bootstrap_preflight_archive, linked["bootstrap_preflight"],
+    )
     bootstrap_log_archive = archive_root / "bootstrap.log"
     bootstrap_log_archive_record = _archive_file(
         build_dir / cakeml_artifact_provenance.LINKED_BOOTSTRAP_LOG,
@@ -848,6 +853,12 @@ def check_candle(
             "bootstrap_provenance": {
                 "path": str(bootstrap_archive.relative_to(evidence_root)),
                 **bootstrap_archive_record,
+            },
+            "bootstrap_preflight": {
+                "path": str(
+                    bootstrap_preflight_archive.relative_to(evidence_root)
+                ),
+                **bootstrap_preflight_archive_record,
             },
             "bootstrap_log": {
                 "path": str(bootstrap_log_archive.relative_to(evidence_root)),
@@ -953,7 +964,8 @@ def check_candle(
         for label in ("artifact", "independent_completeness",
                       "independent_oracle_source",
                       "independent_oracle_binary", "linked_provenance",
-                      "bootstrap_provenance", "bootstrap_log"):
+                      "bootstrap_provenance", "bootstrap_preflight",
+                      "bootstrap_log"):
             archived = attempt["inputs"][label]
             flyspeck_float_corpus.validate_record(
                 evidence_root / archived["path"],

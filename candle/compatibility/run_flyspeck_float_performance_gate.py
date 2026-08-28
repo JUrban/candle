@@ -1196,6 +1196,11 @@ def _archive_linked_runtime(
             archive_root / "bootstrap-provenance.json", evidence_dir,
             linked["bootstrap_record"],
         ),
+        "bootstrap_preflight": _archive_file(
+            build_dir / "bootstrap-preflight.json",
+            archive_root / "bootstrap-preflight.json", evidence_dir,
+            linked["bootstrap_preflight"],
+        ),
         "bootstrap_log": _archive_file(
             build_dir / "bootstrap.log", archive_root / "bootstrap.log",
             evidence_dir, linked["bootstrap_log"],
@@ -1313,7 +1318,7 @@ def _verify_linked_runtime_archive(
     linked: dict[str, Any],
 ) -> None:
     for label in ("linked_provenance", "bootstrap_provenance",
-                  "bootstrap_log"):
+                  "bootstrap_preflight", "bootstrap_log"):
         record = archived[label]
         require(
             inputs.file_record(evidence_dir / record["path"]) == {

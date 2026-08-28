@@ -44,7 +44,8 @@ lock_path_identity=$(/usr/bin/stat -Lc '%d:%i' "$build_dir")
 }
 managed_outputs=(
   cake.S cake.S.bootstrap cake config_enc_str.txt candle_boot.ml basis_ffi.c
-  Makefile types.txt insulate.ml bootstrap-provenance.json bootstrap.log
+  Makefile types.txt insulate.ml bootstrap-preflight.json
+  bootstrap-provenance.json bootstrap.log
   cakeml-build-provenance.json
 )
 for output in "${managed_outputs[@]}"; do
@@ -82,7 +83,8 @@ actual_head=$(/usr/bin/git -C "$cakeml_dir" rev-parse HEAD)
 /usr/bin/git -C "$cakeml_dir" diff --quiet
 /usr/bin/git -C "$cakeml_dir" diff --cached --quiet
 
-/usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
   check-bootstrap \
   --candle-root "$script_dir" \
   --cakeml-root "$cakeml_dir" \
@@ -117,7 +119,8 @@ cp -- "$build_dir/cake.S" "$build_dir/cake.S.bootstrap"
     /usr/bin/python3 -I ../insulate.py types.txt insulate.ml
 )
 
-/usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
   record-linked \
   --candle-root "$script_dir" \
   --cakeml-root "$cakeml_dir" \
@@ -130,7 +133,8 @@ ln -sfn candle/build/candle_boot.ml "$script_dir/candle_boot.ml"
 # Exercise the same complete provenance and root-alias preflight used by every
 # interactive session.  A linked record is not a successful installation until
 # this post-alias check passes.
-/usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
   check-linked --candle-root "$script_dir"
 
 printf 'CakeML head: %s\n' "$actual_head"

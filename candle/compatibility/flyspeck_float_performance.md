@@ -117,7 +117,8 @@ future committed contract binds reviewed values and a machine profile.
 On a completed run, the user-selected evidence directory is never temporary.
 It retains the generated histogram and both generated loop sources, their
 content-addressed input receipt, the exact linked-provenance JSON, its durable
-bootstrap record and successful build log, the exact loader/libc/libm object
+bootstrap record, its authenticated preflight, and successful build log, the
+exact loader/libc/libm object
 bytes, the four captured local controller sources and their commit-blob
 bindings, the Python image/base ELF closure, the pinned `pexpect` source
 snapshot, the exact gate configuration and fixed runtime environment, three
@@ -203,7 +204,7 @@ Reviewed thresholds, when available, are passed explicitly with
 The host generator and its fail-closed unit tests reproduce the pinned source
 histogram and generated input receipts.  No compiled elapsed/RSS result is
 claimed by this document.  A local build record, if present, is acceptable
-only when the complete current schema-3 linked-provenance check passes.  The
+only when the complete current schema-4 linked-provenance check passes.  The
 gate must not be weakened to use an unbound executable or skip the full-HOL
 EOF/`check_axioms` preflight.  A run becomes performance evidence only after
 the verified parser bootstrap is linked and that complete provenance check

@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 import sys
 
@@ -15,6 +16,9 @@ import cakeml_artifact_provenance as subject
 
 def successful_bootstrap_log(build_command: str) -> str:
     lines = [
+        f"Holmake: [{index}/18] {target}"
+        for index, target in enumerate(subject.BOOTSTRAP_TARGETS[:-1], 1)
+    ] + [
         "Writing cv to file: cake.S",
         'Exporting theory "x64Bootstrap" ... done.',
         "Holmake: [18/18] x64Bootstrap",
@@ -98,6 +102,85 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ProvenanceError, "mismatch"):
                 subject.validate_file_record(path, record, "test")
 
+    def test_ordinary_file_identity_rejects_path_swap_during_capture(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "input"
+            old = root / "old"
+            path.write_bytes(b"authenticated bytes")
+            real_read = subject.os.read
+            swapped = False
+
+            def swapping_read(descriptor: int, count: int) -> bytes:
+                nonlocal swapped
+                block = real_read(descriptor, count)
+                if block and not swapped:
+                    swapped = True
+                    path.rename(old)
+                    path.write_bytes(b"replacement")
+                return block
+
+            with mock.patch.object(subject.os, "read", side_effect=swapping_read):
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "file (?:path )?changed",
+                ):
+                    subject.ordinary_file_identity(path)
+
+    def test_atomic_receipt_is_removed_when_publication_postcheck_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            receipt = root / "receipt.json"
+
+            def reject() -> None:
+                raise subject.ProvenanceError("signal before completion boundary")
+
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "completion boundary",
+            ):
+                subject.write_new_json(
+                    receipt, {"state": "complete"}, after_publish=reject,
+                )
+            self.assertFalse(receipt.exists())
+            self.assertEqual(list(root.iterdir()), [])
+
+    def test_retained_python_controller_allows_new_checker_process_identity(self) -> None:
+        executable = subject.executable_tool_record(Path("/usr/bin/python3"))
+        source_bytes = b"controller source"
+        source_record = subject.bytes_record(source_bytes)
+        record = {
+            "policy": "direct_usr_bin_python3_isolated_controller_v1",
+            "executable": executable,
+            "elf_closure": subject.elf_dynamic_closure(Path("/usr/bin/python3")),
+            "proc_self_exe": executable["resolved_path"],
+            "sys_executable": "/usr/bin/python3",
+            "sys_version": "recorded-version",
+            "flags": {
+                "isolated": 1, "ignore_environment": 1, "no_user_site": 1,
+                "no_site": 1, "safe_path": True, "utf8_mode": 1,
+            },
+            "xoptions": {},
+            "warnoptions": [],
+            "argv": ["/candle/candle/cakeml_artifact_provenance.py",
+                     "run-bootstrap"],
+            "module": {"name": "__main__", "spec": None, "cached": None},
+            "process": {"pid": 100, "start_time_ticks": 200},
+            "source": {
+                "repository_path": "candle/cakeml_artifact_provenance.py",
+                "path": "/candle/candle/cakeml_artifact_provenance.py",
+                **source_record,
+                "commit_blob": source_record,
+            },
+        }
+        observed = copy.deepcopy(record)
+        observed["argv"] = [record["argv"][0], "check-bootstrap"]
+        observed["process"] = {"pid": 300, "start_time_ticks": 400}
+        with mock.patch.object(
+            subject, "python_controller_record", return_value=observed,
+        ):
+            subject.validate_python_controller_record(
+                record, candle_root=Path("/candle"),
+            )
+
     def test_version_details_extracts_exact_revisions(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             executable = Path(directory) / "cake"
@@ -178,6 +261,251 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         ).replace("\tExit status: 0\n", "\tExit status: 1\n", 1)
         with self.assertRaises(subject.ProvenanceError):
             subject.validate_bootstrap_log(log, command)
+
+    def test_bootstrap_log_rejects_warm_tree_x64_only_transcript(self) -> None:
+        command = "/hol/bin/Holmake -j1 cake.S"
+        log = successful_bootstrap_log(command)
+        for index, target in enumerate(subject.BOOTSTRAP_TARGETS[:-1], 1):
+            log = log.replace(f"Holmake: [{index}/18] {target}\n", "")
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "exact ordered 18-target rebuild",
+        ):
+            subject.validate_bootstrap_log(log, command)
+
+    def test_bootstrap_forced_outputs_exclude_tracked_side_inputs(self) -> None:
+        root = Path("/authenticated/cakeml")
+        paths = subject.bootstrap_forced_output_paths(root)
+        relatives = [relative for relative, _ in paths]
+        self.assertEqual(len(paths), 2 + 17 * 6 + 4)
+        self.assertIn(
+            "compiler/bootstrap/compilation/x64/64/cake.S", relatives,
+        )
+        self.assertNotIn(
+            "compiler/bootstrap/compilation/x64/64/candle_boot.ml", relatives,
+        )
+        self.assertIn(
+            "compiler/bootstrap/compilation/x64/64/config_enc_str.txt", relatives,
+        )
+
+    def test_bootstrap_output_inventory_rejects_path_escape(self) -> None:
+        root = Path("/authenticated/cakeml")
+        receipt = Path("/evidence/preflight.json")
+        archive = subject._bootstrap_archive_root(receipt)
+        record = {
+            "receipt_path": str(receipt),
+            "forced_outputs": {
+                "preimage_archive_root": str(archive),
+                "entries": [
+                    {
+                        "relative": relative,
+                        "path": str(path),
+                        "postcondition": postcondition,
+                        "preimage_archive_path": str(archive / relative),
+                    }
+                    for relative, path, postcondition in
+                    subject.bootstrap_cleanup_output_paths(root)
+                ],
+            },
+        }
+        subject.validate_bootstrap_output_path_inventory(record, root)
+        victim = Path("/tmp/arbitrary-victim")
+        record["forced_outputs"]["entries"][0]["path"] = str(victim)
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "path inventory mismatch",
+        ):
+            subject.validate_bootstrap_output_path_inventory(record, root)
+
+    def test_bootstrap_symlink_inputs_bind_link_blob_and_in_root_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bootstrap = root / subject.BOOTSTRAP_RELATIVE
+            bootstrap.mkdir(parents=True)
+            for name, (link_text, target_relative) in (
+                subject.BOOTSTRAP_SYMLINK_INPUTS.items()
+            ):
+                target = root / target_relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(f"target {name}\n", encoding="utf-8")
+                (bootstrap / name).symlink_to(link_text)
+            subprocess.run(
+                ["/usr/bin/git", "init", "-q"], cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            subprocess.run(
+                ["/usr/bin/git", "add", "."], cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            subprocess.run(
+                ["/usr/bin/git", "-c", "user.name=Test", "-c",
+                 "user.email=test@example.invalid", "commit", "-qm", "inputs"],
+                cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            records = {
+                name: subject.bootstrap_symlink_input_record(root, name)
+                for name in subject.BOOTSTRAP_SYMLINK_INPUTS
+            }
+            for name, record in records.items():
+                subject.validate_bootstrap_symlink_input_record(
+                    record, name, root, require_live=True,
+                )
+            link = bootstrap / "candle_boot.ml"
+            link_text = link.readlink()
+            link.unlink()
+            link.symlink_to(link_text)
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "symlink input changed",
+            ):
+                subject.validate_bootstrap_symlink_input_record(
+                    records["candle_boot.ml"], "candle_boot.ml", root,
+                    require_live=True,
+                )
+
+    def test_bootstrap_preparation_removes_and_archives_stale_config(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evidence = root / "evidence"
+            evidence.mkdir()
+            receipt = evidence / "preflight.json"
+            archive = subject._bootstrap_archive_root(receipt)
+            entries = []
+            stale_names = {
+                "cake.S", "config_enc_str.txt", "compiler64ProgScript.ui",
+            }
+            for relative, path, postcondition in (
+                subject.bootstrap_cleanup_output_paths(root)
+            ):
+                preimage = None
+                if path.name in stale_names:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(f"stale {path.name}\n", encoding="utf-8")
+                    preimage = subject.ordinary_file_identity(path)
+                entries.append({
+                    "relative": relative,
+                    "path": str(path),
+                    "postcondition": postcondition,
+                    "preimage": preimage,
+                    "preimage_archive_path": str(archive / relative),
+                })
+            preflight = {
+                "forced_outputs": {
+                    "preimage_archive_root": str(archive),
+                    "entries": entries,
+                },
+            }
+            with mock.patch.object(
+                subject, "validate_bootstrap_preflight", return_value=None,
+            ):
+                subject.prepare_bootstrap_output(
+                    root, root, root, preflight,
+                )
+            paths = {
+                path.name: (relative, path)
+                for relative, path, _ in subject.bootstrap_cleanup_output_paths(root)
+                if path.name in stale_names
+            }
+            for name in stale_names:
+                relative, target = paths[name]
+                self.assertFalse(target.exists())
+                archived = archive / relative
+                self.assertEqual(archived.read_text(encoding="utf-8"),
+                                 f"stale {name}\n")
+
+    def test_ancestor_inventory_excludes_fresh_stratum_and_detects_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            objects = root / "unrelated/theory/.hol/objs"
+            objects.mkdir(parents=True)
+            ancestor = objects / "AncestorTheory.dat"
+            ancestor.write_bytes(b"ancestor")
+            managed = dict(subject.bootstrap_forced_output_paths(root))[
+                "compiler/bootstrap/translation/.hol/objs/pancake_lexProgTheory.dat"
+            ]
+            managed.parent.mkdir(parents=True, exist_ok=True)
+            managed.write_bytes(b"fresh-stratum-preimage")
+            inventory = subject.bootstrap_ancestor_artifact_inventory(root)
+            self.assertEqual(
+                [entry["relative"] for entry in inventory["entries"]],
+                ["unrelated/theory/.hol/objs/AncestorTheory.dat"],
+            )
+            ancestor.write_bytes(b"changed")
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "inventory changed",
+            ):
+                subject.validate_bootstrap_ancestor_artifact_inventory(
+                    inventory, root, require_live=True,
+                )
+
+    def test_obsolete_manual_bootstrap_phases_are_not_public_commands(self) -> None:
+        script = Path(subject.__file__).resolve()
+        for command in (
+            "record-bootstrap-preflight", "prepare-bootstrap",
+            "bootstrap-log-preamble", "record-bootstrap",
+        ):
+            with self.subTest(command=command):
+                result = subprocess.run(
+                    ["/usr/bin/python3", "-I", "-S", str(script), command],
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                    text=True,
+                    env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("invalid choice", result.stdout)
+
+    def test_controller_rejects_injected_outer_environment(self) -> None:
+        controller = (
+            Path(subject.__file__).resolve().parent.parent /
+            "build-local-cakeml-bootstrap.sh"
+        )
+        result = subprocess.run(
+            [str(controller), "/missing/cakeml", "/missing/hol",
+             "/tmp/missing.log", "/tmp/missing-preflight.json",
+             "/tmp/missing-final.json"],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            env={
+                "LC_ALL": "C", "PATH": "/usr/bin:/bin",
+                "LD_LIBRARY_PATH": "/injected",
+            },
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unexpected controller launch environment", result.stdout)
+
+    def test_run_bootstrap_nonzero_never_calls_final_recorder(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            log = root / "attempt.log"
+            preflight = root / "preflight.json"
+            final = root / "final.json"
+            fake = {
+                "launch": {
+                    "cwd": str(root),
+                    "environment": {
+                        "PATH": "/usr/bin:/bin", "LC_ALL": "C",
+                        "HOLDIR": str(root),
+                    },
+                    "time_argv": ["/usr/bin/time", "-v", "/bin/false"],
+                    "timed_argv": ["/bin/false"],
+                    "build_command": "/bin/false",
+                    "log_path": str(log),
+                },
+            }
+            with mock.patch.object(
+                subject, "bootstrap_controller_environment",
+                return_value={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+            ), mock.patch.object(
+                subject, "record_bootstrap_preflight", return_value=fake,
+            ), mock.patch.object(
+                subject, "prepare_bootstrap_output", return_value=None,
+            ), mock.patch.object(subject, "record_bootstrap") as final_recorder:
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "exited with status 1",
+                ):
+                    subject.run_bootstrap(
+                        root, root, root, log, preflight, final,
+                    )
+            final_recorder.assert_not_called()
+            self.assertTrue(log.is_file())
+            self.assertFalse(final.exists())
 
     def test_hol_runtime_record_pins_launchers_state_and_closures(self) -> None:
         original_tags = subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS
@@ -328,10 +656,7 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             build = Path(directory)
             build_small_installed_elf(build)
             record = subject.native_link_derivation(build)
-            replacement_build = build / "replacement"
-            replacement_build.mkdir()
-            build_small_installed_elf(replacement_build, return_code=7)
-            shutil.copyfile(replacement_build / "cake", build / "cake")
+            shutil.copyfile("/bin/true", build / "cake")
             # Simulate the old false-green: update the self-certified live
             # output identities while retaining the authenticated inputs.
             replacement = subject.file_record(build / "cake")
@@ -368,20 +693,10 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
     def test_linked_bootstrap_copy_rejects_self_recorded_wrong_kind(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             build = Path(directory)
-            inputs = {}
-            for name in subject.BOOTSTRAP_INPUTS:
-                local_name = "cake.S.bootstrap" if name == "cake.S" else name
-                path = build / local_name
-                path.write_text(name, encoding="utf-8")
-                inputs[name] = subject.file_record(path)
+            preflight = build / subject.LINKED_BOOTSTRAP_PREFLIGHT
+            preflight.write_text("{}\n", encoding="utf-8")
             log = build / subject.LINKED_BOOTSTRAP_LOG
-            build_command = (
-                "env HOLDIR=/build/hol4 /build/hol4/bin/Holmake -j1 cake.S"
-            )
-            log.write_text(
-                successful_bootstrap_log(build_command),
-                encoding="utf-8",
-            )
+            log.write_text("retained log\n", encoding="utf-8")
             pins = {
                 "cakeml_commit": "c" * 40,
                 "hol4_commit": "h" * 40,
@@ -389,52 +704,40 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             }
             durable = {
                 "schema": subject.BOOTSTRAP_PROVENANCE_SCHEMA,
-                "kind": "candle-linked-bootstrap-provenance-copy",
+                "kind": "self-recorded-wrong-kind",
                 **pins,
+                "candle_commit": "d" * 40,
+                "candle_root": "/build/candle",
                 "cakeml_root": "/build/cakeml",
                 "hol4_root": "/build/hol4",
-                "build_command": build_command,
+                "build_command": "/build/hol4/bin/Holmake -j1 cake.S",
+                "preflight": {
+                    "path": subject.LINKED_BOOTSTRAP_PREFLIGHT,
+                    **subject.file_record(preflight),
+                },
                 "bootstrap_log": {
                     "path": subject.LINKED_BOOTSTRAP_LOG,
                     **subject.file_record(log),
                 },
-                "inputs": inputs,
-                "hol_runtime": {
-                    "policy": "exact_hol_launchers_state_and_elf_closure_v1",
-                    "files": {
-                        name: {"bytes": 1, "sha256": "0" * 64}
-                        for name in subject.HOL_BOOTSTRAP_RUNTIME_FILES
-                    },
-                    "elf_closures": {
-                        name: {
-                            "policy":
-                                "ldd_roles_resolved_absolute_paths_and_content_v3",
-                            "dynamic_path_tags":
-                                subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS,
-                            "files": {
-                                "/lib/runtime.so": {
-                                    "bytes": 1, "sha256": "0" * 64,
-                                },
-                            },
-                            "roles": {"runtime.so": "/lib/runtime.so"},
-                            "virtual_objects": [],
-                        }
-                        for name in subject.HOL_BOOTSTRAP_ELF_FILES
-                    },
-                },
+                "inputs": {},
+                "host_runtime": {},
+                "hol_runtime": {},
+                "python_controller": {},
+                "controller_environment": {},
+                "forced_output_transitions": [],
+                "preserved_symlink_input_transitions": {},
                 "source_bootstrap_record": {"bytes": 1, "sha256": "0" * 64},
             }
             record_path = build / subject.LINKED_BOOTSTRAP_RECORD
             record_path.write_text(json.dumps(durable), encoding="utf-8")
             linked = {
                 **pins,
+                "cakeml_commit": pins["cakeml_commit"],
+                "hol4_commit": pins["hol4_commit"],
                 "bootstrap_record": subject.file_record(record_path),
+                "bootstrap_preflight": subject.file_record(preflight),
                 "bootstrap_log": subject.file_record(log),
             }
-            subject.validate_linked_bootstrap_copy(build, linked, pins)
-            durable["kind"] = "self-recorded-wrong-kind"
-            record_path.write_text(json.dumps(durable), encoding="utf-8")
-            linked["bootstrap_record"] = subject.file_record(record_path)
             with self.assertRaisesRegex(
                 subject.ProvenanceError, "bootstrap provenance kind",
             ):

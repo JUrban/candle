@@ -778,13 +778,17 @@ class FloatPerformanceGateTests(unittest.TestCase):
             evidence.mkdir()
             linked_path = build / "cakeml-build-provenance.json"
             bootstrap_path = build / "bootstrap-provenance.json"
+            bootstrap_preflight = build / "bootstrap-preflight.json"
             bootstrap_log = build / "bootstrap.log"
             elf_path = root / "libm.so.6"
             bootstrap_path.write_text("{}\n", encoding="utf-8")
+            bootstrap_preflight.write_text("{}\n", encoding="utf-8")
             bootstrap_log.write_text("successful bootstrap\n", encoding="utf-8")
             elf_path.write_bytes(b"elf")
             linked = {
                 "bootstrap_record": generator.file_record(bootstrap_path),
+                "bootstrap_preflight":
+                    generator.file_record(bootstrap_preflight),
                 "bootstrap_log": generator.file_record(bootstrap_log),
                 "runtime_elf_closure": {
                     "policy": gate.provenance.ELF_DYNAMIC_CLOSURE_POLICY,

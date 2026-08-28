@@ -36,20 +36,21 @@ strictbuild metadata inputs before source evaluation.
 
 ## Reproduction
 
-After the pinned CakeML bootstrap has produced the x64/64 inputs, build a
-fresh integrated Candle executable and run the bounded gate:
+Produce the pinned x64/64 bootstrap with the canonical controller, build a
+fresh integrated Candle executable, and run the bounded gate:
 
 ```sh
 cd /project/worktrees/candle-integration-v13
-/usr/bin/python3 -I candle/cakeml_artifact_provenance.py record-bootstrap \
-  --candle-root . \
-  --cakeml-root /project/worktrees/cakeml-flyspeck-v13-integration \
-  --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \
-  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.log \
-  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /project/worktrees/candle-integration-v13/build-local-cakeml-bootstrap.sh \
+  /project/worktrees/cakeml-flyspeck-v13-integration \
+  /project/worktrees/HOL-cakeml-dopen-v13 \
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-canonical.log \
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-preflight.json \
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-provenance.json
 ./build-local-cakeml.sh \
   /project/worktrees/cakeml-flyspeck-v13-integration \
-  /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-provenance.json
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \
@@ -61,17 +62,32 @@ CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.
 Do not run this command concurrently with a build or another compiled Candle
 workload in the same worktree.
 
-The first command refuses a dirty or mismatched CakeML/HOL worktree, a failed
-bootstrap transcript, a missing output, or any pin drift.  Its schema-2 record
+The first command refuses a dirty or mismatched Candle/CakeML/HOL worktree,
+wrong cwd, stale receipt, unexpected controller/build environment, a failed
+bootstrap transcript, a missing output, or any pin drift. Its immutable
+preflight binds the single controller process's direct `-I -S` Python
+execution, fixed tools,
+launch/runtime ELF closures, exact roots and commits, checkout lock inode, and
+the mechanically derived generated-output inventory before the build. It
+archives and removes only `cake.S`, `config_enc_str.txt`, the exact 18-target
+`.hol/objs` output set, their exact make-dependency files, and retry-only
+`*Script.ui`/`*Script.uo` transients. The tracked `candle_boot.ml`, `basis_ffi.c`,
+and `Makefile` links are preserved and bound to their exact commit blobs and
+in-root ordinary targets. Failure retains the archive, log, and partial outputs;
+there is no automatic restore mutation. The schema-3 final bootstrap record
 authenticates the ordinary bytes of `bin/Holmake`, `bin/hol`, and
 `bin/hol.state`, the exact resolved ELF closures of both launchers (including
 their fixed absolute RUNPATH), and exactly one complete trailing GNU `time -v`
 footer for the pinned build command with final status zero and ordered
-x64Bootstrap completion evidence.
+x64Bootstrap completion evidence, including the exact ordered `[1/18]` through
+`[18/18]` target sequence.
+Every other pre-existing CakeML `.hol/objs` ordinary file is content-inventoried
+before and after. Its bytes are authenticated, but its derivation is expressly
+not claimed to have been replayed and remains in the documented boundary.
 
 The local build revalidates that record before copying ignored generated files,
 then links with a fixed single-job GNU make and C-compiler command.  Before its
-schema-3 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
+schema-4 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
 authenticated patched `cake.S`, `basis_ffi.c`, and `Makefile` to a fresh private
 directory, forcibly relinks them, captures and re-derives the exact make, CC,
 cc1, assembler, collect2, and linker argv, binds the corresponding tool files,
@@ -89,6 +105,9 @@ internal data, linker scripts, startup objects, and archives are not promoted
 to verified evidence merely because their selected tool executables, command
 plan, final runtime closure, and output bytes are authenticated.  This boundary
 is also an exact machine-checked object in the linked provenance record.
+The outer `/usr/bin/env -i` is required, but its own pre-start loader environment
+cannot be checked retrospectively by the controller. That interval, kernel and
+same-UID mutation semantics remain explicitly trusted.
 
 ## Acceptance and failure semantics
 
