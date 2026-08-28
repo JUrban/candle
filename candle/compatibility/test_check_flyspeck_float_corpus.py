@@ -58,6 +58,14 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         mutated["spellings"][0]["ocaml_word64_decimal"] = "1"
         self.assertNotEqual(checker.candle_source(mutated), original)
 
+    def test_evidence_path_is_ocaml_escaped(self):
+        self.assertEqual(
+            checker._ocaml_string('/tmp/a "quoted" path'),
+            '"/tmp/a \\"quoted\\" path"',
+        )
+        with self.assertRaises(corpus.CorpusError):
+            checker._ocaml_string("/tmp/newline\npath")
+
 
 if __name__ == "__main__":
     unittest.main()

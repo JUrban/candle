@@ -48,7 +48,7 @@ the exact schema-2 normalization receipt, and all 18 normalized outputs.
 Regenerate the complete inventory and all OCaml 4.14.1 Word64 observations:
 
 ```sh
-python3 candle/compatibility/flyspeck_float_corpus.py \
+/usr/bin/python3 -I candle/compatibility/flyspeck_float_corpus.py \
   --candle-root /path/to/candle \
   --flyspeck-root /path/to/flyspeck-at-1ce0353 \
   --overlay-root /path/to/ac925270-overlay \
@@ -63,17 +63,22 @@ Candle runtime record, loads the full `hol.ml` insulation stack, and checks
 every exact spelling in bounded chunks:
 
 ```sh
-python3 candle/compatibility/check_flyspeck_float_corpus.py \
+/usr/bin/python3 -I candle/compatibility/check_flyspeck_float_corpus.py \
   --candle-root /path/to/clean-linked-candle \
   --flyspeck-root /path/to/flyspeck-at-1ce0353 \
   --overlay-root /path/to/ac925270-overlay \
-  --ocamlc /usr/bin/ocamlc
+  --ocamlc /usr/bin/ocamlc \
+  --write /path/to/new-float-corpus-evidence-directory
 ```
 
 The committed inventory and generator do not constitute a compiled PASS. A
 PASS from the second command establishes the decimal spelling/Word64
 compatibility of this exact selected graph; it does not establish that the
 graph loaded, that its theorems have approved fingerprints, or S2/S3.
+The second command always retains its exact generated source, complete
+transcript, running-attempt record, final receipt, runtime environment, child
+resources, and pre/postflight linked-artifact identities in the new evidence
+directory; failures are retained as well.
 
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax
