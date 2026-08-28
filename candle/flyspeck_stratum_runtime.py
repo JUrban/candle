@@ -514,6 +514,10 @@ def write_config(
         'let candle_flyspeck_build_mode = "stratum-runtime";;',
         f"let candle_flyspeck_stratum_boundary = {string(prepared['boundary']['boundary_id'])};;",
         f"let candle_flyspeck_stratum_action_count = {len(prepared['actions'])};;",
+        (
+            "let candle_flyspeck_stratum_normalization_count = "
+            f"{len(prepared['normalized_runtime'])};;"
+        ),
         f"let candle_flyspeck_stratum_attempt_nonce = {string(prepared['attempt_nonce'])};;",
         f"let candle_flyspeck_stratum_program = {string(execution_program)};;",
         f"let candle_flyspeck_stratum_program_md5 = {string(execution_md5)};;",

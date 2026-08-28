@@ -46,7 +46,8 @@ Cakeml.configureSourceIdentities
   (map candle_flyspeck_stratum_source_identity
        candle_flyspeck_source_digests);;
 
-if List.length candle_flyspeck_stratum_normalized_sources <> 16 then
+if List.length candle_flyspeck_stratum_normalized_sources <>
+     candle_flyspeck_stratum_normalization_count then
   failwith "incomplete Flyspeck stratum normalized source table";;
 
 List.iter

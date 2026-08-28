@@ -178,7 +178,7 @@ class StratumRuntimeTests(unittest.TestCase):
             "attempt_nonce": self.nonce,
             "normalized_runtime": [
                 {"original": f"/o/{index}", "output": f"/n/{index}", "md5": "2" * 32}
-                for index in range(16)
+                for index in range(18)
             ],
             "generated_runtime": certificates + [
                 {"path": f"/inputs/other_{index}", "md5": "3" * 32}
@@ -202,6 +202,7 @@ class StratumRuntimeTests(unittest.TestCase):
         )[1].split("];;", 1)[0]
         self.assertEqual(certificate_block.count("/inputs/easy_"), 39)
         self.assertNotIn("/inputs/other_", certificate_block)
+        self.assertIn("let candle_flyspeck_stratum_normalization_count = 18;;", source)
 
     def test_snapshot_is_complete_deduplicated_and_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
