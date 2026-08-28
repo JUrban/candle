@@ -34,13 +34,13 @@ def successful_bootstrap_log(build_command: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def build_small_installed_elf(build: Path) -> None:
+def build_small_installed_elf(build: Path, *, return_code: int = 0) -> None:
     (build / "cake.S").write_text(
         ".text\n.section .note.GNU-stack,\"\",@progbits\n",
         encoding="utf-8",
     )
     (build / "basis_ffi.c").write_text(
-        "int main(void) { return 0; }\n",
+        f"int main(void) {{ return {return_code}; }}\n",
         encoding="utf-8",
     )
     (build / "Makefile").write_text(
@@ -322,6 +322,26 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 subject.ProvenanceError, "not byte-identical",
             ):
                 subject.native_link_derivation(build)
+
+    def test_native_link_validation_rejects_forged_replacement_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            build_small_installed_elf(build)
+            record = subject.native_link_derivation(build)
+            replacement_build = build / "replacement"
+            replacement_build.mkdir()
+            build_small_installed_elf(replacement_build, return_code=7)
+            shutil.copyfile(replacement_build / "cake", build / "cake")
+            # Simulate the old false-green: update the self-certified live
+            # output identities while retaining the authenticated inputs.
+            replacement = subject.file_record(build / "cake")
+            record["candidate_elf"] = replacement
+            record["installed_elf"] = replacement
+            with self.assertRaisesRegex(
+                subject.ProvenanceError,
+                "not byte-identical|fresh native link derivation differs",
+            ):
+                subject.validate_native_link_derivation(build, record)
 
     def test_native_link_validation_rejects_environment_and_tool_tampering(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

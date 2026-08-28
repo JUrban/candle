@@ -1155,6 +1155,9 @@ def validate_native_link_derivation(
             record.get("installed_elf") == installed and
             record.get("comparison") == "byte_for_byte_equal",
             "native link candidate/installed comparison mismatch")
+    observed = native_link_derivation(build_dir)
+    require(observed == record,
+            "fresh native link derivation differs from the linked receipt")
 
 
 def record_linked(
