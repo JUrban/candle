@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 
 HERE = Path(__file__).resolve().parent
@@ -142,22 +143,66 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
                 hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest(),
             )
 
+    def test_executed_local_source_divergence_is_rejected(self):
+        completeness_sources = {
+            label: {
+                "path": str(path),
+                **corpus.file_record(path),
+            }
+            for label, path in (
+                checker.check_flyspeck_float_completeness
+                .PYTHON_SOURCE_PATHS.items()
+            )
+        }
+        module = checker.runtime_lock
+        original = module.__candle_source_bytes__
+        module.__candle_source_bytes__ = original + b"\n# mutation\n"
+        try:
+            with self.assertRaisesRegex(
+                corpus.CorpusError,
+                "executed local Python source identity mismatch",
+            ):
+                checker.local_python_source_records({
+                    "python_sources": completeness_sources,
+                })
+        finally:
+            module.__candle_source_bytes__ = original
+
     def test_python_and_pexpect_execution_sources_are_pinned(self):
-        script = (
-            "import sys; "
-            f"sys.path.insert(0, {str(HERE)!r}); "
-            "import check_flyspeck_float_corpus as c; "
-            "assert c.validate_python_runtime() == c.EXPECTED_PYTHON_RUNTIME; "
-            "p, sources = c.load_pexpect_from_pinned_sources(); "
-            "assert sources == c.EXPECTED_PEXPECT_SOURCES; "
-            "print('PINNED_PYTHON_PEXPECT_PASS')"
-        )
+        script = f"""
+import sys
+import tempfile
+from pathlib import Path
+sys.path.insert(0, {str(HERE)!r})
+import check_flyspeck_float_corpus as c
+assert c.validate_python_runtime() == c.EXPECTED_PYTHON_RUNTIME
+with tempfile.TemporaryDirectory() as temporary:
+    p, sources = c.load_pexpect_from_pinned_sources(
+        Path(temporary) / "sources"
+    )
+    for name, expected in c.EXPECTED_PEXPECT_SOURCES.items():
+        assert {{field: sources[name][field] for field in ("bytes", "sha256")}} == {{
+            field: expected[field] for field in ("bytes", "sha256")
+        }}
+print('PINNED_PYTHON_PEXPECT_PASS')
+"""
         completed = subprocess.run(
             ["/usr/bin/python3", "-I", "-c", script], check=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
         )
         self.assertEqual(completed.stdout.strip(),
                          "PINNED_PYTHON_PEXPECT_PASS")
+
+    def test_system_wide_loader_preload_is_rejected(self):
+        with mock.patch.object(
+            checker.cakeml_artifact_provenance.os.path, "lexists",
+            return_value=True,
+        ):
+            with self.assertRaisesRegex(
+                checker.cakeml_artifact_provenance.ProvenanceError,
+                "system-wide dynamic-loader preload",
+            ):
+                checker.cakeml_artifact_provenance.runtime_environment()
 
 
 if __name__ == "__main__":

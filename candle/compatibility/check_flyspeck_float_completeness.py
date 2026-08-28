@@ -43,6 +43,7 @@ def _load_local_source(name: str, path: Path):
     module.__file__ = str(path)
     module.__package__ = ""
     module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
     sys.modules[name] = module
     try:
         exec(compile(source, str(path), "exec", dont_inherit=True),

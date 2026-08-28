@@ -127,13 +127,18 @@ dependency, and linked
 preflight failures occur before attempt creation and are reported without
 claiming a retained compiled attempt.
 
-The compiled runner executes its five local Python modules directly from their
-recorded `.py` bytes, without consulting local bytecode caches. It also loads
-the ten `pexpect`/`ptyprocess` modules through a new empty bytecode-cache prefix,
-pins their exact sources, binds the executing `/proc/self/exe` Python image and
-its base ELF closure, and retains all of those inputs. This is execution-bound
-provenance for the local runner and pexpect layer, not a hermetic claim over the
-kernel, vDSO, frozen/built-in Python modules, or the entire standard library.
+The compiled runner executes its four imported local modules directly from
+captured `.py` byte strings, without consulting local bytecode caches, and
+archives those same strings. The top-level runner is invoked directly as the
+clean checked-out script and archives the source bytes captured at startup.
+Before importing the ten `pexpect`/`ptyprocess` modules, the gate copies their
+pinned source bytes into the evidence tree and loads only that retained package
+snapshot through a new empty bytecode-cache prefix. It also binds the executing
+`/proc/self/exe` Python image and its base ELF closure. This is
+execution-bound provenance for the imported local modules and pexpect layer,
+not a hermetic claim over the initial top-level Python source compilation, a
+removed pre-start loader injection, hostile same-UID mutation, kernel, vDSO,
+frozen/built-in Python modules, or the entire standard library.
 
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax

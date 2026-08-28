@@ -42,6 +42,7 @@ def _load_local_source(name: str, path: Path):
     module.__file__ = str(path)
     module.__package__ = ""
     module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
     sys.modules[name] = module
     try:
         exec(compile(source, str(path), "exec", dont_inherit=True),
@@ -65,6 +66,7 @@ check_flyspeck_float_completeness = _load_local_source(
     "check_flyspeck_float_completeness",
     HERE / "check_flyspeck_float_completeness.py",
 )
+RUNNER_SOURCE_BYTES = Path(__file__).read_bytes()
 
 
 CHUNK_SIZE = 100
@@ -213,7 +215,7 @@ def validate_python_runtime() -> dict[str, Any]:
     return observed
 
 
-def load_pexpect_from_pinned_sources():
+def load_pexpect_from_pinned_sources(snapshot_root: Path):
     prefixes = ("pexpect", "ptyprocess")
     flyspeck_float_corpus.require(
         not any(
@@ -222,6 +224,31 @@ def load_pexpect_from_pinned_sources():
         ),
         "pexpect/ptyprocess were loaded before isolated source validation",
     )
+    flyspeck_float_corpus.require(
+        not snapshot_root.exists() and not snapshot_root.is_symlink(),
+        "pexpect source snapshot must be a new path",
+    )
+    snapshot_root.mkdir(parents=True)
+    for name, expected in sorted(EXPECTED_PEXPECT_SOURCES.items()):
+        source = Path(expected["path"])
+        source_record = flyspeck_float_corpus.file_record(source)
+        flyspeck_float_corpus.require(
+            {field: source_record[field] for field in ("bytes", "sha256")} ==
+            {field: expected[field] for field in ("bytes", "sha256")},
+            f"pexpect source changed before snapshot: {name}",
+        )
+        parts = name.split(".")
+        destination = (
+            snapshot_root / parts[0] /
+            ("__init__.py" if len(parts) == 1 else f"{parts[-1]}.py")
+        )
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(source.read_bytes())
+        flyspeck_float_corpus.require(
+            flyspeck_float_corpus.file_record(destination) == source_record,
+            f"pexpect source changed during snapshot: {name}",
+        )
+        destination.chmod(0o444)
     with tempfile.TemporaryDirectory(
         prefix="candle-empty-python-cache-"
     ) as temporary:
@@ -229,6 +256,7 @@ def load_pexpect_from_pinned_sources():
         previous_dont_write = sys.dont_write_bytecode
         sys.pycache_prefix = temporary
         sys.dont_write_bytecode = True
+        sys.path.insert(0, str(snapshot_root))
         try:
             pexpect = importlib.import_module("pexpect")
             loaded_names = {
@@ -250,6 +278,7 @@ def load_pexpect_from_pinned_sources():
                 cached = Path(module.__cached__).resolve()
                 flyspeck_float_corpus.require(
                     cached.is_relative_to(cache_root) and
+                    source.is_relative_to(snapshot_root) and
                     source.suffix == ".py",
                     f"Python package did not load from isolated source: {name}",
                 )
@@ -260,10 +289,18 @@ def load_pexpect_from_pinned_sources():
                     "sha256": record["sha256"],
                 }
             flyspeck_float_corpus.require(
-                observed == EXPECTED_PEXPECT_SOURCES,
+                all(
+                    {field: observed[name][field]
+                     for field in ("bytes", "sha256")} ==
+                    {field: expected[field]
+                     for field in ("bytes", "sha256")}
+                    for name, expected in EXPECTED_PEXPECT_SOURCES.items()
+                ),
                 "pexpect/ptyprocess source identity mismatch",
             )
         finally:
+            if sys.path[0] == str(snapshot_root):
+                sys.path.pop(0)
             sys.pycache_prefix = previous_prefix
             sys.dont_write_bytecode = previous_dont_write
     return pexpect, observed
@@ -273,27 +310,34 @@ def local_python_source_records(
     completeness: dict[str, Any],
 ) -> dict[str, dict[str, Any]]:
     records = dict(completeness["python_sources"])
-    for module in (
-        cakeml_artifact_provenance,
-        check_flyspeck_float_completeness,
-        flyspeck_float_corpus,
-        runtime_lock,
-    ):
+    for module in local_python_modules():
         path = Path(module.__file__).resolve()
+        source = module.__candle_source_bytes__
         record = {
             "path": str(path),
-            **flyspeck_float_corpus.file_record(path),
+            **data_record(source),
         }
         flyspeck_float_corpus.require(
-            module.__candle_source_sha256__ == record["sha256"],
-            f"executed local Python source changed: {path.name}",
+            module.__candle_source_sha256__ == record["sha256"] and
+            hashlib.sha256(source).hexdigest() == record["sha256"] and
+            flyspeck_float_corpus.file_record(path) ==
+            {field: record[field]
+             for field in ("bytes", "md5", "sha256")},
+            f"executed local Python source identity mismatch: {path.name}",
         )
         records[path.name] = record
     runner = Path(__file__).resolve()
     records[runner.name] = {
         "path": str(runner),
-        **flyspeck_float_corpus.file_record(runner),
+        **data_record(RUNNER_SOURCE_BYTES),
     }
+    flyspeck_float_corpus.require(
+        flyspeck_float_corpus.file_record(runner) == {
+            field: records[runner.name][field]
+            for field in ("bytes", "md5", "sha256")
+        },
+        "top-level runner source changed after startup capture",
+    )
     flyspeck_float_corpus.require(
         set(records) == {
             "cakeml_artifact_provenance.py",
@@ -305,6 +349,32 @@ def local_python_source_records(
         "unexpected local Python orchestration source set",
     )
     return records
+
+
+def local_python_modules() -> tuple[types.ModuleType, ...]:
+    return (
+        cakeml_artifact_provenance,
+        check_flyspeck_float_completeness,
+        flyspeck_float_corpus,
+        runtime_lock,
+    )
+
+
+def data_record(value: bytes) -> dict[str, Any]:
+    return {
+        "bytes": len(value),
+        "md5": hashlib.md5(value, usedforsecurity=False).hexdigest(),
+        "sha256": hashlib.sha256(value).hexdigest(),
+    }
+
+
+def local_python_source_bytes() -> dict[str, bytes]:
+    sources = {
+        Path(module.__file__).name: module.__candle_source_bytes__
+        for module in local_python_modules()
+    }
+    sources[Path(__file__).name] = RUNNER_SOURCE_BYTES
+    return sources
 
 
 def authenticated_artifact(
@@ -470,6 +540,26 @@ def _archive_file(
     return observed
 
 
+def _archive_bytes(
+    value: bytes,
+    destination: Path,
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    flyspeck_float_corpus.require(
+        not destination.exists() and not destination.is_symlink(),
+        f"cannot archive new byte evidence: {destination}",
+    )
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(value)
+    observed = flyspeck_float_corpus.file_record(destination)
+    flyspeck_float_corpus.require(
+        {field: observed[field] for field in expected} == expected,
+        f"archived byte evidence identity mismatch: {destination}",
+    )
+    destination.chmod(0o444)
+    return observed
+
+
 def check_candle(
     payload: dict,
     candle_root: Path,
@@ -480,10 +570,9 @@ def check_candle(
 ) -> dict[str, Any]:
     try:
         python_runtime = validate_python_runtime()
-        pexpect, pexpect_sources = load_pexpect_from_pinned_sources()
     except (ImportError, flyspeck_float_corpus.CorpusError) as error:
         raise RuntimeError(
-            "compiled float corpus gate requires pinned Python/pexpect"
+            "compiled float corpus gate requires the pinned Python runtime"
         ) from error
 
     candle_root = candle_root.resolve()
@@ -508,6 +597,14 @@ def check_candle(
     )
     evidence_root.mkdir()
     archive_root = evidence_root / "provenance"
+    try:
+        pexpect, pexpect_sources = load_pexpect_from_pinned_sources(
+            archive_root / "python-packages"
+        )
+    except (ImportError, flyspeck_float_corpus.CorpusError) as error:
+        raise RuntimeError(
+            "compiled float corpus gate requires pinned pexpect sources"
+        ) from error
     artifact_archive = archive_root / "flyspeck_float_corpus.json"
     expected_artifact_bytes = flyspeck_float_corpus.json_bytes(payload)
     flyspeck_float_corpus.require(
@@ -544,14 +641,15 @@ def check_candle(
     )
     python_source_archive_records = []
     python_sources = local_python_source_records(completeness)
+    python_source_bytes = local_python_source_bytes()
     for label, record in sorted(python_sources.items()):
         destination = archive_root / "python" / label
         python_source_archive_records.append({
             "label": label,
             "source_path": record["path"],
             "path": str(destination.relative_to(evidence_root)),
-            **_archive_file(
-                Path(record["path"]), destination,
+            **_archive_bytes(
+                python_source_bytes[label], destination,
                 {field: record[field]
                  for field in ("bytes", "md5", "sha256")},
             ),
@@ -579,15 +677,13 @@ def check_candle(
         })
     pexpect_archive_records = []
     for label, record in sorted(pexpect_sources.items()):
-        destination = archive_root / "python-packages" / f"{label}.py"
+        retained = Path(record["path"])
+        retained_record = flyspeck_float_corpus.file_record(retained)
         pexpect_archive_records.append({
             "label": label,
-            "source_path": record["path"],
-            "path": str(destination.relative_to(evidence_root)),
-            **_archive_file(
-                Path(record["path"]), destination,
-                {field: record[field] for field in ("bytes", "sha256")},
-            ),
+            "source_path": EXPECTED_PEXPECT_SOURCES[label]["path"],
+            "path": str(retained.relative_to(evidence_root)),
+            **retained_record,
         })
     toolchain_archive_records = []
     for label, record in sorted(completeness["toolchain"]["files"].items()):
