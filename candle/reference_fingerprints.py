@@ -25,8 +25,8 @@ MANIFEST = ROOT / "candle" / "top100_manifest.json"
 SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v4"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v4"
+PLAN_SCHEMA = "candle-s1-reference-plan-v5"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v5"
 
 
 class CollectionError(Exception):
@@ -137,6 +137,21 @@ def _elf_dependencies(paths):
             if dependency not in checked:
                 pending.append(dependency)
     return [dependencies[path] for path in sorted(dependencies)]
+
+
+def _runtime_stub_files(*roots):
+    stubs = {}
+    for root in roots:
+        root = Path(root)
+        if not root.exists():
+            continue
+        root = root.resolve(strict=True)
+        if not root.is_dir():
+            raise CollectionError(f"runtime stub root is not a directory: {root}")
+        for path in root.glob("*.so"):
+            pin = _pin_file(path)
+            stubs[pin["path"]] = pin
+    return [stubs[path] for path in sorted(stubs)]
 
 
 def _collector_repository_pin():
@@ -278,8 +293,15 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     ]
     runtime_library_tree = _pin_tree(Path(runtime_stublib_pin["path"]).parent)
     ocaml_library_tree = _pin_tree(ocaml_where)
+    runtime_stub_files = _runtime_stub_files(
+        Path(runtime_stublib_pin["path"]).parent,
+        Path(ocaml_where) / "stublibs",
+        *(Path(root["root"]) / "stublibs" for root in findlib_package_roots),
+    )
     dynamic_libraries = _elf_dependencies([
-        runtime_interpreter_pin["path"], runtime_stublib_pin["path"]])
+        runtime_interpreter_pin["path"],
+        *(pin["path"] for pin in runtime_stub_files),
+    ])
     collector_repository = _collector_repository_pin()
     runtime_environment = {
         "HOME": str(reference_root),
@@ -316,6 +338,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "runtime_interpreter": runtime_interpreter_pin,
             "runtime_stublib": runtime_stublib_pin,
             "runtime_library_tree": runtime_library_tree,
+            "runtime_stub_files": runtime_stub_files,
             "dynamic_libraries": dynamic_libraries,
             "ocamlc": {
                 **ocamlc_pin, "version": ocaml_version,

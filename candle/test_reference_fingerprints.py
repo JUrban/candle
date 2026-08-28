@@ -51,6 +51,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ocaml_library = root / "ocaml-library"
         ocaml_library.mkdir()
         (ocaml_library / "topfind").write_text("pinned topfind\n")
+        (ocaml_library / "stublibs").mkdir()
+        (ocaml_library / "stublibs/dllunix.so").write_text(
+            "pinned system stub\n")
         findlib_config = root / "ocamlfind.conf"
         findlib_config.write_text(f'path="{ocaml_library}"\n')
         ocamlc = root / "ocamlc"
@@ -126,7 +129,11 @@ class ReferenceFingerprintTest(unittest.TestCase):
             plan["reference"]["generated_boot_files"][0]["path"],
             str(root / "hol_loader.cmo"))
         self.assertEqual(
-            plan["reference"]["ocaml_library_tree"]["entry_count"], 1)
+            plan["reference"]["ocaml_library_tree"]["entry_count"], 3)
+        self.assertEqual(
+            [Path(item["path"]).name
+             for item in plan["reference"]["runtime_stub_files"]],
+            ["dllunix.so", "dllzarith.so"])
         self.assertEqual(
             plan["fresh_process_contract"]["runtime_environment"]
                 ["OCAMLFIND_CONF"],

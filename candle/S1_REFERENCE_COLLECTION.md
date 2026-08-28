@@ -22,8 +22,10 @@ Before execution, the tool requires and records:
   whole-tree inventories for every configured package-search root; the runtime
   receives the exact recorded `OCAMLFIND_CONF` and no inherited `OCAMLPATH`;
 - exact pins for the recursively resolved ELF dependency closure of the
-  bytecode interpreter and runtime stub, including the dynamic loader, libc,
-  libm, and GMP on the current host;
+  bytecode interpreter and every `.so` in the selected local and system OCaml
+  stub directories, including the dynamic loader, libc, libm, GMP, and any
+  transitive native libraries those candidate stubs can select on the current
+  host;
 - the collector repository commit, status, committed collector hash, and an
   assertion that the executing collector equals that committed file;
 - the probed OCaml compiler version;
@@ -93,7 +95,7 @@ python3 candle/reference_fingerprints.py validate \
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v4`, its approval status
+The candidate schema is `candle-s1-reference-candidate-v5`, its approval status
 is always `candidate_unapproved`, `promotion_allowed` is always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
@@ -143,6 +145,8 @@ only the approved expected object in a reviewed commit.
   historical candidate remains review-only. A later schema-v3 pristine run
   matched the earlier identity exactly, but a critical re-review found that
   findlib's configuration and first package-search root were not pinned. It too
-  remains review-only. A schema-v4 candidate must repeat the pristine run and
-  still match a verified Candle observation before any identity can be
-  considered for approval.
+  remains review-only. A schema-v4 plan then pinned findlib selection but was
+  not executed; a final critical pass observed that system OCaml stub files
+  were tree-pinned while their ELF dependencies were not enumerated. A
+  schema-v5 candidate must repeat the pristine run and still match a verified
+  Candle observation before any identity can be considered for approval.
