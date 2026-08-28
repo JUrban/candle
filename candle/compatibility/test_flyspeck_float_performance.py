@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import inspect
 import json
@@ -245,6 +246,13 @@ class FloatPerformanceGateTests(unittest.TestCase):
             generator.DEFAULT_ITERATIONS, ["too slow"], 5.0, 4.0, 2.0,
         ), ("thresholds_failed", True))
 
+    def test_thresholds_must_be_positive_and_finite(self):
+        self.assertEqual(gate._positive_float("0.125"), 0.125)
+        for value in ("0", "-1", "nan", "inf", "-inf"):
+            with self.subTest(value=value):
+                with self.assertRaises(argparse.ArgumentTypeError):
+                    gate._positive_float(value)
+
     def test_rss_scope_does_not_claim_attribution(self):
         self.assertIn("includes full-HOL baseline",
                       inspect.getsource(gate._measure_load))
@@ -328,6 +336,41 @@ class FloatPerformanceGateTests(unittest.TestCase):
             self.assertEqual(receipt["state"], "failed")
             self.assertEqual(receipt["completed_scenarios"]["call_time"], first)
             self.assertEqual(receipt["validation_error"]["type"], "GateError")
+            self.assertEqual(receipt["kind"],
+                             "flyspeck-float-performance-receipt")
+
+    def test_malformed_scenario_journal_is_recorded_in_failure_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = Path(temporary) / "evidence"
+            evidence.mkdir()
+            gate._write_json(evidence / "attempt.json", {
+                "schema": 1,
+                "kind": "flyspeck-float-performance-attempt",
+                "started_utc": "2026-01-01T00:00:00+00:00",
+            })
+            (evidence / "scenario-call_time.json").write_text(
+                '{"outcome":', encoding="utf-8",
+            )
+            arguments = mock.Mock(
+                evidence_dir=evidence,
+                candle_root=Path(temporary) / "candle",
+                flyspeck_root=Path(temporary) / "flyspeck",
+            )
+            with mock.patch.object(gate, "_run_attempt",
+                                   side_effect=gate.GateError("failed")), \
+                    mock.patch.object(gate.runtime_lock, "acquire_build_lock",
+                                      return_value=mock.Mock()), \
+                    mock.patch.object(gate, "_failure_postflight",
+                                      return_value={}):
+                with self.assertRaises(gate.GateError):
+                    gate.run(arguments)
+            receipt = json.loads(
+                (evidence / "receipt.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["completed_scenarios"], {})
+            self.assertIn("call_time", receipt["scenario_journal_errors"])
+            self.assertIn("record",
+                          receipt["scenario_journal_errors"]["call_time"])
 
     def test_postflight_rehashes_linked_source_and_generated_inputs(self):
         source = inspect.getsource(gate._run_attempt)

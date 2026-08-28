@@ -18,6 +18,7 @@ import datetime as dt
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -160,7 +161,7 @@ class CandleSession:
                 encoding="utf-8", logfile=self.transcript, env=environment,
             )
             self._expect_prompt(600.0, "initial Candle boot")
-        except Exception:
+        except BaseException:
             if self.process is not None:
                 self.process.close(force=True)
             self.transcript.close()
@@ -403,7 +404,7 @@ def _run_one(
             if transcript_path.is_file() and not transcript_path.is_symlink():
                 transcript_path.chmod(0o444)
     measured["transcript"] = {
-        "path": str(transcript_path),
+        "path": str(transcript_path.relative_to(log_dir.parent)),
         "bytes": transcript_path.stat().st_size,
         "sha256": sha256_file(transcript_path),
     }
@@ -473,9 +474,19 @@ def _create_evidence_layout(
 
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:
-    path.write_text(
-        json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8",
-    )
+    temporary = path.with_name(f".{path.name}.tmp.{os.getpid()}")
+    require(not temporary.exists(), f"stale JSON temporary file: {temporary}")
+    try:
+        temporary.write_text(
+            json.dumps(
+                value, allow_nan=False, indent=2, sort_keys=True,
+            ) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
 
 
 def _utc_now() -> str:
@@ -844,14 +855,16 @@ def _run_attempt(
         "evidence": {
             "directory": str(evidence_dir),
             "gate_config": {
-                "path": str(config_path),
+                "path": str(config_path.relative_to(evidence_dir)),
                 **config_record,
             },
             "linked_runtime_archive": archived_runtime,
             "performance_source_archive": archived_sources,
             "generated_input_receipt": {
                 "path": str(
-                    generated_dir / "flyspeck_float_performance_inputs.json"
+                    (generated_dir / "flyspeck_float_performance_inputs.json").relative_to(
+                        evidence_dir
+                    )
                 ),
                 **inputs.file_record(
                     generated_dir / "flyspeck_float_performance_inputs.json"
@@ -933,6 +946,31 @@ def _failure_postflight(
     return result
 
 
+def _completed_scenario_journals(
+    evidence_dir: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    completed = {}
+    errors = {}
+    for name in ("call_time", "hoisted", "break_case_log"):
+        path = evidence_dir / f"scenario-{name}.json"
+        if not path.exists():
+            continue
+        if not path.is_file() or path.is_symlink():
+            errors[name] = {"message": "scenario journal is not ordinary"}
+            continue
+        record = inputs.file_record(path)
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            require(isinstance(value, dict), "scenario journal is not an object")
+            completed[name] = value
+        except Exception as error:
+            errors[name] = {
+                "message": str(error),
+                "record": record,
+            }
+    return completed, errors
+
+
 def run(arguments: argparse.Namespace) -> dict[str, Any]:
     evidence_dir = arguments.evidence_dir.resolve()
     runtime_lock_handle = runtime_lock.acquire_build_lock(
@@ -951,15 +989,24 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
                     receipt_path = evidence_dir / "receipt.json"
                     require(not receipt_path.exists(),
                             "performance receipt already exists")
-                    completed_scenarios = {}
-                    for name in ("call_time", "hoisted", "break_case_log"):
-                        scenario_path = evidence_dir / f"scenario-{name}.json"
-                        if scenario_path.is_file() and not scenario_path.is_symlink():
-                            completed_scenarios[name] = json.loads(
-                                scenario_path.read_text(encoding="utf-8")
-                            )
+                    completed_scenarios, scenario_journal_errors = (
+                        _completed_scenario_journals(evidence_dir)
+                    )
+                    try:
+                        failure_postflight = _failure_postflight(
+                            arguments, evidence_dir,
+                        )
+                    except BaseException as postflight_error:
+                        failure_postflight = {
+                            "completed": False,
+                            "error": {
+                                "type": type(postflight_error).__name__,
+                                "message": str(postflight_error),
+                            },
+                        }
                     receipt = {
                         **attempt,
+                        "kind": "flyspeck-float-performance-receipt",
                         "state": "failed",
                         "finished_utc": _utc_now(),
                         "validation_error": {
@@ -967,15 +1014,20 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
                             "message": str(error),
                         },
                         "completed_scenarios": completed_scenarios,
-                        "failure_postflight": _failure_postflight(
-                            arguments, evidence_dir,
-                        ),
+                        "scenario_journal_errors": scenario_journal_errors,
+                        "failure_postflight": failure_postflight,
                         "evidence_inventory": _evidence_inventory(evidence_dir),
                     }
                     _write_json(receipt_path, receipt)
                     receipt_path.chmod(0o444)
-            except BaseException:
-                pass
+            except BaseException as receipt_error:
+                if isinstance(error, (KeyboardInterrupt, SystemExit)):
+                    raise
+                raise GateError(
+                    f"{error}; failure receipt construction also failed: "
+                    f"{type(receipt_error).__name__}: {receipt_error}; "
+                    f"retained evidence: {evidence_dir}"
+                ) from error
         if isinstance(error, (KeyboardInterrupt, SystemExit)):
             raise
         suffix = (
@@ -1003,8 +1055,8 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
 
 def _positive_float(value: str) -> float:
     parsed = float(value)
-    if parsed <= 0:
-        raise argparse.ArgumentTypeError("value must be positive")
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError("value must be positive and finite")
     return parsed
 
 

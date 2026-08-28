@@ -100,9 +100,11 @@ complete session transcripts, and `report.json` with elapsed/RSS observations
 and hashes.  The runner revalidates the linked record, pinned Flyspeck
 manifest/source, all generated inputs, and every archived runtime-provenance
 input after the sessions.  Each successful scenario is journaled immediately.
-After attempt creation, a later failure always produces a `receipt.json` with
-the error, completed scenario measurements, feasible linked/source postflight,
-and a content inventory of all retained files.  The linked-record revalidation is the same
+After attempt creation, a later failure atomically produces a `receipt.json`
+with the error, completed scenario measurements, any malformed-journal hashes,
+feasible linked/source postflight, and a content inventory of all retained
+files.  An I/O failure that prevents that receipt is reported explicitly
+alongside the original gate error.  The linked-record revalidation is the same
 fail-closed check used by `cakeml_artifact_provenance.py check-linked`; the
 report records all of these postflights.
 
