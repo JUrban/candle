@@ -14,7 +14,7 @@ Dopen; this is not a synthetic module smoke test.
 
 ## Exact pins and roots
 
-- CakeML integration: `0c170aa374ec178e5db8a9fe9276244ed7e0dcf7`;
+- CakeML integration: `36e2245f42d4759063615c97fec51865798ca894`;
 - HOL4 proof build: `a390cbabd3a4521bab4ee20281e3e42933a8a3ae`;
 - direct Flyspeck: `1ce0353008eba83d3c76ae9a25c3c242e4802d53`;
 - normalization contract SHA-256:
@@ -45,11 +45,11 @@ python3 candle/cakeml_artifact_provenance.py record-bootstrap \
   --candle-root . \
   --cakeml-root /project/worktrees/cakeml-flyspeck-v13-integration \
   --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \
-  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.log \
-  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.json
+  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.log \
+  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
 CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh \
   /project/worktrees/cakeml-flyspeck-v13-integration \
-  /project/flyspeck-candle-runs/v13-dopen-bootstrap-0c170aa37.json
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \

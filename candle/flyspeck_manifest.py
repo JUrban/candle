@@ -2285,10 +2285,14 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ),
             "verified_cakeml_integration": {
                 "branch": "codex/flyspeck-v13-integration",
-                "commit": "0c170aa374ec178e5db8a9fe9276244ed7e0dcf7",
+                "commit": "36e2245f42d4759063615c97fec51865798ca894",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
+                "ocaml_parser_translation_target": (
+                    "compiler/bootstrap/translation/caml_parserProgTheory.uo"
+                ),
+                "qualified_value_path_regressions": 3,
                 "proof_hol4_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
                 "soundness_targets": [
                     "semantics/proofs/namespacePropsTheory.uo",
@@ -2304,6 +2308,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                     "fec48e7d76b7d3b132ef2d420279a5f0655c76f7",
                     "936219bbc3021fa20418d62e85155f2d0092b9f9",
                     "0c170aa374ec178e5db8a9fe9276244ed7e0dcf7",
+                    "36e2245f42d4759063615c97fec51865798ca894",
                 ],
             },
             "required_gate": (
