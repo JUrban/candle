@@ -28,7 +28,7 @@ trap cleanup EXIT
 
 printf '%s\n' \
   'module M = struct' \
-  '  type t = C | Comb of int * int;;' \
+  '  type t = Empty | Filled' \
   '  let x = 7;;' \
   'end;;' \
   'let x = 1;;' \
@@ -36,7 +36,7 @@ printf '%s\n' \
   'let opened_value = x;;' \
   'let qualified_value = M.x;;' \
   'let opened_constructor_value =' \
-  '  match Comb (2,3) with C -> 0 | Comb (a,b) -> a + b;;' \
+  '  match Filled with Empty -> 0 | Filled -> 5;;' \
   'let x = 9;;' \
   'let later_shadow = x;;' \
   'module Outer = struct' \
@@ -50,7 +50,7 @@ printf '%s\n' \
   '  if opened_value = 7 && qualified_value = 7 &&' \
   '     opened_constructor_value = 5 && later_shadow = 9 &&' \
   '     opened_nested = 11' \
-  '  then print_endline "CANDLE_DOPEN_RUNTIME_OK"' \
+  '  then print "CANDLE_DOPEN_RUNTIME_OK\n"' \
   '  else failwith "Dopen runtime mismatch";;' \
   >"$source_file"
 
