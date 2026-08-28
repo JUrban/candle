@@ -128,6 +128,7 @@ def write_config(
     originals: list[tuple[Path, str]],
     normalized: list[tuple[Path, Path, str]],
     action_identities: list[tuple[Path, str, str]],
+    process_inputs: list[tuple[Path, str]],
 ) -> None:
     def ml(value: Path | str) -> str:
         return ocaml_string(str(value))
@@ -160,6 +161,13 @@ def write_config(
     for index, (original, basename, md5) in enumerate(action_identities):
         suffix = ";" if index + 1 < len(action_identities) else ""
         lines.append(f"  ({ml(original)},({ml(basename)},{ml(md5)})){suffix}")
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_dopen_process_inputs = [",
+    ])
+    for index, (source, md5) in enumerate(process_inputs):
+        suffix = ";" if index + 1 < len(process_inputs) else ""
+        lines.append(f"  ({ml(source)},{ml(md5)}){suffix}")
     lines.extend([
         "];;",
         "",
@@ -280,9 +288,24 @@ def prepare(
         (originals[1][0], "parser_verbose.hl", originals[1][1]),
         (originals[2][0], "debug.hl", originals[2][1]),
     ]
+    process_records = manifest["static_library_contract"]["binding_evidence"][
+        "unix.cma"
+    ]["deterministic_process_inputs"]
+    require(
+        [record["command"] for record in process_records] == ["date", "whoami"],
+        "strictbuild process-input order drift",
+    )
+    process_inputs: list[tuple[Path, str]] = []
+    for record in process_records:
+        source_key = record["source"]
+        require(source_key.startswith("candle:"), "unexpected process-input repository")
+        source = candle_root / source_key.removeprefix("candle:")
+        md5 = validate_record(source, record, "process input")
+        process_inputs.append((source, md5))
     write_config(
         config_path, candle_root, flyspeck_root, overlay_root, generated_root,
         prefix_path, prefix_md5, originals, normalized, action_identities,
+        process_inputs,
     )
     evidence = {
         "schema": 1,

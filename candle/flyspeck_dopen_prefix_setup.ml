@@ -37,6 +37,18 @@ List.iter
 candle_flyspeck_dopen_verify_md5 "strictbuild prefix"
   candle_flyspeck_dopen_prefix candle_flyspeck_dopen_prefix_md5;;
 
+let candle_flyspeck_dopen_date_input,
+    candle_flyspeck_dopen_user_input =
+  match candle_flyspeck_dopen_process_inputs with
+  | [(date_input,date_digest); (user_input,user_digest)] ->
+      candle_flyspeck_dopen_verify_md5 "date input" date_input date_digest;
+      candle_flyspeck_dopen_verify_md5 "user input" user_input user_digest;
+      date_input,user_input
+  | _ -> failwith "Dopen prefix process-input order mismatch";;
+
+candle_configure_manifest_process_inputs
+  candle_flyspeck_dopen_date_input candle_flyspeck_dopen_user_input;;
+
 Cakeml.configureSourceIdentities
   candle_flyspeck_dopen_action_identities;;
 
