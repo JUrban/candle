@@ -43,6 +43,13 @@ and reaped on timeout, interruption, or runner exceptions, and receipt writes
 are atomic.  A retry is always a fresh cumulative replay from action zero; no
 process-state checkpoint or suffix-only continuation is claimed.
 
+The default child limits are 24 hours of CPU time, 48 GiB of virtual address
+space, and 8 GiB per output file, in addition to the 24-hour wall timeout.
+They are recorded in the attempt and enforced before the CakeML process is
+executed.  The receipt records child user/system CPU, maximum resident set,
+and major/minor page faults.  Command-line limits may be lowered; address space
+and output-file limits cannot be raised above 56 GiB and 16 GiB respectively.
+
 The LP-support and later boundaries emit the canonical structural identity of
 `Linear_programming_results.linear_programming_results_th`.  At the final
 boundary, the postlude additionally loads the pinned Candle L2 target and emits
@@ -73,5 +80,6 @@ internal physical-path cache and does not expose every ordinary nested
 snapshot against a hostile same-UID process that can change and later restore
 them.  Consequently a successful receipt remains diagnostic and
 `s2_s3_evidence` stays false pending approved semantic identities and the
-release coverage gates.  Resource high-water and log/disk caps remain an
-external supervisor responsibility in this revision.
+release coverage gates.  The per-file limit is not an aggregate disk quota,
+and process-count/aggregate descendant RSS remain external-supervisor
+responsibilities in this revision.

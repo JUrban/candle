@@ -2,6 +2,8 @@
 
 import copy
 import hashlib
+import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -296,6 +298,29 @@ class StratumRuntimeTests(unittest.TestCase):
             expected["sha256"] = "0" * 64
             with self.assertRaisesRegex(subject.ContractError, "snapshot sha256 mismatch"):
                 subject.snapshot_copy(source, root / "snapshot", "source", expected)
+
+    def test_child_resource_limiter_installs_all_three_limits(self) -> None:
+        cpu_seconds = 17
+        address_space = 2 * subject.GIB
+        output_file = subject.GIB
+        installer = subject.process_limit_preexec(
+            cpu_seconds, address_space, output_file,
+        )
+        code = (
+            "import json,resource; "
+            "print(json.dumps([resource.getrlimit(resource.RLIMIT_CPU),"
+            "resource.getrlimit(resource.RLIMIT_AS),"
+            "resource.getrlimit(resource.RLIMIT_FSIZE)]))"
+        )
+        completed = subprocess.run(
+            [sys.executable, "-c", code], check=True, text=True,
+            stdout=subprocess.PIPE, preexec_fn=installer,
+        )
+        self.assertEqual(json.loads(completed.stdout), [
+            [cpu_seconds, cpu_seconds],
+            [address_space, address_space],
+            [output_file, output_file],
+        ])
 
 
 if __name__ == "__main__":

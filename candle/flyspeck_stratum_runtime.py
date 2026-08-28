@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import re
+import resource
 import secrets
 import shutil
 import signal
@@ -39,6 +40,7 @@ LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
 CHUNK_BYTES = 1024 * 1024
+GIB = 1024 * 1024 * 1024
 ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
 PREFLIGHT_MARKER = "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK"
 SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
@@ -869,12 +871,37 @@ def terminate_process_group(process: subprocess.Popen[bytes]) -> int:
         return process.wait()
 
 
+def process_limit_preexec(
+    cpu_seconds: int,
+    address_space_bytes: int,
+    output_file_bytes: int,
+) -> Any:
+    """Return a child-only resource-limit installer for a fresh process."""
+    require(cpu_seconds > 0, "CPU-time limit must be positive")
+    require(address_space_bytes > 0, "address-space limit must be positive")
+    require(output_file_bytes > 0, "output-file limit must be positive")
+
+    def install() -> None:
+        resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
+        resource.setrlimit(
+            resource.RLIMIT_AS, (address_space_bytes, address_space_bytes),
+        )
+        resource.setrlimit(
+            resource.RLIMIT_FSIZE, (output_file_bytes, output_file_bytes),
+        )
+
+    return install
+
+
 def run_attempt(
     candle_script: Path,
     plan_root: Path,
     boundary_id: str,
     output_root: Path,
     timeout_seconds: int,
+    max_cpu_seconds: int,
+    max_address_space_gib: int,
+    max_output_file_gib: int,
 ) -> dict[str, Any]:
     candle_script = candle_script.resolve()
     plan_root = plan_root.resolve()
@@ -889,6 +916,12 @@ def run_attempt(
     prepared = validate_plan(candle_root, linked, plan_root, boundary_id)
 
     require(timeout_seconds > 0, "timeout must be positive")
+    require(0 < max_cpu_seconds <= 172800,
+            "CPU-time limit must be between 1 and 172800 seconds")
+    require(0 < max_address_space_gib <= 56,
+            "address-space limit must be between 1 and 56 GiB")
+    require(0 < max_output_file_gib <= 16,
+            "output-file limit must be between 1 and 16 GiB")
     require(not output_root.exists(), f"attempt output already exists: {output_root}")
     require(output_root.parent.is_dir(), f"attempt parent does not exist: {output_root.parent}")
     for label, input_root in (
@@ -963,6 +996,11 @@ def run_attempt(
         "attempt_nonce": nonce,
         "action_count": len(prepared["actions"]),
         "timeout_seconds": timeout_seconds,
+        "resource_limits": {
+            "cpu_seconds": max_cpu_seconds,
+            "address_space_bytes": max_address_space_gib * GIB,
+            "output_file_bytes": max_output_file_gib * GIB,
+        },
         "fresh_process_replay_from_action_zero": True,
         "process_state_checkpoint": None,
         "inputs": {
@@ -993,6 +1031,7 @@ def run_attempt(
     execution_error: BaseException | None = None
     process: subprocess.Popen[bytes] | None = None
     previous_sigterm = signal.getsignal(signal.SIGTERM)
+    usage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
 
     def interrupted(signum: int, _frame: Any) -> None:
         raise InterruptedError(f"compiled stratum interrupted by signal {signum}")
@@ -1003,6 +1042,10 @@ def run_attempt(
             process = subprocess.Popen(
                 command, cwd=runtime_candle_root, stdin=stdin, stdout=log,
                 stderr=subprocess.STDOUT, start_new_session=True,
+                preexec_fn=process_limit_preexec(
+                    max_cpu_seconds, max_address_space_gib * GIB,
+                    max_output_file_gib * GIB,
+                ),
             )
             try:
                 exit_code = process.wait(timeout=timeout_seconds)
@@ -1017,6 +1060,14 @@ def run_attempt(
             exit_code = terminate_process_group(process)
 
     finished = utc_now()
+    usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
+    child_resources = {
+        "user_cpu_seconds": usage_after.ru_utime - usage_before.ru_utime,
+        "system_cpu_seconds": usage_after.ru_stime - usage_before.ru_stime,
+        "max_rss_kib": usage_after.ru_maxrss,
+        "major_page_faults": usage_after.ru_majflt - usage_before.ru_majflt,
+        "minor_page_faults": usage_after.ru_minflt - usage_before.ru_minflt,
+    }
     log_record = hash_file(log_path)
     validation_error: str | None = None
     fingerprints: dict[str, Any] | None = None
@@ -1057,6 +1108,7 @@ def run_attempt(
         "timed_out": timed_out,
         "exit_code": exit_code,
         "command": command,
+        "child_resources": child_resources,
         "log": log_record,
         "action_markers_validated": len(prepared["actions"]) if validation_error is None else 0,
         "semantic_fingerprints": fingerprints,
@@ -1077,10 +1129,20 @@ def main() -> None:
     parser.add_argument("--boundary", required=True, metavar="BOUNDARY_ID")
     parser.add_argument("--write", type=Path, required=True, metavar="ATTEMPT_ROOT")
     parser.add_argument("--timeout", type=int, default=86400, metavar="SECONDS")
+    parser.add_argument(
+        "--max-cpu-seconds", type=int, default=86400, metavar="SECONDS",
+    )
+    parser.add_argument(
+        "--max-address-space-gib", type=int, default=48, metavar="GIB",
+    )
+    parser.add_argument(
+        "--max-output-file-gib", type=int, default=8, metavar="GIB",
+    )
     arguments = parser.parse_args()
     receipt = run_attempt(
         arguments.candle_script, arguments.plan_root, arguments.boundary,
-        arguments.write, arguments.timeout,
+        arguments.write, arguments.timeout, arguments.max_cpu_seconds,
+        arguments.max_address_space_gib, arguments.max_output_file_gib,
     )
     print(
         f"compiled stratum PASS: {receipt['boundary_id']} "
