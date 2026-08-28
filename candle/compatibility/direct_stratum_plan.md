@@ -26,9 +26,10 @@ metadata does not serialize, restore, or attest CakeML process or kernel state.
 For the integration input audited here, materialize with:
 
 ```sh
+candle_head=$(git rev-parse HEAD)
 python3 candle/flyspeck_stratum_plan.py \
   --candle-root /project/worktrees/candle-integration-v13 \
-  --expected-candle-base e3965b3734394f45ef92fab74b602f4a6f07ccb1 \
+  --expected-candle-base "$candle_head" \
   --flyspeck-root /project/worktrees/flyspeck-v13-source \
   --overlay-root /project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074 \
   --generated-root /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6 \
