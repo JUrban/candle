@@ -1384,6 +1384,28 @@ def _verify_scenario_journals(
     return records
 
 
+def _verify_scenario_transcripts(
+    evidence_dir: Path,
+    scenarios: dict[str, dict[str, Any]],
+) -> None:
+    require(set(scenarios) == {"call_time", "hoisted", "break_case_log"},
+            "completed transcript scenario set is not exact")
+    for name, scenario in sorted(scenarios.items()):
+        binding = scenario.get("transcript")
+        require(isinstance(binding, dict) and
+                set(binding) == {"path", "bytes", "sha256"},
+                f"scenario {name} transcript binding is malformed")
+        expected_path = f"transcripts/{name}.log"
+        require(binding["path"] == expected_path,
+                f"scenario {name} transcript path is not canonical")
+        path = evidence_dir / expected_path
+        require(path.is_file() and not path.is_symlink(),
+                f"scenario {name} transcript is not an ordinary file")
+        require(inputs.file_record(path) == {
+            field: binding[field] for field in ("bytes", "sha256")
+        }, f"scenario {name} transcript content hash changed")
+
+
 def _verify_completed_success_evidence(
     evidence_dir: Path,
     report: dict[str, Any],
@@ -1414,6 +1436,7 @@ def _verify_completed_success_evidence(
         evidence_dir, report["scenarios"],
         report["evidence"]["scenario_journals"],
     )
+    _verify_scenario_transcripts(evidence_dir, report["scenarios"])
     return attempt, report_record
 
 
@@ -1700,6 +1723,11 @@ def _validate_success_inventory(
         require(inventory.get(record["path"]) == {
             field: record[field] for field in ("bytes", "sha256")
         }, f"success inventory scenario {name} differs from report binding")
+    for name, scenario in sorted(report["scenarios"].items()):
+        transcript = scenario["transcript"]
+        require(inventory.get(transcript["path"]) == {
+            field: transcript[field] for field in ("bytes", "sha256")
+        }, f"success inventory transcript {name} differs from scenario binding")
 
 
 def _failure_postflight(

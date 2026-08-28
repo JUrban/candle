@@ -472,8 +472,8 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         Path("/unused"), evidence, controller, archived,
                     )
 
-    def test_success_receipt_rejects_persistent_json_mutations(self):
-        for target in ("attempt", "scenario", "report"):
+    def test_success_receipt_rejects_persistent_evidence_mutations(self):
+        for target in ("attempt", "scenario", "transcript", "report"):
             with self.subTest(target=target), \
                     tempfile.TemporaryDirectory() as temporary:
                 evidence = Path(temporary)
@@ -491,6 +491,17 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         ("call_time", "hoisted", "break_case_log")
                     )
                 }
+                transcript_dir = evidence / "transcripts"
+                transcript_dir.mkdir()
+                for name, scenario in scenarios.items():
+                    transcript = transcript_dir / f"{name}.log"
+                    transcript.write_text(
+                        f"{name} transcript\n", encoding="utf-8",
+                    )
+                    scenario["transcript"] = {
+                        "path": f"transcripts/{name}.log",
+                        **generator.file_record(transcript),
+                    }
                 journal_records = {}
                 for name, scenario in scenarios.items():
                     path = evidence / f"scenario-{name}.json"
@@ -533,6 +544,11 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         mutated_scenario,
                     )
                     pattern = "scenario journal call_time semantics changed"
+                elif target == "transcript":
+                    (transcript_dir / "call_time.log").write_text(
+                        "mutated transcript\n", encoding="utf-8",
+                    )
+                    pattern = "scenario call_time transcript content hash changed"
                 else:
                     mutated_report = dict(report)
                     mutated_report["mutated"] = True
