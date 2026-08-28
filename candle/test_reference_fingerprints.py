@@ -18,6 +18,22 @@ NONCE = "ab" * 32
 
 
 class ReferenceFingerprintTest(unittest.TestCase):
+    def setUp(self):
+        collector_sha256 = reference._sha256(Path(reference.__file__))
+        self.collector_patch = mock.patch.object(
+            reference, "_collector_repository_pin", return_value={
+                "root": str(reference.ROOT),
+                "git_head": "3" * 40,
+                "git_status": [],
+                "collector_relative_path": "candle/reference_fingerprints.py",
+                "collector_at_head_sha256": collector_sha256,
+                "collector_matches_head": True,
+            })
+        self.collector_patch.start()
+
+    def tearDown(self):
+        self.collector_patch.stop()
+
     def _fake_reference(self, directory, matching_source=True):
         root = Path(directory)
         (root / "100").mkdir()
@@ -26,8 +42,15 @@ class ReferenceFingerprintTest(unittest.TestCase):
             source += b"\n(* changed reference *)\n"
         (root / "100/gcd.ml").write_bytes(source)
         (root / "hol.ml").write_text("(* pinned fake hol root *)\n")
+        (root / "hol_loader.cmo").write_text("pinned loader\n")
+        (root / "pa_j.cmo").write_text("pinned parser\n")
+        (root / "load_camlp5_topfind.ml").write_text("pinned topfind loader\n")
         runtime = root / "ocaml-hol"
-        runtime_stublib = root / "dllzarith.so"
+        runtime_stublib = root / "stublibs/dllzarith.so"
+        runtime_stublib.parent.mkdir()
+        ocaml_library = root / "ocaml-library"
+        ocaml_library.mkdir()
+        (ocaml_library / "topfind").write_text("pinned topfind\n")
         ocamlc = root / "ocamlc"
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
@@ -43,7 +66,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         runtime_stublib.write_text("pinned runtime stub\n")
         ocamlc.write_text(
             "#!/bin/sh\n"
-            "if [ \"$1\" = -where ]; then dirname \"$0\"; "
+            f"if [ \"$1\" = -where ]; then printf '%s\\n' '{ocaml_library}'; "
             "else printf '4.14.1\\n'; fi\n")
         for executable in (runtime, ocamlc):
             executable.chmod(0o755)
@@ -86,6 +109,14 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.assertEqual(
             plan["request"]["sha256"],
             hashlib.sha256(source.encode()).hexdigest())
+        self.assertEqual(
+            plan["reference"]["runtime_interpreter"]["path"],
+            str(Path("/bin/sh").resolve()))
+        self.assertEqual(
+            plan["reference"]["generated_boot_files"][0]["path"],
+            str(root / "hol_loader.cmo"))
+        self.assertEqual(
+            plan["reference"]["ocaml_library_tree"]["entry_count"], 1)
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -155,7 +186,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             candidate_path = root.parent / "candidate.json"
             reference.collect(plan, transcript, candidate_path, 10)
             candidate = json.loads(candidate_path.read_text())
-            reference.validate_candidate(candidate)
+            reference.validate_candidate(
+                candidate, plan, plan["request"]["source"],
+                transcript.read_text())
             self.assertIn(reference.COMPLETE_MARKER, transcript.read_text())
             self.assertEqual(
                 candidate["plan_pins"]["reference"]["git_head"],
@@ -175,7 +208,12 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "approval_status": "candidate_unapproved",
             "promotion_allowed": True,
             "warning": "x", "plan_pins": {}, "session_nonce": NONCE,
-            "process_exit_code": 0, "transcript_sha256": "0" * 64,
+            "process_exit_code": 0,
+            "artifact_hashes": {
+                "plan_sha256": "0" * 64,
+                "request_sha256": "0" * 64,
+                "transcript_sha256": "0" * 64,
+            },
             "candidate_identities": {"status": "observed_uncompared"},
         }
         with self.assertRaisesRegex(reference.CollectionError, "fail-closed"):
@@ -211,6 +249,34 @@ class ReferenceFingerprintTest(unittest.TestCase):
         with self.assertRaisesRegex(
                 reference.CollectionError, "outside reference session"):
             reference.candidate_from_transcript(plan, transcript)
+
+    def test_linked_artifact_validation_rejects_tampering(self):
+        plan = {
+            "schema": reference.PLAN_SCHEMA,
+            "session_nonce": NONCE,
+            "fresh_process_contract": {"required": True},
+            "reference": {"git_head": "1" * 40},
+            "input": {
+                "target": "100/gcd", "theorem_names": ["EGCD"],
+                "mapping_status": "audited"},
+            "request": {"source": "pinned request\n"},
+        }
+        plan["request"]["sha256"] = hashlib.sha256(
+            plan["request"]["source"].encode()).hexdigest()
+        record = "\t".join([
+            regression.FINGERPRINT_MARKER,
+            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"conclusion".hex(), b"axioms".hex(), "0", "3",
+        ])
+        transcript = "\n".join([
+            f"{reference.SESSION_MARKER}\t{NONCE}", record,
+            f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
+        ])
+        candidate = reference.candidate_from_transcript(plan, transcript)
+        with self.assertRaisesRegex(
+                reference.CollectionError, "transcript artifact hash mismatch"):
+            reference.validate_candidate(
+                candidate, plan, plan["request"]["source"], transcript + "x")
 
 
 if __name__ == "__main__":

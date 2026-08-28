@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import stat
 import subprocess
 import sys
 import tempfile
@@ -24,8 +25,8 @@ MANIFEST = ROOT / "candle" / "top100_manifest.json"
 SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v2"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v2"
+PLAN_SCHEMA = "candle-s1-reference-plan-v3"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v3"
 
 
 class CollectionError(Exception):
@@ -46,6 +47,113 @@ def _pin_file(path):
     if not path.is_file():
         raise CollectionError(f"not a regular file: {path}")
     return {"path": str(path), "sha256": _sha256(path)}
+
+
+def _json_sha256(value):
+    encoded = (json.dumps(value, indent=2) + "\n").encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _pin_tree(path):
+    """Pin the names, kinds, modes, links, and contents of a directory tree."""
+    root = Path(path).resolve(strict=True)
+    if not root.is_dir():
+        raise CollectionError(f"not a directory: {root}")
+    records = []
+    for entry in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
+        relative = entry.relative_to(root).as_posix()
+        metadata = entry.lstat()
+        mode = stat.S_IMODE(metadata.st_mode)
+        if entry.is_symlink():
+            target = os.readlink(entry)
+            resolved = entry.resolve(strict=True)
+            record = {
+                "path": relative, "kind": "symlink", "mode": mode,
+                "target": target, "resolved_path": str(resolved),
+            }
+            if resolved.is_file():
+                record["resolved_sha256"] = _sha256(resolved)
+            elif not resolved.is_dir():
+                raise CollectionError(f"unsupported symlink target: {entry}")
+            records.append(record)
+        elif entry.is_file():
+            records.append({
+                "path": relative, "kind": "file", "mode": mode,
+                "sha256": _sha256(entry),
+            })
+        elif entry.is_dir():
+            records.append({"path": relative, "kind": "directory", "mode": mode})
+        else:
+            raise CollectionError(f"unsupported filesystem entry: {entry}")
+    digest = hashlib.sha256()
+    for record in records:
+        digest.update(json.dumps(
+            record, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+        digest.update(b"\n")
+    return {
+        "root": str(root),
+        "entry_count": len(records),
+        "inventory_sha256": digest.hexdigest(),
+        "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1",
+    }
+
+
+def _runtime_interpreter(runtime):
+    first_line = Path(runtime).read_bytes().split(b"\n", 1)[0]
+    match = re.fullmatch(br"#!(/[^\x00-\x20]+)(?:[ \t]+.*)?", first_line)
+    if not match:
+        raise CollectionError("runtime must have an absolute shebang interpreter")
+    return _pin_file(Path(os.fsdecode(match.group(1))))
+
+
+def _elf_dependencies(paths):
+    """Return the recursively resolved dynamic-library closure of ELF files."""
+    pending = [Path(path).resolve(strict=True) for path in paths]
+    checked = set()
+    dependencies = {}
+    absolute_path = re.compile(r"(?:=>\s+)?(/[^\s(]+)\s+\(")
+    while pending:
+        path = pending.pop()
+        if path in checked:
+            continue
+        checked.add(path)
+        if path.read_bytes()[:4] != b"\x7fELF":
+            continue
+        try:
+            output = subprocess.check_output(
+                ["/usr/bin/ldd", str(path)], text=True,
+                stderr=subprocess.STDOUT, timeout=30,
+                env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"})
+        except (OSError, subprocess.SubprocessError) as error:
+            raise CollectionError(f"could not inspect ELF dependencies: {path}") from error
+        if "not found" in output:
+            raise CollectionError(f"unresolved ELF dependency for {path}")
+        for line in output.splitlines():
+            match = absolute_path.search(line)
+            if not match:
+                continue
+            dependency = Path(match.group(1)).resolve(strict=True)
+            dependencies[str(dependency)] = _pin_file(dependency)
+            if dependency not in checked:
+                pending.append(dependency)
+    return [dependencies[path] for path in sorted(dependencies)]
+
+
+def _collector_repository_pin():
+    head = _git(ROOT, "rev-parse", "HEAD")
+    status = _git(ROOT, "status", "--porcelain=v1", "--untracked-files=all")
+    relative = Path(__file__).resolve().relative_to(ROOT).as_posix()
+    committed = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", f"{head}:{relative}"])
+    committed_sha256 = hashlib.sha256(committed).hexdigest()
+    working_sha256 = _sha256(Path(__file__))
+    return {
+        "root": str(ROOT), "git_head": head,
+        "git_status": status.splitlines() if status else [],
+        "collector_relative_path": relative,
+        "collector_at_head_sha256": committed_sha256,
+        "collector_matches_head": committed_sha256 == working_sha256,
+    }
 
 
 def _ocaml_string(value):
@@ -114,6 +222,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
 
     runtime_pin = _pin_file(runtime)
     runtime_stublib_pin = _pin_file(runtime_stublib)
+    runtime_interpreter_pin = _runtime_interpreter(runtime_pin["path"])
     ocamlc_pin = _pin_file(ocamlc)
     try:
         ocaml_version = subprocess.check_output(
@@ -135,8 +244,18 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     serializer_pin = _pin_file(SERIALIZER)
     theorem_names = [item["name"] for item in request["theorems"]]
     hol_ml_pin = _pin_file(reference_root / "hol.ml")
+    boot_files = [
+        _pin_file(reference_root / "hol_loader.cmo"),
+        _pin_file(reference_root / "pa_j.cmo"),
+        _pin_file(reference_root / "load_camlp5_topfind.ml"),
+    ]
+    runtime_library_tree = _pin_tree(Path(runtime_stublib_pin["path"]).parent)
+    ocaml_library_tree = _pin_tree(ocaml_where)
+    dynamic_libraries = _elf_dependencies([
+        runtime_interpreter_pin["path"], runtime_stublib_pin["path"]])
+    collector_repository = _collector_repository_pin()
     runtime_environment = {
-        "HOME": os.environ.get("HOME", ""),
+        "HOME": str(reference_root),
         "PATH": "/usr/bin:/bin",
         "LC_ALL": "C",
         "HOLLIGHT_DIR": str(reference_root),
@@ -145,8 +264,6 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
         "CAML_LD_LIBRARY_PATH": str(Path(runtime_stublib_pin["path"]).parent),
         "OCAML_TOPLEVEL_PATH": ocaml_where,
     }
-    if not runtime_environment["HOME"]:
-        raise CollectionError("HOME is required by the sanitized runtime environment")
     runtime_argv = [
         runtime_pin["path"], "-init", hol_ml_pin["path"],
         "-I", str(reference_root), "-noprompt",
@@ -168,15 +285,21 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "git_head": reference_head,
             "git_status": [],
             "runtime_executable": runtime_pin,
+            "runtime_interpreter": runtime_interpreter_pin,
             "runtime_stublib": runtime_stublib_pin,
+            "runtime_library_tree": runtime_library_tree,
+            "dynamic_libraries": dynamic_libraries,
             "ocamlc": {
                 **ocamlc_pin, "version": ocaml_version,
                 "stdlib_directory": ocaml_where,
             },
             "hol_ml": hol_ml_pin,
+            "generated_boot_files": boot_files,
+            "ocaml_library_tree": ocaml_library_tree,
         },
         "input": {
             "collector": _pin_file(Path(__file__)),
+            "collector_repository": collector_repository,
             "manifest": {"path": str(MANIFEST), "sha256": _sha256(MANIFEST)},
             "manifest_schema_version": manifest["schema_version"],
             "target": target_name,
@@ -200,6 +323,20 @@ def _stable_plan_pins(plan):
         "request_sha256": plan["request"]["sha256"],
         "fresh_process_contract": plan["fresh_process_contract"],
     }
+
+
+def _rebuild_plan(plan):
+    return build_plan(
+        plan["input"]["target"], plan["reference"]["root"],
+        plan["reference"]["runtime_executable"]["path"],
+        plan["reference"]["runtime_stublib"]["path"],
+        plan["reference"]["ocamlc"]["path"], plan["session_nonce"])
+
+
+def _require_current_plan_pins(plan):
+    rebuilt = _rebuild_plan(plan)
+    if _stable_plan_pins(rebuilt) != _stable_plan_pins(plan):
+        raise CollectionError("reference or collector inputs differ from plan pins")
 
 
 def candidate_from_transcript(plan, transcript, exit_code=0):
@@ -252,18 +389,22 @@ def candidate_from_transcript(plan, transcript, exit_code=0):
         "plan_pins": _stable_plan_pins(plan),
         "session_nonce": nonce,
         "process_exit_code": exit_code,
-        "transcript_sha256": hashlib.sha256(
-            transcript.encode("utf-8")).hexdigest(),
+        "artifact_hashes": {
+            "plan_sha256": _json_sha256(plan),
+            "request_sha256": plan["request"]["sha256"],
+            "transcript_sha256": hashlib.sha256(
+                transcript.encode("utf-8")).hexdigest(),
+        },
         "candidate_identities": identities,
     }
 
 
-def validate_candidate(candidate):
-    """Reject artifacts that are not structurally review-only candidates."""
+def validate_candidate(candidate, plan=None, request=None, transcript=None):
+    """Reject malformed candidates and optionally replay all artifact links."""
     required = {
         "schema", "artifact_kind", "approval_status", "promotion_allowed",
         "warning", "plan_pins", "session_nonce", "process_exit_code",
-        "transcript_sha256", "candidate_identities",
+        "artifact_hashes", "candidate_identities",
     }
     if set(candidate) != required:
         raise CollectionError("malformed reference candidate fields")
@@ -275,13 +416,49 @@ def validate_candidate(candidate):
         raise CollectionError("reference artifact is not fail-closed")
     if candidate["process_exit_code"] != 0:
         raise CollectionError("reference candidate records a failed process")
+    if not re.fullmatch(r"[0-9a-f]{64}", candidate["session_nonce"]):
+        raise CollectionError("malformed candidate session nonce")
+    hashes = candidate["artifact_hashes"]
+    if set(hashes) != {"plan_sha256", "request_sha256", "transcript_sha256"}:
+        raise CollectionError("malformed candidate artifact hashes")
+    if any(not re.fullmatch(r"[0-9a-f]{64}", value)
+           for value in hashes.values()):
+        raise CollectionError("malformed candidate artifact hash")
+    plan_pins = candidate["plan_pins"]
+    if (set(plan_pins) != {"reference", "input", "request_sha256",
+                           "fresh_process_contract"}
+            or plan_pins["request_sha256"] != hashes["request_sha256"]):
+        raise CollectionError("malformed candidate plan pins")
     if candidate["candidate_identities"].get("status") != "observed_uncompared":
         raise CollectionError("reference candidate is not explicitly incomparable")
+    supplied = (plan is not None, request is not None, transcript is not None)
+    if any(supplied) and not all(supplied):
+        raise CollectionError("plan, request, and transcript must be supplied together")
+    if all(supplied):
+        if hashes["plan_sha256"] != _json_sha256(plan):
+            raise CollectionError("candidate plan artifact hash mismatch")
+        request_sha256 = hashlib.sha256(request.encode("utf-8")).hexdigest()
+        if (request != plan["request"]["source"]
+                or request_sha256 != hashes["request_sha256"]):
+            raise CollectionError("candidate request artifact mismatch")
+        transcript_sha256 = hashlib.sha256(transcript.encode("utf-8")).hexdigest()
+        if transcript_sha256 != hashes["transcript_sha256"]:
+            raise CollectionError("candidate transcript artifact hash mismatch")
+        rebuilt = candidate_from_transcript(
+            plan, transcript, candidate["process_exit_code"])
+        if rebuilt != candidate:
+            raise CollectionError("candidate does not replay from linked artifacts")
     return candidate
 
 
 def collect(plan, transcript_path, candidate_path, wall_timeout):
     """Launch one fresh reference process, recheck pins, and write a candidate."""
+    collector_repository = plan["input"]["collector_repository"]
+    if (collector_repository["git_status"]
+            or not collector_repository["collector_matches_head"]):
+        raise CollectionError(
+            "collector repository must be clean with the collector at HEAD")
+    _require_current_plan_pins(plan)
     argv = list(plan["fresh_process_contract"]["runtime_argv"])
     env = dict(plan["fresh_process_contract"]["runtime_environment"])
     completed = subprocess.run(
@@ -291,16 +468,10 @@ def collect(plan, transcript_path, candidate_path, wall_timeout):
         timeout=wall_timeout, check=False)
     transcript_path.write_text(completed.stdout, encoding="utf-8")
 
-    rebuilt = build_plan(
-        plan["input"]["target"], plan["reference"]["root"],
-        plan["reference"]["runtime_executable"]["path"],
-        plan["reference"]["runtime_stublib"]["path"],
-        plan["reference"]["ocamlc"]["path"], plan["session_nonce"])
-    if _stable_plan_pins(rebuilt) != _stable_plan_pins(plan):
-        raise CollectionError("reference inputs changed during collection")
+    _require_current_plan_pins(plan)
     candidate = candidate_from_transcript(
         plan, completed.stdout, completed.returncode)
-    validate_candidate(candidate)
+    validate_candidate(candidate, plan, plan["request"]["source"], completed.stdout)
     candidate_path.write_text(
         json.dumps(candidate, indent=2) + "\n", encoding="utf-8")
 
@@ -323,12 +494,20 @@ def main():
             sub.add_argument("--wall-timeout", type=float, required=True)
     validate = subparsers.add_parser("validate")
     validate.add_argument("candidate", type=Path)
+    validate.add_argument("--plan", type=Path, required=True)
+    validate.add_argument("--request", type=Path, required=True)
+    validate.add_argument("--transcript", type=Path, required=True)
     args = parser.parse_args()
 
     try:
         if args.command == "validate":
-            validate_candidate(json.loads(args.candidate.read_text()))
-            print(f"candidate valid and unapproved: {args.candidate}")
+            candidate = json.loads(args.candidate.read_text())
+            plan = json.loads(args.plan.read_text())
+            request = args.request.read_text(encoding="utf-8")
+            transcript = args.transcript.read_text(encoding="utf-8")
+            validate_candidate(candidate, plan, request, transcript)
+            _require_current_plan_pins(plan)
+            print(f"candidate and linked artifacts valid but unapproved: {args.candidate}")
             return 0
         plan = build_plan(
             args.target, args.reference_root, args.runtime,
