@@ -146,6 +146,35 @@ class Top100ManifestTest(unittest.TestCase):
              "FOURIER_JORDAN_BOUNDED_VARIATION",
              "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE"])
 
+    def test_reference_candidate_cannot_enter_expected_identities(self):
+        candidate = {
+            "schema": "candle-s1-reference-candidate-v1",
+            "artifact_kind": "reference_identity_candidate",
+            "approval_status": "candidate_unapproved",
+            "promotion_allowed": False,
+            "candidate_identities": {"status": "observed_uncompared"},
+        }
+        with self.assertRaisesRegex(ValueError, "malformed expected"):
+            top100_manifest._validate_expected_identity_object(
+                "100/gcd", ["EGCD"], candidate)
+
+        approved_shape = {
+            "serializer_sha256": "0" * 64,
+            "theorems": [{
+                "name": "EGCD",
+                "theorem_sha256": "1" * 64,
+                "hypotheses_sha256": "2" * 64,
+                "conclusion_sha256": "3" * 64,
+                "global_axioms_sha256": "4" * 64,
+                "hypothesis_count": 0,
+                "global_axiom_count": 3,
+            }],
+        }
+        self.assertIs(
+            top100_manifest._validate_expected_identity_object(
+                "100/gcd", ["EGCD"], approved_shape),
+            approved_shape)
+
 
 if __name__ == "__main__":
     unittest.main()

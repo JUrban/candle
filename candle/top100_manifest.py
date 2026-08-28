@@ -159,6 +159,46 @@ AUDITED_MAPPING_RATIONALES = {
 # this empty makes every current observation explicitly incomparable.
 EXPECTED_IDENTITIES = {}
 
+EXPECTED_RECORD_FIELDS = {
+    "name", "theorem_sha256", "hypotheses_sha256", "conclusion_sha256",
+    "global_axioms_sha256", "hypothesis_count", "global_axiom_count",
+}
+SHA256_RE = re.compile(r"[0-9a-f]{64}")
+
+
+def _is_sha256(value):
+    return isinstance(value, str) and SHA256_RE.fullmatch(value) is not None
+
+
+def _validate_expected_identity_object(target, theorem_names, expected):
+    """Reject candidates or malformed approvals before manifest generation."""
+    if expected is None:
+        return None
+    if not isinstance(expected, dict) or set(expected) != {
+            "serializer_sha256", "theorems"}:
+        raise ValueError(f"{target}: malformed expected identity object")
+    if not _is_sha256(expected["serializer_sha256"]):
+        raise ValueError(f"{target}: malformed expected serializer identity")
+    records = expected["theorems"]
+    if not isinstance(records, list) or [
+            record.get("name") if isinstance(record, dict) else None
+            for record in records] != list(theorem_names):
+        raise ValueError(f"{target}: expected theorem names/order mismatch")
+    for record in records:
+        if set(record) != EXPECTED_RECORD_FIELDS:
+            raise ValueError(f"{target}: malformed expected theorem record")
+        for field in (
+                "theorem_sha256", "hypotheses_sha256", "conclusion_sha256",
+                "global_axioms_sha256"):
+            if not _is_sha256(record[field]):
+                raise ValueError(f"{target}: malformed expected hash: {field}")
+        for field in ("hypothesis_count", "global_axiom_count"):
+            value = record[field]
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{target}: malformed expected count: {field}")
+    return expected
+
+
 # Observations are evidence, not acceptance-policy exceptions.  Keep expected
 # status "pass" and link failures to a minimized compatibility-ledger entry.
 BASELINE_OBSERVATIONS = {
@@ -638,6 +678,11 @@ def build_manifest():
             if observation and observation["status"] != "pass"
             else "missing"
         )
+        fingerprint_request = _theorem_request(name, load_files)
+        expected_identities = _validate_expected_identity_object(
+            name,
+            [theorem["name"] for theorem in fingerprint_request["theorems"]],
+            EXPECTED_IDENTITIES.get(name))
         targets.append({
             "name": name,
             "load_files": load_files,
@@ -648,8 +693,8 @@ def build_manifest():
             "expected_status": "pass",
             "skip": None,
             "fingerprint_request": {
-                **_theorem_request(name, load_files),
-                "expected_identities": EXPECTED_IDENTITIES.get(name),
+                **fingerprint_request,
+                "expected_identities": expected_identities,
             },
             "fingerprints": {
                 "status": fingerprint_status,

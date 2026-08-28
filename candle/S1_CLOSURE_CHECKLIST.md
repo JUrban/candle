@@ -32,6 +32,10 @@ Before rerunning Candle, produce and review expected records from an approved,
 pinned HOL Light reference environment using the exact
 `candle/fingerprint.ml` serializer. For each target:
 
+Use `candle/reference_fingerprints.py` as documented in
+`candle/S1_REFERENCE_COLLECTION.md`; its output is deliberately an unapproved
+candidate and cannot be consumed as an expected identity object.
+
 1. Approve the named theorem boundary. Resolve both manual-review mappings.
 2. Pin the reference source commit, clean/dirty status, load-file hashes,
    ordered load files, executable/runtime identity, and serializer SHA-256.
