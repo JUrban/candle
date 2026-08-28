@@ -11,6 +11,9 @@ candle_script=$(realpath -- "$1")
   printf 'Candle launcher is not executable: %s\n' "$candle_script" >&2
   exit 2
 }
+candle_root=$(cd -- "$(dirname -- "$candle_script")" && pwd)
+python3 "$candle_root/candle/cakeml_artifact_provenance.py" \
+  check-linked --candle-root "$candle_root"
 
 source_file=$(mktemp /tmp/candle-dopen-runtime.XXXXXX.ml)
 log=$(mktemp /tmp/candle-dopen-runtime.XXXXXX.log)
@@ -52,7 +55,7 @@ printf '%s\n' \
   >"$source_file"
 
 (
-  cd -- "$(dirname -- "$candle_script")"
+  cd -- "$candle_root"
   timeout 300 "$candle_script" >"$log" 2>&1 <<EOF
 #use "$source_file";;
 EOF

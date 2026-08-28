@@ -2,14 +2,15 @@
 set -euo pipefail
 
 usage() {
-  printf 'usage: %s <CakeML checkout>\n' "$0" >&2
+  printf 'usage: %s <CakeML checkout> <bootstrap-provenance.json>\n' "$0" >&2
   exit 2
 }
 
-[[ $# -eq 1 ]] || usage
+[[ $# -eq 2 ]] || usage
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 cakeml_dir=$(realpath -- "$1")
+bootstrap_record=$(realpath -- "$2")
 manifest=$script_dir/candle/flyspeck_manifest.json
 bootstrap_dir=$cakeml_dir/compiler/bootstrap/compilation/x64/64
 build_dir=$script_dir/candle/build
@@ -42,6 +43,12 @@ actual_head=$(git -C "$cakeml_dir" rev-parse HEAD)
 git -C "$cakeml_dir" diff --quiet
 git -C "$cakeml_dir" diff --cached --quiet
 
+python3 "$script_dir/candle/cakeml_artifact_provenance.py" \
+  check-bootstrap \
+  --candle-root "$script_dir" \
+  --cakeml-root "$cakeml_dir" \
+  --record "$bootstrap_record"
+
 required=(cake.S config_enc_str.txt candle_boot.ml basis_ffi.c Makefile)
 for input in "${required[@]}"; do
   [[ -r $bootstrap_dir/$input ]] || {
@@ -64,6 +71,13 @@ done
   python3 ../insulate.py types.txt insulate.ml
 )
 
+python3 "$script_dir/candle/cakeml_artifact_provenance.py" \
+  record-linked \
+  --candle-root "$script_dir" \
+  --cakeml-root "$cakeml_dir" \
+  --bootstrap-record "$bootstrap_record" \
+  --write "$build_dir/cakeml-build-provenance.json"
+
 ln -sfn candle/build/config_enc_str.txt "$script_dir/config_enc_str.txt"
 ln -sfn candle/build/candle_boot.ml "$script_dir/candle_boot.ml"
 
@@ -74,4 +88,5 @@ sha256sum \
   "$build_dir/config_enc_str.txt" \
   "$build_dir/candle_boot.ml" \
   "$build_dir/types.txt" \
-  "$build_dir/insulate.ml"
+  "$build_dir/insulate.ml" \
+  "$build_dir/cakeml-build-provenance.json"

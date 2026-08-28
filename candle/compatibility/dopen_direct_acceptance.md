@@ -40,9 +40,16 @@ After the pinned CakeML bootstrap has produced the x64/64 inputs, build a
 fresh integrated Candle executable and run the bounded gate:
 
 ```sh
-cd /project/worktrees/candle-dopen-acceptance-v13
+cd /project/worktrees/candle-integration-v13
+python3 candle/cakeml_artifact_provenance.py record-bootstrap \
+  --candle-root . \
+  --cakeml-root /project/worktrees/cakeml-flyspeck-v13-integration \
+  --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \
+  --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.log \
+  --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.json
 CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh \
-  /project/worktrees/cakeml-flyspeck-v13-integration
+  /project/worktrees/cakeml-flyspeck-v13-integration \
+  /project/flyspeck-candle-runs/v13-dopen-bootstrap-936219bbc.json
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \
@@ -53,6 +60,14 @@ CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.
 
 Do not run this command concurrently with a build or another compiled Candle
 workload in the same worktree.
+
+The first command refuses a dirty or mismatched CakeML/HOL worktree, a failed
+bootstrap transcript, a missing output, or any pin drift.  The local build
+revalidates that record before copying ignored generated files, then emits
+`candle/build/cakeml-build-provenance.json`.  Both Dopen runners require that
+record to match the clean Candle checkout, the exact linked executable and
+other build outputs, the assembly patch, the external bootstrap record, and
+the compiler's embedded CakeML/HOL revision lines before starting Candle.
 
 ## Acceptance and failure semantics
 
