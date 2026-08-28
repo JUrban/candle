@@ -18,9 +18,9 @@ Dopen; this is not a synthetic module smoke test.
 - HOL4 proof build: `a390cbabd3a4521bab4ee20281e3e42933a8a3ae`;
 - direct Flyspeck: `1ce0353008eba83d3c76ae9a25c3c242e4802d53`;
 - normalization contract SHA-256:
-  `46499f442c741cf9d2c8e4adfeb442b0c4d8fdeb705c6cea8afffbced2e450b8`;
+  `ee96d0327a611074817ae2e458f8013880cad6f1c059fa9b9481b4c3060d48ad`;
 - current authenticated overlay root:
-  `/project/flyspeck-candle-runs/v13-normalized-overlay-46499f442c741cf9`;
+  `/project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074`;
 - prepared `hard_7.dat` SHA-256:
   `0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526`;
 - current authenticated generated-input root:
@@ -54,7 +54,7 @@ CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \
   /project/worktrees/flyspeck-v13-source \
-  /project/flyspeck-candle-runs/v13-normalized-overlay-46499f442c741cf9 \
+  /project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074 \
   /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6
 ```
 

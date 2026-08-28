@@ -27,10 +27,10 @@ For the integration input audited here, materialize with:
 
 ```sh
 python3 candle/flyspeck_stratum_plan.py \
-  --candle-root /project/worktrees/candle-strata-v13 \
+  --candle-root /project/worktrees/candle-integration-v13 \
   --expected-candle-base e3965b3734394f45ef92fab74b602f4a6f07ccb1 \
   --flyspeck-root /project/worktrees/flyspeck-v13-source \
-  --overlay-root /project/flyspeck-candle-runs/v13-normalized-overlay-46499f442c741cf9 \
+  --overlay-root /project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074 \
   --generated-root /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6 \
   --write /path/to/new-empty-output-directory
 ```
