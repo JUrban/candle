@@ -24,17 +24,20 @@ manifest=$script_dir/candle/flyspeck_manifest.json
 bootstrap_dir=$cakeml_dir/compiler/bootstrap/compilation/x64/64
 build_dir=$script_dir/candle/build
 mkdir -p "$build_dir"
-[[ -d $build_dir && ! -L $build_dir ]] || {
+[[ -d $script_dir/candle && ! -L $script_dir/candle &&
+   -d $build_dir && ! -L $build_dir ]] || {
   printf 'Candle build directory must be an ordinary directory: %s\n' \
     "$build_dir" >&2
   exit 1
 }
-[[ ! -L $build_dir/runtime.lock ]] || {
-  printf 'refusing symlink runtime lock: %s\n' "$build_dir/runtime.lock" >&2
+exec 9<"$build_dir"
+/usr/bin/flock -x 9
+lock_fd_identity=$(/usr/bin/stat -Lc '%d:%i' "/proc/$$/fd/9")
+lock_path_identity=$(/usr/bin/stat -Lc '%d:%i' "$build_dir")
+[[ $lock_fd_identity == "$lock_path_identity" ]] || {
+  printf 'Candle build directory changed while acquiring its lock\n' >&2
   exit 1
 }
-exec 9>>"$build_dir/runtime.lock"
-/usr/bin/flock -x 9
 managed_outputs=(
   cake.S cake.S.bootstrap cake config_enc_str.txt candle_boot.ml basis_ffi.c
   Makefile types.txt insulate.ml bootstrap-provenance.json bootstrap.log

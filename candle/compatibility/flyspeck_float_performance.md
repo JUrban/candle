@@ -29,10 +29,12 @@ After masking nested comments and strings, the generator requires exactly
 7,479 `Iarg_leaf` constructors and 463 `add_case` actions.  The generated JSON
 retains the complete histogram, not only these headline counts.
 
-The compiled gate loads the one-line `break_case_type.hl` setup outside the
+The compiled gate loads the small `break_case_type.hl` setup outside the
 measurement interval, then measures an exact `#use` of the authenticated
-`break_case_log.hl` through its EOF marker.  It subsequently requires the
-resulting `Break_case_log.break_data` to contain exactly 463 cases.
+`break_case_log.hl` copy through its EOF marker.  Both source files and the
+manifest that authenticates them are copied read-only into the evidence
+directory before any session.  It subsequently requires the resulting
+`Break_case_log.break_data` to contain exactly 463 cases.
 
 ## Call-time versus hoisted conversion
 
@@ -69,35 +71,47 @@ Every one of the three measured sessions must:
    failure; then
 5. evaluate `(check_axioms (); true)` again as a session postflight.
 
-Elapsed time begins immediately before the measured `#use` and ends at its EOF
-marker.  RSS sampling begins immediately before that `#use` and ends after its
-EOF and prompt.  Reported RSS is total process/process-tree RSS during the
-interval and includes the retained full-HOL baseline; it is not attributed
-incremental allocation.  Fresh processes prevent the large retained
-`break_data` value from contaminating either loop comparison.
+Elapsed time begins immediately before sending the measured `#use` and ends at
+its EOF marker.  RSS sampling begins immediately before that
+`#use` and ends after its EOF and prompt, at 50 ms intervals.  Reported RSS is
+total root-process/process-tree RSS during the interval and includes the
+retained full-HOL baseline; it is not attributed incremental allocation.
+Process-tree RSS is a sum and can double-count shared pages.  Fresh processes
+prevent the large retained `break_data` value from contaminating either loop
+comparison.  Successful sessions send EOF and require zero exit status and no
+terminating signal; forced termination is reserved for failed sessions.
 
 Optional elapsed and ratio ceilings can turn a reviewed baseline into an
 explicit regression threshold.  When no ceiling is supplied, the gate checks
 only successful completion within the independently recorded wall timeout and
 still emits exact elapsed/RSS observations; it does not invent an unreviewed
-performance acceptance threshold.
+performance acceptance threshold.  Machine-readable output is therefore
+`observation_complete`, not `pass`, unless all three ceilings are supplied and
+the pinned 10,000-iteration workload is used.  A complete supplied policy is
+reported as `thresholds_satisfied` or `thresholds_failed` and separately sets
+the boolean `performance_accepted`.
 
 On a completed run, the user-selected evidence directory is never temporary.
 It retains the generated histogram and both generated loop sources, their
-content-addressed input receipt, the exact linked-provenance JSON, the exact
-gate configuration and fixed runtime environment, three complete session
-transcripts, and `report.json` with elapsed/RSS observations and hashes.  The
-runner revalidates the linked record, pinned Flyspeck manifest/source, and all
-generated inputs after the sessions.  The linked-record revalidation is the
-same fail-closed check used by `cakeml_artifact_provenance.py check-linked`;
-the report records all of these postflights.
+content-addressed input receipt, the exact linked-provenance JSON, its durable
+bootstrap record and successful build log, the exact loader/libc/libm object
+bytes, the exact gate configuration and fixed runtime environment, three
+complete session transcripts, and `report.json` with elapsed/RSS observations
+and hashes.  The runner revalidates the linked record, pinned Flyspeck
+manifest/source, all generated inputs, and every archived runtime-provenance
+input after the sessions.  Each successful scenario is journaled immediately.
+After attempt creation, a later failure always produces a `receipt.json` with
+the error, completed scenario measurements, feasible linked/source postflight,
+and a content inventory of all retained files.  The linked-record revalidation is the same
+fail-closed check used by `cakeml_artifact_provenance.py check-linked`; the
+report records all of these postflights.
 
 ## Commands
 
 Generate and inspect the exact host-side inputs:
 
 ```text
-python3 candle/compatibility/generate_flyspeck_float_performance.py \
+/usr/bin/python3 -I candle/compatibility/generate_flyspeck_float_performance.py \
   --candle-root /path/to/clean/candle \
   --flyspeck-root /path/to/pinned/flyspeck \
   --output-dir /tmp/candle-flyspeck-float-performance-inputs \
@@ -108,7 +122,7 @@ Run the compiled performance gate into a new, user-selected evidence
 directory:
 
 ```text
-python3 candle/compatibility/run_flyspeck_float_performance_gate.py \
+/usr/bin/python3 -I candle/compatibility/run_flyspeck_float_performance_gate.py \
   --candle-root /path/to/provenance-bound/candle \
   --flyspeck-root /path/to/pinned/flyspeck \
   --evidence-dir /path/to/results/flyspeck-float-performance-attempt-001 \
@@ -116,8 +130,9 @@ python3 candle/compatibility/run_flyspeck_float_performance_gate.py \
 ```
 
 The evidence directory must not already exist and cannot be inside either
-source tree.  Successful output contains `gate-config.json`,
-`linked-provenance.json`, `generated/`, `transcripts/`, and `report.json`.
+source tree.  Successful output contains `attempt.json`, `gate-config.json`,
+`provenance/`, `sources/`, `generated/`, `transcripts/`, per-scenario journals,
+`report.json`, and `receipt.json`.
 
 Reviewed thresholds, when available, are passed explicitly with
 `--max-break-case-seconds`, `--max-call-time-seconds`, and
@@ -126,10 +141,10 @@ Reviewed thresholds, when available, are passed explicitly with
 ## Current evidence limit
 
 The host generator and its fail-closed unit tests reproduce the pinned source
-histogram and generated input receipts.  This isolated development worktree
-does not contain a linked `candle/build/cakeml-build-provenance.json` or
-authenticated executable, so no compiled elapsed/RSS result is claimed here.
-The gate must not be weakened to use an unbound executable or skip the full-HOL
-EOF/`check_axioms` preflight.  A future run becomes performance evidence only
-after the verified parser bootstrap is linked and the complete provenance
-check passes; even then it remains outside S2 and S3.
+histogram and generated input receipts.  No compiled elapsed/RSS result is
+claimed by this document.  A local build record, if present, is acceptable
+only when the complete current schema-2 linked-provenance check passes.  The
+gate must not be weakened to use an unbound executable or skip the full-HOL
+EOF/`check_axioms` preflight.  A run becomes performance evidence only after
+the verified parser bootstrap is linked and that complete provenance check
+passes; even then it remains outside S2 and S3.

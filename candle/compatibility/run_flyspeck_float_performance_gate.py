@@ -14,12 +14,14 @@ theorem fingerprint gate and never establishes S2 or S3.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import importlib.util
 import json
 import os
 from pathlib import Path
 import re
+import shutil
 import sys
 import threading
 import time
@@ -28,7 +30,11 @@ from typing import Any
 
 import pexpect
 
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent))
 import generate_flyspeck_float_performance as inputs
+import runtime_lock
 
 
 CLAIM = "performance observation only; not semantic, S2, or S3 evidence"
@@ -109,10 +115,9 @@ class ProcessTreeSampler:
                 if parent in tree and pid not in tree:
                     tree.add(pid)
                     changed = True
-        values = [rss[pid] for pid in tree if pid in rss]
-        if not values:
+        if root_pid not in rss:
             return 0, 0
-        return max(values), sum(values)
+        return rss[root_pid], sum(rss[pid] for pid in tree if pid in rss)
 
     def _sample(self) -> None:
         process_rss, tree_rss = self.tree_rss(self.root_pid)
@@ -161,9 +166,25 @@ class CandleSession:
             self.transcript.close()
             raise
 
-    def close(self) -> None:
-        self.process.close(force=True)
+    def abort(self) -> None:
+        if self.process.isalive():
+            self.process.close(force=True)
         self.transcript.close()
+
+    def finish(self, wall_timeout: float = 300.0) -> None:
+        try:
+            self.process.sendeof()
+            self.process.expect(pexpect.EOF, timeout=wall_timeout)
+            self.process.close()
+            require(
+                self.process.exitstatus == 0 and
+                self.process.signalstatus is None,
+                "Candle performance session did not exit cleanly",
+            )
+        finally:
+            if self.process.isalive():
+                self.process.close(force=True)
+            self.transcript.close()
 
     def _expect_until(
         self,
@@ -210,8 +231,8 @@ class CandleSession:
         marker: str | None = None,
     ) -> float:
         require(path.is_file(), f"missing load source: {path}")
-        self.process.sendline(f"#use {json.dumps(str(path))};;")
         started = time.perf_counter()
+        self.process.sendline(f"#use {json.dumps(str(path))};;")
         marker_seen = marker is None
         finished = False
         deadline = time.monotonic() + wall_timeout
@@ -306,8 +327,10 @@ def _measure_load(
         "elapsed_seconds": elapsed,
         "rss_scope": (
             "total process/tree RSS sampled from immediately before measured "
-            "#use through source EOF and prompt; includes full-HOL baseline"
+            "#use through source EOF and prompt; includes full-HOL baseline; "
+            "tree sum can double-count shared pages"
         ),
+        "rss_sampling_interval_seconds": sampler.interval,
         "rss_before_process_kib": before_process,
         "rss_before_tree_kib": before_tree,
         "peak_process_rss_kib": sampler.peak_process_rss_kib,
@@ -320,7 +343,7 @@ def _measure_load(
 def _run_one(
     name: str,
     candle_root: Path,
-    flyspeck_root: Path,
+    source_paths: dict[str, Path],
     generated_dir: Path,
     log_dir: Path,
     environment: dict[str, str],
@@ -332,14 +355,15 @@ def _run_one(
     session = CandleSession(
         candle_root, environment, transcript_path, inactivity_timeout,
     )
+    succeeded = False
     try:
         hol_elapsed = session.full_hol_preflight(hol_wall_timeout)
         if name == "break_case_log":
-            type_path = flyspeck_root / "text_formalization/nonlinear/break_case_type.hl"
+            type_path = source_paths["break_case_type"]
             setup_elapsed = session.load(type_path, scenario_wall_timeout)
             measured = _measure_load(
                 session,
-                flyspeck_root / inputs.SOURCE_PATH,
+                source_paths["break_case_log"],
                 scenario_wall_timeout,
             )
             session.evaluate_true(
@@ -368,8 +392,16 @@ def _run_one(
             "check_axioms_preflight": True,
             "check_axioms_postflight": True,
         })
+        succeeded = True
     finally:
-        session.close()
+        try:
+            if succeeded:
+                session.finish()
+            else:
+                session.abort()
+        finally:
+            if transcript_path.is_file() and not transcript_path.is_symlink():
+                transcript_path.chmod(0o444)
     measured["transcript"] = {
         "path": str(transcript_path),
         "bytes": transcript_path.stat().st_size,
@@ -401,6 +433,27 @@ def threshold_failures(
     return failures
 
 
+def observation_outcome(
+    iterations: int,
+    failures: list[str],
+    max_break_case_seconds: float | None,
+    max_call_time_seconds: float | None,
+    max_call_to_hoisted_ratio: float | None,
+) -> tuple[str, bool]:
+    policy_complete = (
+        iterations == inputs.DEFAULT_ITERATIONS and
+        all(value is not None for value in (
+            max_break_case_seconds, max_call_time_seconds,
+            max_call_to_hoisted_ratio,
+        ))
+    )
+    if failures:
+        return "thresholds_failed", policy_complete
+    if policy_complete:
+        return "thresholds_satisfied", True
+    return "observation_complete", False
+
+
 def _create_evidence_layout(
     evidence_dir: Path,
     candle_root: Path,
@@ -425,6 +478,196 @@ def _write_json(path: Path, value: dict[str, Any]) -> None:
     )
 
 
+def _utc_now() -> str:
+    return dt.datetime.now(dt.timezone.utc).isoformat()
+
+
+def _archive_file(
+    source: Path,
+    destination: Path,
+    evidence_dir: Path,
+    expected: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    require(
+        source.is_file() and not source.is_symlink() and
+        not destination.exists() and not destination.is_symlink(),
+        f"cannot archive ordinary performance evidence input: {source}",
+    )
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+    observed = inputs.file_record(destination)
+    if expected is not None:
+        require(observed == expected,
+                f"archived performance evidence mismatch: {destination}")
+    destination.chmod(0o444)
+    return {
+        "path": str(destination.relative_to(evidence_dir)),
+        **observed,
+    }
+
+
+def _archive_linked_runtime(
+    candle_root: Path,
+    evidence_dir: Path,
+    linked: dict[str, Any],
+) -> dict[str, Any]:
+    """Retain the mutable local/system inputs behind a linked record."""
+
+    archive_root = evidence_dir / "provenance"
+    build_dir = candle_root / "candle/build"
+    linked_record_path = build_dir / "cakeml-build-provenance.json"
+    archived = {
+        "linked_provenance": _archive_file(
+            linked_record_path, archive_root / "linked-provenance.json",
+            evidence_dir,
+        ),
+        "bootstrap_provenance": _archive_file(
+            build_dir / "bootstrap-provenance.json",
+            archive_root / "bootstrap-provenance.json", evidence_dir,
+            linked["bootstrap_record"],
+        ),
+        "bootstrap_log": _archive_file(
+            build_dir / "bootstrap.log", archive_root / "bootstrap.log",
+            evidence_dir, linked["bootstrap_log"],
+        ),
+        "runtime_elf_objects": [],
+    }
+    linked_archive = evidence_dir / archived["linked_provenance"]["path"]
+    require(json.loads(linked_archive.read_text(encoding="utf-8")) == linked,
+            "archived linked provenance differs from validated record")
+    for source_string, expected in sorted(
+        linked["runtime_elf_closure"]["files"].items()
+    ):
+        source = Path(source_string)
+        destination = (
+            archive_root / "runtime-elf" /
+            f"{expected['sha256'][:16]}-{source.name}"
+        )
+        archived["runtime_elf_objects"].append({
+            "source_path": source_string,
+            **_archive_file(source, destination, evidence_dir, expected),
+        })
+    return archived
+
+
+def _archive_performance_sources(
+    candle_root: Path,
+    flyspeck_root: Path,
+    evidence_dir: Path,
+    receipt: dict[str, Any],
+    linked: dict[str, Any],
+) -> dict[str, Any]:
+    manifest_source = candle_root / "candle/flyspeck_manifest.json"
+    manifest_record = inputs.file_record(manifest_source)
+    require(manifest_record["sha256"] == linked["manifest_sha256"],
+            "performance source manifest differs from linked provenance")
+    manifest = json.loads(manifest_source.read_text(encoding="utf-8"))
+    archive_root = evidence_dir / "sources"
+    archived = {
+        "manifest": _archive_file(
+            manifest_source, archive_root / "flyspeck_manifest.json",
+            evidence_dir, manifest_record,
+        ),
+        "flyspeck": {},
+    }
+    source_contracts = {
+        "break_case_log": {
+            "key": inputs.SOURCE_KEY,
+            "path": inputs.SOURCE_PATH,
+            "expected": {
+                field: receipt["flyspeck"][field]
+                for field in ("bytes", "sha256")
+            },
+        },
+        "break_case_type": {
+            "key": (
+                "flyspeck:text_formalization/nonlinear/"
+                "break_case_type.hl"
+            ),
+            "path": Path(
+                "text_formalization/nonlinear/break_case_type.hl"
+            ),
+            "expected": None,
+        },
+    }
+    for label, contract in source_contracts.items():
+        node = manifest.get("source_nodes", {}).get(contract["key"])
+        require(
+            isinstance(node, dict) and node.get("repository") == "flyspeck" and
+            node.get("path") == contract["path"].as_posix(),
+            f"{label} is absent from the authenticated source graph",
+        )
+        node_record = {field: node[field] for field in ("bytes", "sha256")}
+        if contract["expected"] is not None:
+            require(node_record == contract["expected"],
+                    f"{label} receipt differs from manifest")
+        source = (flyspeck_root / contract["path"]).resolve()
+        require(source.is_relative_to(flyspeck_root),
+                f"{label} escaped the Flyspeck source root")
+        destination = archive_root / "flyspeck" / contract["path"]
+        archived["flyspeck"][label] = {
+            "source_key": contract["key"],
+            "source_path": contract["path"].as_posix(),
+            **_archive_file(source, destination, evidence_dir, node_record),
+        }
+    return archived
+
+
+def _verify_performance_source_archive(
+    evidence_dir: Path,
+    archived: dict[str, Any],
+    linked: dict[str, Any],
+) -> None:
+    manifest_record = archived["manifest"]
+    require(
+        inputs.file_record(evidence_dir / manifest_record["path"]) == {
+            field: manifest_record[field] for field in ("bytes", "sha256")
+        } and manifest_record["sha256"] == linked["manifest_sha256"],
+        "retained Flyspeck manifest changed during performance gate",
+    )
+    manifest = json.loads(
+        (evidence_dir / manifest_record["path"]).read_text(encoding="utf-8")
+    )
+    for label, record in archived["flyspeck"].items():
+        node = manifest["source_nodes"][record["source_key"]]
+        expected = {field: node[field] for field in ("bytes", "sha256")}
+        require(
+            inputs.file_record(evidence_dir / record["path"]) == expected,
+            f"retained Flyspeck {label} changed during performance gate",
+        )
+
+
+def _verify_linked_runtime_archive(
+    evidence_dir: Path,
+    archived: dict[str, Any],
+    linked: dict[str, Any],
+) -> None:
+    for label in ("linked_provenance", "bootstrap_provenance",
+                  "bootstrap_log"):
+        record = archived[label]
+        require(
+            inputs.file_record(evidence_dir / record["path"]) == {
+                field: record[field] for field in ("bytes", "sha256")
+            },
+            f"retained {label} changed during performance gate",
+        )
+    linked_archive = evidence_dir / archived["linked_provenance"]["path"]
+    require(json.loads(linked_archive.read_text(encoding="utf-8")) == linked,
+            "retained linked provenance semantics changed")
+    expected_elf = linked["runtime_elf_closure"]["files"]
+    require(
+        {record["source_path"] for record in archived["runtime_elf_objects"]}
+        == set(expected_elf),
+        "retained runtime ELF archive has the wrong object set",
+    )
+    for record in archived["runtime_elf_objects"]:
+        expected = expected_elf[record["source_path"]]
+        require(
+            inputs.file_record(evidence_dir / record["path"]) == expected,
+            f"retained runtime ELF object changed: {record['path']}",
+        )
+
+
 def _verify_generated_inputs(
     generated_dir: Path,
     receipt: dict[str, Any],
@@ -437,7 +680,10 @@ def _verify_generated_inputs(
                 f"generated performance input changed during the run: {name}")
 
 
-def run(arguments: argparse.Namespace) -> dict[str, Any]:
+def _run_attempt(
+    arguments: argparse.Namespace,
+    runtime_lock_handle: runtime_lock.BuildLock,
+) -> dict[str, Any]:
     candle_root = arguments.candle_root.resolve()
     flyspeck_root = arguments.flyspeck_root.resolve()
     evidence_dir = arguments.evidence_dir.resolve()
@@ -456,11 +702,41 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
     generated_dir, transcript_dir, output_path = _create_evidence_layout(
         evidence_dir, candle_root, flyspeck_root,
     )
+    attempt_path = evidence_dir / "attempt.json"
+    attempt = {
+        "schema": 1,
+        "kind": "flyspeck-float-performance-attempt",
+        "claim": CLAIM,
+        "state": "running",
+        "started_utc": _utc_now(),
+        "runtime_environment": runtime_environment,
+        "runtime_lock": runtime_lock_handle.record,
+        "repositories": {
+            "candle": linked["candle_commit"],
+            "cakeml": linked["cakeml_commit"],
+            "hol4": linked["hol4_commit"],
+            "flyspeck": inputs.EXPECTED_FLYSPECK_COMMIT,
+        },
+        "manifest_sha256": linked["manifest_sha256"],
+        "linked_provenance_sha256": sha256_file(
+            candle_root / "candle/build/cakeml-build-provenance.json"
+        ),
+        "parameters": {
+            "iterations": arguments.iterations,
+            "heap_mb": arguments.heap_mb,
+            "inactivity_timeout_seconds": arguments.inactivity_timeout,
+            "hol_wall_timeout_seconds": arguments.hol_wall_timeout,
+            "scenario_wall_timeout_seconds": arguments.scenario_wall_timeout,
+        },
+    }
+    _write_json(attempt_path, attempt)
+    attempt_path.chmod(0o444)
     linked_record_path = (
         candle_root / "candle/build/cakeml-build-provenance.json"
     )
-    linked_archive_path = evidence_dir / "linked-provenance.json"
-    linked_archive_path.write_bytes(linked_record_path.read_bytes())
+    archived_runtime = _archive_linked_runtime(
+        candle_root, evidence_dir, linked,
+    )
     config_path = evidence_dir / "gate-config.json"
     config = {
         "schema": 1,
@@ -485,19 +761,33 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         "linked_provenance_sha256": sha256_file(linked_record_path),
     }
     _write_json(config_path, config)
+    config_record = inputs.file_record(config_path)
+    config_path.chmod(0o444)
     receipt = inputs.materialize(
         candle_root, flyspeck_root, generated_dir, arguments.iterations,
     )
     require(receipt["manifest"]["sha256"] == linked["manifest_sha256"],
             "generated input manifest differs from linked provenance")
-    scenarios = {
-        name: _run_one(
-            name, candle_root, flyspeck_root, generated_dir, transcript_dir,
+    for name in receipt["outputs"]:
+        (generated_dir / name).chmod(0o444)
+    (generated_dir / "flyspeck_float_performance_inputs.json").chmod(0o444)
+    archived_sources = _archive_performance_sources(
+        candle_root, flyspeck_root, evidence_dir, receipt, linked,
+    )
+    source_paths = {
+        label: evidence_dir / record["path"]
+        for label, record in archived_sources["flyspeck"].items()
+    }
+    scenarios = {}
+    for name in ("call_time", "hoisted", "break_case_log"):
+        scenarios[name] = _run_one(
+            name, candle_root, source_paths, generated_dir, transcript_dir,
             runtime_environment, arguments.inactivity_timeout,
             arguments.hol_wall_timeout, arguments.scenario_wall_timeout,
         )
-        for name in ("call_time", "hoisted", "break_case_log")
-    }
+        scenario_path = evidence_dir / f"scenario-{name}.json"
+        _write_json(scenario_path, scenarios[name])
+        scenario_path.chmod(0o444)
 
     try:
         linked_postflight = provenance.validate_linked_record(candle_root)
@@ -507,8 +797,10 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         ) from error
     require(linked_postflight == linked,
             "linked Candle provenance record changed during the run")
-    require(linked_archive_path.read_bytes() == linked_record_path.read_bytes(),
-            "archived linked provenance differs at postflight")
+    _verify_linked_runtime_archive(evidence_dir, archived_runtime, linked)
+    _verify_performance_source_archive(
+        evidence_dir, archived_sources, linked,
+    )
     validated_postflight = inputs.validate_inputs(candle_root, flyspeck_root)
     validated_postflight.pop("source_text")
     require(validated_postflight == {
@@ -516,6 +808,8 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         "flyspeck": receipt["flyspeck"],
     }, "Flyspeck source or manifest changed during the run")
     _verify_generated_inputs(generated_dir, receipt)
+    require(inputs.file_record(config_path) == config_record,
+            "performance gate configuration changed during the run")
 
     ratio = (scenarios["call_time"]["elapsed_seconds"] /
              scenarios["hoisted"]["elapsed_seconds"])
@@ -523,11 +817,17 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         scenarios, arguments.max_break_case_seconds,
         arguments.max_call_time_seconds, arguments.max_call_to_hoisted_ratio,
     )
+    outcome, acceptance_policy_complete = observation_outcome(
+        arguments.iterations, failures, arguments.max_break_case_seconds,
+        arguments.max_call_time_seconds,
+        arguments.max_call_to_hoisted_ratio,
+    )
     report = {
         "schema": 1,
         "kind": "flyspeck-float-performance-gate",
         "claim": CLAIM,
-        "outcome": "fail" if failures else "pass",
+        "outcome": outcome,
+        "performance_accepted": outcome == "thresholds_satisfied",
         "candle": {
             "root": str(candle_root),
             "commit": linked["candle_commit"],
@@ -545,12 +845,10 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "directory": str(evidence_dir),
             "gate_config": {
                 "path": str(config_path),
-                **inputs.file_record(config_path),
+                **config_record,
             },
-            "linked_provenance_archive": {
-                "path": str(linked_archive_path),
-                **inputs.file_record(linked_archive_path),
-            },
+            "linked_runtime_archive": archived_runtime,
+            "performance_source_archive": archived_sources,
             "generated_input_receipt": {
                 "path": str(
                     generated_dir / "flyspeck_float_performance_inputs.json"
@@ -566,8 +864,11 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
             "check_linked_postflight": True,
             "linked_provenance_revalidated": True,
             "linked_provenance_unchanged": True,
+            "linked_runtime_archive_rehashed": True,
+            "performance_source_archive_rehashed": True,
             "flyspeck_manifest_source_revalidated": True,
             "generated_inputs_rehashed": True,
+            "gate_configuration_rehashed": True,
         },
         "comparison": {
             "call_time_minus_hoisted_seconds": (
@@ -580,6 +881,8 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
             ),
         },
         "thresholds": {
+            "acceptance_policy_complete": acceptance_policy_complete,
+            "required_iterations_for_acceptance": inputs.DEFAULT_ITERATIONS,
             "max_break_case_seconds": arguments.max_break_case_seconds,
             "max_call_time_seconds": arguments.max_call_time_seconds,
             "max_call_to_hoisted_ratio": arguments.max_call_to_hoisted_ratio,
@@ -587,8 +890,114 @@ def run(arguments: argparse.Namespace) -> dict[str, Any]:
         },
     }
     _write_json(output_path, report)
+    output_path.chmod(0o444)
     if failures:
         raise GateError("; ".join(failures) + f"; report: {output_path}")
+    return report
+
+
+def _evidence_inventory(evidence_dir: Path) -> dict[str, Any]:
+    inventory = {}
+    for path in sorted(evidence_dir.rglob("*")):
+        if path.is_file() and not path.is_symlink() and path.name != "receipt.json":
+            inventory[str(path.relative_to(evidence_dir))] = inputs.file_record(path)
+    return inventory
+
+
+def _failure_postflight(
+    arguments: argparse.Namespace,
+    evidence_dir: Path,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    linked_archive = evidence_dir / "provenance/linked-provenance.json"
+    if linked_archive.is_file() and not linked_archive.is_symlink():
+        try:
+            archived = json.loads(linked_archive.read_text(encoding="utf-8"))
+            current = _load_provenance_module(
+                arguments.candle_root.resolve()
+            ).validate_linked_record(arguments.candle_root.resolve())
+            result["linked_provenance_valid"] = True
+            result["linked_provenance_unchanged"] = current == archived
+        except Exception as error:
+            result["linked_provenance_valid"] = False
+            result["linked_provenance_error"] = str(error)
+    try:
+        validated = inputs.validate_inputs(
+            arguments.candle_root.resolve(), arguments.flyspeck_root.resolve(),
+        )
+        validated.pop("source_text")
+        result["flyspeck_manifest_source_valid"] = True
+    except Exception as error:
+        result["flyspeck_manifest_source_valid"] = False
+        result["flyspeck_manifest_source_error"] = str(error)
+    return result
+
+
+def run(arguments: argparse.Namespace) -> dict[str, Any]:
+    evidence_dir = arguments.evidence_dir.resolve()
+    runtime_lock_handle = runtime_lock.acquire_build_lock(
+        arguments.candle_root.resolve()
+    )
+    try:
+        report = _run_attempt(arguments, runtime_lock_handle)
+    except BaseException as error:
+        attempt_path = evidence_dir / "attempt.json"
+        if attempt_path.is_file() and not attempt_path.is_symlink():
+            try:
+                attempt = json.loads(attempt_path.read_text(encoding="utf-8"))
+                if (attempt.get("schema") == 1 and
+                        attempt.get("kind") ==
+                        "flyspeck-float-performance-attempt"):
+                    receipt_path = evidence_dir / "receipt.json"
+                    require(not receipt_path.exists(),
+                            "performance receipt already exists")
+                    completed_scenarios = {}
+                    for name in ("call_time", "hoisted", "break_case_log"):
+                        scenario_path = evidence_dir / f"scenario-{name}.json"
+                        if scenario_path.is_file() and not scenario_path.is_symlink():
+                            completed_scenarios[name] = json.loads(
+                                scenario_path.read_text(encoding="utf-8")
+                            )
+                    receipt = {
+                        **attempt,
+                        "state": "failed",
+                        "finished_utc": _utc_now(),
+                        "validation_error": {
+                            "type": type(error).__name__,
+                            "message": str(error),
+                        },
+                        "completed_scenarios": completed_scenarios,
+                        "failure_postflight": _failure_postflight(
+                            arguments, evidence_dir,
+                        ),
+                        "evidence_inventory": _evidence_inventory(evidence_dir),
+                    }
+                    _write_json(receipt_path, receipt)
+                    receipt_path.chmod(0o444)
+            except BaseException:
+                pass
+        if isinstance(error, (KeyboardInterrupt, SystemExit)):
+            raise
+        suffix = (
+            f"; retained evidence: {evidence_dir}"
+            if attempt_path.is_file() else ""
+        )
+        raise GateError(f"{error}{suffix}") from error
+    receipt_path = evidence_dir / "receipt.json"
+    receipt = {
+        "schema": 1,
+        "kind": "flyspeck-float-performance-receipt",
+        "claim": CLAIM,
+        "state": "completed",
+        "started_utc": json.loads(
+            (evidence_dir / "attempt.json").read_text(encoding="utf-8")
+        )["started_utc"],
+        "finished_utc": _utc_now(),
+        "report": inputs.file_record(evidence_dir / "report.json"),
+        "evidence_inventory": _evidence_inventory(evidence_dir),
+    }
+    _write_json(receipt_path, receipt)
+    receipt_path.chmod(0o444)
     return report
 
 

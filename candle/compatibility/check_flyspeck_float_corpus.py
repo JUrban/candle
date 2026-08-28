@@ -26,6 +26,7 @@ sys.path.insert(0, str(HERE.parent))
 
 import cakeml_artifact_provenance
 import flyspeck_float_corpus
+import runtime_lock
 
 
 CHUNK_SIZE = 100
@@ -188,6 +189,7 @@ def check_candle(
         raise RuntimeError("compiled float corpus gate requires pexpect") from error
 
     candle_root = candle_root.resolve()
+    runtime_lock_handle = runtime_lock.acquire_build_lock(candle_root)
     launcher = candle_root / "candle.sh"
     flyspeck_float_corpus.require(
         launcher.is_file() and not launcher.is_symlink(),
@@ -206,7 +208,22 @@ def check_candle(
     evidence_root.mkdir()
     archive_root = evidence_root / "provenance"
     artifact_archive = archive_root / "flyspeck_float_corpus.json"
-    artifact_archive_record = _archive_file(artifact_path, artifact_archive)
+    expected_artifact_bytes = flyspeck_float_corpus.json_bytes(payload)
+    flyspeck_float_corpus.require(
+        artifact_path.read_bytes() == expected_artifact_bytes,
+        "float-corpus artifact changed before evidence archival",
+    )
+    artifact_archive_record = _archive_file(
+        artifact_path, artifact_archive,
+        flyspeck_float_corpus.file_record(artifact_path),
+    )
+    flyspeck_float_corpus.require(
+        artifact_archive.read_bytes() == expected_artifact_bytes and
+        flyspeck_float_corpus.load_object(
+            artifact_archive, "archived float-corpus artifact"
+        ) == payload,
+        "archived float-corpus artifact differs from executed payload",
+    )
     linked_record_path = (
         candle_root / cakeml_artifact_provenance.LINKED_RECORD_RELATIVE
     )
@@ -262,6 +279,7 @@ def check_candle(
         "timeout_seconds": timeout,
         "exact_spelling_count": len(payload["spellings"]),
         "runtime_environment": runtime_env,
+        "runtime_lock": runtime_lock_handle.record,
         "command": [str(launcher)],
         "inputs": {
             "artifact": {

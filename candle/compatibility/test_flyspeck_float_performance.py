@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import inspect
 import json
+import os
 from collections import Counter
 from pathlib import Path
 import struct
@@ -231,6 +232,18 @@ class FloatPerformanceGateTests(unittest.TestCase):
             "call_time elapsed threshold exceeded",
             "call_time/hoisted ratio threshold exceeded",
         ])
+        self.assertEqual(gate.observation_outcome(
+            generator.DEFAULT_ITERATIONS, [], None, None, None,
+        ), ("observation_complete", False))
+        self.assertEqual(gate.observation_outcome(
+            generator.DEFAULT_ITERATIONS, [], 5.0, 4.0, 2.0,
+        ), ("thresholds_satisfied", True))
+        self.assertEqual(gate.observation_outcome(
+            1, [], 5.0, 4.0, 2.0,
+        ), ("observation_complete", False))
+        self.assertEqual(gate.observation_outcome(
+            generator.DEFAULT_ITERATIONS, ["too slow"], 5.0, 4.0, 2.0,
+        ), ("thresholds_failed", True))
 
     def test_rss_scope_does_not_claim_attribution(self):
         self.assertIn("includes full-HOL baseline",
@@ -240,6 +253,20 @@ class FloatPerformanceGateTests(unittest.TestCase):
         self.assertIn("check_axioms", inspect.getsource(
             gate.CandleSession.axioms_postflight))
         self.assertIn("not semantic, S2, or S3", gate.CLAIM)
+
+    def test_process_rss_is_root_not_largest_descendant(self):
+        parents = {100: 1, 101: 100, 102: 101, 200: 1}
+        rss = {100: 120, 101: 450, 102: 30, 200: 900}
+        with mock.patch.object(gate.ProcessTreeSampler, "_snapshot",
+                               return_value=(parents, rss)):
+            self.assertEqual(gate.ProcessTreeSampler.tree_rss(100), (120, 600))
+
+    def test_successful_session_requires_clean_exit(self):
+        source = inspect.getsource(gate._run_one)
+        self.assertIn("session.finish()", source)
+        self.assertIn("session.abort()", source)
+        self.assertIn("exitstatus == 0", inspect.getsource(
+            gate.CandleSession.finish))
 
     def test_evidence_layout_is_retained_and_fail_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -269,12 +296,94 @@ class FloatPerformanceGateTests(unittest.TestCase):
                     candle_root.resolve(), flyspeck_root.resolve(),
                 )
 
+    def test_failure_lifecycle_records_completed_scenarios(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = Path(temporary) / "evidence"
+            evidence.mkdir()
+            attempt = {
+                "schema": 1,
+                "kind": "flyspeck-float-performance-attempt",
+                "started_utc": "2026-01-01T00:00:00+00:00",
+            }
+            gate._write_json(evidence / "attempt.json", attempt)
+            first = {"outcome": "pass", "elapsed_seconds": 1.25}
+            gate._write_json(evidence / "scenario-call_time.json", first)
+            arguments = mock.Mock(
+                evidence_dir=evidence,
+                candle_root=Path(temporary) / "candle",
+                flyspeck_root=Path(temporary) / "flyspeck",
+            )
+            with mock.patch.object(gate, "_run_attempt",
+                                   side_effect=gate.GateError("second failed")), \
+                    mock.patch.object(gate.runtime_lock, "acquire_build_lock",
+                                      return_value=mock.Mock()), \
+                    mock.patch.object(gate, "_failure_postflight",
+                                      return_value={"linked": False}):
+                with self.assertRaisesRegex(gate.GateError,
+                                            "retained evidence"):
+                    gate.run(arguments)
+            receipt = json.loads(
+                (evidence / "receipt.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(receipt["state"], "failed")
+            self.assertEqual(receipt["completed_scenarios"]["call_time"], first)
+            self.assertEqual(receipt["validation_error"]["type"], "GateError")
+
     def test_postflight_rehashes_linked_source_and_generated_inputs(self):
-        source = inspect.getsource(gate.run)
-        self.assertGreaterEqual(source.count("validate_linked_record"), 2)
+        source = inspect.getsource(gate._run_attempt)
+        failure_source = inspect.getsource(gate._failure_postflight)
+        self.assertIn("validate_linked_record", source)
+        self.assertIn("validate_linked_record", failure_source)
         self.assertIn("validate_inputs", source)
         self.assertIn("_verify_generated_inputs", source)
-        self.assertIn("linked_archive_path.read_bytes()", source)
+        self.assertIn("_verify_linked_runtime_archive", source)
+        self.assertIn("_verify_performance_source_archive", source)
+
+    def test_linked_runtime_archive_retains_and_rehashes_exact_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            candle_root = root / "candle"
+            evidence = root / "evidence"
+            build = candle_root / "candle/build"
+            build.mkdir(parents=True)
+            evidence.mkdir()
+            linked_path = build / "cakeml-build-provenance.json"
+            bootstrap_path = build / "bootstrap-provenance.json"
+            bootstrap_log = build / "bootstrap.log"
+            elf_path = root / "libm.so.6"
+            bootstrap_path.write_text("{}\n", encoding="utf-8")
+            bootstrap_log.write_text("successful bootstrap\n", encoding="utf-8")
+            elf_path.write_bytes(b"elf")
+            linked = {
+                "bootstrap_record": generator.file_record(bootstrap_path),
+                "bootstrap_log": generator.file_record(bootstrap_log),
+                "runtime_elf_closure": {
+                    "files": {
+                        str(elf_path): generator.file_record(elf_path),
+                    },
+                },
+            }
+            linked_path.write_text(
+                json.dumps(linked, sort_keys=True) + "\n", encoding="utf-8",
+            )
+            archived = gate._archive_linked_runtime(
+                candle_root, evidence, linked,
+            )
+            gate._verify_linked_runtime_archive(evidence, archived, linked)
+            self.assertEqual(
+                {record["source_path"]
+                 for record in archived["runtime_elf_objects"]},
+                {str(elf_path)},
+            )
+            os.chmod(evidence / archived["bootstrap_log"]["path"], 0o644)
+            (evidence / archived["bootstrap_log"]["path"]).write_text(
+                "mutated\n", encoding="utf-8",
+            )
+            with self.assertRaisesRegex(gate.GateError,
+                                        "bootstrap_log changed"):
+                gate._verify_linked_runtime_archive(
+                    evidence, archived, linked,
+                )
 
 
 if __name__ == "__main__":

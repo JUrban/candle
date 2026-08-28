@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import fcntl
 import hashlib
 import json
 import os
@@ -29,6 +28,7 @@ from typing import Any
 
 import cakeml_artifact_provenance
 import flyspeck_stratum_plan
+import runtime_lock
 
 
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
@@ -1025,13 +1025,7 @@ def run_attempt(
     require(candle_script.is_file() and os.access(candle_script, os.X_OK),
             f"Candle launcher is not executable: {candle_script}")
     candle_root = candle_script.parent
-    runtime_lock_path = candle_root / "candle/build/runtime.lock"
-    runtime_lock = os.fdopen(os.open(
-        runtime_lock_path,
-        os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0),
-        0o600,
-    ), "a")
-    fcntl.flock(runtime_lock.fileno(), fcntl.LOCK_SH)
+    runtime_lock_handle = runtime_lock.acquire_build_lock(candle_root)
 
     # This must precede interpretation of the host plan: no runtime attempt is
     # prepared for an unbound or stale executable.
@@ -1138,6 +1132,7 @@ def run_attempt(
         },
         "fresh_process_replay_from_action_zero": True,
         "cooperative_build_run_lock_held": True,
+        "runtime_lock": runtime_lock_handle.record,
         "concurrent_mutation_model": (
             "cooperating build/launcher processes serialized; hostile same-user "
             "path mutation is outside this evidence model"

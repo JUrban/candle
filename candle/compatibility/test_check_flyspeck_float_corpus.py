@@ -2,6 +2,7 @@
 """Static tests for the compiled direct-corpus decimal-float gate."""
 
 import collections
+import inspect
 import json
 from pathlib import Path
 import sys
@@ -80,6 +81,12 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
             alias.symlink_to(source)
             with self.assertRaises(corpus.CorpusError):
                 checker._archive_file(alias, root / "rejected")
+
+    def test_archived_artifact_is_cross_bound_to_executed_payload(self):
+        source = inspect.getsource(checker.check_candle)
+        self.assertIn("expected_artifact_bytes", source)
+        self.assertIn("artifact_archive.read_bytes()", source)
+        self.assertIn("== payload", source)
 
 
 if __name__ == "__main__":

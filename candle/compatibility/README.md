@@ -75,11 +75,14 @@ The committed inventory and generator do not constitute a compiled PASS. A
 PASS from the second command establishes the decimal spelling/Word64
 compatibility of this exact selected graph; it does not establish that the
 graph loaded, that its theorems have approved fingerprints, or S2/S3.
-The second command always retains its exact generated source, complete
-transcript, running-attempt record, final receipt, runtime environment, child
-resources, committed corpus artifact, linked/bootstrap provenance, bootstrap
-log, exact runtime ELF objects, and pre/postflight linked-artifact identities
-in the new evidence directory; failures are retained as well.
+After the second command creates its running-attempt record, it retains the
+exact generated source, complete transcript, final receipt, runtime
+environment, child resources, committed corpus artifact, linked/bootstrap
+provenance, bootstrap log, exact runtime ELF objects, and pre/postflight
+linked-artifact identities in the new evidence directory; failures after that
+boundary are retained as well.  Host regeneration, dependency, and linked
+preflight failures occur before attempt creation and are reported without
+claiming a retained compiled attempt.
 
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax
@@ -111,8 +114,10 @@ resolved bytes appear in the record. The link step materializes the validated
 bootstrap record and successful log inside `candle/build`, so later launches
 do not depend on their original external paths. It also preserves the exact
 pre-patch `cake.S` and replays the pinned patch to authenticate the postimage.
-Builds take an exclusive cooperative lock and launch/direct runs take a shared
-lock. Standalone compatibility scripts cannot
+Builds take an exclusive cooperative lock on the authenticated build-directory
+inode; launch, compatibility, and direct runs retain a shared lock on that
+same inode across their complete validation/execution/postflight transaction.
+Standalone compatibility scripts cannot
 report a compiled PASS against a dirty tree, an obsolete record schema, or a
 different executable. The direct stratum runner bypasses the launcher only
 after performing its stronger original-plus-snapshot preflight itself.
