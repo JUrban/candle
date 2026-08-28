@@ -70,4 +70,13 @@ require (Array.length initialized = 4 && Array.get initialized 3 = 9)
 require (Sys.word_size = 64) "Sys.word_size mismatch";;
 Gc.compact ();;
 
+require (Stdlib.compare "same" "same" = 0)
+  "Stdlib.compare equality mismatch";;
+let compare_rejected =
+  try let _ = Stdlib.compare "left" "right" in false with Failure _ -> true;;
+require compare_rejected "Stdlib.compare must fail closed without ordering";;
+let hash_rejected =
+  try let _ = Hashtbl.hash "key" in false with Failure _ -> true;;
+require hash_rejected "Hashtbl.hash must fail closed";;
+
 print_endline "CANDLE_FLYSPECK_OCAML_SLICE_OK";;

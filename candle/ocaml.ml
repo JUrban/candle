@@ -119,6 +119,10 @@ type float = Float.float;;
    operations through [Stdlib].  Deliberately omit polymorphic [compare]: each
    selected comparison must be normalized to a type-specific comparator. *)
 module Stdlib = struct
+  let compare left right =
+    if left = right then 0
+    else failwith
+      "Stdlib.compare: polymorphic ordering is unavailable; use an explicit comparator"
   let open_in = open_in
   let open_out = open_out
   let input_line = input_line
@@ -690,6 +694,10 @@ module Hashtbl = struct
     if size < 0 then invalid_arg "Hashtbl.create_ordered"
     else Ordered
       (Cake.Hashtable.empty size hash (Candle.int_to_ordering order))
+
+  let hash _ =
+    failwith
+      "Hashtbl.hash: polymorphic hashing is unavailable; use an explicit hash"
 
   let rec find_linear key entries =
     match entries with
