@@ -31,7 +31,8 @@ The preparation tool re-derives these facts from
 Flyspeck Git root, and the bytes on disk.  It authenticates all normalized
 overlay outputs and the generated input, plus the original strictbuild,
 Parser_verbose, and Debug sources.  The compiled process independently checks
-the original and normalized source MD5 identities before source evaluation.
+the original and normalized source MD5 identities and the two deterministic
+strictbuild metadata inputs before source evaluation.
 
 ## Reproduction
 
