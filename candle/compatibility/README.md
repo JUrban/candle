@@ -77,8 +77,9 @@ compatibility of this exact selected graph; it does not establish that the
 graph loaded, that its theorems have approved fingerprints, or S2/S3.
 The second command always retains its exact generated source, complete
 transcript, running-attempt record, final receipt, runtime environment, child
-resources, and pre/postflight linked-artifact identities in the new evidence
-directory; failures are retained as well.
+resources, committed corpus artifact, linked/bootstrap provenance, bootstrap
+log, exact runtime ELF objects, and pre/postflight linked-artifact identities
+in the new evidence directory; failures are retained as well.
 
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax

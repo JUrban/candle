@@ -5,6 +5,7 @@ import collections
 import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 
@@ -65,6 +66,20 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         )
         with self.assertRaises(corpus.CorpusError):
             checker._ocaml_string("/tmp/newline\npath")
+
+    def test_evidence_archive_binds_bytes_and_rejects_symlink_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            source.write_bytes(b"authenticated")
+            expected = corpus.file_record(source)
+            destination = root / "evidence/archive"
+            observed = checker._archive_file(source, destination, expected)
+            self.assertEqual(observed, expected)
+            alias = root / "alias"
+            alias.symlink_to(source)
+            with self.assertRaises(corpus.CorpusError):
+                checker._archive_file(alias, root / "rejected")
 
 
 if __name__ == "__main__":

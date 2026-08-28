@@ -15,6 +15,7 @@ import datetime as dt
 import json
 from pathlib import Path
 import resource
+import shutil
 import sys
 from typing import Any
 
@@ -151,6 +152,29 @@ def _ocaml_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
+def _archive_file(
+    source: Path,
+    destination: Path,
+    expected: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    flyspeck_float_corpus.require(
+        source.is_file() and not source.is_symlink() and
+        not destination.exists() and not destination.is_symlink(),
+        f"cannot archive ordinary evidence input: {source}",
+    )
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination)
+    observed = flyspeck_float_corpus.file_record(destination)
+    if expected is not None:
+        projection = {field: observed[field] for field in expected}
+        flyspeck_float_corpus.require(
+            projection == expected,
+            f"archived evidence identity mismatch: {destination}",
+        )
+    destination.chmod(0o444)
+    return observed
+
+
 def check_candle(
     payload: dict,
     candle_root: Path,
@@ -180,6 +204,44 @@ def check_candle(
         f"evidence output must be a new child of an existing directory: {evidence_root}",
     )
     evidence_root.mkdir()
+    archive_root = evidence_root / "provenance"
+    artifact_archive = archive_root / "flyspeck_float_corpus.json"
+    artifact_archive_record = _archive_file(artifact_path, artifact_archive)
+    linked_record_path = (
+        candle_root / cakeml_artifact_provenance.LINKED_RECORD_RELATIVE
+    )
+    linked_archive = archive_root / "linked-provenance.json"
+    linked_archive_record = _archive_file(linked_record_path, linked_archive)
+    flyspeck_float_corpus.require(
+        flyspeck_float_corpus.load_object(
+            linked_archive, "archived linked provenance"
+        ) == linked,
+        "archived linked provenance differs from validated record",
+    )
+    build_dir = candle_root / "candle/build"
+    bootstrap_archive = archive_root / "bootstrap-provenance.json"
+    bootstrap_archive_record = _archive_file(
+        build_dir / cakeml_artifact_provenance.LINKED_BOOTSTRAP_RECORD,
+        bootstrap_archive, linked["bootstrap_record"],
+    )
+    bootstrap_log_archive = archive_root / "bootstrap.log"
+    bootstrap_log_archive_record = _archive_file(
+        build_dir / cakeml_artifact_provenance.LINKED_BOOTSTRAP_LOG,
+        bootstrap_log_archive, linked["bootstrap_log"],
+    )
+    elf_archive_records = []
+    for path_string, expected in sorted(
+        linked["runtime_elf_closure"]["files"].items()
+    ):
+        source = Path(path_string)
+        destination = (
+            archive_root / "runtime-elf" /
+            f"{expected['sha256'][:16]}-{source.name}"
+        )
+        elf_archive_records.append({
+            "path": str(destination.relative_to(evidence_root)),
+            **_archive_file(source, destination, expected),
+        })
     source_path = evidence_root / "flyspeck_float_corpus.ml"
     source_path.write_text(source_text, encoding="ascii")
     source_path.chmod(0o444)
@@ -202,12 +264,24 @@ def check_candle(
         "runtime_environment": runtime_env,
         "command": [str(launcher)],
         "inputs": {
-            "artifact": flyspeck_float_corpus.file_record(artifact_path),
+            "artifact": {
+                "path": str(artifact_archive.relative_to(evidence_root)),
+                **artifact_archive_record,
+            },
             "generated_source": flyspeck_float_corpus.file_record(source_path),
-            "linked_provenance": flyspeck_float_corpus.file_record(
-                candle_root /
-                cakeml_artifact_provenance.LINKED_RECORD_RELATIVE
-            ),
+            "linked_provenance": {
+                "path": str(linked_archive.relative_to(evidence_root)),
+                **linked_archive_record,
+            },
+            "bootstrap_provenance": {
+                "path": str(bootstrap_archive.relative_to(evidence_root)),
+                **bootstrap_archive_record,
+            },
+            "bootstrap_log": {
+                "path": str(bootstrap_log_archive.relative_to(evidence_root)),
+                **bootstrap_log_archive_record,
+            },
+            "runtime_elf_objects": elf_archive_records,
         },
         "repositories": {
             "candle": linked["candle_commit"],
@@ -300,6 +374,20 @@ def check_candle(
             source_path, attempt["inputs"]["generated_source"],
             "retained float-corpus source",
         )
+        for label in ("artifact", "linked_provenance",
+                      "bootstrap_provenance", "bootstrap_log"):
+            archived = attempt["inputs"][label]
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field] for field in ("bytes", "md5", "sha256")},
+                f"retained {label}",
+            )
+        for archived in attempt["inputs"]["runtime_elf_objects"]:
+            flyspeck_float_corpus.validate_record(
+                evidence_root / archived["path"],
+                {field: archived[field] for field in ("bytes", "md5", "sha256")},
+                "retained runtime ELF object",
+            )
         postflight_reauthenticated = True
     except BaseException as error:
         if failure is None:
