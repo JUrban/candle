@@ -170,6 +170,32 @@ class ReferenceFingerprintTest(unittest.TestCase):
         with self.assertRaisesRegex(reference.CollectionError, "fields"):
             reference.validate_candidate(extra)
 
+    def test_fingerprint_outside_nonce_markers_fails_closed(self):
+        plan = {
+            "schema": "candle-s1-reference-plan-v1",
+            "session_nonce": NONCE,
+            "fresh_process_contract": {"required": True},
+            "reference": {"git_head": "1" * 40},
+            "input": {
+                "target": "100/gcd", "theorem_names": ["EGCD"],
+                "mapping_status": "audited"},
+            "request": {"sha256": "2" * 64},
+        }
+        record = "\t".join([
+            regression.FINGERPRINT_MARKER,
+            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"conclusion".hex(), b"axioms".hex(), "0", "3",
+        ])
+        transcript = "\n".join([
+            record,
+            f"{reference.SESSION_MARKER}\t{NONCE}",
+            f"{reference.COMPLETE_MARKER}\t{NONCE}",
+            "",
+        ])
+        with self.assertRaisesRegex(
+                reference.CollectionError, "outside reference session"):
+            reference.candidate_from_transcript(plan, transcript)
+
 
 if __name__ == "__main__":
     unittest.main()

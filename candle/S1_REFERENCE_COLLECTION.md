@@ -25,9 +25,10 @@ replace pinned inputs.
 The collector launches the pinned reference launcher itself, supplies the
 generated request on standard input, captures combined output, and rechecks all
 pins and git cleanliness after exit. The target file(s), serializer, and
-theorem requests run in that order. Missing/duplicate session markers, a
-nonzero exit, missing/extra fingerprint records, inconsistent global axioms,
-or any changed pin fails collection.
+theorem requests run in that order. Fingerprint records are accepted only
+between the nonce-bound start and completion markers. Missing/duplicate markers,
+a record outside that interval, a nonzero exit, missing/extra fingerprint
+records, inconsistent global axioms, or any changed pin fails collection.
 
 ## Commands
 

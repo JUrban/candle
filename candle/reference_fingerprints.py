@@ -196,12 +196,20 @@ def candidate_from_transcript(plan, transcript, exit_code=0):
     lines = transcript.splitlines()
     if lines.count(start) != 1 or lines.count(complete) != 1:
         raise CollectionError("missing or duplicate reference session markers")
-    if lines.index(start) >= lines.index(complete):
+    start_index = lines.index(start)
+    complete_index = lines.index(complete)
+    if start_index >= complete_index:
         raise CollectionError("reference completion marker precedes session marker")
+    wire_prefix = regression.FINGERPRINT_MARKER + "\t"
+    outside_session = lines[:start_index] + lines[complete_index + 1:]
+    if any(line.startswith(wire_prefix) for line in outside_session):
+        raise CollectionError("fingerprint record outside reference session")
+    session_transcript = "\n".join(
+        lines[start_index + 1:complete_index]) + "\n"
 
     with tempfile.NamedTemporaryFile(
             mode="w", encoding="utf-8", delete=False) as transcript_file:
-        transcript_file.write(transcript)
+        transcript_file.write(session_transcript)
         transcript_path = Path(transcript_file.name)
     try:
         identities = regression._read_fingerprint_records(
