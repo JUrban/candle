@@ -88,8 +88,10 @@ still emits exact elapsed/RSS observations; it does not invent an unreviewed
 performance acceptance threshold.  Machine-readable output is therefore
 `observation_complete`, not `pass`, unless all three ceilings are supplied and
 the pinned 10,000-iteration workload is used.  A complete supplied policy is
-reported as `thresholds_satisfied` or `thresholds_failed` and separately sets
-the boolean `performance_accepted`.
+reported as `thresholds_satisfied` or `thresholds_failed`.  These command-line
+ceilings are not an authenticated reviewed release policy: the report keeps
+`performance_accepted` false and `reviewed_acceptance_contract` null until a
+future committed contract binds reviewed values and a machine profile.
 
 On a completed run, the user-selected evidence directory is never temporary.
 It retains the generated histogram and both generated loop sources, their

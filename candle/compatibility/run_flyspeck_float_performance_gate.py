@@ -828,7 +828,7 @@ def _run_attempt(
         scenarios, arguments.max_break_case_seconds,
         arguments.max_call_time_seconds, arguments.max_call_to_hoisted_ratio,
     )
-    outcome, acceptance_policy_complete = observation_outcome(
+    outcome, supplied_threshold_set_complete = observation_outcome(
         arguments.iterations, failures, arguments.max_break_case_seconds,
         arguments.max_call_time_seconds,
         arguments.max_call_to_hoisted_ratio,
@@ -838,7 +838,8 @@ def _run_attempt(
         "kind": "flyspeck-float-performance-gate",
         "claim": CLAIM,
         "outcome": outcome,
-        "performance_accepted": outcome == "thresholds_satisfied",
+        "performance_accepted": False,
+        "reviewed_acceptance_contract": None,
         "candle": {
             "root": str(candle_root),
             "commit": linked["candle_commit"],
@@ -894,7 +895,8 @@ def _run_attempt(
             ),
         },
         "thresholds": {
-            "acceptance_policy_complete": acceptance_policy_complete,
+            "supplied_threshold_set_complete":
+                supplied_threshold_set_complete,
             "required_iterations_for_acceptance": inputs.DEFAULT_ITERATIONS,
             "max_break_case_seconds": arguments.max_break_case_seconds,
             "max_call_time_seconds": arguments.max_call_time_seconds,

@@ -253,6 +253,11 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 with self.assertRaises(argparse.ArgumentTypeError):
                     gate._positive_float(value)
 
+    def test_command_line_thresholds_never_self_certify_acceptance(self):
+        source = inspect.getsource(gate._run_attempt)
+        self.assertIn('"performance_accepted": False', source)
+        self.assertIn('"reviewed_acceptance_contract": None', source)
+
     def test_rss_scope_does_not_claim_attribution(self):
         self.assertIn("includes full-HOL baseline",
                       inspect.getsource(gate._measure_load))
