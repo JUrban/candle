@@ -25,8 +25,8 @@ MANIFEST = ROOT / "candle" / "top100_manifest.json"
 SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v3"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v3"
+PLAN_SCHEMA = "candle-s1-reference-plan-v4"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v4"
 
 
 class CollectionError(Exception):
@@ -188,7 +188,7 @@ def _request_source(target, serializer_path, nonce):
 
 
 def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
-               nonce=None):
+               ocamlfind, nonce=None):
     """Pin a clean reference tree and generate, but do not execute, a request."""
     manifest, target = _target_from_manifest(target_name)
     request = target["fingerprint_request"]
@@ -224,6 +224,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     runtime_stublib_pin = _pin_file(runtime_stublib)
     runtime_interpreter_pin = _runtime_interpreter(runtime_pin["path"])
     ocamlc_pin = _pin_file(ocamlc)
+    ocamlfind_pin = _pin_file(ocamlfind)
     try:
         ocaml_version = subprocess.check_output(
             [ocamlc_pin["path"], "-version"], text=True,
@@ -236,6 +237,32 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     if not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:[+~].*)?", ocaml_version):
         raise CollectionError(f"unexpected OCaml version: {ocaml_version!r}")
     ocaml_where = str(Path(ocaml_where).resolve(strict=True))
+    findlib_environment = {
+        "PATH": "/usr/bin:/bin", "LC_ALL": "C", "OCAMLPATH": ""}
+    try:
+        findlib_version = subprocess.check_output(
+            [ocamlfind_pin["path"], "query", "findlib", "-format", "%v"],
+            text=True,
+            stderr=subprocess.STDOUT, timeout=10,
+            env=findlib_environment).strip()
+        findlib_config_path = subprocess.check_output(
+            [ocamlfind_pin["path"], "printconf", "conf"], text=True,
+            stderr=subprocess.STDOUT, timeout=10,
+            env=findlib_environment).strip()
+    except (OSError, subprocess.SubprocessError) as error:
+        raise CollectionError("could not obtain pinned findlib configuration") from error
+    findlib_config_pin = _pin_file(findlib_config_path)
+    findlib_environment["OCAMLFIND_CONF"] = findlib_config_pin["path"]
+    try:
+        findlib_paths = subprocess.check_output(
+            [ocamlfind_pin["path"], "printconf", "path"], text=True,
+            stderr=subprocess.STDOUT, timeout=10,
+            env=findlib_environment).splitlines()
+    except (OSError, subprocess.SubprocessError) as error:
+        raise CollectionError("could not obtain pinned findlib package path") from error
+    if not findlib_paths:
+        raise CollectionError("findlib package path is empty")
+    findlib_package_roots = [_pin_tree(path) for path in findlib_paths]
 
     nonce = nonce or secrets.token_hex(32)
     if not re.fullmatch(r"[0-9a-f]{64}", nonce):
@@ -263,6 +290,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
         "OCAMLRUNPARAM": "l=2000000000",
         "CAML_LD_LIBRARY_PATH": str(Path(runtime_stublib_pin["path"]).parent),
         "OCAML_TOPLEVEL_PATH": ocaml_where,
+        "OCAMLFIND_CONF": findlib_config_pin["path"],
     }
     runtime_argv = [
         runtime_pin["path"], "-init", hol_ml_pin["path"],
@@ -292,6 +320,12 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "ocamlc": {
                 **ocamlc_pin, "version": ocaml_version,
                 "stdlib_directory": ocaml_where,
+            },
+            "findlib": {
+                "executable": ocamlfind_pin,
+                "version": findlib_version,
+                "configuration": findlib_config_pin,
+                "package_roots": findlib_package_roots,
             },
             "hol_ml": hol_ml_pin,
             "generated_boot_files": boot_files,
@@ -330,7 +364,9 @@ def _rebuild_plan(plan):
         plan["input"]["target"], plan["reference"]["root"],
         plan["reference"]["runtime_executable"]["path"],
         plan["reference"]["runtime_stublib"]["path"],
-        plan["reference"]["ocamlc"]["path"], plan["session_nonce"])
+        plan["reference"]["ocamlc"]["path"],
+        plan["reference"]["findlib"]["executable"]["path"],
+        plan["session_nonce"])
 
 
 def _require_current_plan_pins(plan):
@@ -486,6 +522,7 @@ def main():
         sub.add_argument("--runtime", type=Path, required=True)
         sub.add_argument("--runtime-stublib", type=Path, required=True)
         sub.add_argument("--ocamlc", type=Path, required=True)
+        sub.add_argument("--ocamlfind", type=Path, required=True)
         sub.add_argument("--plan", type=Path, required=True)
         sub.add_argument("--request", type=Path, required=True)
         if command == "collect":
@@ -511,7 +548,7 @@ def main():
             return 0
         plan = build_plan(
             args.target, args.reference_root, args.runtime,
-            args.runtime_stublib, args.ocamlc)
+            args.runtime_stublib, args.ocamlc, args.ocamlfind)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         args.request.write_text(plan["request"]["source"], encoding="utf-8")
         if args.command == "plan":

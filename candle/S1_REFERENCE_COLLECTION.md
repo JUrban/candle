@@ -18,6 +18,9 @@ Before execution, the tool requires and records:
 - deterministic whole-tree inventory digests for the OCaml library tree
   selected by `ocamlc -where` (therefore including topfind, findlib, and
   Camlp5) and the runtime-stub directory;
+- an exact pin for the findlib executable and configuration plus versioned
+  whole-tree inventories for every configured package-search root; the runtime
+  receives the exact recorded `OCAMLFIND_CONF` and no inherited `OCAMLPATH`;
 - exact pins for the recursively resolved ELF dependency closure of the
   bytecode interpreter and runtime stub, including the dynamic loader, libc,
   libm, and GMP on the current host;
@@ -55,6 +58,7 @@ python3 candle/reference_fingerprints.py plan \
   --runtime /project/repos/hol-light/ocaml-hol \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
+  --ocamlfind /usr/bin/ocamlfind \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml
 ```
@@ -69,6 +73,7 @@ python3 candle/reference_fingerprints.py collect \
   --runtime /project/repos/hol-light/ocaml-hol \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
+  --ocamlfind /usr/bin/ocamlfind \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml \
   --transcript /tmp/gcd-reference.log \
@@ -88,7 +93,7 @@ python3 candle/reference_fingerprints.py validate \
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v3`, its approval status
+The candidate schema is `candle-s1-reference-candidate-v4`, its approval status
 is always `candidate_unapproved`, `promotion_allowed` is always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
@@ -135,6 +140,9 @@ only the approved expected object in a reviewed commit.
   passed. Independent review found its identity coherent but rejected it for
   promotion because its runtime closure was incomplete, it used the
   PFT-instrumented kernel, and no Candle differential sample existed. That
-  historical candidate remains review-only. A schema-v3 candidate must still
-  be repeated on pristine upstream HOL Light and matched against Candle before
-  any identity can be considered for approval.
+  historical candidate remains review-only. A later schema-v3 pristine run
+  matched the earlier identity exactly, but a critical re-review found that
+  findlib's configuration and first package-search root were not pinned. It too
+  remains review-only. A schema-v4 candidate must repeat the pristine run and
+  still match a verified Candle observation before any identity can be
+  considered for approval.

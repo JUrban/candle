@@ -51,7 +51,10 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ocaml_library = root / "ocaml-library"
         ocaml_library.mkdir()
         (ocaml_library / "topfind").write_text("pinned topfind\n")
+        findlib_config = root / "ocamlfind.conf"
+        findlib_config.write_text(f'path="{ocaml_library}"\n')
         ocamlc = root / "ocamlc"
+        ocamlfind = root / "ocamlfind"
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
@@ -68,7 +71,13 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "#!/bin/sh\n"
             f"if [ \"$1\" = -where ]; then printf '%s\\n' '{ocaml_library}'; "
             "else printf '4.14.1\\n'; fi\n")
-        for executable in (runtime, ocamlc):
+        ocamlfind.write_text(
+            "#!/bin/sh\n"
+            "if [ \"$1\" = query ]; then printf '1.9.6\\n'; "
+            f"elif [ \"$2\" = conf ]; then printf '%s\\n' '{findlib_config}'; "
+            f"elif [ \"$2\" = path ]; then printf '%s\\n' '{ocaml_library}'; "
+            "else exit 2; fi\n")
+        for executable in (runtime, ocamlc, ocamlfind):
             executable.chmod(0o755)
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         subprocess.run(
@@ -82,14 +91,15 @@ class ReferenceFingerprintTest(unittest.TestCase):
         subprocess.run(
             ["git", "-C", str(root), "commit", "-qm", "fixture"],
             check=True)
-        return root, runtime, runtime_stublib, ocamlc
+        return root, runtime, runtime_stublib, ocamlc, ocamlfind
 
     def test_plan_pins_clean_tree_order_and_exact_request(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, runtime, runtime_stublib, ocamlc = self._fake_reference(
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = self._fake_reference(
                 directory)
             plan = reference.build_plan(
-                "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
         self.assertEqual(plan["status"], "planned_not_executed")
         self.assertTrue(plan["fresh_process_contract"]["required"])
         self.assertFalse(
@@ -117,15 +127,24 @@ class ReferenceFingerprintTest(unittest.TestCase):
             str(root / "hol_loader.cmo"))
         self.assertEqual(
             plan["reference"]["ocaml_library_tree"]["entry_count"], 1)
+        self.assertEqual(
+            plan["fresh_process_contract"]["runtime_environment"]
+                ["OCAMLFIND_CONF"],
+            str(root / "ocamlfind.conf"))
+        self.assertEqual(
+            plan["reference"]["findlib"]["package_roots"][0]
+                ["inventory_sha256"],
+            plan["reference"]["ocaml_library_tree"]["inventory_sha256"])
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, runtime, runtime_stublib, ocamlc = self._fake_reference(
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = self._fake_reference(
                 directory, matching_source=False)
             with self.assertRaisesRegex(
                     reference.CollectionError, "differs from manifest"):
                 reference.build_plan(
-                    "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, NONCE)
         manual_target = {
             "fingerprint_request": {
                 "mapping_status": "manual_review",
@@ -139,7 +158,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     reference.CollectionError, "manual-review"):
                 reference.build_plan(
                     "manual-fixture", "/missing", "/missing", "/missing",
-                    "/missing", NONCE)
+                    "/missing", "/missing", NONCE)
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {
@@ -179,9 +198,11 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def test_collect_spawns_process_rechecks_pins_and_writes_candidate(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, runtime, runtime_stublib, ocamlc = self._fake_reference(directory)
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
             plan = reference.build_plan(
-                "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
             transcript = root.parent / "transcript.log"
             candidate_path = root.parent / "candidate.json"
             reference.collect(plan, transcript, candidate_path, 10)
