@@ -57,7 +57,7 @@ cannot be a potential float; malformed potential floats fail closed. Run this
 host completeness check directly with:
 
 ```sh
-python3 candle/compatibility/check_flyspeck_float_completeness.py \
+/usr/bin/python3 -I candle/compatibility/check_flyspeck_float_completeness.py \
   --candle-root /path/to/candle \
   --flyspeck-root /path/to/flyspeck-at-1ce0353 \
   --overlay-root /path/to/ac925270-overlay \
