@@ -34,6 +34,47 @@ After rebuilding Candle with the parser branch, run both sides:
 python3 candle/compatibility/test_float_literals.py --candle-root /path/to/candle
 ```
 
+The direct-source corpus gate is separate from that small grammar/boundary
+suite. `flyspeck_float_corpus.json` binds manifest SHA-256
+`2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380`,
+Flyspeck `1ce0353008eba83d3c76ae9a25c3c242e4802d53`, and normalization
+contract `ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08`.
+It records 15,775 decimal-float code occurrences in nine selected runtime
+files and all 1,741 exact spellings. The scanner follows the proved CakeML
+decimal grammar and excludes nested comments, strings, and HOL backtick
+quotations. Before scanning, it authenticates all 400 original manifest nodes,
+the exact schema-2 normalization receipt, and all 18 normalized outputs.
+
+Regenerate the complete inventory and all OCaml 4.14.1 Word64 observations:
+
+```sh
+python3 candle/compatibility/flyspeck_float_corpus.py \
+  --candle-root /path/to/candle \
+  --flyspeck-root /path/to/flyspeck-at-1ce0353 \
+  --overlay-root /path/to/ac925270-overlay \
+  --ocamlc /usr/bin/ocamlc --check
+```
+
+This also compares every spelling with C-locale host `strtod`; the pinned
+corpus has no `ERANGE` case and all 1,741 words match OCaml. That host result is
+primitive-boundary evidence only. It is not a substitute for the compiled
+gate, which first repeats the complete host regeneration, validates the linked
+Candle runtime record, loads the full `hol.ml` insulation stack, and checks
+every exact spelling in bounded chunks:
+
+```sh
+python3 candle/compatibility/check_flyspeck_float_corpus.py \
+  --candle-root /path/to/clean-linked-candle \
+  --flyspeck-root /path/to/flyspeck-at-1ce0353 \
+  --overlay-root /path/to/ac925270-overlay \
+  --ocamlc /usr/bin/ocamlc
+```
+
+The committed inventory and generator do not constitute a compiled PASS. A
+PASS from the second command establishes the decimal spelling/Word64
+compatibility of this exact selected graph; it does not establish that the
+graph loaded, that its theorems have approved fingerprints, or S2/S3.
+
 The script reports the Candle half as `NOT RUN` unless a built tree is supplied;
 reference-only success is not closure evidence. Hexadecimal OCaml float syntax
 is explicitly out of scope because CakeML's retained scanner is decimal-only
@@ -79,6 +120,12 @@ python3 candle/compatibility/benchmark_float_literals.py \
 Repeat it with `--require-literals` against the rebuilt isolated tree. Compare
 the rebuilt medians with `float_literal_benchmark_baseline.json`; the rejected
 baseline literal time is diagnostic only and is not a valid performance ratio.
+The direct audit also exposes a larger performance obligation than this
+100-term benchmark: `break_case_log.hl` contains 15,462 load-time literals,
+including 11,640 copies of `0.5000`, while `break_case_exec.hl` places
+`10000.0`, `1.0`, and `1.0e-10` inside repeatedly evaluated functions and
+recursive traversals. A corpus-shaped load and repeated-function comparison
+against hoisted constants remain required performance evidence.
 The ledger entry remains under test until the rebuilt IEEE differential,
 end-to-end negative parses, load-time comparison, clean target load, and
 theorem/assumption fingerprints are present.
