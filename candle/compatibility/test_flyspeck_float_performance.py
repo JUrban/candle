@@ -385,6 +385,69 @@ class FloatPerformanceGateTests(unittest.TestCase):
                     evidence, archived, linked,
                 )
 
+    def test_real_source_archive_is_manifest_bound_and_loaded_by_gate(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            candle_root = root / "candle-root"
+            flyspeck_root = root / "flyspeck-root"
+            evidence = root / "evidence"
+            (candle_root / "candle").mkdir(parents=True)
+            evidence.mkdir()
+            files = {
+                "break_case_log": generator.SOURCE_PATH,
+                "break_case_type": Path(
+                    "text_formalization/nonlinear/break_case_type.hl"
+                ),
+            }
+            records = {}
+            for label, relative in files.items():
+                path = flyspeck_root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(f"let {label} = true;;\n", encoding="utf-8")
+                records[label] = generator.file_record(path)
+            type_key = (
+                "flyspeck:text_formalization/nonlinear/break_case_type.hl"
+            )
+            manifest = {
+                "source_nodes": {
+                    generator.SOURCE_KEY: {
+                        "repository": "flyspeck",
+                        "path": generator.SOURCE_PATH.as_posix(),
+                        **records["break_case_log"],
+                    },
+                    type_key: {
+                        "repository": "flyspeck",
+                        "path": files["break_case_type"].as_posix(),
+                        **records["break_case_type"],
+                    },
+                },
+            }
+            manifest_path = candle_root / "candle/flyspeck_manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            linked = {"manifest_sha256": generator.file_record(
+                manifest_path)["sha256"]}
+            receipt = {"flyspeck": records["break_case_log"]}
+            archived = gate._archive_performance_sources(
+                candle_root, flyspeck_root, evidence, receipt, linked,
+            )
+            gate._verify_performance_source_archive(
+                evidence, archived, linked,
+            )
+            implementation = inspect.getsource(gate._run_attempt)
+            self.assertIn("source_paths", implementation)
+            self.assertIn("archived_sources", implementation)
+            retained = (
+                evidence /
+                archived["flyspeck"]["break_case_type"]["path"]
+            )
+            os.chmod(retained, 0o644)
+            retained.write_text("mutated\n", encoding="utf-8")
+            with self.assertRaisesRegex(gate.GateError,
+                                        "break_case_type changed"):
+                gate._verify_performance_source_archive(
+                    evidence, archived, linked,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()
