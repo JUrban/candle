@@ -55,6 +55,12 @@ to pin the kernel, vDSO implementation, CPU/IFUNC choice, NSS/gconv inputs, or
 libraries opened later with `dlopen`; a fixed runtime image remains the stronger
 release option if those affect an observed result.
 
+The repository launcher runs the linked-provenance validator before every
+ordinary Candle session. Standalone compatibility scripts therefore cannot
+report a compiled PASS against a dirty tree, an obsolete record schema, or a
+different executable. The direct stratum runner bypasses the launcher only
+after performing its stronger original-plus-snapshot preflight itself.
+
 `float_literal_progress.json` records the completed proof build without treating
 it as runtime evidence. `benchmark_float_literals.py` measures representative
 compiled-Candle load time for integer controls, explicit `Double.fromString`,

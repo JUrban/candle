@@ -116,16 +116,42 @@ def check_candle(payload, candle_root, timeout):
                     detail = (process.match.group(1) if boot in (1, 2) else
                               "timeout" if boot == 3 else "unexpected EOF")
                     raise AssertionError(f"Candle boot failed: {detail}")
-                process.sendline('#use "hol.ml";;')
+                process.send('#use "hol.ml";;\n'
+                             'let candle_hol_load_complete = '
+                             '(check_axioms (); true);;\n')
                 hol_load = process.expect([
-                    r"\n# ", r"\n(ERROR: .+)", r"\n(Parsing failed)",
+                    r"\n- Finished loading (?:\S*/)?hol\.ml",
+                    r"\n(ERROR: .+)", r"\n(Parsing failed)",
                     r"\n(EXCEPTION: .+)", pexpect.TIMEOUT, pexpect.EOF],
                     timeout=timeout)
                 if hol_load != 0:
                     detail = (process.match.group(1)
                               if hol_load in (1, 2, 3) else
                               "timeout" if hol_load == 4 else "unexpected EOF")
-                    raise AssertionError(f"Candle hol.ml load failed: {detail}")
+                    raise AssertionError(
+                        f"Candle hol.ml EOF witness failed: {detail}")
+                hol_marker = process.expect([
+                    r"\nval candle_hol_load_complete = true",
+                    r"\n(ERROR: .+)", r"\n(Parsing failed)",
+                    r"\n(EXCEPTION: .+)", pexpect.TIMEOUT, pexpect.EOF],
+                    timeout=timeout)
+                if hol_marker != 0:
+                    detail = (process.match.group(1)
+                              if hol_marker in (1, 2, 3) else
+                              "timeout" if hol_marker == 4 else
+                              "unexpected EOF")
+                    raise AssertionError(
+                        f"Candle hol.ml completion marker failed: {detail}")
+                prompt = process.expect([
+                    r"\n# ", r"\n(ERROR: .+)", r"\n(EXCEPTION: .+)",
+                    pexpect.TIMEOUT, pexpect.EOF], timeout=timeout)
+                if prompt != 0:
+                    detail = (process.match.group(1)
+                              if prompt in (1, 2) else
+                              "timeout" if prompt == 3 else
+                              "unexpected EOF")
+                    raise AssertionError(
+                        f"Candle prompt after hol.ml failed: {detail}")
                 process.sendline(f'#use "{source}";;')
                 result = process.expect([
                     r"\nval candle_num_rational_differential_passed = true",

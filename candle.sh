@@ -17,6 +17,8 @@ export LC_ALL=C
 # in the same authenticated source tree that it subsequently loads.  This
 # avoids a boot-time custom chdir FFI and keeps relocation explicit.
 script_dir=$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")
+python3 "$script_dir/candle/cakeml_artifact_provenance.py" \
+  check-linked --candle-root "$script_dir"
 for generated in config_enc_str.txt candle_boot.ml; do
   if [[ ! -r "$script_dir/$generated" ]]; then
     echo "missing generated Candle runtime input: $script_dir/$generated" >&2
