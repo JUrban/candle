@@ -309,8 +309,20 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 module.__candle_source_sha256__, hashlib.sha256(source).hexdigest()
             )
             self.assertEqual(Path(module.__file__).read_bytes(), source)
-        self.assertEqual(gate.python_startup_flags(),
-                         gate.EXPECTED_PYTHON_STARTUP_FLAGS)
+        observed_flags = gate.python_startup_flags()
+        if sys.flags.no_site == 1:
+            self.assertEqual(observed_flags,
+                             gate.EXPECTED_PYTHON_STARTUP_FLAGS)
+        else:
+            self.assertEqual(observed_flags["no_site"], 0)
+            self.assertEqual(gate.EXPECTED_PYTHON_STARTUP_FLAGS["no_site"], 1)
+            with mock.patch.object(gate, "__name__", "__main__"), \
+                    mock.patch.object(gate, "__spec__", None), \
+                    mock.patch.object(gate, "__cached__", None), \
+                    mock.patch.object(sys, "argv", [gate.__file__]):
+                with self.assertRaisesRegex(
+                        gate.GateError, "startup flags mismatch"):
+                    gate.require_direct_script_startup()
         self.assertEqual(gate.python_startup_options(),
                          gate.EXPECTED_PYTHON_STARTUP_OPTIONS)
         self.assertEqual(gate.validate_python_runtime(),
@@ -324,10 +336,13 @@ class FloatPerformanceGateTests(unittest.TestCase):
 
     def test_pexpect_loads_only_from_retained_pinned_sources(self):
         prefixes = ("pexpect", "ptyprocess")
-        self.assertFalse(any(
-            name == prefix or name.startswith(prefix + ".")
-            for name in sys.modules for prefix in prefixes
-        ))
+        ambient = {
+            name: module for name, module in list(sys.modules.items())
+            if any(name == prefix or name.startswith(prefix + ".")
+                   for prefix in prefixes)
+        }
+        for name in ambient:
+            sys.modules.pop(name, None)
         try:
             with tempfile.TemporaryDirectory() as temporary:
                 snapshot = Path(temporary) / "python-packages"
@@ -348,6 +363,7 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 if any(name == prefix or name.startswith(prefix + ".")
                        for prefix in prefixes):
                     sys.modules.pop(name, None)
+            sys.modules.update(ambient)
 
     def test_controller_archive_retains_all_execution_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:
