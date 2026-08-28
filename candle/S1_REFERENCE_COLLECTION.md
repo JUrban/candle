@@ -9,20 +9,21 @@ write `top100_manifest.EXPECTED_IDENTITIES`.
 Before execution, the tool requires and records:
 
 - a clean reference git tree and full commit ID;
-- exact SHA-256 pins for the collector, launcher, OCaml/HOL runtime executable,
-  `ocamlc`, `hol.ml`, the manifest, and `candle/fingerprint.ml`;
+- exact SHA-256 pins for the collector, OCaml/HOL runtime executable, required
+  runtime stub library, `ocamlc`, `hol.ml`, the manifest, and
+  `candle/fingerprint.ml`;
 - the probed OCaml compiler version;
 - manifest-equal hashes for every ordered target load file;
 - audited mapping status and ordered requested theorem value paths;
 - a 256-bit session nonce embedded in both start and completion markers;
 - fresh-process execution, with checkpoints/preloaded theorem state forbidden.
 
-Execution uses a recorded allowlist environment (`HOME`, `PATH`, `LC_ALL`, and
-`LINE_EDITOR`) rather than inheriting arbitrary caller variables. In particular,
-`HOL_ML_PATH`, `HOLLIGHT_DIR`, and OCaml preload variables cannot silently
-replace pinned inputs.
+Execution invokes the pinned runtime directly with the pinned `hol.ml`, exact
+reference include path, and `-noprompt`. It uses a recorded allowlist
+environment, including exact HOL root, runtime-library directory, and OCaml
+toplevel directory, rather than inheriting arbitrary caller variables.
 
-The collector launches the pinned reference launcher itself, supplies the
+The collector launches the pinned reference runtime itself, supplies the
 generated request on standard input, captures combined output, and rechecks all
 pins and git cleanliness after exit. The target file(s), serializer, and
 theorem requests run in that order. Fingerprint records are accepted only
@@ -38,8 +39,8 @@ Generate and inspect a plan without starting HOL Light:
 python3 candle/reference_fingerprints.py plan \
   --target 100/gcd \
   --reference-root /project/repos/hol-light \
-  --launcher /project/repos/hol-light/hol.sh \
   --runtime /project/repos/hol-light/ocaml-hol \
+  --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml
@@ -52,8 +53,8 @@ process with an explicit total wall deadline:
 python3 candle/reference_fingerprints.py collect \
   --target 100/gcd \
   --reference-root /project/repos/hol-light \
-  --launcher /project/repos/hol-light/hol.sh \
   --runtime /project/repos/hol-light/ocaml-hol \
+  --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml \
@@ -71,7 +72,7 @@ python3 candle/reference_fingerprints.py validate \
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v1`, its approval status
+The candidate schema is `candle-s1-reference-candidate-v2`, its approval status
 is always `candidate_unapproved`, `promotion_allowed` is always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
@@ -86,10 +87,11 @@ only the approved expected object in a reviewed commit.
 
 ## Current limitations
 
-- Fresh-process isolation is enforced by spawning a new launcher, but it is not
-  a proof that the pinned launcher/runtime implementation is trustworthy.
-- The launcher pin and runtime pin are recorded separately; a reviewer must
-  confirm that the launcher actually invokes that runtime.
+- Fresh-process isolation is enforced by spawning the pinned runtime directly,
+  but it is not a proof that the runtime implementation is trustworthy.
+- The required runtime stub is pinned individually. Other OCaml standard-library
+  and Camlp5 files are selected through the recorded `ocamlc -where` directory
+  and are not individually hashed.
 - Direct target files are hash-equal to the manifest. Transitive dependencies
   are pinned collectively by the clean reference git commit, not enumerated in
   the candidate.
@@ -102,4 +104,7 @@ only the approved expected object in a reviewed commit.
 - The structural serializer preserves free and type-variable names. Its
   cross-runtime canonicality remains an acceptance assumption to validate on
   reference/Candle differential samples before approving all 65 identities.
-- No reference workload was executed as part of implementing this path.
+- The first wrapper-based GCD attempt failed closed before HOL initialization;
+  a direct-runtime initialization smoke and one schema-v2 GCD collection then
+  passed. That candidate remains review-only and does not validate the other
+  64 targets or approve any identity.

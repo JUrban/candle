@@ -26,23 +26,26 @@ class ReferenceFingerprintTest(unittest.TestCase):
             source += b"\n(* changed reference *)\n"
         (root / "100/gcd.ml").write_bytes(source)
         (root / "hol.ml").write_text("(* pinned fake hol root *)\n")
-        launcher = root / "hol.sh"
         runtime = root / "ocaml-hol"
+        runtime_stublib = root / "dllzarith.so"
         ocamlc = root / "ocamlc"
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
-        launcher.write_text(
+        runtime.write_text(
             "#!/bin/sh\n"
             "cat >/dev/null\n"
             f"printf '%s\\n' '{reference.SESSION_MARKER}\t{NONCE}'\n"
             f"printf '%s\\n' '{record}'\n"
             f"printf '%s\\n' '{reference.COMPLETE_MARKER}\t{NONCE}'\n")
-        runtime.write_text("#!/bin/sh\nexit 99\n")
-        ocamlc.write_text("#!/bin/sh\nprintf '4.14.1\\n'\n")
-        for executable in (launcher, runtime, ocamlc):
+        runtime_stublib.write_text("pinned runtime stub\n")
+        ocamlc.write_text(
+            "#!/bin/sh\n"
+            "if [ \"$1\" = -where ]; then dirname \"$0\"; "
+            "else printf '4.14.1\\n'; fi\n")
+        for executable in (runtime, ocamlc):
             executable.chmod(0o755)
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         subprocess.run(
@@ -56,17 +59,20 @@ class ReferenceFingerprintTest(unittest.TestCase):
         subprocess.run(
             ["git", "-C", str(root), "commit", "-qm", "fixture"],
             check=True)
-        return root, launcher, runtime, ocamlc
+        return root, runtime, runtime_stublib, ocamlc
 
     def test_plan_pins_clean_tree_order_and_exact_request(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, launcher, runtime, ocamlc = self._fake_reference(directory)
+            root, runtime, runtime_stublib, ocamlc = self._fake_reference(
+                directory)
             plan = reference.build_plan(
-                "100/gcd", root, launcher, runtime, ocamlc, NONCE)
+                "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
         self.assertEqual(plan["status"], "planned_not_executed")
         self.assertTrue(plan["fresh_process_contract"]["required"])
         self.assertFalse(
             plan["fresh_process_contract"]["preloaded_checkpoint_allowed"])
+        self.assertEqual(
+            plan["fresh_process_contract"]["runtime_argv"][-1], "-noprompt")
         self.assertEqual(
             [item["relative_path"] for item in plan["input"]["load_files"]],
             ["100/gcd.ml"])
@@ -83,12 +89,12 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, launcher, runtime, ocamlc = self._fake_reference(
+            root, runtime, runtime_stublib, ocamlc = self._fake_reference(
                 directory, matching_source=False)
             with self.assertRaisesRegex(
                     reference.CollectionError, "differs from manifest"):
                 reference.build_plan(
-                    "100/gcd", root, launcher, runtime, ocamlc, NONCE)
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
         manual_target = {
             "fingerprint_request": {
                 "mapping_status": "manual_review",
@@ -106,7 +112,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {
-            "schema": "candle-s1-reference-plan-v1",
+            "schema": reference.PLAN_SCHEMA,
             "session_nonce": NONCE,
             "fresh_process_contract": {"required": True},
             "reference": {"git_head": "1" * 40},
@@ -142,9 +148,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def test_collect_spawns_process_rechecks_pins_and_writes_candidate(self):
         with tempfile.TemporaryDirectory() as directory:
-            root, launcher, runtime, ocamlc = self._fake_reference(directory)
+            root, runtime, runtime_stublib, ocamlc = self._fake_reference(directory)
             plan = reference.build_plan(
-                "100/gcd", root, launcher, runtime, ocamlc, NONCE)
+                "100/gcd", root, runtime, runtime_stublib, ocamlc, NONCE)
             transcript = root.parent / "transcript.log"
             candidate_path = root.parent / "candidate.json"
             reference.collect(plan, transcript, candidate_path, 10)
@@ -159,7 +165,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         with self.assertRaisesRegex(
                 reference.CollectionError, "session markers"):
             reference.candidate_from_transcript({
-                "schema": "candle-s1-reference-plan-v1",
+                "schema": reference.PLAN_SCHEMA,
                 "session_nonce": NONCE,
                 "input": {"theorem_names": [], "mapping_status": "audited"},
             }, "")
@@ -182,7 +188,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def test_fingerprint_outside_nonce_markers_fails_closed(self):
         plan = {
-            "schema": "candle-s1-reference-plan-v1",
+            "schema": reference.PLAN_SCHEMA,
             "session_nonce": NONCE,
             "fresh_process_contract": {"required": True},
             "reference": {"git_head": "1" * 40},

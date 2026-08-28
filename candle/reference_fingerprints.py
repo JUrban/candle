@@ -24,7 +24,8 @@ MANIFEST = ROOT / "candle" / "top100_manifest.json"
 SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v1"
+PLAN_SCHEMA = "candle-s1-reference-plan-v2"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v2"
 
 
 class CollectionError(Exception):
@@ -78,7 +79,7 @@ def _request_source(target, serializer_path, nonce):
     return "\n".join(lines) + "\n"
 
 
-def build_plan(target_name, reference_root, launcher, runtime, ocamlc,
+def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
                nonce=None):
     """Pin a clean reference tree and generate, but do not execute, a request."""
     manifest, target = _target_from_manifest(target_name)
@@ -111,17 +112,21 @@ def build_plan(target_name, reference_root, launcher, runtime, ocamlc,
             "sha256": pin["sha256"],
         })
 
-    launcher_pin = _pin_file(launcher)
     runtime_pin = _pin_file(runtime)
+    runtime_stublib_pin = _pin_file(runtime_stublib)
     ocamlc_pin = _pin_file(ocamlc)
     try:
         ocaml_version = subprocess.check_output(
             [ocamlc_pin["path"], "-version"], text=True,
             stderr=subprocess.STDOUT, timeout=10).strip()
+        ocaml_where = subprocess.check_output(
+            [ocamlc_pin["path"], "-where"], text=True,
+            stderr=subprocess.STDOUT, timeout=10).strip()
     except (OSError, subprocess.SubprocessError) as error:
         raise CollectionError("could not obtain pinned OCaml version") from error
     if not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:[+~].*)?", ocaml_version):
         raise CollectionError(f"unexpected OCaml version: {ocaml_version!r}")
+    ocaml_where = str(Path(ocaml_where).resolve(strict=True))
 
     nonce = nonce or secrets.token_hex(32)
     if not re.fullmatch(r"[0-9a-f]{64}", nonce):
@@ -129,16 +134,25 @@ def build_plan(target_name, reference_root, launcher, runtime, ocamlc,
     source = _request_source(target, SERIALIZER, nonce)
     serializer_pin = _pin_file(SERIALIZER)
     theorem_names = [item["name"] for item in request["theorems"]]
-    launcher_environment = {
+    hol_ml_pin = _pin_file(reference_root / "hol.ml")
+    runtime_environment = {
         "HOME": os.environ.get("HOME", ""),
-        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "PATH": "/usr/bin:/bin",
         "LC_ALL": "C",
-        "LINE_EDITOR": "/usr/bin/env",
+        "HOLLIGHT_DIR": str(reference_root),
+        "HOLLIGHT_USE_MODULE": "0",
+        "OCAMLRUNPARAM": "l=2000000000",
+        "CAML_LD_LIBRARY_PATH": str(Path(runtime_stublib_pin["path"]).parent),
+        "OCAML_TOPLEVEL_PATH": ocaml_where,
     }
-    if not launcher_environment["HOME"]:
-        raise CollectionError("HOME is required by the sanitized launcher environment")
+    if not runtime_environment["HOME"]:
+        raise CollectionError("HOME is required by the sanitized runtime environment")
+    runtime_argv = [
+        runtime_pin["path"], "-init", hol_ml_pin["path"],
+        "-I", str(reference_root), "-noprompt",
+    ]
     return {
-        "schema": "candle-s1-reference-plan-v1",
+        "schema": PLAN_SCHEMA,
         "status": "planned_not_executed",
         "session_nonce": nonce,
         "fresh_process_contract": {
@@ -146,16 +160,20 @@ def build_plan(target_name, reference_root, launcher, runtime, ocamlc,
             "preloaded_checkpoint_allowed": False,
             "working_directory": str(reference_root),
             "environment_policy": "sanitized_allowlist_no_inherited_overrides",
-            "launcher_environment": launcher_environment,
+            "runtime_argv": runtime_argv,
+            "runtime_environment": runtime_environment,
         },
         "reference": {
             "root": str(reference_root),
             "git_head": reference_head,
             "git_status": [],
-            "launcher": launcher_pin,
             "runtime_executable": runtime_pin,
-            "ocamlc": {**ocamlc_pin, "version": ocaml_version},
-            "hol_ml": _pin_file(reference_root / "hol.ml"),
+            "runtime_stublib": runtime_stublib_pin,
+            "ocamlc": {
+                **ocamlc_pin, "version": ocaml_version,
+                "stdlib_directory": ocaml_where,
+            },
+            "hol_ml": hol_ml_pin,
         },
         "input": {
             "collector": _pin_file(Path(__file__)),
@@ -186,7 +204,7 @@ def _stable_plan_pins(plan):
 
 def candidate_from_transcript(plan, transcript, exit_code=0):
     """Validate a completed transcript and return an unapproved candidate."""
-    if plan.get("schema") != "candle-s1-reference-plan-v1":
+    if plan.get("schema") != PLAN_SCHEMA:
         raise CollectionError("unsupported collection plan")
     if exit_code != 0:
         raise CollectionError(f"reference process exited with status {exit_code}")
@@ -264,10 +282,10 @@ def validate_candidate(candidate):
 
 def collect(plan, transcript_path, candidate_path, wall_timeout):
     """Launch one fresh reference process, recheck pins, and write a candidate."""
-    launcher = plan["reference"]["launcher"]["path"]
-    env = dict(plan["fresh_process_contract"]["launcher_environment"])
+    argv = list(plan["fresh_process_contract"]["runtime_argv"])
+    env = dict(plan["fresh_process_contract"]["runtime_environment"])
     completed = subprocess.run(
-        [launcher], input=plan["request"]["source"], text=True,
+        argv, input=plan["request"]["source"], text=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         cwd=plan["fresh_process_contract"]["working_directory"], env=env,
         timeout=wall_timeout, check=False)
@@ -275,8 +293,8 @@ def collect(plan, transcript_path, candidate_path, wall_timeout):
 
     rebuilt = build_plan(
         plan["input"]["target"], plan["reference"]["root"],
-        plan["reference"]["launcher"]["path"],
         plan["reference"]["runtime_executable"]["path"],
+        plan["reference"]["runtime_stublib"]["path"],
         plan["reference"]["ocamlc"]["path"], plan["session_nonce"])
     if _stable_plan_pins(rebuilt) != _stable_plan_pins(plan):
         raise CollectionError("reference inputs changed during collection")
@@ -294,8 +312,8 @@ def main():
         sub = subparsers.add_parser(command)
         sub.add_argument("--target", required=True)
         sub.add_argument("--reference-root", type=Path, required=True)
-        sub.add_argument("--launcher", type=Path, required=True)
         sub.add_argument("--runtime", type=Path, required=True)
+        sub.add_argument("--runtime-stublib", type=Path, required=True)
         sub.add_argument("--ocamlc", type=Path, required=True)
         sub.add_argument("--plan", type=Path, required=True)
         sub.add_argument("--request", type=Path, required=True)
@@ -313,8 +331,8 @@ def main():
             print(f"candidate valid and unapproved: {args.candidate}")
             return 0
         plan = build_plan(
-            args.target, args.reference_root, args.launcher,
-            args.runtime, args.ocamlc)
+            args.target, args.reference_root, args.runtime,
+            args.runtime_stublib, args.ocamlc)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         args.request.write_text(plan["request"]["source"], encoding="utf-8")
         if args.command == "plan":
