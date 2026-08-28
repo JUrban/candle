@@ -19,9 +19,10 @@ its compatibility module also preserves `valOf`. The differential gate
 loads the complete `hol.ml` stack before checking the literal corpus, so later
 module shadowing cannot silently invalidate the parser runtime.
 
-`float_literal_cases.json` defines the supported non-ERANGE decimal subset and
-pins exact OCaml 4.14.1 IEEE-754 words as well as invalid parses. Run the
-reference side:
+`float_literal_cases.json` defines the currently evidenced ten-case non-ERANGE
+decimal subset and pins exact OCaml 4.14.1 IEEE-754 words as well as invalid
+parses. Broader non-ERANGE decimal support remains implementation intent until
+the direct corpus execution gates exercise it. Run the reference side:
 
 ```sh
 python3 candle/compatibility/test_float_literals.py
@@ -47,7 +48,12 @@ claimed subset.
 
 The linked-artifact provenance also pins the resolved ELF loader, libc, and
 libm contents used by the executable, because the conversion depends on host
-`strtod` behavior.
+`strtod` behavior. Promotable gates reject loader-control environment
+variables, fix `LC_ALL=C`, require the exact three dependency roles, and archive
+the record and object bytes in each direct-attempt snapshot. This does not claim
+to pin the kernel, vDSO implementation, CPU/IFUNC choice, NSS/gconv inputs, or
+libraries opened later with `dlopen`; a fixed runtime image remains the stronger
+release option if those affect an observed result.
 
 `float_literal_progress.json` records the completed proof build without treating
 it as runtime evidence. `benchmark_float_literals.py` measures representative

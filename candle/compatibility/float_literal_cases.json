@@ -6,7 +6,7 @@
     "version": "4.14.1",
     "bit_observation": "Int64.bits_of_float printed as an unsigned 64-bit integer"
   },
-  "supported_subset": "decimal literals accepted by CakeML's existing scan_float_or_int lexer and converted by Double.fromString without ERANGE, including the pinned decimal points, exponents, and separator underscores",
+  "supported_subset": "the ten exact positive_cases spellings below, covering pinned decimal points, exponents, separator underscores, signed zero, and a subnormal; broader non-ERANGE decimal support remains implementation intent pending corpus execution evidence",
   "out_of_scope": [
     {
       "syntax": "hexadecimal floating-point literals such as 0x1.0p0",

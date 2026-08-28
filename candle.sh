@@ -2,6 +2,16 @@
 # Set up "strict mode" for bash
 set -euo pipefail
 
+# Promotable runtime provenance models a fixed dynamic-loader environment.
+# Refuse ambient loader injection rather than silently blessing it into a run.
+for variable in ${!LD_@} GLIBC_TUNABLES; do
+  if [[ -v $variable ]]; then
+    printf 'forbidden dynamic-loader environment: %s\n' "$variable" >&2
+    exit 1
+  fi
+done
+export LC_ALL=C
+
 # The CakeML bootstrap reads these generated files from its current directory.
 # The build installs relative links at the repository root so Candle can start
 # in the same authenticated source tree that it subsequently loads.  This

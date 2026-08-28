@@ -767,6 +767,25 @@ def create_runtime_snapshot(
     cake_snapshot = candle_snapshot / "candle/build/cake"
     cake_snapshot.chmod(0o555)
 
+    linked_record_snapshot = candle_snapshot / LINKED_RECORD_RELATIVE
+    record = snapshot_copy(
+        candle_root / LINKED_RECORD_RELATIVE, candle_snapshot,
+        LINKED_RECORD_RELATIVE.as_posix(), prepared["linked_record"],
+    )
+    add_record("candle", "linked-provenance-record", record)
+
+    closure = linked.get("runtime_elf_closure")
+    require(isinstance(closure, dict), "missing linked ELF closure")
+    closure_files = closure.get("files")
+    require(isinstance(closure_files, dict), "missing linked ELF closure files")
+    for path_string, expected in sorted(closure_files.items()):
+        source = Path(path_string)
+        relative = f"{expected['sha256'][:16]}-{source.name}"
+        record = snapshot_copy(
+            source, snapshot_root / "runtime-elf", relative, expected,
+        )
+        add_record("runtime-elf", "archived-runtime-elf", record)
+
     normalized_runtime = []
     for item in prepared["normalized_runtime"]:
         output_record = snapshot_copy(
@@ -838,6 +857,7 @@ def create_runtime_snapshot(
         "lp_certificate_runtime": lp_certificate_runtime,
         "process_runtime": process_runtime,
         "cake_runtime": cake_snapshot,
+        "linked_record_snapshot": linked_record_snapshot,
         "prefix_path": prefix_snapshot / prefix_relative,
     }
     records = list(records_by_path.values())
@@ -944,8 +964,8 @@ def run_attempt(
     require(timeout_seconds > 0, "timeout must be positive")
     require(0 < max_cpu_seconds <= 172800,
             "CPU-time limit must be between 1 and 172800 seconds")
-    require(0 < max_address_space_gib <= 56,
-            "address-space limit must be between 1 and 56 GiB")
+    require(0 < max_address_space_gib <= 120,
+            "address-space limit must be between 1 and 120 GiB")
     require(0 < max_output_file_gib <= 16,
             "output-file limit must be between 1 and 16 GiB")
     require(not output_root.exists(), f"attempt output already exists: {output_root}")
@@ -966,6 +986,16 @@ def run_attempt(
     )
     snapshot_record_path = output_root / "snapshot.json"
     atomic_write_json(snapshot_record_path, snapshot_record)
+    validate_runtime_snapshot(snapshot_record, output_root)
+    archived_linked = load_object(
+        runtime_prepared["linked_record_snapshot"],
+        "archived linked provenance",
+    )
+    require(archived_linked == linked,
+            "archived linked provenance differs from validated record")
+    cakeml_artifact_provenance.validate_elf_dynamic_closure(
+        runtime_prepared["cake_runtime"], linked["runtime_elf_closure"],
+    )
 
     control_root = output_root / "control"
     control_root.mkdir()
@@ -1030,11 +1060,17 @@ def run_attempt(
         },
         "fresh_process_replay_from_action_zero": True,
         "process_state_checkpoint": None,
+        "runtime_environment_policy": (
+            "LC_ALL=C; reject LD_* and GLIBC_TUNABLES"
+        ),
         "inputs": {
             "plan": prepared["plan_record"],
             "host_materialization": prepared["materialization_record"],
             "manifest": prepared["manifest_record"],
             "linked_provenance": prepared["linked_record"],
+            "archived_linked_provenance": hash_file(
+                runtime_prepared["linked_record_snapshot"]
+            ),
             "runtime_snapshot": hash_file(snapshot_record_path),
             "authenticated_prefix": prepared["prefix_record"],
             **control_records,
@@ -1052,7 +1088,8 @@ def run_attempt(
     }
     atomic_write_json(attempt_path, attempt)
 
-    command = ["/usr/bin/time", "-v", str(runtime_prepared["cake_runtime"]), "--candle"]
+    command = [str(runtime_prepared["cake_runtime"]), "--candle"]
+    runtime_env = cakeml_artifact_provenance.runtime_environment()
     timed_out = False
     exit_code: int | None = None
     execution_error: BaseException | None = None
@@ -1069,6 +1106,7 @@ def run_attempt(
             process = subprocess.Popen(
                 command, cwd=runtime_candle_root, stdin=stdin, stdout=log,
                 stderr=subprocess.STDOUT, start_new_session=True,
+                env=runtime_env,
                 preexec_fn=process_limit_preexec(
                     max_cpu_seconds, max_address_space_gib * GIB,
                     max_output_file_gib * GIB,
@@ -1105,10 +1143,21 @@ def run_attempt(
         require(not timed_out, "compiled stratum attempt timed out")
         require(exit_code == 0, f"compiled stratum process exited {exit_code}")
         post_linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+        require(post_linked == linked, "linked provenance changed during attempt")
         validate_plan(candle_root, post_linked, plan_root, boundary_id)
         validate_file(snapshot_record_path, attempt["inputs"]["runtime_snapshot"],
                       "runtime snapshot record")
         validate_runtime_snapshot(snapshot_record, output_root)
+        archived_post = load_object(
+            runtime_prepared["linked_record_snapshot"],
+            "archived linked provenance",
+        )
+        require(archived_post == linked,
+                "archived linked provenance changed during attempt")
+        cakeml_artifact_provenance.validate_elf_dynamic_closure(
+            runtime_prepared["cake_runtime"],
+            archived_post["runtime_elf_closure"],
+        )
         for label, path in (
             ("instrumented_prefix", program_path),
             ("runtime_config", config_path),

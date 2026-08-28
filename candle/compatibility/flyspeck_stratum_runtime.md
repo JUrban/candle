@@ -32,13 +32,20 @@ top-level error is present, and the process exits zero.
 Before generating the control program, the runner copies every runtime source,
 normalization, generated input, deterministic process input, linked CakeML
 output, harness file, and selected cumulative prefix into a disjoint attempt-
-local snapshot.  Every copied byte must match the independently reconstructed
-plan or linked provenance, duplicate paths must be byte-identical, and the
-snapshot inventory is content-addressed.  Snapshot files and directories and
-the generated control inputs are made read-only.  The compiled process reads
-only these attempt-local paths.  The runner then rehashes the complete snapshot
-and all control inputs and reauthenticates the original repositories, plan, and
-linked executable after the process exits.
+local snapshot.  It also archives the complete linked-provenance JSON and exact
+loader, libc, and libm objects named by its ELF closure.  Every copied byte must
+match the independently reconstructed plan or linked provenance, duplicate
+paths must be byte-identical, and the snapshot inventory is content-addressed.
+Snapshot files and directories and the generated control inputs are made
+read-only.  Before and after execution, the runner resolves the exact snapshot
+executable's ELF closure and requires it to match the archived record; linked
+artifacts with RPATH/RUNPATH or unexpected dependency roles are rejected.  The
+compiled process reads only attempt-local source/input paths under `LC_ALL=C`,
+with `LD_*` and `GLIBC_TUNABLES` forbidden.  It is launched directly, without an
+unrecorded timing wrapper; Python `getrusage` supplies the recorded child
+measurements.  The runner then rehashes the complete snapshot and all control
+inputs and reauthenticates the original repositories, plan, and linked
+executable after the process exits.
 
 Each run writes the generated config, instrumented prefix, standard input,
 fingerprint postlude, combined log, initial `attempt.json`, and final
@@ -53,7 +60,9 @@ space, and 8 GiB per output file, in addition to the 24-hour wall timeout.
 They are recorded in the attempt and enforced before the CakeML process is
 executed.  The receipt records child user/system CPU, maximum resident set,
 and major/minor page faults.  Command-line limits may be lowered; address space
-and output-file limits cannot be raised above 56 GiB and 16 GiB respectively.
+and output-file limits cannot be raised above 120 GiB and 16 GiB respectively.
+The address-space default remains 48 GiB; the higher ceiling is reserved for
+measured proof/corpus stages that need it.
 
 The LP-support and later boundaries emit the canonical structural identity of
 `Linear_programming_results.linear_programming_results_th`.  At the final

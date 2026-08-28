@@ -81,6 +81,39 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         ):
             subject.validate_elf_dynamic_closure(executable, closure)
 
+    def test_runtime_environment_rejects_loader_controls(self) -> None:
+        for variable in ("LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH",
+                         "GLIBC_TUNABLES"):
+            with self.subTest(variable=variable):
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError,
+                    "forbidden dynamic-loader environment",
+                ):
+                    subject.runtime_environment({variable: "injected"})
+
+    def test_runtime_environment_fixes_locale(self) -> None:
+        self.assertEqual(
+            subject.runtime_environment({"LANG": "de_DE.UTF-8"})["LC_ALL"],
+            "C",
+        )
+
+    def test_candle_elf_policy_rejects_extra_object(self) -> None:
+        closure = {
+            "files": {
+                f"/runtime/{name}": {"bytes": 1, "sha256": "0" * 64}
+                for name in subject.CANDLE_ELF_OBJECTS
+            },
+            "virtual_objects": list(subject.CANDLE_ELF_VIRTUAL_OBJECTS),
+        }
+        subject.validate_candle_elf_policy(closure)
+        closure["files"]["/runtime/libinjected.so"] = {
+            "bytes": 1, "sha256": "1" * 64,
+        }
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "unexpected.*dependency roles",
+        ):
+            subject.validate_candle_elf_policy(closure)
+
 
 if __name__ == "__main__":
     unittest.main()

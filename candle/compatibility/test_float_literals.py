@@ -10,15 +10,18 @@ reported pass always says whether only OCaml or both implementations ran.
 
 import argparse
 import json
-import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 
 HERE = Path(__file__).resolve().parent
 CASES_PATH = HERE / "float_literal_cases.json"
 EXPECTED_OCAML_VERSION = "4.14.1"
+
+sys.path.insert(0, str(HERE.parent))
+import cakeml_artifact_provenance
 
 
 def _load_cases():
@@ -128,8 +131,14 @@ def _candle_positive_source(payload):
          'failwith "Option.valOf None";;'),
     ])
     for case in payload["runtime_divergence_cases"]:
+        string_binding = f'candle_float_{case["id"]}_fromstring_none'
         binding = f'candle_float_{case["id"]}_raises'
         lines.extend([
+            (f'let {string_binding} = match Double.fromString '
+             f'{json.dumps(case["literal"])} with '
+             'None -> true | Some _ -> false;;'),
+            (f'let () = if {string_binding} then () else failwith '
+             f'"runtime conversion boundary: {case["id"]}";;'),
             (f'let {binding} = try let _ = {case["literal"]} in false '
              'with _ -> true;;'),
             (f'let () = if {binding} then () else failwith '
@@ -165,6 +174,8 @@ def check_candle(payload, candle_root, timeout):
     launcher = root / "candle.sh"
     if not launcher.is_file():
         raise RuntimeError(f"Candle launcher not found: {launcher}")
+    cakeml_artifact_provenance.validate_linked_record(root)
+    runtime_env = cakeml_artifact_provenance.runtime_environment()
 
     transcript = tempfile.NamedTemporaryFile(
         mode="w+", encoding="utf-8", prefix="candle-float-", suffix=".log",
@@ -175,11 +186,23 @@ def check_candle(payload, candle_root, timeout):
     try:
         process = pexpect.spawn(
             str(launcher), encoding="utf-8", logfile=transcript,
-            cwd=str(root), env=os.environ.copy())
+            cwd=str(root), env=runtime_env)
         _expect_prompt(process, timeout)
         process.send('#use "hol.ml";;\n'
                      'let candle_hol_load_complete = '
                      '(check_axioms (); true);;\n')
+        loaded = process.expect([
+            r"\n- Finished loading (?:\S*/)?hol\.ml",
+            r"\n(ERROR: .+)",
+            r"\n(Parsing failed)",
+            r"\n(EXCEPTION: .+)",
+            pexpect.TIMEOUT,
+            pexpect.EOF,
+        ], timeout=timeout)
+        if loaded != 0:
+            detail = (process.match.group(1) if loaded in (1, 2, 3)
+                      else "timeout" if loaded == 4 else "unexpected EOF")
+            raise AssertionError(f"Candle hol.ml EOF witness failed: {detail}")
         index = process.expect([
             r"\nval candle_hol_load_complete = true",
             r"\n(ERROR: .+)",
@@ -265,11 +288,11 @@ def check_candle(payload, candle_root, timeout):
         if passed:
             transcript_path.unlink()
 
-    print(f"Candle: {len(payload['positive_cases'])} positive values, "
-          f"{len(payload['negative_cases'])} negative parses, and "
-          f"{len(payload['candle_excluded_cases'])} excluded forms plus "
-          f"{len(payload['runtime_divergence_cases'])} declared runtime "
-          "boundaries PASS")
+    print(f"Candle supported subset: {len(payload['positive_cases'])} "
+          f"positive values, {len(payload['negative_cases'])} negative "
+          f"parses, and {len(payload['candle_excluded_cases'])} excluded "
+          f"forms PASS; {len(payload['runtime_divergence_cases'])} expected "
+          "ERANGE divergences confirmed")
 
 
 def main():

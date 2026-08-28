@@ -239,6 +239,13 @@ class StratumRuntimeTests(unittest.TestCase):
                 if name == "cake":
                     path.chmod(0o755)
                 linked_outputs[name] = record
+            _, linked_record = write(
+                candle, subject.LINKED_RECORD_RELATIVE,
+                json.dumps({"schema": 2}).encode(),
+            )
+            runtime_object, runtime_object_record = write(
+                root, "libc.so.6", b"runtime object",
+            )
 
             source, source_record = write(flyspeck, "source.ml", b"source")
             normalized, normalized_record = write(overlay, "source.ml", b"normalized")
@@ -269,9 +276,17 @@ class StratumRuntimeTests(unittest.TestCase):
                 }],
                 "prefix_path": prefix,
                 "prefix_record": prefix_record,
+                "linked_record": linked_record,
             }
             runtime, snapshot = subject.create_runtime_snapshot(
-                output, candle, prepared, {"outputs": linked_outputs},
+                output, candle, prepared, {
+                    "outputs": linked_outputs,
+                    "runtime_elf_closure": {
+                        "files": {
+                            str(runtime_object): runtime_object_record,
+                        },
+                    },
+                },
             )
             subject.validate_runtime_snapshot(snapshot, output)
             self.assertEqual(
@@ -284,6 +299,17 @@ class StratumRuntimeTests(unittest.TestCase):
             self.assertEqual(source_entry["classes"], ["source:flyspeck"])
             self.assertEqual(len({item["path"] for item in snapshot["files"]}),
                              snapshot["file_count"])
+            self.assertTrue(any(
+                item["path"] ==
+                "candle/candle/build/cakeml-build-provenance.json"
+                and item["classes"] == ["linked-provenance-record"]
+                for item in snapshot["files"]
+            ))
+            self.assertTrue(any(
+                item["path"].startswith("runtime-elf/")
+                and item["classes"] == ["archived-runtime-elf"]
+                for item in snapshot["files"]
+            ))
 
             snapshot_source = output / "snapshot/flyspeck/source.ml"
             snapshot_source.chmod(0o644)

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -32,6 +33,12 @@ LINKED_OUTPUTS = (
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
+CANDLE_ELF_OBJECTS = {
+    "ld-linux-x86-64.so.2",
+    "libc.so.6",
+    "libm.so.6",
+}
+CANDLE_ELF_VIRTUAL_OBJECTS = ["linux-vdso.so.1"]
 
 
 class ProvenanceError(ValueError):
@@ -83,6 +90,22 @@ def validate_git(root: Path, expected_head: str, label: str) -> None:
             f"{label} worktree is not clean")
 
 
+def runtime_environment(
+    environment: dict[str, str] | None = None,
+) -> dict[str, str]:
+    """Return the fixed locale environment allowed for linked execution."""
+    source = os.environ if environment is None else environment
+    forbidden = sorted(
+        name for name in source
+        if name.startswith("LD_") or name == "GLIBC_TUNABLES"
+    )
+    require(not forbidden,
+            "forbidden dynamic-loader environment: " + ", ".join(forbidden))
+    result = dict(source)
+    result["LC_ALL"] = "C"
+    return result
+
+
 def expected_pins(candle_root: Path) -> dict[str, str]:
     manifest_path = candle_root / MANIFEST_RELATIVE
     manifest = load_object(manifest_path)
@@ -99,6 +122,7 @@ def version_details(executable: Path) -> tuple[str, str, str]:
     output = subprocess.run(
         [str(executable), "--version"], check=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        env=runtime_environment(),
     ).stdout
     cake_lines = [line.removeprefix("CakeML:").strip()
                   for line in output.splitlines() if line.startswith("CakeML:")]
@@ -113,13 +137,21 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
     """Pin the host ELF objects selected for this executable by ldd."""
     executable = executable.resolve()
     require(executable.is_file(), f"missing ELF executable: {executable}")
-    require(executable.read_bytes()[:4] == b"\x7fELF",
-            f"runtime executable is not ELF: {executable}")
+    with executable.open("rb") as source:
+        require(source.read(4) == b"\x7fELF",
+                f"runtime executable is not ELF: {executable}")
     try:
+        dynamic_tags = subprocess.run(
+            ["/usr/bin/readelf", "-d", str(executable)], check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            timeout=30, env=runtime_environment(),
+        ).stdout
+        require(re.search(r"\((?:RPATH|RUNPATH)\)", dynamic_tags) is None,
+                f"RPATH/RUNPATH is outside the ELF closure model: {executable}")
         observed = subprocess.run(
             ["/usr/bin/ldd", str(executable)], check=True,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-            timeout=30,
+            timeout=30, env=runtime_environment(),
         ).stdout
     except (OSError, subprocess.SubprocessError) as error:
         raise ProvenanceError(
@@ -150,6 +182,16 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
         "files": {path: files[path] for path in sorted(files)},
         "virtual_objects": sorted(virtual_objects),
     }
+
+
+def validate_candle_elf_policy(record: dict[str, Any]) -> None:
+    files = record.get("files")
+    virtual_objects = record.get("virtual_objects")
+    require(isinstance(files, dict), "malformed Candle ELF file closure")
+    require({Path(path).name for path in files} == CANDLE_ELF_OBJECTS,
+            "unexpected Candle ELF dependency roles")
+    require(virtual_objects == CANDLE_ELF_VIRTUAL_OBJECTS,
+            "unexpected Candle virtual ELF objects")
 
 
 def validate_elf_dynamic_closure(
@@ -292,6 +334,7 @@ def record_linked(
         "version_output_sha256": hashlib.sha256(version_output.encode()).hexdigest(),
     }
     output_path = output_path.resolve()
+    validate_candle_elf_policy(record["runtime_elf_closure"])
     output_path.write_text(
         json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8",
     )
@@ -329,6 +372,7 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     validate_elf_dynamic_closure(
         build_dir / "cake", record.get("runtime_elf_closure", {}),
     )
+    validate_candle_elf_policy(record["runtime_elf_closure"])
     cake_commit, hol_commit, version_output = version_details(build_dir / "cake")
     require(cake_commit == pins["cakeml_commit"], "runtime CakeML revision mismatch")
     require(hol_commit == pins["hol4_commit"], "runtime HOL4 revision mismatch")
