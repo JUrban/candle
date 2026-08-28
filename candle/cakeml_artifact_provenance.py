@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -60,6 +61,63 @@ GNU_TIME_FOOTER_LABELS = (
     "Page size (bytes)",
     "Exit status",
 )
+NATIVE_LINK_ENVIRONMENT = {
+    "LC_ALL": "C",
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": ".candle-native-tmp",
+}
+NATIVE_LINK_MAKE_ARGV = (
+    "/usr/bin/make",
+    "--no-builtin-rules",
+    "--no-builtin-variables",
+    "-B",
+    "-j1",
+    "-f",
+    "Makefile",
+    "OS=Linux",
+    "CC=/usr/bin/cc -B.candle-native-tools/",
+    "CFLAGS=-O2 -save-temps=obj -v",
+    "LOADLIBES=",
+    "EVALFLAG=-DEVAL",
+    "LDFLAGS=",
+    "LDLIBS=-lm",
+    "cake",
+)
+NATIVE_LINK_CC_ARGV = (
+    "/usr/bin/cc",
+    "-B.candle-native-tools/",
+    "-O2",
+    "-save-temps=obj",
+    "-v",
+    "cake.S",
+    "basis_ffi.c",
+    "-DEVAL",
+    "-o",
+    "cake",
+    "-lm",
+)
+NATIVE_LINK_INPUTS = ("cake.S", "basis_ffi.c", "Makefile")
+NATIVE_TOOL_PATHS = {
+    "make": "/usr/bin/make",
+    "cc": "/usr/bin/cc",
+    "as": "/usr/bin/as",
+    "ld": "/usr/bin/ld",
+    "shell": "/bin/sh",
+}
+NATIVE_LINK_TRUSTED_BOUNDARY = {
+    "policy": "explicit_host_toolchain_boundary_v1",
+    "bound_by_content": [
+        "make, cc, as, ld, shell, cc1, collect2, and lto-wrapper executables",
+        "GCC target/version/specification bytes and every recorded command/flag",
+        "cake.S, basis_ffi.c, Makefile, and the resulting executable bytes",
+    ],
+    "trusted_not_independently_authenticated": [
+        "kernel process and filesystem semantics",
+        "dynamic loader and shared libraries used while running host build tools",
+        "system C headers, GCC internal data, linker scripts, startup objects, and archives",
+        "the semantics of the exact recorded host tool binaries and system inputs",
+    ],
+}
 LINKED_OUTPUTS = (
     "cake.S",
     "cake.S.bootstrap",
@@ -471,9 +529,24 @@ def validate_bootstrap_log(log: str, build_command: str) -> None:
     expected_command = f'\tCommand being timed: "{build_command}"'
     require(footer[0] == expected_command,
             "bootstrap log command does not match the pinned x64 cake.S build")
-    for line, label in zip(footer, GNU_TIME_FOOTER_LABELS):
-        require(line.startswith(f"\t{label}: "),
+    decimal_fields = {"User time (seconds)", "System time (seconds)"}
+    elapsed_field = "Elapsed (wall clock) time (h:mm:ss or m:ss)"
+    for line, label in zip(footer[1:-1], GNU_TIME_FOOTER_LABELS[1:-1]):
+        prefix = f"\t{label}: "
+        require(line.startswith(prefix),
                 f"malformed GNU-time footer field: {label}")
+        value = line.removeprefix(prefix)
+        if label in decimal_fields:
+            valid = re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", value) is not None
+        elif label == "Percent of CPU this job got":
+            valid = re.fullmatch(r"[0-9]+%", value) is not None
+        elif label == elapsed_field:
+            valid = re.fullmatch(
+                r"(?:[0-9]+:)?[0-9]+:[0-9]+(?:\.[0-9]+)?", value,
+            ) is not None
+        else:
+            valid = re.fullmatch(r"[0-9]+", value) is not None
+        require(valid, f"malformed GNU-time footer value: {label}")
     require(footer[-1] == "\tExit status: 0",
             "bootstrap GNU-time footer does not record final exit status 0")
     require(lines.count(expected_command) == 1,
@@ -487,12 +560,17 @@ def validate_bootstrap_log(log: str, build_command: str) -> None:
             "bootstrap log lacks unique cake.S emission evidence")
     require(lines.count('Exporting theory "x64Bootstrap" ... done.') == 1,
             "bootstrap log lacks unique x64Bootstrap export evidence")
-    target_lines = [
-        line for line in lines
+    target_indices = [
+        index for index, line in enumerate(lines)
         if re.fullmatch(r"Holmake: \[([0-9]+)/\1\] x64Bootstrap", line)
     ]
-    require(len(target_lines) == 1,
+    require(len(target_indices) == 1,
             "bootstrap log lacks unique completed x64Bootstrap target evidence")
+    write_index = lines.index("Writing cv to file: cake.S")
+    export_index = lines.index('Exporting theory "x64Bootstrap" ... done.')
+    footer_index = len(lines) - len(GNU_TIME_FOOTER_LABELS)
+    require(write_index < export_index < target_indices[0] == footer_index - 1,
+            "bootstrap completion evidence is not in exact final order")
 
 
 def record_bootstrap(
@@ -719,6 +797,363 @@ def cake_patch_derivation(
     }
 
 
+def executable_tool_record(requested_path: Path) -> dict[str, Any]:
+    """Bind both a fixed tool pathname and the ordinary file it resolves to."""
+    require(requested_path.is_absolute() and os.path.lexists(requested_path),
+            f"missing host tool: {requested_path}")
+    symlink_target = (os.readlink(requested_path)
+                      if requested_path.is_symlink() else None)
+    resolved = requested_path.resolve(strict=True)
+    require(resolved.is_file() and not resolved.is_symlink(),
+            f"host tool does not resolve to an ordinary file: {requested_path}")
+    return {
+        "requested_path": str(requested_path),
+        "symlink_target": symlink_target,
+        "resolved_path": str(resolved),
+        "file": file_record(resolved),
+    }
+
+
+def native_toolchain_record() -> dict[str, Any]:
+    runtime_environment({})
+    environment = {"LC_ALL": "C", "PATH": "/usr/bin:/bin"}
+
+    def cc_output(*arguments: str) -> bytes:
+        try:
+            return subprocess.run(
+                ["/usr/bin/cc", *arguments], check=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=30, env=environment,
+            ).stdout
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ProvenanceError(
+                f"could not query host C compiler: {' '.join(arguments)}",
+            ) from error
+
+    query_arguments = {
+        "dumpmachine": ("-dumpmachine",),
+        "dumpfullversion": ("-dumpfullversion",),
+        "dumpspecs": ("-dumpspecs",),
+    }
+    queries = {}
+    for name, arguments in query_arguments.items():
+        output = cc_output(*arguments)
+        queries[name] = {
+            "argv": ["/usr/bin/cc", *arguments],
+            "bytes": len(output),
+            "sha256": hashlib.sha256(output).hexdigest(),
+        }
+    tools = {
+        name: executable_tool_record(Path(path))
+        for name, path in NATIVE_TOOL_PATHS.items()
+    }
+    for name, program in (
+        ("cc1", "cc1"),
+        ("collect2", "collect2"),
+        ("lto_wrapper", "lto-wrapper"),
+    ):
+        output = cc_output(f"-print-prog-name={program}").decode(
+            "utf-8", errors="strict",
+        ).strip()
+        path = Path(output)
+        require(path.is_absolute(), f"C compiler returned non-absolute {program}")
+        tools[name] = executable_tool_record(path)
+    return {
+        "policy": "exact_native_link_tool_files_and_cc_queries_v1",
+        "tools": tools,
+        "cc_queries": queries,
+    }
+
+
+def tool_wrapper_source(tool_path: str, log_name: str) -> str:
+    require(re.fullmatch(r"[a-z]+", log_name) is not None,
+            "invalid native tool log name")
+    require(Path(tool_path).is_absolute(), "native tool wrapper path is not absolute")
+    return (
+        "#!/bin/sh\n"
+        "set -eu\n"
+        "{\n"
+        "  printf 'BEGIN %s\\n' \"$#\"\n"
+        "  printf 'ARG %s\\n' \"$@\"\n"
+        f"}} >> .candle-native-tools/{log_name}.argv\n"
+        f"exec {tool_path} \"$@\"\n"
+    )
+
+
+def parse_tool_argv_log(path: Path, tool_path: str) -> list[list[str]]:
+    require(path.is_file() and not path.is_symlink(),
+            f"missing native tool invocation log: {path}")
+    lines = path.read_text(encoding="utf-8", errors="strict").splitlines()
+    result: list[list[str]] = []
+    offset = 0
+    while offset < len(lines):
+        match = re.fullmatch(r"BEGIN ([0-9]+)", lines[offset])
+        require(match is not None, f"malformed native tool invocation log: {path}")
+        count = int(match.group(1))
+        arguments = lines[offset + 1:offset + 1 + count]
+        require(len(arguments) == count and
+                all(argument.startswith("ARG ") for argument in arguments),
+                f"truncated native tool invocation log: {path}")
+        result.append([tool_path, *(argument[4:] for argument in arguments)])
+        offset += count + 1
+    return result
+
+
+def files_are_byte_identical(left: Path, right: Path) -> bool:
+    with left.open("rb") as left_file, right.open("rb") as right_file:
+        while True:
+            left_block = left_file.read(1024 * 1024)
+            right_block = right_file.read(1024 * 1024)
+            if left_block != right_block:
+                return False
+            if not left_block:
+                return True
+
+
+def _driver_commands(
+    diagnostic_output: str,
+    toolchain: dict[str, Any],
+) -> dict[str, list[list[str]]]:
+    expected_paths = {
+        name: details["requested_path"]
+        for name, details in toolchain["tools"].items()
+        if name in {"cc1", "collect2"}
+    }
+    expected_resolved = {
+        name: details["resolved_path"]
+        for name, details in toolchain["tools"].items()
+        if name in {"cc1", "collect2"}
+    }
+    result: dict[str, list[list[str]]] = {"cc1": [], "collect2": []}
+    for line in diagnostic_output.splitlines():
+        if not line.startswith(" "):
+            continue
+        try:
+            arguments = shlex.split(line)
+        except ValueError as error:
+            raise ProvenanceError("malformed C compiler diagnostic command") from error
+        if not arguments:
+            continue
+        for name in result:
+            if arguments[0] in {expected_paths[name], expected_resolved[name]}:
+                result[name].append(arguments)
+                break
+    require(len(result["cc1"]) == 3,
+            "native relink did not execute the exact three expected cc1 stages")
+    require(len(result["collect2"]) == 1,
+            "native relink did not execute exactly one collect2 link stage")
+    return result
+
+
+def expected_native_driver_commands(
+    build_dir: Path,
+    toolchain: dict[str, Any],
+) -> dict[str, list[list[str]]]:
+    """Ask the authenticated GCC driver for its exact non-executing plan."""
+    for name in ("cake.S", "basis_ffi.c"):
+        require((build_dir / name).is_file(),
+                f"missing native driver-plan input: {name}")
+    with tempfile.TemporaryDirectory(
+        prefix="candle-native-plan-",
+    ) as temporary:
+        plan_root = Path(temporary)
+        tools_dir = plan_root / ".candle-native-tools"
+        tools_dir.mkdir()
+        (plan_root / NATIVE_LINK_ENVIRONMENT["TMPDIR"]).mkdir()
+        for name in ("as", "ld"):
+            wrapper = tools_dir / name
+            wrapper.write_text(
+                tool_wrapper_source(NATIVE_TOOL_PATHS[name], name),
+                encoding="utf-8",
+            )
+            wrapper.chmod(0o755)
+        (plan_root / "cake.S").write_bytes(b"")
+        (plan_root / "basis_ffi.c").write_bytes(b"")
+        arguments = [*NATIVE_LINK_CC_ARGV, "-###"]
+        try:
+            completed = subprocess.run(
+                arguments, check=True, cwd=plan_root,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                timeout=60, env=NATIVE_LINK_ENVIRONMENT,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ProvenanceError(
+                "could not derive the native GCC command plan",
+            ) from error
+    result = _driver_commands(completed.stderr, toolchain)
+    assemblers: list[list[str]] = []
+    for line in completed.stderr.splitlines():
+        if not line.startswith(" "):
+            continue
+        try:
+            command = shlex.split(line)
+        except ValueError as error:
+            raise ProvenanceError("malformed GCC assembler command plan") from error
+        if command and Path(command[0]).name == "as":
+            command[0] = NATIVE_TOOL_PATHS["as"]
+            assemblers.append(command)
+    require(len(assemblers) == 2,
+            "native GCC command plan does not contain exactly two assemblers")
+    result["as"] = assemblers
+    return result
+
+
+def native_link_derivation(build_dir: Path) -> dict[str, Any]:
+    """Freshly relink exact inputs, capture the host commands, and byte-compare."""
+    runtime_environment({})
+    installed = build_dir / "cake"
+    installed_identity = file_record(installed)
+    inputs = {
+        name: file_record(build_dir / name)
+        for name in NATIVE_LINK_INPUTS
+    }
+    toolchain = native_toolchain_record()
+    with tempfile.TemporaryDirectory(prefix="candle-native-link-") as temporary:
+        replay = Path(temporary)
+        for name in NATIVE_LINK_INPUTS:
+            shutil.copyfile(build_dir / name, replay / name)
+            validate_file_record(replay / name, inputs[name], f"native relink {name}")
+        tools_dir = replay / ".candle-native-tools"
+        tools_dir.mkdir()
+        (replay / NATIVE_LINK_ENVIRONMENT["TMPDIR"]).mkdir()
+        wrapper_records = {}
+        for name in ("as", "ld"):
+            wrapper = tools_dir / name
+            source = tool_wrapper_source(NATIVE_TOOL_PATHS[name], name)
+            wrapper.write_text(source, encoding="utf-8")
+            wrapper.chmod(0o755)
+            wrapper_records[name] = file_record(wrapper)
+        try:
+            completed = subprocess.run(
+                list(NATIVE_LINK_MAKE_ARGV), check=True, cwd=replay,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                timeout=1800, env=NATIVE_LINK_ENVIRONMENT,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ProvenanceError("fresh deterministic CakeML relink failed") from error
+        stdout_lines = [line for line in completed.stdout.splitlines() if line]
+        require(len(stdout_lines) == 1,
+                "native relink make output does not identify one exact C command")
+        require(shlex.split(stdout_lines[0]) == list(NATIVE_LINK_CC_ARGV),
+                "native relink C command mismatch")
+        tool_commands = {
+            name: parse_tool_argv_log(
+                tools_dir / f"{name}.argv", NATIVE_TOOL_PATHS[name],
+            )
+            for name in ("as", "ld")
+        }
+        require(len(tool_commands["as"]) == 2,
+                "native relink did not execute exactly two assembler commands")
+        require(len(tool_commands["ld"]) == 1,
+                "native relink did not execute exactly one linker command")
+        candidate = replay / "cake"
+        candidate_identity = file_record(candidate)
+        with candidate.open("rb") as source:
+            require(source.read(4) == b"\x7fELF",
+                    "fresh native relink candidate is not ELF")
+        require(files_are_byte_identical(candidate, installed),
+                "fresh native relink is not byte-identical to installed cake")
+        driver_commands = _driver_commands(completed.stderr, toolchain)
+    require(candidate_identity == installed_identity,
+            "native relink candidate identity differs from installed cake")
+    return {
+        "policy": "fresh_exact_inputs_commands_and_byte_comparison_v1",
+        "inputs": inputs,
+        "environment": dict(NATIVE_LINK_ENVIRONMENT),
+        "commands": {
+            "make": [list(NATIVE_LINK_MAKE_ARGV)],
+            "cc": [list(NATIVE_LINK_CC_ARGV)],
+            "cc1": driver_commands["cc1"],
+            "as": tool_commands["as"],
+            "collect2": driver_commands["collect2"],
+            "ld": tool_commands["ld"],
+        },
+        "tool_wrappers": wrapper_records,
+        "toolchain": toolchain,
+        "candidate_elf": candidate_identity,
+        "installed_elf": installed_identity,
+        "comparison": "byte_for_byte_equal",
+        "trusted_host_boundary": copy.deepcopy(NATIVE_LINK_TRUSTED_BOUNDARY),
+    }
+
+
+def validate_native_link_derivation(
+    build_dir: Path,
+    record: dict[str, Any],
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "inputs", "environment", "commands", "tool_wrappers",
+        "toolchain", "candidate_elf", "installed_elf", "comparison",
+        "trusted_host_boundary",
+    }, "malformed native link derivation")
+    require(record.get("policy") ==
+            "fresh_exact_inputs_commands_and_byte_comparison_v1",
+            "unsupported native link derivation policy")
+    require(record.get("environment") == NATIVE_LINK_ENVIRONMENT,
+            "native link environment mismatch")
+    require(record.get("trusted_host_boundary") == NATIVE_LINK_TRUSTED_BOUNDARY,
+            "native link trusted host boundary mismatch")
+    inputs = record.get("inputs")
+    require(isinstance(inputs, dict) and set(inputs) == set(NATIVE_LINK_INPUTS),
+            "native link input set mismatch")
+    for name in NATIVE_LINK_INPUTS:
+        validate_file_record(build_dir / name, inputs[name], f"native link {name}")
+    commands = record.get("commands")
+    require(isinstance(commands, dict) and set(commands) == {
+        "make", "cc", "cc1", "as", "collect2", "ld",
+    }, "malformed native link command set")
+    require(commands["make"] == [list(NATIVE_LINK_MAKE_ARGV)],
+            "native link make command mismatch")
+    require(commands["cc"] == [list(NATIVE_LINK_CC_ARGV)],
+            "native link C command mismatch")
+    require(isinstance(commands["cc1"], list) and len(commands["cc1"]) == 3,
+            "native link cc1 command set mismatch")
+    require(isinstance(commands["as"], list) and len(commands["as"]) == 2 and
+            all(command and command[0] == NATIVE_TOOL_PATHS["as"]
+                for command in commands["as"]),
+            "native link assembler command set mismatch")
+    require(isinstance(commands["collect2"], list) and
+            len(commands["collect2"]) == 1,
+            "native link collect2 command set mismatch")
+    require(isinstance(commands["ld"], list) and len(commands["ld"]) == 1 and
+            commands["ld"][0] and
+            commands["ld"][0][0] == NATIVE_TOOL_PATHS["ld"],
+            "native link linker command set mismatch")
+    toolchain = native_toolchain_record()
+    require(record.get("toolchain") == toolchain,
+            "native link host toolchain mismatch")
+    for name in ("cc1", "collect2"):
+        allowed = {
+            toolchain["tools"][name]["requested_path"],
+            toolchain["tools"][name]["resolved_path"],
+        }
+        require(all(command and command[0] in allowed
+                    for command in commands[name]),
+                f"native link {name} command path mismatch")
+    expected_commands = expected_native_driver_commands(build_dir, toolchain)
+    require(commands["cc1"] == expected_commands["cc1"],
+            "native link cc1 commands differ from the authenticated driver plan")
+    require(commands["as"] == expected_commands["as"],
+            "native link assembler commands differ from the authenticated driver plan")
+    require(commands["collect2"] == expected_commands["collect2"],
+            "native link collect2 command differs from the authenticated driver plan")
+    require(commands["ld"][0][1:] == commands["collect2"][0][1:],
+            "native linker command differs from the collect2 link plan")
+    wrappers = record.get("tool_wrappers")
+    require(isinstance(wrappers, dict) and set(wrappers) == {"as", "ld"},
+            "native link tool wrapper set mismatch")
+    for name in wrappers:
+        source = tool_wrapper_source(NATIVE_TOOL_PATHS[name], name).encode()
+        require(wrappers[name] == {
+            "bytes": len(source), "sha256": hashlib.sha256(source).hexdigest(),
+        }, f"native link {name} wrapper mismatch")
+    installed = file_record(build_dir / "cake")
+    require(record.get("candidate_elf") == installed and
+            record.get("installed_elf") == installed and
+            record.get("comparison") == "byte_for_byte_equal",
+            "native link candidate/installed comparison mismatch")
+
+
 def record_linked(
     candle_root: Path,
     cakeml_root: Path,
@@ -745,8 +1180,9 @@ def record_linked(
     patch_derivation = cake_patch_derivation(
         build_dir, inputs["cake.S"], candle_root / "candle/cake.S.patch",
     )
+    link_derivation = native_link_derivation(build_dir)
     record = {
-        "schema": 2,
+        "schema": 3,
         "kind": "candle-linked-pinned-cakeml",
         "candle_commit": candle_head,
         "cakeml_commit": cake_commit,
@@ -756,6 +1192,7 @@ def record_linked(
         "bootstrap_log": file_record(build_dir / LINKED_BOOTSTRAP_LOG),
         "cake_patch": file_record(candle_root / "candle/cake.S.patch"),
         "cake_patch_derivation": patch_derivation,
+        "native_link_derivation": link_derivation,
         "outputs": {name: file_record(build_dir / name) for name in LINKED_OUTPUTS},
         "runtime_elf_closure": elf_dynamic_closure(build_dir / "cake"),
         "version_output_sha256": hashlib.sha256(version_output.encode()).hexdigest(),
@@ -780,10 +1217,11 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     require(set(record) == {
         "schema", "kind", "candle_commit", "cakeml_commit", "hol4_commit",
         "manifest_sha256", "bootstrap_record", "bootstrap_log", "cake_patch",
-        "cake_patch_derivation", "outputs", "runtime_elf_closure",
+        "cake_patch_derivation", "native_link_derivation", "outputs",
+        "runtime_elf_closure",
         "version_output_sha256",
     }, "malformed linked provenance record")
-    require(record.get("schema") == 2, "unsupported linked provenance schema")
+    require(record.get("schema") == 3, "unsupported linked provenance schema")
     require(record.get("kind") == "candle-linked-pinned-cakeml",
             "wrong linked provenance kind")
     candle_head = record.get("candle_commit")
@@ -810,6 +1248,9 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     )
     require(observed_derivation == record.get("cake_patch_derivation"),
             "CakeML assembly patch derivation mismatch")
+    validate_native_link_derivation(
+        build_dir, record.get("native_link_derivation"),
+    )
     validate_root_runtime_aliases(candle_root, outputs)
     validate_elf_dynamic_closure(
         build_dir / "cake", record.get("runtime_elf_closure", {}),

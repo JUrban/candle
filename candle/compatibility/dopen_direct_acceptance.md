@@ -47,7 +47,7 @@ cd /project/worktrees/candle-integration-v13
   --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \
   --bootstrap-log /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.log \
   --write /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
-CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh \
+./build-local-cakeml.sh \
   /project/worktrees/cakeml-flyspeck-v13-integration \
   /project/flyspeck-candle-runs/v13-dopen-bootstrap-36e2245f4.json
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
@@ -62,12 +62,33 @@ Do not run this command concurrently with a build or another compiled Candle
 workload in the same worktree.
 
 The first command refuses a dirty or mismatched CakeML/HOL worktree, a failed
-bootstrap transcript, a missing output, or any pin drift.  The local build
-revalidates that record before copying ignored generated files, then emits
-`candle/build/cakeml-build-provenance.json`.  Both Dopen runners require that
-record to match the clean Candle checkout, the exact linked executable and
-other build outputs, the assembly patch, the external bootstrap record, and
-the compiler's embedded CakeML/HOL revision lines before starting Candle.
+bootstrap transcript, a missing output, or any pin drift.  Its schema-2 record
+authenticates the ordinary bytes of `bin/Holmake`, `bin/hol`, and
+`bin/hol.state`, the exact resolved ELF closures of both launchers (including
+their fixed absolute RUNPATH), and exactly one complete trailing GNU `time -v`
+footer for the pinned build command with final status zero and ordered
+x64Bootstrap completion evidence.
+
+The local build revalidates that record before copying ignored generated files,
+then links with a fixed single-job GNU make and C-compiler command.  Before its
+schema-3 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
+authenticated patched `cake.S`, `basis_ffi.c`, and `Makefile` to a fresh private
+directory, forcibly relinks them, captures and re-derives the exact make, CC,
+cc1, assembler, collect2, and linker argv, binds the corresponding tool files,
+GCC query/specification identities, fixed environment and flags, and compares
+the fresh candidate ELF byte-for-byte with the installed `cake`.  Both Dopen
+runners require that record to match the clean Candle checkout, the exact
+linked executable and other build outputs, assembly patch derivation, retained
+bootstrap evidence, runtime ELF closure, and the compiler's embedded CakeML/HOL
+revision lines before starting Candle.
+
+This gate explicitly leaves the semantics of the exact host toolchain and
+system inputs in the trusted boundary.  In particular, kernel/process/filesystem
+semantics, dynamic libraries used by the build tools, system headers, compiler
+internal data, linker scripts, startup objects, and archives are not promoted
+to verified evidence merely because their selected tool executables, command
+plan, final runtime closure, and output bytes are authenticated.  This boundary
+is also an exact machine-checked object in the linked provenance record.
 
 ## Acceptance and failure semantics
 

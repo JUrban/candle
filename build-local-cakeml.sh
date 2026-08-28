@@ -9,6 +9,10 @@ for variable in ${!LD_@} GLIBC_TUNABLES BASH_ENV ENV; do
     exit 1
   fi
 done
+[[ ! -e /etc/ld.so.preload && ! -L /etc/ld.so.preload ]] || {
+  printf 'system-wide dynamic-loader preload is outside the build model\n' >&2
+  exit 1
+}
 
 usage() {
   printf 'usage: %s <CakeML checkout> <bootstrap-provenance.json>\n' "$0" >&2
@@ -93,12 +97,6 @@ for input in "${required[@]}"; do
   }
 done
 
-build_jobs=${CANDLE_BUILD_JOBS:-2}
-[[ $build_jobs =~ ^[1-9][0-9]*$ ]] || {
-  printf 'CANDLE_BUILD_JOBS must be a positive decimal integer\n' >&2
-  exit 2
-}
-
 for input in "${required[@]}"; do
   cp -L -- "$bootstrap_dir/$input" "$build_dir/$input"
 done
@@ -109,7 +107,10 @@ cp -- "$build_dir/cake.S" "$build_dir/cake.S.bootstrap"
   /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
     /usr/bin/patch --batch --forward cake.S ../cake.S.patch
   /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
-    /usr/bin/make -j"$build_jobs" cake
+    /usr/bin/make --no-builtin-rules --no-builtin-variables \
+      -B -j1 -f Makefile \
+      OS=Linux CC=/usr/bin/cc CFLAGS=-O2 LOADLIBES= EVALFLAG=-DEVAL \
+      LDFLAGS= LDLIBS=-lm cake
   /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
     ./cake --types </dev/null >types.txt 2>&1
   /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \

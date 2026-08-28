@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
+import copy
 import json
 import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -22,10 +24,43 @@ def successful_bootstrap_log(build_command: str) -> str:
             value = f'"{build_command}"'
         elif label == "Exit status":
             value = "0"
+        elif label == "Percent of CPU this job got":
+            value = "100%"
+        elif label == "Elapsed (wall clock) time (h:mm:ss or m:ss)":
+            value = "0:01.00"
         else:
             value = "0"
         lines.append(f"\t{label}: {value}")
     return "\n".join(lines) + "\n"
+
+
+def build_small_installed_elf(build: Path) -> None:
+    (build / "cake.S").write_text(
+        ".text\n.section .note.GNU-stack,\"\",@progbits\n",
+        encoding="utf-8",
+    )
+    (build / "basis_ffi.c").write_text(
+        "int main(void) { return 0; }\n",
+        encoding="utf-8",
+    )
+    (build / "Makefile").write_text(
+        "cake: cake.S basis_ffi.c\n"
+        "\t$(CC) $(CFLAGS) $< basis_ffi.c $(LOADLIBES) $(EVALFLAG) "
+        "-o $@ $(LDFLAGS) $(LDLIBS)\n",
+        encoding="utf-8",
+    )
+    arguments = list(subject.NATIVE_LINK_MAKE_ARGV)
+    arguments[arguments.index(
+        "CC=/usr/bin/cc -B.candle-native-tools/"
+    )] = "CC=/usr/bin/cc"
+    arguments[arguments.index(
+        "CFLAGS=-O2 -save-temps=obj -v"
+    )] = "CFLAGS=-O2"
+    subprocess.run(
+        arguments, check=True, cwd=build,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+    )
 
 
 class CakeMLArtifactProvenanceTests(unittest.TestCase):
@@ -247,6 +282,56 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 subject.cake_patch_derivation(
                     root, subject.file_record(preimage), patch,
                 )
+
+    def test_native_link_derivation_relinks_and_binds_exact_commands(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            build_small_installed_elf(build)
+            record = subject.native_link_derivation(build)
+            subject.validate_native_link_derivation(build, record)
+            self.assertEqual(
+                record["candidate_elf"], record["installed_elf"],
+            )
+            self.assertEqual(len(record["commands"]["as"]), 2)
+            self.assertEqual(len(record["commands"]["ld"]), 1)
+            tampered = copy.deepcopy(record)
+            tampered["commands"]["ld"][0].append("--injected")
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "collect2 link plan",
+            ):
+                subject.validate_native_link_derivation(build, tampered)
+
+    def test_native_link_derivation_rejects_nonmatching_installed_elf(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            build_small_installed_elf(build)
+            (build / "cake").write_bytes(b"\x7fELFnot-the-relinked-program")
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "not byte-identical",
+            ):
+                subject.native_link_derivation(build)
+
+    def test_native_link_validation_rejects_environment_and_tool_tampering(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            build_small_installed_elf(build)
+            record = subject.native_link_derivation(build)
+            tampered_environment = copy.deepcopy(record)
+            tampered_environment["environment"]["PATH"] = "/injected"
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "environment mismatch",
+            ):
+                subject.validate_native_link_derivation(
+                    build, tampered_environment,
+                )
+            tampered_tool = copy.deepcopy(record)
+            tampered_tool["toolchain"]["tools"]["cc"]["file"]["sha256"] = (
+                "0" * 64
+            )
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "host toolchain mismatch",
+            ):
+                subject.validate_native_link_derivation(build, tampered_tool)
 
     def test_linked_bootstrap_copy_rejects_self_recorded_wrong_kind(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

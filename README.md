@@ -35,7 +35,7 @@ are documented in
 In outline, record the completed bootstrap and then link it locally with:
 
     $ /usr/bin/python3 -I candle/cakeml_artifact_provenance.py record-bootstrap ...
-    $ CANDLE_BUILD_JOBS=2 ./build-local-cakeml.sh CAKEML_ROOT BOOTSTRAP_RECORD.json
+    $ ./build-local-cakeml.sh CAKEML_ROOT BOOTSTRAP_RECORD.json
     $ ./candle.sh
 
 `candle.sh` authenticates the clean Candle revision, manifest pins, linked
@@ -45,6 +45,23 @@ closure before every session. Then load the HOL Light sources by writing:
     #use "hol.ml";;
 
 into the REPL.
+
+The bootstrap record includes ordinary-file identities for `bin/Holmake`,
+`bin/hol`, and `bin/hol.state`, the two launchers' exact ELF closures, and one
+complete trailing GNU `time -v` receipt for the pinned command.  Local linking
+uses a fixed single-job make/CC command.  Before accepting the linked record,
+the provenance checker relinks exact authenticated copies of `cake.S`,
+`basis_ffi.c`, and `Makefile` in a fresh directory, records the exact compiler,
+assembler, and linker command plan and tool identities, and requires the fresh
+ELF to be byte-for-byte equal to the installed ELF.
+
+This is an authenticated-build boundary, not a proof of the host toolchain.
+The exact make, compiler, assembler, linker, shell, compiler-internal binaries,
+flags, GCC specifications, selected runtime ELF objects, and output bytes are
+bound. Kernel/process/filesystem behavior, host-tool dynamic libraries, system
+C headers, GCC internal data, linker scripts, startup objects and archives, and
+the semantics of those exact host inputs remain an explicit trusted boundary.
+The linked JSON record carries the same machine-checkable boundary declaration.
 
 The historical [build-instructions.sh](build-instructions.sh) download flow is
 retained only as an upstream development reference.  It does not create the
