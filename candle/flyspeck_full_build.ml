@@ -382,7 +382,7 @@
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
 (* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0 *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;
-(* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 *)
+(* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 normalization=PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001 normalized_sha256=f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6 *)
 #flyspeck_needs "tame/linear_programming_results.hl";;
 
 (* stratum: text_formalization *)

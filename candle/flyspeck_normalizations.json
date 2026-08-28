@@ -368,6 +368,27 @@
       ],
       "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run.",
       "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight."
+    },
+    {
+      "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
+      "source_key": "flyspeck:text_formalization/tame/linear_programming_results.hl",
+      "path": "text_formalization/tame/linear_programming_results.hl",
+      "source_sha256": "0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4",
+      "source_md5": "75fb7f0449759cd3592569426d4e66b4",
+      "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
+      "normalized_md5": "873d319b17157a5f244f40d18450eacd",
+      "normalized_bytes": 3544,
+      "operations": [
+        {
+          "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 46,
+          "before": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let result_table = Hashtbl.create (length ths) in\n  let _ = map (fun (id, th) -> Hashtbl.add result_table id th) ths in\n",
+          "after": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let expected_table = Hashtbl.create (length archive_const_ids) in\n  let add_expected id =\n    if Hashtbl.mem expected_table id then\n      failwith (\"duplicate Flyspeck archive id: \"^id)\n    else Hashtbl.add expected_table id () in\n  let _ = map add_expected archive_const_ids in\n  let result_table = Hashtbl.create (length ths) in\n  let add_result (id, th) =\n    if not (Hashtbl.mem expected_table id) then\n      failwith (\"unexpected LP result id: \"^id)\n    else if Hashtbl.mem result_table id then\n      failwith (\"duplicate LP result id: \"^id)\n    else Hashtbl.add result_table id th in\n  let _ = map add_result ths in\n  let _ =\n    if length ths <> length archive_const_ids then\n      failwith \"LP result/archive id count mismatch\"\n    else () in\n"
+        }
+      ],
+      "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification.",
+      "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
     }
   ]
 }

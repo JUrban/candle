@@ -114,7 +114,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 13)
+        self.assertEqual(len(self.contract["entries"]), 14)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(immediate["operations"][0]["line"], 1050)
@@ -196,12 +196,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertNotIn("Sys.readdir", (
             static_inventory["operations"][0]["after"]
         ))
+        exact_lp = entries["PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001"]
+        self.assertEqual(exact_lp["operations"][0]["line"], 46)
+        exact_lp_after = exact_lp["operations"][0]["after"]
+        self.assertIn("duplicate Flyspeck archive id", exact_lp_after)
+        self.assertIn("unexpected LP result id", exact_lp_after)
+        self.assertIn("duplicate LP result id", exact_lp_after)
+        self.assertIn("length ths <> length archive_const_ids", exact_lp_after)
+        self.assertNotIn("map (fun (id, th) -> Hashtbl.add", exact_lp_after)
         operation_ids = [
             operation["id"]
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 25)
+        self.assertEqual(len(operation_ids), 26)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

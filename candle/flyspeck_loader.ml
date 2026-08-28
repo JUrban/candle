@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "6464bfaff378cb8c9b13627c0e9561de" then
+     "e321ace652d99cd574dfa3b9fc512201" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "441e01a66fabf8e2fb15677e2be6c567" then
+     "ae887e2178b05532cea07f1ba116eef1" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,7 +156,7 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer may materialize only these thirteen outputs in a
+(* The host-side normalizer may materialize only these fourteen outputs in a
    separate tree.  The outer release manifest authenticates size and SHA-256;
    this process independently checks OCaml-compatible MD5 before registering
    exact original-path -> normalized-path substitutions.  The overlay root is
@@ -217,9 +217,14 @@ let candle_flyspeck_normalized_sources =
       "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-    "fddf2accd2071d09095166ff7af885c7")];;
+    "fddf2accd2071d09095166ff7af885c7");
+   (Filename.concat candle_flyspeck_text_root
+      "tame/linear_programming_results.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/tame/linear_programming_results.hl",
+    "873d319b17157a5f244f40d18450eacd")];;
 
-if List.length candle_flyspeck_normalized_sources <> 13 then
+if List.length candle_flyspeck_normalized_sources <> 14 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

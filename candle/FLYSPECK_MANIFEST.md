@@ -64,8 +64,8 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement seven
-site-specific source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement fourteen
+site-specific, hash-bound source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
 the ten physical-sharing tests in `general/lib.hl`: explicit change flags
@@ -168,13 +168,16 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates and
-registers the nine exact normalization outputs, authenticates a host-prepared
+registers the fourteen exact normalization outputs, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
 not yet complete that sequence or implement versioned checkpoints, so it is
 frontier evidence rather than S2/S3 acceptance.  Its current source preflight
 checks all selected source nodes except the already-executing loader; the
 outer release lock authenticates that loader and the generated contracts.
+
+The LP assembly normalization's exact-set argument and remaining S3 gates are
+documented in `compatibility/lp_exact_result_coverage.md`.
 
 The fail-closed ordering is exercised against a compiled Candle executable by
 `test_flyspeck_loader_guard.sh`; the negative test must reach the exact mode

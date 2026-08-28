@@ -2927,13 +2927,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 228,
+        "line": 233,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 228,
+        "line": 233,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3070,13 +3070,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 228,
+        "line": 233,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 228,
+        "line": 233,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3212,8 +3212,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "6464bfaff378cb8c9b13627c0e9561de",
-    "generated_source_sha256": "76bb4583e0050d54e7d37ab9360b212088e829a8b2b529d31329a552037987a4",
+    "generated_source_md5": "e321ace652d99cd574dfa3b9fc512201",
+    "generated_source_sha256": "8423946c0c61e7ff7ec8c64c87aa9cd56654038c757d3f4a6eecc7101f387b1d",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -5977,7 +5977,7 @@
       "sha256": "cf327c067fa7cb127ed14bb5909cbbecb9f9ac48b13f59d576c9ca2230cbb6d9"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 56068,
+      "bytes": 56205,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -9247,10 +9247,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "441e01a66fabf8e2fb15677e2be6c567",
+      "md5": "ae887e2178b05532cea07f1ba116eef1",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "58859b468dbd0f45c5197ee4b9b32f081125a78c70fe3baba957f7d3ff83acfc"
+      "sha256": "1cdc2cac0a7815e3c9bd04d9ec8330293aa7ef47db9b2757aa1f0f8f411d1307"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -9261,7 +9261,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 10879,
+      "bytes": 11122,
       "dependencies": [
         {
           "kind": "#use",
@@ -9299,7 +9299,7 @@
         },
         {
           "kind": "needs",
-          "line": 249,
+          "line": 254,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -9310,7 +9310,7 @@
         },
         {
           "kind": "needs",
-          "line": 255,
+          "line": 260,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -9321,7 +9321,7 @@
         },
         {
           "kind": "needs",
-          "line": 257,
+          "line": 262,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -9331,10 +9331,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "d3799d18913fc82c244612f5bb99fcc1",
+      "md5": "265a355b2461049efa44e201a2ce6208",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "eacdf15fee92abdd9daf268030f0e1a4fe27eefbc915fe4c6271da7ef7df2434"
+      "sha256": "c682578999ded024c1ff2322973625b4e3215d7f8e3f54f2115afc3d7382c05d"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -15546,6 +15546,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3544,
+        "normalized_md5": "873d319b17157a5f244f40d18450eacd",
+        "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
+        "operation_count": 1
+      },
       "md5": "75fb7f0449759cd3592569426d4e66b4",
       "path": "text_formalization/tame/linear_programming_results.hl",
       "repository": "flyspeck",
@@ -16444,7 +16452,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "46499f442c741cf9d2c8e4adfeb442b0c4d8fdeb705c6cea8afffbced2e450b8",
+    "contract_sha256": "37d01c189c718ecda9f6ec18560c0eb93053a288c16421b873377cdec9a40e92",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -16838,9 +16846,32 @@
         "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
         "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
         "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
+      },
+      {
+        "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3544,
+        "normalized_md5": "873d319b17157a5f244f40d18450eacd",
+        "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let expected_table = Hashtbl.create (length archive_const_ids) in\n  let add_expected id =\n    if Hashtbl.mem expected_table id then\n      failwith (\"duplicate Flyspeck archive id: \"^id)\n    else Hashtbl.add expected_table id () in\n  let _ = map add_expected archive_const_ids in\n  let result_table = Hashtbl.create (length ths) in\n  let add_result (id, th) =\n    if not (Hashtbl.mem expected_table id) then\n      failwith (\"unexpected LP result id: \"^id)\n    else if Hashtbl.mem result_table id then\n      failwith (\"duplicate LP result id: \"^id)\n    else Hashtbl.add result_table id th in\n  let _ = map add_result ths in\n  let _ =\n    if length ths <> length archive_const_ids then\n      failwith \"LP result/archive id count mismatch\"\n    else () in\n",
+            "before": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let result_table = Hashtbl.create (length ths) in\n  let _ = map (fun (id, th) -> Hashtbl.add result_table id th) ths in\n",
+            "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001-FAIL-CLOSED",
+            "kind": "exact_bytes_replace_once",
+            "line": 46
+          }
+        ],
+        "path": "text_formalization/tame/linear_programming_results.hl",
+        "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility.",
+        "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification.",
+        "source_key": "flyspeck:text_formalization/tame/linear_programming_results.hl",
+        "source_md5": "75fb7f0449759cd3592569426d4e66b4",
+        "source_sha256": "0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4"
       }
     ],
-    "entry_count": 13,
+    "entry_count": 14,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -16925,8 +16956,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "441e01a66fabf8e2fb15677e2be6c567",
-    "generated_source_sha256": "58859b468dbd0f45c5197ee4b9b32f081125a78c70fe3baba957f7d3ff83acfc",
+    "generated_source_md5": "ae887e2178b05532cea07f1ba116eef1",
+    "generated_source_sha256": "1cdc2cac0a7815e3c9bd04d9ec8330293aa7ef47db9b2757aa1f0f8f411d1307",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
