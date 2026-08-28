@@ -134,6 +134,12 @@ LINKED_OUTPUTS = (
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
+BOOTSTRAP_PROVENANCE_SCHEMA = 2
+LINKED_PROVENANCE_SCHEMA = 3
+ELF_DYNAMIC_CLOSURE_POLICY = "ldd_roles_resolved_absolute_paths_and_content_v3"
+ELF_DYNAMIC_CLOSURE_FIELDS = frozenset({
+    "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
+})
 CANDLE_ELF_OBJECTS = {
     "ld-linux-x86-64.so.2",
     "libc.so.6",
@@ -379,7 +385,7 @@ def elf_dynamic_closure(
         virtual_objects.add(match.group(1))
     require(files, f"ELF dependency closure is empty: {executable}")
     return {
-        "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+        "policy": ELF_DYNAMIC_CLOSURE_POLICY,
         "dynamic_path_tags": path_tags,
         "files": {path: files[path] for path in sorted(files)},
         "roles": {role: roles[role] for role in sorted(roles)},
@@ -412,12 +418,9 @@ def validate_elf_dynamic_closure(
     allowed_dynamic_path_tags: dict[str, list[str]] | None = None,
 ) -> None:
     require(isinstance(record, dict), "malformed ELF dependency closure")
-    require(set(record) == {
-        "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
-    },
+    require(set(record) == ELF_DYNAMIC_CLOSURE_FIELDS,
             "malformed ELF dependency closure")
-    require(record["policy"] ==
-            "ldd_roles_resolved_absolute_paths_and_content_v3",
+    require(record["policy"] == ELF_DYNAMIC_CLOSURE_POLICY,
             "unsupported ELF dependency policy")
     observed = elf_dynamic_closure(
         executable, allowed_dynamic_path_tags=allowed_dynamic_path_tags,
@@ -432,11 +435,10 @@ def validate_elf_closure_record(
     allowed_dynamic_path_tags: dict[str, list[str]],
 ) -> None:
     """Check the internal semantics of a retained, relocation-safe closure."""
-    require(isinstance(record, dict) and set(record) == {
-        "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
-    }, f"malformed {label} ELF dependency closure")
-    require(record.get("policy") ==
-            "ldd_roles_resolved_absolute_paths_and_content_v3",
+    require(isinstance(record, dict) and
+            set(record) == ELF_DYNAMIC_CLOSURE_FIELDS,
+            f"malformed {label} ELF dependency closure")
+    require(record.get("policy") == ELF_DYNAMIC_CLOSURE_POLICY,
             f"unsupported {label} ELF dependency policy")
     require(record.get("dynamic_path_tags") == allowed_dynamic_path_tags,
             f"unexpected {label} RPATH/RUNPATH")
@@ -596,7 +598,7 @@ def record_bootstrap(
     bootstrap_dir = cakeml_root / BOOTSTRAP_RELATIVE
     inputs = {name: file_record(bootstrap_dir / name) for name in BOOTSTRAP_INPUTS}
     record = {
-        "schema": 2,
+        "schema": BOOTSTRAP_PROVENANCE_SCHEMA,
         "kind": "verified-cakeml-x64-64-bootstrap",
         **pins,
         "cakeml_root": str(cakeml_root),
@@ -630,7 +632,8 @@ def validate_bootstrap_record(
         "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
         "hol_runtime",
     }, "malformed bootstrap provenance record")
-    require(record.get("schema") == 2, "unsupported bootstrap provenance schema")
+    require(record.get("schema") == BOOTSTRAP_PROVENANCE_SCHEMA,
+            "unsupported bootstrap provenance schema")
     require(record.get("kind") == "verified-cakeml-x64-64-bootstrap",
             "wrong bootstrap provenance kind")
     pins = expected_pins(candle_root)
@@ -720,7 +723,7 @@ def validate_linked_bootstrap_copy(
         "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
         "hol_runtime", "source_bootstrap_record",
     }, "malformed linked bootstrap provenance copy")
-    require(bootstrap.get("schema") == 2,
+    require(bootstrap.get("schema") == BOOTSTRAP_PROVENANCE_SCHEMA,
             "unsupported linked bootstrap provenance schema")
     require(bootstrap.get("kind") == "candle-linked-bootstrap-provenance-copy",
             "wrong linked bootstrap provenance kind")
@@ -1182,7 +1185,7 @@ def record_linked(
     )
     link_derivation = native_link_derivation(build_dir)
     record = {
-        "schema": 3,
+        "schema": LINKED_PROVENANCE_SCHEMA,
         "kind": "candle-linked-pinned-cakeml",
         "candle_commit": candle_head,
         "cakeml_commit": cake_commit,
@@ -1221,7 +1224,8 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
         "runtime_elf_closure",
         "version_output_sha256",
     }, "malformed linked provenance record")
-    require(record.get("schema") == 3, "unsupported linked provenance schema")
+    require(record.get("schema") == LINKED_PROVENANCE_SCHEMA,
+            "unsupported linked provenance schema")
     require(record.get("kind") == "candle-linked-pinned-cakeml",
             "wrong linked provenance kind")
     candle_head = record.get("candle_commit")

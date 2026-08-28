@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import inspect
 import json
@@ -22,6 +23,15 @@ import run_flyspeck_float_performance_gate as gate
 
 
 class FloatPerformanceInputTests(unittest.TestCase):
+    def test_pinned_python_elf_contract_tracks_provenance_schema(self):
+        closure = gate.EXPECTED_PYTHON_RUNTIME["elf_closure"]
+        helper = gate.provenance
+        self.assertEqual(set(closure), helper.ELF_DYNAMIC_CLOSURE_FIELDS)
+        self.assertEqual(closure["policy"], helper.ELF_DYNAMIC_CLOSURE_POLICY)
+        helper.validate_elf_closure_record(
+            closure, "pinned Python runtime", allowed_dynamic_path_tags={},
+        )
+
     def test_pinned_break_case_contract_is_exact(self):
         self.assertEqual(generator.EXPECTED_FACET_COUNT, 15462)
         self.assertEqual(generator.EXPECTED_HALF_SPELLING_COUNT, 11640)
@@ -417,9 +427,10 @@ class FloatPerformanceGateTests(unittest.TestCase):
                         **generator.file_record(executable),
                     },
                     "elf_closure": {
-                        "policy": "test",
+                        "policy": gate.provenance.ELF_DYNAMIC_CLOSURE_POLICY,
+                        "dynamic_path_tags": {},
                         "files": {str(elf): generator.file_record(elf)},
-                        "roles": {},
+                        "roles": {"libtest.so": str(elf)},
                         "virtual_objects": [],
                     },
                 },
@@ -451,6 +462,9 @@ class FloatPerformanceGateTests(unittest.TestCase):
             )
             self.assertEqual(len(archived["local_sources"]), 1)
             self.assertEqual(len(archived["python_runtime"]["elf_objects"]), 1)
+            self.assertEqual(
+                archived["python_runtime"]["elf_dynamic_path_tags"], {},
+            )
             self.assertEqual(len(archived["pexpect_sources"]), 1)
             for record in (
                 archived["local_sources"] +
@@ -463,6 +477,16 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 gate._verify_controller_execution(
                     Path("/unused"), evidence, controller, archived,
                 )
+                tampered = copy.deepcopy(archived)
+                tampered["python_runtime"]["elf_dynamic_path_tags"] = {
+                    "RUNPATH": ["/injected"],
+                }
+                with self.assertRaisesRegex(
+                    gate.GateError, "ELF closure metadata changed",
+                ):
+                    gate._verify_controller_execution(
+                        Path("/unused"), evidence, controller, tampered,
+                    )
                 retained = evidence / archived["local_sources"][0]["path"]
                 retained.chmod(0o644)
                 retained.write_bytes(b"mutated")
@@ -763,9 +787,13 @@ class FloatPerformanceGateTests(unittest.TestCase):
                 "bootstrap_record": generator.file_record(bootstrap_path),
                 "bootstrap_log": generator.file_record(bootstrap_log),
                 "runtime_elf_closure": {
+                    "policy": gate.provenance.ELF_DYNAMIC_CLOSURE_POLICY,
+                    "dynamic_path_tags": {},
                     "files": {
                         str(elf_path): generator.file_record(elf_path),
                     },
+                    "roles": {"libm.so.6": str(elf_path)},
+                    "virtual_objects": [],
                 },
             }
             linked_path.write_text(

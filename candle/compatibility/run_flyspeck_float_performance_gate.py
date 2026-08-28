@@ -120,7 +120,8 @@ EXPECTED_PYTHON_RUNTIME = {
             "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
     },
     "elf_closure": {
-        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+        "dynamic_path_tags": {},
         "files": {
             "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
                 "bytes": 236616,
@@ -326,6 +327,10 @@ def require_direct_script_startup() -> dict[str, Any]:
 
 
 def validate_python_runtime() -> dict[str, Any]:
+    provenance.validate_elf_closure_record(
+        EXPECTED_PYTHON_RUNTIME["elf_closure"], "pinned Python runtime",
+        allowed_dynamic_path_tags={},
+    )
     process_executable = Path("/proc/self/exe")
     require(process_executable.is_symlink(),
             "cannot bind the executing Python image through /proc/self/exe")
@@ -1120,6 +1125,8 @@ def _archive_controller_execution(
                 **executable_archive,
             },
             "elf_policy": python_runtime["elf_closure"]["policy"],
+            "elf_dynamic_path_tags":
+                python_runtime["elf_closure"]["dynamic_path_tags"],
             "elf_roles": python_runtime["elf_closure"]["roles"],
             "virtual_objects": python_runtime["elf_closure"]["virtual_objects"],
             "elf_objects": elf_objects,
@@ -1145,6 +1152,16 @@ def _verify_controller_execution(
             field: record[field] for field in ("bytes", "sha256")
         }, f"retained controller source changed: {record['label']}")
     python_runtime = archived["python_runtime"]
+    expected_python_elf = controller["python_runtime"]["elf_closure"]
+    require(
+        python_runtime["elf_policy"] == expected_python_elf["policy"] and
+        python_runtime["elf_dynamic_path_tags"] ==
+        expected_python_elf["dynamic_path_tags"] and
+        python_runtime["elf_roles"] == expected_python_elf["roles"] and
+        python_runtime["virtual_objects"] ==
+        expected_python_elf["virtual_objects"],
+        "retained Python ELF closure metadata changed",
+    )
     executable = python_runtime["executable"]
     require(inputs.file_record(evidence_dir / executable["path"]) == {
         field: executable[field] for field in ("bytes", "sha256")

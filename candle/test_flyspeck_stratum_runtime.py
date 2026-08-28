@@ -45,6 +45,22 @@ class StratumRuntimeTests(unittest.TestCase):
         )
         self.nonce = "a" * 32
 
+    def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
+        closure = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
+        helper = subject.cakeml_artifact_provenance
+        self.assertEqual(set(closure), helper.ELF_DYNAMIC_CLOSURE_FIELDS)
+        self.assertEqual(closure["policy"], helper.ELF_DYNAMIC_CLOSURE_POLICY)
+        helper.validate_elf_closure_record(
+            closure, "pinned Python runtime", allowed_dynamic_path_tags={},
+        )
+        stale = copy.deepcopy(closure)
+        stale.pop("dynamic_path_tags")
+        with self.assertRaisesRegex(
+            helper.ProvenanceError, "malformed pinned Python runtime",
+        ):
+            helper.validate_elf_closure_record(
+                stale, "pinned Python runtime", allowed_dynamic_path_tags={},
+            )
     def test_instrumentation_is_ordered_and_output_only(self) -> None:
         result = subject.instrument_prefix(self.prefix, self.actions, self.nonce).decode()
         self.assertIn(self.prefix.splitlines()[0].decode(), result)
@@ -370,9 +386,15 @@ class StratumRuntimeTests(unittest.TestCase):
                 output, candle, prepared, {
                     "outputs": linked_outputs,
                     "runtime_elf_closure": {
+                        "policy":
+                            subject.cakeml_artifact_provenance
+                            .ELF_DYNAMIC_CLOSURE_POLICY,
+                        "dynamic_path_tags": {},
                         "files": {
                             str(runtime_object): runtime_object_record,
                         },
+                        "roles": {"libc.so.6": str(runtime_object)},
+                        "virtual_objects": [],
                     },
                 }, controller_execution,
             )
@@ -426,6 +448,11 @@ class StratumRuntimeTests(unittest.TestCase):
                  snapshot["controller_execution"]["host_tools"]},
                 set(subject.EXPECTED_CONTROLLER_TOOLS),
             )
+            self.assertEqual(
+                snapshot["controller_execution"]["python_runtime"]
+                ["elf_dynamic_path_tags"],
+                {},
+            )
 
             malformed = copy.deepcopy(snapshot)
             malformed["schema"] = 1
@@ -435,6 +462,14 @@ class StratumRuntimeTests(unittest.TestCase):
             malformed["controller_execution"]["python_runtime"]["version"] = "other"
             with self.assertRaisesRegex(
                 subject.ContractError, "Python execution identity mismatch",
+            ):
+                subject.validate_runtime_snapshot(malformed, output)
+            malformed = copy.deepcopy(snapshot)
+            malformed["controller_execution"]["python_runtime"][
+                "elf_dynamic_path_tags"
+            ] = {"RUNPATH": ["/injected"]}
+            with self.assertRaisesRegex(
+                subject.ContractError, "Python ELF metadata mismatch",
             ):
                 subject.validate_runtime_snapshot(malformed, output)
 

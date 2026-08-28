@@ -82,7 +82,8 @@ EXPECTED_PYTHON_RUNTIME = {
             "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
     },
     "elf_closure": {
-        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+        "dynamic_path_tags": {},
         "files": {
             "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
                 "bytes": 236616,
@@ -186,6 +187,10 @@ EXPECTED_PEXPECT_SOURCES = {
 
 
 def validate_python_runtime() -> dict[str, Any]:
+    cakeml_artifact_provenance.validate_elf_closure_record(
+        EXPECTED_PYTHON_RUNTIME["elf_closure"], "pinned Python runtime",
+        allowed_dynamic_path_tags={},
+    )
     process_executable = Path("/proc/self/exe")
     flyspeck_float_corpus.require(
         process_executable.is_symlink(),
@@ -827,6 +832,8 @@ def check_candle(
                     **python_executable_archive_record,
                 },
                 "elf_policy": python_runtime["elf_closure"]["policy"],
+                "elf_dynamic_path_tags":
+                    python_runtime["elf_closure"]["dynamic_path_tags"],
                 "elf_roles": python_runtime["elf_closure"]["roles"],
                 "virtual_elf_objects":
                     python_runtime["elf_closure"]["virtual_objects"],
@@ -968,6 +975,18 @@ def check_candle(
                 f"retained Python source {archived['label']}",
             )
         python_runtime_input = attempt["inputs"]["python_runtime"]
+        expected_python_elf = python_runtime["elf_closure"]
+        flyspeck_float_corpus.require(
+            python_runtime_input["elf_policy"] ==
+            expected_python_elf["policy"] and
+            python_runtime_input["elf_dynamic_path_tags"] ==
+            expected_python_elf["dynamic_path_tags"] and
+            python_runtime_input["elf_roles"] ==
+            expected_python_elf["roles"] and
+            python_runtime_input["virtual_elf_objects"] ==
+            expected_python_elf["virtual_objects"],
+            "retained Python ELF closure metadata changed",
+        )
         archived_python = python_runtime_input["executable"]
         flyspeck_float_corpus.validate_record(
             evidence_root / archived_python["path"],

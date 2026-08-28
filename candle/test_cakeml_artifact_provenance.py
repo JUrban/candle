@@ -76,6 +76,18 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
         )
 
+    def test_documented_linked_schema_tracks_implementation(self) -> None:
+        candle_root = Path(__file__).resolve().parent.parent
+        current = f"schema-{subject.LINKED_PROVENANCE_SCHEMA} linked-provenance"
+        performance = (
+            candle_root / "candle/compatibility/flyspeck_float_performance.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(current, performance)
+        for path in candle_root.rglob("*.md"):
+            self.assertNotIn("schema-2 linked-provenance", path.read_text(
+                encoding="utf-8",
+            ))
+
     def test_file_record_rejects_tampering(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "input"
@@ -356,7 +368,7 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 "manifest_sha256": "m" * 64,
             }
             durable = {
-                "schema": 2,
+                "schema": subject.BOOTSTRAP_PROVENANCE_SCHEMA,
                 "kind": "candle-linked-bootstrap-provenance-copy",
                 **pins,
                 "cakeml_root": "/build/cakeml",

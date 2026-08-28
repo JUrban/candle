@@ -203,7 +203,7 @@ Reviewed thresholds, when available, are passed explicitly with
 The host generator and its fail-closed unit tests reproduce the pinned source
 histogram and generated input receipts.  No compiled elapsed/RSS result is
 claimed by this document.  A local build record, if present, is acceptable
-only when the complete current schema-2 linked-provenance check passes.  The
+only when the complete current schema-3 linked-provenance check passes.  The
 gate must not be weakened to use an unbound executable or skip the full-HOL
 EOF/`check_axioms` preflight.  A run becomes performance evidence only after
 the verified parser bootstrap is linked and that complete provenance check

@@ -27,6 +27,15 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
             (HERE / "flyspeck_float_corpus.json").read_text(encoding="utf-8")
         )
 
+    def test_pinned_python_elf_contract_tracks_provenance_schema(self):
+        closure = checker.EXPECTED_PYTHON_RUNTIME["elf_closure"]
+        helper = checker.cakeml_artifact_provenance
+        self.assertEqual(set(closure), helper.ELF_DYNAMIC_CLOSURE_FIELDS)
+        self.assertEqual(closure["policy"], helper.ELF_DYNAMIC_CLOSURE_POLICY)
+        helper.validate_elf_closure_record(
+            closure, "pinned Python runtime", allowed_dynamic_path_tags={},
+        )
+
     def test_generated_source_evaluates_every_exact_spelling_once(self):
         source = checker.candle_source(self.payload)
         checker.validate_generated_source(self.payload, source)

@@ -101,7 +101,8 @@ EXPECTED_PYTHON_RUNTIME = {
             "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
     },
     "elf_closure": {
-        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+        "dynamic_path_tags": {},
         "files": {
             "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
                 "bytes": 236616,
@@ -262,6 +263,10 @@ def local_python_modules() -> tuple[types.ModuleType, ...]:
 
 def validate_python_runtime() -> dict[str, Any]:
     """Bind the host controller to the pinned executing Python image."""
+    cakeml_artifact_provenance.validate_elf_closure_record(
+        EXPECTED_PYTHON_RUNTIME["elf_closure"], "pinned Python runtime",
+        allowed_dynamic_path_tags={},
+    )
     process_executable = Path("/proc/self/exe")
     require(process_executable.is_symlink(),
             "cannot bind the executing Python image through /proc/self/exe")
@@ -1343,6 +1348,8 @@ def create_runtime_snapshot(
                    for field in ("bytes", "sha256", "md5")},
             },
             "elf_policy": python_runtime["elf_closure"]["policy"],
+            "elf_dynamic_path_tags":
+                python_runtime["elf_closure"]["dynamic_path_tags"],
             "elf_roles": python_runtime["elf_closure"]["roles"],
             "virtual_elf_objects":
                 python_runtime["elf_closure"]["virtual_objects"],
@@ -1542,7 +1549,8 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
     python_runtime = controller["python_runtime"]
     require(isinstance(python_runtime, dict) and set(python_runtime) == {
         "execution_binding", "version", "executable", "elf_policy",
-        "elf_roles", "virtual_elf_objects", "elf_objects",
+        "elf_dynamic_path_tags", "elf_roles", "virtual_elf_objects",
+        "elf_objects",
     }, "malformed controller Python runtime record")
     require(python_runtime["execution_binding"] ==
             EXPECTED_PYTHON_RUNTIME["execution_binding"] and
@@ -1562,6 +1570,8 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
                       "controller Python executable")
     expected_elf = EXPECTED_PYTHON_RUNTIME["elf_closure"]
     require(python_runtime["elf_policy"] == expected_elf["policy"] and
+            python_runtime["elf_dynamic_path_tags"] ==
+            expected_elf["dynamic_path_tags"] and
             python_runtime["elf_roles"] == expected_elf["roles"] and
             python_runtime["virtual_elf_objects"] ==
             expected_elf["virtual_objects"],
