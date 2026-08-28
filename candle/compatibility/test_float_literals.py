@@ -150,6 +150,8 @@ def check_candle(payload, candle_root, timeout):
             str(launcher), encoding="utf-8", logfile=transcript,
             cwd=str(root), env=os.environ.copy())
         _expect_prompt(process, timeout)
+        process.sendline('#use "candle/build/insulate.ml";;')
+        _expect_prompt(process, timeout)
         with tempfile.TemporaryDirectory(prefix="candle-float-source-") as tmp:
             source = Path(tmp) / "positive.ml"
             source.write_text(_candle_positive_source(payload),

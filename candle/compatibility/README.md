@@ -10,7 +10,12 @@ declaration in its parser. The `fix-top100` anchor avoids the construct in
 `100/bertrand.ml`, but also imports broad float/byte FFI changes. The selected
 smaller remedy instead restores CakeML's retained decimal-float token to the
 OCaml grammar and lowers it through the existing `Double.fromString` basis
-operation. It adds no FFI command.
+operation. It adds no FFI command. Because that lowering is expressed as
+`Option.valOf (Double.fromString ...)`, the generated insulation layer retains
+exactly those two global functions while stubbing the remainder of both
+CakeML modules. This is required for literals parsed after `hol.ml` loads the
+insulation layer; the differential gate therefore loads `insulate.ml` before
+checking the literal corpus.
 
 `float_literal_cases.json` defines the supported decimal subset and pins exact
 OCaml 4.14.1 IEEE-754 words as well as invalid parses. Run the reference side:
