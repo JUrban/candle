@@ -258,7 +258,19 @@ def validate_plan(
     require(isinstance(normalization, dict), "missing normalization overlay")
     normalization_bindings = normalization.get("bindings")
     require(isinstance(normalization_bindings, list), "missing normalization bindings")
-    require(normalization.get("entry_count") == len(normalization_bindings) == 16,
+    source_graph = plan.get("source_graph")
+    require(isinstance(source_graph, dict), "missing plan source graph")
+    source_graph_bindings = source_graph.get("bindings")
+    require(isinstance(source_graph_bindings, list),
+            "missing plan source graph bindings")
+    expected_normalizations = sum(
+        isinstance(binding.get("execution_normalization"), dict)
+        for binding in source_graph_bindings
+    )
+    require(expected_normalizations > 0, "empty normalization contract")
+    require(
+        normalization.get("entry_count") == len(normalization_bindings)
+        == expected_normalizations,
             "normalization binding count mismatch")
     require(canonical_sha256(normalization_bindings) == normalization.get("ordered_binding_sha256"),
             "normalization binding order digest mismatch")

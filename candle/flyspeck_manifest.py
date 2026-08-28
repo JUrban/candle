@@ -51,8 +51,19 @@ STATIC_RUNTIME_MEMBERS = {
     },
 }
 OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
+    "Array": {"fold_left", "get", "init", "length", "make", "map", "of_list", "set"},
     "Digest": {"compare", "file", "string", "t", "to_hex"},
+    "Gc": {"compact"},
+    "Hashtbl": {
+        "add", "clear", "create", "create_ordered", "find", "fold", "hash",
+        "length", "mem", "remove", "replace", "t",
+    },
+    "Stdlib": {
+        "close_in", "close_out", "compare", "input_line", "open_in",
+        "open_out", "output_string", "sqrt",
+    },
 }
+OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS = {"float_of_num", "frexp"}
 TOPLEVEL_INTERFACE_MODULES = {"Format", "Lexing", "Obj", "Toploop"}
 TOPLEVEL_INTERFACE_SOURCE_MEMBERS = {
     "Format": {
@@ -647,7 +658,7 @@ def scan_qualified_module_uses(source: str, modules: set[str]) -> list[dict[str,
     clean = strip_ocaml_comments(source)
     mask = _code_mask(clean)
     qualified = re.compile(
-        r"\b(" + "|".join(re.escape(module) for module in sorted(modules))
+        r"(?<!\.)\b(" + "|".join(re.escape(module) for module in sorted(modules))
         + r")\.([A-Za-z_][A-Za-z0-9_']*)\b"
     )
     return [
@@ -990,6 +1001,18 @@ def _render_full_build_program(
 def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     _require_git_clean(flyspeck_root)
     resolver = Resolver(candle_root, flyspeck_root)
+    normalization_path = candle_root / SOURCE_NORMALIZATION_CONTRACT
+    normalization_contract, normalization_outputs = (
+        flyspeck_normalize.evaluate_contract(
+            normalization_path, flyspeck_root,
+        )
+    )
+    normalized_analysis_text = {
+        str(entry["source_key"]): normalized.decode(
+            "utf-8", errors="surrogateescape",
+        )
+        for entry, normalized in normalization_outputs
+    }
     build_file = flyspeck_root / "text_formalization/build/build.hl"
     sequence = extract_full_build_sequence(build_file.read_text(encoding="utf-8"))
 
@@ -1032,6 +1055,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     qualified_compatibility_uses: list[dict[str, object]] = []
     opened_compatibility_uses: list[dict[str, object]] = []
     compatibility_module_opens: list[dict[str, object]] = []
+    toplevel_compatibility_uses: list[dict[str, object]] = []
     declaration_opens: list[dict[str, object]] = []
     toplevel_interface_uses: list[dict[str, object]] = []
     toplevel_consumer_uses: list[dict[str, object]] = []
@@ -1041,16 +1065,13 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     typed_theorem_lookup_counts: dict[str, int] = {}
     runtime_modules = set(STATIC_RUNTIME_LIBRARIES.values())
     compatibility_modules = set(OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
-    all_opened_exports = {
-        **OPENED_MODULE_EXPORTS,
-        **OCAML_COMPATIBILITY_SUPPORTED_MEMBERS,
-    }
     while pending:
         ref = pending.pop(0)
         if ref.key in nodes:
             continue
         path = resolver.path(ref)
         text = path.read_text(encoding="utf-8", errors="surrogateescape")
+        capability_text = normalized_analysis_text.get(ref.key, text)
         dependencies: list[dict[str, object]] = []
         edge_targets: list[str] = []
         try:
@@ -1059,7 +1080,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             raise ValueError(f"{ref.key}: {error}") from error
         for use in scan_qualified_module_uses(
             text,
-            runtime_modules | compatibility_modules | TOPLEVEL_INTERFACE_MODULES
+            runtime_modules | TOPLEVEL_INTERFACE_MODULES
             | PROCESS_ROUTE_MODULES,
         ):
             if use["module"] in PROCESS_ROUTE_MODULES:
@@ -1067,13 +1088,16 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             elif use["module"] in TOPLEVEL_INTERFACE_MODULES:
                 toplevel_interface_uses.append({"source": ref.key, **use})
             else:
-                target = (
-                    qualified_runtime_uses
-                    if use["module"] in runtime_modules
-                    else qualified_compatibility_uses
-                )
-                target.append({"source": ref.key, **use})
+                qualified_runtime_uses.append({"source": ref.key, **use})
+        for use in scan_qualified_module_uses(
+            capability_text, compatibility_modules,
+        ):
+            qualified_compatibility_uses.append({"source": ref.key, **use})
         if ref.repository == "flyspeck":
+            for use in scan_identifier_uses(
+                capability_text, OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS,
+            ):
+                toplevel_compatibility_uses.append({"source": ref.key, **use})
             for use in scan_identifier_uses(text, TOPLEVEL_CONSUMER_IDENTIFIERS):
                 toplevel_consumer_uses.append({"source": ref.key, **use})
             for use in scan_identifier_uses(text, NORMALIZATION_NONUSE_IDENTIFIERS):
@@ -1089,21 +1113,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 typed_theorem_lookup_counts[ref.key] = typed_count
         for declaration in scan_open_declarations(text):
             declaration_opens.append({"source": ref.key, **declaration})
-        opens, opened_uses = scan_opened_module_uses(text, all_opened_exports)
+        opens, opened_uses = scan_opened_module_uses(text, OPENED_MODULE_EXPORTS)
         for entry in opens:
-            target = (
-                runtime_module_opens
-                if entry["module"] in runtime_modules
-                else compatibility_module_opens
-            )
-            target.append({"source": ref.key, **entry})
+            runtime_module_opens.append({"source": ref.key, **entry})
         for entry in opened_uses:
-            target = (
-                opened_runtime_uses
-                if entry["module"] in runtime_modules
-                else opened_compatibility_uses
-            )
-            target.append({"source": ref.key, **entry})
+            opened_runtime_uses.append({"source": ref.key, **entry})
+        opens, opened_uses = scan_opened_module_uses(
+            capability_text, OCAML_COMPATIBILITY_SUPPORTED_MEMBERS,
+        )
+        for entry in opens:
+            compatibility_module_opens.append({"source": ref.key, **entry})
+        for entry in opened_uses:
+            opened_compatibility_uses.append({"source": ref.key, **entry})
         for call in calls:
             dependency = dict(call)
             literal = call.get("literal")
@@ -1163,12 +1184,6 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "dependencies": dependencies,
         }
 
-    normalization_path = candle_root / SOURCE_NORMALIZATION_CONTRACT
-    normalization_contract, normalization_outputs = (
-        flyspeck_normalize.evaluate_contract(
-            normalization_path, flyspeck_root,
-        )
-    )
     normalization_entries: list[dict[str, object]] = []
     for entry, normalized in normalization_outputs:
         source_key = str(entry["source_key"])
@@ -1929,6 +1944,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 for module in OCAML_COMPATIBILITY_SUPPORTED_MEMBERS
             },
             "binding_evidence": {
+                "Array": {
+                    "status": "pure-source-compiled-gate",
+                    "source": "candle:candle/ocaml.ml",
+                    "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+                    "assurance_limit": (
+                        "source-backed typed Array surface used by the boot graph; "
+                        "direct Flyspeck adds only Array.init after normalization"
+                    ),
+                },
                 "Digest": {
                     "status": "pure-source-differential-gate",
                     "source": "candle:candle/ocaml.ml",
@@ -1939,7 +1963,60 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         "CakeML's existing verified md5Theory/md5Prog"
                     ),
                 },
+                "Gc": {
+                    "status": "telemetry-only-source-substitution",
+                    "source": "candle:candle/ocaml.ml",
+                    "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+                    "assurance_limit": (
+                        "Gc.compact is a deterministic no-op; record-valued "
+                        "Gc.stat is not implemented and is removed only from "
+                        "selected progress telemetry by an exact normalization"
+                    ),
+                },
+                "Hashtbl": {
+                    "status": "pure-source-compiled-gate",
+                    "source": "candle:candle/ocaml.ml",
+                    "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+                    "assurance_limit": (
+                        "unary tables preserve OCaml binding-stack semantics "
+                        "with equality-backed linear storage; polymorphic hash "
+                        "fails closed; explicit ordered tables are an internal "
+                        "performance path and do not retain duplicate bindings"
+                    ),
+                },
+                "Stdlib": {
+                    "status": "typed-source-bindings-and-exact-normalizations",
+                    "source": "candle:candle/ocaml.ml",
+                    "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+                    "assurance_limit": (
+                        "I/O and sqrt delegate to existing typed bindings; "
+                        "polymorphic compare recognizes equality but fails "
+                        "closed on unequal values, while every selected active "
+                        "ordering site uses an exact type-specific comparator"
+                    ),
+                },
+                "toplevel_float": {
+                    "status": "pure-source-compiled-gate",
+                    "source": ["candle:candle/nums.ml", "candle:candle/ocaml.ml"],
+                    "members": sorted(OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS),
+                    "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+                    "assurance_limit": (
+                        "float_of_num converts through verified integer-to-double "
+                        "and division primitives; frexp uses proved IEEE-754 "
+                        "field extraction and reconstruction without a new FFI"
+                    ),
+                },
             },
+            "toplevel_supported_members": sorted(
+                OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS
+            ),
+            "toplevel_uses": sorted(
+                toplevel_compatibility_uses,
+                key=lambda entry: (
+                    str(entry["source"]), int(entry["line"]),
+                    str(entry["identifier"]),
+                ),
+            ),
             "opened_use_attribution": (
                 "conservative lexical candidates after a source open; exact "
                 "sites require review and are not compiler name-resolution proof"

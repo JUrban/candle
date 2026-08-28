@@ -6,7 +6,7 @@ compiled Candle process.  It first validates the linked CakeML provenance.
 It independently reconstructs the plan and every prefix from the pinned
 manifest/full driver rather than trusting plan-supplied self-digests, then
 requires exact equality and rechecks the clean repository revisions, all 400
-source nodes, all 16 normalization outputs, all 43 generated inputs,
+source nodes, all 18 normalization outputs, all 43 generated inputs,
 deterministic `date`/`whoami` inputs, and the selected prefix.  The config also
 provides the exact ordered 39-certificate list required by normalized
 `verify_all.hl`.
@@ -63,7 +63,7 @@ Example (after a linked verified binary exists):
 ```sh
 python3 candle/flyspeck_stratum_runtime.py \
   --candle-script ./candle.sh \
-  --plan-root /project/flyspeck-candle-runs/v13-stratum-plan-aac2a6a \
+  --plan-root /project/flyspeck-candle-runs/v13-stratum-plan-$(git rev-parse --short=7 HEAD) \
   --boundary 00-base-through-029 \
   --write /project/flyspeck-candle-runs/v13-stratum-base-attempt-001
 ```

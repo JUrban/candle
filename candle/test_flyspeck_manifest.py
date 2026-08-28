@@ -62,10 +62,13 @@ class SyntaxTests(unittest.TestCase):
           let r = Str.regexp "x";;
           (* Unix.system "ignored";; *)
           let s = "Str.split";;
+          let internal = Cake.Array.tabulate;;
           let theorem = `Unix.mkdir /\\ Str.string_match`;;
         '''
         self.assertEqual(
-            flyspeck_manifest.scan_qualified_module_uses(source, {"Str", "Unix"}),
+            flyspeck_manifest.scan_qualified_module_uses(
+                source, {"Array", "Str", "Unix"},
+            ),
             [
                 {"line": 2, "module": "Unix", "member": "gettimeofday"},
                 {"line": 3, "module": "Str", "member": "regexp"},
@@ -351,7 +354,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 16)
+        self.assertEqual(contract["entry_count"], 18)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -378,7 +381,10 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(entry["source_key"], (
             "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
         ))
-        self.assertEqual(entry["operations"][0]["line"], 1050)
+        self.assertEqual(
+            [operation["line"] for operation in entry["operations"]],
+            [329, 342, 1050],
+        )
         node = self.payload["source_nodes"][entry["source_key"]]
         self.assertEqual(node["sha256"], entry["source_sha256"])
         self.assertEqual(node["md5"], entry["source_md5"])
@@ -397,6 +403,9 @@ class GeneratedManifestTests(unittest.TestCase):
             entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]["operation_count"],
             5,
         )
+        self.assertEqual(entry["operation_count"], 3)
+        self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
+        self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
         self.assertIn(
             "failwith",
             entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]["operations"][0]["after"],
@@ -788,20 +797,37 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["selected_members"]["Digest"],
             ["file", "string", "t", "to_hex"],
         )
-        uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 23)
+        uses = [
+            use for use in contract["qualified_uses"]
+            if use["module"] == "Digest"
+        ]
+        self.assertEqual(len(uses), 22)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 11, "string": 2, "t": 3, "to_hex": 7},
+            {"file": 10, "string": 2, "t": 3, "to_hex": 7},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")
         self.assertEqual(evidence["source"], "candle:candle/ocaml.ml")
         self.assertEqual(evidence["gate"], "candle:candle/test_digest_compat.sh")
         self.assertIn("not yet formally linked", evidence["assurance_limit"])
+        self.assertEqual(
+            contract["toplevel_supported_members"],
+            ["float_of_num", "frexp"],
+        )
+        self.assertEqual(
+            {name: sum(use["identifier"] == name
+                       for use in contract["toplevel_uses"])
+             for name in contract["toplevel_supported_members"]},
+            {"float_of_num": 7, "frexp": 3},
+        )
+        self.assertEqual(
+            contract["binding_evidence"]["Gc"]["status"],
+            "telemetry-only-source-substitution",
+        )
         source = Path(__file__).with_name("ocaml.ml").read_text(encoding="utf-8")
         self.assertIn("module Digest = struct", source)
         for member in contract["supported_members"]["Digest"]:

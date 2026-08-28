@@ -9,10 +9,24 @@
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
       "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f",
       "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
-      "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
-      "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
-      "normalized_bytes": 45263,
+      "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
+      "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
+      "normalized_bytes": 45259,
       "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-FIRST-VARIABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 329,
+          "before": "Stdlib.compare var1 var2",
+          "after": "Term.compare var1 var2"
+        },
+        {
+          "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-VARIABLE-TABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 342,
+          "before": "Stdlib.compare tm1 tm2",
+          "after": "Term.compare tm1 tm2"
+        },
         {
           "id": "PROJECT-POINTER-S3-IMMEDIATE-001-REPLACE",
           "kind": "exact_bytes_replace_once",
@@ -21,8 +35,8 @@
           "after": "    if n = 1 then [] else\n"
         }
       ],
-      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value.",
-      "scope_limit": "This scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison."
+      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison.",
+      "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists; compiled ordering and terminal theorem fingerprints remain required."
     },
     {
       "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
@@ -100,9 +114,9 @@
       "path": "text_formalization/jordan/tactics_jordan.hl",
       "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe",
       "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
-      "normalized_sha256": "e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5",
-      "normalized_md5": "e2076c132f1901e8e9dab2b1ed3cf02a",
-      "normalized_bytes": 54860,
+      "normalized_sha256": "6d28b0d1ba6300a9dca6705530e15a555567ca31bd1661a21a23703bf913df8d",
+      "normalized_md5": "750508a2cadac11cd053fec89cb2a5fb",
+      "normalized_bytes": 54870,
       "operations": [
         {
           "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
@@ -110,10 +124,17 @@
           "line": 256,
           "before": "        let avoids = filter ((!=) x) (vars_and_constants tm []) in",
           "after": "        let avoids = filter (fun y -> not (y = x)) (vars_and_constants tm []) in"
+        },
+        {
+          "id": "PROJECT-HASH-S3-JORDAN-TERM-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 529,
+          "before": "num (Hashtbl.hash tm)",
+          "after": "num (Hash_term.hash_of_term tm)"
         }
       ],
-      "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged.",
-      "scope_limit": "The rule is specific to relabel_bound_conv and its fresh-name consumer; it does not authorize replacing physical identity by structural equality elsewhere. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
+      "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
+      "scope_limit": "The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; it does not implement polymorphic hashing. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
     },
     {
       "id": "PROJECT-MODULE-S3-SET-MAKE-001",
@@ -354,9 +375,9 @@
       "path": "formal_lp/hypermap/verify_all.hl",
       "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95",
       "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
-      "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
-      "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
-      "normalized_bytes": 3929,
+      "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
+      "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
+      "normalized_bytes": 3630,
       "operations": [
         {
           "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
@@ -364,10 +385,17 @@
           "line": 10,
           "before": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_files_with_prefix dir prefix =\n  let files = Array.to_list (Sys.readdir dir) in\n  let n = String.length prefix in\n  let files1 = filter (fun f -> String.length f >= n) files in\n  let files2 = filter (fun f -> String.sub f 0 n = prefix) files1 in\n    map (fun f -> sprintf \"%s/%s\" dir f) files2;;\n\nlet get_certificate_files_with_prefix dir prefix =\n  let alt_dir = dir ^ \"/lp_certificates\" in\n  let files1 = get_files_with_prefix dir prefix in\n  let files2 =\n    if Sys.file_exists alt_dir then\n      get_files_with_prefix alt_dir prefix\n    else\n      [] in\n    files1 @ files2;;\n\n",
           "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n"
+        },
+        {
+          "id": "PROJECT-TELEMETRY-S3-GC-STAT-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 29,
+          "before": "let mem_stat () =\n  let stat = Gc.stat() in\n  let word = float_of_int (Sys.word_size / 8) in\n  let free = float_of_int stat.Gc.free_words *. word /. 1024.0 in\n  let total = float_of_int stat.Gc.heap_words *. word /. 1024.0 in\n  let allocated = total -. free in\n  let str = sprintf \"allocated = %f (free = %f; total_size = %f; %f)\\n\" \n    allocated free total (free /. total) in\n    print_string str;;\n",
+          "after": "let mem_stat () =\n  print_string \"Candle S3: GC memory telemetry is reported by the outer runner\\n\";;\n"
         }
       ],
-      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run.",
-      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight."
+      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
+      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims."
     },
     {
       "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
@@ -466,6 +494,48 @@
       ],
       "semantic_rule": "Both existing digest comparisons remain fatal. In addition, every caught Failure in the nonlinear implication reconstruction and the serialized prep reconstruction must leave no TRUTH sentinel, and the complete prep traversal must visit exactly 7,479 authenticated Iarg leaves before final theorem construction can continue.",
       "scope_limit": "The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required."
+    },
+    {
+      "id": "PROJECT-COMPARE-S3-SECTION-NAME-001",
+      "source_key": "flyspeck:jHOLLight/caml/sections.hl",
+      "path": "jHOLLight/caml/sections.hl",
+      "source_sha256": "05e435d55cada51b56fee84696fffe30b7e11b0010fb8a56061c2e9b2c815b51",
+      "source_md5": "4b207a2e7a8b7ab7f86f9cb9ffd80d88",
+      "normalized_sha256": "2bb6554caf5cdfdb5f4f9abc9a5721f609c3979d9012e4aed8de44f0590acb7b",
+      "normalized_md5": "f7f829fcc3465c1336bdd80f74ab148c",
+      "normalized_bytes": 10672,
+      "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-SECTION-NAME-001-STRING",
+          "kind": "exact_bytes_replace_once",
+          "line": 47,
+          "before": "Stdlib.compare last_name name",
+          "after": "String.compare last_name name"
+        }
+      ],
+      "semantic_rule": "Both operands are section-name strings. String.compare has the same zero/nonzero equality result used by this branch without requiring a polymorphic ordering primitive.",
+      "scope_limit": "This rewrite establishes only the typed section-name comparison. It does not implement polymorphic comparison; compiled section-stack behavior remains a gate."
+    },
+    {
+      "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
+      "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
+      "path": "formal_lp/glpk/lpproc.ml",
+      "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8",
+      "source_md5": "8e2eea27fffde333d431fc757fbe918e",
+      "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
+      "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
+      "normalized_bytes": 16194,
+      "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001-INT",
+          "kind": "exact_bytes_replace_once",
+          "line": 95,
+          "before": "Stdlib.compare (mc b) (mc a)",
+          "after": "Int.compare (mc b) (mc a)"
+        }
+      ],
+      "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison.",
+      "scope_limit": "This rewrite is confined to the typed LP preprocessing count comparator. It does not implement polymorphic comparison; compiled list ordering and final theorem fingerprints remain gates."
     }
   ]
 }

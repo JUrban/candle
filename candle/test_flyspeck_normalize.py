@@ -27,6 +27,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         source = b"prefix\n    if n == 1 then [] else\nsuffix\n"
         normalized = b"prefix\n    if n = 1 then [] else\nsuffix\n"
         entry = copy.deepcopy(self.contract["entries"][0])
+        entry["operations"] = [copy.deepcopy(entry["operations"][2])]
         entry["operations"][0]["line"] = 2
         entry["source_sha256"], entry["source_md5"] = digests(source)
         entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
@@ -114,12 +115,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 16)
+        self.assertEqual(len(self.contract["entries"]), 18)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
-        self.assertEqual(immediate["operations"][0]["line"], 1050)
-        self.assertEqual(immediate["operations"][0]["before"].count("=="), 1)
-        self.assertNotIn("==", immediate["operations"][0]["after"])
+        self.assertEqual(
+            [operation["line"] for operation in immediate["operations"]],
+            [329, 342, 1050],
+        )
+        self.assertIn("Term.compare", immediate["operations"][0]["after"])
+        self.assertEqual(immediate["operations"][2]["before"].count("=="), 1)
+        self.assertNotIn("==", immediate["operations"][2]["after"])
         self.assertIn("does not apply to allocated values", immediate["scope_limit"])
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
         self.assertEqual(len(allocated["operations"]), 5)
@@ -128,6 +133,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("failwith", unsuppress["operations"][0]["after"])
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertIn("not (y = x)", relabel["operations"][0]["after"])
+        self.assertIn("Hash_term.hash_of_term", relabel["operations"][1]["after"])
         set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
         self.assertEqual(set_make["operations"][0]["line"], 34)
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
@@ -196,6 +202,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertNotIn("Sys.readdir", (
             static_inventory["operations"][0]["after"]
         ))
+        self.assertNotIn("Gc.stat", static_inventory["operations"][1]["after"])
+        self.assertIn("outer runner", static_inventory["operations"][1]["after"])
+        section_compare = entries["PROJECT-COMPARE-S3-SECTION-NAME-001"]
+        self.assertIn("String.compare", section_compare["operations"][0]["after"])
+        lp_compare = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
+        self.assertIn("Int.compare", lp_compare["operations"][0]["after"])
         exact_lp = entries["PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001"]
         self.assertEqual(exact_lp["operations"][0]["line"], 46)
         exact_lp_after = exact_lp["operations"][0]["after"]
@@ -241,7 +253,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 33)
+        self.assertEqual(len(operation_ids), 39)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

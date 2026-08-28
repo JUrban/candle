@@ -2881,16 +2881,161 @@
   "ocaml_compatibility_contract": {
     "activation_status": "partial-source-bindings",
     "binding_evidence": {
+      "Array": {
+        "assurance_limit": "source-backed typed Array surface used by the boot graph; direct Flyspeck adds only Array.init after normalization",
+        "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+        "source": "candle:candle/ocaml.ml",
+        "status": "pure-source-compiled-gate"
+      },
       "Digest": {
         "assurance_limit": "differentially tested but not yet formally linked to CakeML's existing verified md5Theory/md5Prog",
         "gate": "candle:candle/test_digest_compat.sh",
         "oracle": "OCaml 4.14.1 Digest",
         "source": "candle:candle/ocaml.ml",
         "status": "pure-source-differential-gate"
+      },
+      "Gc": {
+        "assurance_limit": "Gc.compact is a deterministic no-op; record-valued Gc.stat is not implemented and is removed only from selected progress telemetry by an exact normalization",
+        "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+        "source": "candle:candle/ocaml.ml",
+        "status": "telemetry-only-source-substitution"
+      },
+      "Hashtbl": {
+        "assurance_limit": "unary tables preserve OCaml binding-stack semantics with equality-backed linear storage; polymorphic hash fails closed; explicit ordered tables are an internal performance path and do not retain duplicate bindings",
+        "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+        "source": "candle:candle/ocaml.ml",
+        "status": "pure-source-compiled-gate"
+      },
+      "Stdlib": {
+        "assurance_limit": "I/O and sqrt delegate to existing typed bindings; polymorphic compare recognizes equality but fails closed on unequal values, while every selected active ordering site uses an exact type-specific comparator",
+        "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+        "source": "candle:candle/ocaml.ml",
+        "status": "typed-source-bindings-and-exact-normalizations"
+      },
+      "toplevel_float": {
+        "assurance_limit": "float_of_num converts through verified integer-to-double and division primitives; frexp uses proved IEEE-754 field extraction and reconstruction without a new FFI",
+        "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
+        "members": [
+          "float_of_num",
+          "frexp"
+        ],
+        "source": [
+          "candle:candle/nums.ml",
+          "candle:candle/ocaml.ml"
+        ],
+        "status": "pure-source-compiled-gate"
       }
     },
     "capability_uses": [
       {
+        "line": 385,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 385,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 388,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 388,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 395,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 396,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 414,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 415,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 454,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 511,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 577,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 581,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 630,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 688,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 689,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 690,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 715,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 723,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
         "line": 55,
         "member": "file",
         "module": "Digest",
@@ -2927,13 +3072,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 243,
+        "line": 251,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 243,
+        "line": 251,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -2949,11 +3094,899 @@
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_source_integrity.ml"
+      },
+      {
+        "line": 338,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 341,
+        "member": "create_ordered",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 344,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 347,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 362,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 438,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 467,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 511,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 554,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 596,
+        "member": "fold_left",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 915,
+        "member": "map",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 915,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 916,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 5978,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 5988,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 5994,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 6005,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 28,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 29,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 30,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 31,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 32,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 33,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 34,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 35,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 36,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 37,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 38,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 39,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 40,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 41,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 18,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 19,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 23,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 25,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 26,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 27,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 28,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 29,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 30,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 50,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 77,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 143,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 154,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 165,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 175,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 186,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 197,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 86,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 106,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 107,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 111,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 112,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 115,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 116,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 121,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 153,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 167,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 170,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 209,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 226,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 235,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 286,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 322,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 323,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 326,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 345,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 373,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 375,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 378,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 392,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 438,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 440,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 443,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 475,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 489,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 504,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 518,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 574,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 582,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 584,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 591,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 593,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 623,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 670,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 674,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 701,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 707,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 714,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 722,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 729,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 744,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 748,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 775,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 781,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 788,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 796,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 803,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 820,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 832,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 852,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 864,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 918,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 923,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 927,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 950,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 953,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 961,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 968,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 972,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 979,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 995,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1015,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1122,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1126,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1136,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1139,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1194,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1201,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1206,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1214,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1250,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1251,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1259,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1260,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1281,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1283,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1309,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1311,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1351,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1359,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1483,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1485,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1488,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1489,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1492,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1493,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1496,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1497,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1509,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1521,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 136,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
       },
       {
         "line": 107,
         "member": "t",
         "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
       },
       {
@@ -2963,40 +3996,466 @@
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
       },
       {
-        "line": 96,
+        "line": 630,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 640,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 655,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 656,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 669,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 670,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 747,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 747,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 759,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 760,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 783,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 784,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 791,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 792,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 799,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 842,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 865,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 226,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 226,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 230,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 293,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 294,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 296,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 54,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 55,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 58,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 59,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 61,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 64,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 65,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 67,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 81,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 82,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 284,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 302,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 309,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 310,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 314,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 316,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 318,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 341,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 38,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 57,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 240,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 240,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 498,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 499,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 504,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 505,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 863,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 864,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 865,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 866,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 867,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 868,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 878,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 879,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 880,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 881,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 882,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 883,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 895,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 922,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 91,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 128,
+        "line": 123,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 135,
+        "line": 162,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 173,
-        "member": "file",
-        "module": "Digest",
-        "source": "flyspeck:text_formalization/build/strictbuild.hl"
-      },
-      {
-        "line": 190,
+        "line": 179,
         "member": "t",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 190,
+        "line": 179,
         "member": "t",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 238,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 46,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 49,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 55,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 56,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 58,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 62,
+        "member": "open_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
       },
       {
         "line": 23,
@@ -3005,28 +4464,418 @@
         "source": "flyspeck:text_formalization/general/hol_pervasives.hl"
       },
       {
-        "line": 268,
+        "line": 264,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 274,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 297,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 302,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 359,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 361,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 369,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 476,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 481,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 515,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 517,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 609,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 613,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 636,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 644,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 682,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 692,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 698,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 841,
+        "member": "open_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 845,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 849,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 855,
+        "member": "open_out",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 270,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 268,
+        "line": 270,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 438,
+        "line": 306,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 307,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 317,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 325,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 331,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 332,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 334,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 340,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 341,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 342,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 377,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 379,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 385,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 387,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 390,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 405,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 440,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 438,
+        "line": 440,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 484,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 175,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 191,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 192,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 209,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 1823,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1829,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 26,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 26,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 28,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 29,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 30,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 31,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 92,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 101,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 106,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 48,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 50,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 52,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 54,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 56,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 58,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 60,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 75,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 86,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 87,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 88,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       }
     ],
     "module_opens": [],
@@ -3034,6 +4883,114 @@
     "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
     "qualified_uses": [
       {
+        "line": 385,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 385,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 388,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 388,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 395,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 396,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 414,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 415,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 454,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 511,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 577,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 581,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 630,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 688,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 689,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 690,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 715,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
+        "line": 723,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:calc_num.ml"
+      },
+      {
         "line": 55,
         "member": "file",
         "module": "Digest",
@@ -3070,13 +5027,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 243,
+        "line": 251,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 243,
+        "line": 251,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3092,11 +5049,899 @@
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_source_integrity.ml"
+      },
+      {
+        "line": 338,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 341,
+        "member": "create_ordered",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 344,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 347,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 362,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 438,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 467,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 511,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 554,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 596,
+        "member": "fold_left",
+        "module": "Array",
+        "source": "candle:compute.ml"
+      },
+      {
+        "line": 915,
+        "member": "map",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 915,
+        "member": "of_list",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 916,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:lists.ml"
+      },
+      {
+        "line": 5978,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 5988,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 5994,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 6005,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 28,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 29,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 30,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 31,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 32,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 33,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 34,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 35,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 36,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 37,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 38,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 39,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 40,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 41,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:printer.ml"
+      },
+      {
+        "line": 18,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 19,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 23,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 25,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 26,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 27,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 28,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 29,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 30,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 50,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 77,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 143,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 154,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 165,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 175,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 186,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 197,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 86,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 106,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 107,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 111,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 112,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 115,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 116,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 121,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 153,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 167,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 170,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 209,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 226,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 235,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 286,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 322,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 323,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 326,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 345,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 373,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 375,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 378,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 392,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 438,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 440,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 443,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 475,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 489,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 504,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 518,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 574,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 582,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 584,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 591,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 593,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 623,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 670,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 674,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 701,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 707,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 714,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 722,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 729,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 744,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 748,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 775,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 781,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 788,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 796,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 803,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 820,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 832,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 852,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 864,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 918,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 923,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 927,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 950,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 953,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 961,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 968,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 972,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 979,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 995,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1015,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1122,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1126,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1136,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1139,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1194,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1201,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1206,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1214,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1250,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1251,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1259,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1260,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1281,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1283,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1309,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1311,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1351,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1359,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1483,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1485,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1488,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1489,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1492,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1493,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1496,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1497,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1509,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1521,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 136,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
       },
       {
         "line": 107,
         "member": "t",
         "module": "Digest",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 108,
+        "member": "t",
+        "module": "Hashtbl",
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
       },
       {
@@ -3106,40 +5951,466 @@
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
       },
       {
-        "line": 96,
+        "line": 630,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 640,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 655,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 656,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 669,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 670,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 747,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 747,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 759,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 760,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 783,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 784,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 791,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 792,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 799,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 842,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 865,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+      },
+      {
+        "line": 226,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 226,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 227,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 230,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 293,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 294,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 296,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+      },
+      {
+        "line": 54,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 55,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 58,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 59,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 61,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 64,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 65,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 67,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 81,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 82,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl"
+      },
+      {
+        "line": 284,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 302,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 309,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 310,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 314,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 316,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 318,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 341,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
+        "line": 38,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 57,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+      },
+      {
+        "line": 240,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 240,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 498,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 499,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 504,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 505,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 863,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 864,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 865,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 866,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 867,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 868,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 878,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 879,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 880,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 881,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 882,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 883,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 895,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 922,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 91,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 128,
+        "line": 123,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 135,
+        "line": 162,
         "member": "file",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 173,
-        "member": "file",
-        "module": "Digest",
-        "source": "flyspeck:text_formalization/build/strictbuild.hl"
-      },
-      {
-        "line": 190,
+        "line": 179,
         "member": "t",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
       },
       {
-        "line": 190,
+        "line": 179,
         "member": "t",
         "module": "Digest",
         "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 238,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/build/strictbuild.hl"
+      },
+      {
+        "line": 46,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 49,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 55,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 56,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 58,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "line": 62,
+        "member": "open_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
       },
       {
         "line": 23,
@@ -3148,48 +6419,566 @@
         "source": "flyspeck:text_formalization/general/hol_pervasives.hl"
       },
       {
-        "line": 268,
+        "line": 264,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 274,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 297,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 302,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 359,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 361,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 369,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 476,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 481,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 515,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 517,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 609,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 613,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 636,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 644,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 682,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 692,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 698,
+        "member": "hash",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 841,
+        "member": "open_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 845,
+        "member": "input_line",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 849,
+        "member": "close_in",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 855,
+        "member": "open_out",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/lib.hl"
+      },
+      {
+        "line": 270,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 268,
+        "line": 270,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 438,
+        "line": 306,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 307,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 317,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 325,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 331,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 332,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 334,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 340,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 341,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 342,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 377,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 379,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 385,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 387,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 390,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 405,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 440,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 438,
+        "line": 440,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 484,
+        "member": "output_string",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 175,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 191,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 192,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 209,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/update_database_310.ml"
+      },
+      {
+        "line": 1823,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1829,
+        "member": "sqrt",
+        "module": "Stdlib",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 26,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 26,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 28,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 29,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 30,
+        "member": "remove",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 31,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 92,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 101,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 106,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+      },
+      {
+        "line": 48,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 50,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 52,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 54,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 56,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 58,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 60,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 75,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 86,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 87,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 88,
+        "member": "compact",
+        "module": "Gc",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       }
     ],
     "scope": "reachable direct-source full-build graph only",
     "selected_members": {
+      "Array": [
+        "fold_left",
+        "get",
+        "init",
+        "make",
+        "map",
+        "of_list",
+        "set"
+      ],
       "Digest": [
         "file",
         "string",
         "t",
         "to_hex"
+      ],
+      "Gc": [
+        "compact"
+      ],
+      "Hashtbl": [
+        "add",
+        "clear",
+        "create",
+        "create_ordered",
+        "find",
+        "fold",
+        "hash",
+        "length",
+        "mem",
+        "remove",
+        "replace",
+        "t"
+      ],
+      "Stdlib": [
+        "close_in",
+        "compare",
+        "input_line",
+        "open_in",
+        "open_out",
+        "output_string",
+        "sqrt"
       ]
     },
     "supported_members": {
+      "Array": [
+        "fold_left",
+        "get",
+        "init",
+        "length",
+        "make",
+        "map",
+        "of_list",
+        "set"
+      ],
       "Digest": [
         "compare",
         "file",
         "string",
         "t",
         "to_hex"
+      ],
+      "Gc": [
+        "compact"
+      ],
+      "Hashtbl": [
+        "add",
+        "clear",
+        "create",
+        "create_ordered",
+        "find",
+        "fold",
+        "hash",
+        "length",
+        "mem",
+        "remove",
+        "replace",
+        "t"
+      ],
+      "Stdlib": [
+        "close_in",
+        "close_out",
+        "compare",
+        "input_line",
+        "open_in",
+        "open_out",
+        "output_string",
+        "sqrt"
       ]
-    }
+    },
+    "toplevel_supported_members": [
+      "float_of_num",
+      "frexp"
+    ],
+    "toplevel_uses": [
+      {
+        "identifier": "float_of_num",
+        "line": 239,
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 239,
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 76,
+        "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 1096,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1097,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1150,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1163,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 1822,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 1829,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 145,
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
+      }
+    ]
   },
   "repositories": {
     "candle": {
@@ -3212,8 +7001,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "d889f34531e9e793f33d21331720ae77",
-    "generated_source_sha256": "4bfb739c1bd10172fc8963c1d6b317105048e9fe096b368e07791ec9e0ed8dd2",
+    "generated_source_md5": "32ff14536b22b6ed09f64faf4e1645e6",
+    "generated_source_sha256": "fecab8f91c7c38836f7eadc73b2aae8b64256f58b5ccca4e94903d84fc89a2d6",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -5977,7 +9766,7 @@
       "sha256": "cf327c067fa7cb127ed14bb5909cbbecb9f9ac48b13f59d576c9ca2230cbb6d9"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 56348,
+      "bytes": 56616,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -9247,10 +13036,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "825f2d51f520b3e68b3daebf8d8eadad",
+      "md5": "5a75485f5e5b8d9f94fbf91feb84521f",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "aebd573d379f2787c03738db27b8e04f80adc7a8a2e1546fed840b9006937e0e"
+      "sha256": "1a86ee399ae3f2a19387aad5a058a8f51de1ebf85baea6b6045e4897a6077b32"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -9261,7 +13050,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 11575,
+      "bytes": 11966,
       "dependencies": [
         {
           "kind": "#use",
@@ -9299,7 +13088,7 @@
         },
         {
           "kind": "needs",
-          "line": 264,
+          "line": 272,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -9310,7 +13099,7 @@
         },
         {
           "kind": "needs",
-          "line": 270,
+          "line": 278,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -9321,7 +13110,7 @@
         },
         {
           "kind": "needs",
-          "line": 272,
+          "line": 280,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -9331,10 +13120,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "39424034ba2fc5264b3cbff353b0beaa",
+      "md5": "60a463cb178b8fe9a134d8f2e9b8c576",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "47d3b1fad6c53c7b7d68b69d69e1755ddf3db95717ef4c004e5d621d996c01ea"
+      "sha256": "4d7547f84560c164b69850922c8691fa6109317d3d6284d2a42a099ad6766f77"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -9353,20 +13142,20 @@
       "sha256": "6ef26962e67f7e5e647074af8864800b5765a51c792ac58eaf3d6352f688c206"
     },
     "candle:candle/nums.ml": {
-      "bytes": 8392,
+      "bytes": 8683,
       "dependencies": [],
-      "md5": "d7010e4c6e3a3d16d2ff02baec9a97b9",
+      "md5": "c6467fb5d11c943a2f5d8b8a7c8fd647",
       "path": "candle/nums.ml",
       "repository": "candle",
-      "sha256": "72ca1663e4a4077b9681bcb5988fb83fc102195e0b0fdfd84691b5e6a336e253"
+      "sha256": "67543a75a9e11989e422e612c775e4bccd63843c446b849e3033c29086d74f3d"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 30791,
+      "bytes": 35441,
       "dependencies": [],
-      "md5": "17c52bb024ed4744db54f4424ef3066b",
+      "md5": "44e8c70e392c766f2784de66aa6ddaba",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "2ec2a65214cc706e0c0dc9cfb883d1d94e4c93dce6025a9451d59d0efce97b8d"
+      "sha256": "b7e30ffc6bdebeb7dedc8c8bccfaecfb29961105579b058c6cb698c54d391a32"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -9437,7 +13226,7 @@
       "sha256": "c26adcc124c7e13a8285c083a1f8482f6c4497d16c60ad14f4f3aad9d69bdcd5"
     },
     "candle:compute.ml": {
-      "bytes": 32113,
+      "bytes": 32123,
       "dependencies": [
         {
           "kind": "needs",
@@ -9451,10 +13240,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1af536e52c38de969e87159a20e13d84",
+      "md5": "957c919cf9593bac3744fac78b4eb53d",
       "path": "compute.ml",
       "repository": "candle",
-      "sha256": "dac1a0a85342bef4698488f3207350d4c7b4ddd26c759ea86dbdad4ecd2fd011"
+      "sha256": "00c266cf7e3e9a6c24781a368dbf108b11ef81e06e185a8c7c42b0f48bb24860"
     },
     "candle:define.ml": {
       "bytes": 47399,
@@ -10913,6 +14702,14 @@
           ]
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 16194,
+        "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
+        "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
+        "operation_count": 1
+      },
       "md5": "8e2eea27fffde333d431fc757fbe918e",
       "path": "formal_lp/glpk/lpproc.ml",
       "repository": "flyspeck",
@@ -11626,10 +15423,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45263,
-        "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
-        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
-        "operation_count": 1
+        "normalized_bytes": 45259,
+        "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
+        "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
+        "operation_count": 3
       },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
@@ -11769,10 +15566,10 @@
       "execution_normalization": {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3929,
-        "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
-        "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
-        "operation_count": 1
+        "normalized_bytes": 3630,
+        "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
+        "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
+        "operation_count": 2
       },
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
       "path": "formal_lp/hypermap/verify_all.hl",
@@ -11993,6 +15790,14 @@
     "flyspeck:jHOLLight/caml/sections.hl": {
       "bytes": 10672,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-COMPARE-S3-SECTION-NAME-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 10672,
+        "normalized_md5": "f7f829fcc3465c1336bdd80f74ab148c",
+        "normalized_sha256": "2bb6554caf5cdfdb5f4f9abc9a5721f609c3979d9012e4aed8de44f0590acb7b",
+        "operation_count": 1
+      },
       "md5": "4b207a2e7a8b7ab7f86f9cb9ffd80d88",
       "path": "jHOLLight/caml/sections.hl",
       "repository": "flyspeck",
@@ -12987,10 +16792,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-RELABEL-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 54860,
-        "normalized_md5": "e2076c132f1901e8e9dab2b1ed3cf02a",
-        "normalized_sha256": "e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5",
-        "operation_count": 1
+        "normalized_bytes": 54870,
+        "normalized_md5": "750508a2cadac11cd053fec89cb2a5fb",
+        "normalized_sha256": "6d28b0d1ba6300a9dca6705530e15a555567ca31bd1661a21a23703bf913df8d",
+        "operation_count": 2
       },
       "md5": "bd35c3dc23e929b6495940412fcc7c03",
       "path": "text_formalization/jordan/tactics_jordan.hl",
@@ -16468,17 +20273,31 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "ee96d0327a611074817ae2e458f8013880cad6f1c059fa9b9481b4c3060d48ad",
+    "contract_sha256": "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45263,
-        "normalized_md5": "fddf2accd2071d09095166ff7af885c7",
-        "normalized_sha256": "243a2031e595efa9bf0b85b552f9620f4ab45cbca8dcebef821f2eae68c3bba4",
-        "operation_count": 1,
+        "normalized_bytes": 45259,
+        "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
+        "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
+        "operation_count": 3,
         "operations": [
+          {
+            "after": "Term.compare var1 var2",
+            "before": "Stdlib.compare var1 var2",
+            "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-FIRST-VARIABLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 329
+          },
+          {
+            "after": "Term.compare tm1 tm2",
+            "before": "Stdlib.compare tm1 tm2",
+            "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-VARIABLE-TABLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 342
+          },
           {
             "after": "    if n = 1 then [] else\n",
             "before": "    if n == 1 then [] else\n",
@@ -16488,8 +20307,8 @@
           }
         ],
         "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-        "scope_limit": "This scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison.",
-        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value.",
+        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists; compiled ordering and terminal theorem fingerprints remain required.",
+        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison.",
         "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
         "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
@@ -16571,10 +20390,10 @@
       {
         "id": "PROJECT-POINTER-S3-RELABEL-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 54860,
-        "normalized_md5": "e2076c132f1901e8e9dab2b1ed3cf02a",
-        "normalized_sha256": "e34517f72ed00eeb30275f1dca01210604665a43d96aa1d759c9f6890f0312e5",
-        "operation_count": 1,
+        "normalized_bytes": 54870,
+        "normalized_md5": "750508a2cadac11cd053fec89cb2a5fb",
+        "normalized_sha256": "6d28b0d1ba6300a9dca6705530e15a555567ca31bd1661a21a23703bf913df8d",
+        "operation_count": 2,
         "operations": [
           {
             "after": "        let avoids = filter (fun y -> not (y = x)) (vars_and_constants tm []) in",
@@ -16582,11 +20401,18 @@
             "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
             "kind": "exact_bytes_replace_once",
             "line": 256
+          },
+          {
+            "after": "num (Hash_term.hash_of_term tm)",
+            "before": "num (Hashtbl.hash tm)",
+            "id": "PROJECT-HASH-S3-JORDAN-TERM-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 529
           }
         ],
         "path": "text_formalization/jordan/tactics_jordan.hl",
-        "scope_limit": "The rule is specific to relabel_bound_conv and its fresh-name consumer; it does not authorize replacing physical identity by structural equality elsewhere. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release.",
-        "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged.",
+        "scope_limit": "The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; it does not implement polymorphic hashing. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release.",
+        "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
         "source_key": "flyspeck:text_formalization/jordan/tactics_jordan.hl",
         "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
         "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe"
@@ -16843,10 +20669,10 @@
       {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3929,
-        "normalized_md5": "f37e71e8e7319c0036082fc8c2525055",
-        "normalized_sha256": "f64bf35f3d1cfff43ab8117ee632e625b219390e416d31a463ad7d2fea2e55d0",
-        "operation_count": 1,
+        "normalized_bytes": 3630,
+        "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
+        "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
+        "operation_count": 2,
         "operations": [
           {
             "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n",
@@ -16854,11 +20680,18 @@
             "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
             "kind": "exact_bytes_replace_once",
             "line": 10
+          },
+          {
+            "after": "let mem_stat () =\n  print_string \"Candle S3: GC memory telemetry is reported by the outer runner\\n\";;\n",
+            "before": "let mem_stat () =\n  let stat = Gc.stat() in\n  let word = float_of_int (Sys.word_size / 8) in\n  let free = float_of_int stat.Gc.free_words *. word /. 1024.0 in\n  let total = float_of_int stat.Gc.heap_words *. word /. 1024.0 in\n  let allocated = total -. free in\n  let str = sprintf \"allocated = %f (free = %f; total_size = %f; %f)\\n\" \n    allocated free total (free /. total) in\n    print_string str;;\n",
+            "id": "PROJECT-TELEMETRY-S3-GC-STAT-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 29
           }
         ],
         "path": "formal_lp/hypermap/verify_all.hl",
-        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight.",
-        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run.",
+        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims.",
+        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
         "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
         "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
         "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
@@ -16966,9 +20799,55 @@
         "source_key": "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
         "source_md5": "d80256e5d423dadbde8f58f6ff5cbc81",
         "source_sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11"
+      },
+      {
+        "id": "PROJECT-COMPARE-S3-SECTION-NAME-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 10672,
+        "normalized_md5": "f7f829fcc3465c1336bdd80f74ab148c",
+        "normalized_sha256": "2bb6554caf5cdfdb5f4f9abc9a5721f609c3979d9012e4aed8de44f0590acb7b",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "String.compare last_name name",
+            "before": "Stdlib.compare last_name name",
+            "id": "PROJECT-COMPARE-S3-SECTION-NAME-001-STRING",
+            "kind": "exact_bytes_replace_once",
+            "line": 47
+          }
+        ],
+        "path": "jHOLLight/caml/sections.hl",
+        "scope_limit": "This rewrite establishes only the typed section-name comparison. It does not implement polymorphic comparison; compiled section-stack behavior remains a gate.",
+        "semantic_rule": "Both operands are section-name strings. String.compare has the same zero/nonzero equality result used by this branch without requiring a polymorphic ordering primitive.",
+        "source_key": "flyspeck:jHOLLight/caml/sections.hl",
+        "source_md5": "4b207a2e7a8b7ab7f86f9cb9ffd80d88",
+        "source_sha256": "05e435d55cada51b56fee84696fffe30b7e11b0010fb8a56061c2e9b2c815b51"
+      },
+      {
+        "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 16194,
+        "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
+        "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "Int.compare (mc b) (mc a)",
+            "before": "Stdlib.compare (mc b) (mc a)",
+            "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001-INT",
+            "kind": "exact_bytes_replace_once",
+            "line": 95
+          }
+        ],
+        "path": "formal_lp/glpk/lpproc.ml",
+        "scope_limit": "This rewrite is confined to the typed LP preprocessing count comparator. It does not implement polymorphic comparison; compiled list ordering and final theorem fingerprints remain gates.",
+        "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison.",
+        "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
+        "source_md5": "8e2eea27fffde333d431fc757fbe918e",
+        "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
       }
     ],
-    "entry_count": 16,
+    "entry_count": 18,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -17053,8 +20932,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "825f2d51f520b3e68b3daebf8d8eadad",
-    "generated_source_sha256": "aebd573d379f2787c03738db27b8e04f80adc7a8a2e1546fed840b9006937e0e",
+    "generated_source_md5": "5a75485f5e5b8d9f94fbf91feb84521f",
+    "generated_source_sha256": "1a86ee399ae3f2a19387aad5a058a8f51de1ebf85baea6b6045e4897a6077b32",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
@@ -18390,13 +22269,13 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 605,
+        "line": 655,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 606,
+        "line": 656,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
