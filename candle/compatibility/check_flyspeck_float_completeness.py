@@ -348,7 +348,10 @@ def validate_completeness(
         independent_files == inventory["files"],
         "independent OCaml lexer file projection mismatch",
     )
-    return {
+    result = {
+        "schema": 1,
+        "kind": "flyspeck-independent-float-completeness",
+        "claim": "host/source completeness only; not compiled, S2, or S3 evidence",
         "occurrence_count": len(sites),
         "unique_spelling_count": len(unique),
         "source_file_count": len(independent_files),
@@ -361,6 +364,56 @@ def validate_completeness(
         },
         "toolchain": toolchain,
     }
+    validate_completeness_result(result, artifact)
+    return result
+
+
+def validate_completeness_result(
+    result: dict[str, Any],
+    artifact: dict[str, Any],
+) -> None:
+    flyspeck_float_corpus.require(
+        set(result) == {
+            "schema", "kind", "claim", "occurrence_count",
+            "unique_spelling_count", "source_file_count",
+            "site_record_sha256", "unique_spelling_sha256",
+            "oracle_source", "toolchain",
+        },
+        "malformed independent completeness result",
+    )
+    flyspeck_float_corpus.require(
+        result["schema"] == 1 and
+        result["kind"] == "flyspeck-independent-float-completeness" and
+        result["claim"] ==
+        "host/source completeness only; not compiled, S2, or S3 evidence",
+        "independent completeness result claim/schema mismatch",
+    )
+    inventory = artifact["inventory"]
+    flyspeck_float_corpus.require(
+        result["occurrence_count"] == inventory["occurrence_count"] and
+        result["unique_spelling_count"] ==
+        inventory["unique_spelling_count"] and
+        result["source_file_count"] == len(inventory["files"]) and
+        result["site_record_sha256"] == inventory["site_record_sha256"] and
+        result["unique_spelling_sha256"] ==
+        inventory["unique_spelling_sha256"],
+        "independent completeness result differs from corpus artifact",
+    )
+    expected_oracle = flyspeck_float_corpus.file_record(ORACLE_SOURCE)
+    flyspeck_float_corpus.require(
+        result["oracle_source"] == {
+            "path": str(ORACLE_SOURCE), **expected_oracle,
+        } and expected_oracle["sha256"] == EXPECTED_ORACLE_SHA256,
+        "independent completeness oracle identity mismatch",
+    )
+    flyspeck_float_corpus.require(
+        result["toolchain"] == {
+            "ocaml_version": flyspeck_float_corpus.EXPECTED_OCAML_VERSION,
+            "ocaml_where": str(EXPECTED_OCAML_WHERE),
+            "files": EXPECTED_TOOLCHAIN,
+        },
+        "independent completeness toolchain identity mismatch",
+    )
 
 
 def main() -> int:

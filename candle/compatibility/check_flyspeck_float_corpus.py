@@ -207,6 +207,9 @@ def check_candle(
 
     candle_root = candle_root.resolve()
     runtime_lock_handle = runtime_lock.acquire_build_lock(candle_root)
+    check_flyspeck_float_completeness.validate_completeness_result(
+        completeness, payload,
+    )
     launcher = candle_root / "candle.sh"
     flyspeck_float_corpus.require(
         launcher.is_file() and not launcher.is_symlink(),
