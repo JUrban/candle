@@ -23,6 +23,43 @@ BOOTSTRAP_INPUTS = (
     "basis_ffi.c",
     "Makefile",
 )
+HOL_BOOTSTRAP_RUNTIME_FILES = (
+    "bin/Holmake",
+    "bin/hol",
+    "bin/hol.state",
+)
+HOL_BOOTSTRAP_ELF_FILES = (
+    "bin/Holmake",
+    "bin/hol",
+)
+HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
+    "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
+}
+GNU_TIME_FOOTER_LABELS = (
+    "Command being timed",
+    "User time (seconds)",
+    "System time (seconds)",
+    "Percent of CPU this job got",
+    "Elapsed (wall clock) time (h:mm:ss or m:ss)",
+    "Average shared text size (kbytes)",
+    "Average unshared data size (kbytes)",
+    "Average stack size (kbytes)",
+    "Average total size (kbytes)",
+    "Maximum resident set size (kbytes)",
+    "Average resident set size (kbytes)",
+    "Major (requiring I/O) page faults",
+    "Minor (reclaiming a frame) page faults",
+    "Voluntary context switches",
+    "Involuntary context switches",
+    "Swaps",
+    "File system inputs",
+    "File system outputs",
+    "Socket messages sent",
+    "Socket messages received",
+    "Signals delivered",
+    "Page size (bytes)",
+    "Exit status",
+)
 LINKED_OUTPUTS = (
     "cake.S",
     "cake.S.bootstrap",
@@ -206,7 +243,11 @@ def version_details(executable: Path) -> tuple[str, str, str]:
     return cake_lines[0], hol_lines[0], output
 
 
-def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
+def elf_dynamic_closure(
+    executable: Path,
+    *,
+    allowed_dynamic_path_tags: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
     """Pin the host ELF objects selected for this executable by ldd."""
     executable = executable.resolve()
     require(executable.is_file(), f"missing ELF executable: {executable}")
@@ -219,7 +260,26 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
             timeout=30, env=runtime_environment(),
         ).stdout
-        require(re.search(r"\((?:RPATH|RUNPATH)\)", dynamic_tags) is None,
+        path_tags: dict[str, list[str]] = {}
+        for line in dynamic_tags.splitlines():
+            if re.search(r"\((?:RPATH|RUNPATH)\)", line) is None:
+                continue
+            match = re.search(
+                r"\((RPATH|RUNPATH)\).*Library (?:rpath|runpath): \[([^]]*)\]",
+                line,
+            )
+            require(match is not None,
+                    f"unrecognized RPATH/RUNPATH for {executable}: {line}")
+            tag, value = match.groups()
+            require(tag not in path_tags,
+                    f"duplicate {tag} for {executable}")
+            entries = value.split(":")
+            require(all(entry.startswith("/") for entry in entries),
+                    f"non-absolute {tag} is outside the ELF closure model: {executable}")
+            path_tags[tag] = entries
+        expected_path_tags = ({} if allowed_dynamic_path_tags is None
+                              else allowed_dynamic_path_tags)
+        require(path_tags == expected_path_tags,
                 f"RPATH/RUNPATH is outside the ELF closure model: {executable}")
         observed = subprocess.run(
             ["/usr/bin/ldd", str(executable)], check=True,
@@ -261,7 +321,8 @@ def elf_dynamic_closure(executable: Path) -> dict[str, Any]:
         virtual_objects.add(match.group(1))
     require(files, f"ELF dependency closure is empty: {executable}")
     return {
-        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+        "dynamic_path_tags": path_tags,
         "files": {path: files[path] for path in sorted(files)},
         "roles": {role: roles[role] for role in sorted(roles)},
         "virtual_objects": sorted(virtual_objects),
@@ -274,6 +335,8 @@ def validate_candle_elf_policy(record: dict[str, Any]) -> None:
     virtual_objects = record.get("virtual_objects")
     require(isinstance(files, dict), "malformed Candle ELF file closure")
     require(isinstance(roles, dict), "malformed Candle ELF role closure")
+    require(record.get("dynamic_path_tags") == {},
+            "unexpected Candle RPATH/RUNPATH")
     require(len(files) == len(CANDLE_ELF_OBJECTS),
             "unexpected Candle ELF dependency object count")
     require(set(roles) == CANDLE_ELF_OBJECTS,
@@ -287,15 +350,149 @@ def validate_candle_elf_policy(record: dict[str, Any]) -> None:
 def validate_elf_dynamic_closure(
     executable: Path,
     record: dict[str, Any],
+    *,
+    allowed_dynamic_path_tags: dict[str, list[str]] | None = None,
 ) -> None:
     require(isinstance(record, dict), "malformed ELF dependency closure")
-    require(set(record) == {"policy", "files", "roles", "virtual_objects"},
+    require(set(record) == {
+        "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
+    },
             "malformed ELF dependency closure")
     require(record["policy"] ==
-            "ldd_roles_resolved_absolute_paths_and_content_v2",
+            "ldd_roles_resolved_absolute_paths_and_content_v3",
             "unsupported ELF dependency policy")
-    observed = elf_dynamic_closure(executable)
+    observed = elf_dynamic_closure(
+        executable, allowed_dynamic_path_tags=allowed_dynamic_path_tags,
+    )
     require(observed == record, "ELF dependency closure mismatch")
+
+
+def validate_elf_closure_record(
+    record: dict[str, Any],
+    label: str,
+    *,
+    allowed_dynamic_path_tags: dict[str, list[str]],
+) -> None:
+    """Check the internal semantics of a retained, relocation-safe closure."""
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
+    }, f"malformed {label} ELF dependency closure")
+    require(record.get("policy") ==
+            "ldd_roles_resolved_absolute_paths_and_content_v3",
+            f"unsupported {label} ELF dependency policy")
+    require(record.get("dynamic_path_tags") == allowed_dynamic_path_tags,
+            f"unexpected {label} RPATH/RUNPATH")
+    files = record.get("files")
+    roles = record.get("roles")
+    virtual_objects = record.get("virtual_objects")
+    require(isinstance(files, dict) and files,
+            f"empty or malformed {label} ELF file closure")
+    require(isinstance(roles, dict) and roles and
+            set(roles.values()) == set(files),
+            f"malformed {label} ELF role closure")
+    require(isinstance(virtual_objects, list) and
+            all(isinstance(name, str) for name in virtual_objects) and
+            virtual_objects == sorted(set(virtual_objects)),
+            f"malformed {label} virtual ELF objects")
+    for path, identity in files.items():
+        require(isinstance(path, str) and Path(path).is_absolute(),
+                f"non-absolute {label} ELF object")
+        require(isinstance(identity, dict) and
+                set(identity) == {"bytes", "sha256"} and
+                isinstance(identity["bytes"], int) and identity["bytes"] >= 0 and
+                isinstance(identity["sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", identity["sha256"]) is not None,
+                f"malformed {label} ELF object identity")
+
+
+def hol_runtime_record(hol_root: Path) -> dict[str, Any]:
+    return {
+        "policy": "exact_hol_launchers_state_and_elf_closure_v1",
+        "files": {
+            name: file_record(hol_root / name)
+            for name in HOL_BOOTSTRAP_RUNTIME_FILES
+        },
+        "elf_closures": {
+            name: elf_dynamic_closure(
+                hol_root / name,
+                allowed_dynamic_path_tags=HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS,
+            )
+            for name in HOL_BOOTSTRAP_ELF_FILES
+        },
+    }
+
+
+def validate_hol_runtime_record(
+    record: dict[str, Any],
+    *,
+    hol_root: Path | None = None,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "files", "elf_closures",
+    }, "malformed HOL bootstrap runtime record")
+    require(record.get("policy") ==
+            "exact_hol_launchers_state_and_elf_closure_v1",
+            "unsupported HOL bootstrap runtime policy")
+    files = record.get("files")
+    closures = record.get("elf_closures")
+    require(isinstance(files, dict) and
+            set(files) == set(HOL_BOOTSTRAP_RUNTIME_FILES),
+            "HOL bootstrap runtime file set mismatch")
+    require(isinstance(closures, dict) and
+            set(closures) == set(HOL_BOOTSTRAP_ELF_FILES),
+            "HOL bootstrap ELF set mismatch")
+    for name in HOL_BOOTSTRAP_RUNTIME_FILES:
+        identity = files[name]
+        require(isinstance(identity, dict) and
+                set(identity) == {"bytes", "sha256"},
+                f"malformed HOL bootstrap runtime identity: {name}")
+        if hol_root is not None:
+            validate_file_record(
+                hol_root / name, identity, f"HOL bootstrap runtime {name}",
+            )
+    for name in HOL_BOOTSTRAP_ELF_FILES:
+        validate_elf_closure_record(
+            closures[name], f"HOL bootstrap {name}",
+            allowed_dynamic_path_tags=HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS,
+        )
+        if hol_root is not None:
+            validate_elf_dynamic_closure(
+                hol_root / name, closures[name],
+                allowed_dynamic_path_tags=HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS,
+            )
+
+
+def validate_bootstrap_log(log: str, build_command: str) -> None:
+    """Require one complete trailing GNU-time -v record for the exact build."""
+    lines = log.splitlines()
+    require(len(lines) >= len(GNU_TIME_FOOTER_LABELS),
+            "bootstrap log has no complete GNU-time footer")
+    footer = lines[-len(GNU_TIME_FOOTER_LABELS):]
+    expected_command = f'\tCommand being timed: "{build_command}"'
+    require(footer[0] == expected_command,
+            "bootstrap log command does not match the pinned x64 cake.S build")
+    for line, label in zip(footer, GNU_TIME_FOOTER_LABELS):
+        require(line.startswith(f"\t{label}: "),
+                f"malformed GNU-time footer field: {label}")
+    require(footer[-1] == "\tExit status: 0",
+            "bootstrap GNU-time footer does not record final exit status 0")
+    require(lines.count(expected_command) == 1,
+            "bootstrap log has duplicate or missing GNU-time command records")
+    require(lines.count("\tExit status: 0") == 1,
+            "bootstrap log has duplicate or missing successful exit status")
+    require(not any(line.startswith("Command exited with non-zero status")
+                    for line in lines),
+            "bootstrap log records a non-zero command exit")
+    require(lines.count("Writing cv to file: cake.S") == 1,
+            "bootstrap log lacks unique cake.S emission evidence")
+    require(lines.count('Exporting theory "x64Bootstrap" ... done.') == 1,
+            "bootstrap log lacks unique x64Bootstrap export evidence")
+    target_lines = [
+        line for line in lines
+        if re.fullmatch(r"Holmake: \[([0-9]+)/\1\] x64Bootstrap", line)
+    ]
+    require(len(target_lines) == 1,
+            "bootstrap log lacks unique completed x64Bootstrap target evidence")
 
 
 def record_bootstrap(
@@ -317,14 +514,11 @@ def record_bootstrap(
             "bootstrap log must be an ordinary file")
     log = log_path.read_text(encoding="utf-8", errors="replace")
     build_command = f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
-    require("Exit status: 0" in log, "bootstrap log has no successful exit status")
-    require(f'Command being timed: "{build_command}"' in log,
-            "bootstrap log command does not match the pinned x64 cake.S build")
-    require("Holmake: [" in log, "bootstrap log lacks Holmake target evidence")
+    validate_bootstrap_log(log, build_command)
     bootstrap_dir = cakeml_root / BOOTSTRAP_RELATIVE
     inputs = {name: file_record(bootstrap_dir / name) for name in BOOTSTRAP_INPUTS}
     record = {
-        "schema": 1,
+        "schema": 2,
         "kind": "verified-cakeml-x64-64-bootstrap",
         **pins,
         "cakeml_root": str(cakeml_root),
@@ -335,6 +529,7 @@ def record_bootstrap(
             **file_record(log_path),
         },
         "inputs": inputs,
+        "hol_runtime": hol_runtime_record(hol_root),
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(
@@ -355,8 +550,9 @@ def validate_bootstrap_record(
     require(set(record) == {
         "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
         "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
+        "hol_runtime",
     }, "malformed bootstrap provenance record")
-    require(record.get("schema") == 1, "unsupported bootstrap provenance schema")
+    require(record.get("schema") == 2, "unsupported bootstrap provenance schema")
     require(record.get("kind") == "verified-cakeml-x64-64-bootstrap",
             "wrong bootstrap provenance kind")
     pins = expected_pins(candle_root)
@@ -381,9 +577,8 @@ def validate_bootstrap_record(
         "bootstrap log",
     )
     log = log_path.read_text(encoding="utf-8", errors="replace")
-    require("Exit status: 0" in log, "bootstrap log no longer records success")
-    require(f'Command being timed: "{build_command}"' in log,
-            "bootstrap log no longer records the pinned command")
+    validate_bootstrap_log(log, build_command)
+    validate_hol_runtime_record(record.get("hol_runtime"), hol_root=hol_root)
     inputs = record.get("inputs")
     require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
             "bootstrap input set mismatch")
@@ -445,9 +640,9 @@ def validate_linked_bootstrap_copy(
     require(set(bootstrap) == {
         "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
         "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
-        "source_bootstrap_record",
+        "hol_runtime", "source_bootstrap_record",
     }, "malformed linked bootstrap provenance copy")
-    require(bootstrap.get("schema") == 1,
+    require(bootstrap.get("schema") == 2,
             "unsupported linked bootstrap provenance schema")
     require(bootstrap.get("kind") == "candle-linked-bootstrap-provenance-copy",
             "wrong linked bootstrap provenance kind")
@@ -480,10 +675,8 @@ def validate_linked_bootstrap_copy(
             record.get("bootstrap_log"),
             "linked bootstrap log record mismatch")
     log = local_log.read_text(encoding="utf-8", errors="replace")
-    require("Exit status: 0" in log,
-            "linked bootstrap log has no successful exit status")
-    require(f'Command being timed: "{build_command}"' in log,
-            "linked bootstrap log does not record the pinned command")
+    validate_bootstrap_log(log, build_command)
+    validate_hol_runtime_record(bootstrap.get("hol_runtime"))
     inputs = bootstrap.get("inputs")
     require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
             "linked bootstrap input set mismatch")

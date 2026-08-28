@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,23 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import cakeml_artifact_provenance as subject
+
+
+def successful_bootstrap_log(build_command: str) -> str:
+    lines = [
+        "Writing cv to file: cake.S",
+        'Exporting theory "x64Bootstrap" ... done.',
+        "Holmake: [18/18] x64Bootstrap",
+    ]
+    for label in subject.GNU_TIME_FOOTER_LABELS:
+        if label == "Command being timed":
+            value = f'"{build_command}"'
+        elif label == "Exit status":
+            value = "0"
+        else:
+            value = "0"
+        lines.append(f"\t{label}: {value}")
+    return "\n".join(lines) + "\n"
 
 
 class CakeMLArtifactProvenanceTests(unittest.TestCase):
@@ -63,8 +81,9 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         closure = subject.elf_dynamic_closure(executable)
         self.assertEqual(
             closure["policy"],
-            "ldd_roles_resolved_absolute_paths_and_content_v2",
+            "ldd_roles_resolved_absolute_paths_and_content_v3",
         )
+        self.assertEqual(closure["dynamic_path_tags"], {})
         self.assertTrue(closure["files"])
         self.assertEqual(set(closure["roles"].values()), set(closure["files"]))
         self.assertTrue(any(
@@ -81,7 +100,57 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
         with self.assertRaisesRegex(
             subject.ProvenanceError, "closure mismatch",
         ):
-            subject.validate_elf_dynamic_closure(executable, closure)
+                subject.validate_elf_dynamic_closure(executable, closure)
+
+    def test_bootstrap_log_requires_one_exact_trailing_gnu_time_footer(self) -> None:
+        command = "env HOLDIR=/hol /hol/bin/Holmake -j1 cake.S"
+        log = successful_bootstrap_log(command)
+        subject.validate_bootstrap_log(log, command)
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "duplicate or missing successful",
+        ):
+            subject.validate_bootstrap_log(
+                log.replace(
+                    "Writing cv to file: cake.S\n",
+                    "\tExit status: 0\nWriting cv to file: cake.S\n",
+                ),
+                command,
+            )
+        with self.assertRaisesRegex(
+            subject.ProvenanceError, "command does not match",
+        ):
+            subject.validate_bootstrap_log(log + "trailing output\n", command)
+
+    def test_bootstrap_log_rejects_spoofed_success_before_failure(self) -> None:
+        command = "env HOLDIR=/hol /hol/bin/Holmake -j1 cake.S"
+        log = successful_bootstrap_log(command)
+        log = log.replace(
+            "Writing cv to file: cake.S\n",
+            "\tExit status: 0\nCommand exited with non-zero status 1\n"
+            "Writing cv to file: cake.S\n",
+        ).replace("\tExit status: 0\n", "\tExit status: 1\n", 1)
+        with self.assertRaises(subject.ProvenanceError):
+            subject.validate_bootstrap_log(log, command)
+
+    def test_hol_runtime_record_pins_launchers_state_and_closures(self) -> None:
+        original_tags = subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS
+        try:
+            subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {}
+            with tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / "bin").mkdir()
+                shutil.copyfile("/bin/true", root / "bin/Holmake")
+                shutil.copyfile("/bin/true", root / "bin/hol")
+                (root / "bin/hol.state").write_bytes(b"saved-state")
+                record = subject.hol_runtime_record(root)
+                subject.validate_hol_runtime_record(record, hol_root=root)
+                (root / "bin/hol.state").write_bytes(b"tampered")
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "provenance mismatch",
+                ):
+                    subject.validate_hol_runtime_record(record, hol_root=root)
+        finally:
+            subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = original_tags
 
     def test_runtime_environment_rejects_loader_controls(self) -> None:
         for variable in ("LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH",
@@ -193,7 +262,7 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 "env HOLDIR=/build/hol4 /build/hol4/bin/Holmake -j1 cake.S"
             )
             log.write_text(
-                f'Command being timed: "{build_command}"\nExit status: 0\n',
+                successful_bootstrap_log(build_command),
                 encoding="utf-8",
             )
             pins = {
@@ -202,7 +271,7 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 "manifest_sha256": "m" * 64,
             }
             durable = {
-                "schema": 1,
+                "schema": 2,
                 "kind": "candle-linked-bootstrap-provenance-copy",
                 **pins,
                 "cakeml_root": "/build/cakeml",
@@ -213,6 +282,29 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                     **subject.file_record(log),
                 },
                 "inputs": inputs,
+                "hol_runtime": {
+                    "policy": "exact_hol_launchers_state_and_elf_closure_v1",
+                    "files": {
+                        name: {"bytes": 1, "sha256": "0" * 64}
+                        for name in subject.HOL_BOOTSTRAP_RUNTIME_FILES
+                    },
+                    "elf_closures": {
+                        name: {
+                            "policy":
+                                "ldd_roles_resolved_absolute_paths_and_content_v3",
+                            "dynamic_path_tags":
+                                subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS,
+                            "files": {
+                                "/lib/runtime.so": {
+                                    "bytes": 1, "sha256": "0" * 64,
+                                },
+                            },
+                            "roles": {"runtime.so": "/lib/runtime.so"},
+                            "virtual_objects": [],
+                        }
+                        for name in subject.HOL_BOOTSTRAP_ELF_FILES
+                    },
+                },
                 "source_bootstrap_record": {"bytes": 1, "sha256": "0" * 64},
             }
             record_path = build / subject.LINKED_BOOTSTRAP_RECORD
@@ -233,7 +325,8 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
 
     def test_candle_elf_policy_rejects_extra_object(self) -> None:
         closure = {
-            "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+            "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+            "dynamic_path_tags": {},
             "files": {
                 f"/runtime/{name}": {"bytes": 1, "sha256": "0" * 64}
                 for name in subject.CANDLE_ELF_OBJECTS
@@ -255,7 +348,8 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
 
     def test_candle_elf_policy_rejects_duplicate_basename_extra_object(self) -> None:
         closure = {
-            "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+            "policy": "ldd_roles_resolved_absolute_paths_and_content_v3",
+            "dynamic_path_tags": {},
             "files": {
                 f"/runtime/{name}": {"bytes": 1, "sha256": "0" * 64}
                 for name in subject.CANDLE_ELF_OBJECTS
