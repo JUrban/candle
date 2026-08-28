@@ -31,14 +31,14 @@ python3 candle/flyspeck_stratum_plan.py \
   --candle-root /project/worktrees/candle-integration-v13 \
   --expected-candle-base "$candle_head" \
   --flyspeck-root /project/worktrees/flyspeck-v13-source \
-  --overlay-root /project/flyspeck-candle-runs/v13-normalized-overlay-ee96d0327a611074 \
+  --overlay-root /project/flyspeck-candle-runs/v13-normalized-overlay-ac925270aa6a8605 \
   --generated-root /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6 \
   --write /path/to/new-empty-output-directory
 ```
 
 The command requires a clean Candle descendant of the exact integration base,
 an exact clean Flyspeck revision, and authenticates all 400
-selected source nodes, all 16 normalized outputs and their receipt, all 43
+selected source nodes, all 18 normalized outputs and their receipt, all 43
 generated inputs and the prepared-archive receipt, the manifest, and the exact
 full-build driver.  Descendant commits cannot silently change a selected input:
 the byte checks still use the base manifest's individual hashes.  Output
