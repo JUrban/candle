@@ -1025,7 +1025,12 @@ def run_attempt(
     require(candle_script.is_file() and os.access(candle_script, os.X_OK),
             f"Candle launcher is not executable: {candle_script}")
     candle_root = candle_script.parent
-    runtime_lock = (candle_root / "candle/build/runtime.lock").open("a")
+    runtime_lock_path = candle_root / "candle/build/runtime.lock"
+    runtime_lock = os.fdopen(os.open(
+        runtime_lock_path,
+        os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    ), "a")
     fcntl.flock(runtime_lock.fileno(), fcntl.LOCK_SH)
 
     # This must precede interpretation of the host plan: no runtime attempt is

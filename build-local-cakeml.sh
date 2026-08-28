@@ -29,6 +29,10 @@ mkdir -p "$build_dir"
     "$build_dir" >&2
   exit 1
 }
+[[ ! -L $build_dir/runtime.lock ]] || {
+  printf 'refusing symlink runtime lock: %s\n' "$build_dir/runtime.lock" >&2
+  exit 1
+}
 exec 9>>"$build_dir/runtime.lock"
 /usr/bin/flock -x 9
 managed_outputs=(

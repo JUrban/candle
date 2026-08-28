@@ -23,6 +23,10 @@ if [[ ! -d $script_dir/candle/build || -L $script_dir/candle/build ]]; then
   echo "Candle build directory must be an ordinary directory" >&2
   exit 1
 fi
+if [[ -L $script_dir/candle/build/runtime.lock ]]; then
+  echo "refusing symlink Candle runtime lock" >&2
+  exit 1
+fi
 exec 9>>"$script_dir/candle/build/runtime.lock"
 /usr/bin/flock -s 9
 /usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
