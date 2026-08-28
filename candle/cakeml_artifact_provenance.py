@@ -126,9 +126,11 @@ def record_bootstrap(
     require(log_path.is_file() and not log_path.is_symlink(),
             "bootstrap log must be an ordinary file")
     log = log_path.read_text(encoding="utf-8", errors="replace")
+    build_command = f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
     require("Exit status: 0" in log, "bootstrap log has no successful exit status")
-    require("Holmake: [" in log and "cake.S" in log,
-            "bootstrap log lacks the x64 cake.S target evidence")
+    require(f'Command being timed: "{build_command}"' in log,
+            "bootstrap log command does not match the pinned x64 cake.S build")
+    require("Holmake: [" in log, "bootstrap log lacks Holmake target evidence")
     bootstrap_dir = cakeml_root / BOOTSTRAP_RELATIVE
     inputs = {name: file_record(bootstrap_dir / name) for name in BOOTSTRAP_INPUTS}
     record = {
@@ -137,9 +139,7 @@ def record_bootstrap(
         **pins,
         "cakeml_root": str(cakeml_root),
         "hol4_root": str(hol_root),
-        "build_command": (
-            f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
-        ),
+        "build_command": build_command,
         "bootstrap_log": {
             "path": str(log_path),
             **file_record(log_path),
@@ -171,6 +171,9 @@ def validate_bootstrap_record(
     require(record.get("cakeml_root") == str(cakeml_root),
             "bootstrap CakeML root mismatch")
     hol_root = Path(record.get("hol4_root", "")).resolve()
+    build_command = f"env HOLDIR={hol_root} {hol_root}/bin/Holmake -j1 cake.S"
+    require(record.get("build_command") == build_command,
+            "bootstrap command record mismatch")
     validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
     validate_git(hol_root, pins["hol4_commit"], "HOL4")
     log_record = record.get("bootstrap_log")
@@ -183,6 +186,8 @@ def validate_bootstrap_record(
     )
     log = log_path.read_text(encoding="utf-8", errors="replace")
     require("Exit status: 0" in log, "bootstrap log no longer records success")
+    require(f'Command being timed: "{build_command}"' in log,
+            "bootstrap log no longer records the pinned command")
     inputs = record.get("inputs")
     require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
             "bootstrap input set mismatch")
