@@ -33,8 +33,9 @@ and have `s2_s3_evidence` set to false.
 For the integration input audited here, materialize with:
 
 ```sh
-candle_head=$(git rev-parse HEAD)
-python3 candle/flyspeck_stratum_plan.py \
+candle_head=$(GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null \
+  /usr/bin/git rev-parse HEAD)
+/usr/bin/python3 -I -S candle/flyspeck_stratum_plan.py \
   --candle-root /project/worktrees/candle-integration-v13 \
   --expected-candle-base "$candle_head" \
   --flyspeck-root /project/worktrees/flyspeck-v13-source \
@@ -49,7 +50,10 @@ selected source nodes, all 18 normalized outputs and their receipt, all 43
 generated inputs and the prepared-archive receipt, the manifest, and the exact
 full-build driver.  Descendant commits cannot silently change a selected input:
 the byte checks still use the base manifest's individual hashes.  Output
-creation is fail-closed and refuses an existing directory.
+creation is fail-closed and refuses an existing directory.  Repository checks
+call the fixed `/usr/bin/git` under a minimal locale/path, disable system/global
+Git configuration and replacement objects, override fsmonitor/untracked-index
+features, and disable terminal prompting.
 
 `plan.json` is path-independent and content-addressed by the SHA-256 recorded
 in the two companion files.  Each action binds its selected original source
@@ -63,6 +67,11 @@ S2 or S3.  A later verified run must separately authenticate the compiled
 Candle binary and runtime inputs, observe every required loader action through
 the boundary, terminate successfully, and collect the required semantic
 fingerprints.  This planner neither performs nor claims any of those gates.
+It remains trusted host Python orchestration rather than theorem evidence.  Its
+output binds the planner source digest, and the later direct runner recompiles
+that exact source from captured bytes before independently reconstructing the
+plan.  The standalone planning step does not itself archive a complete Python
+standard-library or native-extension closure.
 
 The lightweight static test is:
 

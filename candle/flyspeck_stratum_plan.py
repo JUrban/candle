@@ -15,6 +15,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +28,20 @@ GENERATED_CONTRACT_PATH = "candle/flyspeck_lp_archive_contract.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
 PREPARED_INPUT_CLASS = "lp-certificate-prepared"
 CHUNK_BYTES = 1024 * 1024
+GIT_ENVIRONMENT = {
+    "LC_ALL": "C",
+    "PATH": "/usr/bin:/bin",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_NO_REPLACE_OBJECTS": "1",
+    "GIT_OPTIONAL_LOCKS": "0",
+}
+GIT_OPTIONS = (
+    "-c", "core.fsmonitor=false",
+    "-c", "core.untrackedCache=false",
+    "-c", "core.preloadIndex=false",
+)
 
 
 class ContractError(ValueError):
@@ -78,8 +93,10 @@ def load_json(path: Path) -> dict[str, Any]:
 def git_output(root: Path, *arguments: str) -> str:
     try:
         return subprocess.run(
-            ["git", "-C", str(root), *arguments], check=True,
+            ["/usr/bin/git", *GIT_OPTIONS, "-C", str(root), *arguments],
+            check=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            env=GIT_ENVIRONMENT,
         ).stdout.strip()
     except subprocess.CalledProcessError as error:
         raise ContractError(f"git check failed for {root}: {error.stderr.strip()}") from error
@@ -101,8 +118,10 @@ def validate_clean_git_descendant(root: Path, expected_base: str, label: str) ->
     require(root.is_dir(), f"missing {label} root: {root}")
     observed_head = git_output(root, "rev-parse", "HEAD")
     result = subprocess.run(
-        ["git", "-C", str(root), "merge-base", "--is-ancestor", expected_base, observed_head],
+        ["/usr/bin/git", *GIT_OPTIONS, "-C", str(root), "merge-base",
+         "--is-ancestor", expected_base, observed_head],
         stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True,
+        env=GIT_ENVIRONMENT,
     )
     require(
         result.returncode == 0,
@@ -645,6 +664,8 @@ def materialize(
 
 
 def main() -> None:
+    require(sys.flags.isolated == 1 and sys.flags.no_site == 1,
+            "stratum planner requires /usr/bin/python3 -I -S")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candle-root", type=Path, required=True)
     parser.add_argument("--expected-candle-base", required=True)

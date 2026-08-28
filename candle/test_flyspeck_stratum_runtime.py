@@ -2,11 +2,17 @@
 
 import copy
 import hashlib
+import importlib
 import json
+import os
+import py_compile
+import signal
 import subprocess
 import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -265,6 +271,70 @@ class StratumRuntimeTests(unittest.TestCase):
                 root, "libc.so.6", b"runtime object",
             )
 
+            controller_sources = {}
+            for module in subject.local_python_modules():
+                label = Path(module.__file__).name
+                source_bytes = module.__candle_source_bytes__
+                source_path, source_record = write(
+                    candle, Path("candle") / label, source_bytes,
+                )
+                controller_sources[label] = {
+                    "source_path": str(source_path),
+                    "execution_binding":
+                        "compiled-from-captured-source-bytes",
+                    "source_bytes": source_bytes,
+                    **source_record,
+                }
+            runner_path, runner_record = write(
+                candle, "candle/flyspeck_stratum_runtime.py",
+                subject.RUNNER_SOURCE_BYTES,
+            )
+            controller_sources["flyspeck_stratum_runtime.py"] = {
+                "source_path": str(runner_path),
+                "execution_binding":
+                    "startup-captured-after-initial-compilation",
+                "source_bytes": subject.RUNNER_SOURCE_BYTES,
+                **runner_record,
+            }
+            controller_execution = {
+                "source_root": str(candle / "candle"),
+                "direct_script_startup": {
+                    "module_name": "__main__",
+                    "spec_is_none": True,
+                    "cached_is_none": True,
+                    "argv0": str(runner_path),
+                    "source_path": str(runner_path),
+                },
+                "commit_binding": {
+                    "candle_commit": "f" * 40,
+                    "sources": {
+                        label: {
+                            "repository_path": f"candle/{label}",
+                            "index_tag": "H",
+                            **{field: record[field]
+                               for field in ("bytes", "sha256", "md5")},
+                        }
+                        for label, record in controller_sources.items()
+                    },
+                },
+                "python_startup_flags": subject.EXPECTED_PYTHON_STARTUP_FLAGS,
+                "python_startup_options":
+                    subject.EXPECTED_PYTHON_STARTUP_OPTIONS,
+                "initial_top_level_compilation_in_host_trust_boundary": True,
+                "local_sources": controller_sources,
+                "python_runtime": subject.validate_python_runtime(),
+                "host_tools": subject.validate_controller_tools(),
+                "git_environment": {
+                    "LC_ALL": "C",
+                    "PATH": "/usr/bin:/bin",
+                    "GIT_CONFIG_NOSYSTEM": "1",
+                    "GIT_CONFIG_GLOBAL": "/dev/null",
+                    "GIT_TERMINAL_PROMPT": "0",
+                    "GIT_NO_REPLACE_OBJECTS": "1",
+                    "GIT_OPTIONAL_LOCKS": "0",
+                },
+            }
+
             source, source_record = write(flyspeck, "source.ml", b"source")
             normalized, normalized_record = write(overlay, "source.ml", b"normalized")
             certificate, certificate_record = write(generated, "cert.out", b"certificate")
@@ -304,7 +374,7 @@ class StratumRuntimeTests(unittest.TestCase):
                             str(runtime_object): runtime_object_record,
                         },
                     },
-                },
+                }, controller_execution,
             )
             subject.validate_runtime_snapshot(snapshot, output)
             self.assertEqual(
@@ -339,10 +409,33 @@ class StratumRuntimeTests(unittest.TestCase):
                 and item["classes"] == ["linked-runtime"]
                 for item in snapshot["files"]
             ))
+            retained_runner = next(
+                item for item in snapshot["controller_execution"]["local_sources"]
+                if item["label"] == "flyspeck_stratum_runtime.py"
+            )
+            self.assertEqual(
+                (output / "snapshot" / retained_runner["path"]).read_bytes(),
+                subject.RUNNER_SOURCE_BYTES,
+            )
+            self.assertTrue(any(
+                item["classes"] == ["controller-python-executable"]
+                for item in snapshot["files"]
+            ))
+            self.assertEqual(
+                {item["label"] for item in
+                 snapshot["controller_execution"]["host_tools"]},
+                set(subject.EXPECTED_CONTROLLER_TOOLS),
+            )
 
             malformed = copy.deepcopy(snapshot)
-            malformed["schema"] = 2
+            malformed["schema"] = 1
             with self.assertRaisesRegex(subject.ContractError, "snapshot schema"):
+                subject.validate_runtime_snapshot(malformed, output)
+            malformed = copy.deepcopy(snapshot)
+            malformed["controller_execution"]["python_runtime"]["version"] = "other"
+            with self.assertRaisesRegex(
+                subject.ContractError, "Python execution identity mismatch",
+            ):
                 subject.validate_runtime_snapshot(malformed, output)
 
             snapshot_root = output / "snapshot"
@@ -362,11 +455,130 @@ class StratumRuntimeTests(unittest.TestCase):
             extra.unlink()
             snapshot_root.chmod(0o555)
 
+            retained_runner_path = snapshot_root / retained_runner["path"]
+            retained_runner_path.chmod(0o644)
+            retained_runner_path.write_bytes(b"tampered controller")
+            with self.assertRaisesRegex(subject.ContractError, "mismatch"):
+                subject.validate_runtime_snapshot(snapshot, output)
+            retained_runner_path.write_bytes(subject.RUNNER_SOURCE_BYTES)
+            retained_runner_path.chmod(0o444)
+
             snapshot_source = output / "snapshot/flyspeck/source.ml"
             snapshot_source.chmod(0o644)
             snapshot_source.write_bytes(b"tampered")
             with self.assertRaisesRegex(subject.ContractError, "mismatch"):
                 subject.validate_runtime_snapshot(snapshot, output)
+
+    def test_runner_cli_requires_isolated_python(self) -> None:
+        runner = Path(subject.__file__).resolve()
+        ordinary = subprocess.run(
+            ["/usr/bin/python3", str(runner), "--help"],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        )
+        self.assertNotEqual(ordinary.returncode, 0)
+        self.assertIn("Python startup flags mismatch", ordinary.stdout)
+        for flags in (
+            ("-I",),
+            ("-S",),
+            ("-I", "-S", "-O"),
+            ("-I", "-S", "-X", "tracemalloc"),
+            ("-I", "-S", "-W", "error"),
+            ("-I", "-S", "-u"),
+        ):
+            rejected = subprocess.run(
+                ["/usr/bin/python3", *flags, str(runner), "--help"],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            )
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertRegex(
+                rejected.stdout, r"Python startup (?:flags|options) mismatch",
+            )
+        isolated = subprocess.run(
+            ["/usr/bin/python3", "-I", "-S", str(runner), "--help"],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        )
+        self.assertEqual(isolated.returncode, 0, isolated.stdout)
+
+        imported = subprocess.run(
+            [
+                "/usr/bin/python3", "-I", "-S", "-c",
+                (
+                    "import importlib.util,pathlib;"
+                    f"p=pathlib.Path({str(runner)!r});"
+                    "s=importlib.util.spec_from_file_location('imported_runner',p);"
+                    "m=importlib.util.module_from_spec(s);s.loader.exec_module(m);"
+                    "m.main()"
+                ),
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+        )
+        self.assertNotEqual(imported.returncode, 0)
+        self.assertIn("execute directly from its .py source", imported.stdout)
+
+    def test_local_modules_execute_from_captured_source_bytes(self) -> None:
+        for module in subject.local_python_modules():
+            source = module.__candle_source_bytes__
+            self.assertEqual(
+                hashlib.sha256(source).hexdigest(),
+                module.__candle_source_sha256__,
+            )
+            self.assertEqual(Path(module.__file__).read_bytes(), source)
+
+    def test_all_controller_git_calls_share_the_fail_closed_policy(self) -> None:
+        expected_environment = subject.flyspeck_stratum_plan.GIT_ENVIRONMENT
+        self.assertEqual(
+            subject.cakeml_artifact_provenance.git_environment(),
+            expected_environment,
+        )
+        command = subject.cakeml_artifact_provenance.git_command(
+            Path("/repository"), "status",
+        )
+        self.assertEqual(
+            tuple(command[1:7]), subject.flyspeck_stratum_plan.GIT_OPTIONS,
+        )
+
+    def test_exact_source_loader_ignores_adjacent_bytecode(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "helper.py"
+            cache = root / "__pycache__/helper.cpython-312.pyc"
+            cache.parent.mkdir()
+            source.write_text("VALUE = 'cached!'\n", encoding="utf-8")
+            source_stat = source.stat()
+            py_compile.compile(str(source), cfile=str(cache), doraise=True)
+            source.write_text("VALUE = 'source!'\n", encoding="utf-8")
+            os.utime(
+                source,
+                ns=(source_stat.st_atime_ns, source_stat.st_mtime_ns),
+            )
+            sys.path.insert(0, str(root))
+            try:
+                ordinary = importlib.import_module("helper")
+                self.assertEqual(ordinary.VALUE, "cached!")
+            finally:
+                sys.modules.pop("helper", None)
+                sys.path.pop(0)
+            name = "_candle_stratum_test_exact_source"
+            try:
+                module = subject._load_local_source(name, source.resolve())
+                self.assertEqual(module.VALUE, "source!")
+                self.assertEqual(
+                    module.__candle_source_bytes__, source.read_bytes(),
+                )
+            finally:
+                sys.modules.pop(name, None)
+
+    def test_exact_source_loader_rejects_preloaded_collision(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "helper.py"
+            source.write_text("VALUE = 1\n", encoding="utf-8")
+            name = "_candle_stratum_test_preloaded"
+            sys.modules[name] = types.ModuleType(name)
+            try:
+                with self.assertRaisesRegex(RuntimeError, "untrusted preloaded"):
+                    subject._load_local_source(name, source.resolve())
+            finally:
+                sys.modules.pop(name, None)
 
     def test_snapshot_copy_rejects_bytes_not_bound_by_expected_digest(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -377,6 +589,120 @@ class StratumRuntimeTests(unittest.TestCase):
             expected["sha256"] = "0" * 64
             with self.assertRaisesRegex(subject.ContractError, "snapshot sha256 mismatch"):
                 subject.snapshot_copy(source, root / "snapshot", "source", expected)
+
+    def test_pre_attempt_failure_removes_only_new_incomplete_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "new-attempt"
+
+            def fail_preflight(*arguments):
+                ownership = arguments[-1]
+                snapshot = output / "snapshot/readonly"
+                snapshot.mkdir(parents=True)
+                (snapshot / "partial").write_bytes(b"partial")
+                snapshot.chmod(0o555)
+                opened = output.stat()
+                marker = output / ".candle-preflight-owner"
+                marker.write_text(ownership["nonce"] + "\n", encoding="ascii")
+                ownership.update({
+                    "created": True,
+                    "device": opened.st_dev,
+                    "inode": opened.st_ino,
+                    "marker_path": marker,
+                    "marker_ready": True,
+                })
+                raise subject.ContractError("injected preflight failure")
+
+            with mock.patch.object(
+                subject, "_run_attempt_impl", side_effect=fail_preflight,
+            ):
+                with self.assertRaisesRegex(
+                    subject.ContractError, "injected preflight failure",
+                ):
+                    subject.run_attempt(
+                        Path("candle.sh"), Path("plan"), "boundary", output,
+                        1, 1, 1, 1,
+                    )
+            self.assertFalse(output.exists())
+
+    def test_lost_output_race_never_deletes_competing_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "competing-attempt"
+
+            def lose_race(*_arguments):
+                output.mkdir()
+                (output / "competitor").write_bytes(b"owned elsewhere")
+                raise subject.ContractError("output already exists")
+
+            with mock.patch.object(
+                subject, "_run_attempt_impl", side_effect=lose_race,
+            ):
+                with self.assertRaisesRegex(
+                    subject.ContractError, "output already exists",
+                ):
+                    subject.run_attempt(
+                        Path("candle.sh"), Path("plan"), "boundary", output,
+                        1, 1, 1, 1,
+                    )
+            self.assertEqual(
+                (output / "competitor").read_bytes(), b"owned elsewhere",
+            )
+
+    def test_owned_empty_directory_is_cleaned_if_marker_creation_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "attempt"
+
+            def fail_marker(*arguments):
+                ownership = arguments[-1]
+                output.mkdir()
+                opened = output.stat()
+                ownership.update({
+                    "created": True,
+                    "device": opened.st_dev,
+                    "inode": opened.st_ino,
+                    "marker_ready": False,
+                })
+                raise OSError("injected marker failure")
+
+            with mock.patch.object(
+                subject, "_run_attempt_impl", side_effect=fail_marker,
+            ):
+                with self.assertRaisesRegex(OSError, "injected marker failure"):
+                    subject.run_attempt(
+                        Path("candle.sh"), Path("plan"), "boundary", output,
+                        1, 1, 1, 1,
+                    )
+            self.assertFalse(output.exists())
+
+    def test_outer_wrapper_restores_handlers_after_internal_escape(self) -> None:
+        original_term = signal.getsignal(signal.SIGTERM)
+        original_int = signal.getsignal(signal.SIGINT)
+        original_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+
+        def escape(*_arguments):
+            signal.signal(signal.SIGTERM, lambda *_ignored: None)
+            signal.signal(signal.SIGINT, lambda *_ignored: None)
+            signal.pthread_sigmask(
+                signal.SIG_BLOCK, {signal.SIGTERM, signal.SIGINT},
+            )
+            raise RuntimeError("injected internal escape")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "attempt"
+            with mock.patch.object(
+                subject, "_run_attempt_impl", side_effect=escape,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError, "injected internal escape",
+                ):
+                    subject.run_attempt(
+                        Path("candle.sh"), Path("plan"), "boundary", output,
+                        1, 1, 1, 1,
+                    )
+        self.assertIs(signal.getsignal(signal.SIGTERM), original_term)
+        self.assertIs(signal.getsignal(signal.SIGINT), original_int)
+        self.assertEqual(
+            signal.pthread_sigmask(signal.SIG_BLOCK, set()), original_mask,
+        )
 
     def test_child_resource_limiter_installs_all_three_limits(self) -> None:
         cpu_seconds = 17

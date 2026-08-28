@@ -23,12 +23,55 @@ import secrets
 import shutil
 import signal
 import subprocess
+import sys
+import types
 from pathlib import Path
 from typing import Any
 
-import cakeml_artifact_provenance
-import flyspeck_stratum_plan
-import runtime_lock
+
+HERE = Path(__file__).resolve().parent
+RUNNER_SOURCE_BYTES = Path(__file__).read_bytes()
+
+
+def _load_local_source(name: str, path: Path):
+    """Execute exact local source bytes without consulting bytecode caches."""
+    source = path.read_bytes()
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        if (getattr(existing, "__candle_source_sha256__", None) !=
+                source_sha256 or
+                Path(getattr(existing, "__file__", "")).resolve() != path):
+            raise RuntimeError(f"untrusted preloaded local module: {name}")
+        return existing
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
+    sys.modules[name] = module
+    try:
+        exec(compile(source, str(path), "exec", dont_inherit=True),
+             module.__dict__)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    return module
+
+
+# Private module names prevent an unrelated earlier import in a test harness or
+# embedding process from satisfying the exact-source execution contract.
+cakeml_artifact_provenance = _load_local_source(
+    "_candle_stratum_cakeml_artifact_provenance",
+    HERE / "cakeml_artifact_provenance.py",
+)
+flyspeck_stratum_plan = _load_local_source(
+    "_candle_stratum_flyspeck_stratum_plan",
+    HERE / "flyspeck_stratum_plan.py",
+)
+runtime_lock = _load_local_source(
+    "_candle_stratum_runtime_lock", HERE / "runtime_lock.py",
+)
 
 
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
@@ -48,6 +91,118 @@ SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
 FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
 FINGERPRINT_SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_FINGERPRINTS_OK"
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
+EXPECTED_PYTHON_RUNTIME = {
+    "execution_binding": "/proc/self/exe",
+    "version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
+    "executable": {
+        "path": "/usr/bin/python3.12",
+        "bytes": 8020928,
+        "sha256":
+            "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118",
+    },
+    "elf_closure": {
+        "policy": "ldd_roles_resolved_absolute_paths_and_content_v2",
+        "files": {
+            "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2": {
+                "bytes": 236616,
+                "sha256":
+                    "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+            },
+            "/lib/x86_64-linux-gnu/libc.so.6": {
+                "bytes": 2125328,
+                "sha256":
+                    "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161",
+            },
+            "/lib/x86_64-linux-gnu/libexpat.so.1.9.1": {
+                "bytes": 174336,
+                "sha256":
+                    "c42ff317838b4b4639e2ea801905f0317177c6df7e31b2f0d0240e3c3ac0cfde",
+            },
+            "/lib/x86_64-linux-gnu/libm.so.6": {
+                "bytes": 952616,
+                "sha256":
+                    "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91",
+            },
+            "/lib/x86_64-linux-gnu/libz.so.1.3": {
+                "bytes": 113000,
+                "sha256":
+                    "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286",
+            },
+        },
+        "roles": {
+            "ld-linux-x86-64.so.2":
+                "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "libc.so.6": "/lib/x86_64-linux-gnu/libc.so.6",
+            "libexpat.so.1": "/lib/x86_64-linux-gnu/libexpat.so.1.9.1",
+            "libm.so.6": "/lib/x86_64-linux-gnu/libm.so.6",
+            "libz.so.1": "/lib/x86_64-linux-gnu/libz.so.1.3",
+        },
+        "virtual_objects": ["linux-vdso.so.1"],
+    },
+}
+EXPECTED_PYTHON_STARTUP_FLAGS = {
+    "debug": 0,
+    "inspect": 0,
+    "interactive": 0,
+    "optimize": 0,
+    "dont_write_bytecode": 0,
+    "no_user_site": 1,
+    "no_site": 1,
+    "ignore_environment": 1,
+    "verbose": 0,
+    "bytes_warning": 0,
+    "quiet": 0,
+    "hash_randomization": 1,
+    "isolated": 1,
+    "dev_mode": False,
+    "utf8_mode": 0,
+    "warn_default_encoding": 0,
+    "safe_path": True,
+    "int_max_str_digits": 4300,
+}
+EXPECTED_PYTHON_STARTUP_OPTIONS = {
+    "xoptions": {},
+    "warnoptions": [],
+    "stdio_write_through": {
+        "stdin": False,
+        "stdout": False,
+        "stderr": False,
+    },
+}
+EXPECTED_CONTROLLER_TOOLS = {
+    "git": {
+        "invocation_path": "/usr/bin/git",
+        "resolved_path": "/usr/bin/git",
+        "symlink_target": None,
+        "bytes": 4066232,
+        "sha256":
+            "2a8c18fbf43da9f692d75474c72bea9dfd796c260b0f3dfe456376abc3bbd668",
+    },
+    "ldd": {
+        "invocation_path": "/usr/bin/ldd",
+        "resolved_path": "/usr/bin/ldd",
+        "symlink_target": None,
+        "bytes": 5382,
+        "sha256":
+            "4f1d37e25f27535e3f02a5b7da63e1ce18d4982445db2c25fc8f985a3d395cc3",
+    },
+    "patch": {
+        "invocation_path": "/usr/bin/patch",
+        "resolved_path": "/usr/bin/patch",
+        "symlink_target": None,
+        "bytes": 186896,
+        "sha256":
+            "a7ae8b838a75711c06f86a2a8293dcad85a20b564670a120717e704c436e6f3a",
+    },
+    "readelf": {
+        "invocation_path": "/usr/bin/readelf",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-readelf",
+        "symlink_target": "x86_64-linux-gnu-readelf",
+        "bytes": 789280,
+        "sha256":
+            "871be389739ecf9924b052c2fde4d2a2068a54e882201b9c34897337a5a0a130",
+    },
+}
 
 
 class ContractError(ValueError):
@@ -89,6 +244,191 @@ def hash_file(path: Path) -> dict[str, Any]:
     return {"bytes": size, "sha256": sha256.hexdigest(), "md5": md5.hexdigest()}
 
 
+def data_record(value: bytes) -> dict[str, Any]:
+    return {
+        "bytes": len(value),
+        "sha256": hashlib.sha256(value).hexdigest(),
+        "md5": hashlib.md5(value, usedforsecurity=False).hexdigest(),
+    }
+
+
+def local_python_modules() -> tuple[types.ModuleType, ...]:
+    return (
+        cakeml_artifact_provenance,
+        flyspeck_stratum_plan,
+        runtime_lock,
+    )
+
+
+def validate_python_runtime() -> dict[str, Any]:
+    """Bind the host controller to the pinned executing Python image."""
+    process_executable = Path("/proc/self/exe")
+    require(process_executable.is_symlink(),
+            "cannot bind the executing Python image through /proc/self/exe")
+    executable = process_executable.resolve(strict=True)
+    require(Path(sys.executable).resolve(strict=True) == executable,
+            "Python executable metadata differs from the running image")
+    executable_record = hash_file(executable)
+    observed = {
+        "execution_binding": "/proc/self/exe",
+        "version": sys.version,
+        "executable": {
+            "path": str(executable),
+            "bytes": executable_record["bytes"],
+            "sha256": executable_record["sha256"],
+        },
+        "elf_closure":
+            cakeml_artifact_provenance.elf_dynamic_closure(executable),
+    }
+    require(observed == EXPECTED_PYTHON_RUNTIME,
+            "stratum-controller Python runtime identity mismatch")
+    return observed
+
+
+def python_startup_flags() -> dict[str, Any]:
+    return {
+        name: getattr(sys.flags, name)
+        for name in EXPECTED_PYTHON_STARTUP_FLAGS
+    }
+
+
+def python_startup_options() -> dict[str, Any]:
+    return {
+        "xoptions": dict(sys._xoptions),
+        "warnoptions": list(sys.warnoptions),
+        "stdio_write_through": {
+            "stdin": sys.stdin.write_through,
+            "stdout": sys.stdout.write_through,
+            "stderr": sys.stderr.write_through,
+        },
+    }
+
+
+def require_direct_script_startup() -> dict[str, Any]:
+    source = Path(__file__).resolve()
+    argv0 = Path(sys.argv[0]).resolve()
+    require(source.name == "flyspeck_stratum_runtime.py" and
+            RUNNER_SOURCE_BYTES.startswith(b"#!/usr/bin/env python3\n"),
+            "stratum runner is not a direct Python source file")
+    try:
+        compile(RUNNER_SOURCE_BYTES, str(source), "exec", dont_inherit=True)
+    except (SyntaxError, UnicodeError, ValueError) as error:
+        raise ContractError(
+            "stratum runner startup bytes are not Python source"
+        ) from error
+    record = {
+        "module_name": __name__,
+        "spec_is_none": __spec__ is None,
+        "cached_is_none": globals().get("__cached__") is None,
+        "argv0": str(argv0),
+        "source_path": str(source),
+    }
+    require(record == {
+        "module_name": "__main__",
+        "spec_is_none": True,
+        "cached_is_none": True,
+        "argv0": str(source),
+        "source_path": str(source),
+    }, "stratum runner must execute directly from its .py source")
+    require(python_startup_flags() == EXPECTED_PYTHON_STARTUP_FLAGS,
+            "stratum runner Python startup flags mismatch")
+    require(python_startup_options() == EXPECTED_PYTHON_STARTUP_OPTIONS,
+            "stratum runner Python startup options mismatch")
+    return record
+
+
+def validate_controller_tools() -> dict[str, dict[str, Any]]:
+    """Bind the four fixed external programs used by controller validation."""
+    observed = {}
+    for label, expected in sorted(EXPECTED_CONTROLLER_TOOLS.items()):
+        invocation = Path(expected["invocation_path"])
+        require(invocation.is_file(),
+                f"missing controller host tool: {invocation}")
+        if expected["symlink_target"] is None:
+            require(not invocation.is_symlink(),
+                    f"unexpected controller host-tool symlink: {invocation}")
+            symlink_target = None
+        else:
+            require(invocation.is_symlink(),
+                    f"missing controller host-tool symlink: {invocation}")
+            symlink_target = os.readlink(invocation)
+        resolved = invocation.resolve(strict=True)
+        record = hash_file(resolved)
+        candidate = {
+            "invocation_path": str(invocation),
+            "resolved_path": str(resolved),
+            "symlink_target": symlink_target,
+            "bytes": record["bytes"],
+            "sha256": record["sha256"],
+        }
+        require(candidate == expected,
+                f"controller host-tool identity mismatch: {label}")
+        observed[label] = {**candidate, "md5": record["md5"]}
+    return observed
+
+
+def collect_controller_execution(candle_root: Path) -> dict[str, Any]:
+    """Capture exact executed local sources and the pinned Python runtime."""
+    direct_startup = require_direct_script_startup()
+    expected_directory = candle_root / "candle"
+    sources: dict[str, dict[str, Any]] = {}
+    for module in local_python_modules():
+        path = Path(module.__file__).resolve()
+        label = path.name
+        source = module.__candle_source_bytes__
+        record = data_record(source)
+        require(path == expected_directory / label,
+                f"local Python source is outside the exact Candle root: {label}")
+        require(module.__candle_source_sha256__ == record["sha256"],
+                f"executed local Python source digest mismatch: {label}")
+        require(hash_file(path) == record,
+                f"executed local Python source changed after compilation: {label}")
+        sources[label] = {
+            "source_path": str(path),
+            "execution_binding": "compiled-from-captured-source-bytes",
+            "source_bytes": source,
+            **record,
+        }
+    runner = Path(__file__).resolve()
+    runner_record = data_record(RUNNER_SOURCE_BYTES)
+    require(runner == expected_directory / runner.name,
+            "top-level runner source is outside the exact Candle root")
+    require(hash_file(runner) == runner_record,
+            "top-level runner source changed after startup capture")
+    sources[runner.name] = {
+        "source_path": str(runner),
+        "execution_binding": "startup-captured-after-initial-compilation",
+        "source_bytes": RUNNER_SOURCE_BYTES,
+        **runner_record,
+    }
+    require(set(sources) == {
+        "cakeml_artifact_provenance.py",
+        "flyspeck_stratum_plan.py",
+        "flyspeck_stratum_runtime.py",
+        "runtime_lock.py",
+    }, "unexpected local Python controller source set")
+    return {
+        "source_root": str(expected_directory),
+        "direct_script_startup": direct_startup,
+        "python_startup_flags": python_startup_flags(),
+        "python_startup_options": python_startup_options(),
+        "initial_top_level_compilation_in_host_trust_boundary": True,
+        "local_sources": sources,
+        "python_runtime": validate_python_runtime(),
+        "host_tools": validate_controller_tools(),
+        "git_environment": cakeml_artifact_provenance.git_environment(),
+    }
+
+
+def validate_controller_execution(
+    expected: dict[str, Any], candle_root: Path, candle_commit: str,
+) -> None:
+    observed = collect_controller_execution(candle_root)
+    bind_controller_sources_to_commit(observed, candle_root, candle_commit)
+    require(observed == expected,
+            "stratum-controller execution identity changed during attempt")
+
+
 def load_object(path: Path, label: str) -> dict[str, Any]:
     require(path.is_file() and not path.is_symlink(), f"missing ordinary {label}: {path}")
     try:
@@ -102,12 +442,52 @@ def load_object(path: Path, label: str) -> dict[str, Any]:
 def git_output(root: Path, *arguments: str) -> str:
     try:
         return subprocess.run(
-            ["/usr/bin/git", "-C", str(root), *arguments], check=True,
+            cakeml_artifact_provenance.git_command(root, *arguments), check=True,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-            env=cakeml_artifact_provenance.runtime_environment(),
+            env=cakeml_artifact_provenance.git_environment(),
         ).stdout.strip()
     except subprocess.CalledProcessError as error:
         raise ContractError(f"git check failed for {root}: {error.stderr.strip()}") from error
+
+
+def git_bytes(root: Path, *arguments: str) -> bytes:
+    try:
+        return subprocess.run(
+            cakeml_artifact_provenance.git_command(root, *arguments), check=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env=cakeml_artifact_provenance.git_environment(),
+        ).stdout
+    except subprocess.CalledProcessError as error:
+        raise ContractError(
+            f"git byte check failed for {root}: " +
+            error.stderr.decode(errors="replace").strip()
+        ) from error
+
+
+def bind_controller_sources_to_commit(
+    controller: dict[str, Any], candle_root: Path, commit: str,
+) -> dict[str, Any]:
+    """Require captured controller bytes to be exact blobs of the linked commit."""
+    records = {}
+    for label, source in sorted(controller["local_sources"].items()):
+        relative = f"candle/{label}"
+        index = git_output(candle_root, "ls-files", "-v", "--", relative)
+        require(index == f"H {relative}",
+                f"controller source has special or missing index flags: {relative}")
+        blob = git_bytes(candle_root, "cat-file", "blob", f"{commit}:{relative}")
+        require(blob == source["source_bytes"],
+                f"executed controller source differs from linked commit: {relative}")
+        records[label] = {
+            "repository_path": relative,
+            "index_tag": "H",
+            **data_record(blob),
+        }
+    binding = {
+        "candle_commit": commit,
+        "sources": records,
+    }
+    controller["commit_binding"] = binding
+    return binding
 
 
 def validate_clean_exact(root: Path, head: str, label: str) -> None:
@@ -697,11 +1077,34 @@ def snapshot_copy(
     return observed
 
 
+def snapshot_bytes(
+    source: bytes,
+    root: Path,
+    relative_value: str,
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    """Archive immutable bytes that were already used for Python compilation."""
+    relative = safe_relative(relative_value, "snapshot")
+    destination = root / relative
+    require(not destination.exists() and not destination.is_symlink(),
+            f"snapshot byte destination collision: {destination}")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(source)
+    destination.chmod(0o444)
+    observed = {"path": relative.as_posix(), **hash_file(destination)}
+    for field in ("bytes", "sha256", "md5"):
+        if field in expected:
+            require(observed[field] == expected[field],
+                    f"snapshot byte {field} mismatch: {destination}")
+    return observed
+
+
 def create_runtime_snapshot(
     output_root: Path,
     candle_root: Path,
     prepared: dict[str, Any],
     linked: dict[str, Any],
+    controller_execution: dict[str, Any],
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Copy every runtime-consumed byte into one disjoint read-only tree."""
     snapshot_root = output_root / "snapshot"
@@ -709,6 +1112,7 @@ def create_runtime_snapshot(
     flyspeck_snapshot = snapshot_root / "flyspeck"
     overlay_snapshot = snapshot_root / "overlay"
     generated_snapshot = snapshot_root / "generated"
+    controller_snapshot = snapshot_root / "controller"
     records_by_path: dict[str, dict[str, Any]] = {}
 
     def add_record(prefix: str, classification: str,
@@ -860,6 +1264,95 @@ def create_runtime_snapshot(
     )
     add_record("plan", "authenticated-prefix", prefix_copy_record)
 
+    controller_source_records = []
+    for label, source in sorted(controller_execution["local_sources"].items()):
+        record = snapshot_bytes(
+            source["source_bytes"], controller_snapshot,
+            f"python-source/{label}", source,
+        )
+        add_record("controller", "controller-python-source", record)
+        controller_source_records.append({
+            "label": label,
+            "source_path": source["source_path"],
+            "execution_binding": source["execution_binding"],
+            "path": f"controller/{record['path']}",
+            **{field: record[field] for field in ("bytes", "sha256", "md5")},
+        })
+
+    python_runtime = controller_execution["python_runtime"]
+    python_executable = python_runtime["executable"]
+    python_executable_record = snapshot_copy(
+        Path(python_executable["path"]), controller_snapshot,
+        f"python-runtime/{Path(python_executable['path']).name}",
+        python_executable,
+    )
+    add_record("controller", "controller-python-executable",
+               python_executable_record)
+    python_elf_records = []
+    for path_string, expected in sorted(
+        python_runtime["elf_closure"]["files"].items()
+    ):
+        source = Path(path_string)
+        record = snapshot_copy(
+            source, controller_snapshot / "python-runtime-elf",
+            f"{expected['sha256'][:16]}-{source.name}", expected,
+        )
+        add_record("controller/python-runtime-elf",
+                   "controller-python-runtime-elf", record)
+        python_elf_records.append({
+            "source_path": path_string,
+            "path": f"controller/python-runtime-elf/{record['path']}",
+            **{field: record[field] for field in ("bytes", "sha256", "md5")},
+        })
+
+    host_tool_records = []
+    for label, tool in sorted(controller_execution["host_tools"].items()):
+        record = snapshot_copy(
+            Path(tool["resolved_path"]), controller_snapshot,
+            f"host-tools/{label}-{Path(tool['resolved_path']).name}", tool,
+        )
+        add_record("controller", "controller-host-tool", record)
+        host_tool_records.append({
+            "label": label,
+            "invocation_path": tool["invocation_path"],
+            "resolved_path": tool["resolved_path"],
+            "symlink_target": tool["symlink_target"],
+            "path": f"controller/{record['path']}",
+            **{field: record[field] for field in ("bytes", "sha256", "md5")},
+        })
+
+    controller_record = {
+        "source_root": controller_execution["source_root"],
+        "direct_script_startup": controller_execution["direct_script_startup"],
+        "commit_binding": controller_execution["commit_binding"],
+        "python_startup_flags": controller_execution["python_startup_flags"],
+        "python_startup_options":
+            controller_execution["python_startup_options"],
+        "initial_top_level_compilation_in_host_trust_boundary":
+            controller_execution[
+                "initial_top_level_compilation_in_host_trust_boundary"
+            ],
+        "local_sources": controller_source_records,
+        "python_runtime": {
+            "execution_binding": python_runtime["execution_binding"],
+            "version": python_runtime["version"],
+            "executable": {
+                "source_path": python_executable["path"],
+                "path": f"controller/{python_executable_record['path']}",
+                **{field: python_executable_record[field]
+                   for field in ("bytes", "sha256", "md5")},
+            },
+            "elf_policy": python_runtime["elf_closure"]["policy"],
+            "elf_roles": python_runtime["elf_closure"]["roles"],
+            "virtual_elf_objects":
+                python_runtime["elf_closure"]["virtual_objects"],
+            "elf_objects": python_elf_records,
+        },
+        "host_tools": host_tool_records,
+        "git_environment": controller_execution["git_environment"],
+        "broader_python_standard_library_in_host_trust_boundary": True,
+    }
+
     for directory in sorted(
         (path for path in snapshot_root.rglob("*") if path.is_dir()),
         key=lambda path: len(path.parts), reverse=True,
@@ -885,7 +1378,7 @@ def create_runtime_snapshot(
     }
     records = list(records_by_path.values())
     snapshot_record = {
-        "schema": 1,
+        "schema": 2,
         "kind": "candle-flyspeck-attempt-local-runtime-snapshot",
         "file_count": len(records),
         "ordered_file_sha256": canonical_sha256(records),
@@ -895,7 +1388,9 @@ def create_runtime_snapshot(
             "flyspeck": str(flyspeck_snapshot),
             "normalization_overlay": str(overlay_snapshot),
             "generated_inputs": str(generated_snapshot),
+            "controller": str(controller_snapshot),
         },
+        "controller_execution": controller_record,
         "files_read_only": True,
         "directories_read_only": True,
     }
@@ -906,9 +1401,9 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
     snapshot_root = output_root / "snapshot"
     require(set(snapshot) == {
         "schema", "kind", "file_count", "ordered_file_sha256", "files", "roots",
-        "files_read_only", "directories_read_only",
+        "controller_execution", "files_read_only", "directories_read_only",
     }, "malformed runtime snapshot record")
-    require(snapshot.get("schema") == 1,
+    require(snapshot.get("schema") == 2,
             "unsupported runtime snapshot schema")
     require(snapshot.get("kind") ==
             "candle-flyspeck-attempt-local-runtime-snapshot",
@@ -921,6 +1416,7 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
         "flyspeck": str(snapshot_root / "flyspeck"),
         "normalization_overlay": str(snapshot_root / "overlay"),
         "generated_inputs": str(snapshot_root / "generated"),
+        "controller": str(snapshot_root / "controller"),
     }, "runtime snapshot root declaration mismatch")
     records = snapshot.get("files")
     require(isinstance(records, list), "missing snapshot file records")
@@ -929,12 +1425,14 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
             "snapshot ordered-file digest mismatch")
     expected_files: set[str] = set()
     expected_directories = {"."}
+    records_by_path: dict[str, dict[str, Any]] = {}
     for record in records:
         relative = safe_relative(record.get("path", ""), "snapshot file record")
         relative_string = relative.as_posix()
         require(relative_string not in expected_files,
                 f"duplicate runtime snapshot record: {relative_string}")
         expected_files.add(relative_string)
+        records_by_path[relative_string] = record
         expected_directories.update(
             parent.as_posix() for parent in relative.parents
             if parent != Path(".")
@@ -944,6 +1442,182 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
                       f"runtime snapshot {relative_string}")
         require(path.stat().st_mode & 0o222 == 0,
                 f"runtime snapshot file is writable: {relative_string}")
+
+    controller = snapshot.get("controller_execution")
+    require(isinstance(controller, dict) and set(controller) == {
+        "source_root",
+        "direct_script_startup",
+        "commit_binding",
+        "python_startup_flags",
+        "python_startup_options",
+        "initial_top_level_compilation_in_host_trust_boundary",
+        "local_sources",
+        "python_runtime",
+        "host_tools",
+        "git_environment",
+        "broader_python_standard_library_in_host_trust_boundary",
+    }, "malformed controller execution record")
+    require(controller["python_startup_flags"] ==
+            EXPECTED_PYTHON_STARTUP_FLAGS,
+            "controller Python startup isolation mismatch")
+    require(controller["python_startup_options"] ==
+            EXPECTED_PYTHON_STARTUP_OPTIONS,
+            "controller Python startup options mismatch")
+    require(controller[
+        "initial_top_level_compilation_in_host_trust_boundary"
+    ] is True and controller[
+        "broader_python_standard_library_in_host_trust_boundary"
+    ] is True, "controller host trust-boundary declaration mismatch")
+
+    def validate_retained(
+        item: dict[str, Any], expected_class: str, label: str,
+    ) -> None:
+        require(isinstance(item, dict), f"malformed retained {label}")
+        path = item.get("path")
+        require(isinstance(path, str) and path in records_by_path,
+                f"missing retained {label} snapshot record")
+        inventory = records_by_path[path]
+        require(inventory.get("classes") == [expected_class],
+                f"wrong retained {label} snapshot class")
+        require(all(item.get(field) == inventory.get(field)
+                    for field in ("bytes", "sha256", "md5")),
+                f"retained {label} digest differs from snapshot inventory")
+
+    sources = controller["local_sources"]
+    source_root = Path(controller["source_root"])
+    require(source_root.is_absolute(), "controller source root is not absolute")
+    direct_startup = controller["direct_script_startup"]
+    direct_source = source_root / "flyspeck_stratum_runtime.py"
+    require(direct_startup == {
+        "module_name": "__main__",
+        "spec_is_none": True,
+        "cached_is_none": True,
+        "argv0": str(direct_source),
+        "source_path": str(direct_source),
+    }, "controller direct-script startup binding mismatch")
+    require(isinstance(sources, list) and len(sources) == 4,
+            "malformed controller local-source closure")
+    expected_bindings = {
+        "cakeml_artifact_provenance.py":
+            "compiled-from-captured-source-bytes",
+        "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
+        "flyspeck_stratum_runtime.py":
+            "startup-captured-after-initial-compilation",
+        "runtime_lock.py": "compiled-from-captured-source-bytes",
+    }
+    require({item.get("label") for item in sources} == set(expected_bindings),
+            "unexpected retained controller source set")
+    commit_binding = controller["commit_binding"]
+    require(isinstance(commit_binding, dict) and set(commit_binding) == {
+        "candle_commit", "sources",
+    }, "malformed controller commit binding")
+    commit_sources = commit_binding["sources"]
+    require(isinstance(commit_binding["candle_commit"], str) and
+            re.fullmatch(r"[0-9a-f]{40}",
+                         commit_binding["candle_commit"]) is not None and
+            isinstance(commit_sources, dict) and
+            set(commit_sources) == set(expected_bindings),
+            "malformed controller commit-source closure")
+    for item in sources:
+        require(set(item) == {
+            "label", "source_path", "execution_binding", "path",
+            "bytes", "sha256", "md5",
+        }, "malformed retained controller source")
+        require(item["execution_binding"] == expected_bindings[item["label"]],
+                f"wrong controller source execution binding: {item['label']}")
+        require(item["source_path"] == str(source_root / item["label"]) and
+                item["path"] == f"controller/python-source/{item['label']}",
+                f"wrong retained controller source path: {item['label']}")
+        validate_retained(item, "controller-python-source",
+                          f"controller source {item['label']}")
+        committed = commit_sources[item["label"]]
+        require(committed == {
+            "repository_path": f"candle/{item['label']}",
+            "index_tag": "H",
+            "bytes": item["bytes"],
+            "sha256": item["sha256"],
+            "md5": item["md5"],
+        }, f"controller commit-source identity mismatch: {item['label']}")
+
+    python_runtime = controller["python_runtime"]
+    require(isinstance(python_runtime, dict) and set(python_runtime) == {
+        "execution_binding", "version", "executable", "elf_policy",
+        "elf_roles", "virtual_elf_objects", "elf_objects",
+    }, "malformed controller Python runtime record")
+    require(python_runtime["execution_binding"] ==
+            EXPECTED_PYTHON_RUNTIME["execution_binding"] and
+            python_runtime["version"] == EXPECTED_PYTHON_RUNTIME["version"],
+            "controller Python execution identity mismatch")
+    executable = python_runtime["executable"]
+    require(isinstance(executable, dict) and set(executable) == {
+        "source_path", "path", "bytes", "sha256", "md5",
+    }, "malformed retained controller Python executable")
+    expected_executable = EXPECTED_PYTHON_RUNTIME["executable"]
+    require(executable["source_path"] == expected_executable["path"] and
+            executable["path"] == "controller/python-runtime/python3.12" and
+            all(executable[field] == expected_executable[field]
+                for field in ("bytes", "sha256")),
+            "retained controller Python executable identity mismatch")
+    validate_retained(executable, "controller-python-executable",
+                      "controller Python executable")
+    expected_elf = EXPECTED_PYTHON_RUNTIME["elf_closure"]
+    require(python_runtime["elf_policy"] == expected_elf["policy"] and
+            python_runtime["elf_roles"] == expected_elf["roles"] and
+            python_runtime["virtual_elf_objects"] ==
+            expected_elf["virtual_objects"],
+            "controller Python ELF metadata mismatch")
+    elf_objects = python_runtime["elf_objects"]
+    require(isinstance(elf_objects, list) and
+            {item.get("source_path") for item in elf_objects} ==
+            set(expected_elf["files"]),
+            "controller Python ELF object set mismatch")
+    for item in elf_objects:
+        require(isinstance(item, dict) and set(item) == {
+            "source_path", "path", "bytes", "sha256", "md5",
+        }, "malformed retained controller Python ELF object")
+        expected = expected_elf["files"][item["source_path"]]
+        source = Path(item["source_path"])
+        require(item["path"] == (
+            "controller/python-runtime-elf/" +
+            f"{expected['sha256'][:16]}-{source.name}"
+        ), "wrong retained controller Python ELF object path")
+        require(all(item[field] == expected[field]
+                    for field in ("bytes", "sha256")),
+                "retained controller Python ELF object identity mismatch")
+        validate_retained(item, "controller-python-runtime-elf",
+                          "controller Python ELF object")
+
+    require(controller["git_environment"] == {
+        "LC_ALL": "C",
+        "PATH": "/usr/bin:/bin",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_TERMINAL_PROMPT": "0",
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_OPTIONAL_LOCKS": "0",
+    }, "controller Git environment mismatch")
+    host_tools = controller["host_tools"]
+    require(isinstance(host_tools, list) and
+            {item.get("label") for item in host_tools} ==
+            set(EXPECTED_CONTROLLER_TOOLS),
+            "controller host-tool set mismatch")
+    for item in host_tools:
+        require(isinstance(item, dict) and set(item) == {
+            "label", "invocation_path", "resolved_path", "symlink_target",
+            "path", "bytes", "sha256", "md5",
+        }, "malformed retained controller host tool")
+        label = item["label"]
+        expected = EXPECTED_CONTROLLER_TOOLS[label]
+        require(all(item[field] == expected[field] for field in (
+            "invocation_path", "resolved_path", "symlink_target", "bytes",
+            "sha256",
+        )), f"retained controller host-tool identity mismatch: {label}")
+        require(item["path"] == (
+            f"controller/host-tools/{label}-" +
+            Path(expected["resolved_path"]).name
+        ), f"wrong retained controller host-tool path: {label}")
+        validate_retained(item, "controller-host-tool",
+                          f"controller host tool {label}")
     observed_files: set[str] = set()
     observed_directories = {"."}
     for path in snapshot_root.rglob("*"):
@@ -1009,7 +1683,7 @@ def process_limit_preexec(
     return install
 
 
-def run_attempt(
+def _run_attempt_impl(
     candle_script: Path,
     plan_root: Path,
     boundary_id: str,
@@ -1018,18 +1692,26 @@ def run_attempt(
     max_cpu_seconds: int,
     max_address_space_gib: int,
     max_output_file_gib: int,
+    output_ownership: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    require(not Path(output_root).is_symlink(),
+            "attempt output path must not be a symlink")
     candle_script = candle_script.resolve()
     plan_root = plan_root.resolve()
     output_root = output_root.resolve()
     require(candle_script.is_file() and os.access(candle_script, os.X_OK),
             f"Candle launcher is not executable: {candle_script}")
     candle_root = candle_script.parent
+    require_direct_script_startup()
+    controller_execution = collect_controller_execution(candle_root)
     runtime_lock_handle = runtime_lock.acquire_build_lock(candle_root)
 
     # This must precede interpretation of the host plan: no runtime attempt is
     # prepared for an unbound or stale executable.
     linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+    bind_controller_sources_to_commit(
+        controller_execution, candle_root, linked["candle_commit"],
+    )
     prepared = validate_plan(candle_root, linked, plan_root, boundary_id)
 
     require(timeout_seconds > 0, "timeout must be positive")
@@ -1052,11 +1734,26 @@ def run_attempt(
             f"attempt output must be disjoint from {label} root",
         )
     output_root.mkdir()
+    if output_ownership is not None:
+        opened = os.stat(output_root, follow_symlinks=False)
+        nonce = output_ownership["nonce"]
+        marker_path = output_root / ".candle-preflight-owner"
+        output_ownership.update({
+            "created": True,
+            "device": opened.st_dev,
+            "inode": opened.st_ino,
+            "marker_path": marker_path,
+            "marker_ready": False,
+        })
+        marker_path.write_text(nonce + "\n", encoding="ascii")
+        output_ownership["marker_ready"] = True
+        marker_path.chmod(0o444)
     runtime_prepared, snapshot_record = create_runtime_snapshot(
-        output_root, candle_root, prepared, linked,
+        output_root, candle_root, prepared, linked, controller_execution,
     )
     snapshot_record_path = output_root / "snapshot.json"
     atomic_write_json(snapshot_record_path, snapshot_record)
+    snapshot_record_path.chmod(0o444)
     validate_runtime_snapshot(snapshot_record, output_root)
     archived_linked = load_object(
         runtime_prepared["linked_record_snapshot"],
@@ -1115,7 +1812,7 @@ def run_attempt(
     runtime_env = cakeml_artifact_provenance.runtime_environment()
     started = utc_now()
     attempt = {
-        "schema": 1,
+        "schema": 2,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
         "claim": "compiled cumulative source-action attempt; not S2/S3 without semantic fingerprints",
         "state": "running",
@@ -1158,6 +1855,7 @@ def run_attempt(
                 runtime_prepared["bootstrap_log_snapshot"]
             ),
             "runtime_snapshot": hash_file(snapshot_record_path),
+            "controller_execution": snapshot_record["controller_execution"],
             "authenticated_prefix": prepared["prefix_record"],
             **control_records,
             "setup": hash_file(runtime_candle_root / SETUP_RELATIVE),
@@ -1173,6 +1871,11 @@ def run_attempt(
         },
     }
     atomic_write_json(attempt_path, attempt)
+    if output_ownership is not None:
+        output_ownership["marker_path"].unlink()
+        output_ownership["committed"] = True
+    attempt_path.chmod(0o444)
+    attempt_record = hash_file(attempt_path)
 
     command = [str(runtime_prepared["cake_runtime"]), "--candle"]
     timed_out = False
@@ -1180,12 +1883,22 @@ def run_attempt(
     execution_error: BaseException | None = None
     process: subprocess.Popen[bytes] | None = None
     previous_sigterm = signal.getsignal(signal.SIGTERM)
+    previous_sigint = signal.getsignal(signal.SIGINT)
     usage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
+    finished: str | None = None
+    child_resources: dict[str, Any] | None = None
+    log_record: dict[str, Any] | None = None
+    validation_error: str | None = None
+    fingerprints: dict[str, Any] | None = None
+    postflight_reauthenticated = False
+    handled_signals = {signal.SIGTERM, signal.SIGINT}
+    previous_mask: set[signal.Signals] | None = None
 
     def interrupted(signum: int, _frame: Any) -> None:
         raise InterruptedError(f"compiled stratum interrupted by signal {signum}")
 
     signal.signal(signal.SIGTERM, interrupted)
+    signal.signal(signal.SIGINT, interrupted)
     try:
         with stdin_path.open("rb") as stdin, log_path.open("wb") as log:
             process = subprocess.Popen(
@@ -1205,24 +1918,37 @@ def run_attempt(
     except BaseException as error:
         execution_error = error
     finally:
-        signal.signal(signal.SIGTERM, previous_sigterm)
-        if process is not None and process.poll() is None:
-            exit_code = terminate_process_group(process)
+        try:
+            if process is not None and process.poll() is None:
+                exit_code = terminate_process_group(process)
+            previous_mask = signal.pthread_sigmask(
+                signal.SIG_BLOCK, handled_signals,
+            )
+        except BaseException as error:
+            if execution_error is None:
+                execution_error = error
+            if previous_mask is None:
+                try:
+                    previous_mask = signal.pthread_sigmask(
+                        signal.SIG_BLOCK, handled_signals,
+                    )
+                except BaseException as mask_error:
+                    if execution_error is error:
+                        execution_error = RuntimeError(
+                            f"{error}; signal-mask failure: {mask_error}"
+                        )
 
-    finished = utc_now()
-    usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
-    child_resources = {
-        "user_cpu_seconds": usage_after.ru_utime - usage_before.ru_utime,
-        "system_cpu_seconds": usage_after.ru_stime - usage_before.ru_stime,
-        "max_rss_kib": usage_after.ru_maxrss,
-        "major_page_faults": usage_after.ru_majflt - usage_before.ru_majflt,
-        "minor_page_faults": usage_after.ru_minflt - usage_before.ru_minflt,
-    }
-    log_record = hash_file(log_path)
-    validation_error: str | None = None
-    fingerprints: dict[str, Any] | None = None
-    postflight_reauthenticated = False
     try:
+        finished = utc_now()
+        usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
+        child_resources = {
+            "user_cpu_seconds": usage_after.ru_utime - usage_before.ru_utime,
+            "system_cpu_seconds": usage_after.ru_stime - usage_before.ru_stime,
+            "max_rss_kib": usage_after.ru_maxrss,
+            "major_page_faults": usage_after.ru_majflt - usage_before.ru_majflt,
+            "minor_page_faults": usage_after.ru_minflt - usage_before.ru_minflt,
+        }
+        log_record = hash_file(log_path)
         require(execution_error is None,
                 f"compiled stratum execution failed: {execution_error}")
         require(not timed_out, "compiled stratum attempt timed out")
@@ -1232,7 +1958,11 @@ def run_attempt(
         validate_plan(candle_root, post_linked, plan_root, boundary_id)
         validate_file(snapshot_record_path, attempt["inputs"]["runtime_snapshot"],
                       "runtime snapshot record")
+        validate_file(attempt_path, attempt_record, "initial attempt record")
         validate_runtime_snapshot(snapshot_record, output_root)
+        validate_controller_execution(
+            controller_execution, candle_root, linked["candle_commit"],
+        )
         archived_post = load_object(
             runtime_prepared["linked_record_snapshot"],
             "archived linked provenance",
@@ -1259,31 +1989,137 @@ def run_attempt(
             log_path.read_text(encoding="utf-8", errors="replace"),
             theorem_names, runtime_candle_root / FINGERPRINT_RELATIVE,
         )
-    except ContractError as error:
-        validation_error = str(error)
+    except Exception as error:
+        validation_error = f"{type(error).__name__}: {error}"
 
-    receipt = {
-        **attempt,
-        "state": "completed" if validation_error is None else "failed",
-        "finished_utc": finished,
-        "timed_out": timed_out,
-        "exit_code": exit_code,
-        "command": command,
-        "child_resources": child_resources,
-        "log": log_record,
-        "action_markers_validated": len(prepared["actions"]) if validation_error is None else 0,
-        "semantic_fingerprints": fingerprints,
-        "s2_s3_evidence": False,
-        "validation_error": validation_error,
-        "postflight_reauthenticated": postflight_reauthenticated,
-    }
-    atomic_write_json(receipt_path, receipt)
+    if previous_mask is None:
+        try:
+            previous_mask = signal.pthread_sigmask(
+                signal.SIG_BLOCK, handled_signals,
+            )
+        except Exception as error:
+            mask_error = f"{type(error).__name__}: {error}"
+            validation_error = (
+                mask_error if validation_error is None else
+                validation_error + "; receipt signal-mask failure: " +
+                mask_error
+            )
+    if previous_mask is not None:
+        pending_interrupts = sorted(
+            int(item) for item in signal.sigpending() & handled_signals
+        )
+        if pending_interrupts:
+            pending_error = (
+                "interrupt signal(s) pending after child exit: " +
+                ",".join(map(str, pending_interrupts))
+            )
+            validation_error = (
+                pending_error if validation_error is None else
+                validation_error + "; " + pending_error
+            )
+    if finished is None:
+        finished = utc_now()
+    try:
+        receipt = {
+            **attempt,
+            "state": "completed" if validation_error is None else "failed",
+            "finished_utc": finished,
+            "timed_out": timed_out,
+            "exit_code": exit_code,
+            "command": command,
+            "child_resources": child_resources,
+            "log": log_record,
+            "initial_attempt": attempt_record,
+            "action_markers_validated": (
+                len(prepared["actions"]) if validation_error is None else 0
+            ),
+            "semantic_fingerprints": fingerprints,
+            "s2_s3_evidence": False,
+            "validation_error": validation_error,
+            "postflight_reauthenticated": postflight_reauthenticated,
+        }
+        atomic_write_json(receipt_path, receipt)
+    finally:
+        signal.signal(signal.SIGTERM, previous_sigterm)
+        signal.signal(signal.SIGINT, previous_sigint)
+        if previous_mask is not None:
+            signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
     if validation_error is not None:
         raise ContractError(validation_error)
     return receipt
 
 
+def cleanup_incomplete_output(output_root: Path) -> None:
+    """Remove only a new pre-attempt tree that never gained attempt.json."""
+    for directory, _subdirectories, _files in os.walk(
+        output_root, topdown=True, followlinks=False,
+    ):
+        os.chmod(directory, 0o700)
+    shutil.rmtree(output_root)
+
+
+def run_attempt(
+    candle_script: Path,
+    plan_root: Path,
+    boundary_id: str,
+    output_root: Path,
+    timeout_seconds: int,
+    max_cpu_seconds: int,
+    max_address_space_gib: int,
+    max_output_file_gib: int,
+) -> dict[str, Any]:
+    """Run an attempt, cleaning only an unpublished pre-attempt failure."""
+    unresolved_output = Path(output_root)
+    require(not unresolved_output.is_symlink(),
+            "attempt output path must not be a symlink")
+    resolved_output = unresolved_output.resolve()
+    ownership: dict[str, Any] = {
+        "nonce": secrets.token_hex(32),
+        "created": False,
+        "committed": False,
+    }
+    original_sigterm = signal.getsignal(signal.SIGTERM)
+    original_sigint = signal.getsignal(signal.SIGINT)
+    original_signal_mask = signal.pthread_sigmask(signal.SIG_BLOCK, set())
+    try:
+        return _run_attempt_impl(
+            candle_script, plan_root, boundary_id, output_root,
+            timeout_seconds, max_cpu_seconds, max_address_space_gib,
+            max_output_file_gib, ownership,
+        )
+    except BaseException:
+        if ownership["created"] and not ownership["committed"]:
+            try:
+                current = os.stat(resolved_output, follow_symlinks=False)
+                marker = resolved_output / ".candle-preflight-owner"
+                inode_owned = (
+                    not resolved_output.is_symlink() and
+                    current.st_dev == ownership["device"] and
+                    current.st_ino == ownership["inode"]
+                )
+                if ownership.get("marker_ready"):
+                    marker_owned = (
+                        marker.is_file() and not marker.is_symlink() and
+                        marker.read_text(encoding="ascii") ==
+                        ownership["nonce"] + "\n"
+                    )
+                else:
+                    marker_owned = not any(resolved_output.iterdir())
+                owned = (inode_owned and marker_owned and
+                         not (resolved_output / "attempt.json").exists())
+            except OSError:
+                owned = False
+            if owned:
+                cleanup_incomplete_output(resolved_output)
+        raise
+    finally:
+        signal.signal(signal.SIGTERM, original_sigterm)
+        signal.signal(signal.SIGINT, original_sigint)
+        signal.pthread_sigmask(signal.SIG_SETMASK, original_signal_mask)
+
+
 def main() -> None:
+    require_direct_script_startup()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--candle-script", type=Path, required=True)
     parser.add_argument("--plan-root", type=Path, required=True)

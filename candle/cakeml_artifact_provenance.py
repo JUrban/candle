@@ -94,10 +94,20 @@ def load_object(path: Path) -> dict[str, Any]:
 
 def git_output(root: Path, *arguments: str) -> str:
     return subprocess.run(
-        ["/usr/bin/git", "-C", str(root), *arguments], check=True,
+        git_command(root, *arguments), check=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-        env=runtime_environment(),
+        env=git_environment(),
     ).stdout.strip()
+
+
+def git_command(root: Path, *arguments: str) -> list[str]:
+    return [
+        "/usr/bin/git",
+        "-c", "core.fsmonitor=false",
+        "-c", "core.untrackedCache=false",
+        "-c", "core.preloadIndex=false",
+        "-C", str(root), *arguments,
+    ]
 
 
 def validate_git(root: Path, expected_head: str, label: str) -> None:
@@ -128,6 +138,20 @@ def runtime_environment(
                     f"invalid CakeML runtime size: {name}")
             result[name] = source[name]
     return result
+
+
+def git_environment() -> dict[str, str]:
+    """Return the fixed fail-closed environment for host Git validation."""
+    runtime_environment()
+    return {
+        "LC_ALL": "C",
+        "PATH": "/usr/bin:/bin",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": "/dev/null",
+        "GIT_TERMINAL_PROMPT": "0",
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_OPTIONAL_LOCKS": "0",
+    }
 
 
 def validate_root_runtime_aliases(
