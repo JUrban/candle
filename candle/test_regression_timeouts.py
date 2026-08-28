@@ -3,8 +3,12 @@
 
 import json
 from pathlib import Path
+import sys
+import time
 import unittest
 from unittest import mock
+
+import pexpect
 
 import regression
 
@@ -42,8 +46,7 @@ class TimeoutPolicyTest(unittest.TestCase):
             regression._timeout_policy(1800, None),
             {
                 "inactivity_timeout_seconds": 1800,
-                "inactivity_resets_on": (
-                    "each recognized Loading, val, or Finished progress event"),
+                "inactivity_resets_on": "each complete REPL output line",
                 "inactivity_scope": (
                     "each REPL expect wait, including initial boot"),
                 "total_wall_timeout_seconds": None,
@@ -98,6 +101,63 @@ class TimeoutPolicyTest(unittest.TestCase):
             repl.kill()
         killpg.assert_not_called()
         self.assertEqual(repl.process.close_calls, [True])
+
+    @staticmethod
+    def _stream_repl(script, inactivity_timeout, wall_timeout=None):
+        repl = object.__new__(regression.CandleREPL)
+        repl.inactivity_timeout = inactivity_timeout
+        repl.wall_deadline = (
+            time.monotonic() + wall_timeout
+            if wall_timeout is not None else None)
+        repl.load_stack = ["long.ml"]
+        repl.last_val = None
+        repl.process = pexpect.spawn(
+            sys.executable, ["-c", script], encoding="utf-8")
+        return repl
+
+    def test_complete_progress_lines_refresh_inactivity(self):
+        repl = self._stream_repl(
+            "import time\n"
+            "print('phase one', flush=True)\n"
+            "time.sleep(0.06)\n"
+            "print('phase two', flush=True)\n"
+            "time.sleep(0.06)\n"
+            "print('- Finished loading long.ml', flush=True)\n",
+            inactivity_timeout=0.1)
+        try:
+            repl._check_output()
+            self.assertEqual(repl.load_stack, [])
+        finally:
+            repl.kill()
+
+    def test_progress_never_extends_absolute_wall_deadline(self):
+        repl = self._stream_repl(
+            "import time\n"
+            "print('phase one', flush=True)\n"
+            "time.sleep(0.06)\n"
+            "print('phase two', flush=True)\n"
+            "time.sleep(0.06)\n"
+            "print('phase three', flush=True)\n"
+            "time.sleep(0.06)\n"
+            "print('- Finished loading long.ml', flush=True)\n",
+            inactivity_timeout=1, wall_timeout=0.15)
+        try:
+            with self.assertRaises(regression.WallTimeout):
+                repl._check_output()
+        finally:
+            repl.kill()
+
+    def test_error_sentinel_precedes_generic_progress(self):
+        repl = self._stream_repl(
+            "print('still working', flush=True)\n"
+            "print('ERROR: deterministic failure', flush=True)\n",
+            inactivity_timeout=1)
+        try:
+            with self.assertRaisesRegex(
+                    regression.LoadFailure, "deterministic failure"):
+                repl._check_output()
+        finally:
+            repl.kill()
 
 
 if __name__ == "__main__":

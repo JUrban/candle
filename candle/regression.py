@@ -20,7 +20,7 @@ Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
 to preserve the complete per-test table and exact source/executable identity.
 
 Timeouts have two independent meanings.  The inactivity timeout is reset by
-each recognized REPL progress event.  An optional total wall timeout is an
+each complete REPL output line.  An optional total wall timeout is an
 absolute per-target deadline from process spawn through fingerprint capture;
 progress never extends it.
 """
@@ -100,7 +100,7 @@ def _timeout_policy(inactivity_timeout, wall_timeout):
     return {
         "inactivity_timeout_seconds": inactivity_timeout,
         "inactivity_resets_on": (
-            "each recognized Loading, val, or Finished progress event"),
+            "each complete REPL output line"),
         "inactivity_scope": "each REPL expect wait, including initial boot",
         "total_wall_timeout_seconds": wall_timeout,
         "total_wall_scope": "process spawn through fingerprint capture",
@@ -242,45 +242,58 @@ class CandleREPL:
         return f"[while loading: {' > '.join(self.load_stack)}]"
 
     def _check_output(self):
-        timeout, wall_limited = _effective_expect_timeout(
-            self.inactivity_timeout, self.wall_deadline)
-        try:
-            index = self.process.expect([
-                r'\n\- Loading (\S+)',
-                r'\nval (\w+) =',
-                r'\n(ERROR: .+)',
-                r'\n(Parsing failed)',
-                r'\n(EXCEPTION: .+)',
-                r'\n\- Finished loading (\S+)',
-                pexpect.TIMEOUT,
-                pexpect.EOF,
-            ], timeout=timeout)
-        except Exception as e:
-            raise LoadFailure from e
+        while True:
+            timeout, wall_limited = _effective_expect_timeout(
+                self.inactivity_timeout, self.wall_deadline)
+            try:
+                index = self.process.expect([
+                    r'(?:^|\n)\- Loading (\S+)',
+                    r'(?:^|\n)val (\w+) =',
+                    r'(?:^|\n)(ERROR: .+)',
+                    r'(?:^|\n)(Parsing failed)',
+                    r'(?:^|\n)(EXCEPTION: .+)',
+                    r'(?:^|\n)\- Finished loading (\S+)',
+                    # Semantic sentinels take priority at the same position.
+                    # Consume any other complete line as progress, bounding
+                    # the unmatched buffer and restarting inactivity only.
+                    # Recomputing the timeout preserves the absolute wall
+                    # deadline across every progress line.
+                    r'(?:^|\n)[^\n]*\n',
+                    pexpect.TIMEOUT,
+                    pexpect.EOF,
+                ], timeout=timeout)
+            except Exception as e:
+                raise LoadFailure from e
 
-        match index:
-            case 0:
-                dependency = self._get_match(1)
-                self.load_stack.append(dependency)
-            case 1:
-                self.last_val = self._get_match(1)
-            case 2 | 3 | 4:
-                raise LoadFailure(self._get_match(1))
-            case 5:
-                finished = self._get_match(1)
-                expected = self.load_stack.pop()
-                assert finished == expected, (
-                    f"Expected to finish loading {expected}. Actual: {finished}")
-            case 6:
-                if wall_limited:
-                    raise WallTimeout(
-                        "total wall deadline expired while loading")
-                raise InactivityTimeout(
-                    "no recognized REPL progress while loading")
-            case 7:
-                raise LoadFailure("Process exited unexpectedly")
-            case _:
-                assert False, "Unreachable: Did you add a new case in _check_output?"
+            match index:
+                case 0:
+                    dependency = self._get_match(1)
+                    self.load_stack.append(dependency)
+                    return
+                case 1:
+                    self.last_val = self._get_match(1)
+                    return
+                case 2 | 3 | 4:
+                    raise LoadFailure(self._get_match(1))
+                case 5:
+                    finished = self._get_match(1)
+                    expected = self.load_stack.pop()
+                    assert finished == expected, (
+                        f"Expected to finish loading {expected}. Actual: {finished}")
+                    return
+                case 6:
+                    continue
+                case 7:
+                    if wall_limited:
+                        raise WallTimeout(
+                            "total wall deadline expired while loading")
+                    raise InactivityTimeout(
+                        "no complete REPL output while loading")
+                case 8:
+                    raise LoadFailure("Process exited unexpectedly")
+                case _:
+                    assert False, (
+                        "Unreachable: Did you add a new case in _check_output?")
 
     def load(self, file):
         self.process.sendline(f'#use "{file}";;')
@@ -819,7 +832,7 @@ def main():
     parser.add_argument(
         "--timeout", "--inactivity-timeout", dest="inactivity_timeout",
         type=float, default=600,
-        help=("seconds without a recognized REPL progress event before a "
+        help=("seconds without a complete REPL output line before a "
               "target times out; --timeout is retained as an alias "
               "(default: 600)"),
     )
