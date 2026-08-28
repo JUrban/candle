@@ -45,6 +45,25 @@ decimal grammar and excludes nested comments, strings, and HOL backtick
 quotations. Before scanning, it authenticates all 400 original manifest nodes,
 the exact schema-2 normalization receipt, and all 18 normalized outputs.
 
+An independent completeness gate then lexes the same authenticated runtime
+sources with the actual OCaml 4.14.1 compiler-libs lexer. It requires an exact
+match of site records (including locations), spellings, counts, and file
+projections. OCaml's lexer, rather than the Python scanner, classifies comments,
+strings, character literals, identifiers, numeric forms, and suffixes. A small
+separate quotation skipper starts only when OCaml emits `BACKQUOTE`, because HOL
+quotation bodies are not OCaml syntax. Recovery for source forms rejected by
+stock OCaml (such as Flyspeck's `0in`) is permitted only when the rejected token
+cannot be a potential float; malformed potential floats fail closed. Run this
+host completeness check directly with:
+
+```sh
+python3 candle/compatibility/check_flyspeck_float_completeness.py \
+  --candle-root /path/to/candle \
+  --flyspeck-root /path/to/flyspeck-at-1ce0353 \
+  --overlay-root /path/to/ac925270-overlay \
+  --ocamlc /usr/bin/ocamlc
+```
+
 Regenerate the complete inventory and all OCaml 4.14.1 Word64 observations:
 
 ```sh
@@ -58,9 +77,10 @@ python3 candle/compatibility/flyspeck_float_corpus.py \
 This also compares every spelling with C-locale host `strtod`; the pinned
 corpus has no `ERANGE` case and all 1,741 words match OCaml. That host result is
 primitive-boundary evidence only. It is not a substitute for the compiled
-gate, which first repeats the complete host regeneration, validates the linked
-Candle runtime record, loads the full `hol.ml` insulation stack, and checks
-every exact spelling in bounded chunks:
+gate, which first repeats both the Python regeneration and independent OCaml
+lexer completeness check, validates the linked Candle runtime record, loads the
+full `hol.ml` insulation stack, and checks every exact spelling in bounded
+chunks:
 
 ```sh
 python3 candle/compatibility/check_flyspeck_float_corpus.py \

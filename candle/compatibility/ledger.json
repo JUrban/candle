@@ -61,8 +61,10 @@
         "unique_spelling_count": 1741,
         "source_file_count": 9,
         "unique_spelling_sha256": "174fe9827e0e52fbe7e4d2f5303a56996321070921bd0d0cecbca790bf04caa2",
+        "independent_completeness_gate": "candle/compatibility/check_flyspeck_float_completeness.py using the pinned candle/compatibility/ocaml_float_token_oracle.ml",
+        "independent_completeness_result": "OCaml 4.14.1 compiler-libs Lexer exactly matches all site records, source locations, spelling and file projections",
         "reference_result": "all OCaml 4.14.1 Word64 observations pinned; all match C-locale host strtod without ERANGE",
-        "status": "authenticated_host_reference_pass_not_compiled_candle_evidence"
+        "status": "authenticated_two_lexer_host_reference_pass_not_compiled_candle_evidence"
       },
       "direct_corpus_compiled_gate": {
         "runner": "candle/compatibility/check_flyspeck_float_corpus.py",
@@ -72,7 +74,7 @@
       },
       "proof_build_evidence": "candle/compatibility/float_literal_progress.json",
       "proof_obligation": "CakeML grammar and conversion theories build; every accepted boundary case and every one of the 1,741 authenticated direct-corpus spellings produces exactly the OCaml 4.14.1 IEEE-754 word in clean linked Candle; every negative boundary case is rejected; the existing Double.fromString FFI remains the explicit parsing trust boundary",
-      "regression_oracle": "candle/compatibility/test_float_literals.py with candle/compatibility/float_literal_cases.json, plus flyspeck_float_corpus.py and check_flyspeck_float_corpus.py with flyspeck_float_corpus.json",
+      "regression_oracle": "candle/compatibility/test_float_literals.py with candle/compatibility/float_literal_cases.json, plus flyspeck_float_corpus.py, check_flyspeck_float_completeness.py, ocaml_float_token_oracle.ml, and check_flyspeck_float_corpus.py with flyspeck_float_corpus.json",
       "performance_benchmark": "candle/compatibility/benchmark_float_literals.py",
       "performance_baseline": "candle/compatibility/float_literal_benchmark_baseline.json",
       "regression_requirement": "targeted CakeML parser proof build, ten-case boundary differential, authenticated all-1,741-spelling direct-corpus compiled differential, successful clean bertrand-primerecip load, and populated theorem plus assumption fingerprints",

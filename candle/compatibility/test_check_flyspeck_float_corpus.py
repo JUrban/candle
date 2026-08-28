@@ -58,6 +58,13 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         mutated["spellings"][0]["ocaml_word64_decimal"] = "1"
         self.assertNotEqual(checker.candle_source(mutated), original)
 
+    def test_compiled_runner_requires_independent_completeness_gate(self):
+        implementation = Path(checker.__file__).read_text(encoding="utf-8")
+        self.assertIn(
+            "check_flyspeck_float_completeness.validate_completeness(",
+            implementation,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
