@@ -25,6 +25,7 @@ sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent))
 
 import cakeml_artifact_provenance
+import check_flyspeck_float_completeness
 import flyspeck_float_corpus
 import runtime_lock
 
@@ -52,6 +53,9 @@ def authenticated_artifact(
     flyspeck_float_corpus.require(
         flyspeck_float_corpus.json_bytes(generated) == artifact_path.read_bytes(),
         "float-corpus artifact differs from authenticated regeneration",
+    )
+    check_flyspeck_float_completeness.validate_completeness(
+        manifest, runtime_sources, expected, ocamlc
     )
     return expected
 

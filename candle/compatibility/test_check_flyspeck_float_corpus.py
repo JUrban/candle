@@ -88,6 +88,13 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         self.assertIn("artifact_archive.read_bytes()", source)
         self.assertIn("== payload", source)
 
+    def test_compiled_runner_requires_independent_completeness_gate(self):
+        implementation = Path(checker.__file__).read_text(encoding="utf-8")
+        self.assertIn(
+            "check_flyspeck_float_completeness.validate_completeness(",
+            implementation,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
