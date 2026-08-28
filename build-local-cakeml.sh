@@ -23,6 +23,25 @@ bootstrap_record=$(/usr/bin/realpath -- "$2")
 manifest=$script_dir/candle/flyspeck_manifest.json
 bootstrap_dir=$cakeml_dir/compiler/bootstrap/compilation/x64/64
 build_dir=$script_dir/candle/build
+mkdir -p "$build_dir"
+[[ -d $build_dir && ! -L $build_dir ]] || {
+  printf 'Candle build directory must be an ordinary directory: %s\n' \
+    "$build_dir" >&2
+  exit 1
+}
+exec 9>>"$build_dir/runtime.lock"
+/usr/bin/flock -x 9
+managed_outputs=(
+  cake.S cake.S.bootstrap cake config_enc_str.txt candle_boot.ml basis_ffi.c
+  Makefile types.txt insulate.ml bootstrap-provenance.json bootstrap.log
+  cakeml-build-provenance.json
+)
+for output in "${managed_outputs[@]}"; do
+  [[ ! -L $build_dir/$output ]] || {
+    printf 'refusing symlink build output: %s\n' "$build_dir/$output" >&2
+    exit 1
+  }
+done
 
 [[ -d $cakeml_dir/.git || -f $cakeml_dir/.git ]] || {
   printf 'not a CakeML Git checkout: %s\n' "$cakeml_dir" >&2
@@ -73,10 +92,10 @@ build_jobs=${CANDLE_BUILD_JOBS:-2}
   exit 2
 }
 
-mkdir -p "$build_dir"
 for input in "${required[@]}"; do
   cp -L -- "$bootstrap_dir/$input" "$build_dir/$input"
 done
+cp -- "$build_dir/cake.S" "$build_dir/cake.S.bootstrap"
 
 (
   cd "$build_dir"
@@ -99,6 +118,12 @@ done
 
 ln -sfn candle/build/config_enc_str.txt "$script_dir/config_enc_str.txt"
 ln -sfn candle/build/candle_boot.ml "$script_dir/candle_boot.ml"
+
+# Exercise the same complete provenance and root-alias preflight used by every
+# interactive session.  A linked record is not a successful installation until
+# this post-alias check passes.
+/usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
+  check-linked --candle-root "$script_dir"
 
 printf 'CakeML head: %s\n' "$actual_head"
 /usr/bin/sha256sum \

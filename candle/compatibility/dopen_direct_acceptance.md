@@ -41,7 +41,7 @@ fresh integrated Candle executable and run the bounded gate:
 
 ```sh
 cd /project/worktrees/candle-integration-v13
-python3 candle/cakeml_artifact_provenance.py record-bootstrap \
+/usr/bin/python3 -I candle/cakeml_artifact_provenance.py record-bootstrap \
   --candle-root . \
   --cakeml-root /project/worktrees/cakeml-flyspeck-v13-integration \
   --hol-root /project/worktrees/HOL-cakeml-dopen-v13 \

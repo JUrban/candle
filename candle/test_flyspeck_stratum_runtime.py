@@ -244,20 +244,23 @@ class StratumRuntimeTests(unittest.TestCase):
                 json.dumps({"schema": 2}).encode(),
             )
             bootstrap_log, bootstrap_log_record = write(
-                root, "bootstrap.log", b"verified bootstrap transcript",
+                candle, "candle/build/bootstrap.log",
+                b"verified bootstrap transcript",
             )
             bootstrap_record_value = {
                 "schema": 1,
                 "bootstrap_log": {
-                    "path": str(bootstrap_log),
+                    "path": "bootstrap.log",
                     "bytes": bootstrap_log_record["bytes"],
                     "sha256": bootstrap_log_record["sha256"],
                 },
             }
             bootstrap_record, bootstrap_record_digest = write(
-                root, "bootstrap-record.json",
+                candle, "candle/build/bootstrap-provenance.json",
                 json.dumps(bootstrap_record_value).encode(),
             )
+            linked_outputs["bootstrap.log"] = bootstrap_log_record
+            linked_outputs["bootstrap-provenance.json"] = bootstrap_record_digest
             runtime_object, runtime_object_record = write(
                 root, "libc.so.6", b"runtime object",
             )
@@ -296,8 +299,6 @@ class StratumRuntimeTests(unittest.TestCase):
             runtime, snapshot = subject.create_runtime_snapshot(
                 output, candle, prepared, {
                     "outputs": linked_outputs,
-                    "bootstrap_record_path": str(bootstrap_record),
-                    "bootstrap_record": bootstrap_record_digest,
                     "runtime_elf_closure": {
                         "files": {
                             str(runtime_object): runtime_object_record,
@@ -328,15 +329,21 @@ class StratumRuntimeTests(unittest.TestCase):
                 for item in snapshot["files"]
             ))
             self.assertTrue(any(
-                item["path"] == "provenance/bootstrap-record.json"
-                and item["classes"] == ["bootstrap-provenance-record"]
+                item["path"] ==
+                "candle/candle/build/bootstrap-provenance.json"
+                and item["classes"] == ["linked-runtime"]
                 for item in snapshot["files"]
             ))
             self.assertTrue(any(
-                item["path"] == "provenance/bootstrap.log"
-                and item["classes"] == ["bootstrap-proof-log"]
+                item["path"] == "candle/candle/build/bootstrap.log"
+                and item["classes"] == ["linked-runtime"]
                 for item in snapshot["files"]
             ))
+
+            malformed = copy.deepcopy(snapshot)
+            malformed["schema"] = 2
+            with self.assertRaisesRegex(subject.ContractError, "snapshot schema"):
+                subject.validate_runtime_snapshot(malformed, output)
 
             snapshot_root = output / "snapshot"
             snapshot_root.chmod(0o755)
@@ -349,6 +356,10 @@ class StratumRuntimeTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ContractError, "unrecorded.*directories"):
                 subject.validate_runtime_snapshot(snapshot, output)
             extra.rmdir()
+            extra.symlink_to(snapshot_root / "flyspeck/source.ml")
+            with self.assertRaisesRegex(subject.ContractError, "contains a symlink"):
+                subject.validate_runtime_snapshot(snapshot, output)
+            extra.unlink()
             snapshot_root.chmod(0o555)
 
             snapshot_source = output / "snapshot/flyspeck/source.ml"

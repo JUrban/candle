@@ -33,7 +33,8 @@ Before generating the control program, the runner copies every runtime source,
 normalization, generated input, deterministic process input, linked CakeML
 output, harness file, and selected cumulative prefix into a disjoint attempt-
 local snapshot.  It also archives the complete linked-provenance JSON and exact
-loader, libc, and libm objects named by its ELF closure.  Every copied byte must
+relocation-safe bootstrap record/log copies plus the exact loader, libc, and
+libm objects named by its ELF closure.  Every copied byte must
 match the independently reconstructed plan or linked provenance, duplicate
 paths must be byte-identical, and the snapshot inventory is content-addressed.
 Snapshot files and directories and the generated control inputs are made
@@ -42,7 +43,8 @@ executable's ELF closure and requires it to match the archived record; linked
 artifacts with RPATH/RUNPATH or unexpected dependency roles are rejected.  The
 compiled process reads only attempt-local source/input paths under a minimal
 fixed `PATH` and `LC_ALL=C`; only validated decimal CakeML heap/stack sizes are
-forwarded, while `LD_*`, `GLIBC_TUNABLES`, `BASH_ENV`, and `ENV` are forbidden.
+forwarded and the exact mapping is written into the attempt/receipt, while
+`LD_*`, `GLIBC_TUNABLES`, `BASH_ENV`, and `ENV` are forbidden.
 It is launched directly, without an unrecorded timing wrapper; Python
 `getrusage` supplies the recorded child
 measurements.  The runner then rehashes the complete snapshot and all control
@@ -94,7 +96,10 @@ ledger load or skip transition.  It is still not a loader-owned trace of the
 internal physical-path cache and does not expose every ordinary nested
 `needs`/`loads` event.  Filesystem modes also are not a kernel-level immutable
 snapshot against a hostile same-UID process that can change and later restore
-them.  Consequently a successful receipt remains diagnostic and
+them. Build, repository-launcher, and direct-attempt processes take a
+cooperative exclusive/shared lock to prevent accidental concurrent mutation;
+noncooperating hostile same-user mutation remains outside the evidence model.
+Consequently a successful receipt remains diagnostic and
 `s2_s3_evidence` stays false pending approved semantic identities and the
 release coverage gates.  The per-file limit is not an aggregate disk quota,
 and process-count/aggregate descendant RSS remain external-supervisor

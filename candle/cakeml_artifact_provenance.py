@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +25,7 @@ BOOTSTRAP_INPUTS = (
 )
 LINKED_OUTPUTS = (
     "cake.S",
+    "cake.S.bootstrap",
     "cake",
     "config_enc_str.txt",
     "candle_boot.ml",
@@ -29,6 +33,8 @@ LINKED_OUTPUTS = (
     "Makefile",
     "types.txt",
     "insulate.ml",
+    "bootstrap-provenance.json",
+    "bootstrap.log",
 )
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
@@ -40,6 +46,8 @@ CANDLE_ELF_OBJECTS = {
 }
 CANDLE_ELF_VIRTUAL_OBJECTS = ["linux-vdso.so.1"]
 ROOT_RUNTIME_ALIASES = ("config_enc_str.txt", "candle_boot.ml")
+LINKED_BOOTSTRAP_RECORD = "bootstrap-provenance.json"
+LINKED_BOOTSTRAP_LOG = "bootstrap.log"
 
 
 class ProvenanceError(ValueError):
@@ -59,14 +67,21 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def file_record(path: Path) -> dict[str, Any]:
-    require(path.is_file(), f"missing provenance input: {path}")
+def file_record(path: Path, *, allow_symlink: bool = False) -> dict[str, Any]:
+    require(path.is_file() and (allow_symlink or not path.is_symlink()),
+            f"missing ordinary provenance input: {path}")
     return {"bytes": path.stat().st_size, "sha256": sha256_file(path)}
 
 
-def validate_file_record(path: Path, record: dict[str, Any], label: str) -> None:
+def validate_file_record(
+    path: Path,
+    record: dict[str, Any],
+    label: str,
+    *,
+    allow_symlink: bool = False,
+) -> None:
     require(set(record) == {"bytes", "sha256"}, f"malformed {label} record")
-    observed = file_record(path)
+    observed = file_record(path, allow_symlink=allow_symlink)
     require(observed == record, f"{label} provenance mismatch: {path}")
 
 
@@ -124,7 +139,16 @@ def validate_root_runtime_aliases(
                 f"runtime alias target mismatch: {alias}")
         require(alias.resolve(strict=True) == (build_dir / name).resolve(strict=True),
                 f"runtime alias resolution mismatch: {alias}")
-        validate_file_record(alias, outputs[name], f"runtime alias {name}")
+        validate_file_record(
+            alias, outputs[name], f"runtime alias {name}", allow_symlink=True,
+        )
+
+
+def validate_build_directory(candle_root: Path) -> Path:
+    build_dir = candle_root / "candle/build"
+    require(build_dir.is_dir() and not build_dir.is_symlink(),
+            f"Candle build directory is not an ordinary directory: {build_dir}")
+    return build_dir
 
 
 def expected_pins(candle_root: Path) -> dict[str, str]:
@@ -300,6 +324,10 @@ def validate_bootstrap_record(
     cakeml_root = cakeml_root.resolve()
     record_path = record_path.resolve()
     record = load_object(record_path)
+    require(set(record) == {
+        "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
+        "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
+    }, "malformed bootstrap provenance record")
     require(record.get("schema") == 1, "unsupported bootstrap provenance schema")
     require(record.get("kind") == "verified-cakeml-x64-64-bootstrap",
             "wrong bootstrap provenance kind")
@@ -315,9 +343,11 @@ def validate_bootstrap_record(
     validate_git(cakeml_root, pins["cakeml_commit"], "CakeML")
     validate_git(hol_root, pins["hol4_commit"], "HOL4")
     log_record = record.get("bootstrap_log")
-    require(isinstance(log_record, dict) and "path" in log_record,
+    require(isinstance(log_record, dict) and
+            set(log_record) == {"path", "bytes", "sha256"},
             "malformed bootstrap log record")
     log_path = Path(log_record["path"])
+    require(not log_path.is_symlink(), "bootstrap log must be an ordinary file")
     validate_file_record(
         log_path, {key: log_record[key] for key in ("bytes", "sha256")},
         "bootstrap log",
@@ -335,6 +365,139 @@ def validate_bootstrap_record(
     return record
 
 
+def materialize_linked_bootstrap(
+    build_dir: Path,
+    source_record_path: Path,
+    bootstrap: dict[str, Any],
+) -> dict[str, Any]:
+    """Create relocation-safe authenticated copies of bootstrap evidence."""
+    source_log = Path(bootstrap["bootstrap_log"]["path"])
+    local_log = build_dir / LINKED_BOOTSTRAP_LOG
+    require(not local_log.is_symlink(),
+            "refusing symlink destination for linked bootstrap log")
+    shutil.copyfile(source_log, local_log)
+    validate_file_record(
+        local_log,
+        {field: bootstrap["bootstrap_log"][field]
+         for field in ("bytes", "sha256")},
+        "materialized bootstrap log",
+    )
+    durable = copy.deepcopy(bootstrap)
+    durable["kind"] = "candle-linked-bootstrap-provenance-copy"
+    durable["source_bootstrap_record"] = file_record(source_record_path)
+    durable["bootstrap_log"] = {
+        "path": LINKED_BOOTSTRAP_LOG,
+        **file_record(local_log),
+    }
+    local_record = build_dir / LINKED_BOOTSTRAP_RECORD
+    require(not local_record.is_symlink(),
+            "refusing symlink destination for linked bootstrap record")
+    local_record.write_text(
+        json.dumps(durable, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    )
+    return durable
+
+
+def validate_linked_bootstrap_copy(
+    build_dir: Path,
+    record: dict[str, Any],
+    pins: dict[str, str],
+) -> dict[str, Any]:
+    """Validate durable bootstrap semantics without external worktree paths."""
+    local_record = build_dir / LINKED_BOOTSTRAP_RECORD
+    local_log = build_dir / LINKED_BOOTSTRAP_LOG
+    validate_file_record(
+        local_record, record.get("bootstrap_record", {}),
+        "linked bootstrap provenance copy",
+    )
+    validate_file_record(
+        local_log, record.get("bootstrap_log", {}), "linked bootstrap log copy",
+    )
+    bootstrap = load_object(local_record)
+    require(set(bootstrap) == {
+        "schema", "kind", "cakeml_commit", "hol4_commit", "manifest_sha256",
+        "cakeml_root", "hol4_root", "build_command", "bootstrap_log", "inputs",
+        "source_bootstrap_record",
+    }, "malformed linked bootstrap provenance copy")
+    require(bootstrap.get("schema") == 1,
+            "unsupported linked bootstrap provenance schema")
+    require(bootstrap.get("kind") == "candle-linked-bootstrap-provenance-copy",
+            "wrong linked bootstrap provenance kind")
+    for field, expected in pins.items():
+        require(bootstrap.get(field) == expected,
+                f"linked bootstrap {field} mismatch")
+    require(bootstrap.get("cakeml_commit") == record.get("cakeml_commit"),
+            "linked bootstrap CakeML revision mismatch")
+    require(bootstrap.get("hol4_commit") == record.get("hol4_commit"),
+            "linked bootstrap HOL4 revision mismatch")
+    cakeml_root = bootstrap.get("cakeml_root")
+    hol4_root = bootstrap.get("hol4_root")
+    require(isinstance(cakeml_root, str) and Path(cakeml_root).is_absolute(),
+            "malformed linked bootstrap CakeML root")
+    require(isinstance(hol4_root, str) and Path(hol4_root).is_absolute(),
+            "malformed linked bootstrap HOL4 root")
+    build_command = f"env HOLDIR={hol4_root} {hol4_root}/bin/Holmake -j1 cake.S"
+    require(bootstrap.get("build_command") == build_command,
+            "linked bootstrap command record mismatch")
+    source_record = bootstrap.get("source_bootstrap_record")
+    require(isinstance(source_record, dict) and
+            set(source_record) == {"bytes", "sha256"},
+            "malformed source bootstrap record identity")
+    log_record = bootstrap.get("bootstrap_log")
+    require(isinstance(log_record, dict) and
+            set(log_record) == {"path", "bytes", "sha256"} and
+            log_record.get("path") == LINKED_BOOTSTRAP_LOG,
+            "malformed linked bootstrap log identity")
+    require({field: log_record[field] for field in ("bytes", "sha256")} ==
+            record.get("bootstrap_log"),
+            "linked bootstrap log record mismatch")
+    log = local_log.read_text(encoding="utf-8", errors="replace")
+    require("Exit status: 0" in log,
+            "linked bootstrap log has no successful exit status")
+    require(f'Command being timed: "{build_command}"' in log,
+            "linked bootstrap log does not record the pinned command")
+    inputs = bootstrap.get("inputs")
+    require(isinstance(inputs, dict) and set(inputs) == set(BOOTSTRAP_INPUTS),
+            "linked bootstrap input set mismatch")
+    for name in BOOTSTRAP_INPUTS:
+        source = build_dir / ("cake.S.bootstrap" if name == "cake.S" else name)
+        validate_file_record(source, inputs[name], f"linked bootstrap input {name}")
+    return bootstrap
+
+
+def cake_patch_derivation(
+    build_dir: Path,
+    bootstrap_cake_record: dict[str, Any],
+    patch_path: Path,
+) -> dict[str, Any]:
+    """Reapply the exact patch and require the recorded assembly postimage."""
+    preimage = build_dir / "cake.S.bootstrap"
+    postimage = build_dir / "cake.S"
+    validate_file_record(preimage, bootstrap_cake_record, "CakeML assembly preimage")
+    patch = file_record(patch_path)
+    expected_postimage = file_record(postimage)
+    with tempfile.TemporaryDirectory(prefix="candle-cake-patch-") as temporary:
+        candidate = Path(temporary) / "cake.S"
+        shutil.copyfile(preimage, candidate)
+        try:
+            subprocess.run(
+                ["/usr/bin/patch", "--batch", "--forward", "cake.S", str(patch_path)],
+                check=True, cwd=temporary, stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT, text=True, timeout=60,
+                env=runtime_environment({}),
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise ProvenanceError("could not reproduce CakeML assembly patch") from error
+        require(file_record(candidate) == expected_postimage,
+                "CakeML assembly patch postimage mismatch")
+    return {
+        "policy": "gnu_patch_exact_preimage_and_postimage_v1",
+        "preimage": bootstrap_cake_record,
+        "patch": patch,
+        "postimage": expected_postimage,
+    }
+
+
 def record_linked(
     candle_root: Path,
     cakeml_root: Path,
@@ -348,7 +511,7 @@ def record_linked(
     )
     candle_head = git_output(candle_root, "rev-parse", "HEAD")
     validate_git(candle_root, candle_head, "Candle")
-    build_dir = candle_root / "candle/build"
+    build_dir = validate_build_directory(candle_root)
     inputs = bootstrap["inputs"]
     for name in ("config_enc_str.txt", "candle_boot.ml", "basis_ffi.c", "Makefile"):
         validate_file_record(build_dir / name, inputs[name], f"copied {name}")
@@ -357,6 +520,10 @@ def record_linked(
             "linked compiler CakeML revision mismatch")
     require(hol_commit == bootstrap["hol4_commit"],
             "linked compiler HOL4 revision mismatch")
+    materialize_linked_bootstrap(build_dir, bootstrap_record_path, bootstrap)
+    patch_derivation = cake_patch_derivation(
+        build_dir, inputs["cake.S"], candle_root / "candle/cake.S.patch",
+    )
     record = {
         "schema": 2,
         "kind": "candle-linked-pinned-cakeml",
@@ -364,13 +531,19 @@ def record_linked(
         "cakeml_commit": cake_commit,
         "hol4_commit": hol_commit,
         "manifest_sha256": bootstrap["manifest_sha256"],
-        "bootstrap_record": file_record(bootstrap_record_path),
-        "bootstrap_record_path": str(bootstrap_record_path),
+        "bootstrap_record": file_record(build_dir / LINKED_BOOTSTRAP_RECORD),
+        "bootstrap_log": file_record(build_dir / LINKED_BOOTSTRAP_LOG),
         "cake_patch": file_record(candle_root / "candle/cake.S.patch"),
+        "cake_patch_derivation": patch_derivation,
         "outputs": {name: file_record(build_dir / name) for name in LINKED_OUTPUTS},
         "runtime_elf_closure": elf_dynamic_closure(build_dir / "cake"),
         "version_output_sha256": hashlib.sha256(version_output.encode()).hexdigest(),
     }
+    require(not output_path.is_symlink(),
+            "refusing symlink destination for linked provenance record")
+    require(output_path.parent.resolve() == build_dir.resolve() and
+            output_path.name == LINKED_RECORD_RELATIVE.name,
+            "linked provenance destination must be the Candle build record")
     output_path = output_path.resolve()
     validate_candle_elf_policy(record["runtime_elf_closure"])
     output_path.write_text(
@@ -383,6 +556,12 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     candle_root = candle_root.resolve()
     record_path = candle_root / LINKED_RECORD_RELATIVE
     record = load_object(record_path)
+    require(set(record) == {
+        "schema", "kind", "candle_commit", "cakeml_commit", "hol4_commit",
+        "manifest_sha256", "bootstrap_record", "bootstrap_log", "cake_patch",
+        "cake_patch_derivation", "outputs", "runtime_elf_closure",
+        "version_output_sha256",
+    }, "malformed linked provenance record")
     require(record.get("schema") == 2, "unsupported linked provenance schema")
     require(record.get("kind") == "candle-linked-pinned-cakeml",
             "wrong linked provenance kind")
@@ -393,10 +572,6 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     pins = expected_pins(candle_root)
     for field, expected in pins.items():
         require(record.get(field) == expected, f"linked {field} mismatch")
-    bootstrap_path = Path(record.get("bootstrap_record_path", ""))
-    validate_file_record(
-        bootstrap_path, record.get("bootstrap_record", {}), "bootstrap record",
-    )
     validate_file_record(
         candle_root / "candle/cake.S.patch", record.get("cake_patch", {}),
         "CakeML assembly patch",
@@ -404,9 +579,16 @@ def validate_linked_record(candle_root: Path) -> dict[str, Any]:
     outputs = record.get("outputs")
     require(isinstance(outputs, dict) and set(outputs) == set(LINKED_OUTPUTS),
             "linked output set mismatch")
-    build_dir = candle_root / "candle/build"
+    build_dir = validate_build_directory(candle_root)
     for name in LINKED_OUTPUTS:
         validate_file_record(build_dir / name, outputs[name], f"linked {name}")
+    bootstrap = validate_linked_bootstrap_copy(build_dir, record, pins)
+    observed_derivation = cake_patch_derivation(
+        build_dir, bootstrap["inputs"]["cake.S"],
+        candle_root / "candle/cake.S.patch",
+    )
+    require(observed_derivation == record.get("cake_patch_derivation"),
+            "CakeML assembly patch derivation mismatch")
     validate_root_runtime_aliases(candle_root, outputs)
     validate_elf_dynamic_closure(
         build_dir / "cake", record.get("runtime_elf_closure", {}),

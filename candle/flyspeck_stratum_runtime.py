@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import fcntl
 import hashlib
 import json
 import os
@@ -775,39 +776,24 @@ def create_runtime_snapshot(
     )
     add_record("candle", "linked-provenance-record", record)
 
-    bootstrap_record_source = Path(linked.get("bootstrap_record_path", ""))
-    bootstrap_record_expected = linked.get("bootstrap_record")
-    require(isinstance(bootstrap_record_expected, dict),
-            "missing linked bootstrap record")
-    validate_file(
-        bootstrap_record_source, bootstrap_record_expected,
-        "linked bootstrap record snapshot input",
+    bootstrap_record_snapshot = (
+        candle_snapshot / "candle/build/bootstrap-provenance.json"
     )
-    bootstrap = load_object(bootstrap_record_source, "linked bootstrap record")
-    bootstrap_record_snapshot = snapshot_root / "provenance/bootstrap-record.json"
-    record = snapshot_copy(
-        bootstrap_record_source, snapshot_root / "provenance",
-        "bootstrap-record.json", bootstrap_record_expected,
-    )
-    add_record("provenance", "bootstrap-provenance-record", record)
+    bootstrap_log_snapshot = candle_snapshot / "candle/build/bootstrap.log"
+    bootstrap = load_object(bootstrap_record_snapshot, "linked bootstrap record")
     bootstrap_log = bootstrap.get("bootstrap_log")
     require(isinstance(bootstrap_log, dict) and
             set(bootstrap_log) == {"path", "bytes", "sha256"},
             "malformed linked bootstrap log record")
-    bootstrap_log_source = Path(bootstrap_log["path"])
-    bootstrap_log_expected = {
+    require(bootstrap_log.get("path") == "bootstrap.log",
+            "linked bootstrap log path is not relocation-safe")
+    bootstrap_log_record = {
         field: bootstrap_log[field] for field in ("bytes", "sha256")
     }
     validate_file(
-        bootstrap_log_source, bootstrap_log_expected,
-        "linked bootstrap log snapshot input",
+        bootstrap_log_snapshot, bootstrap_log_record,
+        "linked bootstrap log snapshot",
     )
-    bootstrap_log_snapshot = snapshot_root / "provenance/bootstrap.log"
-    record = snapshot_copy(
-        bootstrap_log_source, snapshot_root / "provenance", "bootstrap.log",
-        bootstrap_log_expected,
-    )
-    add_record("provenance", "bootstrap-proof-log", record)
 
     closure = linked.get("runtime_elf_closure")
     require(isinstance(closure, dict), "missing linked ELF closure")
@@ -918,6 +904,24 @@ def create_runtime_snapshot(
 
 def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> None:
     snapshot_root = output_root / "snapshot"
+    require(set(snapshot) == {
+        "schema", "kind", "file_count", "ordered_file_sha256", "files", "roots",
+        "files_read_only", "directories_read_only",
+    }, "malformed runtime snapshot record")
+    require(snapshot.get("schema") == 1,
+            "unsupported runtime snapshot schema")
+    require(snapshot.get("kind") ==
+            "candle-flyspeck-attempt-local-runtime-snapshot",
+            "wrong runtime snapshot kind")
+    require(snapshot.get("files_read_only") is True and
+            snapshot.get("directories_read_only") is True,
+            "runtime snapshot read-only declaration mismatch")
+    require(snapshot.get("roots") == {
+        "candle": str(snapshot_root / "candle"),
+        "flyspeck": str(snapshot_root / "flyspeck"),
+        "normalization_overlay": str(snapshot_root / "overlay"),
+        "generated_inputs": str(snapshot_root / "generated"),
+    }, "runtime snapshot root declaration mismatch")
     records = snapshot.get("files")
     require(isinstance(records, list), "missing snapshot file records")
     require(snapshot.get("file_count") == len(records), "snapshot file count mismatch")
@@ -1021,6 +1025,8 @@ def run_attempt(
     require(candle_script.is_file() and os.access(candle_script, os.X_OK),
             f"Candle launcher is not executable: {candle_script}")
     candle_root = candle_script.parent
+    runtime_lock = (candle_root / "candle/build/runtime.lock").open("a")
+    fcntl.flock(runtime_lock.fileno(), fcntl.LOCK_SH)
 
     # This must precede interpretation of the host plan: no runtime attempt is
     # prepared for an unbound or stale executable.
@@ -1107,6 +1113,7 @@ def run_attempt(
         path.chmod(0o444)
     control_root.chmod(0o555)
 
+    runtime_env = cakeml_artifact_provenance.runtime_environment()
     started = utc_now()
     attempt = {
         "schema": 1,
@@ -1125,11 +1132,17 @@ def run_attempt(
             "output_file_bytes": max_output_file_gib * GIB,
         },
         "fresh_process_replay_from_action_zero": True,
+        "cooperative_build_run_lock_held": True,
+        "concurrent_mutation_model": (
+            "cooperating build/launcher processes serialized; hostile same-user "
+            "path mutation is outside this evidence model"
+        ),
         "process_state_checkpoint": None,
         "runtime_environment_policy": (
             "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
             "BASH_ENV, and ENV"
         ),
+        "runtime_environment": runtime_env,
         "inputs": {
             "plan": prepared["plan_record"],
             "host_materialization": prepared["materialization_record"],
@@ -1162,7 +1175,6 @@ def run_attempt(
     atomic_write_json(attempt_path, attempt)
 
     command = [str(runtime_prepared["cake_runtime"]), "--candle"]
-    runtime_env = cakeml_artifact_provenance.runtime_environment()
     timed_out = False
     exit_code: int | None = None
     execution_error: BaseException | None = None

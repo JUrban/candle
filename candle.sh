@@ -19,6 +19,12 @@ export LC_ALL=C
 # avoids a boot-time custom chdir FFI and keeps relocation explicit.
 script_path=$(/usr/bin/readlink -f -- "${BASH_SOURCE[0]}")
 script_dir=${script_path%/*}
+if [[ ! -d $script_dir/candle/build || -L $script_dir/candle/build ]]; then
+  echo "Candle build directory must be an ordinary directory" >&2
+  exit 1
+fi
+exec 9>>"$script_dir/candle/build/runtime.lock"
+/usr/bin/flock -s 9
 /usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
   check-linked --candle-root "$script_dir"
 for generated in config_enc_str.txt candle_boot.ml; do

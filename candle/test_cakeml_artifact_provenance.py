@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -134,6 +135,101 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 subject.ProvenanceError, "alias target mismatch",
             ):
                 subject.validate_root_runtime_aliases(root, outputs)
+
+    def test_provenance_inputs_reject_symlinks_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "target"
+            target.write_bytes(b"authenticated bytes")
+            alias = root / "alias"
+            alias.symlink_to(target)
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "ordinary provenance input",
+            ):
+                subject.file_record(alias)
+            self.assertEqual(
+                subject.file_record(alias, allow_symlink=True),
+                subject.file_record(target),
+            )
+
+    def test_cake_patch_derivation_replays_exact_postimage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            preimage = root / "cake.S.bootstrap"
+            postimage = root / "cake.S"
+            patch = root / "cake.S.patch"
+            preimage.write_text("old\n", encoding="utf-8")
+            postimage.write_text("new\n", encoding="utf-8")
+            patch.write_text(
+                "--- cake.S\n+++ cake.S\n@@ -1 +1 @@\n-old\n+new\n",
+                encoding="utf-8",
+            )
+            derivation = subject.cake_patch_derivation(
+                root, subject.file_record(preimage), patch,
+            )
+            self.assertEqual(
+                derivation["policy"],
+                "gnu_patch_exact_preimage_and_postimage_v1",
+            )
+            postimage.write_text("tampered\n", encoding="utf-8")
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "postimage mismatch",
+            ):
+                subject.cake_patch_derivation(
+                    root, subject.file_record(preimage), patch,
+                )
+
+    def test_linked_bootstrap_copy_rejects_self_recorded_wrong_kind(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            build = Path(directory)
+            inputs = {}
+            for name in subject.BOOTSTRAP_INPUTS:
+                local_name = "cake.S.bootstrap" if name == "cake.S" else name
+                path = build / local_name
+                path.write_text(name, encoding="utf-8")
+                inputs[name] = subject.file_record(path)
+            log = build / subject.LINKED_BOOTSTRAP_LOG
+            build_command = (
+                "env HOLDIR=/build/hol4 /build/hol4/bin/Holmake -j1 cake.S"
+            )
+            log.write_text(
+                f'Command being timed: "{build_command}"\nExit status: 0\n',
+                encoding="utf-8",
+            )
+            pins = {
+                "cakeml_commit": "c" * 40,
+                "hol4_commit": "h" * 40,
+                "manifest_sha256": "m" * 64,
+            }
+            durable = {
+                "schema": 1,
+                "kind": "candle-linked-bootstrap-provenance-copy",
+                **pins,
+                "cakeml_root": "/build/cakeml",
+                "hol4_root": "/build/hol4",
+                "build_command": build_command,
+                "bootstrap_log": {
+                    "path": subject.LINKED_BOOTSTRAP_LOG,
+                    **subject.file_record(log),
+                },
+                "inputs": inputs,
+                "source_bootstrap_record": {"bytes": 1, "sha256": "0" * 64},
+            }
+            record_path = build / subject.LINKED_BOOTSTRAP_RECORD
+            record_path.write_text(json.dumps(durable), encoding="utf-8")
+            linked = {
+                **pins,
+                "bootstrap_record": subject.file_record(record_path),
+                "bootstrap_log": subject.file_record(log),
+            }
+            subject.validate_linked_bootstrap_copy(build, linked, pins)
+            durable["kind"] = "self-recorded-wrong-kind"
+            record_path.write_text(json.dumps(durable), encoding="utf-8")
+            linked["bootstrap_record"] = subject.file_record(record_path)
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "bootstrap provenance kind",
+            ):
+                subject.validate_linked_bootstrap_copy(build, linked, pins)
 
     def test_candle_elf_policy_rejects_extra_object(self) -> None:
         closure = {

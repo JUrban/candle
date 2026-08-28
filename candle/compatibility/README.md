@@ -60,7 +60,12 @@ release option if those affect an observed result.
 The privileged-mode repository launcher uses absolute isolated Python and runs
 the linked-provenance validator before every ordinary Candle session. It also
 requires the root boot/config aliases to be the exact relative symlinks whose
-resolved bytes appear in the record. Standalone compatibility scripts cannot
+resolved bytes appear in the record. The link step materializes the validated
+bootstrap record and successful log inside `candle/build`, so later launches
+do not depend on their original external paths. It also preserves the exact
+pre-patch `cake.S` and replays the pinned patch to authenticate the postimage.
+Builds take an exclusive cooperative lock and launch/direct runs take a shared
+lock. Standalone compatibility scripts cannot
 report a compiled PASS against a dirty tree, an obsolete record schema, or a
 different executable. The direct stratum runner bypasses the launcher only
 after performing its stronger original-plus-snapshot preflight itself.
