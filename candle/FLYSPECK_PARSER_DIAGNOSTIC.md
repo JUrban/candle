@@ -88,6 +88,10 @@ is not part of the preimage. This is controller receipt metadata, not a runtime
 wire field. Any other exit code, output byte, nonce, or encoding is rejected;
 a runtime-supplied digest field is therefore also rejected.
 
+This three-field error wire format plus controller-side stderr digest is
+`parser_runtime_protocol.schema = 2`. Schema 1 described the superseded
+runtime-supplied digest contract and must not be used for the CakeML migration.
+
 A generic compiler, old compiler, REPL, or protocol variation is rejected
 during the empty handshake before any corpus bytes are sent. Both the
 capability process and every parser process run with fixed environment and
@@ -217,6 +221,13 @@ copies—never mutable hardlinks. A closed inventory is rehashed before
 publication, so an omitted, extra, symlinked, writable, or tampered snapshot
 member rejects the result. This can intentionally cost multiple GiB once a
 linked compiler exists.
+
+The published diagnostic receipt is schema 4. This version closes its exact
+top-level field set over the sealed `runtime_execution` record and requires
+that record's byte count and SHA-256 to equal the archived linked runtime. It
+also requires the durable snapshot to contain exactly one original-source
+record for every selected pilot input. Receipt schema 3 predates this security-
+material shape and is not compatible.
 
 While the shared build lock is held, the controller opens the authenticated
 linked runtime with `O_NOFOLLOW`, verifies one stable ordinary inode, and
