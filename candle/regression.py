@@ -33,6 +33,7 @@ import argparse
 import hashlib
 import json
 import re
+import secrets
 import signal
 import subprocess
 import tempfile
@@ -52,6 +53,15 @@ CANDLE_ROOT = Path(__file__).resolve().parent.parent
 # Set via CML_HEAP_SIZE (MB) per candle process; parallelism is capped so the
 # combined heap reservation stays within available memory.
 TOP100_HEAP_MB = 6000
+
+
+def _reject_duplicate_json_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
 
 # ---------------------------------------------------------------------------
 # Exceptions
@@ -154,12 +164,25 @@ REGRESSION = [
 def _load_top100_manifest():
     """Load the audited suite inventory and reject any hidden skip."""
     path = CANDLE_ROOT / "candle" / "top100_manifest.json"
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_json_keys)
     if payload.get("schema_version") != 1:
         raise ValueError(f"unsupported Great 100 manifest schema: {path}")
     targets = payload.get("targets", [])
     if payload.get("target_count") != len(targets):
         raise ValueError(f"Great 100 target_count does not match targets: {path}")
+    covered = {source for target in targets for source in target["load_files"]}
+    requests = sum(len(target["fingerprint_request"]["theorems"])
+                   for target in targets)
+    if (len(targets), len(covered), requests) != (65, 66, 97):
+        raise ValueError("Great 100 manifest is not the canonical 65/66/97 inventory")
+    inventory = payload.get("inventory_contract")
+    if not isinstance(inventory, dict) or (
+            inventory.get("target_count"),
+            inventory.get("covered_source_count"),
+            inventory.get("theorem_request_count")) != (65, 66, 97):
+        raise ValueError("Great 100 inventory contract is malformed")
     if any(target.get("skip") is not None for target in targets):
         raise ValueError(f"Great 100 manifest contains a skipped target: {path}")
     tests = []
@@ -169,6 +192,20 @@ def _load_top100_manifest():
             raise ValueError(
                 f"Great 100 target has no fingerprint request: {target['name']}")
         theorem_names = tuple(item["name"] for item in request["theorems"])
+        if set(target.get("load_file_sha256", {})) != set(target["load_files"]):
+            raise ValueError(f"Great 100 source hash set mismatch: {target['name']}")
+        for source in target["load_files"]:
+            source_path = CANDLE_ROOT / source
+            if source_path.is_symlink() or not source_path.is_file():
+                raise ValueError(f"unsafe Great 100 source: {source}")
+            try:
+                source_path.resolve(strict=True).relative_to(
+                    CANDLE_ROOT.resolve(strict=True))
+            except ValueError as error:
+                raise ValueError(f"Great 100 source escapes root: {source}") from error
+            if hashlib.sha256(source_path.read_bytes()).hexdigest() != \
+                    target["load_file_sha256"][source]:
+                raise ValueError(f"Great 100 source hash mismatch: {source}")
         tests.append(Test(
             target["name"], tuple(target["load_files"]), theorem_names,
             request["mapping_status"], request.get("expected_identities")))
@@ -182,6 +219,162 @@ TOP100 = _load_top100_manifest()
 # Lookup by name, so --test can reuse multi-file definitions (e.g. the
 # bertrand-primerecip pairing) rather than always assuming "<name>.ml".
 BY_NAME = {t.name: t for t in TOP100}
+
+LINKED_RECORD_PATH = CANDLE_ROOT / "candle/build/cakeml-build-provenance.json"
+APPROVAL_PATH = CANDLE_ROOT / "candle/top100_identity_approval.json"
+EXECUTION_CONTRACT_PATHS = (
+    "candle/cakeml_artifact_provenance.py",
+    "candle/regression.py",
+    "candle/top100_manifest.json",
+    "candle/fingerprint.ml",
+    "candle.sh",
+)
+
+
+def _sha256_bytes(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def _ordinary_file_record(path, display_path=None):
+    path = Path(path)
+    metadata = path.lstat()
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"retained input is not an ordinary file: {path}")
+    data = path.read_bytes()
+    if path.lstat().st_ino != metadata.st_ino or path.lstat().st_dev != metadata.st_dev:
+        raise ValueError(f"retained input changed while hashing: {path}")
+    return {
+        "path": str(display_path if display_path is not None else path.resolve()),
+        "bytes": len(data),
+        "sha256": _sha256_bytes(data),
+    }
+
+
+def _canonical_digest(value):
+    return _sha256_bytes(json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    ).encode("ascii"))
+
+
+def _git_state():
+    head = subprocess.check_output(
+        ["/usr/bin/git", "-C", str(CANDLE_ROOT), "rev-parse", "HEAD"],
+        text=True, env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"}).strip()
+    status = subprocess.check_output(
+        ["/usr/bin/git", "-C", str(CANDLE_ROOT), "status", "--porcelain=v1",
+         "--untracked-files=all"], text=True,
+        env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"}).splitlines()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise ValueError("Candle Git HEAD is not a full SHA-1")
+    return head, status
+
+
+def _source_closure(manifest):
+    targets = manifest["targets"]
+    ordered_targets = [{
+        "name": target["name"],
+        "load_files": list(target["load_files"]),
+        "theorem_names": [
+            theorem["name"]
+            for theorem in target["fingerprint_request"]["theorems"]
+        ],
+    } for target in targets]
+    ordered_paths = []
+    for target in targets:
+        for source in target["load_files"]:
+            if source not in ordered_paths:
+                ordered_paths.append(source)
+    files = [_ordinary_file_record(CANDLE_ROOT / source, source)
+             for source in ordered_paths]
+    closure = {
+        "target_count": len(targets),
+        "source_file_count": len(files),
+        "fingerprint_request_count": sum(
+            len(target["fingerprint_request"]["theorems"])
+            for target in targets),
+        "ordered_targets": ordered_targets,
+        "files": files,
+    }
+    if (closure["target_count"], closure["source_file_count"],
+            closure["fingerprint_request_count"]) != (65, 66, 97):
+        raise ValueError("Great 100 source closure is not canonical 65/66/97")
+    closure["sha256"] = _canonical_digest(closure)
+    return closure
+
+
+def _capture_suite_contract(require_approved=True):
+    head, status = _git_state()
+    if status:
+        raise ValueError("promotable Great 100 execution requires a clean Git tree")
+    manifest_path = CANDLE_ROOT / "candle/top100_manifest.json"
+    manifest = json.loads(
+        manifest_path.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_json_keys)
+    execution_contract = {
+        relative: {
+            key: value for key, value in
+            _ordinary_file_record(CANDLE_ROOT / relative, relative).items()
+            if key != "path"
+        }
+        for relative in EXECUTION_CONTRACT_PATHS
+    }
+    approval = _ordinary_file_record(
+        APPROVAL_PATH, APPROVAL_PATH.relative_to(CANDLE_ROOT).as_posix())
+    approval_payload = json.loads(
+        APPROVAL_PATH.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_json_keys)
+    manifest_approval = manifest.get("identity_approval", {})
+    if (manifest_approval.get("sha256") != approval["sha256"] or
+            manifest_approval.get("approval_status") !=
+            approval_payload.get("approval_status") or
+            manifest_approval.get("promotion_allowed") is not
+            approval_payload.get("promotion_allowed")):
+        raise ValueError("manifest and identity approval artifact disagree")
+    if require_approved and (
+            approval_payload.get("approval_status") != "approved" or
+            approval_payload.get("promotion_allowed") is not True or
+            any(target["fingerprint_request"].get("expected_identities") is None
+                for target in manifest["targets"])):
+        raise ValueError("Great 100 identities are not independently approved")
+    linked = _ordinary_file_record(
+        LINKED_RECORD_PATH,
+        LINKED_RECORD_PATH.relative_to(CANDLE_ROOT).as_posix())
+    linked_payload = json.loads(
+        LINKED_RECORD_PATH.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_json_keys)
+    if (linked_payload.get("schema") != 6 or
+            linked_payload.get("candle_commit") != head):
+        raise ValueError("linked schema-6 record does not bind clean Candle HEAD")
+    executable = _ordinary_file_record(CANDLE_ROOT / "candle/build/cake")
+    source_closure = _source_closure(manifest)
+    return {
+        "candle_git_head": head,
+        "candle_git_status": [],
+        "execution_contract": execution_contract,
+        "execution_contract_sha256": _canonical_digest(execution_contract),
+        "source_closure": source_closure,
+        "independent_approval": approval,
+        "linked_record": linked,
+        "candle_executable": executable,
+    }
+
+
+def _runtime_state(contract):
+    current = _capture_suite_contract(require_approved=True)
+    for field in (
+            "candle_git_head", "candle_git_status", "execution_contract",
+            "execution_contract_sha256", "source_closure",
+            "independent_approval", "linked_record", "candle_executable"):
+        if current[field] != contract[field]:
+            raise ValueError(f"Great 100 runtime input changed: {field}")
+    return {
+        "candle_git_head": current["candle_git_head"],
+        "candle_git_status": current["candle_git_status"],
+        "linked_record_sha256": current["linked_record"]["sha256"],
+        "candle_executable": current["candle_executable"],
+        "execution_contract_sha256": current["execution_contract_sha256"],
+        "source_closure_sha256": current["source_closure"]["sha256"],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -305,6 +498,22 @@ class CandleREPL:
         while self.load_stack:
             self._check_output()
 
+    def finish(self):
+        """Request an ordinary zero exit and return the observed exit status."""
+        timeout, wall_limited = _effective_expect_timeout(
+            self.inactivity_timeout, self.wall_deadline)
+        self.process.sendline("exit 0;;")
+        index = self.process.expect([pexpect.EOF, pexpect.TIMEOUT], timeout=timeout)
+        if index == 1:
+            if wall_limited:
+                raise WallTimeout("total wall deadline expired while exiting")
+            raise InactivityTimeout("Candle did not exit after completion")
+        self.process.close()
+        if self.process.exitstatus != 0:
+            raise LoadFailure(
+                f"Candle completed but exited with status {self.process.exitstatus}")
+        return self.process.exitstatus
+
     def kill(self):
         # pexpect makes candle.sh a session/process-group leader and cake stays
         # in that foreground group.  Kill the verified isolated group so a
@@ -326,18 +535,30 @@ class CandleREPL:
 # Canonical theorem fingerprint requests
 # ---------------------------------------------------------------------------
 
-FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
+FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V2"
+STATE_FINGERPRINT_MARKER = "CANDLE_STATE_FINGERPRINT_V2"
+SUITE_MARKER = "CANDLE_GREAT100_SUITE_V1"
+PROCESS_MARKER = "CANDLE_GREAT100_PROCESS_V1"
+LINKED_RECORD_MARKER = "CANDLE_LINKED_PROVENANCE_V1"
 FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint.ml"
 OCAML_VALUE_PATH_RE = re.compile(
     r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 
 
-def _fingerprint_request_source(theorem_names):
+def _fingerprint_request_source(theorem_names, suite_nonce=None,
+                                process_nonce=None):
     lines = []
     for name in theorem_names:
         if not OCAML_VALUE_PATH_RE.fullmatch(name):
             raise ValueError(f"unsafe theorem value path in manifest: {name!r}")
         lines.append(f'candle_s1_emit_fingerprint "{name}" {name};;')
+    lines.append("candle_s1_emit_state_fingerprint ();;")
+    if suite_nonce is not None or process_nonce is not None:
+        if (not re.fullmatch(r"[0-9a-f]{64}", suite_nonce or "") or
+                not re.fullmatch(r"[0-9a-f]{64}", process_nonce or "")):
+            raise ValueError("invalid Great 100 process marker nonce")
+        marker = f"{PROCESS_MARKER}\t{suite_nonce}\t{process_nonce}\tCOMPLETE"
+        lines.append(f"print_endline ({json.dumps(marker)});;")
     return "\n".join(lines) + "\n"
 
 
@@ -352,20 +573,25 @@ def _identity_sha256(serialized):
     return hashlib.sha256(serialized).hexdigest()
 
 
-def _match_expected_identities(records, expected_identities, serializer_sha256,
-                               mapping_status):
+def _match_expected_identities(records, post_state, expected_identities,
+                               serializer_sha256, mapping_status):
     """Fail closed unless every approved structural identity matches exactly."""
     if expected_identities is None:
         return "observed_uncompared", False
     if mapping_status != "audited":
         raise LoadFailure(
             "expected fingerprints cannot approve a manual-review mapping")
-    if set(expected_identities) != {"serializer_sha256", "theorems"}:
+    if set(expected_identities) != {
+            "approval_sha256", "serializer_sha256", "theorems", "post_state"}:
         raise LoadFailure("malformed expected fingerprint identity object")
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_identities["approval_sha256"]):
+        raise LoadFailure("malformed expected fingerprint approval identity")
     if expected_identities["serializer_sha256"] != serializer_sha256:
         raise LoadFailure("expected fingerprint serializer identity mismatch")
     if expected_identities["theorems"] != records:
         raise LoadFailure("observed theorem or global-axiom fingerprint mismatch")
+    if expected_identities["post_state"] != post_state:
+        raise LoadFailure("observed post-load kernel-state fingerprint mismatch")
     return "matched", True
 
 
@@ -373,6 +599,7 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
                               expected_identities=None):
     """Parse structural identities emitted by candle/fingerprint.ml."""
     records = {}
+    state_records = []
     for line in Path(log_path).read_text(encoding="utf-8").splitlines():
         if not line.startswith(FINGERPRINT_MARKER + "\t"):
             continue
@@ -410,6 +637,37 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
             "hypothesis_count": parsed_hypothesis_count,
             "global_axiom_count": parsed_assumption_count,
         }
+    for line in Path(log_path).read_text(encoding="utf-8").splitlines():
+        if not line.startswith(STATE_FINGERPRINT_MARKER + "\t"):
+            continue
+        fields = line.split("\t")
+        if len(fields) != 10:
+            raise LoadFailure(
+                f"malformed {STATE_FINGERPRINT_MARKER} record with "
+                f"{len(fields)} fields")
+        serialized = [
+            _decode_fingerprint_hex(field, label)
+            for field, label in zip(fields[1:6], (
+                "kernel state", "type constants", "term constants",
+                "definitions", "state axioms"))
+        ]
+        try:
+            counts = [int(field) for field in fields[6:10]]
+        except ValueError as error:
+            raise LoadFailure("non-numeric post-state fingerprint count") from error
+        if any(count < 0 for count in counts):
+            raise LoadFailure("negative post-state fingerprint count")
+        state_records.append({
+            "kernel_state_sha256": _identity_sha256(serialized[0]),
+            "type_constants_sha256": _identity_sha256(serialized[1]),
+            "term_constants_sha256": _identity_sha256(serialized[2]),
+            "definitions_sha256": _identity_sha256(serialized[3]),
+            "global_axioms_sha256": _identity_sha256(serialized[4]),
+            "type_constant_count": counts[0],
+            "term_constant_count": counts[1],
+            "definition_count": counts[2],
+            "global_axiom_count": counts[3],
+        })
 
     expected = list(theorem_names)
     missing = [name for name in expected if name not in records]
@@ -425,11 +683,22 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
     }
     if len(axiom_identities) != 1:
         raise LoadFailure("global axiom identity changed between theorem requests")
+    if len(state_records) != 1:
+        raise LoadFailure(
+            f"expected exactly one post-state fingerprint; got {len(state_records)}")
+    post_state = state_records[0]
+    if next(iter(axiom_identities)) != (
+            post_state["global_axioms_sha256"],
+            post_state["global_axiom_count"]):
+        raise LoadFailure("theorem and post-state global axiom identity mismatch")
+    if post_state["global_axiom_count"] != 3:
+        raise LoadFailure("post-state does not contain exactly three global axioms")
 
     serializer_sha256 = hashlib.sha256(FINGERPRINT_HELPER.read_bytes()).hexdigest()
     ordered_records = [records[name] for name in expected]
     status, expected_present = _match_expected_identities(
-        ordered_records, expected_identities, serializer_sha256, mapping_status)
+        ordered_records, post_state, expected_identities, serializer_sha256,
+        mapping_status)
     return {
         "status": status,
         "mapping_status": mapping_status,
@@ -439,6 +708,50 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
             "sha256": serializer_sha256,
         },
         "theorems": ordered_records,
+        "post_state": post_state,
+        "approval_sha256": (
+            expected_identities["approval_sha256"]
+            if expected_identities is not None else None),
+    }
+
+
+def _read_process_markers(log_path, suite_nonce, process_nonce,
+                          linked_record_sha256):
+    data = Path(log_path).read_bytes()
+    try:
+        lines = data.decode("utf-8").splitlines()
+    except UnicodeDecodeError as error:
+        raise LoadFailure("Great 100 transcript is not UTF-8") from error
+    expected = {
+        "suite": f"{SUITE_MARKER}\t{suite_nonce}",
+        "start": f"{PROCESS_MARKER}\t{suite_nonce}\t{process_nonce}\tSTART",
+        "linked": f"{LINKED_RECORD_MARKER}\t{linked_record_sha256}",
+        "complete": (
+            f"{PROCESS_MARKER}\t{suite_nonce}\t{process_nonce}\tCOMPLETE"),
+    }
+    indices = {}
+    for name, marker in expected.items():
+        matches = [index for index, line in enumerate(lines) if line == marker]
+        if len(matches) != 1:
+            raise LoadFailure(f"missing or duplicate Great 100 {name} marker")
+        indices[name] = matches[0]
+    if not (indices["suite"] < indices["start"] < indices["linked"] <
+            indices["complete"]):
+        raise LoadFailure("Great 100 process markers are out of order")
+    fingerprint_indices = [
+        index for index, line in enumerate(lines)
+        if line.startswith((FINGERPRINT_MARKER + "\t",
+                            STATE_FINGERPRINT_MARKER + "\t"))
+    ]
+    if not fingerprint_indices or any(
+            not indices["linked"] < index < indices["complete"]
+            for index in fingerprint_indices):
+        raise LoadFailure("fingerprint record lies outside process markers")
+    return {
+        "suite_line": indices["suite"],
+        "start_line": indices["start"],
+        "linked_line": indices["linked"],
+        "complete_line": indices["complete"],
     }
 
 
@@ -454,6 +767,9 @@ class ProcessTreeSampler:
         self.interval = interval
         self.peak_process_rss_kib = 0
         self.peak_tree_rss_kib = 0
+        self.sample_count = 0
+        self.root_observed = False
+        self.error = None
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
 
@@ -481,6 +797,8 @@ class ProcessTreeSampler:
 
     def _sample(self):
         parents, rss = self._process_snapshot()
+        self.sample_count += 1
+        self.root_observed = self.root_observed or self.root_pid in rss
         tree = {self.root_pid}
         changed = True
         while changed:
@@ -497,9 +815,12 @@ class ProcessTreeSampler:
                 self.peak_tree_rss_kib, sum(live_rss))
 
     def _run(self):
-        self._sample()
-        while not self._stop.wait(self.interval):
+        try:
             self._sample()
+            while not self._stop.wait(self.interval):
+                self._sample()
+        except Exception as error:  # pylint: disable=broad-exception-caught
+            self.error = f"{error.__class__.__name__}: {error}"
 
     def start(self):
         self._thread.start()
@@ -507,7 +828,21 @@ class ProcessTreeSampler:
     def stop(self):
         self._stop.set()
         self._thread.join()
-        self._sample()
+        try:
+            self._sample()
+        except Exception as error:  # pylint: disable=broad-exception-caught
+            self.error = f"{error.__class__.__name__}: {error}"
+
+    def evidence(self):
+        completed = not self._thread.is_alive() and self.error is None
+        return {
+            "interval_seconds": self.interval,
+            "sample_count": self.sample_count,
+            "root_observed": self.root_observed,
+            "sampler_completed": completed,
+            "peak_process_rss_kib": self.peak_process_rss_kib,
+            "peak_tree_rss_kib": self.peak_tree_rss_kib,
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -528,6 +863,7 @@ class TestResult:
     log_path: str = ""
     fingerprints: dict | None = None
     timeout_kind: str | None = None
+    process_evidence: dict | None = None
 
     @property
     def total(self):
@@ -558,7 +894,7 @@ def _open_test_log(safe_name, log_dir=None):
 
 
 def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
-             log_dir=None):
+             log_dir=None, suite_nonce=None, suite_contract=None):
     """Run one fresh process with distinct inactivity and total wall limits."""
     safe_name = test.name.replace("/", "_")
     logfile, log_path = _open_test_log(safe_name, log_dir)
@@ -575,11 +911,24 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
     test_elapsed = 0.0
     fingerprint_elapsed = 0.0
     request_path = None
+    process_nonce = secrets.token_hex(32) if suite_contract is not None else None
+    process_started_utc = datetime.now(timezone.utc).isoformat()
+    process_pid = None
+    exit_code = None
+    markers = None
+    pre_runtime_state = None
+    post_runtime_state = None
+    if suite_contract is not None:
+        pre_runtime_state = _runtime_state(suite_contract)
+        env = dict(os.environ if env is None else env)
+        env["CANDLE_GREAT100_SUITE_NONCE"] = suite_nonce
+        env["CANDLE_GREAT100_PROCESS_NONCE"] = process_nonce
     try:
         repl = CandleREPL(
             logfile=logfile, inactivity_timeout=inactivity_timeout,
             wall_deadline=wall_deadline, env=env)
         boot_elapsed = time.perf_counter() - run_started
+        process_pid = repl.process.pid
         sampler = ProcessTreeSampler(repl.process.pid)
         sampler.start()
 
@@ -599,14 +948,21 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
                 prefix=f"candle-{safe_name}-fingerprints-", suffix=".ml")
             with os.fdopen(request_fd, "w", encoding="utf-8") as request_file:
                 request_file.write(
-                    _fingerprint_request_source(test.fingerprint_theorems))
+                    _fingerprint_request_source(
+                        test.fingerprint_theorems, suite_nonce, process_nonce))
             repl.load(request_path)
             logfile.flush()
             fingerprints = _read_fingerprint_records(
                 log_path, test.fingerprint_theorems,
                 test.fingerprint_mapping_status,
                 test.fingerprint_expected_identities)
+            if suite_contract is not None:
+                markers = _read_process_markers(
+                    log_path, suite_nonce, process_nonce,
+                    suite_contract["linked_record"]["sha256"])
             fingerprint_elapsed = time.perf_counter() - fingerprint_start
+
+        exit_code = repl.finish()
 
         result = TestResult(
             test.name, TestStatus.PASS, boot_elapsed=boot_elapsed,
@@ -654,6 +1010,48 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
         logfile.close()
         if request_path is not None:
             Path(request_path).unlink(missing_ok=True)
+        if suite_contract is not None and result is not None:
+            evidence_error = None
+            try:
+                post_runtime_state = _runtime_state(suite_contract)
+                transcript = _ordinary_file_record(log_path)
+                resource = sampler.evidence() if sampler is not None else {
+                    "interval_seconds": 0.25,
+                    "sample_count": 0,
+                    "root_observed": False,
+                    "sampler_completed": False,
+                    "peak_process_rss_kib": 0,
+                    "peak_tree_rss_kib": 0,
+                }
+                if result.status is TestStatus.PASS and (
+                        exit_code != 0 or markers is None or
+                        pre_runtime_state != post_runtime_state or
+                        resource["sample_count"] <= 0 or
+                        not resource["root_observed"] or
+                        not resource["sampler_completed"] or
+                        resource["peak_process_rss_kib"] <= 0 or
+                        resource["peak_tree_rss_kib"] <= 0):
+                    raise LoadFailure("incomplete Great 100 process evidence")
+                result.process_evidence = {
+                    "suite_nonce": suite_nonce,
+                    "process_nonce": process_nonce,
+                    "pid": process_pid,
+                    "started_utc": process_started_utc,
+                    "completed_utc": datetime.now(timezone.utc).isoformat(),
+                    "exit_code": exit_code,
+                    "markers": markers,
+                    "linked_record_sha256":
+                        suite_contract["linked_record"]["sha256"],
+                    "transcript": transcript,
+                    "pre_runtime_state": pre_runtime_state,
+                    "post_runtime_state": post_runtime_state,
+                    "resource_sampling": resource,
+                }
+            except Exception as error:  # pylint: disable=broad-exception-caught
+                evidence_error = error
+            if evidence_error is not None and result.status is TestStatus.PASS:
+                result.status = TestStatus.FAIL
+                result.error_message = f"evidence validation failed: {evidence_error}"
     return result
 
 
@@ -686,6 +1084,7 @@ class Reporter:
             "error_message": result.error_message,
             "log_path": result.log_path,
             "fingerprints": result.fingerprints,
+            "process_evidence": result.process_evidence,
         }
 
     @staticmethod
@@ -717,7 +1116,12 @@ class Reporter:
             "missing_or_failed_fingerprint_target_count": missing,
             "suite_closed": (
                 suite == "top100" and len(results) == len(tests)
-                and matched == len(tests) and manual_review_count == 0),
+                and matched == len(tests) and expected_count == len(tests)
+                and manual_review_count == 0
+                and all(result.status is TestStatus.PASS and
+                        result.process_evidence is not None and
+                        result.process_evidence.get("exit_code") == 0
+                        for result in results)),
         }
 
     @staticmethod
@@ -762,25 +1166,22 @@ class Reporter:
 
     @staticmethod
     def write_json(results, wall, path, suite, jobs, inactivity_timeout,
-                   wall_timeout, tests, log_dir):
-        executable = CANDLE_ROOT / "candle" / "build" / "cake"
-        executable_sha256 = hashlib.sha256(executable.read_bytes()).hexdigest()
-        git_head = subprocess.check_output(
-            ["git", "-C", str(CANDLE_ROOT), "rev-parse", "HEAD"],
-            text=True,
-        ).strip()
-        git_status = subprocess.check_output(
-            ["git", "-C", str(CANDLE_ROOT), "status", "--short"],
-            text=True,
-        ).splitlines()
+                   wall_timeout, tests, log_dir, suite_nonce=None,
+                   suite_contract=None, suite_started_utc=None):
+        if suite == "top100":
+            if suite_contract is None or not re.fullmatch(
+                    r"[0-9a-f]{64}", suite_nonce or ""):
+                raise ValueError("schema-4 Great 100 report lacks suite evidence")
+            _runtime_state(suite_contract)
         files_by_name = {test.name: list(test.files) for test in tests}
         counts = {
             status.value: sum(result.status == status for result in results)
             for status in TestStatus
         }
         payload = {
-            "schema": 3,
+            "schema": 4,
             "generated_utc": datetime.now(timezone.utc).isoformat(),
+            "suite_started_utc": suite_started_utc,
             "suite": suite,
             "test_count": len(results),
             "jobs": jobs,
@@ -790,15 +1191,23 @@ class Reporter:
             "sum_test_seconds": sum(result.total for result in results),
             "counts": counts,
             "candle_root": str(CANDLE_ROOT),
-            "candle_git_head": git_head,
-            "candle_git_status": git_status,
-            "candle_executable": str(executable.resolve()),
-            "candle_executable_sha256": executable_sha256,
+            "candle_git_head": (
+                suite_contract["candle_git_head"]
+                if suite_contract is not None else _git_state()[0]),
+            "candle_git_status": (
+                suite_contract["candle_git_status"]
+                if suite_contract is not None else _git_state()[1]),
+            "candle_executable": (
+                suite_contract["candle_executable"]
+                if suite_contract is not None else
+                _ordinary_file_record(CANDLE_ROOT / "candle/build/cake")),
             "log_directory": str(Path(log_dir).resolve()),
             "fingerprint_contract": {
-                "serializer": "candle/fingerprint.ml structural v1",
+                "serializer": "candle/fingerprint.ml structural v2",
                 "load_pass_is_fingerprint_match": False,
-                "expected_identity_source": "top100_manifest.json",
+                "expected_identity_source": (
+                    "separate independently reviewed approval artifact, "
+                    "fail-closed through top100_manifest.json"),
                 "expected_mismatch_result": "FAIL",
             },
             "s1_evidence": Reporter.s1_evidence_summary(
@@ -808,8 +1217,28 @@ class Reporter:
                 for result in results
             ],
         }
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        if suite_contract is not None:
+            payload.update({
+                "execution_contract": suite_contract["execution_contract"],
+                "source_closure": suite_contract["source_closure"],
+                "independent_approval": suite_contract["independent_approval"],
+                "linked_record": suite_contract["linked_record"],
+                "run_evidence": {
+                    "suite_nonce": suite_nonce,
+                    "marker_contract": "candle-great100-process-markers-v1",
+                    "linked_record_sha256":
+                        suite_contract["linked_record"]["sha256"],
+                    "source_closure_sha256":
+                        suite_contract["source_closure"]["sha256"],
+                    "independent_approval_sha256":
+                        suite_contract["independent_approval"]["sha256"],
+                },
+            })
+        with path.open("x", encoding="utf-8") as report_file:
+            json.dump(payload, report_file, indent=2)
+            report_file.write("\n")
         print(f"Machine-readable report: {path}")
+        return payload
 
 
 # ---------------------------------------------------------------------------
@@ -841,7 +1270,7 @@ def cap_jobs_for_heap(jobs, heap_mb):
 
 
 def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
-              log_dir=None):
+              log_dir=None, suite_nonce=None, suite_contract=None):
     total = len(tests)
     print(f"Running {total} test(s) with {jobs} parallel worker(s).")
     wall_description = (f"{wall_timeout:g}s" if wall_timeout is not None
@@ -860,7 +1289,8 @@ def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
         futures = {
             ex.submit(
                 run_test, t, inactivity_timeout,
-                wall_timeout=wall_timeout, env=env, log_dir=log_dir): t
+                wall_timeout=wall_timeout, env=env, log_dir=log_dir,
+                suite_nonce=suite_nonce, suite_contract=suite_contract): t
             for t in tests
         }
         try:
@@ -880,6 +1310,8 @@ def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
                 fut.cancel()
 
     wall = time.perf_counter() - wall_start
+    order = {test.name: index for index, test in enumerate(tests)}
+    results.sort(key=lambda result: order[result.name])
     return results, wall
 
 
@@ -958,6 +1390,19 @@ def main():
         print(f"\n{len(tests)} test(s)")
         return
 
+    suite_contract = None
+    suite_nonce = None
+    suite_started_utc = datetime.now(timezone.utc).isoformat()
+    if running_top100:
+        if args.json_report is None:
+            parser.error("--top100 requires --json-report")
+        if wall_timeout is None:
+            parser.error("--top100 requires a positive --wall-timeout")
+        if args.json_report.exists():
+            parser.error("--json-report must not already exist")
+        suite_contract = _capture_suite_contract(require_approved=True)
+        suite_nonce = secrets.token_hex(32)
+
     # The Top 100 suite gets a larger heap; cap parallelism so the combined
     # per-process heap reservation does not exceed available memory.
     child_env = None
@@ -975,15 +1420,19 @@ def main():
 
     results, wall = run_suite(
         tests, jobs, args.inactivity_timeout,
-        wall_timeout=wall_timeout, env=child_env, log_dir=log_dir)
+        wall_timeout=wall_timeout, env=child_env, log_dir=log_dir,
+        suite_nonce=suite_nonce, suite_contract=suite_contract)
     Reporter.print_summary(results, wall)
     if args.json_report:
         Reporter.write_json(
             results, wall, args.json_report, suite_name, jobs,
-            args.inactivity_timeout, wall_timeout, tests, log_dir)
+            args.inactivity_timeout, wall_timeout, tests, log_dir,
+            suite_nonce=suite_nonce, suite_contract=suite_contract,
+            suite_started_utc=suite_started_utc)
 
     unexpected = [r for r in results if r.status in (TestStatus.FAIL, TestStatus.TIMEOUT)]
-    sys.exit(1 if unexpected else 0)
+    s1 = Reporter.s1_evidence_summary(results, tests, suite_name)
+    sys.exit(1 if unexpected or (running_top100 and not s1["suite_closed"]) else 0)
 
 
 if __name__ == "__main__":
