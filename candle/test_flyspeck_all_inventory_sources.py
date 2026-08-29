@@ -80,6 +80,18 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
             for entry in self.plan["inputs"]
             for action in entry["recognized_loader_actions"]
         ))
+        remaining = [
+            call
+            for entry in self.plan["inputs"]
+            for call in subject.scan_load_calls(
+                self.files[entry["prepared_input"]["path"]]
+            )
+        ]
+        self.assertEqual(len(remaining), 6)
+        self.assertTrue(all(
+            call["syntax_position"] == "embedded-expression"
+            for call in remaining
+        ))
 
     def test_prepared_paths_and_hashes_are_exact_ordered_and_unique(self) -> None:
         prepared = self.plan["prepared_inputs"]
@@ -275,6 +287,11 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         calls[0]["literal"] = "other.ml"
         with self.assertRaisesRegex(subject.ContractError, "literal/line drift"):
             subject._mask_effective_source("fixture", source, calls)
+        trailing = b'loads "dep.ml";; let unexpected = 1;;\n'
+        with self.assertRaisesRegex(subject.ContractError, "complete line phrase"):
+            subject._mask_effective_source(
+                "fixture", trailing, subject.scan_load_calls(trailing),
+            )
 
     def test_utf8_omission_and_input_count_drift_fail_closed(self) -> None:
         altered = copy.deepcopy(self.descriptor)

@@ -504,6 +504,12 @@ def _mask_effective_source(
     source_key: str, effective: bytes, calls: list[dict[str, Any]],
 ) -> tuple[bytes, list[dict[str, Any]]]:
     lines = _lf_lines(effective)
+    clean_bytes = strip_ocaml_comments(
+        effective.decode("latin-1")
+    ).encode("latin-1")
+    clean_lines = _lf_lines(clean_bytes)
+    require(len(clean_lines) == len(lines),
+            f"comment masking changed line count: {source_key}")
     masked_lines: set[int] = set()
     embedded_lines: set[int] = set()
     actions: list[dict[str, Any]] = []
@@ -543,8 +549,13 @@ def _mask_effective_source(
             and stripped[len(token):len(token) + 1] in b" \t",
             f"loader token/line drift: {source_key}:{line_number}",
         )
-        require(b";;" in stripped,
-                f"unterminated loader line: {source_key}:{line_number}")
+        clean_line = clean_lines[line_number - 1].decode("latin-1")
+        code_line = _code_mask(clean_line)
+        phrase_end = code_line.find(";;")
+        require(
+            phrase_end >= 0 and code_line[phrase_end + 2:].strip() == "",
+            f"loader is not the complete line phrase: {source_key}:{line_number}",
+        )
         literal = call.get("literal")
         if isinstance(literal, str):
             encoded = json.dumps(literal, ensure_ascii=False).encode("latin-1")
@@ -563,6 +574,11 @@ def _mask_effective_source(
     require(len(prepared) == len(effective), f"prepared size drift: {source_key}")
     require(not masked_lines.intersection(embedded_lines),
             f"masked line also contains an embedded loader call: {source_key}")
+    expected_remaining = [
+        call for call in calls if call["syntax_position"] == "embedded-expression"
+    ]
+    require(scan_load_calls(prepared) == expected_remaining,
+            f"prepared loader rescan drift: {source_key}")
     return prepared, actions
 
 
