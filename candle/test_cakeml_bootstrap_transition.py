@@ -123,7 +123,7 @@ class TransitionFixture:
             return copy.deepcopy(expected)
 
         with mock.patch.object(
-            subject.provenance, "validate_bootstrap_record",
+            subject, "validate_canonical_bootstrap_receipt",
             side_effect=validate,
         ):
             yield
@@ -148,6 +148,72 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
         self.addCleanup(fixture.close)
         return fixture
 
+    def test_isolated_cli_loads_exact_sibling_source(self) -> None:
+        script = Path(subject.__file__).resolve()
+        completed = subprocess.run(
+            ["/usr/bin/python3", "-I", "-S", str(script), "--help"],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout)
+        self.assertIn("record-transition", completed.stdout)
+
+    def test_schema7_is_diagnostic_and_schema6_promotion_gate_stays_closed(self) -> None:
+        regression_source = (
+            Path(subject.__file__).resolve().with_name("regression.py")
+        ).read_text(encoding="utf-8")
+        self.assertIn('linked_payload.get("schema") != 6', regression_source)
+        self.assertEqual(subject.TRANSITION_LINKED_SCHEMA, 7)
+
+    def test_exact_loader_ignores_adjacent_bytecode_cache(self) -> None:
+        path = Path(subject.provenance.__file__)
+        cache = path.parent / "__pycache__"
+        cache.mkdir(exist_ok=True)
+        injected = cache / "cakeml_artifact_provenance.cpython-312.pyc"
+        prior = injected.read_bytes() if injected.exists() else None
+        try:
+            injected.write_bytes(b"untrusted adjacent bytecode")
+            module = subject._load_exact_local_source(
+                "_transition_bytecode_regression", path,
+            )
+            self.assertEqual(
+                module.__candle_source_bytes__, path.read_bytes(),
+            )
+        finally:
+            if prior is None:
+                injected.unlink(missing_ok=True)
+                try:
+                    cache.rmdir()
+                except OSError:
+                    pass
+            else:
+                injected.write_bytes(prior)
+
+    def test_canonical_validator_runs_exact_source_controller_directly(self) -> None:
+        fixture = self.make_fixture()
+        completed = subprocess.CompletedProcess(
+            [], 0, b"bootstrap provenance PASS\n", b"",
+        )
+        with mock.patch.object(
+            subject.subprocess, "run", return_value=completed,
+        ) as run:
+            self.assertEqual(
+                subject.validate_canonical_bootstrap_receipt(
+                    fixture.source, fixture.cakeml, fixture.receipt,
+                ),
+                {},
+            )
+        argv = run.call_args.args[0]
+        self.assertEqual(argv[:3], ["/usr/bin/python3", "-I", "-S"])
+        self.assertEqual(
+            argv[3],
+            str(fixture.source / "candle/cakeml_artifact_provenance.py"),
+        )
+        self.assertIn("check-bootstrap", argv)
+
     def test_transition_reconstructs_byte_identical_closure(self) -> None:
         fixture = self.make_fixture()
         with fixture.authenticated_receipt():
@@ -165,6 +231,180 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
             record["final_candle"]["closure"],
         )
         self.assertEqual(fixture.transition.stat().st_mode & 0o777, 0o444)
+
+    def test_retained_transition_reconstructs_source_commit_without_worktree(self) -> None:
+        fixture = self.make_fixture()
+        with fixture.authenticated_receipt():
+            transition = subject.transition_derivation(*fixture.arguments())
+        bootstrap = fixture.bootstrap()
+        bootstrap["source_bootstrap_record"] = subject.provenance.file_record(
+            fixture.receipt,
+        )
+        controller_sources = {}
+        for relative in (
+            "build-local-cakeml-bootstrap.sh",
+            "candle/cakeml_artifact_provenance.py",
+        ):
+            identity = {
+                field: transition["source_candle"]["closure"]["inputs"][relative][field]
+                for field in ("bytes", "sha256")
+            }
+            controller_sources[relative] = {
+                "repository_path": relative,
+                "path": str(fixture.source / relative),
+                **identity,
+                "commit_blob": identity,
+            }
+        preflight = {
+            "controller_sources": controller_sources,
+            "python_controller": {
+                "source": controller_sources[
+                    "candle/cakeml_artifact_provenance.py"
+                ],
+            },
+        }
+        bootstrap["python_controller"] = preflight["python_controller"]
+        subject.validate_retained_transition(
+            transition, bootstrap, preflight, fixture.final, fixture.final_head,
+        )
+
+        forged = copy.deepcopy(transition)
+        for side in ("source_candle", "final_candle"):
+            closure = forged[side]["closure"]
+            closure["inputs"]["candle/insulate.py"]["sha256"] = "f" * 64
+            canonical = json.dumps(
+                closure["inputs"], sort_keys=True, separators=(",", ":"),
+                ensure_ascii=True,
+            ).encode()
+            closure["sha256"] = hashlib.sha256(canonical).hexdigest()
+        with self.assertRaisesRegex(
+            subject.provenance.ProvenanceError, "source closure differs from Git",
+        ):
+            subject.validate_retained_transition(
+                forged, bootstrap, preflight, fixture.final, fixture.final_head,
+            )
+
+        omitted = copy.deepcopy(transition)
+        del omitted["comparison"]
+        with self.assertRaisesRegex(
+            subject.provenance.ProvenanceError,
+            "malformed retained bootstrap transition",
+        ):
+            subject.validate_retained_transition(
+                omitted, bootstrap, preflight, fixture.final, fixture.final_head,
+            )
+
+        rebound = copy.deepcopy(transition)
+        rebound_bootstrap = copy.deepcopy(bootstrap)
+        rebound["source_candle"]["root"] = str(fixture.final)
+        rebound["source_candle"]["head"] = fixture.final_head
+        rebound_bootstrap["candle_root"] = str(fixture.final)
+        rebound_bootstrap["candle_commit"] = fixture.final_head
+        with self.assertRaisesRegex(
+            subject.provenance.ProvenanceError, "authorities are not distinct",
+        ):
+            subject.validate_retained_transition(
+                rebound, rebound_bootstrap, preflight,
+                fixture.final, fixture.final_head,
+            )
+
+        forged_preflight = copy.deepcopy(preflight)
+        forged_bootstrap = copy.deepcopy(bootstrap)
+        forged_source = forged_preflight["controller_sources"][
+            "candle/cakeml_artifact_provenance.py"
+        ]
+        forged_source["sha256"] = "e" * 64
+        forged_source["commit_blob"]["sha256"] = "e" * 64
+        forged_preflight["python_controller"]["source"] = forged_source
+        forged_bootstrap["python_controller"] = forged_preflight[
+            "python_controller"
+        ]
+        with self.assertRaisesRegex(
+            subject.provenance.ProvenanceError,
+            "controller differs from source Git",
+        ):
+            subject.validate_retained_transition(
+                transition, forged_bootstrap, forged_preflight,
+                fixture.final, fixture.final_head,
+            )
+
+    def test_schema7_linked_record_rejects_omitted_or_wrong_controller(self) -> None:
+        fixture = self.make_fixture()
+        build = fixture.final / "candle/build"
+        build.mkdir(parents=True)
+        record_path = build / subject.provenance.LINKED_RECORD_RELATIVE.name
+        pins = subject.provenance.expected_pins(fixture.final)
+        base = {
+            "schema": subject.TRANSITION_LINKED_SCHEMA,
+            "kind": subject.TRANSITION_LINKED_KIND,
+            "promotion_status":
+                "diagnostic-only-requires-final-head-canonical-bootstrap",
+            "transition_mode":
+                "byte-identical-canonical-bootstrap-rebinding-v1",
+            "transition_record": {},
+            "transition_controller": {"wrong": {}},
+            "candle_commit": fixture.final_head,
+            **pins,
+            "bootstrap_record": {}, "bootstrap_preflight": {},
+            "bootstrap_log": {}, "cake_patch": {},
+            "cake_patch_derivation": {}, "native_link_derivation": {},
+            "outputs": {}, "runtime_elf_closure": {},
+            "version_output_sha256": "0" * 64,
+        }
+        omitted = copy.deepcopy(base)
+        del omitted["transition_record"]
+        record_path.write_text(json.dumps(omitted), encoding="utf-8")
+        with self.assertRaisesRegex(
+            subject.provenance.ProvenanceError,
+            "malformed transition-linked provenance",
+        ):
+            subject.validate_linked_transition_record(fixture.final)
+
+        record_path.write_text(json.dumps(base), encoding="utf-8")
+        with mock.patch.object(
+            subject, "validate_git_checkout", return_value=fixture.final,
+        ), mock.patch.object(
+            subject.provenance, "expected_pins", return_value=pins,
+        ), mock.patch.object(
+            subject, "transition_controller_closure",
+            return_value={"expected": {}},
+        ), self.assertRaisesRegex(
+            subject.provenance.ProvenanceError, "controller closure mismatch",
+        ):
+            subject.validate_linked_transition_record(fixture.final)
+
+    def test_schema6_dispatch_rejects_transition_downgrade(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            (root / "candle/build").mkdir(parents=True)
+            record_path = root / subject.provenance.LINKED_RECORD_RELATIVE
+            record_path.write_text(
+                json.dumps({"schema": subject.provenance.LINKED_PROVENANCE_SCHEMA}),
+                encoding="utf-8",
+            )
+            linked = {
+                "schema": subject.provenance.LINKED_PROVENANCE_SCHEMA,
+                "candle_commit": "f" * 40,
+            }
+            retained = {
+                "candle_root": "/different/bootstrap/root",
+                "candle_commit": "e" * 40,
+            }
+            with mock.patch.object(
+                subject.provenance, "validate_linked_record", return_value=linked,
+            ), mock.patch.object(
+                subject.provenance, "validate_build_directory",
+                return_value=root / "candle/build",
+            ), mock.patch.object(
+                subject.provenance, "expected_pins", return_value={},
+            ), mock.patch.object(
+                subject.provenance, "validate_linked_bootstrap_copy",
+                return_value=retained,
+            ), self.assertRaisesRegex(
+                subject.provenance.ProvenanceError,
+                "not an exact-root bootstrap link",
+            ):
+                subject.validate_linked_record(root)
 
     def test_changed_bootstrap_inputs_reject(self) -> None:
         for relative in subject.TRANSITION_CANDLE_INPUTS:

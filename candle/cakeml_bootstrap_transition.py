@@ -23,15 +23,76 @@ import os
 import re
 import stat
 import subprocess
+import sys
+import types
 from pathlib import Path
 from typing import Any
 
-import cakeml_artifact_provenance as provenance
+
+HERE = Path(__file__).resolve().parent
+
+
+def _load_exact_local_source(name: str, path: Path):
+    """Execute one stable sibling source image without import/bytecode lookup."""
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError as error:
+        raise RuntimeError(f"could not open exact local source: {path}") from error
+    try:
+        before = os.fstat(descriptor)
+        chunks = []
+        while block := os.read(descriptor, 1024 * 1024):
+            chunks.append(block)
+        after = os.fstat(descriptor)
+        named = path.stat(follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    source = b"".join(chunks)
+    if (not stat.S_ISREG(before.st_mode) or
+            (before.st_dev, before.st_ino, before.st_size,
+             before.st_mtime_ns, before.st_ctime_ns) !=
+            (after.st_dev, after.st_ino, after.st_size,
+             after.st_mtime_ns, after.st_ctime_ns) or
+            (named.st_dev, named.st_ino) != (after.st_dev, after.st_ino) or
+            len(source) != before.st_size):
+        raise RuntimeError(f"local source changed while loading: {path}")
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        if (getattr(existing, "__candle_source_sha256__", None) !=
+                source_sha256 or
+                Path(getattr(existing, "__file__", "")).resolve() != path):
+            raise RuntimeError(f"untrusted preloaded local module: {name}")
+        return existing
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
+    sys.modules[name] = module
+    try:
+        exec(
+            compile(source, str(path), "exec", dont_inherit=True),
+            module.__dict__,
+        )
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    return module
+
+
+provenance = _load_exact_local_source(
+    "_candle_bootstrap_transition_provenance",
+    HERE / "cakeml_artifact_provenance.py",
+)
 
 
 TRANSITION_SCHEMA = 1
 TRANSITION_KIND = "candle-cakeml-bootstrap-byte-identical-transition"
 TRANSITION_POLICY = "reconstruct_exact_candle_bootstrap_input_closure_v1"
+TRANSITION_LINKED_SCHEMA = 7
+TRANSITION_LINKED_KIND = "candle-linked-pinned-cakeml-transition"
+LINKED_TRANSITION_RECORD = "bootstrap-transition.json"
 
 # build-local-cakeml.sh is deliberately not in this equality closure: it is the
 # destination-side consumer being extended with transition support, not an
@@ -45,6 +106,14 @@ TRANSITION_CANDLE_INPUTS = {
     "candle/cake.S.patch": "100644",
     "candle/insulate.py": "100644",
 }
+TRANSITION_LINK_CONTROLLER_INPUTS = {
+    "build-local-cakeml.sh": "100755",
+    "candle/cakeml_bootstrap_transition.py": "100644",
+}
+TRANSITION_LINKED_OUTPUTS = (
+    *provenance.LINKED_OUTPUTS,
+    LINKED_TRANSITION_RECORD,
+)
 
 TRANSITION_TRUST_BOUNDARY = {
     "policy": "diagnostic_reconstructed_transition_not_signature_v1",
@@ -240,6 +309,96 @@ def candle_input_closure(root: Path, head: str, label: str) -> dict[str, Any]:
     }
 
 
+def committed_tree_input_closure(
+    repository_root: Path,
+    head: str,
+    label: str,
+) -> dict[str, Any]:
+    """Reconstruct the closure at an ancestor without its old worktree."""
+    inputs: dict[str, dict[str, Any]] = {}
+    for relative, expected_mode in TRANSITION_CANDLE_INPUTS.items():
+        entry = git_bytes(
+            repository_root, "ls-tree", "-z", head, "--", relative,
+        )
+        provenance.require(
+            entry.endswith(b"\0") and entry.count(b"\0") == 1,
+            f"{label} has no exact committed input: {relative}",
+        )
+        metadata, path_bytes = entry[:-1].split(b"\t", 1)
+        fields = metadata.decode("ascii", errors="strict").split()
+        path = path_bytes.decode("utf-8", errors="strict")
+        provenance.require(
+            len(fields) == 3 and fields[0] == expected_mode and
+            fields[1] == "blob" and
+            re.fullmatch(r"[0-9a-f]{40}", fields[2]) is not None and
+            path == relative,
+            f"{label} committed input mode/path mismatch: {relative}",
+        )
+        value = git_bytes(repository_root, "cat-file", "blob", fields[2])
+        inputs[relative] = {
+            "path": relative,
+            "mode": expected_mode,
+            **provenance.bytes_record(value),
+        }
+    canonical = json.dumps(
+        inputs, sort_keys=True, separators=(",", ":"), ensure_ascii=True,
+    ).encode()
+    return {
+        "policy": "exact_committed_live_files_v1",
+        "inputs": inputs,
+        "sha256": hashlib.sha256(canonical).hexdigest(),
+    }
+
+
+def validate_canonical_bootstrap_receipt(
+    source_candle_root: Path,
+    cakeml_root: Path,
+    bootstrap_record_path: Path,
+) -> dict[str, Any]:
+    """Run the exact source controller because its process identity is causal."""
+    controller = source_candle_root / "candle/cakeml_artifact_provenance.py"
+    before_identity = provenance.ordinary_file_identity(bootstrap_record_path)
+    receipt_bytes, receipt_record = provenance.captured_ordinary_file(
+        bootstrap_record_path,
+    )
+    completed = subprocess.run(
+        [
+            "/usr/bin/python3", "-I", "-S", str(controller),
+            "check-bootstrap",
+            "--candle-root", str(source_candle_root),
+            "--cakeml-root", str(cakeml_root),
+            "--record", str(bootstrap_record_path),
+        ],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+        timeout=3600,
+    )
+    provenance.require(
+        completed.returncode == 0 and
+        completed.stdout == b"bootstrap provenance PASS\n" and
+        completed.stderr == b"",
+        "canonical source bootstrap validator did not report exact PASS",
+    )
+    provenance.require(
+        provenance.ordinary_file_identity(bootstrap_record_path) == before_identity,
+        "bootstrap receipt changed across canonical validation",
+    )
+    try:
+        bootstrap = json.loads(receipt_bytes.decode("utf-8", errors="strict"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise provenance.ProvenanceError(
+            "malformed canonically validated bootstrap receipt",
+        ) from error
+    provenance.require(
+        isinstance(bootstrap, dict) and
+        provenance.bytes_record(receipt_bytes) == receipt_record,
+        "malformed canonically validated bootstrap receipt",
+    )
+    return bootstrap
+
+
 def transition_derivation(
     source_candle_root: Path,
     source_candle_head: str,
@@ -283,7 +442,7 @@ def transition_derivation(
         )),
         "bootstrap receipt must be outside transition worktrees",
     )
-    bootstrap = provenance.validate_bootstrap_record(
+    bootstrap = validate_canonical_bootstrap_receipt(
         source_candle_root, cakeml_root, bootstrap_record_path,
     )
     provenance.require(
@@ -410,12 +569,341 @@ def validate_transition_record(
     )
     # Do not reuse a bootstrap object parsed from the transition.  Re-run the
     # canonical validator and return that exact result to the linking phase.
-    bootstrap = provenance.validate_bootstrap_record(
+    bootstrap = validate_canonical_bootstrap_receipt(
         Path(expected["source_candle"]["root"]),
         Path(expected["cakeml"]["root"]),
         Path(expected["bootstrap_record"]["path"]),
     )
     return transition, bootstrap
+
+
+def materialize_transition_record(
+    build_dir: Path,
+    source_path: Path,
+    transition: dict[str, Any],
+) -> dict[str, Any]:
+    source_path = source_path.resolve(strict=True)
+    source_bytes, source_identity = provenance.captured_ordinary_file(source_path)
+    destination = build_dir / LINKED_TRANSITION_RECORD
+    provenance.require(
+        not destination.is_symlink(),
+        "refusing symlink destination for linked bootstrap transition",
+    )
+    destination.write_bytes(source_bytes)
+    provenance.validate_file_record(
+        destination, source_identity, "materialized bootstrap transition",
+    )
+    retained, _ = provenance.load_captured_object(destination)
+    provenance.require(
+        retained == transition,
+        "materialized bootstrap transition differs from validated record",
+    )
+    return source_identity
+
+
+def transition_controller_closure(
+    final_candle_root: Path,
+    final_candle_head: str,
+) -> dict[str, Any]:
+    return {
+        relative: committed_input_record(
+            final_candle_root, final_candle_head, relative, mode,
+            "final transition-link controller",
+        )
+        for relative, mode in TRANSITION_LINK_CONTROLLER_INPUTS.items()
+    }
+
+
+def validate_retained_transition(
+    transition: dict[str, Any],
+    bootstrap: dict[str, Any],
+    preflight: dict[str, Any],
+    final_candle_root: Path,
+    final_candle_head: str,
+) -> None:
+    provenance.require(
+        isinstance(transition, dict) and set(transition) == {
+            "schema", "kind", "policy", "source_candle", "final_candle",
+            "cakeml", "bootstrap_record", "comparison", "trusted_boundary",
+        },
+        "malformed retained bootstrap transition",
+    )
+    provenance.require(
+        transition.get("schema") == TRANSITION_SCHEMA and
+        transition.get("kind") == TRANSITION_KIND and
+        transition.get("policy") == TRANSITION_POLICY and
+        transition.get("comparison") == "byte_for_byte_equal" and
+        transition.get("trusted_boundary") == TRANSITION_TRUST_BOUNDARY,
+        "retained bootstrap transition policy mismatch",
+    )
+    source = transition.get("source_candle")
+    final = transition.get("final_candle")
+    cakeml = transition.get("cakeml")
+    receipt = transition.get("bootstrap_record")
+    provenance.require(
+        isinstance(source, dict) and set(source) == {"root", "head", "closure"} and
+        isinstance(final, dict) and set(final) == {"root", "head", "closure"} and
+        isinstance(cakeml, dict) and set(cakeml) == {"root", "head"} and
+        isinstance(receipt, dict) and set(receipt) == {
+            "path", "bytes", "sha256",
+        },
+        "malformed retained bootstrap transition authority",
+    )
+    provenance.require(
+        source["root"] == bootstrap.get("candle_root") and
+        source["head"] == bootstrap.get("candle_commit") and
+        cakeml["root"] == bootstrap.get("cakeml_root") and
+        cakeml["head"] == bootstrap.get("cakeml_commit") and
+        final["root"] == str(final_candle_root) and
+        final["head"] == final_candle_head,
+        "retained bootstrap transition root/head mismatch",
+    )
+    provenance.require(
+        source["root"] != str(final_candle_root) and
+        source["head"] != final_candle_head,
+        "retained bootstrap transition authorities are not distinct",
+    )
+    source_head = require_commit(
+        source["head"], "retained bootstrap source Candle head",
+    )
+    try:
+        ancestry = subprocess.run(
+            provenance.git_command(
+                final_candle_root, "merge-base", "--is-ancestor",
+                source_head, final_candle_head,
+            ),
+            check=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env=provenance.git_environment(), timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise provenance.ProvenanceError(
+            "could not reconstruct retained transition ancestry",
+        ) from error
+    provenance.require(
+        ancestry.returncode == 0 and ancestry.stdout == b"" and
+        ancestry.stderr == b"",
+        "retained bootstrap source is not an ancestor of final Candle head",
+    )
+    provenance.require(
+        {field: receipt[field] for field in ("bytes", "sha256")} ==
+        bootstrap.get("source_bootstrap_record"),
+        "retained transition bootstrap receipt identity mismatch",
+    )
+    provenance.require(
+        isinstance(receipt["path"], str) and Path(receipt["path"]).is_absolute(),
+        "malformed retained transition bootstrap receipt path",
+    )
+    for name, closure in (("source", source["closure"]),
+                          ("final", final["closure"])):
+        provenance.require(
+            isinstance(closure, dict) and set(closure) == {
+                "policy", "inputs", "sha256",
+            } and closure.get("policy") == "exact_committed_live_files_v1" and
+            isinstance(closure.get("inputs"), dict) and
+            set(closure["inputs"]) == set(TRANSITION_CANDLE_INPUTS),
+            f"malformed retained {name} transition closure",
+        )
+        for relative, mode in TRANSITION_CANDLE_INPUTS.items():
+            item = closure["inputs"][relative]
+            provenance.require(
+                isinstance(item, dict) and set(item) == {
+                    "path", "mode", "bytes", "sha256",
+                } and item.get("path") == relative and
+                item.get("mode") == mode and
+                isinstance(item.get("bytes"), int) and item["bytes"] >= 0 and
+                isinstance(item.get("sha256"), str) and
+                re.fullmatch(r"[0-9a-f]{64}", item["sha256"]) is not None,
+                f"malformed retained {name} transition input: {relative}",
+            )
+        canonical = json.dumps(
+            closure["inputs"], sort_keys=True, separators=(",", ":"),
+            ensure_ascii=True,
+        ).encode()
+        provenance.require(
+            hashlib.sha256(canonical).hexdigest() == closure["sha256"],
+            f"retained {name} transition closure digest mismatch",
+        )
+    provenance.require(
+        source["closure"] == final["closure"],
+        "retained bootstrap transition closures differ",
+    )
+    observed_source = committed_tree_input_closure(
+        final_candle_root, source_head, "retained source Candle commit",
+    )
+    provenance.require(
+        observed_source == source["closure"],
+        "retained bootstrap transition source closure differs from Git",
+    )
+    controller_sources = preflight.get("controller_sources")
+    provenance.require(
+        isinstance(controller_sources, dict),
+        "retained bootstrap preflight lacks controller sources",
+    )
+    for relative in (
+        "build-local-cakeml-bootstrap.sh",
+        "candle/cakeml_artifact_provenance.py",
+    ):
+        controller = controller_sources.get(relative)
+        closure_input = source["closure"]["inputs"][relative]
+        provenance.require(
+            isinstance(controller, dict) and
+            controller.get("repository_path") == relative and
+            {field: controller.get(field) for field in ("bytes", "sha256")} ==
+            {field: closure_input[field] for field in ("bytes", "sha256")} and
+            controller.get("commit_blob") == {
+                field: closure_input[field] for field in ("bytes", "sha256")
+            },
+            f"retained bootstrap controller differs from source Git: {relative}",
+        )
+    python_controller = preflight.get("python_controller")
+    provenance.require(
+        isinstance(python_controller, dict) and
+        python_controller.get("source") ==
+        controller_sources["candle/cakeml_artifact_provenance.py"] and
+        bootstrap.get("python_controller") == python_controller,
+        "retained bootstrap Python controller/source binding mismatch",
+    )
+    observed_final = candle_input_closure(
+        final_candle_root, final_candle_head, "retained final Candle checkout",
+    )
+    provenance.require(
+        observed_final == final["closure"],
+        "retained bootstrap transition final closure changed",
+    )
+
+
+def validate_linked_transition_record(candle_root: Path) -> dict[str, Any]:
+    candle_root = candle_root.resolve(strict=True)
+    record_path = candle_root / provenance.LINKED_RECORD_RELATIVE
+    record = provenance.load_object(record_path)
+    provenance.require(
+        set(record) == {
+            "schema", "kind", "promotion_status", "transition_mode",
+            "transition_record",
+            "transition_controller", "candle_commit", "cakeml_commit",
+            "hol4_commit", "manifest_sha256", "bootstrap_record",
+            "bootstrap_preflight", "bootstrap_log", "cake_patch",
+            "cake_patch_derivation", "native_link_derivation", "outputs",
+            "runtime_elf_closure", "version_output_sha256",
+        },
+        "malformed transition-linked provenance record",
+    )
+    provenance.require(
+        record.get("schema") == TRANSITION_LINKED_SCHEMA and
+        record.get("kind") == TRANSITION_LINKED_KIND and
+        record.get("promotion_status") ==
+        "diagnostic-only-requires-final-head-canonical-bootstrap" and
+        record.get("transition_mode") ==
+        "byte-identical-canonical-bootstrap-rebinding-v1",
+        "unsupported transition-linked provenance record",
+    )
+    candle_head = require_commit(
+        record.get("candle_commit"), "transition-linked Candle head",
+    )
+    validate_git_checkout(candle_root, candle_head, "Candle checkout")
+    pins = provenance.expected_pins(candle_root)
+    for field, expected in pins.items():
+        provenance.require(
+            record.get(field) == expected,
+            f"transition-linked {field} mismatch",
+        )
+    controller = record.get("transition_controller")
+    provenance.require(
+        isinstance(controller, dict) and
+        set(controller) == set(TRANSITION_LINK_CONTROLLER_INPUTS) and
+        controller == transition_controller_closure(candle_root, candle_head),
+        "transition-linked controller closure mismatch",
+    )
+    build_dir = provenance.validate_build_directory(candle_root)
+    outputs = record.get("outputs")
+    provenance.require(
+        isinstance(outputs, dict) and set(outputs) == set(TRANSITION_LINKED_OUTPUTS),
+        "transition-linked output set mismatch",
+    )
+    for name in TRANSITION_LINKED_OUTPUTS:
+        provenance.validate_file_record(
+            build_dir / name, outputs[name], f"transition-linked {name}",
+        )
+    provenance.validate_file_record(
+        candle_root / "candle/cake.S.patch", record.get("cake_patch", {}),
+        "CakeML assembly patch",
+    )
+    bootstrap = provenance.validate_linked_bootstrap_copy(
+        build_dir, record, pins,
+    )
+    transition_record = record.get("transition_record")
+    provenance.require(
+        isinstance(transition_record, dict) and
+        set(transition_record) == {"bytes", "sha256"} and
+        transition_record == outputs[LINKED_TRANSITION_RECORD],
+        "transition-linked transition identity mismatch",
+    )
+    transition_path = build_dir / LINKED_TRANSITION_RECORD
+    provenance.validate_file_record(
+        transition_path, transition_record, "linked bootstrap transition copy",
+    )
+    retained_transition = provenance.load_object(transition_path)
+    retained_preflight = provenance.load_object(
+        build_dir / provenance.LINKED_BOOTSTRAP_PREFLIGHT,
+    )
+    validate_retained_transition(
+        retained_transition, bootstrap, retained_preflight,
+        candle_root, candle_head,
+    )
+    observed_derivation = provenance.cake_patch_derivation(
+        build_dir, bootstrap["inputs"]["cake.S"],
+        candle_root / "candle/cake.S.patch",
+    )
+    provenance.require(
+        observed_derivation == record.get("cake_patch_derivation"),
+        "CakeML assembly patch derivation mismatch",
+    )
+    provenance.validate_native_link_derivation(
+        build_dir, record.get("native_link_derivation"),
+    )
+    provenance.validate_root_runtime_aliases(candle_root, outputs)
+    provenance.validate_elf_dynamic_closure(
+        build_dir / "cake", record.get("runtime_elf_closure", {}),
+    )
+    provenance.validate_candle_elf_policy(record["runtime_elf_closure"])
+    cake_commit, hol_commit, version_output = provenance.version_details(
+        build_dir / "cake",
+    )
+    provenance.require(
+        cake_commit == pins["cakeml_commit"], "runtime CakeML revision mismatch",
+    )
+    provenance.require(
+        hol_commit == pins["hol4_commit"], "runtime HOL4 revision mismatch",
+    )
+    provenance.require(
+        hashlib.sha256(version_output.encode()).hexdigest() ==
+        record.get("version_output_sha256"),
+        "runtime version output mismatch",
+    )
+    return record
+
+
+def validate_linked_record(candle_root: Path) -> dict[str, Any]:
+    record = provenance.load_object(
+        candle_root.resolve() / provenance.LINKED_RECORD_RELATIVE,
+    )
+    schema = record.get("schema")
+    if schema == provenance.LINKED_PROVENANCE_SCHEMA:
+        linked = provenance.validate_linked_record(candle_root)
+        root = candle_root.resolve(strict=True)
+        bootstrap = provenance.validate_linked_bootstrap_copy(
+            provenance.validate_build_directory(root),
+            linked, provenance.expected_pins(root),
+        )
+        provenance.require(
+            bootstrap.get("candle_root") == str(root) and
+            bootstrap.get("candle_commit") == linked.get("candle_commit"),
+            "schema-6 linked record is not an exact-root bootstrap link",
+        )
+        return linked
+    if schema == TRANSITION_LINKED_SCHEMA:
+        return validate_linked_transition_record(candle_root)
+    raise provenance.ProvenanceError("unsupported linked provenance schema")
 
 
 def record_linked_transition(
@@ -428,7 +916,7 @@ def record_linked_transition(
     transition_record_path: Path,
     output_path: Path,
 ) -> dict[str, Any]:
-    """Create the ordinary schema-6 linked record after a valid transition."""
+    """Create a durable schema-7 linked record after a valid transition."""
     transition, bootstrap = validate_transition_record(
         source_candle_root, source_candle_head,
         final_candle_root, final_candle_head,
@@ -456,13 +944,26 @@ def record_linked_transition(
     provenance.materialize_linked_bootstrap(
         build_dir, bootstrap_record_path.resolve(), bootstrap,
     )
+    materialize_transition_record(
+        build_dir, transition_record_path, transition,
+    )
     patch_derivation = provenance.cake_patch_derivation(
         build_dir, inputs["cake.S"], final_candle_root / "candle/cake.S.patch",
     )
     link_derivation = provenance.native_link_derivation(build_dir)
+    controller_closure = transition_controller_closure(
+        final_candle_root, final_candle_head,
+    )
     record = {
-        "schema": provenance.LINKED_PROVENANCE_SCHEMA,
-        "kind": "candle-linked-pinned-cakeml",
+        "schema": TRANSITION_LINKED_SCHEMA,
+        "kind": TRANSITION_LINKED_KIND,
+        "promotion_status":
+            "diagnostic-only-requires-final-head-canonical-bootstrap",
+        "transition_mode": "byte-identical-canonical-bootstrap-rebinding-v1",
+        "transition_record": provenance.file_record(
+            build_dir / LINKED_TRANSITION_RECORD,
+        ),
+        "transition_controller": controller_closure,
         "candle_commit": final_candle_head,
         "cakeml_commit": cake_commit,
         "hol4_commit": hol_commit,
@@ -483,7 +984,7 @@ def record_linked_transition(
         "native_link_derivation": link_derivation,
         "outputs": {
             name: provenance.file_record(build_dir / name)
-            for name in provenance.LINKED_OUTPUTS
+            for name in TRANSITION_LINKED_OUTPUTS
         },
         "runtime_elf_closure": provenance.elf_dynamic_closure(build_dir / "cake"),
         "version_output_sha256": hashlib.sha256(version_output.encode()).hexdigest(),
@@ -523,7 +1024,13 @@ def main() -> None:
     add_transition_arguments(linked_parser)
     linked_parser.add_argument("--transition-record", type=Path, required=True)
     linked_parser.add_argument("--write", type=Path, required=True)
+    check_linked_parser = subparsers.add_parser("check-linked")
+    check_linked_parser.add_argument("--candle-root", type=Path, required=True)
     arguments = parser.parse_args()
+    if arguments.command == "check-linked":
+        validate_linked_record(arguments.candle_root)
+        print("linked CakeML provenance PASS")
+        return
     common = (
         arguments.source_candle_root, arguments.source_candle_head,
         arguments.final_candle_root, arguments.final_candle_head,
