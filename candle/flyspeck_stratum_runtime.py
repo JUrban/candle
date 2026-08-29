@@ -114,6 +114,33 @@ SOURCE_TRACE_TOP_LEVEL_CONTROLS = (
     "control:stratum-check",
     "control:postlude",
 )
+DIRECT_EVIDENCE_CLAIM = (
+    "compiled cumulative source-action attempt; not S2/S3 without semantic "
+    "fingerprints"
+)
+DIRECT_ATTEMPT_FIELDS = frozenset({
+    "schema", "kind", "claim", "state", "started_utc", "boundary_id",
+    "diagnostic_only", "attempt_nonce", "action_count",
+    "ordered_expected_action_sha256", "expected_action_events",
+    "timeout_seconds", "resource_limits", "fresh_process_replay_from_action_zero",
+    "cooperative_build_run_lock_held", "runtime_lock",
+    "concurrent_mutation_model", "process_state_checkpoint", "evidence_contract",
+    "expected_logical_source_closure", "expected_physical_source_trace",
+    "runtime_environment_policy", "runtime_environment", "inputs", "repositories",
+})
+DIRECT_RECEIPT_ONLY_FIELDS = frozenset({
+    "finished_utc", "timed_out", "exit_code", "command", "child_resources",
+    "log", "initial_attempt", "action_markers_validated", "action_events",
+    "logical_source_closure", "physical_source_trace", "semantic_fingerprints",
+    "s2_s3_evidence", "validation_error", "postflight_reauthenticated",
+})
+DIRECT_INPUT_FIELDS = frozenset({
+    "plan", "host_materialization", "manifest", "linked_provenance",
+    "archived_linked_provenance", "archived_bootstrap_provenance",
+    "archived_bootstrap_log", "runtime_snapshot", "controller_execution",
+    "authenticated_prefix", "instrumented_prefix", "runtime_config", "stdin",
+    "postlude", "setup", "check", "fingerprint_serializer", "l2_target",
+})
 SOURCE_CLOSURE_CLASSIFICATIONS = (
     "observed-outer-source",
     "observed-nested-source",
@@ -138,7 +165,7 @@ SOURCE_ALIAS_POLICY = (
     "and physical loader-cache lookup"
 )
 SOURCE_ALIAS_LOAD_PATH_ORDER = (
-    "flyspeck:text_formalization/../jHOLLight",
+    "flyspeck:text_formalization/../jHOLLight/",
     "flyspeck:text_formalization/../formal_ineqs",
     "flyspeck:jHOLLight",
     "flyspeck:formal_ineqs",
@@ -595,22 +622,32 @@ def resolve_source(binding: dict[str, Any], candle_root: Path, flyspeck_root: Pa
     return root / binding["path"]
 
 
+def loader_filename_concat(directory: Path | str, filename: str) -> str:
+    """Mirror Candle's lexical Filename.concat without normalizing separators."""
+    directory_string = str(directory)
+    require(isinstance(filename, str) and filename,
+            "malformed loader filename")
+    return filename if directory_string == "." else directory_string + "/" + filename
+
+
 def derive_source_alias_contract(
     manifest: dict[str, Any], candle_root: Path, flyspeck_root: Path,
 ) -> dict[str, Any]:
     """Reconstruct alias provenance from the independently recorded load graph."""
     require(manifest.get("load_path_order") == list(SOURCE_ALIAS_LOAD_PATH_ORDER),
             "source alias load-path order mismatch")
+    text_root = loader_filename_concat(flyspeck_root, "text_formalization")
     search_roots = (
-        ("flyspeck", "text_formalization/../jHOLLight",
-         flyspeck_root / "text_formalization/../jHOLLight"),
+        ("flyspeck", "text_formalization/../jHOLLight/",
+         loader_filename_concat(text_root, "../jHOLLight/")),
         ("flyspeck", "text_formalization/../formal_ineqs",
-         flyspeck_root / "text_formalization/../formal_ineqs"),
-        ("flyspeck", "jHOLLight", flyspeck_root / "jHOLLight"),
-        ("flyspeck", "formal_ineqs", flyspeck_root / "formal_ineqs"),
-        ("flyspeck", "text_formalization",
-         flyspeck_root / "text_formalization"),
-        ("candle", "", candle_root),
+         loader_filename_concat(text_root, "../formal_ineqs")),
+        ("flyspeck", "jHOLLight",
+         loader_filename_concat(flyspeck_root, "jHOLLight")),
+        ("flyspeck", "formal_ineqs",
+         loader_filename_concat(flyspeck_root, "formal_ineqs")),
+        ("flyspeck", "text_formalization", text_root),
+        ("candle", "", str(candle_root)),
     )
 
     def selected_lookup(target: Any, selected: Any) -> dict[str, Any]:
@@ -618,10 +655,10 @@ def derive_source_alias_contract(
                 not os.path.isabs(target) and isinstance(selected, str),
                 "malformed source alias selection")
         for search_root_index, (repository, prefix, root) in enumerate(search_roots):
-            lexical = root / target
-            if not lexical.is_file():
+            lexical = loader_filename_concat(root, target)
+            if not os.path.isfile(lexical):
                 continue
-            resolved = lexical.resolve(strict=True)
+            resolved = Path(lexical).resolve(strict=True)
             observed_repository = ""
             observed_relative: Path | None = None
             for candidate_repository, candidate_root in (
@@ -642,7 +679,10 @@ def derive_source_alias_contract(
                 "target": target,
                 "search_root_index": search_root_index,
                 "alias_repository": repository,
-                "alias_path": (Path(prefix) / target).as_posix(),
+                "alias_path": (
+                    target if not prefix else
+                    loader_filename_concat(prefix, target)
+                ),
                 "selected": selected,
                 "canonical_repository": observed_repository,
                 "canonical_path": observed_relative.as_posix(),
@@ -786,10 +826,11 @@ def validate_source_alias_contract(
         canonical_root = (
             candle_root if canonical_repository == "candle" else flyspeck_root
         )
-        alias_path = alias_root / alias_relative
+        alias_path = loader_filename_concat(alias_root, alias_value)
         canonical_path = canonical_root / canonical_relative
-        require(alias_path.is_file() and not alias_path.is_symlink() and
-                alias_path.resolve(strict=True) == canonical_path.resolve(strict=True),
+        require(os.path.isfile(alias_path) and not os.path.islink(alias_path) and
+                Path(alias_path).resolve(strict=True) ==
+                canonical_path.resolve(strict=True),
                 f"source alias no longer selects canonical source: {alias_value}")
         source_alias_runtime.append({
             "source_key": selected,
@@ -797,7 +838,7 @@ def validate_source_alias_contract(
             "alias_relative": alias_value,
             "canonical_repository": canonical_repository,
             "canonical_relative": canonical_value,
-            "alias": str(alias_path),
+            "alias": alias_path,
             "canonical": str(canonical_path),
         })
     require(len(source_alias_runtime) == expected_contract["record_count"],
@@ -1637,20 +1678,25 @@ def build_source_trace_contract(
         selected_sha256: str | None = None,
         normalization: str = "-",
     ) -> str:
-        resolved_path = Path(resolved)
-        canonical_path = Path(canonical)
-        selected_path = Path(selected) if selected is not None else canonical_path
-        require(all(path.is_absolute() and path.is_file() and not path.is_symlink()
-                    for path in (resolved_path, canonical_path, selected_path)),
+        resolved_value = str(resolved)
+        canonical_value = str(canonical)
+        selected_value = (
+            str(selected) if selected is not None else canonical_value
+        )
+        require(all(os.path.isabs(path) and os.path.isfile(path) and
+                    not os.path.islink(path)
+                    for path in (
+                        resolved_value, canonical_value, selected_value,
+                    )),
                 f"source trace binding is not an ordinary absolute file: {key}")
         record = {
-            "resolved": str(resolved_path),
-            "canonical": str(canonical_path),
+            "resolved": resolved_value,
+            "canonical": canonical_value,
             "key": key,
-            "basename": canonical_path.name,
+            "basename": Path(canonical_value).name,
             "source_md5": source_record["md5"],
             "source_sha256": source_record["sha256"],
-            "selected": str(selected_path),
+            "selected": selected_value,
             "selected_sha256": (
                 selected_sha256 if selected_sha256 is not None
                 else source_record["sha256"]
@@ -2066,15 +2112,16 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
         "ordered_required_key_sha256", "required_keys",
         "top_level_control_keys",
     }, "malformed physical source trace contract")
-    require(contract["schema"] == 1 and not isinstance(contract["schema"], bool)
-            and contract["protocol"] == SOURCE_TRACE_PROTOCOL and
+    require(type(contract["schema"]) is int and contract["schema"] == 1 and
+            contract["protocol"] == SOURCE_TRACE_PROTOCOL and
             contract["activation"] == SOURCE_TRACE_ACTIVATION and
-            re.fullmatch(r"[0-9a-f]{32}", str(contract["nonce"])) is not None,
+            isinstance(contract["nonce"], str) and
+            re.fullmatch(r"[0-9a-f]{32}", contract["nonce"]) is not None,
             "physical source trace contract identity mismatch")
     bindings = contract["bindings"]
     require(isinstance(bindings, list) and
+            type(contract["binding_count"]) is int and
             contract["binding_count"] == len(bindings) and
-            not isinstance(contract["binding_count"], bool) and
             contract["ordered_binding_sha256"] == canonical_sha256(bindings),
             "physical source trace binding closure mismatch")
     previous_resolved: str | None = None
@@ -2082,6 +2129,7 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
     binding_ids: set[str] = set()
     bound_keys: set[str] = set()
     identity_by_key: dict[str, tuple[str, ...]] = {}
+    key_by_canonical: dict[str, str] = {}
     binding_fields = {
         "binding_id", "resolved", "canonical", "key", "basename",
         "source_md5", "source_sha256", "selected", "selected_sha256",
@@ -2108,17 +2156,21 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
                 not any(character in binding["basename"]
                         for character in "\t\n\r") and
                 binding["basename"] == Path(binding["canonical"]).name and
-                re.fullmatch(r"[0-9a-f]{32}", str(binding["source_md5"]))
+                isinstance(binding["source_md5"], str) and
+                re.fullmatch(r"[0-9a-f]{32}", binding["source_md5"])
                 is not None and
-                re.fullmatch(r"[0-9a-f]{64}", str(binding["source_sha256"]))
+                isinstance(binding["source_sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", binding["source_sha256"])
                 is not None and
-                re.fullmatch(r"[0-9a-f]{64}", str(binding["selected_sha256"]))
+                isinstance(binding["selected_sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", binding["selected_sha256"])
                 is not None and
                 isinstance(binding["normalization"], str) and
                 binding["normalization"] and
                 not any(character in binding["normalization"]
                         for character in "\t\n\r") and
-                re.fullmatch(r"[0-9a-f]{64}", str(binding["binding_id"]))
+                isinstance(binding["binding_id"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", binding["binding_id"])
                 is not None and
                 binding["binding_id"] == canonical_sha256(binding_payload) and
                 binding["binding_id"] not in binding_ids,
@@ -2134,13 +2186,19 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
         prior_identity = identity_by_key.setdefault(binding["key"], identity)
         require(prior_identity == identity,
                 f"inconsistent physical source trace key: {binding['key']}")
+        prior_key = key_by_canonical.setdefault(
+            binding["canonical"], binding["key"],
+        )
+        require(prior_key == binding["key"],
+                f"physical source trace canonical path has multiple keys: "
+                f"{binding['canonical']}")
     required_keys = contract["required_keys"]
     require(isinstance(required_keys, list) and
             all(isinstance(key, str) and key for key in required_keys),
             "malformed physical source trace required keys")
     require(required_keys == sorted(set(required_keys)) and
+            type(contract["required_key_count"]) is int and
             contract["required_key_count"] == len(required_keys) and
-            not isinstance(contract["required_key_count"], bool) and
             contract["ordered_required_key_sha256"] ==
             canonical_sha256(required_keys) and
             set(required_keys) == bound_keys,
@@ -2161,16 +2219,16 @@ def validate_source_trace_observation(
         "events", "request_count", "cache_skip_count", "observed_key_count",
         "ordered_observed_key_sha256", "observed_keys", "status",
     }, "malformed physical source trace observation")
-    require(observation["schema"] == 1 and
-            not isinstance(observation["schema"], bool) and
+    require(type(observation["schema"]) is int and
+            observation["schema"] == 1 and
             observation["protocol"] == SOURCE_TRACE_PROTOCOL and
             observation["nonce"] == contract["nonce"] and
             observation["status"] == "closed-loader-owned-session",
             "physical source trace observation identity mismatch")
     events = observation["events"]
     require(isinstance(events, list) and
+            type(observation["event_count"]) is int and
             observation["event_count"] == len(events) and
-            not isinstance(observation["event_count"], bool) and
             observation["ordered_event_sha256"] == canonical_sha256(events),
             "physical source trace event closure mismatch")
     binding_by_id = {
@@ -2191,11 +2249,10 @@ def validate_source_trace_observation(
             require(set(event) == {
                 "event", "id", "parent", "kind", "binding_id", "key",
                 "cache_before",
-            } and event["id"] == request_count and
-                    not isinstance(event["id"], bool) and
+            } and type(event["id"]) is int and
+                    event["id"] == request_count and
                     (event["parent"] is None or
-                     (isinstance(event["parent"], int) and
-                      not isinstance(event["parent"], bool) and
+                     (type(event["parent"]) is int and
                       event["parent"] >= 0)) and
                     isinstance(event["binding_id"], str) and
                     isinstance(event["key"], str) and
@@ -2232,8 +2289,8 @@ def validate_source_trace_observation(
             request_count += 1
         elif event_type == "outcome":
             require(set(event) == {"event", "id", "outcome"} and active and
+                    type(event["id"]) is int and
                     event["id"] == active[-1][0] and
-                    not isinstance(event["id"], bool) and
                     event["outcome"] == active[-1][1],
                     f"physical source trace outcome mismatch: {event_index}")
             if event["outcome"] == "cache-skip":
@@ -2242,8 +2299,9 @@ def validate_source_trace_observation(
         elif event_type == "terminal":
             require(set(event) == {"event", "request_count"} and
                     event_index == len(events) - 1 and not active and
+                    type(event["request_count"]) is int and
                     event["request_count"] == request_count and
-                    not isinstance(event["request_count"], bool),
+                    event["request_count"] >= 0,
                     "physical source trace terminal mismatch")
             terminal_seen = True
         else:
@@ -2256,14 +2314,14 @@ def validate_source_trace_observation(
     ordered_keys = sorted(observed_keys)
     require(ordered_keys == contract["required_keys"] and
             observation["observed_keys"] == ordered_keys and
+            type(observation["observed_key_count"]) is int and
             observation["observed_key_count"] == len(ordered_keys) and
-            not isinstance(observation["observed_key_count"], bool) and
             observation["ordered_observed_key_sha256"] ==
             canonical_sha256(ordered_keys) and
+            type(observation["request_count"]) is int and
             observation["request_count"] == request_count and
-            not isinstance(observation["request_count"], bool) and
-            observation["cache_skip_count"] == cache_skip_count and
-            not isinstance(observation["cache_skip_count"], bool),
+            type(observation["cache_skip_count"]) is int and
+            observation["cache_skip_count"] == cache_skip_count,
             "physical source trace observed closure mismatch")
     return observation
 
@@ -2372,13 +2430,123 @@ def validate_direct_evidence_v4_artifact(
     artifact: dict[str, Any], *, receipt: bool,
 ) -> None:
     """Reject legacy or partially upgraded direct-attempt artifacts."""
-    require(artifact.get("schema") == 4 and
-            not isinstance(artifact.get("schema"), bool),
+    expected_fields = (
+        DIRECT_ATTEMPT_FIELDS | DIRECT_RECEIPT_ONLY_FIELDS
+        if receipt else DIRECT_ATTEMPT_FIELDS
+    )
+    require(isinstance(artifact, dict) and set(artifact) == expected_fields,
+            "malformed direct runtime evidence envelope")
+    require(type(artifact["schema"]) is int and artifact["schema"] == 4,
             "direct runtime evidence requires disjoint schema 4")
     require(artifact.get("kind") == "candle-flyspeck-compiled-stratum-attempt",
             "wrong direct runtime evidence kind")
+    require(artifact.get("claim") == DIRECT_EVIDENCE_CLAIM and
+            isinstance(artifact.get("diagnostic_only"), bool) and
+            isinstance(artifact.get("started_utc"), str) and
+            artifact["started_utc"].endswith("Z"),
+            "malformed direct runtime evidence identity")
+    try:
+        started = dt.datetime.fromisoformat(
+            artifact["started_utc"].removesuffix("Z") + "+00:00"
+        )
+    except ValueError as error:
+        raise ContractError("malformed direct runtime start time") from error
+    require(started.tzinfo is not None,
+            "direct runtime start time lacks timezone")
+    require(type(artifact.get("timeout_seconds")) is int and
+            artifact["timeout_seconds"] > 0,
+            "malformed direct runtime timeout")
+    limits = artifact.get("resource_limits")
+    require(isinstance(limits, dict) and set(limits) == {
+                "cpu_seconds", "address_space_bytes", "output_file_bytes",
+            } and all(type(limits[field]) is int and limits[field] > 0
+                      for field in limits),
+            "malformed direct runtime resource limits")
+    require(artifact.get("fresh_process_replay_from_action_zero") is True and
+            artifact.get("cooperative_build_run_lock_held") is True and
+            artifact.get("concurrent_mutation_model") == (
+                "cooperating build/launcher processes serialized; hostile "
+                "same-user path mutation is outside this evidence model"
+            ) and artifact.get("process_state_checkpoint") is None and
+            artifact.get("runtime_environment_policy") == (
+                "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
+                "BASH_ENV, and ENV"
+            ), "malformed direct runtime execution policy")
+    lock = artifact.get("runtime_lock")
+    require(isinstance(lock, dict) and set(lock) == {
+                "path", "object", "mode", "device", "inode",
+            } and isinstance(lock["path"], str) and
+            Path(lock["path"]).is_absolute() and
+            lock["object"] == "directory_inode" and lock["mode"] == "shared" and
+            type(lock["device"]) is int and lock["device"] >= 0 and
+            type(lock["inode"]) is int and lock["inode"] > 0,
+            "malformed direct runtime lock binding")
+    environment = artifact.get("runtime_environment")
+    require(isinstance(environment, dict) and
+            set(environment) >= {"LC_ALL", "PATH"} and
+            set(environment) <= {
+                "LC_ALL", "PATH", "CML_HEAP_SIZE", "CML_STACK_SIZE",
+            } and environment["LC_ALL"] == "C" and
+            environment["PATH"] == "/usr/bin:/bin" and
+            all(isinstance(value, str) for value in environment.values()) and
+            all(re.fullmatch(r"[1-9][0-9]*", environment[name]) is not None
+                for name in ("CML_HEAP_SIZE", "CML_STACK_SIZE")
+                if name in environment),
+            "malformed direct runtime environment")
+    inputs = artifact.get("inputs")
+    require(isinstance(inputs, dict) and set(inputs) == DIRECT_INPUT_FIELDS,
+            "malformed direct runtime input closure")
+
+    def digest_record(value: object, label: str, *, path: bool = False) -> None:
+        fields = {"bytes", "sha256", "md5"} | ({"path"} if path else set())
+        require(isinstance(value, dict) and set(value) == fields and
+                type(value["bytes"]) is int and value["bytes"] >= 0 and
+                isinstance(value["sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", value["sha256"]) is not None and
+                isinstance(value["md5"], str) and
+                re.fullmatch(r"[0-9a-f]{32}", value["md5"]) is not None and
+                (not path or
+                 (isinstance(value["path"], str) and bool(value["path"]))),
+                f"malformed direct runtime {label} record")
+
+    for label in sorted(DIRECT_INPUT_FIELDS - {
+        "controller_execution", "authenticated_prefix",
+    }):
+        digest_record(inputs[label], f"input {label}")
+    digest_record(inputs["authenticated_prefix"],
+                  "authenticated prefix", path=True)
+    controller = inputs["controller_execution"]
+    require(isinstance(controller, dict) and set(controller) == {
+                "source_root", "direct_script_startup", "commit_binding",
+                "python_startup_flags", "python_startup_options",
+                "initial_top_level_compilation_in_host_trust_boundary",
+                "local_sources", "python_runtime", "host_tools",
+                "git_environment",
+                "broader_python_standard_library_in_host_trust_boundary",
+            } and
+            controller["initial_top_level_compilation_in_host_trust_boundary"]
+            is True and
+            controller[
+                "broader_python_standard_library_in_host_trust_boundary"
+            ] is True,
+            "malformed direct runtime controller binding")
+    repositories = artifact.get("repositories")
+    require(isinstance(repositories, dict) and set(repositories) == {
+                "candle", "flyspeck",
+            } and all(isinstance(value, str) and
+                      re.fullmatch(r"[0-9a-f]{40}", value) is not None
+                      for value in repositories.values()),
+            "malformed direct runtime repository binding")
     contract = artifact.get("evidence_contract")
-    require(isinstance(contract, dict) and
+    require(isinstance(contract, dict) and set(contract) == {
+                "schema", "allowed_action_outcomes",
+                "physical_loader_cache_skip_allowed",
+                "logical_source_closure_policy", "logical_source_closure_order",
+                "selected_loadt_ledger_delta_included",
+                "physical_loader_cache_trace_included",
+                "physical_source_trace_protocol", "pre_trace_control_exclusion",
+                "s2_s3_approval_included",
+            } and
             contract.get("schema") ==
             "candle-flyspeck-direct-runtime-evidence-v4" and
             contract.get("allowed_action_outcomes") == list(ACTION_OUTCOMES) and
@@ -2397,8 +2565,7 @@ def validate_direct_evidence_v4_artifact(
             contract.get("s2_s3_approval_included") is False,
             "malformed direct runtime evidence-v4 contract")
     action_count = artifact.get("action_count")
-    require(isinstance(action_count, int) and not isinstance(action_count, bool)
-            and action_count >= 0,
+    require(type(action_count) is int and action_count >= 0,
             "malformed direct runtime action count")
     boundary_id = artifact.get("boundary_id")
     require(isinstance(boundary_id, str) and boundary_id,
@@ -2413,9 +2580,11 @@ def validate_direct_evidence_v4_artifact(
         require(isinstance(action, dict) and set(action) == {
                     "index", "source_sha256", "logical_source_delta",
                     "logical_source_delta_sha256",
-                } and action.get("index") == index and
+                } and type(action.get("index")) is int and
+                action["index"] == index and
+                isinstance(action.get("source_sha256"), str) and
                 re.fullmatch(r"[0-9a-f]{64}",
-                             str(action.get("source_sha256"))) is not None,
+                             action["source_sha256"]) is not None,
                 f"malformed authenticated action-event projection: {index}")
         delta = action["logical_source_delta"]
         require(isinstance(delta, list) and bool(delta) and
@@ -2431,12 +2600,14 @@ def validate_direct_evidence_v4_artifact(
                         "observed-outer-source" if delta_index == 0 else
                         "observed-nested-source"
                     ) and
+                    isinstance(record.get("source_sha256"), str) and
                     re.fullmatch(r"[0-9a-f]{64}",
-                                 str(record.get("source_sha256"))) is not None and
+                                 record["source_sha256"]) is not None and
                     isinstance(record.get("identity_basename"), str) and
                     bool(record["identity_basename"]) and
+                    isinstance(record.get("identity_md5"), str) and
                     re.fullmatch(r"[0-9a-f]{32}",
-                                 str(record.get("identity_md5"))) is not None,
+                                 record["identity_md5"]) is not None,
                     f"malformed logical-source delta record: {index}:{delta_index}")
         require(delta[0]["source_sha256"] == action["source_sha256"],
                 f"logical-source delta outer digest mismatch: {index}")
@@ -2449,11 +2620,13 @@ def validate_direct_evidence_v4_artifact(
         "self_certifies_nested_execution", "s2_s3_evidence",
     }
     require(isinstance(expected, dict) and set(expected) == expected_fields and
-            expected.get("schema") == 3 and expected.get("kind") ==
+            type(expected.get("schema")) is int and
+            expected["schema"] == 3 and expected.get("kind") ==
             "candle-flyspeck-selected-nested-logical-source-closure" and
             expected.get("policy") == SOURCE_CLOSURE_POLICY and
             expected.get("order") == SOURCE_CLOSURE_ORDER and
-            expected.get("completed_action_count") == action_count and
+            type(expected.get("completed_action_count")) is int and
+            expected["completed_action_count"] == action_count and
             expected.get("final_target_selected") ==
             boundary_id.startswith("07-") and
             expected.get("physical_loader_cache_trace") is False and
@@ -2463,9 +2636,11 @@ def validate_direct_evidence_v4_artifact(
             "malformed direct runtime expected closure")
     expected_records = expected.get("records")
     require(isinstance(expected_records, list) and
-            expected.get("record_count") == len(expected_records) and
+            type(expected.get("record_count")) is int and
+            expected["record_count"] == len(expected_records) and
+            isinstance(expected.get("ordered_record_sha256"), str) and
             re.fullmatch(r"[0-9a-f]{64}",
-                         str(expected.get("ordered_record_sha256"))) is not None and
+                         expected["ordered_record_sha256"]) is not None and
             expected.get("ordered_record_sha256") ==
             canonical_sha256(expected_records),
             "malformed direct runtime expected closure records")
@@ -2474,14 +2649,17 @@ def validate_direct_evidence_v4_artifact(
         require(isinstance(record, dict) and set(record) == {
                     "index", "key", "classification", "source_sha256", "source_md5",
                     "execution_normalization",
-                } and record.get("index") == index and
+                } and type(record.get("index")) is int and
+                record["index"] == index and
                 isinstance(record.get("key"), str) and record["key"] and
                 record.get("classification") in SOURCE_CLOSURE_CLASSIFICATIONS and
                 (previous_key is None or previous_key < record["key"]) and
+                isinstance(record.get("source_sha256"), str) and
                 re.fullmatch(r"[0-9a-f]{64}",
-                             str(record.get("source_sha256"))) is not None and
+                             record["source_sha256"]) is not None and
+                isinstance(record.get("source_md5"), str) and
                 re.fullmatch(r"[0-9a-f]{32}",
-                             str(record.get("source_md5"))) is not None,
+                             record["source_md5"]) is not None,
                 f"malformed direct runtime expected closure record: {index}")
         normalization = record.get("execution_normalization")
         require(normalization is None or (
@@ -2489,11 +2667,13 @@ def validate_direct_evidence_v4_artifact(
                         "id", "normalized_sha256", "normalized_md5",
                     } and isinstance(normalization.get("id"), str) and
                     bool(normalization["id"]) and
+                    isinstance(normalization.get("normalized_sha256"), str) and
                     re.fullmatch(r"[0-9a-f]{64}",
-                                 str(normalization.get("normalized_sha256")))
+                                 normalization["normalized_sha256"])
                     is not None and
+                    isinstance(normalization.get("normalized_md5"), str) and
                     re.fullmatch(r"[0-9a-f]{32}",
-                                 str(normalization.get("normalized_md5")))
+                                 normalization["normalized_md5"])
                     is not None
                 ), f"malformed closure normalization record: {index}")
         previous_key = record["key"]
@@ -2550,9 +2730,49 @@ def validate_direct_evidence_v4_artifact(
     if not receipt:
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
-        require("s2_s3_evidence" not in artifact,
-                "initial direct runtime artifact claims release evidence")
         return
+    initial_projection = {
+        field: artifact[field] for field in DIRECT_ATTEMPT_FIELDS
+    }
+    initial_projection["state"] = "running"
+    require(artifact["initial_attempt"] == {
+                "path": "attempt.json", **data_record(json_bytes(initial_projection)),
+            }, "receipt differs from immutable initial attempt")
+    finished_utc = artifact.get("finished_utc")
+    require(isinstance(finished_utc, str) and finished_utc.endswith("Z"),
+            "malformed direct runtime finish time")
+    try:
+        finished = dt.datetime.fromisoformat(
+            finished_utc.removesuffix("Z") + "+00:00"
+        )
+    except ValueError as error:
+        raise ContractError("malformed direct runtime finish time") from error
+    require(finished >= started,
+            "direct runtime finish precedes start")
+    command = artifact.get("command")
+    require(isinstance(command, list) and len(command) == 2 and
+            isinstance(command[0], str) and Path(command[0]).is_absolute() and
+            command[1] == "--candle",
+            "malformed direct runtime command")
+    log_record = artifact.get("log")
+    if log_record is not None:
+        digest_record(log_record, "log", path=True)
+        require(log_record["path"] == "candle.log",
+                "wrong direct runtime log path")
+    resources = artifact.get("child_resources")
+    if resources is not None:
+        require(isinstance(resources, dict) and set(resources) == {
+                    "user_cpu_seconds", "system_cpu_seconds", "max_rss_kib",
+                    "major_page_faults", "minor_page_faults",
+                } and
+                all(isinstance(resources[field], (int, float)) and
+                    not isinstance(resources[field], bool) and
+                    resources[field] >= 0
+                    for field in ("user_cpu_seconds", "system_cpu_seconds")) and
+                all(type(resources[field]) is int and resources[field] >= 0
+                    for field in (
+                        "max_rss_kib", "major_page_faults", "minor_page_faults",
+                    )), "malformed direct runtime child resources")
     require(artifact.get("state") in ("completed", "failed"),
             "direct runtime receipt state mismatch")
     require(artifact.get("s2_s3_evidence") is False,
@@ -2563,10 +2783,9 @@ def validate_direct_evidence_v4_artifact(
     marker_count = artifact.get("action_markers_validated")
     validation_error = artifact.get("validation_error")
     require(isinstance(timed_out, bool) and
-            (exit_code is None or
-             (isinstance(exit_code, int) and not isinstance(exit_code, bool))) and
+            (exit_code is None or type(exit_code) is int) and
             isinstance(postflight, bool) and
-            isinstance(marker_count, int) and not isinstance(marker_count, bool)
+            type(marker_count) is int
             and 0 <= marker_count <= action_count,
             "malformed direct runtime receipt state fields")
 
@@ -2581,7 +2800,8 @@ def validate_direct_evidence_v4_artifact(
             require(isinstance(event, dict) and set(event) == {
                         "index", "source_sha256",
                         "logical_source_delta_sha256", "outcome",
-                    } and event.get("index") == index and
+                    } and type(event.get("index")) is int and
+                    event["index"] == index and
                     event.get("source_sha256") ==
                     expected_action["source_sha256"] and
                     event.get("logical_source_delta_sha256") ==
@@ -2691,7 +2911,8 @@ def validate_direct_evidence_v4_artifact(
 
     complete_success = (
         validation_error is None and timed_out is False and
-        exit_code == 0 and postflight is True and
+        exit_code == 0 and postflight is True and log_record is not None and
+        resources is not None and
         marker_count == action_count and exact_events and
         exact_closure and exact_physical_trace and exact_fingerprints
     )
@@ -2828,15 +3049,15 @@ def create_runtime_snapshot(
             candle_snapshot
             if item["canonical_repository"] == "candle" else flyspeck_snapshot
         )
-        alias = alias_root / Path(item["alias_relative"])
+        alias = loader_filename_concat(alias_root, item["alias_relative"])
         canonical = canonical_root / safe_relative(
             item["canonical_relative"], "snapshot canonical source alias",
         )
-        require(alias.is_file() and not alias.is_symlink() and
-                alias.resolve(strict=True) == canonical.resolve(strict=True),
+        require(os.path.isfile(alias) and not os.path.islink(alias) and
+                Path(alias).resolve(strict=True) == canonical.resolve(strict=True),
                 f"snapshot source alias differs from canonical source: {alias}")
         source_alias_runtime.append({
-            **item, "alias": str(alias), "canonical": str(canonical),
+            **item, "alias": alias, "canonical": str(canonical),
         })
 
     for relative in (SOURCE_DIGEST_RELATIVE, SETUP_RELATIVE, CHECK_RELATIVE,
@@ -3535,7 +3756,7 @@ def _run_attempt_impl(
     attempt = {
         "schema": 4,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
-        "claim": "compiled cumulative source-action attempt; not S2/S3 without semantic fingerprints",
+        "claim": DIRECT_EVIDENCE_CLAIM,
         "state": "running",
         "started_utc": started,
         "boundary_id": boundary_id,
@@ -3693,6 +3914,7 @@ def _run_attempt_impl(
             "minor_page_faults": usage_after.ru_minflt - usage_before.ru_minflt,
         }
         log_record = hash_file(log_path)
+        log_path.chmod(0o444)
         require(execution_error is None,
                 f"compiled stratum execution failed: {execution_error}")
         require(not timed_out, "compiled stratum attempt timed out")
@@ -3783,8 +4005,11 @@ def _run_attempt_impl(
             "exit_code": exit_code,
             "command": command,
             "child_resources": child_resources,
-            "log": log_record,
-            "initial_attempt": attempt_record,
+            "log": (
+                None if log_record is None else
+                {"path": "candle.log", **log_record}
+            ),
+            "initial_attempt": {"path": "attempt.json", **attempt_record},
             "action_markers_validated": (
                 len(prepared["actions"]) if validation_error is None else 0
             ),
@@ -3798,6 +4023,7 @@ def _run_attempt_impl(
         }
         validate_direct_evidence_v4_artifact(receipt, receipt=True)
         atomic_write_json(receipt_path, receipt)
+        receipt_path.chmod(0o444)
     finally:
         signal.signal(signal.SIGTERM, previous_sigterm)
         signal.signal(signal.SIGINT, previous_sigint)

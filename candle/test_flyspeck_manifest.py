@@ -187,7 +187,7 @@ class SyntaxTests(unittest.TestCase):
                     "search_root_index": 0,
                     "alias_repository": "flyspeck",
                     "alias_path": (
-                        "text_formalization/../jHOLLight/../external/y.ml"
+                        "text_formalization/../jHOLLight//../external/y.ml"
                     ),
                     "selected": "flyspeck:external/y.ml",
                     "canonical_repository": "flyspeck",
@@ -250,7 +250,7 @@ class GeneratedManifestTests(unittest.TestCase):
         ssreflect = aliases[
             (
                 "flyspeck",
-                "text_formalization/../jHOLLight/../jHOLLight/caml/ssreflect.hl",
+                "text_formalization/../jHOLLight//../jHOLLight/caml/ssreflect.hl",
             )
         ]
         self.assertEqual(ssreflect["canonical_path"], "jHOLLight/caml/ssreflect.hl")
@@ -270,7 +270,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn(
             (
                 "flyspeck",
-                "text_formalization/../jHOLLight/Examples/seq-compiled.hl",
+                "text_formalization/../jHOLLight//Examples/seq-compiled.hl",
             ),
             aliases,
         )
@@ -284,7 +284,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(
             self.payload["load_path_order"],
             [
-                "flyspeck:text_formalization/../jHOLLight",
+                "flyspeck:text_formalization/../jHOLLight/",
                 "flyspeck:text_formalization/../formal_ineqs",
                 "flyspeck:jHOLLight",
                 "flyspeck:formal_ineqs",
@@ -325,7 +325,7 @@ class GeneratedManifestTests(unittest.TestCase):
         prepend_distinct([
             "flyspeck:text_formalization",
             "flyspeck:text_formalization/../formal_ineqs",
-            "flyspeck:text_formalization/../jHOLLight",
+            "flyspeck:text_formalization/../jHOLLight/",
         ])
         self.assertEqual(observed, self.payload["load_path_order"])
 

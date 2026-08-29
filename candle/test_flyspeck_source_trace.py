@@ -135,6 +135,13 @@ class SourceTraceTests(unittest.TestCase):
         )
         with self.assertRaises(subject.ContractError):
             subject.validate_source_trace_observation(contract, forged)
+        forged = copy.deepcopy(observed)
+        forged["events"][0]["id"] = 0.0
+        forged["ordered_event_sha256"] = subject.canonical_sha256(
+            forged["events"]
+        )
+        with self.assertRaises(subject.ContractError):
+            subject.validate_source_trace_observation(contract, forged)
 
     def test_parser_rejects_forged_state_machine_and_binding_records(self) -> None:
         contract, valid = self.valid_lines()
@@ -219,6 +226,15 @@ class SourceTraceTests(unittest.TestCase):
         boolean_count = copy.deepcopy(valid)
         boolean_count["binding_count"] = True
         cases.append(("boolean count", boolean_count))
+        float_schema = copy.deepcopy(valid)
+        float_schema["schema"] = 1.0
+        cases.append(("float schema", float_schema))
+        float_count = copy.deepcopy(valid)
+        float_count["binding_count"] = float(float_count["binding_count"])
+        cases.append(("float count", float_count))
+        integer_nonce = copy.deepcopy(valid)
+        integer_nonce["nonce"] = int("1" * 32)
+        cases.append(("integer nonce", integer_nonce))
         malformed_key = copy.deepcopy(valid)
         malformed_key["required_keys"][0] = []
         malformed_key["ordered_required_key_sha256"] = subject.canonical_sha256(
@@ -236,6 +252,27 @@ class SourceTraceTests(unittest.TestCase):
             reordered["bindings"]
         )
         cases.append(("binding order", reordered))
+        duplicate_canonical = copy.deepcopy(valid)
+        duplicate_canonical["bindings"][2]["key"] = "flyspeck:b"
+        duplicate_canonical["bindings"][2]["binding_id"] = (
+            subject.canonical_sha256({
+                field: value
+                for field, value in duplicate_canonical["bindings"][2].items()
+                if field != "binding_id"
+            })
+        )
+        duplicate_canonical["required_keys"].append("flyspeck:b")
+        duplicate_canonical["required_keys"].sort()
+        duplicate_canonical["required_key_count"] = len(
+            duplicate_canonical["required_keys"]
+        )
+        duplicate_canonical["ordered_required_key_sha256"] = (
+            subject.canonical_sha256(duplicate_canonical["required_keys"])
+        )
+        duplicate_canonical["ordered_binding_sha256"] = subject.canonical_sha256(
+            duplicate_canonical["bindings"]
+        )
+        cases.append(("canonical path has two keys", duplicate_canonical))
 
         for label, contract in cases:
             with self.subTest(label=label), self.assertRaises(subject.ContractError):

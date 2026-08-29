@@ -226,6 +226,119 @@ class StratumRuntimeTests(unittest.TestCase):
             f"{action['logical_source_delta_sha256']} {outcome}"
         )
 
+    def direct_attempt(
+        self, expected_actions: list[dict],
+        boundary_id: str = "00-test-through-001",
+    ) -> dict:
+        digest = {"bytes": 1, "sha256": "a" * 64, "md5": "b" * 32}
+        inputs = {
+            field: copy.deepcopy(digest)
+            for field in subject.DIRECT_INPUT_FIELDS
+            if field not in {"controller_execution", "authenticated_prefix"}
+        }
+        inputs["authenticated_prefix"] = {
+            "path": "prefix.ml", **copy.deepcopy(digest),
+        }
+        inputs["controller_execution"] = {
+            "source_root": "/controller",
+            "direct_script_startup": {},
+            "commit_binding": {},
+            "python_startup_flags": {},
+            "python_startup_options": {},
+            "initial_top_level_compilation_in_host_trust_boundary": True,
+            "local_sources": [],
+            "python_runtime": {},
+            "host_tools": [],
+            "git_environment": {},
+            "broader_python_standard_library_in_host_trust_boundary": True,
+        }
+        return {
+            "schema": 4,
+            "kind": "candle-flyspeck-compiled-stratum-attempt",
+            "claim": subject.DIRECT_EVIDENCE_CLAIM,
+            "state": "running",
+            "started_utc": "2026-08-29T00:00:00Z",
+            "boundary_id": boundary_id,
+            "diagnostic_only": False,
+            "attempt_nonce": self.nonce,
+            "action_count": len(expected_actions),
+            "ordered_expected_action_sha256":
+                subject.canonical_sha256(expected_actions),
+            "expected_action_events": expected_actions,
+            "timeout_seconds": 60,
+            "resource_limits": {
+                "cpu_seconds": 60,
+                "address_space_bytes": subject.GIB,
+                "output_file_bytes": subject.GIB,
+            },
+            "fresh_process_replay_from_action_zero": True,
+            "cooperative_build_run_lock_held": True,
+            "runtime_lock": {
+                "path": "/candle/build", "object": "directory_inode",
+                "mode": "shared", "device": 0, "inode": 1,
+            },
+            "concurrent_mutation_model": (
+                "cooperating build/launcher processes serialized; hostile "
+                "same-user path mutation is outside this evidence model"
+            ),
+            "process_state_checkpoint": None,
+            "evidence_contract": {
+                "schema": "candle-flyspeck-direct-runtime-evidence-v4",
+                "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
+                "physical_loader_cache_skip_allowed":
+                    "only loader-authenticated needs cache-skip events",
+                "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
+                "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
+                "selected_loadt_ledger_delta_included": True,
+                "physical_loader_cache_trace_included": True,
+                "physical_source_trace_protocol": subject.SOURCE_TRACE_PROTOCOL,
+                "pre_trace_control_exclusion": "control:runtime-config",
+                "s2_s3_approval_included": False,
+            },
+            "expected_logical_source_closure": self.logical_source_closure,
+            "expected_physical_source_trace": self.source_trace_contract,
+            "runtime_environment_policy": (
+                "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
+                "BASH_ENV, and ENV"
+            ),
+            "runtime_environment": {"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            "inputs": inputs,
+            "repositories": {"candle": "c" * 40, "flyspeck": "f" * 40},
+        }
+
+    def direct_receipt_envelope(self, attempt: dict) -> dict:
+        return {
+            **attempt,
+            "state": "completed",
+            "finished_utc": "2026-08-29T00:00:01Z",
+            "timed_out": False,
+            "exit_code": 0,
+            "command": ["/runtime/cake", "--candle"],
+            "child_resources": {
+                "user_cpu_seconds": 1.0,
+                "system_cpu_seconds": 0.1,
+                "max_rss_kib": 1,
+                "major_page_faults": 0,
+                "minor_page_faults": 1,
+            },
+            "log": {
+                "path": "candle.log", "bytes": 1,
+                "sha256": "d" * 64, "md5": "e" * 32,
+            },
+            "initial_attempt": {
+                "path": "attempt.json",
+                **subject.data_record(subject.json_bytes(attempt)),
+            },
+            "action_markers_validated": len(attempt["expected_action_events"]),
+            "action_events": None,
+            "logical_source_closure": None,
+            "physical_source_trace": None,
+            "semantic_fingerprints": None,
+            "s2_s3_evidence": False,
+            "validation_error": None,
+            "postflight_reauthenticated": True,
+        }
+
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
         closure = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
         helper = subject.cakeml_artifact_provenance
@@ -626,37 +739,14 @@ class StratumRuntimeTests(unittest.TestCase):
             }
             for index, action in enumerate(self.actions)
         ]
-        attempt = {
-            "schema": 4,
-            "kind": "candle-flyspeck-compiled-stratum-attempt",
-            "state": "running",
-            "boundary_id": "00-test-through-001",
-            "action_count": 2,
-            "ordered_expected_action_sha256":
-                subject.canonical_sha256(expected_actions),
-            "expected_action_events": expected_actions,
-            "evidence_contract": {
-                "schema": "candle-flyspeck-direct-runtime-evidence-v4",
-                "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
-                "physical_loader_cache_skip_allowed":
-                    "only loader-authenticated needs cache-skip events",
-                "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
-                "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
-                "selected_loadt_ledger_delta_included": True,
-                "physical_loader_cache_trace_included": True,
-                "physical_source_trace_protocol": subject.SOURCE_TRACE_PROTOCOL,
-                "pre_trace_control_exclusion": "control:runtime-config",
-                "s2_s3_approval_included": False,
-            },
-            "expected_logical_source_closure": self.logical_source_closure,
-            "expected_physical_source_trace": self.source_trace_contract,
-            "attempt_nonce": self.nonce,
-            "inputs": {"fingerprint_serializer": {
-                "path": subject.FINGERPRINT_RELATIVE.as_posix(),
-                "sha256": "a" * 64,
-            }},
-        }
+        attempt = self.direct_attempt(expected_actions)
         subject.validate_direct_evidence_v4_artifact(attempt, receipt=False)
+        missing_claim = copy.deepcopy(attempt)
+        missing_claim.pop("claim")
+        with self.assertRaisesRegex(subject.ContractError, "evidence envelope"):
+            subject.validate_direct_evidence_v4_artifact(
+                missing_claim, receipt=False,
+            )
         schema3 = copy.deepcopy(attempt)
         schema3["schema"] = 3
         with self.assertRaisesRegex(subject.ContractError, "disjoint schema 4"):
@@ -688,14 +778,7 @@ class StratumRuntimeTests(unittest.TestCase):
             )
 
         receipt = {
-            **attempt,
-            "state": "completed",
-            "s2_s3_evidence": False,
-            "timed_out": False,
-            "exit_code": 0,
-            "postflight_reauthenticated": True,
-            "action_markers_validated": 2,
-            "validation_error": None,
+            **self.direct_receipt_envelope(attempt),
             "logical_source_closure": {
                 **self.logical_source_closure,
                 "status": "expected-closure-emitted-unapproved",
@@ -735,45 +818,9 @@ class StratumRuntimeTests(unittest.TestCase):
             }
             for index, action in enumerate(self.actions)
         ]
-        attempt = {
-            "schema": 4,
-            "kind": "candle-flyspeck-compiled-stratum-attempt",
-            "state": "running",
-            "boundary_id": "00-test-through-001",
-            "action_count": 2,
-            "ordered_expected_action_sha256":
-                subject.canonical_sha256(expected_actions),
-            "expected_action_events": expected_actions,
-            "evidence_contract": {
-                "schema": "candle-flyspeck-direct-runtime-evidence-v4",
-                "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
-                "physical_loader_cache_skip_allowed":
-                    "only loader-authenticated needs cache-skip events",
-                "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
-                "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
-                "selected_loadt_ledger_delta_included": True,
-                "physical_loader_cache_trace_included": True,
-                "physical_source_trace_protocol": subject.SOURCE_TRACE_PROTOCOL,
-                "pre_trace_control_exclusion": "control:runtime-config",
-                "s2_s3_approval_included": False,
-            },
-            "expected_logical_source_closure": self.logical_source_closure,
-            "expected_physical_source_trace": self.source_trace_contract,
-            "attempt_nonce": self.nonce,
-            "inputs": {"fingerprint_serializer": {
-                "path": subject.FINGERPRINT_RELATIVE.as_posix(),
-                "sha256": "a" * 64,
-            }},
-        }
+        attempt = self.direct_attempt(expected_actions)
         valid = {
-            **attempt,
-            "state": "completed",
-            "s2_s3_evidence": False,
-            "timed_out": False,
-            "exit_code": 0,
-            "postflight_reauthenticated": True,
-            "action_markers_validated": 2,
-            "validation_error": None,
+            **self.direct_receipt_envelope(attempt),
             "logical_source_closure": {
                 **self.logical_source_closure,
                 "status": "expected-closure-emitted-unapproved",
@@ -798,6 +845,12 @@ class StratumRuntimeTests(unittest.TestCase):
             },
         }
         subject.validate_direct_evidence_v4_artifact(valid, receipt=True)
+        missing_log = copy.deepcopy(valid)
+        missing_log.pop("log")
+        with self.assertRaisesRegex(subject.ContractError, "evidence envelope"):
+            subject.validate_direct_evidence_v4_artifact(
+                missing_log, receipt=True,
+            )
         for label, mutate in (
             ("exit 137", lambda item: item.update(exit_code=137)),
             ("timeout", lambda item: item.update(timed_out=True)),
@@ -838,9 +891,8 @@ class StratumRuntimeTests(unittest.TestCase):
                 )
 
         failed = {
-            **attempt,
+            **self.direct_receipt_envelope(attempt),
             "state": "failed",
-            "s2_s3_evidence": False,
             "timed_out": True,
             "exit_code": 137,
             "postflight_reauthenticated": False,
@@ -1068,7 +1120,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "search_root_index": 0,
                 "alias_repository": "flyspeck",
                 "alias_path": (
-                    "text_formalization/../jHOLLight/../external/a.ml"
+                    "text_formalization/../jHOLLight//../external/a.ml"
                 ),
                 "selected": "flyspeck:external/a.ml",
                 "canonical_repository": "flyspeck",
