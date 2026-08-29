@@ -71,10 +71,12 @@ launch/runtime ELF closures, exact roots and commits, checkout lock inode, and
 the mechanically derived generated-output inventory before the build. It
 archives and removes only `cake.S`, `config_enc_str.txt`, the exact 18-target
 `.hol/objs` output set, their exact make-dependency files, and retry-only
-`*Script.ui`/`*Script.uo` transients. The tracked `candle_boot.ml`, `basis_ffi.c`,
+`*Script.ui`/`*Script.uo` transients, plus both relevant `.hol/make-deps/lastmaker`
+files. The two `lastmaker` postimages must freshly name only the pinned absolute
+`HOL_ROOT/bin/Holmake` path. The tracked `candle_boot.ml`, `basis_ffi.c`,
 and `Makefile` links are preserved and bound to their exact commit blobs and
 in-root ordinary targets. Failure retains the archive, log, and partial outputs;
-there is no automatic restore mutation. The schema-4 final bootstrap record
+there is no automatic restore mutation. The schema-5 final bootstrap record
 authenticates the ordinary bytes of `bin/Holmake`, `bin/hol`, and
 `bin/hol.state`, the exact resolved ELF closures of both launchers (including
 their fixed absolute RUNPATH), and exactly one complete trailing GNU `time -v`
@@ -90,10 +92,21 @@ exact link text and each symlink's resolved in-root ordinary payload), and the
 seven generated HOL sources used outside those sets. This conservative HOL
 proof-artifact closure is validated before and after and retained with the
 receipt, but is explicitly content-bound rather than independently rederived.
+All ordinary HOL4 `.hol/make-deps` files and all non-transitioned CakeML
+ancestor `.hol/make-deps` files are also inventoried before and after. Every
+retained `lastmaker` must contain exactly the pinned absolute Holmake path;
+these dependency artifacts are content-bound inputs, not claimed source
+derivations. The ignored HOL4 `.kernelidstr` read by Holmake is also bound
+exactly through the launch-runtime record.
+The requested `/bin/sh` link, resolved executable bytes, and ELF closure are
+authenticated because Holmake builders invoke it with `-c`. The CakeML
+`cv_translator/cake_compile_heap` selected through the pinned final
+x64Bootstrap Holmakefile's HMF `POLY` branch is content-bound before and after
+as a non-rederived input, together with that Holmakefile's committed bytes.
 
 The local build revalidates that record before copying ignored generated files,
 then links with a fixed single-job GNU make and C-compiler command.  Before its
-schema-5 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
+schema-6 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
 authenticated patched `cake.S`, `basis_ffi.c`, and `Makefile` to a fresh private
 directory, forcibly relinks them, captures and re-derives the exact make, CC,
 cc1, assembler, collect2, and linker argv, binds the corresponding tool files,

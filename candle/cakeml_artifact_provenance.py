@@ -32,11 +32,13 @@ HOL_BOOTSTRAP_RUNTIME_FILES = (
     "bin/Holmake",
     "bin/hol",
     "bin/hol.state",
+    ".kernelidstr",
 )
 HOL_BOOTSTRAP_ELF_FILES = (
     "bin/Holmake",
     "bin/hol",
 )
+HOL_KERNEL_ID_BYTES = b"stdknl\n"
 HOL_GENERATED_PROOF_INPUTS = (
     "src/parse/base_lexer.sml",
     "src/portableML/HOLsexp.grm-sig.sml",
@@ -54,6 +56,14 @@ HOL_PROOF_OBJECT_PATHS_SHA256 = (
 )
 HOL_SIGOBJ_CONTRACTS_SHA256 = (
     "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
+)
+HOL_MAKE_DEPENDENCY_COUNT = 2309
+CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 1785
+HOL_MAKE_DEPENDENCY_PATHS_SHA256 = (
+    "dc3e187784b21ab208d02c5ee17675337938f401e2aca10e03cf211e360c9dac"
+)
+CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256 = (
+    "25a8b77fbffd65a688322b1b864015a4fb5e8345c59a1ff4d2c7b27ddf46a0ea"
 )
 HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
     "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
@@ -155,11 +165,15 @@ LINKED_OUTPUTS = (
     "bootstrap.log",
 )
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
+CAKE_COMPILE_HEAP_RELATIVE = Path("cv_translator/cake_compile_heap")
+CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE = (
+    "compiler/bootstrap/compilation/x64/64/Holmakefile"
+)
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
-BOOTSTRAP_PREFLIGHT_SCHEMA = 2
-BOOTSTRAP_PROVENANCE_SCHEMA = 4
-LINKED_PROVENANCE_SCHEMA = 5
+BOOTSTRAP_PREFLIGHT_SCHEMA = 3
+BOOTSTRAP_PROVENANCE_SCHEMA = 5
+LINKED_PROVENANCE_SCHEMA = 6
 ELF_DYNAMIC_CLOSURE_POLICY = "ldd_roles_resolved_absolute_paths_and_content_v3"
 ELF_DYNAMIC_CLOSURE_FIELDS = frozenset({
     "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
@@ -188,10 +202,11 @@ BOOTSTRAP_CONTROLLER_TOOLS = {
     "python": "/usr/bin/python3",
     "readelf": "/usr/bin/readelf",
     "realpath": "/usr/bin/realpath",
+    "sh": "/bin/sh",
     "stat": "/usr/bin/stat",
     "time": "/usr/bin/time",
 }
-BOOTSTRAP_LAUNCH_ELF_TOOLS = ("env", "time")
+BOOTSTRAP_LAUNCH_ELF_TOOLS = ("env", "time", "sh")
 BOOTSTRAP_LOG_MARKER = "CANDLE_CAKEML_BOOTSTRAP_CONTROLLER_V1"
 BOOTSTRAP_TARGETS = (
     "pancake_lexProg",
@@ -238,9 +253,14 @@ BOOTSTRAP_TRUST_BOUNDARY = {
     "bound_by_content": [
         "clean Candle, CakeML, and HOL4 revisions and controller sources",
         "fixed controller tool paths and resolved executable bytes",
-        "env, time, Holmake, and hol ELF closures plus hol.state bytes",
+        "env, time, Holmake, and hol ELF closures plus hol.state and "
+        ".kernelidstr bytes",
         "the complete HOL4 .hol/objs file set, exact sigobj link contracts "
         "and resolved payloads, and exact generated HOL proof inputs",
+        "all HOL4 and non-target CakeML .hol/make-deps files, with every "
+        "lastmaker pinned to the authenticated HOL4 Holmake",
+        "the CakeML cv_translator/cake_compile_heap bytes selected by the "
+        "pinned final x64Bootstrap Holmakefile",
         "preflight, exact launch environment/argv/cwd, transcript, and outputs",
     ],
     "trusted_not_independently_authenticated": [
@@ -255,6 +275,10 @@ BOOTSTRAP_TRUST_BOUNDARY = {
         "ancestor artifacts outside the freshly rebuilt 18-target stratum",
         "derivation and semantics of the content-bound HOL4 proof-artifact "
         "closure; those artifacts are not independently rebuilt here",
+        "derivation and semantics of content-bound HOL4 and ancestor CakeML "
+        "make-dependency artifacts outside the fresh target transitions",
+        "derivation and semantics of the content-bound CakeML compiler heap; "
+        "the heap is not independently rebuilt here",
     ],
 }
 
@@ -950,8 +974,8 @@ def validate_elf_closure_record(
 
 
 def hol_runtime_record(hol_root: Path) -> dict[str, Any]:
-    return {
-        "policy": "exact_hol_launchers_state_and_elf_closure_v1",
+    record = {
+        "policy": "exact_hol_launchers_state_kernelid_and_elf_closure_v2",
         "files": {
             name: file_record(hol_root / name)
             for name in HOL_BOOTSTRAP_RUNTIME_FILES
@@ -964,6 +988,9 @@ def hol_runtime_record(hol_root: Path) -> dict[str, Any]:
             for name in HOL_BOOTSTRAP_ELF_FILES
         },
     }
+    require(record["files"][".kernelidstr"] == bytes_record(HOL_KERNEL_ID_BYTES),
+            "HOL kernel identifier is not the pinned stdknl identity")
+    return record
 
 
 def validate_hol_runtime_record(
@@ -975,7 +1002,7 @@ def validate_hol_runtime_record(
         "policy", "files", "elf_closures",
     }, "malformed HOL bootstrap runtime record")
     require(record.get("policy") ==
-            "exact_hol_launchers_state_and_elf_closure_v1",
+            "exact_hol_launchers_state_kernelid_and_elf_closure_v2",
             "unsupported HOL bootstrap runtime policy")
     files = record.get("files")
     closures = record.get("elf_closures")
@@ -985,6 +1012,8 @@ def validate_hol_runtime_record(
     require(isinstance(closures, dict) and
             set(closures) == set(HOL_BOOTSTRAP_ELF_FILES),
             "HOL bootstrap ELF set mismatch")
+    require(files.get(".kernelidstr") == bytes_record(HOL_KERNEL_ID_BYTES),
+            "HOL bootstrap kernel identifier mismatch")
     for name in HOL_BOOTSTRAP_RUNTIME_FILES:
         identity = files[name]
         require(isinstance(identity, dict) and
@@ -1329,7 +1358,7 @@ def bootstrap_host_runtime_record() -> dict[str, Any]:
         for name, path in BOOTSTRAP_CONTROLLER_TOOLS.items()
     }
     return {
-        "policy": "exact_controller_tools_and_launch_elf_closure_v1",
+        "policy": "exact_controller_builder_tools_and_launch_elf_closure_v2",
         "tools": tools,
         "launch_elf_closures": {
             name: elf_dynamic_closure(Path(BOOTSTRAP_CONTROLLER_TOOLS[name]))
@@ -1347,7 +1376,7 @@ def validate_bootstrap_host_runtime_record(
         "policy", "tools", "launch_elf_closures",
     }, "malformed bootstrap host runtime record")
     require(record.get("policy") ==
-            "exact_controller_tools_and_launch_elf_closure_v1",
+            "exact_controller_builder_tools_and_launch_elf_closure_v2",
             "unsupported bootstrap host runtime policy")
     tools = record.get("tools")
     closures = record.get("launch_elf_closures")
@@ -1493,6 +1522,23 @@ def bootstrap_dependency_output_paths(
     return result
 
 
+def bootstrap_lastmaker_output_paths(
+    cakeml_root: Path,
+) -> list[tuple[str, Path]]:
+    result = []
+    for directory in (
+        Path("compiler/bootstrap/translation/.hol/make-deps"),
+        BOOTSTRAP_RELATIVE / ".hol/make-deps",
+    ):
+        relative = directory / "lastmaker"
+        result.append((str(relative), cakeml_root / relative))
+    return result
+
+
+def bootstrap_lastmaker_bytes(hol_root: Path) -> bytes:
+    return (str(hol_root / "bin/Holmake") + "\n").encode("utf-8")
+
+
 def bootstrap_cleanup_output_paths(
     cakeml_root: Path,
 ) -> list[tuple[str, Path, str]]:
@@ -1505,10 +1551,226 @@ def bootstrap_cleanup_output_paths(
     ] + [
         (relative, path, "ordinary_fresh")
         for relative, path in bootstrap_dependency_output_paths(cakeml_root)
+    ] + [
+        (relative, path, "exact_holmake_lastmaker")
+        for relative, path in bootstrap_lastmaker_output_paths(cakeml_root)
     ]
     require(len({relative for relative, _, _ in result}) == len(result),
             "duplicate bootstrap cleanup-output path")
     return result
+
+
+def _make_dependency_artifact_entries(
+    root: Path,
+    *,
+    excluded_paths: set[str],
+) -> list[dict[str, Any]]:
+    entries = []
+    dependency_directories = sorted(root.rglob(".hol/make-deps"))
+    for dependency_directory in dependency_directories:
+        metadata = dependency_directory.stat(follow_symlinks=False)
+        require(stat.S_ISDIR(metadata.st_mode) and
+                not dependency_directory.is_symlink(),
+                f"make-dependency directory is not ordinary: {dependency_directory}")
+        for current, directories, files in os.walk(
+            dependency_directory, topdown=True, followlinks=False,
+        ):
+            current_path = Path(current)
+            for directory in directories:
+                child = current_path / directory
+                require(not child.is_symlink(),
+                        f"symlink inside make-dependency inventory: {child}")
+            for filename in sorted(files):
+                path = current_path / filename
+                require(not path.is_symlink(),
+                        f"symlink inside make-dependency inventory: {path}")
+                if str(path) in excluded_paths:
+                    continue
+                relative = str(path.relative_to(root))
+                entries.append({
+                    "relative": relative,
+                    "path": str(path),
+                    "identity": ordinary_file_identity(path),
+                })
+    entries.sort(key=lambda entry: entry["relative"])
+    require(len({entry["relative"] for entry in entries}) == len(entries),
+            "duplicate make-dependency artifact path")
+    return entries
+
+
+def bootstrap_make_dependency_artifact_inventory(
+    cakeml_root: Path,
+    hol_root: Path,
+) -> dict[str, Any]:
+    """Bind every non-transitioned make-dependency input in both trees."""
+    cakeml_root = cakeml_root.resolve(strict=True)
+    hol_root = hol_root.resolve(strict=True)
+    transitioned = {
+        str(path) for _, path in (
+            bootstrap_dependency_output_paths(cakeml_root) +
+            bootstrap_lastmaker_output_paths(cakeml_root)
+        )
+    }
+    hol_entries = _make_dependency_artifact_entries(
+        hol_root, excluded_paths=set(),
+    )
+    cakeml_entries = _make_dependency_artifact_entries(
+        cakeml_root, excluded_paths=transitioned,
+    )
+    hol_paths_sha256 = _canonical_json_sha256([
+        entry["relative"] for entry in hol_entries
+    ])
+    cakeml_paths_sha256 = _canonical_json_sha256([
+        entry["relative"] for entry in cakeml_entries
+    ])
+    require(len(hol_entries) == HOL_MAKE_DEPENDENCY_COUNT and
+            hol_paths_sha256 == HOL_MAKE_DEPENDENCY_PATHS_SHA256,
+            "HOL make-dependency artifact path set mismatch")
+    require(len(cakeml_entries) == CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT and
+            cakeml_paths_sha256 ==
+            CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256,
+            "CakeML ancestor make-dependency artifact path set mismatch")
+    expected_lastmaker = bytes_record(bootstrap_lastmaker_bytes(hol_root))
+    for entry in hol_entries + cakeml_entries:
+        if Path(entry["relative"]).name == "lastmaker":
+            require({field: entry["identity"][field]
+                     for field in ("bytes", "sha256")} == expected_lastmaker,
+                    f"ancestor lastmaker does not name pinned Holmake: "
+                    f"{entry['path']}")
+    return {
+        "policy": "all_hol_and_cakeml_ancestor_make_dependencies_v1",
+        "derivation_claim": "content_bound_not_independently_rebuilt",
+        "lastmaker_content": expected_lastmaker,
+        "structure": {
+            "hol_paths_sha256": hol_paths_sha256,
+            "cakeml_ancestor_paths_sha256": cakeml_paths_sha256,
+        },
+        "hol_entries": hol_entries,
+        "cakeml_ancestor_entries": cakeml_entries,
+    }
+
+
+def validate_bootstrap_make_dependency_artifact_inventory(
+    record: Any,
+    cakeml_root: Path,
+    hol_root: Path,
+    *,
+    require_live: bool,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "derivation_claim", "lastmaker_content", "structure",
+        "hol_entries", "cakeml_ancestor_entries",
+    } and record.get("policy") ==
+            "all_hol_and_cakeml_ancestor_make_dependencies_v1" and
+            record.get("derivation_claim") ==
+            "content_bound_not_independently_rebuilt",
+            "malformed make-dependency artifact inventory")
+    cakeml_root = Path(cakeml_root)
+    hol_root = Path(hol_root)
+    expected_lastmaker = bytes_record(bootstrap_lastmaker_bytes(hol_root))
+    require(record.get("lastmaker_content") == expected_lastmaker,
+            "make-dependency lastmaker contract mismatch")
+    require(record.get("structure") == {
+        "hol_paths_sha256": HOL_MAKE_DEPENDENCY_PATHS_SHA256,
+        "cakeml_ancestor_paths_sha256":
+            CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256,
+    }, "make-dependency structure digest mismatch")
+    transitioned = {
+        str(path) for _, path in (
+            bootstrap_dependency_output_paths(cakeml_root) +
+            bootstrap_lastmaker_output_paths(cakeml_root)
+        )
+    }
+    roles = (
+        ("HOL", record.get("hol_entries"), hol_root,
+         HOL_MAKE_DEPENDENCY_COUNT, HOL_MAKE_DEPENDENCY_PATHS_SHA256),
+        ("CakeML ancestor", record.get("cakeml_ancestor_entries"), cakeml_root,
+         CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT,
+         CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256),
+    )
+    for label, entries, root, expected_count, expected_paths_sha256 in roles:
+        require(isinstance(entries, list) and len(entries) == expected_count,
+                f"{label} make-dependency artifact count mismatch")
+        prior = None
+        for entry in entries:
+            require(isinstance(entry, dict) and set(entry) == {
+                "relative", "path", "identity",
+            }, f"malformed {label} make-dependency artifact")
+            relative = entry.get("relative")
+            require(isinstance(relative, str) and
+                    _relative_path_is_canonical(relative) and
+                    relative > (prior or "") and
+                    "/.hol/make-deps/" in f"/{relative}" and
+                    entry.get("path") == str(root / relative) and
+                    entry.get("path") not in transitioned and
+                    _ordinary_identity_is_well_formed(entry.get("identity")),
+                    f"malformed {label} make-dependency artifact")
+            if Path(relative).name == "lastmaker":
+                require({field: entry["identity"][field]
+                         for field in ("bytes", "sha256")} ==
+                        expected_lastmaker,
+                        f"{label} lastmaker does not name pinned Holmake")
+            prior = relative
+        require(_canonical_json_sha256([
+            entry["relative"] for entry in entries
+        ]) == expected_paths_sha256,
+                f"{label} make-dependency artifact path set mismatch")
+    if require_live:
+        require(record == bootstrap_make_dependency_artifact_inventory(
+            cakeml_root, hol_root,
+        ), "make-dependency artifact inventory changed")
+
+
+def cake_compile_heap_record(cakeml_root: Path) -> dict[str, Any]:
+    path = cakeml_root / CAKE_COMPILE_HEAP_RELATIVE
+    return {
+        "policy": "x64bootstrap_holmakefile_selected_compile_heap_v2",
+        "derivation_claim": "content_bound_not_independently_rebuilt",
+        "selection": "HMF_POLY_selects_CAKEMLDIR_cv_translator_cake_compile_heap",
+        "holmakefile": committed_source_record(
+            cakeml_root, CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE,
+        ),
+        "relative": str(CAKE_COMPILE_HEAP_RELATIVE),
+        "path": str(path),
+        "identity": ordinary_file_identity(path),
+    }
+
+
+def validate_cake_compile_heap_record(
+    record: Any,
+    cakeml_root: Path,
+    *,
+    require_live: bool,
+) -> None:
+    expected_path = cakeml_root / CAKE_COMPILE_HEAP_RELATIVE
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "derivation_claim", "selection", "holmakefile", "relative",
+        "path", "identity",
+    } and record.get("policy") ==
+            "x64bootstrap_holmakefile_selected_compile_heap_v2" and
+            record.get("derivation_claim") ==
+            "content_bound_not_independently_rebuilt" and
+            record.get("selection") ==
+            "HMF_POLY_selects_CAKEMLDIR_cv_translator_cake_compile_heap" and
+            record.get("relative") == str(CAKE_COMPILE_HEAP_RELATIVE) and
+            record.get("path") == str(expected_path) and
+            _ordinary_identity_is_well_formed(record.get("identity")),
+            "malformed CakeML compile-heap record")
+    holmakefile = record.get("holmakefile")
+    require(isinstance(holmakefile, dict) and set(holmakefile) == {
+        "repository_path", "path", "bytes", "sha256", "commit_blob",
+    } and holmakefile.get("repository_path") ==
+            CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE and
+            holmakefile.get("path") == str(
+                cakeml_root / CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE
+            ) and
+            isinstance(holmakefile.get("commit_blob"), dict) and
+            holmakefile["commit_blob"] == {
+                field: holmakefile[field] for field in ("bytes", "sha256")
+            }, "malformed CakeML compile-heap Holmakefile binding")
+    if require_live:
+        require(record == cake_compile_heap_record(cakeml_root),
+                "CakeML compile heap changed")
 
 
 def bootstrap_ancestor_artifact_inventory(
@@ -1691,12 +1953,15 @@ def record_bootstrap_preflight(
         "lock": _directory_identity(cakeml_root),
         "launch": launch,
         "forced_outputs": {
-            "policy": "exact_18_target_outputs_dependencies_and_transients_v2",
+            "policy": "exact_18_target_outputs_dependencies_transients_lastmaker_v3",
             "preimage_archive_root": str(archive_root),
             "entries": forced_outputs,
         },
         "preserved_symlink_inputs": symlink_inputs,
         "ancestor_artifacts": bootstrap_ancestor_artifact_inventory(cakeml_root),
+        "make_dependency_artifacts":
+            bootstrap_make_dependency_artifact_inventory(cakeml_root, hol_root),
+        "cake_compile_heap": cake_compile_heap_record(cakeml_root),
         "host_runtime": bootstrap_host_runtime_record(),
         "hol_runtime": hol_runtime_record(hol_root),
         "hol_proof_artifacts": hol_proof_artifact_inventory(hol_root),
@@ -1715,7 +1980,8 @@ def _validate_bootstrap_preflight_structure(
         "receipt_path", "final_record_path", "controller_sources", "lock",
         "controller_environment", "python_controller", "launch",
         "forced_outputs", "preserved_symlink_inputs", "ancestor_artifacts",
-        "host_runtime", "hol_runtime", "hol_proof_artifacts",
+        "make_dependency_artifacts", "cake_compile_heap", "host_runtime",
+        "hol_runtime", "hol_proof_artifacts",
         "trusted_host_boundary",
     }, "malformed bootstrap preflight record")
     require(record.get("schema") == BOOTSTRAP_PREFLIGHT_SCHEMA,
@@ -1754,11 +2020,11 @@ def _validate_bootstrap_preflight_structure(
     require(isinstance(outputs, dict) and set(outputs) == {
         "policy", "preimage_archive_root", "entries",
     } and outputs.get("policy") ==
-            "exact_18_target_outputs_dependencies_and_transients_v2",
+            "exact_18_target_outputs_dependencies_transients_lastmaker_v3",
             "malformed bootstrap forced-output preflight")
     entries = outputs.get("entries")
     require(isinstance(entries, list) and
-            len(entries) == 108 + 18 * 2 + 18 * 3,
+            len(entries) == 108 + 18 * 2 + 18 * 3 + 2,
             "bootstrap forced-output inventory size mismatch")
     for output in entries:
         require(isinstance(output, dict) and set(output) == {
@@ -1767,6 +2033,7 @@ def _validate_bootstrap_preflight_structure(
         }, "malformed bootstrap forced-output entry")
         require(output["postcondition"] in {
             "ordinary_fresh", "absent_after_success",
+            "exact_holmake_lastmaker",
         }, "malformed bootstrap forced-output postcondition")
         preimage = output.get("preimage")
         require(preimage is None or
@@ -1784,6 +2051,15 @@ def _validate_bootstrap_preflight_structure(
         )
     validate_bootstrap_ancestor_artifact_inventory(
         record.get("ancestor_artifacts"), Path(record["cakeml_root"]),
+        require_live=False,
+    )
+    validate_bootstrap_make_dependency_artifact_inventory(
+        record.get("make_dependency_artifacts"),
+        Path(record["cakeml_root"]), Path(record["hol4_root"]),
+        require_live=False,
+    )
+    validate_cake_compile_heap_record(
+        record.get("cake_compile_heap"), Path(record["cakeml_root"]),
         require_live=False,
     )
     validate_bootstrap_host_runtime_record(
@@ -1851,6 +2127,14 @@ def validate_bootstrap_preflight(
             record["ancestor_artifacts"], Path(cakeml_string),
             require_live=False,
         )
+        validate_bootstrap_make_dependency_artifact_inventory(
+            record["make_dependency_artifacts"], Path(cakeml_string),
+            Path(hol_string), require_live=False,
+        )
+        validate_cake_compile_heap_record(
+            record["cake_compile_heap"], Path(cakeml_string),
+            require_live=False,
+        )
         validate_hol_proof_artifact_inventory(
             record["hol_proof_artifacts"], Path(hol_string),
             require_live=False,
@@ -1905,6 +2189,13 @@ def validate_bootstrap_preflight(
     validate_bootstrap_ancestor_artifact_inventory(
         record["ancestor_artifacts"], cakeml_root, require_live=True,
     )
+    validate_bootstrap_make_dependency_artifact_inventory(
+        record["make_dependency_artifacts"], cakeml_root, hol_root,
+        require_live=True,
+    )
+    validate_cake_compile_heap_record(
+        record["cake_compile_heap"], cakeml_root, require_live=True,
+    )
     if phase == "preflight":
         require(not os.path.lexists(record["launch"]["log_path"]) and
                 not os.path.lexists(record["final_record_path"]),
@@ -1941,7 +2232,13 @@ def validate_bootstrap_preflight(
             else:
                 require(target.is_file() and not target.is_symlink(),
                         f"bootstrap did not freshly produce: {target}")
-            if (output["postcondition"] == "ordinary_fresh" and
+            if output["postcondition"] == "exact_holmake_lastmaker":
+                value, _ = captured_ordinary_file(target)
+                require(value == bootstrap_lastmaker_bytes(hol_root),
+                        f"bootstrap lastmaker does not name pinned Holmake: {target}")
+            if (output["postcondition"] in {
+                    "ordinary_fresh", "exact_holmake_lastmaker",
+            } and
                     output["preimage"] is not None):
                 postimage = ordinary_file_identity(target)
                 require(any(postimage[field] != output["preimage"][field]
@@ -2101,6 +2398,14 @@ def validate_bootstrap_forced_output_transitions(
             require(isinstance(postimage, dict) and set(postimage) == {
                 "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
             }, "malformed bootstrap forced-output postimage")
+            if output["postcondition"] == "exact_holmake_lastmaker":
+                require(
+                    {field: postimage[field] for field in ("bytes", "sha256")} ==
+                    bytes_record(bootstrap_lastmaker_bytes(
+                        Path(preflight["hol4_root"]),
+                    )),
+                    "bootstrap lastmaker postimage does not name pinned Holmake",
+                )
         preimage = output["preimage"]
         archive = transition.get("preimage_archive")
         if preimage is None:

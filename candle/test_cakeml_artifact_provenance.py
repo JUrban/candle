@@ -429,6 +429,76 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 self.assertEqual(archived.read_text(encoding="utf-8"),
                                  f"stale {name}\n")
 
+    def test_bootstrap_preparation_archives_both_malicious_lastmakers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evidence = root / "evidence"
+            evidence.mkdir()
+            receipt = evidence / "preflight.json"
+            archive = subject._bootstrap_archive_root(receipt)
+            entries = []
+            lastmakers = set(subject.bootstrap_lastmaker_output_paths(root))
+            for relative, path, postcondition in (
+                subject.bootstrap_cleanup_output_paths(root)
+            ):
+                preimage = None
+                if (relative, path) in lastmakers:
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(b"/bin/true\n")
+                    preimage = subject.ordinary_file_identity(path)
+                entries.append({
+                    "relative": relative,
+                    "path": str(path),
+                    "postcondition": postcondition,
+                    "preimage": preimage,
+                    "preimage_archive_path": str(archive / relative),
+                })
+            preflight = {
+                "forced_outputs": {
+                    "preimage_archive_root": str(archive),
+                    "entries": entries,
+                },
+            }
+            with mock.patch.object(
+                subject, "validate_bootstrap_preflight", return_value=None,
+            ):
+                subject.prepare_bootstrap_output(root, root, root, preflight)
+            for relative, path in lastmakers:
+                self.assertFalse(path.exists())
+                self.assertEqual((archive / relative).read_bytes(), b"/bin/true\n")
+
+    def test_bootstrap_transition_rejects_alternate_lastmaker_postimage(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            hol_root = root / "hol"
+            path = root / "translation/.hol/make-deps/lastmaker"
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"/bin/true\n")
+            output = {
+                "relative": "translation/.hol/make-deps/lastmaker",
+                "path": str(path),
+                "postcondition": "exact_holmake_lastmaker",
+                "preimage": None,
+                "preimage_archive_path": str(root / "archive/lastmaker"),
+            }
+            preflight = {
+                "hol4_root": str(hol_root),
+                "forced_outputs": {"entries": [output]},
+            }
+            transition = {
+                "relative": output["relative"],
+                "postcondition": output["postcondition"],
+                "preimage": None,
+                "preimage_archive": None,
+                "postimage": subject.ordinary_file_identity(path),
+            }
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "does not name pinned Holmake",
+            ):
+                subject.validate_bootstrap_forced_output_transitions(
+                    preflight, [transition], require_live=False,
+                )
+
     def test_ancestor_inventory_excludes_fresh_stratum_and_detects_drift(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -550,6 +620,156 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             finally:
                 outside.unlink(missing_ok=True)
 
+    def test_make_dependency_inventory_binds_depfiles_and_lastmakers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            hol_root = root / "hol"
+            cakeml_root = root / "cakeml"
+            hol_deps = hol_root / "one/.hol/make-deps"
+            cake_deps = cakeml_root / "ancestor/.hol/make-deps"
+            hol_deps.mkdir(parents=True)
+            cake_deps.mkdir(parents=True)
+            expected_lastmaker = subject.bootstrap_lastmaker_bytes(hol_root)
+            (hol_deps / "lastmaker").write_bytes(expected_lastmaker)
+            (cake_deps / "lastmaker").write_bytes(expected_lastmaker)
+            hol_depfile = hol_deps / "FooScript.sml.d"
+            hol_depfile.write_bytes(b"hol dependency")
+            (cake_deps / "AncestorScript.sml.d").write_bytes(
+                b"cakeml dependency",
+            )
+            hol_paths = [
+                "one/.hol/make-deps/FooScript.sml.d",
+                "one/.hol/make-deps/lastmaker",
+            ]
+            cake_paths = [
+                "ancestor/.hol/make-deps/AncestorScript.sml.d",
+                "ancestor/.hol/make-deps/lastmaker",
+            ]
+            with mock.patch.object(
+                subject, "HOL_MAKE_DEPENDENCY_COUNT", 2,
+            ), mock.patch.object(
+                subject, "CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT", 2,
+            ), mock.patch.object(
+                subject, "HOL_MAKE_DEPENDENCY_PATHS_SHA256",
+                subject._canonical_json_sha256(hol_paths),
+            ), mock.patch.object(
+                subject, "CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256",
+                subject._canonical_json_sha256(cake_paths),
+            ):
+                inventory = subject.bootstrap_make_dependency_artifact_inventory(
+                    cakeml_root, hol_root,
+                )
+                subject.validate_bootstrap_make_dependency_artifact_inventory(
+                    inventory, cakeml_root, hol_root, require_live=True,
+                )
+                alternate = copy.deepcopy(inventory)
+                retained_lastmaker = next(
+                    entry for entry in alternate["cakeml_ancestor_entries"]
+                    if Path(entry["relative"]).name == "lastmaker"
+                )
+                retained_lastmaker["identity"].update(
+                    subject.bytes_record(b"/bin/true\n"),
+                )
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "does not name pinned Holmake",
+                ):
+                    subject.validate_bootstrap_make_dependency_artifact_inventory(
+                        alternate, cakeml_root, hol_root, require_live=False,
+                    )
+                wrong_path = copy.deepcopy(inventory)
+                wrong_path_entry = wrong_path["hol_entries"][0]
+                wrong_path_entry["relative"] = (
+                    "one/.hol/make-deps/AAAInjected.sml.d"
+                )
+                wrong_path_entry["path"] = str(
+                    hol_root / wrong_path_entry["relative"]
+                )
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "path set mismatch",
+                ):
+                    subject.validate_bootstrap_make_dependency_artifact_inventory(
+                        wrong_path, cakeml_root, hol_root, require_live=False,
+                    )
+                hol_depfile.write_bytes(b"malicious dependency")
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "inventory changed",
+                ):
+                    subject.validate_bootstrap_make_dependency_artifact_inventory(
+                        inventory, cakeml_root, hol_root, require_live=True,
+                    )
+
+    def test_make_dependency_inventory_rejects_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            hol_root = root / "hol"
+            cakeml_root = root / "cakeml"
+            deps = hol_root / "one/.hol/make-deps"
+            deps.mkdir(parents=True)
+            cakeml_root.mkdir()
+            target = hol_root / "target"
+            target.write_bytes(b"dependency")
+            (deps / "Injected.d").symlink_to(target)
+            with self.assertRaisesRegex(
+                subject.ProvenanceError,
+                "symlink inside make-dependency inventory",
+            ):
+                subject.bootstrap_make_dependency_artifact_inventory(
+                    cakeml_root, hol_root,
+                )
+
+    def test_cake_compile_heap_record_rejects_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            heap = root / subject.CAKE_COMPILE_HEAP_RELATIVE
+            heap.parent.mkdir(parents=True)
+            heap.write_bytes(b"saved compiler heap")
+            holmakefile = (
+                root / subject.CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE
+            )
+            holmakefile.parent.mkdir(parents=True)
+            holmakefile.write_text(
+                "ifdef POLY\nHOLHEAP = $(CAKEMLDIR)/cv_translator/"
+                "cake_compile_heap\nendif\n",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                ["/usr/bin/git", "init", "-q"], cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            subprocess.run(
+                ["/usr/bin/git", "add",
+                 subject.CAKE_COMPILE_HEAP_HOLMAKEFILE_RELATIVE],
+                cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            subprocess.run(
+                ["/usr/bin/git", "-c", "user.name=Test", "-c",
+                 "user.email=test@example.invalid", "commit", "-qm", "heap"],
+                cwd=root, check=True,
+                env={"LC_ALL": "C", "PATH": "/usr/bin:/bin"},
+            )
+            record = subject.cake_compile_heap_record(root)
+            subject.validate_cake_compile_heap_record(
+                record, root, require_live=True,
+            )
+            heap.write_bytes(b"replacement heap")
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "compile heap changed",
+            ):
+                subject.validate_cake_compile_heap_record(
+                    record, root, require_live=True,
+                )
+            heap.unlink()
+            target = root / "replacement-heap"
+            target.write_bytes(b"saved compiler heap")
+            heap.symlink_to(target)
+            with self.assertRaisesRegex(
+                subject.ProvenanceError, "capture ordinary file",
+            ):
+                subject.validate_cake_compile_heap_record(
+                    record, root, require_live=True,
+                )
+
     def test_obsolete_manual_bootstrap_phases_are_not_public_commands(self) -> None:
         script = Path(subject.__file__).resolve()
         for command in (
@@ -631,15 +851,41 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 shutil.copyfile("/bin/true", root / "bin/Holmake")
                 shutil.copyfile("/bin/true", root / "bin/hol")
                 (root / "bin/hol.state").write_bytes(b"saved-state")
+                (root / ".kernelidstr").write_bytes(b"stdknl\n")
                 record = subject.hol_runtime_record(root)
                 subject.validate_hol_runtime_record(record, hol_root=root)
+                wrong_kernel = copy.deepcopy(record)
+                wrong_kernel["files"][".kernelidstr"] = subject.bytes_record(
+                    b"injected-kernel\n",
+                )
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "kernel identifier mismatch",
+                ):
+                    subject.validate_hol_runtime_record(wrong_kernel)
                 (root / "bin/hol.state").write_bytes(b"tampered")
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "provenance mismatch",
+                ):
+                    subject.validate_hol_runtime_record(record, hol_root=root)
+                (root / "bin/hol.state").write_bytes(b"saved-state")
+                (root / ".kernelidstr").write_bytes(b"injected-kernel\n")
                 with self.assertRaisesRegex(
                     subject.ProvenanceError, "provenance mismatch",
                 ):
                     subject.validate_hol_runtime_record(record, hol_root=root)
         finally:
             subject.HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = original_tags
+
+    def test_bootstrap_host_runtime_binds_requested_bin_sh_and_closure(self) -> None:
+        record = subject.bootstrap_host_runtime_record()
+        subject.validate_bootstrap_host_runtime_record(
+            record, require_live=True,
+        )
+        shell = record["tools"]["sh"]
+        self.assertEqual(shell["requested_path"], "/bin/sh")
+        self.assertEqual(shell["symlink_target"], "dash")
+        self.assertEqual(shell["resolved_path"], "/bin/dash")
+        self.assertIn("sh", record["launch_elf_closures"])
 
     def test_runtime_environment_rejects_loader_controls(self) -> None:
         for variable in ("LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH",

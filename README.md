@@ -52,7 +52,10 @@ That process writes an immutable preflight before mutation, holds an exclusive
 lock on the exact CakeML checkout inode through atomic final publication,
 archives and removes the exact generated `cake.S`, `config_enc_str.txt`,
 18-target theory-output inventory, their exact make-dependency files, and any
-retry-only `*Script.ui`/`*Script.uo` transients, and runs exactly
+retry-only `*Script.ui`/`*Script.uo` transients. It also archives and removes
+both relevant `lastmaker` files before launch and requires their fresh
+postimages to contain exactly the pinned `HOL_ROOT/bin/Holmake` path. It runs
+exactly
 `/usr/bin/time -v HOL_ROOT/bin/Holmake -j1 cake.S`
 in the pinned x64/64 directory under an exact three-variable build environment.
 It preserves and authenticates the tracked `candle_boot.ml`, `basis_ffi.c`, and
@@ -69,9 +72,18 @@ symlink text and resolved in-tree payload included), and the exact generated
 HOL sources used outside those sets. These HOL proof artifacts are retained as
 content-bound inputs; the controller does not claim to rederive them from
 source.
+All ordinary `.hol/make-deps` files in HOL4 and all non-transitioned ancestor
+`.hol/make-deps` files in CakeML are likewise content-bound before and after.
+Every retained `lastmaker` must contain exactly the pinned absolute Holmake
+path, preventing dependency traversal from selecting another executable.
+The `cv_translator/cake_compile_heap` selected by the pinned final x64Bootstrap
+Holmakefile is also hashed before and after as a non-rederived input; the
+Holmakefile's committed bytes are bound alongside it.
 
 The bootstrap record includes ordinary-file identities for `bin/Holmake`,
-`bin/hol`, and `bin/hol.state`, the two launchers' exact ELF closures, and one
+`bin/hol`, `bin/hol.state`, and `.kernelidstr`, the two launchers' exact ELF
+closures, and the requested `/bin/sh` link, resolved bytes, and ELF closure used
+by Holmake builders, plus one
 complete trailing GNU `time -v` receipt for the pinned command.  Local linking
 uses a fixed single-job make/CC command.  Before accepting the linked record,
 the provenance checker relinks exact authenticated copies of `cake.S`,
