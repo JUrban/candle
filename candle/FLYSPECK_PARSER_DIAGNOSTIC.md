@@ -67,13 +67,15 @@ lowercase hexadecimal characters. The only accepted replies are:
 
 ```text
 CANDLE_CAMLPARSER_DIAGNOSTIC_V1	NONCE	OK
-CANDLE_CAMLPARSER_DIAGNOSTIC_V1	NONCE	PARSE_ERROR	DIGEST
+CANDLE_CAMLPARSER_DIAGNOSTIC_V1	NONCE	PARSE_ERROR
 ```
 
 `OK` requires exit code 0 and empty stderr. `PARSE_ERROR` requires exit code
 **exactly 65**, not merely a nonzero code. Its stderr must be well-formed UTF-8
 (the protocol does not perform Unicode normalization).
-`DIGEST` is the lowercase 64-hex encoding of:
+The runtime does not compute or emit an error digest. After validating the
+exact runtime line, exit status, and UTF-8 stderr, the controller records the
+lowercase 64-hex encoding of:
 
 ```text
 SHA256(ASCII("CANDLE_CAMLPARSER_ERROR_V1") || byte(0x00) || STDERR_BYTES)
@@ -82,8 +84,9 @@ SHA256(ASCII("CANDLE_CAMLPARSER_ERROR_V1") || byte(0x00) || STDERR_BYTES)
 `STDERR_BYTES` is the exact UTF-8 byte stream emitted on stderr, including any
 newlines; there is no decoding, newline conversion, length prefix, or terminal
 NUL in the digest preimage. The newline terminating the stdout protocol record
-is not part of the preimage. Any other exit code, output byte, nonce, digest,
-or encoding is rejected.
+is not part of the preimage. This is controller receipt metadata, not a runtime
+wire field. Any other exit code, output byte, nonce, or encoding is rejected;
+a runtime-supplied digest field is therefore also rejected.
 
 A generic compiler, old compiler, REPL, or protocol variation is rejected
 during the empty handshake before any corpus bytes are sent. Both the
@@ -122,22 +125,17 @@ owns stdin and command-line dispatch:
    `caml_parser$run (explode input)`. Format its success or parser failure using
    the exact wire bytes above. Do not route through `parse_ocaml_syntax` if that
    would obscure the direct call in its specification.
-3. Add the protocol's SHA-256 function in the same theory (or import a separately
-   proved equivalent). The pinned tree has no existing translated SHA-256
-   helper, so a claim that only dispatch glue is needed would be incomplete.
-   Prove its byte/list implementation against the HOL digest definition and
-   translate it before the diagnostic function.
-4. Put the two branches before REPL/general compilation dispatch. The
+3. Put the two branches before REPL/general compilation dispatch. The
    capability branch must not open stdin; the run branch reads stdin exactly
    once and parses exactly those bytes.
-5. On parser error, emit the canonical UTF-8 diagnostic, compute the domain-
-   separated digest over those exact emitted bytes, and invoke an exact exit
-   FFI path carrying byte value 65. The existing
+4. On parser error, emit the exact three-field `PARSE_ERROR` stdout line and
+   canonical UTF-8 diagnostic, then invoke an exact exit FFI path carrying byte
+   value 65. Digesting is deliberately a controller operation. The existing
    `nonzero_exit_code_for_error_msg` helper is insufficient because it does not
    promise exit status 65.
-6. Do not invoke `infertype_prog`, `check_and_tweak`, `eval`, `compile_64`, or
+5. Do not invoke `infertype_prog`, `check_and_tweak`, `eval`, `compile_64`, or
    `parse_prog` in either diagnostic branch.
-7. Prove the translated hash/parser-diagnostic functions and both new `main`
+6. Prove the translated parser-diagnostic functions and both new `main`
    branches. Add separate capability and run-mode STDIO/COMMANDLINE/exit-event
    specifications that establish empty-stdin behavior, exact parser input,
    output bytes, and absence of inference/evaluation by construction.
@@ -210,11 +208,22 @@ validation, the empty capability handshake, all parser attempts, postflight
 runtime validation, evidence capture, and result publication. A result embeds
 read-only snapshots of the exact plan and inputs, manifest, pilot, host
 receipt, linked provenance, controller/policy sources, every `linked.outputs`
-member, the patch plus patch/native-link inputs, the CakeML runtime ELF
-closure, the controller Python executable/ELF closure and host tools, and the
-schema-7 transition record when applicable. Large linked objects are streamed
-into independent ordinary copies—never mutable hardlinks. A closed inventory
-is rehashed before publication, so an omitted, extra, symlinked, writable, or
-tampered snapshot member rejects the result. This can intentionally cost
-multiple GiB once a linked compiler exists. None of these measures changes the
-categorically non-promotable claim boundary.
+member, every selected source's original Git blob alongside its prepared input,
+the patch plus patch/native-link inputs, the CakeML runtime ELF closure, the
+controller Python executable/ELF closure and host tools, and the schema-7
+transition record when applicable. This makes the exact masking transformation
+auditable offline. Large objects are streamed into independent ordinary
+copies—never mutable hardlinks. A closed inventory is rehashed before
+publication, so an omitted, extra, symlinked, writable, or tampered snapshot
+member rejects the result. This can intentionally cost multiple GiB once a
+linked compiler exists.
+
+While the shared build lock is held, the controller opens the authenticated
+linked runtime with `O_NOFOLLOW`, verifies one stable ordinary inode, and
+copies those exact bytes into an anonymous mode-0500 memfd sealed against
+write, growth, shrinkage, and further seal changes. The capability handshake
+and every parser attempt execute that same inherited descriptor via
+`/proc/self/fd`; they never reopen the mutable runtime pathname. Postflight and
+pre-publication checks revalidate both the named linked runtime and the sealed
+executed image. None of these measures changes the categorically
+non-promotable claim boundary.
