@@ -355,7 +355,11 @@ class ParserDiagnosticTests(unittest.TestCase):
             child_pid = int(child_pid_path.read_text())
             for _attempt in range(20):
                 status = Path(f"/proc/{child_pid}/stat")
-                if not status.exists() or status.read_text().split()[2] == "Z":
+                try:
+                    process_state = status.read_text().split()[2]
+                except (FileNotFoundError, ProcessLookupError):
+                    break
+                if process_state == "Z":
                     break
                 time.sleep(0.05)
             else:
