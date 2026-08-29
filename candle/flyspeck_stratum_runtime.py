@@ -2426,8 +2426,176 @@ def validate_source_trace(
     return validate_source_trace_observation(contract, observation)
 
 
+def validate_direct_controller_binding(
+    controller: object, candle_commit: str,
+) -> None:
+    """Validate the complete retained controller claim without host lookups."""
+    require(isinstance(controller, dict) and set(controller) == {
+                "source_root", "direct_script_startup", "commit_binding",
+                "python_startup_flags", "python_startup_options",
+                "initial_top_level_compilation_in_host_trust_boundary",
+                "local_sources", "python_runtime", "host_tools",
+                "git_environment",
+                "broader_python_standard_library_in_host_trust_boundary",
+            }, "malformed direct runtime controller binding")
+    source_root_value = controller["source_root"]
+    require(isinstance(source_root_value, str) and
+            Path(source_root_value).is_absolute(),
+            "malformed direct runtime controller source root")
+    source_root = Path(source_root_value)
+    direct_source = source_root / "flyspeck_stratum_runtime.py"
+    require(controller["direct_script_startup"] == {
+                "module_name": "__main__",
+                "spec_is_none": True,
+                "cached_is_none": True,
+                "argv0": str(direct_source),
+                "source_path": str(direct_source),
+            } and controller["python_startup_flags"] ==
+            EXPECTED_PYTHON_STARTUP_FLAGS and
+            controller["python_startup_options"] ==
+            EXPECTED_PYTHON_STARTUP_OPTIONS and
+            controller[
+                "initial_top_level_compilation_in_host_trust_boundary"
+            ] is True and
+            controller[
+                "broader_python_standard_library_in_host_trust_boundary"
+            ] is True,
+            "malformed direct runtime controller startup binding")
+
+    def retained_digest(item: object, fields: set[str], label: str) -> dict[str, Any]:
+        require(isinstance(item, dict) and set(item) == fields and
+                type(item["bytes"]) is int and item["bytes"] >= 0 and
+                isinstance(item["sha256"], str) and
+                re.fullmatch(r"[0-9a-f]{64}", item["sha256"]) is not None and
+                isinstance(item["md5"], str) and
+                re.fullmatch(r"[0-9a-f]{32}", item["md5"]) is not None,
+                f"malformed direct runtime retained {label}")
+        return item
+
+    expected_bindings = {
+        "cakeml_artifact_provenance.py":
+            "compiled-from-captured-source-bytes",
+        "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
+        "flyspeck_stratum_runtime.py":
+            "startup-captured-after-initial-compilation",
+        "reference_protocol.py": "compiled-from-captured-source-bytes",
+        "runtime_lock.py": "compiled-from-captured-source-bytes",
+    }
+    sources = controller["local_sources"]
+    require(isinstance(sources, list) and len(sources) == len(expected_bindings) and
+            all(isinstance(item, dict) for item in sources) and
+            {item.get("label") for item in sources} == set(expected_bindings),
+            "malformed direct runtime controller source closure")
+    source_by_label: dict[str, dict[str, Any]] = {}
+    source_fields = {
+        "label", "source_path", "execution_binding", "path",
+        "bytes", "sha256", "md5",
+    }
+    for item in sources:
+        retained_digest(item, source_fields, "controller source")
+        label = item["label"]
+        require(item["execution_binding"] == expected_bindings[label] and
+                item["source_path"] == str(source_root / label) and
+                item["path"] == f"controller/python-source/{label}",
+                f"malformed direct runtime controller source: {label}")
+        source_by_label[label] = item
+
+    commit_binding = controller["commit_binding"]
+    require(isinstance(commit_binding, dict) and set(commit_binding) == {
+                "candle_commit", "sources",
+            } and commit_binding["candle_commit"] == candle_commit and
+            isinstance(commit_binding["sources"], dict) and
+            set(commit_binding["sources"]) == set(expected_bindings),
+            "malformed direct runtime controller commit binding")
+    for label, item in source_by_label.items():
+        require(commit_binding["sources"][label] == {
+                    "repository_path": f"candle/{label}",
+                    "index_tag": "H",
+                    "bytes": item["bytes"],
+                    "sha256": item["sha256"],
+                    "md5": item["md5"],
+                }, f"direct runtime controller commit source differs: {label}")
+
+    python_runtime = controller["python_runtime"]
+    require(isinstance(python_runtime, dict) and set(python_runtime) == {
+                "execution_binding", "version", "executable", "elf_policy",
+                "elf_dynamic_path_tags", "elf_roles", "virtual_elf_objects",
+                "elf_objects",
+            } and python_runtime["execution_binding"] ==
+            EXPECTED_PYTHON_RUNTIME["execution_binding"] and
+            python_runtime["version"] == EXPECTED_PYTHON_RUNTIME["version"],
+            "malformed direct runtime controller Python binding")
+    executable = retained_digest(
+        python_runtime["executable"], {
+            "source_path", "path", "bytes", "sha256", "md5",
+        }, "controller Python executable",
+    )
+    expected_executable = EXPECTED_PYTHON_RUNTIME["executable"]
+    require(executable["source_path"] == expected_executable["path"] and
+            executable["path"] == "controller/python-runtime/python3.12" and
+            all(executable[field] == expected_executable[field]
+                for field in ("bytes", "sha256")),
+            "direct runtime controller Python executable differs")
+    expected_elf = EXPECTED_PYTHON_RUNTIME["elf_closure"]
+    require(python_runtime["elf_policy"] == expected_elf["policy"] and
+            python_runtime["elf_dynamic_path_tags"] ==
+            expected_elf["dynamic_path_tags"] and
+            python_runtime["elf_roles"] == expected_elf["roles"] and
+            python_runtime["virtual_elf_objects"] ==
+            expected_elf["virtual_objects"],
+            "direct runtime controller Python ELF metadata differs")
+    elf_objects = python_runtime["elf_objects"]
+    require(isinstance(elf_objects, list) and
+            all(isinstance(item, dict) for item in elf_objects) and
+            {item.get("source_path") for item in elf_objects} ==
+            set(expected_elf["files"]),
+            "malformed direct runtime controller Python ELF closure")
+    for item in elf_objects:
+        retained_digest(item, {
+            "source_path", "path", "bytes", "sha256", "md5",
+        }, "controller Python ELF object")
+        expected = expected_elf["files"][item["source_path"]]
+        source = Path(item["source_path"])
+        require(item["path"] == (
+                    "controller/python-runtime-elf/" +
+                    f"{expected['sha256'][:16]}-{source.name}"
+                ) and all(item[field] == expected[field]
+                          for field in ("bytes", "sha256")),
+                "direct runtime controller Python ELF object differs")
+
+    require(controller["git_environment"] == {
+                "LC_ALL": "C", "PATH": "/usr/bin:/bin",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_CONFIG_GLOBAL": "/dev/null",
+                "GIT_TERMINAL_PROMPT": "0",
+                "GIT_NO_REPLACE_OBJECTS": "1",
+                "GIT_OPTIONAL_LOCKS": "0",
+            }, "direct runtime controller Git environment differs")
+    host_tools = controller["host_tools"]
+    require(isinstance(host_tools, list) and
+            all(isinstance(item, dict) for item in host_tools) and
+            {item.get("label") for item in host_tools} ==
+            set(EXPECTED_CONTROLLER_TOOLS),
+            "malformed direct runtime controller host-tool closure")
+    for item in host_tools:
+        retained_digest(item, {
+            "label", "invocation_path", "resolved_path", "symlink_target",
+            "path", "bytes", "sha256", "md5",
+        }, "controller host tool")
+        label = item["label"]
+        expected = EXPECTED_CONTROLLER_TOOLS[label]
+        require(all(item[field] == expected[field] for field in (
+                    "invocation_path", "resolved_path", "symlink_target",
+                    "bytes", "sha256",
+                )) and item["path"] == (
+                    f"controller/host-tools/{label}-" +
+                    Path(expected["resolved_path"]).name
+                ), f"direct runtime controller host tool differs: {label}")
+
+
 def validate_direct_evidence_v4_artifact(
     artifact: dict[str, Any], *, receipt: bool,
+    log_path: Path | None = None,
 ) -> None:
     """Reject legacy or partially upgraded direct-attempt artifacts."""
     expected_fields = (
@@ -2515,21 +2683,6 @@ def validate_direct_evidence_v4_artifact(
         digest_record(inputs[label], f"input {label}")
     digest_record(inputs["authenticated_prefix"],
                   "authenticated prefix", path=True)
-    controller = inputs["controller_execution"]
-    require(isinstance(controller, dict) and set(controller) == {
-                "source_root", "direct_script_startup", "commit_binding",
-                "python_startup_flags", "python_startup_options",
-                "initial_top_level_compilation_in_host_trust_boundary",
-                "local_sources", "python_runtime", "host_tools",
-                "git_environment",
-                "broader_python_standard_library_in_host_trust_boundary",
-            } and
-            controller["initial_top_level_compilation_in_host_trust_boundary"]
-            is True and
-            controller[
-                "broader_python_standard_library_in_host_trust_boundary"
-            ] is True,
-            "malformed direct runtime controller binding")
     repositories = artifact.get("repositories")
     require(isinstance(repositories, dict) and set(repositories) == {
                 "candle", "flyspeck",
@@ -2537,6 +2690,9 @@ def validate_direct_evidence_v4_artifact(
                       re.fullmatch(r"[0-9a-f]{40}", value) is not None
                       for value in repositories.values()),
             "malformed direct runtime repository binding")
+    validate_direct_controller_binding(
+        inputs["controller_execution"], repositories["candle"],
+    )
     contract = artifact.get("evidence_contract")
     require(isinstance(contract, dict) and set(contract) == {
                 "schema", "allowed_action_outcomes",
@@ -2627,7 +2783,7 @@ def validate_direct_evidence_v4_artifact(
             expected.get("order") == SOURCE_CLOSURE_ORDER and
             type(expected.get("completed_action_count")) is int and
             expected["completed_action_count"] == action_count and
-            expected.get("final_target_selected") ==
+            expected.get("final_target_selected") is
             boundary_id.startswith("07-") and
             expected.get("physical_loader_cache_trace") is False and
             expected.get("execution_observation") == SOURCE_CLOSURE_OBSERVATION and
@@ -2856,10 +3012,11 @@ def validate_direct_evidence_v4_artifact(
                         "path", "sha256",
                     } and serializer.get("path") ==
                     FINGERPRINT_RELATIVE.as_posix() and
+                    isinstance(serializer.get("sha256"), str) and
                     isinstance(input_serializer, dict) and
                     serializer.get("sha256") == input_serializer.get("sha256") and
                     re.fullmatch(r"[0-9a-f]{64}",
-                                 str(serializer.get("sha256"))) is not None,
+                                 serializer["sha256"]) is not None,
                     "requested-boundary fingerprint serializer mismatch")
             theorems = fingerprints.get("theorems")
             post_state = fingerprints.get("post_state")
@@ -2874,10 +3031,15 @@ def validate_direct_evidence_v4_artifact(
                 "hypothesis_count", "global_axiom_count",
             }
             for record in theorems:
-                require(set(record) == theorem_fields and
-                        record.get("hypothesis_count") == 0 and
-                        record.get("global_axiom_count") == 3 and
-                        all(re.fullmatch(r"[0-9a-f]{64}", str(record.get(field)))
+                require(isinstance(record, dict) and
+                        set(record) == theorem_fields and
+                        isinstance(record.get("name"), str) and
+                        type(record.get("hypothesis_count")) is int and
+                        record["hypothesis_count"] == 0 and
+                        type(record.get("global_axiom_count")) is int and
+                        record["global_axiom_count"] == 3 and
+                        all(isinstance(record.get(field), str) and
+                            re.fullmatch(r"[0-9a-f]{64}", record[field])
                             is not None for field in (
                                 "theorem_sha256", "hypotheses_sha256",
                                 "conclusion_sha256", "global_axioms_sha256",
@@ -2891,14 +3053,14 @@ def validate_direct_evidence_v4_artifact(
             }
             require(set(post_state) == state_fields and
                     post_state.get("global_axiom_count") == 3 and
-                    all(isinstance(post_state.get(field), int) and
-                        not isinstance(post_state.get(field), bool) and
+                    all(type(post_state.get(field)) is int and
                         post_state[field] >= 0 for field in (
                             "type_constant_count", "term_constant_count",
                             "definition_count", "global_axiom_count",
                         )) and
-                    all(re.fullmatch(r"[0-9a-f]{64}",
-                                     str(post_state.get(field))) is not None
+                    all(isinstance(post_state.get(field), str) and
+                        re.fullmatch(r"[0-9a-f]{64}", post_state[field])
+                        is not None
                         for field in (
                             "kernel_state_sha256", "type_constants_sha256",
                             "term_constants_sha256", "definitions_sha256",
@@ -2917,7 +3079,7 @@ def validate_direct_evidence_v4_artifact(
         exact_closure and exact_physical_trace and exact_fingerprints
     )
     if artifact["state"] == "completed":
-        require(complete_success,
+        require(complete_success and log_record["bytes"] > 0,
                 "completed direct runtime receipt violates success invariants")
     else:
         require(isinstance(validation_error, str) and bool(validation_error) and
@@ -2925,6 +3087,61 @@ def validate_direct_evidence_v4_artifact(
                 "failed direct runtime receipt violates failure invariants")
         require(not complete_success,
                 "failed direct runtime receipt has complete success evidence")
+    if log_record is None:
+        require(log_path is None,
+                "direct runtime log path supplied without a log record")
+        return
+    require(log_path is not None,
+            "direct runtime receipt validation requires its log bytes")
+    bound_log_path = Path(log_path)
+    require(bound_log_path.name == "candle.log",
+            "direct runtime log filename mismatch")
+    validate_file(bound_log_path, log_record, "direct runtime log")
+    require(bound_log_path.stat().st_mode & 0o222 == 0,
+            "direct runtime log is writable")
+    if artifact["state"] != "completed":
+        return
+    try:
+        log_text = bound_log_path.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeError) as error:
+        raise ContractError(f"cannot read direct runtime log: {error}") from error
+    require(validate_source_trace(log_text, expected_trace) == physical_trace,
+            "receipt physical source trace differs from bound log")
+    require(validate_log(
+                log_text, expected_actions, boundary_id,
+                artifact["attempt_nonce"], fingerprint_requests(boundary_id),
+            ) == events,
+            "receipt action events differ from bound log")
+    require(validate_logical_source_closure(
+                log_text, expected, boundary_id, artifact["attempt_nonce"],
+            ) == observed,
+            "receipt logical source closure differs from bound log")
+    theorem_names = fingerprint_requests(boundary_id)
+    if theorem_names:
+        try:
+            parsed = reference_protocol._read_fingerprint_records(
+                bound_log_path, tuple(theorem_names), "audited",
+            )
+        except (OSError, UnicodeError, reference_protocol.LoadFailure) as error:
+            raise ContractError(str(error)) from error
+        require(parsed["status"] == "observed_uncompared" and
+                parsed["expected_identities_present"] is False and
+                parsed["approval_sha256"] is None and
+                parsed["mapping_status"] == "audited",
+                "bound log fingerprint protocol returned an unexpected state")
+        log_fingerprints = {
+            "status": parsed["status"],
+            "approved_reference_present": False,
+            "serializer": parsed["serializer"],
+            "theorems": parsed["theorems"],
+            "post_state": parsed["post_state"],
+        }
+    else:
+        log_fingerprints = parse_fingerprints(
+            bound_log_path, [], Path("unused-for-unrequested-boundary"),
+        )
+    require(log_fingerprints == fingerprints,
+            "receipt fingerprints differ from bound log")
 
 
 def utc_now() -> str:
@@ -4021,7 +4238,9 @@ def _run_attempt_impl(
             "validation_error": validation_error,
             "postflight_reauthenticated": postflight_reauthenticated,
         }
-        validate_direct_evidence_v4_artifact(receipt, receipt=True)
+        validate_direct_evidence_v4_artifact(
+            receipt, receipt=True, log_path=log_path,
+        )
         atomic_write_json(receipt_path, receipt)
         receipt_path.chmod(0o444)
     finally:

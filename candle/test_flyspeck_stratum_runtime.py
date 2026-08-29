@@ -239,17 +239,112 @@ class StratumRuntimeTests(unittest.TestCase):
         inputs["authenticated_prefix"] = {
             "path": "prefix.ml", **copy.deepcopy(digest),
         }
+        source_root = "/candle/candle"
+        source_bindings = {
+            "cakeml_artifact_provenance.py":
+                "compiled-from-captured-source-bytes",
+            "flyspeck_stratum_plan.py":
+                "compiled-from-captured-source-bytes",
+            "flyspeck_stratum_runtime.py":
+                "startup-captured-after-initial-compilation",
+            "reference_protocol.py":
+                "compiled-from-captured-source-bytes",
+            "runtime_lock.py": "compiled-from-captured-source-bytes",
+        }
+        local_sources = []
+        committed_sources = {}
+        for index, (label, binding) in enumerate(source_bindings.items(), start=1):
+            retained = {
+                "bytes": index,
+                "sha256": f"{index:064x}",
+                "md5": f"{index:032x}",
+            }
+            local_sources.append({
+                "label": label,
+                "source_path": f"{source_root}/{label}",
+                "execution_binding": binding,
+                "path": f"controller/python-source/{label}",
+                **retained,
+            })
+            committed_sources[label] = {
+                "repository_path": f"candle/{label}",
+                "index_tag": "H",
+                **retained,
+            }
+        expected_executable = subject.EXPECTED_PYTHON_RUNTIME["executable"]
+        expected_elf = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
+        elf_objects = []
+        for index, (path, expected) in enumerate(
+            sorted(expected_elf["files"].items()), start=10,
+        ):
+            elf_objects.append({
+                "source_path": path,
+                "path": (
+                    "controller/python-runtime-elf/" +
+                    f"{expected['sha256'][:16]}-{Path(path).name}"
+                ),
+                "bytes": expected["bytes"],
+                "sha256": expected["sha256"],
+                "md5": f"{index:032x}",
+            })
+        host_tools = []
+        for index, (label, expected) in enumerate(
+            sorted(subject.EXPECTED_CONTROLLER_TOOLS.items()), start=20,
+        ):
+            host_tools.append({
+                "label": label,
+                **expected,
+                "path": (
+                    f"controller/host-tools/{label}-" +
+                    Path(expected["resolved_path"]).name
+                ),
+                "md5": f"{index:032x}",
+            })
         inputs["controller_execution"] = {
-            "source_root": "/controller",
-            "direct_script_startup": {},
-            "commit_binding": {},
-            "python_startup_flags": {},
-            "python_startup_options": {},
+            "source_root": source_root,
+            "direct_script_startup": {
+                "module_name": "__main__",
+                "spec_is_none": True,
+                "cached_is_none": True,
+                "argv0": f"{source_root}/flyspeck_stratum_runtime.py",
+                "source_path": f"{source_root}/flyspeck_stratum_runtime.py",
+            },
+            "commit_binding": {
+                "candle_commit": "c" * 40,
+                "sources": committed_sources,
+            },
+            "python_startup_flags":
+                copy.deepcopy(subject.EXPECTED_PYTHON_STARTUP_FLAGS),
+            "python_startup_options":
+                copy.deepcopy(subject.EXPECTED_PYTHON_STARTUP_OPTIONS),
             "initial_top_level_compilation_in_host_trust_boundary": True,
-            "local_sources": [],
-            "python_runtime": {},
-            "host_tools": [],
-            "git_environment": {},
+            "local_sources": local_sources,
+            "python_runtime": {
+                "execution_binding":
+                    subject.EXPECTED_PYTHON_RUNTIME["execution_binding"],
+                "version": subject.EXPECTED_PYTHON_RUNTIME["version"],
+                "executable": {
+                    "source_path": expected_executable["path"],
+                    "path": "controller/python-runtime/python3.12",
+                    "bytes": expected_executable["bytes"],
+                    "sha256": expected_executable["sha256"],
+                    "md5": "a" * 32,
+                },
+                "elf_policy": expected_elf["policy"],
+                "elf_dynamic_path_tags": expected_elf["dynamic_path_tags"],
+                "elf_roles": expected_elf["roles"],
+                "virtual_elf_objects": expected_elf["virtual_objects"],
+                "elf_objects": elf_objects,
+            },
+            "host_tools": host_tools,
+            "git_environment": {
+                "LC_ALL": "C", "PATH": "/usr/bin:/bin",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_CONFIG_GLOBAL": "/dev/null",
+                "GIT_TERMINAL_PROMPT": "0",
+                "GIT_NO_REPLACE_OBJECTS": "1",
+                "GIT_OPTIONAL_LOCKS": "0",
+            },
             "broader_python_standard_library_in_host_trust_boundary": True,
         }
         return {
@@ -307,6 +402,9 @@ class StratumRuntimeTests(unittest.TestCase):
         }
 
     def direct_receipt_envelope(self, attempt: dict) -> dict:
+        log_record = subject.data_record(
+            self.direct_log_text(attempt["boundary_id"]).encode("utf-8")
+        )
         return {
             **attempt,
             "state": "completed",
@@ -322,8 +420,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "minor_page_faults": 1,
             },
             "log": {
-                "path": "candle.log", "bytes": 1,
-                "sha256": "d" * 64, "md5": "e" * 32,
+                "path": "candle.log", **log_record,
             },
             "initial_attempt": {
                 "path": "attempt.json",
@@ -338,6 +435,71 @@ class StratumRuntimeTests(unittest.TestCase):
             "validation_error": None,
             "postflight_reauthenticated": True,
         }
+
+    def direct_log_text(self, boundary_id: str) -> str:
+        binding_by_id = {
+            item["binding_id"]: item
+            for item in self.source_trace_contract["bindings"]
+        }
+        lines = [f"{subject.PREFLIGHT_MARKER} {self.nonce}"]
+        for event in self.source_trace_observation["events"]:
+            if event["event"] == "request":
+                binding = binding_by_id[event["binding_id"]]
+                lines.append("\t".join((
+                    subject.SOURCE_TRACE_PREFIX,
+                    self.nonce,
+                    "REQUEST",
+                    str(event["id"]),
+                    "-" if event["parent"] is None else str(event["parent"]),
+                    event["kind"],
+                    event["binding_id"],
+                    event["key"],
+                    binding["basename"],
+                    binding["source_md5"],
+                    binding["source_sha256"],
+                    binding["selected_sha256"],
+                    binding["normalization"],
+                    event["cache_before"],
+                )))
+            elif event["event"] == "outcome":
+                lines.append("\t".join((
+                    subject.SOURCE_TRACE_PREFIX,
+                    self.nonce,
+                    "OUTCOME",
+                    str(event["id"]),
+                    event["outcome"],
+                )))
+            else:
+                lines.append("\t".join((
+                    subject.SOURCE_TRACE_PREFIX,
+                    self.nonce,
+                    "TERMINAL",
+                    str(event["request_count"]),
+                )))
+        lines.extend((
+            self.action_marker(0, "load"),
+            self.action_marker(1, "skip-ledger"),
+            f"{subject.SUCCESS_MARKER} {self.nonce} {boundary_id} 2",
+        ))
+        lines.extend(
+            subject.logical_source_marker(self.nonce, record)
+            for record in self.logical_source_closure["records"]
+        )
+        lines.append(subject.logical_source_terminal(
+            self.nonce, boundary_id, self.logical_source_closure,
+        ))
+        return "\n".join(lines) + "\n"
+
+    def validate_receipt(self, receipt: dict) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            log_path = Path(temporary) / "candle.log"
+            log_path.write_text(
+                self.direct_log_text(receipt["boundary_id"]), encoding="utf-8",
+            )
+            log_path.chmod(0o444)
+            subject.validate_direct_evidence_v4_artifact(
+                receipt, receipt=True, log_path=log_path,
+            )
 
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
         closure = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
@@ -741,6 +903,28 @@ class StratumRuntimeTests(unittest.TestCase):
         ]
         attempt = self.direct_attempt(expected_actions)
         subject.validate_direct_evidence_v4_artifact(attempt, receipt=False)
+        for label, mutate in (
+            ("controller source root", lambda item: item["inputs"][
+                "controller_execution"
+            ].update(source_root=False)),
+            ("controller source closure", lambda item: item["inputs"][
+                "controller_execution"
+            ].update(local_sources="forged")),
+            ("controller Python runtime", lambda item: item["inputs"][
+                "controller_execution"
+            ].update(python_runtime={})),
+            ("integer final-target flag", lambda item: item[
+                "expected_logical_source_closure"
+            ].update(final_target_selected=0)),
+        ):
+            forged = copy.deepcopy(attempt)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.validate_direct_evidence_v4_artifact(
+                    forged, receipt=False,
+                )
         missing_claim = copy.deepcopy(attempt)
         missing_claim.pop("claim")
         with self.assertRaisesRegex(subject.ContractError, "evidence envelope"):
@@ -802,10 +986,10 @@ class StratumRuntimeTests(unittest.TestCase):
                 "post_state": None,
             },
         }
-        subject.validate_direct_evidence_v4_artifact(receipt, receipt=True)
+        self.validate_receipt(receipt)
         receipt["logical_source_closure"]["self_certifies_nested_execution"] = True
         with self.assertRaisesRegex(subject.ContractError, "differs"):
-            subject.validate_direct_evidence_v4_artifact(receipt, receipt=True)
+            self.validate_receipt(receipt)
 
     def test_evidence_v4_completed_receipt_rejects_forged_state_flips(self) -> None:
         expected_actions = [
@@ -844,13 +1028,42 @@ class StratumRuntimeTests(unittest.TestCase):
                 "post_state": None,
             },
         }
-        subject.validate_direct_evidence_v4_artifact(valid, receipt=True)
+        self.validate_receipt(valid)
+        with self.assertRaisesRegex(
+            subject.ContractError, "requires its log bytes",
+        ):
+            subject.validate_direct_evidence_v4_artifact(
+                valid, receipt=True,
+            )
+        empty_log = copy.deepcopy(valid)
+        empty_log["log"] = {
+            "path": "candle.log", **subject.data_record(b""),
+        }
+        with self.assertRaisesRegex(subject.ContractError, "success invariants"):
+            self.validate_receipt(empty_log)
+        forged_log_text = self.direct_log_text(valid["boundary_id"]).replace(
+            self.action_marker(0, "load"),
+            self.action_marker(0, "skip-ledger"),
+        )
+        forged_log = copy.deepcopy(valid)
+        forged_log["log"] = {
+            "path": "candle.log",
+            **subject.data_record(forged_log_text.encode("utf-8")),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            forged_path = Path(temporary) / "candle.log"
+            forged_path.write_text(forged_log_text, encoding="utf-8")
+            forged_path.chmod(0o444)
+            with self.assertRaisesRegex(
+                subject.ContractError, "action events differ from bound log",
+            ):
+                subject.validate_direct_evidence_v4_artifact(
+                    forged_log, receipt=True, log_path=forged_path,
+                )
         missing_log = copy.deepcopy(valid)
         missing_log.pop("log")
         with self.assertRaisesRegex(subject.ContractError, "evidence envelope"):
-            subject.validate_direct_evidence_v4_artifact(
-                missing_log, receipt=True,
-            )
+            self.validate_receipt(missing_log)
         for label, mutate in (
             ("exit 137", lambda item: item.update(exit_code=137)),
             ("timeout", lambda item: item.update(timed_out=True)),
@@ -872,9 +1085,7 @@ class StratumRuntimeTests(unittest.TestCase):
             forged = copy.deepcopy(valid)
             mutate(forged)
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
-                subject.validate_direct_evidence_v4_artifact(
-                    forged, receipt=True,
-                )
+                self.validate_receipt(forged)
 
         for label, mutate in (
             ("missing physical trace", lambda item: item.update(
@@ -886,9 +1097,7 @@ class StratumRuntimeTests(unittest.TestCase):
             forged = copy.deepcopy(valid)
             mutate(forged)
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
-                subject.validate_direct_evidence_v4_artifact(
-                    forged, receipt=True,
-                )
+                self.validate_receipt(forged)
 
         failed = {
             **self.direct_receipt_envelope(attempt),
@@ -903,14 +1112,14 @@ class StratumRuntimeTests(unittest.TestCase):
             "physical_source_trace": None,
             "semantic_fingerprints": None,
         }
-        subject.validate_direct_evidence_v4_artifact(failed, receipt=True)
+        self.validate_receipt(failed)
         late_failed = {
             **copy.deepcopy(valid),
             "state": "failed",
             "action_markers_validated": 0,
             "validation_error": "InterruptedError: pending signal after validation",
         }
-        subject.validate_direct_evidence_v4_artifact(late_failed, receipt=True)
+        self.validate_receipt(late_failed)
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
@@ -952,6 +1161,93 @@ class StratumRuntimeTests(unittest.TestCase):
             )
             with self.assertRaisesRegex(subject.ContractError, "three axioms"):
                 subject.parse_fingerprints(log, [name], serializer)
+
+    def test_receipt_fingerprint_scalars_have_exact_json_types(self) -> None:
+        name = "Linear_programming_results.linear_programming_results_th"
+        expected_actions = [
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = self.direct_attempt(expected_actions)
+        serializer_sha256 = "7" * 64
+        attempt["inputs"]["fingerprint_serializer"]["sha256"] = (
+            serializer_sha256
+        )
+        fingerprints = {
+            "status": "observed_uncompared",
+            "approved_reference_present": False,
+            "serializer": {
+                "path": subject.FINGERPRINT_RELATIVE.as_posix(),
+                "sha256": serializer_sha256,
+            },
+            "theorems": [{
+                "name": name,
+                "theorem_sha256": "1" * 64,
+                "hypotheses_sha256": "2" * 64,
+                "conclusion_sha256": "3" * 64,
+                "global_axioms_sha256": "4" * 64,
+                "hypothesis_count": 0,
+                "global_axiom_count": 3,
+            }],
+            "post_state": {
+                "kernel_state_sha256": "5" * 64,
+                "type_constants_sha256": "6" * 64,
+                "term_constants_sha256": "7" * 64,
+                "definitions_sha256": "8" * 64,
+                "global_axioms_sha256": "4" * 64,
+                "type_constant_count": 1,
+                "term_constant_count": 2,
+                "definition_count": 3,
+                "global_axiom_count": 3,
+            },
+        }
+        receipt = {
+            **self.direct_receipt_envelope(attempt),
+            "logical_source_closure": {
+                **self.logical_source_closure,
+                "status": "expected-closure-emitted-unapproved",
+            },
+            "action_events": [
+                {"index": 0, "source_sha256": "1" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[0]["logical_source_delta_sha256"],
+                 "outcome": "load"},
+                {"index": 1, "source_sha256": "2" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[1]["logical_source_delta_sha256"],
+                 "outcome": "skip-ledger"},
+            ],
+            "physical_source_trace": self.source_trace_observation,
+            "semantic_fingerprints": fingerprints,
+        }
+        for label, mutate in (
+            ("boolean hypothesis count", lambda value: value[
+                "semantic_fingerprints"
+            ]["theorems"][0].update(hypothesis_count=False)),
+            ("float axiom count", lambda value: value[
+                "semantic_fingerprints"
+            ]["theorems"][0].update(global_axiom_count=3.0)),
+            ("integer theorem digest", lambda value: value[
+                "semantic_fingerprints"
+            ]["theorems"][0].update(theorem_sha256=int("9" * 64))),
+            ("integer state digest", lambda value: value[
+                "semantic_fingerprints"
+            ]["post_state"].update(kernel_state_sha256=int("9" * 64))),
+        ):
+            forged = copy.deepcopy(receipt)
+            mutate(forged)
+            with self.subTest(label=label), mock.patch.object(
+                subject, "fingerprint_requests", side_effect=[[], [name]],
+            ), self.assertRaises(subject.ContractError):
+                subject.validate_direct_evidence_v4_artifact(
+                    forged, receipt=True,
+                )
 
     def test_postlude_uses_actual_v2_theorem_and_state_serializer(self) -> None:
         serializer_source = subject.reference_protocol.FINGERPRINT_HELPER.read_text(
