@@ -138,6 +138,27 @@ PARSER_RUNTIME_PROTOCOL_SCHEMA = 2
 DIAGNOSTIC_RECEIPT_SCHEMA = 4
 ALL_INVENTORY_PLAN_SCHEMA = 2
 ALL_INVENTORY_RECEIPT_SCHEMA = 5
+PILOT_PLAN_FIELDS = frozenset({
+    "schema", "kind", "claim", "promotion", "repositories", "controller",
+    "authority_sources", "manifest", "pilot", "parser_runtime_protocol",
+    "manifest_action_order", "generated_inputs", "input_count", "ready_count",
+    "unsupported_count", "ordered_input_sha256", "inputs", "limitations",
+})
+ALL_INVENTORY_PLAN_FIELDS = frozenset({
+    *(PILOT_PLAN_FIELDS - {"pilot"}), "profile", "source_preparation",
+})
+PILOT_INPUT_FIELDS = frozenset({
+    "index", "source_key", "repository", "source", "discovery",
+    "manifest_actions", "manifest_action_semantics", "generated_inputs_consumed",
+    "normalization", "unsupported_reasons", "status", "prepared_input",
+})
+ALL_INVENTORY_INPUT_FIELDS = frozenset({
+    "index", "source_key", "repository", "source", "effective_kind",
+    "normalization", "effective_input", "lexical_scan_encoding",
+    "utf8_decodable", "recognized_loader_actions",
+    "recognized_loader_action_count", "prepared_input",
+    "parser_or_runtime_invoked", "status",
+})
 EXECUTION_ENVIRONMENT = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
 GIT_ENVIRONMENT = {
     **EXECUTION_ENVIRONMENT,
@@ -216,26 +237,88 @@ def bytes_record(data: bytes, relative: str | None = None) -> dict[str, Any]:
     return record
 
 
-def file_record(path: Path, relative: str | None = None) -> dict[str, Any]:
+def file_record(
+    path: Path, relative: str | None = None, *, include_md5: bool = False,
+) -> dict[str, Any]:
+    """Hash one stable ordinary named inode through a no-follow descriptor."""
     digest = hashlib.sha256()
+    md5_digest = hashlib.md5(usedforsecurity=False) if include_md5 else None
     size = 0
-    with path.open("rb") as source:
-        while block := source.read(CHUNK_BYTES):
+    descriptor = os.open(
+        path, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+    )
+    try:
+        before = os.fstat(descriptor)
+        require(stat.S_ISREG(before.st_mode), f"hashed path is not ordinary: {path}")
+        while block := os.read(descriptor, CHUNK_BYTES):
             size += len(block)
             digest.update(block)
+            if md5_digest is not None:
+                md5_digest.update(block)
+        after = os.fstat(descriptor)
+        named = path.stat(follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    require(
+        (before.st_dev, before.st_ino, before.st_size,
+         before.st_mtime_ns, before.st_ctime_ns) ==
+        (after.st_dev, after.st_ino, after.st_size,
+         after.st_mtime_ns, after.st_ctime_ns) and
+        (after.st_dev, after.st_ino) == (named.st_dev, named.st_ino) and
+        size == before.st_size,
+        f"hashed file changed while reading: {path}",
+    )
     record: dict[str, Any] = {"bytes": size, "sha256": digest.hexdigest()}
+    if md5_digest is not None:
+        record["md5"] = md5_digest.hexdigest()
     if relative is not None:
         record["path"] = relative
     return record
 
 
+def exact_int(value: Any, expected: int | None = None) -> bool:
+    return type(value) is int and (expected is None or value == expected)
+
+
+def exact_byte_record(
+    record: Any, expected_path: str | None = None, *, md5: bool = False,
+) -> bool:
+    fields = {"bytes", "sha256", *( {"path"} if expected_path is not None else set())}
+    if md5:
+        fields.add("md5")
+    return (
+        isinstance(record, dict) and set(record) == fields and
+        exact_int(record.get("bytes")) and record["bytes"] >= 0 and
+        isinstance(record.get("sha256"), str) and
+        HEX64.fullmatch(record["sha256"]) is not None and
+        (expected_path is None or record.get("path") == expected_path) and
+        (not md5 or (
+            isinstance(record.get("md5"), str) and
+            re.fullmatch(r"[0-9a-f]{32}", record["md5"]) is not None
+        ))
+    )
+
+
+def validate_expected_file_identity(expected: Any, label: str) -> None:
+    """Reject Python's bool/int and float/int coercions in JSON file records."""
+    require(isinstance(expected, dict), f"{label} identity is not an object")
+    require(
+        exact_int(expected.get("bytes")) and expected["bytes"] >= 0 and
+        isinstance(expected.get("sha256"), str) and
+        HEX64.fullmatch(expected["sha256"]) is not None,
+        f"{label} identity is not an exact byte record",
+    )
+    if "md5" in expected:
+        require(
+            isinstance(expected["md5"], str) and
+            re.fullmatch(r"[0-9a-f]{32}", expected["md5"]) is not None,
+            f"{label} MD5 identity is malformed",
+        )
+
+
 def validate_file(path: Path, expected: dict[str, Any], label: str) -> bytes:
-    try:
-        status = path.lstat()
-    except OSError as error:
-        raise ContractError(f"missing {label}: {path}: {error}") from error
-    require(stat.S_ISREG(status.st_mode), f"{label} is not an ordinary file: {path}")
-    data = path.read_bytes()
+    validate_expected_file_identity(expected, label)
+    data = _read_stable_source(path)
     require(len(data) == expected.get("bytes"), f"{label} byte-count mismatch")
     require(
         hashlib.sha256(data).hexdigest() == expected.get("sha256"),
@@ -254,21 +337,16 @@ def validate_file_record(
     relative: str | None = None,
 ) -> dict[str, Any]:
     """Validate an ordinary file without materializing its bytes in memory."""
+    validate_expected_file_identity(expected, label)
     try:
         observed_status = path.lstat()
     except OSError as error:
         raise ContractError(f"missing {label}: {path}: {error}") from error
     require(stat.S_ISREG(observed_status.st_mode),
             f"{label} is not an ordinary file: {path}")
-    observed = file_record(path, relative)
+    observed = file_record(path, relative, include_md5="md5" in expected)
     for field in ("bytes", "sha256", "md5"):
         if field in expected:
-            if field == "md5" and field not in observed:
-                digest = hashlib.md5(usedforsecurity=False)
-                with path.open("rb") as source:
-                    while block := source.read(CHUNK_BYTES):
-                        digest.update(block)
-                observed[field] = digest.hexdigest()
             require(observed.get(field) == expected[field],
                     f"{label} {field} mismatch")
     return observed
@@ -604,14 +682,129 @@ def profile_authority_source_relatives(profile: str) -> tuple[Path, ...]:
 def plan_profile(plan: dict[str, Any]) -> str:
     """Recognize only the two closed, non-relabelable runtime plan shapes."""
     require(isinstance(plan, dict), "parser plan is not an object")
-    if (
-        plan.get("schema") == 1
-        and plan.get("kind") == "candle-flyspeck-caml-parser-diagnostic-plan"
-        and "pilot" in plan
-        and "profile" not in plan
-        and "source_preparation" not in plan
-    ):
+    is_pilot = (
+        exact_int(plan.get("schema"), 1) and
+        plan.get("kind") == "candle-flyspeck-caml-parser-diagnostic-plan"
+    )
+    require(
+        set(plan) == (PILOT_PLAN_FIELDS if is_pilot else ALL_INVENTORY_PLAN_FIELDS),
+        "parser plan top-level field set is not profile-closed",
+    )
+    protocol = plan.get("parser_runtime_protocol")
+    require(
+        isinstance(protocol, dict) and
+        set(protocol) == {
+            "schema", "function", "language", "capability_argument",
+            "capability_stdout_sha256", "run_argument", "input",
+            "parse_error_exit_code", "parse_error_stdout",
+            "controller_stderr_digest", "forbidden_substitutes",
+            "required_properties",
+        } and
+        exact_int(protocol.get("schema"), PARSER_RUNTIME_PROTOCOL_SCHEMA) and
+        exact_int(protocol.get("parse_error_exit_code"), PARSER_ERROR_EXIT),
+        "parser runtime protocol shape is not exact",
+    )
+    promotion = plan.get("promotion")
+    repositories = plan.get("repositories")
+    authority_sources = plan.get("authority_sources")
+    require(
+        isinstance(promotion, dict) and set(promotion) == {
+            "eligible", "s1_evidence", "s2_evidence", "s3_evidence", "reason",
+        } and
+        promotion.get("eligible") is False and
+        promotion.get("s1_evidence") is False and
+        promotion.get("s2_evidence") is False and
+        promotion.get("s3_evidence") is False and
+        isinstance(repositories, dict) and set(repositories) == {
+            "candle_commit", "flyspeck_commit", "cakeml_commit", "hol4_commit",
+        } and
+        all(isinstance(value, str) and HEX40.fullmatch(value) is not None
+            for value in repositories.values()) and
+        exact_byte_record(
+            plan.get("controller"), CONTROLLER_RELATIVE.as_posix(),
+        ) and
+        exact_byte_record(plan.get("manifest"), MANIFEST_RELATIVE.as_posix()) and
+        isinstance(authority_sources, dict),
+        "parser plan common authority shape is not exact",
+    )
+    expected_authorities = profile_authority_source_relatives(
+        PILOT_PROFILE if is_pilot else ALL_INVENTORY_PROFILE,
+    )
+    require(
+        set(authority_sources) == {
+            relative.as_posix() for relative in expected_authorities
+        } and
+        all(exact_byte_record(record, relative)
+            for relative, record in authority_sources.items()),
+        "parser plan authority-source closure is not exact",
+    )
+    inputs = plan.get("inputs")
+    require(
+        isinstance(inputs, list) and
+        isinstance(plan.get("ordered_input_sha256"), str) and
+        HEX64.fullmatch(plan["ordered_input_sha256"]) is not None and
+        plan["ordered_input_sha256"] == canonical_sha256(inputs),
+        "parser plan ordered input binding is malformed",
+    )
+    if is_pilot:
+        pilot = plan.get("pilot")
+        descriptor = pilot.get("file") if isinstance(pilot, dict) else None
+        selection = pilot.get("selection") if isinstance(pilot, dict) else None
+        require(
+            isinstance(pilot, dict) and set(pilot) == {
+                "path", "canonical_sha256", "file", "selection",
+            } and
+            pilot.get("path") == PILOT_RELATIVE.as_posix() and
+            isinstance(pilot.get("canonical_sha256"), str) and
+            HEX64.fullmatch(pilot["canonical_sha256"]) is not None and
+            exact_byte_record(descriptor, PILOT_RELATIVE.as_posix()) and
+            isinstance(selection, dict) and set(selection) == {
+                "algorithm", "coverage", "discovered_source_count",
+                "excluded_source_count", "manifest_source_count",
+                "ordered_source_key_sha256", "pilot_source_count",
+            } and
+            exact_int(selection.get("pilot_source_count"), PILOT_COUNT) and
+            exact_int(selection.get("manifest_source_count"), ALL_INVENTORY_COUNT) and
+            exact_int(selection.get("discovered_source_count"), 392) and
+            exact_int(selection.get("excluded_source_count"), 8) and
+            selection.get("ordered_source_key_sha256") == canonical_sha256([
+                entry.get("source_key") if isinstance(entry, dict) else None
+                for entry in inputs
+            ]) and
+            exact_int(plan.get("input_count"), PILOT_COUNT) and
+            exact_int(plan.get("ready_count"), PILOT_COUNT) and
+            exact_int(plan.get("unsupported_count"), 0) and
+            len(inputs) == PILOT_COUNT,
+            "pilot parser plan descriptor or count closure is malformed",
+        )
+        require(
+            all(
+                isinstance(entry, dict) and set(entry) == PILOT_INPUT_FIELDS and
+                exact_int(entry.get("index"), index) and
+                isinstance(entry.get("source_key"), str) and
+                entry.get("repository") in {"candle", "flyspeck"} and
+                isinstance(entry.get("source"), dict) and
+                isinstance(entry["source"].get("path"), str) and
+                exact_byte_record(
+                    entry["source"], entry["source"]["path"], md5=True,
+                ) and
+                isinstance(entry.get("discovery"), dict) and
+                isinstance(entry.get("manifest_actions"), list) and
+                entry.get("generated_inputs_consumed") is False and
+                isinstance(entry.get("unsupported_reasons"), list) and
+                not entry["unsupported_reasons"] and
+                entry.get("status") == "ready" and
+                exact_byte_record(
+                    entry.get("prepared_input"), f"inputs/{index:03d}.ml",
+                )
+                for index, entry in enumerate(inputs)
+            ) and
+            len({entry["source_key"] for entry in inputs}) == PILOT_COUNT and
+            len({entry["prepared_input"]["path"] for entry in inputs}) == PILOT_COUNT,
+            "pilot parser plan inputs are not an exact ready profile",
+        )
         return PILOT_PROFILE
+
     profile = plan.get("profile")
     descriptor = profile.get("descriptor") if isinstance(profile, dict) else None
     source_preparation = plan.get("source_preparation")
@@ -619,7 +812,7 @@ def plan_profile(plan: dict[str, Any]) -> str:
         descriptor.get("file") if isinstance(descriptor, dict) else None
     )
     require(
-        plan.get("schema") == ALL_INVENTORY_PLAN_SCHEMA
+        exact_int(plan.get("schema"), ALL_INVENTORY_PLAN_SCHEMA)
         and plan.get("kind")
         == "candle-flyspeck-caml-parser-all-inventory-diagnostic-plan"
         and isinstance(profile, dict)
@@ -656,7 +849,7 @@ def plan_profile(plan: dict[str, Any]) -> str:
             "input_count", "effective_kind_counts", "non_utf8_source_keys",
             "loader_actions", "prepared_inputs",
         }
-        and source_preparation.get("schema") == 1
+        and exact_int(source_preparation.get("schema"), 1)
         and source_preparation.get("kind")
         == "candle-flyspeck-all-inventory-source-preparation"
         and source_preparation.get("promotion_allowed") is False
@@ -668,7 +861,6 @@ def plan_profile(plan: dict[str, Any]) -> str:
         and HEX64.fullmatch(source_preparation["canonical_sha256"]) is not None,
         "parser plan has an unknown or relabeled profile",
     )
-    inputs = plan.get("inputs")
     prepared_summary = source_preparation.get("prepared_inputs")
     authorities = source_preparation.get("authorities")
     require(
@@ -682,6 +874,7 @@ def plan_profile(plan: dict[str, Any]) -> str:
         and type(plan.get("unsupported_count")) is int
         and all(
             isinstance(entry, dict)
+            and set(entry) == ALL_INVENTORY_INPUT_FIELDS
             and type(entry.get("index")) is int
             and entry["index"] == index
             and isinstance(entry.get("source_key"), str)
@@ -704,7 +897,7 @@ def plan_profile(plan: dict[str, Any]) -> str:
         and descriptor["selection"].get("ordered_source_key_sha256")
         == canonical_sha256([entry["source_key"] for entry in inputs])
         and isinstance(prepared_summary, dict)
-        and prepared_summary.get("count") == ALL_INVENTORY_COUNT
+        and exact_int(prepared_summary.get("count"), ALL_INVENTORY_COUNT)
         and prepared_summary.get("paths_unique") is True
         and prepared_summary.get("sha256_unique") is True
         and prepared_summary.get("ordered_path_sha256")
@@ -1084,7 +1277,7 @@ def build_all_inventory_plan(
     )
     source_inputs = source_plan.get("inputs")
     require(
-        source_plan.get("schema") == 1
+        exact_int(source_plan.get("schema"), 1)
         and source_plan.get("kind")
         == "candle-flyspeck-all-inventory-source-preparation"
         and source_plan.get("promotion_allowed") is False
@@ -1101,7 +1294,7 @@ def build_all_inventory_plan(
     )):
         require(
             isinstance(source, dict)
-            and source.get("index") == index
+            and exact_int(source.get("index"), index)
             and source.get("source_key") == selected.get("source_key")
             and source.get("repository") == selected.get("repository")
             and source.get("source", {}).get("path") == selected.get("path")
@@ -1271,7 +1464,8 @@ def build_all_inventory_plan(
     return plan, files
 
 
-def _rename_noreplace(source: Path, destination: Path) -> None:
+def _rename_noreplace(source: Path, destination: Path) -> int:
+    """Publish one opened directory and return its stable descriptor."""
     libc = ctypes.CDLL(None, use_errno=True)
     try:
         renameat2 = libc.renameat2
@@ -1282,14 +1476,49 @@ def _rename_noreplace(source: Path, destination: Path) -> None:
         ctypes.c_uint,
     ]
     renameat2.restype = ctypes.c_int
-    if renameat2(
-        AT_FDCWD, os.fsencode(source), AT_FDCWD, os.fsencode(destination),
-        RENAME_NOREPLACE,
-    ) != 0:
-        number = ctypes.get_errno()
-        if number == errno.EEXIST:
-            raise FileExistsError(number, os.strerror(number), destination)
-        raise OSError(number, os.strerror(number), destination)
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+    source_fd = -1
+    source_parent_fd = -1
+    destination_parent_fd = -1
+    try:
+        source_fd = os.open(source, flags)
+        source_parent_fd = os.open(source.parent, flags)
+        destination_parent_fd = os.open(destination.parent, flags)
+        opened = os.fstat(source_fd)
+        named = os.stat(source.name, dir_fd=source_parent_fd, follow_symlinks=False)
+        require(
+            stat.S_ISDIR(opened.st_mode) and
+            (opened.st_dev, opened.st_ino) == (named.st_dev, named.st_ino),
+            "publication staging directory identity changed",
+        )
+        if renameat2(
+            source_parent_fd, os.fsencode(source.name),
+            destination_parent_fd, os.fsencode(destination.name),
+            RENAME_NOREPLACE,
+        ) != 0:
+            number = ctypes.get_errno()
+            if number == errno.EEXIST:
+                raise FileExistsError(number, os.strerror(number), destination)
+            raise OSError(number, os.strerror(number), destination)
+        published = os.stat(
+            destination.name, dir_fd=destination_parent_fd,
+            follow_symlinks=False,
+        )
+        require(
+            (opened.st_dev, opened.st_ino) ==
+            (published.st_dev, published.st_ino),
+            "published directory differs from opened staging directory",
+        )
+        return source_fd
+    except BaseException:
+        if source_fd >= 0:
+            os.close(source_fd)
+        raise
+    finally:
+        if source_parent_fd >= 0:
+            os.close(source_parent_fd)
+        if destination_parent_fd >= 0:
+            os.close(destination_parent_fd)
 
 
 def _write_tree(root: Path, files: dict[str, bytes], root_mode: int, file_mode: int) -> None:
@@ -1304,6 +1533,63 @@ def _write_tree(root: Path, files: dict[str, bytes], root_mode: int, file_mode: 
     root.chmod(root_mode)
 
 
+def validate_exact_byte_tree(
+    root: Path, files: dict[str, bytes], root_mode: int, file_mode: int,
+    label: str,
+) -> None:
+    """Validate an exact ordinary-file tree through a stable root path or fd."""
+    status = root.stat()
+    require(stat.S_ISDIR(status.st_mode) and stat.S_IMODE(status.st_mode) == root_mode,
+            f"{label} root mode mismatch")
+    expected_paths = {safe_relative_path(relative, label) for relative in files}
+    expected_directories = {Path(".")}
+    for relative in expected_paths:
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    observed_paths: set[Path] = set()
+    observed_directories = {Path(".")}
+    for current, directory_names, file_names in os.walk(
+        root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            observed = path.lstat()
+            require(stat.S_ISDIR(observed.st_mode) and
+                    stat.S_IMODE(observed.st_mode) == root_mode,
+                    f"{label} directory mismatch: {path}")
+            observed_directories.add(path.relative_to(root))
+        for name in file_names:
+            path = current_path / name
+            relative = path.relative_to(root)
+            observed = path.lstat()
+            require(relative in expected_paths and
+                    stat.S_ISREG(observed.st_mode) and
+                    stat.S_IMODE(observed.st_mode) == file_mode,
+                    f"{label} file mismatch: {relative}")
+            expected = bytes_record(files[relative.as_posix()], relative.as_posix())
+            try:
+                validate_file_record(path, expected, f"{label} {relative}",
+                                     relative.as_posix())
+            except ContractError as error:
+                raise ContractError(f"{label} bytes mismatch: {relative}: {error}") from error
+            observed_paths.add(relative)
+    require(observed_paths == expected_paths and
+            observed_directories == expected_directories,
+            f"{label} tree closure mismatch")
+
+
+def require_published_directory_identity(descriptor: int, destination: Path) -> None:
+    opened = os.fstat(descriptor)
+    published = destination.stat(follow_symlinks=False)
+    require(
+        stat.S_ISDIR(published.st_mode) and
+        (opened.st_dev, opened.st_ino) == (published.st_dev, published.st_ino),
+        "published output path no longer names the validated directory",
+    )
+
+
 def build_host_receipt(
     candle_root: Path,
     flyspeck_root: Path,
@@ -1314,7 +1600,10 @@ def build_host_receipt(
     return {
         "schema": 1,
         "kind": "candle-flyspeck-parser-diagnostic-host-materialization",
-        "claim": "host paths and immutable publication only; not parser or release evidence",
+        "claim": (
+            "host paths and fresh-path read-only publication only; "
+            "not parser or release evidence"
+        ),
         "plan": bytes_record(plan_data, PLAN_NAME),
         "plan_sha256": plan_sha256,
         "controller_source_sha256": hashlib.sha256(SOURCE_BYTES).hexdigest(),
@@ -1378,7 +1667,8 @@ def reconstruct_plan_authority(
     manifest_data, manifest = capture_committed_json(
         candle_root, candle_head, MANIFEST_RELATIVE, "Flyspeck manifest",
     )
-    require(manifest.get("schema") == 1, "unsupported Flyspeck manifest schema")
+    require(exact_int(manifest.get("schema"), 1),
+            "unsupported Flyspeck manifest schema")
     require(manifest["repositories"]["flyspeck"]["commit"] == flyspeck_head,
             "explicit Flyspeck authority differs from manifest pin")
 
@@ -1457,9 +1747,22 @@ def materialize(
             **input_files,
         }
         _write_tree(staging, files, PLAN_ROOT_MODE, PLAN_FILE_MODE)
-        _rename_noreplace(staging, output_root)
+        validate_exact_byte_tree(
+            staging, files, PLAN_ROOT_MODE, PLAN_FILE_MODE,
+            "parser plan publication",
+        )
+        published_fd = _rename_noreplace(staging, output_root)
+        try:
+            published_root = Path(f"/proc/self/fd/{published_fd}")
+            validate_exact_byte_tree(
+                published_root, files, PLAN_ROOT_MODE, PLAN_FILE_MODE,
+                "published parser plan",
+            )
+            require_published_directory_identity(published_fd, output_root)
+        finally:
+            os.close(published_fd)
     except BaseException:
-        # Retain staging on failure for inspection; never replace a destination.
+        # Retain whichever fresh path exists for inspection; never replace one.
         raise
     return host
 
@@ -2104,22 +2407,24 @@ def validate_snapshot_tree(
     require(set(inventory) == {
         "schema", "kind", "file_count", "ordered_file_sha256",
         "closed_file_inventory", "files",
-    } and inventory.get("schema") == 1 and
+    } and exact_int(inventory.get("schema"), 1) and
             inventory.get("kind") ==
             "candle-parser-diagnostic-durable-snapshot" and
             inventory.get("closed_file_inventory") is True,
             "snapshot inventory is not closed")
     records = inventory.get("files")
     require(isinstance(records, list) and
-            inventory.get("file_count") == len(records) and
+            exact_int(inventory.get("file_count"), len(records)) and
             inventory.get("ordered_file_sha256") == canonical_sha256(records),
             "malformed durable snapshot inventory")
     expected: dict[str, dict[str, Any]] = {}
     expected_directories = {Path("snapshot")}
     for record in records:
-        require(isinstance(record, dict) and set(record) == {
-            "path", "bytes", "sha256",
-        }, "malformed durable snapshot file record")
+        require(
+            isinstance(record, dict) and isinstance(record.get("path"), str) and
+            exact_byte_record(record, record["path"]),
+            "malformed durable snapshot file record",
+        )
         relative = safe_relative_path(record["path"], "snapshot inventory")
         require(relative.parts and relative.parts[0] == "snapshot",
                 "snapshot inventory path is outside snapshot tree")
@@ -2163,6 +2468,58 @@ def validate_snapshot_tree(
             "durable snapshot file inventory is incomplete")
     require(observed_directories == expected_directories,
             "durable snapshot directory inventory is not closed")
+
+
+def validate_result_tree(
+    result_root: Path, inventory: dict[str, Any], receipt_data: bytes,
+    transcript_files: dict[str, bytes],
+) -> None:
+    """Validate the complete published result, including its top-level closure."""
+    root_status = result_root.stat()
+    require(stat.S_ISDIR(root_status.st_mode) and
+            stat.S_IMODE(root_status.st_mode) == RESULT_ROOT_MODE,
+            "diagnostic result root mode mismatch")
+    validate_snapshot_tree(result_root, inventory)
+    records = {
+        record["path"]: record for record in inventory["files"]
+    }
+    direct_files = {RESULT_NAME: receipt_data, **transcript_files}
+    for relative, data in direct_files.items():
+        path = safe_relative_path(relative, "diagnostic result file")
+        require(path.parts[0] != "snapshot" and relative not in records,
+                "diagnostic result direct-file collision")
+        records[relative] = bytes_record(data, relative)
+    expected_directories = {Path(".")}
+    for relative in records:
+        expected_directories.update(
+            parent for parent in Path(relative).parents if parent != Path(".")
+        )
+    observed_paths = set()
+    observed_directories = {Path(".")}
+    for current, directory_names, file_names in os.walk(
+        result_root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            status = path.lstat()
+            require(stat.S_ISDIR(status.st_mode) and
+                    stat.S_IMODE(status.st_mode) == RESULT_ROOT_MODE,
+                    f"diagnostic result directory mismatch: {path}")
+            observed_directories.add(path.relative_to(result_root))
+        for name in file_names:
+            path = current_path / name
+            relative = path.relative_to(result_root).as_posix()
+            require(relative in records and
+                    stat.S_IMODE(path.lstat().st_mode) == RESULT_FILE_MODE,
+                    f"diagnostic result file mismatch: {relative}")
+            validate_file_record(
+                path, records[relative], f"diagnostic result {relative}", relative,
+            )
+            observed_paths.add(relative)
+    require(observed_paths == set(records) and
+            observed_directories == expected_directories,
+            "diagnostic result tree inventory is not closed")
 
 
 def capture_authority_snapshot(
@@ -2600,7 +2957,7 @@ def build_diagnostic_receipt(
     )
     protocol = plan.get("parser_runtime_protocol")
     require(isinstance(protocol, dict) and
-            protocol.get("schema") == PARSER_RUNTIME_PROTOCOL_SCHEMA,
+            exact_int(protocol.get("schema"), PARSER_RUNTIME_PROTOCOL_SCHEMA),
             "receipt plan does not use parser runtime protocol schema 2")
     validate_runtime_result(plan, runtime_result, transcript_files)
     require(set(runtime_execution) == SEALED_RUNTIME_EXECUTION_FIELDS and
@@ -2621,61 +2978,79 @@ def build_diagnostic_receipt(
     require(isinstance(inventory, dict) and set(inventory) == {
                 "schema", "kind", "file_count", "ordered_file_sha256",
                 "closed_file_inventory", "files",
-            } and inventory.get("schema") == 1 and
+            } and exact_int(inventory.get("schema"), 1) and
             inventory.get("kind") == "candle-parser-diagnostic-durable-snapshot" and
             inventory.get("closed_file_inventory") is True and
             isinstance(inventory_files, list) and
-            inventory.get("file_count") == len(inventory_files) and
+            exact_int(inventory.get("file_count"), len(inventory_files)) and
             inventory.get("ordered_file_sha256") == canonical_sha256(inventory_files) and
             all(isinstance(record, dict) and
-                isinstance(record.get("path"), str)
+                isinstance(record.get("path"), str) and
+                exact_byte_record(record, record["path"])
                 for record in inventory_files) and
             len({record["path"] for record in inventory_files}) == len(inventory_files),
             "receipt durable snapshot inventory shape is not closed")
     require(runtime_snapshot in inventory_files,
             "receipt runtime is absent from durable snapshot inventory")
-    if profile_id == ALL_INVENTORY_PROFILE:
-        descriptor_file = plan["profile"]["descriptor"]["file"]
-        normalization_file = plan["source_preparation"]["authorities"][
-            "normalization_contract"
-        ]
-        preparation_file = plan["authority_sources"][
-            ALL_INVENTORY_SOURCES_RELATIVE.as_posix()
-        ]
-        required_profile_authorities = {
-            canonical_bytes(bytes_record(
-                expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
-            )),
-            canonical_bytes(bytes_record(
-                json_bytes(expected_host),
-                f"snapshot/plan/{HOST_RECEIPT_NAME}",
-            )),
-            canonical_bytes({
-                **descriptor_file,
-                "path": (
-                    "snapshot/authority/candle/"
-                    "flyspeck_parser_diagnostic_all_inventory.json"
-                ),
-            }),
-            canonical_bytes({
-                **normalization_file,
-                "path": "snapshot/authority/candle/flyspeck_normalizations.json",
-            }),
-            canonical_bytes({
-                **preparation_file,
-                "path": (
-                    "snapshot/authority/candle/"
-                    "flyspeck_all_inventory_sources.py"
-                ),
-            }),
-        }
-        observed_inventory_records = {
-            canonical_bytes(record) for record in inventory_files
-        }
-        require(
-            required_profile_authorities <= observed_inventory_records,
-            "all-inventory durable profile authority closure mismatch",
+    def snapshot_record(record: dict[str, Any], prefix: str) -> bytes:
+        relative = safe_relative_path(
+            record.get("path"), f"{profile_id} durable authority",
         )
+        return canonical_bytes({
+            **record,
+            "path": (Path(prefix) / relative).as_posix(),
+        })
+
+    descriptor_file = (
+        plan["pilot"]["file"]
+        if profile_id == PILOT_PROFILE
+        else plan["profile"]["descriptor"]["file"]
+    )
+    required_profile_authorities = {
+        snapshot_record(plan["controller"], "snapshot/authority"),
+        snapshot_record(plan["manifest"], "snapshot/authority"),
+        snapshot_record(descriptor_file, "snapshot/authority"),
+        *(
+            snapshot_record(record, "snapshot/authority")
+            for record in plan["authority_sources"].values()
+        ),
+    }
+    if profile_id == ALL_INVENTORY_PROFILE:
+        required_profile_authorities.add(snapshot_record(
+            plan["source_preparation"]["authorities"]["normalization_contract"],
+            "snapshot/authority",
+        ))
+    observed_profile_authorities = {
+        canonical_bytes(record)
+        for record in inventory_files
+        if record["path"].startswith("snapshot/authority/")
+    }
+    require(
+        observed_profile_authorities == required_profile_authorities,
+        f"{profile_id} durable profile authority closure mismatch",
+    )
+    required_plan_records = {
+        canonical_bytes(bytes_record(
+            expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
+        )),
+        canonical_bytes(bytes_record(
+            json_bytes(expected_host),
+            f"snapshot/plan/{HOST_RECEIPT_NAME}",
+        )),
+        *(
+            snapshot_record(entry["prepared_input"], "snapshot/plan")
+            for entry in plan["inputs"]
+        ),
+    }
+    observed_plan_records = {
+        canonical_bytes(record)
+        for record in inventory_files
+        if record["path"].startswith("snapshot/plan/")
+    }
+    require(
+        observed_plan_records == required_plan_records,
+        f"{profile_id} durable prepared-plan closure mismatch",
+    )
     expected_transcripts = {
         canonical_bytes(bytes_record(
             data, f"snapshot/runtime/{relative}",
@@ -2926,10 +3301,12 @@ def run(
             transition_snapshot, runtime_snapshot, runtime_execution, inventory,
             runtime_result, files,
         )
+        transcript_files = dict(files)
+        receipt_data = json_bytes(receipt)
         files.update(snapshot_files)
-        files[RESULT_NAME] = json_bytes(receipt)
+        files[RESULT_NAME] = receipt_data
         _write_tree(staging, files, RESULT_ROOT_MODE, RESULT_FILE_MODE)
-        validate_snapshot_tree(staging, inventory)
+        validate_result_tree(staging, inventory, receipt_data, transcript_files)
         # One final in-lock validation precedes publication of the captured receipt.
         linked_final, runtime_final = validate_linked_runtime(
             candle_root, plan, policy,
@@ -2969,8 +3346,16 @@ def run(
                 capture_authority_snapshot(candle_root, plan) == authority_snapshot and
                 durable_authority_unchanged,
                 "linked authority changed before receipt publication")
-        validate_snapshot_tree(staging, inventory)
-        _rename_noreplace(staging, output_root)
+        validate_result_tree(staging, inventory, receipt_data, transcript_files)
+        published_fd = _rename_noreplace(staging, output_root)
+        try:
+            published_root = Path(f"/proc/self/fd/{published_fd}")
+            validate_result_tree(
+                published_root, inventory, receipt_data, transcript_files,
+            )
+            require_published_directory_identity(published_fd, output_root)
+        finally:
+            os.close(published_fd)
         return receipt
     finally:
         if runtime_descriptor >= 0:

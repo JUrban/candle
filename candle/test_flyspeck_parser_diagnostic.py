@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import copy
+import errno
 import importlib.util
 import json
 import os
@@ -358,6 +359,18 @@ class ParserDiagnosticTests(unittest.TestCase):
         boolean_count = copy.deepcopy(plan)
         boolean_count["profile"]["input_count"] = True
         mutations.append(boolean_count)
+        float_schema = copy.deepcopy(plan)
+        float_schema["schema"] = 2.0
+        mutations.append(float_schema)
+        boolean_preparation_schema = copy.deepcopy(plan)
+        boolean_preparation_schema["source_preparation"]["schema"] = True
+        mutations.append(boolean_preparation_schema)
+        float_prepared_count = copy.deepcopy(plan)
+        float_prepared_count["source_preparation"]["prepared_inputs"]["count"] = 400.0
+        mutations.append(float_prepared_count)
+        float_protocol_schema = copy.deepcopy(plan)
+        float_protocol_schema["parser_runtime_protocol"]["schema"] = 2.0
+        mutations.append(float_protocol_schema)
         unsupported = copy.deepcopy(plan)
         unsupported["inputs"][0]["status"] = "unsupported-no-launch"
         unsupported["inputs"][0]["prepared_input"] = None
@@ -390,6 +403,40 @@ class ParserDiagnosticTests(unittest.TestCase):
         for index, mutation in enumerate(mutations):
             with self.subTest(index=index), self.assertRaises(subject.ContractError):
                 subject.plan_profile(mutation)
+
+        pilot, _pilot_files = self.build_real_plan()
+        for value in (True, 1.0):
+            malformed = copy.deepcopy(pilot)
+            malformed["schema"] = value
+            with self.subTest(pilot_schema=value), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.plan_profile(malformed)
+
+    def test_schema_two_subset_cannot_be_relabeled_as_pilot(self) -> None:
+        all_plan, _files = self.build_real_all_inventory_plan()
+        pilot_plan, _pilot_files = self.build_real_plan()
+        relabeled = copy.deepcopy(all_plan)
+        relabeled["schema"] = 1
+        relabeled["kind"] = "candle-flyspeck-caml-parser-diagnostic-plan"
+        relabeled["pilot"] = copy.deepcopy(pilot_plan["pilot"])
+        del relabeled["profile"]
+        del relabeled["source_preparation"]
+        relabeled["authority_sources"] = copy.deepcopy(
+            pilot_plan["authority_sources"],
+        )
+        relabeled["inputs"] = relabeled["inputs"][-20:]
+        for index, entry in enumerate(relabeled["inputs"]):
+            entry["index"] = index
+            entry["prepared_input"]["path"] = f"inputs/{index:03d}.ml"
+        relabeled["input_count"] = 20
+        relabeled["ready_count"] = 20
+        relabeled["unsupported_count"] = 0
+        relabeled["ordered_input_sha256"] = subject.canonical_sha256(
+            relabeled["inputs"],
+        )
+        with self.assertRaises(subject.ContractError):
+            subject.plan_profile(relabeled)
 
     def test_all_inventory_launch_guard_rejects_placeholder_before_handshake(self) -> None:
         plan, _files = self.build_real_all_inventory_plan()
@@ -460,40 +507,66 @@ class ParserDiagnosticTests(unittest.TestCase):
         normalization = plan["source_preparation"]["authorities"][
             "normalization_contract"
         ]
-        preparation = plan["authority_sources"][
-            subject.ALL_INVENTORY_SOURCES_RELATIVE.as_posix()
-        ]
-        authority_records = [
+        plan_records = [
             subject.bytes_record(plan_data, "snapshot/plan/plan.json"),
             subject.bytes_record(
                 subject.json_bytes(host),
                 "snapshot/plan/host-materialization.json",
             ),
+            *(
+                {
+                    **entry["prepared_input"],
+                    "path": (
+                        Path("snapshot/plan") /
+                        entry["prepared_input"]["path"]
+                    ).as_posix(),
+                }
+                for entry in plan["inputs"]
+            ),
+        ]
+        authority_records = [
+            {
+                **plan["controller"],
+                "path": (
+                    Path("snapshot/authority") /
+                    plan["controller"]["path"]
+                ).as_posix(),
+            },
+            {
+                **plan["manifest"],
+                "path": (
+                    Path("snapshot/authority") /
+                    plan["manifest"]["path"]
+                ).as_posix(),
+            },
             {
                 **descriptor,
-                "path": (
-                    "snapshot/authority/candle/"
-                    "flyspeck_parser_diagnostic_all_inventory.json"
-                ),
+                "path": (Path("snapshot/authority") /
+                         descriptor["path"]).as_posix(),
             },
             {
                 **normalization,
-                "path": "snapshot/authority/candle/flyspeck_normalizations.json",
+                "path": (Path("snapshot/authority") /
+                         normalization["path"]).as_posix(),
             },
-            {
-                **preparation,
-                "path": (
-                    "snapshot/authority/candle/"
-                    "flyspeck_all_inventory_sources.py"
-                ),
-            },
+            *(
+                {
+                    **record,
+                    "path": (Path("snapshot/authority") /
+                             record["path"]).as_posix(),
+                }
+                for record in plan["authority_sources"].values()
+            ),
         ]
         inventory = subject.snapshot_inventory(
             {
                 f"snapshot/runtime/{relative}": data
                 for relative, data in transcripts.items()
             },
-            [runtime_snapshot, *original_records, *authority_records],
+            [
+                runtime_snapshot, *original_records,
+                *plan_records, *authority_records,
+            ],
         )
 
         def build(snapshot=inventory, candidate_plan=plan):
@@ -521,7 +594,13 @@ class ParserDiagnosticTests(unittest.TestCase):
             subject.bytes_record(plan_data, "snapshot/plan/plan.json"),
         )
 
-        for required in authority_records:
+        omission_cases = [
+            (authority_records[0], "profile authority closure mismatch"),
+            (authority_records[-1], "profile authority closure mismatch"),
+            (plan_records[0], "prepared-plan closure mismatch"),
+            (plan_records[-1], "prepared-plan closure mismatch"),
+        ]
+        for required, message in omission_cases:
             omitted_inventory = subject.snapshot_inventory(
                 {}, [
                     row for row in inventory["files"]
@@ -529,9 +608,22 @@ class ParserDiagnosticTests(unittest.TestCase):
                 ],
             )
             with self.subTest(path=required["path"]), self.assertRaisesRegex(
-                subject.ContractError, "profile authority closure mismatch",
+                subject.ContractError, message,
             ):
                 build(snapshot=omitted_inventory)
+
+        extra_authority = subject.snapshot_inventory(
+            {}, [
+                *inventory["files"],
+                subject.bytes_record(
+                    b"unbound\n", "snapshot/authority/candle/unbound.py",
+                ),
+            ],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "profile authority closure mismatch",
+        ):
+            build(snapshot=extra_authority)
 
         relabeled = copy.deepcopy(plan)
         relabeled["schema"] = 1
@@ -586,6 +678,8 @@ class ParserDiagnosticTests(unittest.TestCase):
 
     def test_receipt_schema_four_closes_runtime_and_original_source_shape(self) -> None:
         plan, _files = self.build_real_plan()
+        plan_data = subject.json_bytes(plan)
+        host = {"fixture": "host"}
         runtime_data = b"sealed runtime fixture\n"
         runtime_snapshot = subject.bytes_record(
             runtime_data, "snapshot/linked/outputs/cake",
@@ -658,12 +752,44 @@ class ParserDiagnosticTests(unittest.TestCase):
             "attempts": attempts,
             "outcome": "parse-pass",
         }
+        plan_records = [
+            subject.bytes_record(plan_data, "snapshot/plan/plan.json"),
+            subject.bytes_record(
+                subject.json_bytes(host),
+                "snapshot/plan/host-materialization.json",
+            ),
+            *(
+                {
+                    **entry["prepared_input"],
+                    "path": (Path("snapshot/plan") /
+                             entry["prepared_input"]["path"]).as_posix(),
+                }
+                for entry in plan["inputs"]
+            ),
+        ]
+        authority_records = [
+            *(
+                {
+                    **record,
+                    "path": (Path("snapshot/authority") /
+                             record["path"]).as_posix(),
+                }
+                for record in [
+                    plan["controller"], plan["manifest"],
+                    plan["pilot"]["file"],
+                    *plan["authority_sources"].values(),
+                ]
+            ),
+        ]
         inventory = subject.snapshot_inventory(
             {
                 f"snapshot/runtime/{relative}": data
                 for relative, data in transcript_files.items()
             },
-            [runtime_snapshot, *original_records],
+            [
+                runtime_snapshot, *original_records,
+                *plan_records, *authority_records,
+            ],
         )
 
         def build(
@@ -671,7 +797,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             result=runtime_result, transcripts=transcript_files,
         ):
             return subject.build_diagnostic_receipt(
-                plan, subject.json_bytes(plan), {"fixture": "host"},
+                plan, plan_data, host,
                 {"fixture": "controller"}, {"fixture": "lock"},
                 1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
                 runtime_snapshot, execution, snapshot, result, transcripts,
@@ -1181,6 +1307,35 @@ class ParserDiagnosticTests(unittest.TestCase):
             reconstruct.assert_not_called()
             self.assertFalse(os.path.lexists(output))
 
+    def test_materialize_revalidates_the_opened_published_directory(self) -> None:
+        plan, inputs = self.build_real_plan()
+        host = {"fixture": "published-plan-host"}
+        plan_data = subject.json_bytes(plan)
+        flyspeck_root = Path("/project/worktrees/flyspeck-v13-source")
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "published-plan"
+            with mock.patch.object(
+                subject, "reconstruct_plan_authority",
+                return_value=(plan, inputs, host, plan_data),
+            ):
+                observed = subject.materialize(
+                    ROOT, flyspeck_root, output, subject.PILOT_PROFILE,
+                )
+            try:
+                self.assertEqual(observed, host)
+                subject.validate_exact_byte_tree(
+                    output,
+                    {
+                        subject.PLAN_NAME: plan_data,
+                        subject.HOST_RECEIPT_NAME: subject.json_bytes(host),
+                        **inputs,
+                    },
+                    subject.PLAN_ROOT_MODE, subject.PLAN_FILE_MODE,
+                    "published parser plan test",
+                )
+            finally:
+                self.make_tree_removable(output)
+
     def test_fully_rehashed_prepared_input_plan_is_rejected(self) -> None:
         expected_plan, expected_inputs = self.build_real_plan()
         execution = {"test-only": "authenticated controller execution"}
@@ -1342,6 +1497,124 @@ class ParserDiagnosticTests(unittest.TestCase):
                         subject.validate_snapshot_tree(root, inventory)
                 finally:
                     self.make_tree_removable(root)
+
+    def test_durable_snapshot_rejects_coercive_json_numbers(self) -> None:
+        files = {"snapshot/x": b"x"}
+        good = subject.snapshot_inventory(files)
+        mutations = []
+        boolean_schema = copy.deepcopy(good)
+        boolean_schema["schema"] = True
+        mutations.append(boolean_schema)
+        float_count = copy.deepcopy(good)
+        float_count["file_count"] = 1.0
+        mutations.append(float_count)
+        float_bytes = copy.deepcopy(good)
+        float_bytes["files"][0]["bytes"] = 1.0
+        float_bytes["ordered_file_sha256"] = subject.canonical_sha256(
+            float_bytes["files"],
+        )
+        mutations.append(float_bytes)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "result"
+            root.mkdir()
+            subject._write_tree(
+                root, files, subject.RESULT_ROOT_MODE, subject.RESULT_FILE_MODE,
+            )
+            try:
+                for index, mutation in enumerate(mutations):
+                    with self.subTest(index=index), self.assertRaises(
+                        subject.ContractError,
+                    ):
+                        subject.validate_snapshot_tree(root, mutation)
+            finally:
+                self.make_tree_removable(root)
+
+    def test_post_rename_validation_detects_completed_staging_mutation(self) -> None:
+        files = {"plan.json": b"good\n"}
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            staging = parent / "staging"
+            output = parent / "published"
+            staging.mkdir()
+            subject._write_tree(
+                staging, files, subject.PLAN_ROOT_MODE, subject.PLAN_FILE_MODE,
+            )
+            subject.validate_exact_byte_tree(
+                staging, files, subject.PLAN_ROOT_MODE, subject.PLAN_FILE_MODE,
+                "test plan",
+            )
+            target = staging / "plan.json"
+            target.chmod(0o644)
+            target.write_bytes(b"evil\n")
+            target.chmod(subject.PLAN_FILE_MODE)
+            descriptor = subject._rename_noreplace(staging, output)
+            try:
+                with self.assertRaisesRegex(subject.ContractError, "bytes mismatch"):
+                    subject.validate_exact_byte_tree(
+                        Path(f"/proc/self/fd/{descriptor}"), files,
+                        subject.PLAN_ROOT_MODE, subject.PLAN_FILE_MODE,
+                        "published test plan",
+                    )
+            finally:
+                os.close(descriptor)
+                self.make_tree_removable(output)
+
+    def test_publication_open_failure_does_not_leak_descriptors(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            staging = parent / "staging"
+            staging.mkdir()
+            real_open = subject.os.open
+            for failing_call in (2, 3):
+                calls = 0
+
+                def selective_open(*arguments, **keywords):
+                    nonlocal calls
+                    calls += 1
+                    if calls == failing_call:
+                        raise OSError(errno.EMFILE, "test open failure")
+                    return real_open(*arguments, **keywords)
+
+                before = len(list(Path("/proc/self/fd").iterdir()))
+                with self.subTest(failing_call=failing_call), mock.patch.object(
+                    subject.os, "open", side_effect=selective_open,
+                ), self.assertRaises(OSError):
+                    subject._rename_noreplace(staging, parent / "output")
+                after = len(list(Path("/proc/self/fd").iterdir()))
+                self.assertEqual(after, before)
+
+    def test_result_tree_fd_publication_closes_direct_and_snapshot_files(self) -> None:
+        snapshot_files = {"snapshot/plan/plan.json": b"plan\n"}
+        transcripts = {
+            "capability.stdout": b"capability\n",
+            "attempts/000.stdout": b"attempt\n",
+        }
+        inventory = subject.snapshot_inventory(snapshot_files)
+        receipt_data = b"{}\n"
+        files = {
+            **snapshot_files, **transcripts, subject.RESULT_NAME: receipt_data,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            parent = Path(directory)
+            staging = parent / "staging"
+            output = parent / "result"
+            staging.mkdir()
+            subject._write_tree(
+                staging, files, subject.RESULT_ROOT_MODE, subject.RESULT_FILE_MODE,
+            )
+            subject.validate_result_tree(
+                staging, inventory, receipt_data, transcripts,
+            )
+            descriptor = subject._rename_noreplace(staging, output)
+            try:
+                subject.validate_result_tree(
+                    Path(f"/proc/self/fd/{descriptor}"), inventory,
+                    receipt_data, transcripts,
+                )
+                subject.require_published_directory_identity(descriptor, output)
+            finally:
+                os.close(descriptor)
+                self.make_tree_removable(output)
 
     def test_streamed_snapshot_copy_is_not_a_hardlink(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

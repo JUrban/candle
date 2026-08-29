@@ -12,7 +12,7 @@ The controller never uses the generic CakeML `parse_prog` language (including
 REPL proceeds from parsing into inference and evaluation and is therefore not
 a safe implementation of this gate.
 
-## Exact pilot
+## Exact profiles
 
 `flyspeck_parser_diagnostic_pilot.json` predeclares 20 nodes. Its order is the
 first-discovery preorder obtained from manifest bootstrap roots, then build
@@ -26,21 +26,19 @@ That traversal reaches 392 of the manifest's 400 nodes. The pilot binds the
 other eight by source identity and reason rather than silently calling 392
 "all 400": four Candle-generated/control nodes are not reachable through the
 runtime source graph, and four Flyspeck nodes are reached only by
-`resolved-dynamic` actions. A future all-inventory plan must select all 400
-explicitly. Before that expansion, use a separate deterministic Flyspeck-heavy
-pilot: the first 20 `repository=flyspeck` entries in the same authenticated
-first-discovery order, followed by the eight bound exclusions under explicit
-handling rules. Do not describe the current core pilot as corpus coverage.
+`resolved-dynamic` actions. Do not describe the 20-input core pilot as corpus
+coverage.
 
-`flyspeck_parser_diagnostic_all_inventory.json` is the separate, committed
-selection foundation for the expansion. It contains the 392 first-discovery
+`flyspeck_parser_diagnostic_all_inventory.json` defines the separate
+`all-inventory` profile. It contains the 392 first-discovery
 nodes followed by the eight exclusions in lexicographic source-key order, so
 its 400 inputs are an exact set-equal partition of the authenticated manifest.
-`check-all-inventory` independently regenerates and compares it. This
-descriptor is not yet accepted by `materialize` or `run`, and is therefore not
-a parser result. Runtime support must first define and authenticate handling
-for every dynamic loader action and normalized execution input; merely sending
-the currently preparable subset would not be an all-inventory gate.
+`check-all-inventory` independently regenerates and compares it. Both
+`materialize --profile all-inventory` and `run --profile all-inventory` require
+all 400 inputs to be ready and launch exactly one fresh parser process per
+input; there is no accepted partial profile. Materialization of the committed
+authorities produces 382 byte-identical inputs and 18 normalized inputs. The
+normalization contract accounts for all 727 classified loader sites.
 
 For each selected source, the generator:
 
@@ -114,13 +112,17 @@ Linux pidfd supervision keeps the leader unreaped while the controller kills
 the entire process group on normal exit or timeout. The no-fork child limit is
 an additional defense against escaped descendants.
 
-The CakeML integration commit currently pinned by the manifest does **not**
-implement these two options. Therefore the exact blocking condition is:
+The older CakeML integration commit currently pinned by the manifest does
+**not** implement these two options. Development commit
+`964406486a52e1a53a94eade4cf86a666dc8055a` implements the dedicated protocol
+and its proof obligations, but its clean x64 proof replay and canonical
+bootstrap/link qualification are still in progress. Therefore the exact
+blocking condition is:
 
-> No pilot process may be launched until a new, proof-built CakeML commit
-> exposes the dedicated protocol directly around `caml_parser$run`, that commit
-> is pinned by the Candle manifest, and the resulting compiler is bootstrapped
-> and linked to the exact Candle controller commit under validated provenance.
+> No pilot or all-inventory process may be launched until the protocol commit's
+> proof replay succeeds, that commit is pinned by the Candle manifest, and the
+> resulting compiler is canonically bootstrapped and linked to the exact Candle
+> controller commit under validated provenance.
 
 No parser pilot was launched while implementing this controller.
 
@@ -177,7 +179,7 @@ pinned CakeML identity, changes the Candle manifest/pilot digest, and requires
 a new exact-head linked-provenance record. An old linked compiler cannot
 validate the new parser or satisfy the capability handshake.
 
-## Invocation after the blocker is closed
+## Invocation and release order
 
 From the exact committed Candle checkout, using fresh destination paths:
 
@@ -188,12 +190,14 @@ From the exact committed Candle checkout, using fresh destination paths:
 
 /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
   /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py materialize \
+  --profile pilot \
   --candle-root /absolute/candle \
   --flyspeck-root /absolute/flyspeck \
   --output-root /fresh/parser-pilot-plan
 
 /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
   /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py run \
+  --profile pilot \
   --plan-root /fresh/parser-pilot-plan \
   --candle-root /absolute/candle \
   --candle-head CANDLE_40_HEX_COMMIT \
@@ -202,13 +206,40 @@ From the exact committed Candle checkout, using fresh destination paths:
   --output-root /fresh/parser-pilot-result
 ```
 
+After the 20-input pilot succeeds, materialize and run the exact 400-input
+profile with new destinations:
+
+```sh
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py check-all-inventory \
+  --candle-root /absolute/candle
+
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py materialize \
+  --profile all-inventory \
+  --candle-root /absolute/candle \
+  --flyspeck-root /absolute/flyspeck \
+  --output-root /fresh/parser-all-inventory-plan
+
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py run \
+  --profile all-inventory \
+  --plan-root /fresh/parser-all-inventory-plan \
+  --candle-root /absolute/candle \
+  --candle-head CANDLE_40_HEX_COMMIT \
+  --flyspeck-root /absolute/flyspeck \
+  --flyspeck-head FLYSPECK_40_HEX_COMMIT \
+  --output-root /fresh/parser-all-inventory-result
+```
+
 The controller rejects any other Python flags or environment, any system-wide
 `/etc/ld.so.preload`, symlinked authority/output path component, or changed
 authenticated Python/runtime dependency. It binds `/proc/self/exe`, the Python
 ELF closure and controller tools using the established direct-runner policy.
 
-`materialize` requires the controller, pilot, manifest, policy helpers, and
-every selected source to be exact committed blobs. At run time, the supplied
+`materialize` requires the controller, selected profile descriptor, manifest,
+policy helpers, preparation authorities, and every selected source to be exact
+committed blobs. At run time, the supplied
 Candle and Flyspeck roots and heads independently reconstruct the canonical
 plan, every prepared input, every promotion flag/claim, and the host receipt;
 the published tree must match byte for byte. Fully rehashing a forged tree is
@@ -220,7 +251,8 @@ from captured source bytes without import or bytecode lookup. It holds a shared
 lock on the authenticated `candle/build` inode across linked-provenance
 validation, the empty capability handshake, all parser attempts, postflight
 runtime validation, evidence capture, and result publication. A result embeds
-read-only snapshots of the exact plan and inputs, manifest, pilot, host
+read-only snapshots of the exact plan and inputs, manifest, selected profile,
+normalization authorities when applicable, host
 receipt, linked provenance, controller/policy sources, every `linked.outputs`
 member, every selected source's original Git blob alongside its prepared input,
 the patch plus patch/native-link inputs, the CakeML runtime ELF closure, the
@@ -232,12 +264,20 @@ publication, so an omitted, extra, symlinked, writable, or tampered snapshot
 member rejects the result. This can intentionally cost multiple GiB once a
 linked compiler exists.
 
-The published diagnostic receipt is schema 4. This version closes its exact
-top-level field set over the sealed `runtime_execution` record and requires
-that record's byte count and SHA-256 to equal the archived linked runtime. It
-also requires the durable snapshot to contain exactly one original-source
-record for every selected pilot input. Receipt schema 3 predates this security-
-material shape and is not compatible.
+Publication retains stable descriptors for the staging directory and both
+parents, uses descriptor-relative `renameat2(RENAME_NOREPLACE)`, verifies the
+published inode identity, and rehashes the complete opened tree after the
+rename before reporting success. Modes 0555/0444 are an audit and accidental-
+mutation barrier, not immutability against another process with the same UID;
+every later consumer must therefore revalidate the closed receipt inventory.
+
+The published pilot receipt is schema 4. The all-inventory receipt is schema 5
+and additionally closes its profile and source-preparation fields, its exact
+authority directory, and all 400 prepared plan inputs. Both schemas close the
+top-level field set over the sealed `runtime_execution` record, require that
+record's byte count and SHA-256 to equal the archived linked runtime, and
+require exactly one original-source record for every selected input. Older
+receipt schemas are not compatible.
 
 While the shared build lock is held, the controller opens the authenticated
 linked runtime with `O_NOFOLLOW`, verifies one stable ordinary inode, and
