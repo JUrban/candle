@@ -7,13 +7,23 @@ let candle_s1_field s = string_of_int (String.length s) ^ ":" ^ s;;
 
 let candle_s1_hex_digits = "0123456789abcdef";;
 
-let candle_s1_hex_byte s =
-  let n = Char.code (String.get s 0) in
-  String.make 1 (String.get candle_s1_hex_digits (n / 16)) ^
-  String.make 1 (String.get candle_s1_hex_digits (n mod 16));;
-
+(* Build the wire encoding in place.  Expanding a large kernel-state string to
+   a character list and then using non-tail-recursive List.map exhausts the
+   OCaml stack on real Great 100 states. *)
 let candle_s1_hex s =
-  String.concat "" (List.map candle_s1_hex_byte (explode s));;
+  let input_length = String.length s in
+  if input_length > max_int / 2 then
+    failwith "candle_s1_hex: input too large"
+  else
+    let encoded = Bytes.create (2 * input_length) in
+    for index = 0 to input_length - 1 do
+      let byte = Char.code (String.get s index) in
+      Bytes.set encoded (2 * index)
+        (String.get candle_s1_hex_digits (byte / 16));
+      Bytes.set encoded (2 * index + 1)
+        (String.get candle_s1_hex_digits (byte mod 16))
+    done;
+    Bytes.to_string encoded;;
 
 let candle_s1_node tag fields =
   candle_s1_field tag ^

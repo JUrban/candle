@@ -30,6 +30,17 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             regression._fingerprint_request_source(("THM; failwith",))
 
+    def test_hex_wire_encoder_is_iterative_for_large_kernel_states(self):
+        source = regression.FINGERPRINT_HELPER.read_text(encoding="utf-8")
+        start = source.index("let candle_s1_hex s =")
+        end = source.index("let candle_s1_node", start)
+        implementation = source[start:end]
+        self.assertIn("Bytes.create (2 * input_length)", implementation)
+        self.assertIn("for index = 0 to input_length - 1 do", implementation)
+        self.assertIn("Bytes.to_string encoded", implementation)
+        self.assertNotIn("List.map", implementation)
+        self.assertNotIn("explode", implementation)
+
     def test_structural_records_become_compact_hashes(self):
         fields = [
             regression.FINGERPRINT_MARKER,
