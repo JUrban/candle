@@ -128,6 +128,13 @@ class SourceTraceTests(unittest.TestCase):
         )
         with self.assertRaises(subject.ContractError):
             subject.validate_source_trace_observation(contract, forged)
+        forged = copy.deepcopy(observed)
+        forged["events"][0]["cache_before"] = []
+        forged["ordered_event_sha256"] = subject.canonical_sha256(
+            forged["events"]
+        )
+        with self.assertRaises(subject.ContractError):
+            subject.validate_source_trace_observation(contract, forged)
 
     def test_parser_rejects_forged_state_machine_and_binding_records(self) -> None:
         contract, valid = self.valid_lines()
@@ -212,6 +219,12 @@ class SourceTraceTests(unittest.TestCase):
         boolean_count = copy.deepcopy(valid)
         boolean_count["binding_count"] = True
         cases.append(("boolean count", boolean_count))
+        malformed_key = copy.deepcopy(valid)
+        malformed_key["required_keys"][0] = []
+        malformed_key["ordered_required_key_sha256"] = subject.canonical_sha256(
+            malformed_key["required_keys"]
+        )
+        cases.append(("malformed required key", malformed_key))
         extra_field = copy.deepcopy(valid)
         extra_field["untrusted"] = True
         cases.append(("extra field", extra_field))

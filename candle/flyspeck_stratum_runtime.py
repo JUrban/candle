@@ -2135,9 +2135,10 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
         require(prior_identity == identity,
                 f"inconsistent physical source trace key: {binding['key']}")
     required_keys = contract["required_keys"]
-    require(isinstance(required_keys, list) and required_keys ==
-            sorted(set(required_keys)) and
-            all(isinstance(key, str) and key for key in required_keys) and
+    require(isinstance(required_keys, list) and
+            all(isinstance(key, str) and key for key in required_keys),
+            "malformed physical source trace required keys")
+    require(required_keys == sorted(set(required_keys)) and
             contract["required_key_count"] == len(required_keys) and
             not isinstance(contract["required_key_count"], bool) and
             contract["ordered_required_key_sha256"] ==
@@ -2198,6 +2199,8 @@ def validate_source_trace_observation(
                       event["parent"] >= 0)) and
                     isinstance(event["binding_id"], str) and
                     isinstance(event["key"], str) and
+                    isinstance(event["kind"], str) and
+                    isinstance(event["cache_before"], str) and
                     event["kind"] in SOURCE_TRACE_KINDS and
                     event["cache_before"] in {"fresh-cache", "prior-cache"},
                     f"malformed physical source trace request: {event_index}")
