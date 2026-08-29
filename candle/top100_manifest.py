@@ -289,6 +289,10 @@ def _inventory_contract(targets):
 
 
 def _load_identity_approval(targets):
+    approval_metadata = IDENTITY_APPROVAL.lstat()
+    if (IDENTITY_APPROVAL.is_symlink() or not IDENTITY_APPROVAL.is_file() or
+            approval_metadata.st_nlink != 1):
+        raise ValueError("identity approval is not an ordinary single-link file")
     source = IDENTITY_APPROVAL.read_bytes()
     try:
         approval = json.loads(
@@ -416,7 +420,9 @@ def _load_identity_approval(targets):
                     raise ValueError(
                         f"{target['name']}: unsafe {artifact_name} artifact path")
                 artifact_path = ROOT / relative
-                if artifact_path.is_symlink() or not artifact_path.is_file():
+                metadata = artifact_path.lstat()
+                if (artifact_path.is_symlink() or not artifact_path.is_file() or
+                        metadata.st_nlink != 1):
                     raise ValueError(
                         f"{target['name']}: missing ordinary {artifact_name} artifact")
                 source = artifact_path.read_bytes()

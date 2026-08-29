@@ -238,7 +238,7 @@ def _sha256_bytes(data):
 def _ordinary_file_record(path, display_path=None):
     path = Path(path)
     metadata = path.lstat()
-    if path.is_symlink() or not path.is_file():
+    if path.is_symlink() or not path.is_file() or metadata.st_nlink != 1:
         raise ValueError(f"retained input is not an ordinary file: {path}")
     data = path.read_bytes()
     if path.lstat().st_ino != metadata.st_ino or path.lstat().st_dev != metadata.st_dev:
@@ -1318,11 +1318,16 @@ def _validate_top100_results(results, tests, suite_nonce, suite_contract):
             raise ValueError(f"{result.name}: runtime provenance mismatch")
         resource = evidence["resource_sampling"]
         if (not isinstance(resource, dict) or set(resource) !=
-                RESOURCE_EVIDENCE_KEYS or resource["sample_count"] <= 0 or
-                not resource["root_observed"] or
-                not resource["sampler_completed"] or
-                resource["peak_process_rss_kib"] <= 0 or
-                resource["peak_tree_rss_kib"] <= 0):
+                RESOURCE_EVIDENCE_KEYS or
+                isinstance(resource["interval_seconds"], bool) or
+                not isinstance(resource["interval_seconds"], (int, float)) or
+                resource["interval_seconds"] <= 0 or
+                any(isinstance(resource[field], bool) or
+                    not isinstance(resource[field], int) or resource[field] <= 0
+                    for field in ("sample_count", "peak_process_rss_kib",
+                                  "peak_tree_rss_kib")) or
+                resource["root_observed"] is not True or
+                resource["sampler_completed"] is not True):
             raise ValueError(f"{result.name}: incomplete resource sampling")
         fingerprints = result.fingerprints
         expected = test.fingerprint_expected_identities
@@ -1364,6 +1369,39 @@ def cap_jobs_for_heap(jobs, heap_mb):
     if avail is None:
         return jobs
     return max(1, min(jobs, avail // heap_mb))
+
+
+def _prepare_top100_evidence_paths(report_path, log_dir):
+    report_path = Path(report_path)
+    log_dir = Path(log_dir)
+    if not report_path.is_absolute() or not log_dir.is_absolute():
+        raise ValueError("Great 100 report and log paths must be absolute")
+    candle_root = CANDLE_ROOT.resolve(strict=True)
+    for path, label in ((report_path, "report"), (log_dir, "log directory")):
+        try:
+            path.resolve().relative_to(candle_root)
+        except ValueError:
+            pass
+        else:
+            raise ValueError(f"Great 100 {label} must be outside the Candle tree")
+    parent = report_path.parent
+    if (parent.is_symlink() or not parent.is_dir() or
+            parent.resolve(strict=True) != parent):
+        raise ValueError("Great 100 report parent is not an ordinary directory")
+    if report_path.exists() or report_path.is_symlink():
+        raise ValueError("Great 100 report path must not already exist")
+    if log_dir.exists() or log_dir.is_symlink():
+        if (log_dir.is_symlink() or not log_dir.is_dir() or
+                log_dir.resolve(strict=True) != log_dir):
+            raise ValueError("Great 100 log path is not an ordinary directory")
+        if any(log_dir.iterdir()):
+            raise ValueError("Great 100 log directory must be empty")
+    else:
+        if (log_dir.parent.is_symlink() or not log_dir.parent.is_dir() or
+                log_dir.parent.resolve(strict=True) != log_dir.parent):
+            raise ValueError("Great 100 log parent is not an ordinary directory")
+        log_dir.mkdir(mode=0o700)
+    return report_path, log_dir
 
 
 def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
@@ -1514,6 +1552,12 @@ def main():
     log_dir = args.log_dir
     if log_dir is None and args.json_report is not None:
         log_dir = args.json_report.parent / f"{args.json_report.stem}-logs"
+    if running_top100:
+        try:
+            args.json_report, log_dir = _prepare_top100_evidence_paths(
+                args.json_report, log_dir)
+        except ValueError as error:
+            parser.error(str(error))
 
     results, wall = run_suite(
         tests, jobs, args.inactivity_timeout,

@@ -189,6 +189,21 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     "100/gcd", root, runtime, runtime_stublib, ocamlc,
                     ocamlfind, NONCE, source_mode="historical-original")
 
+    def test_exact_three_delta_contract_matches_both_git_sides(self):
+        contract = reference._load_source_contract()
+        self.assertEqual(len(contract["compatibility_deltas"]), 3)
+        for delta in contract["compatibility_deltas"]:
+            historical = subprocess.check_output([
+                "/usr/bin/git", "-C", str(reference.ROOT), "show",
+                f"{contract['historical_upstream_commit']}:{delta['path']}",
+            ])
+            self.assertEqual(
+                hashlib.sha256(historical).hexdigest(),
+                delta["historical_sha256"])
+            self.assertEqual(
+                reference._sha256(reference.ROOT / delta["path"]),
+                delta["selected_sha256"])
+
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {
             "schema": reference.PLAN_SCHEMA,
