@@ -234,10 +234,17 @@ class StratumRuntimeTests(unittest.TestCase):
         inputs = {
             field: copy.deepcopy(digest)
             for field in subject.DIRECT_INPUT_FIELDS
-            if field not in {"controller_execution", "authenticated_prefix"}
+            if field not in {
+                "controller_execution", "authenticated_prefix",
+                "runtime_executable",
+            }
         }
         inputs["authenticated_prefix"] = {
             "path": "prefix.ml", **copy.deepcopy(digest),
+        }
+        inputs["runtime_executable"] = {
+            "path": "/attempt/snapshot/candle/candle/build/cake",
+            **copy.deepcopy(digest),
         }
         source_root = "/candle/candle"
         source_bindings = {
@@ -411,7 +418,9 @@ class StratumRuntimeTests(unittest.TestCase):
             "finished_utc": "2026-08-29T00:00:01Z",
             "timed_out": False,
             "exit_code": 0,
-            "command": ["/runtime/cake", "--candle"],
+            "command": [
+                attempt["inputs"]["runtime_executable"]["path"], "--candle",
+            ],
             "child_resources": {
                 "user_cpu_seconds": 1.0,
                 "system_cpu_seconds": 0.1,
@@ -913,6 +922,40 @@ class StratumRuntimeTests(unittest.TestCase):
             ("controller Python runtime", lambda item: item["inputs"][
                 "controller_execution"
             ].update(python_runtime={})),
+            ("duplicate controller ELF", lambda item: item["inputs"][
+                "controller_execution"
+            ]["python_runtime"]["elf_objects"].append(copy.deepcopy(
+                item["inputs"]["controller_execution"]["python_runtime"]
+                ["elf_objects"][0]
+            ))),
+            ("duplicate controller host tool", lambda item: item["inputs"][
+                "controller_execution"
+            ]["host_tools"].append(copy.deepcopy(
+                item["inputs"]["controller_execution"]["host_tools"][0]
+            ))),
+            ("integer startup boolean", lambda item: item["inputs"][
+                "controller_execution"
+            ]["direct_script_startup"].update(spec_is_none=1)),
+            ("boolean startup integer", lambda item: item["inputs"][
+                "controller_execution"
+            ]["python_startup_flags"].update(debug=False)),
+            ("integer dev-mode boolean", lambda item: item["inputs"][
+                "controller_execution"
+            ]["python_startup_flags"].update(dev_mode=0)),
+            ("integer stdio boolean", lambda item: item["inputs"][
+                "controller_execution"
+            ]["python_startup_options"]["stdio_write_through"].update(
+                stdin=0,
+            )),
+            ("parent-traversing source root", lambda item: item["inputs"][
+                "controller_execution"
+            ].update(source_root="/candle/../candle")),
+            ("absolute prefix path", lambda item: item["inputs"][
+                "authenticated_prefix"
+            ].update(path="/prefix.ml")),
+            ("parent-traversing lock path", lambda item: item[
+                "runtime_lock"
+            ].update(path="/candle/../candle/build")),
             ("integer final-target flag", lambda item: item[
                 "expected_logical_source_closure"
             ].update(final_target_selected=0)),
@@ -1079,6 +1122,8 @@ class StratumRuntimeTests(unittest.TestCase):
                 "logical_source_closure"
             ].update(records=[])),
             ("failed state flip", lambda item: item.update(state="failed")),
+            ("unbound executable", lambda item: item.update(
+                command=["/bin/false", "--candle"])),
             ("requested boundary lacks fingerprints", lambda item: item.update(
                 boundary_id="05-lp_support-through-184")),
         ):

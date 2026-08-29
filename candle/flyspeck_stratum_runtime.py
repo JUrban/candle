@@ -137,9 +137,10 @@ DIRECT_RECEIPT_ONLY_FIELDS = frozenset({
 DIRECT_INPUT_FIELDS = frozenset({
     "plan", "host_materialization", "manifest", "linked_provenance",
     "archived_linked_provenance", "archived_bootstrap_provenance",
-    "archived_bootstrap_log", "runtime_snapshot", "controller_execution",
-    "authenticated_prefix", "instrumented_prefix", "runtime_config", "stdin",
-    "postlude", "setup", "check", "fingerprint_serializer", "l2_target",
+    "archived_bootstrap_log", "runtime_snapshot", "runtime_executable",
+    "controller_execution", "authenticated_prefix", "instrumented_prefix",
+    "runtime_config", "stdin", "postlude", "setup", "check",
+    "fingerprint_serializer", "l2_target",
 })
 SOURCE_CLOSURE_CLASSIFICATIONS = (
     "observed-outer-source",
@@ -324,6 +325,30 @@ def canonical_bytes(value: Any) -> bytes:
 
 def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(canonical_bytes(value)).hexdigest()
+
+
+def exact_json_equal(left: object, right: object) -> bool:
+    """Compare JSON values without Python's bool/int/float coercions."""
+    if type(left) is not type(right):
+        return False
+    if isinstance(left, dict):
+        return set(left) == set(right) and all(
+            exact_json_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, list):
+        return len(left) == len(right) and all(
+            exact_json_equal(a, b) for a, b in zip(left, right, strict=True)
+        )
+    return left == right
+
+
+def exact_absolute_path(value: object) -> bool:
+    """Recognize one normalized lexical absolute path without parent hops."""
+    if not isinstance(value, str) or not value:
+        return False
+    path = Path(value)
+    return (path.is_absolute() and ".." not in path.parts and
+            str(path) == value)
 
 
 def json_bytes(value: Any) -> bytes:
@@ -2439,21 +2464,23 @@ def validate_direct_controller_binding(
                 "broader_python_standard_library_in_host_trust_boundary",
             }, "malformed direct runtime controller binding")
     source_root_value = controller["source_root"]
-    require(isinstance(source_root_value, str) and
-            Path(source_root_value).is_absolute(),
+    require(exact_absolute_path(source_root_value),
             "malformed direct runtime controller source root")
     source_root = Path(source_root_value)
     direct_source = source_root / "flyspeck_stratum_runtime.py"
-    require(controller["direct_script_startup"] == {
+    require(exact_json_equal(controller["direct_script_startup"], {
                 "module_name": "__main__",
                 "spec_is_none": True,
                 "cached_is_none": True,
                 "argv0": str(direct_source),
                 "source_path": str(direct_source),
-            } and controller["python_startup_flags"] ==
-            EXPECTED_PYTHON_STARTUP_FLAGS and
-            controller["python_startup_options"] ==
-            EXPECTED_PYTHON_STARTUP_OPTIONS and
+            }) and exact_json_equal(
+                controller["python_startup_flags"],
+                EXPECTED_PYTHON_STARTUP_FLAGS,
+            ) and exact_json_equal(
+                controller["python_startup_options"],
+                EXPECTED_PYTHON_STARTUP_OPTIONS,
+            ) and
             controller[
                 "initial_top_level_compilation_in_host_trust_boundary"
             ] is True and
@@ -2483,7 +2510,8 @@ def validate_direct_controller_binding(
     }
     sources = controller["local_sources"]
     require(isinstance(sources, list) and len(sources) == len(expected_bindings) and
-            all(isinstance(item, dict) for item in sources) and
+            all(isinstance(item, dict) and
+                isinstance(item.get("label"), str) for item in sources) and
             {item.get("label") for item in sources} == set(expected_bindings),
             "malformed direct runtime controller source closure")
     source_by_label: dict[str, dict[str, Any]] = {}
@@ -2546,7 +2574,10 @@ def validate_direct_controller_binding(
             "direct runtime controller Python ELF metadata differs")
     elf_objects = python_runtime["elf_objects"]
     require(isinstance(elf_objects, list) and
-            all(isinstance(item, dict) for item in elf_objects) and
+            len(elf_objects) == len(expected_elf["files"]) and
+            all(isinstance(item, dict) and
+                isinstance(item.get("source_path"), str)
+                for item in elf_objects) and
             {item.get("source_path") for item in elf_objects} ==
             set(expected_elf["files"]),
             "malformed direct runtime controller Python ELF closure")
@@ -2573,7 +2604,9 @@ def validate_direct_controller_binding(
             }, "direct runtime controller Git environment differs")
     host_tools = controller["host_tools"]
     require(isinstance(host_tools, list) and
-            all(isinstance(item, dict) for item in host_tools) and
+            len(host_tools) == len(EXPECTED_CONTROLLER_TOOLS) and
+            all(isinstance(item, dict) and
+                isinstance(item.get("label"), str) for item in host_tools) and
             {item.get("label") for item in host_tools} ==
             set(EXPECTED_CONTROLLER_TOOLS),
             "malformed direct runtime controller host-tool closure")
@@ -2643,8 +2676,7 @@ def validate_direct_evidence_v4_artifact(
     lock = artifact.get("runtime_lock")
     require(isinstance(lock, dict) and set(lock) == {
                 "path", "object", "mode", "device", "inode",
-            } and isinstance(lock["path"], str) and
-            Path(lock["path"]).is_absolute() and
+            } and exact_absolute_path(lock["path"]) and
             lock["object"] == "directory_inode" and lock["mode"] == "shared" and
             type(lock["device"]) is int and lock["device"] >= 0 and
             type(lock["inode"]) is int and lock["inode"] > 0,
@@ -2678,11 +2710,23 @@ def validate_direct_evidence_v4_artifact(
                 f"malformed direct runtime {label} record")
 
     for label in sorted(DIRECT_INPUT_FIELDS - {
-        "controller_execution", "authenticated_prefix",
+        "controller_execution", "authenticated_prefix", "runtime_executable",
     }):
         digest_record(inputs[label], f"input {label}")
     digest_record(inputs["authenticated_prefix"],
                   "authenticated prefix", path=True)
+    prefix_path = inputs["authenticated_prefix"]["path"]
+    require(not Path(prefix_path).is_absolute() and
+            ".." not in Path(prefix_path).parts and
+            Path(prefix_path).as_posix() == prefix_path,
+            "unsafe direct runtime authenticated prefix path")
+    digest_record(inputs["runtime_executable"],
+                  "runtime executable", path=True)
+    runtime_executable = inputs["runtime_executable"]["path"]
+    require(exact_absolute_path(runtime_executable) and
+            Path(runtime_executable).parts[-5:] == (
+                "snapshot", "candle", "candle", "build", "cake",
+            ), "malformed direct runtime executable binding")
     repositories = artifact.get("repositories")
     require(isinstance(repositories, dict) and set(repositories) == {
                 "candle", "flyspeck",
@@ -2906,9 +2950,7 @@ def validate_direct_evidence_v4_artifact(
     require(finished >= started,
             "direct runtime finish precedes start")
     command = artifact.get("command")
-    require(isinstance(command, list) and len(command) == 2 and
-            isinstance(command[0], str) and Path(command[0]).is_absolute() and
-            command[1] == "--candle",
+    require(command == [runtime_executable, "--candle"],
             "malformed direct runtime command")
     log_record = artifact.get("log")
     if log_record is not None:
@@ -4033,6 +4075,10 @@ def _run_attempt_impl(
                 runtime_prepared["bootstrap_log_snapshot"]
             ),
             "runtime_snapshot": hash_file(snapshot_record_path),
+            "runtime_executable": {
+                "path": str(runtime_prepared["cake_runtime"]),
+                **hash_file(runtime_prepared["cake_runtime"]),
+            },
             "controller_execution": snapshot_record["controller_execution"],
             "authenticated_prefix": prepared["prefix_record"],
             **control_records,
@@ -4239,7 +4285,8 @@ def _run_attempt_impl(
             "postflight_reauthenticated": postflight_reauthenticated,
         }
         validate_direct_evidence_v4_artifact(
-            receipt, receipt=True, log_path=log_path,
+            receipt, receipt=True,
+            log_path=(log_path if log_record is not None else None),
         )
         atomic_write_json(receipt_path, receipt)
         receipt_path.chmod(0o444)
