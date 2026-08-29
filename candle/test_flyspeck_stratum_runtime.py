@@ -56,6 +56,15 @@ class StratumRuntimeTests(unittest.TestCase):
             b'#flyspeck_needs "../formal_lp/b.ml";;\n'
         )
         self.nonce = "a" * 32
+        self.runtime_temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.runtime_temporary.cleanup)
+        self.runtime_executable_path = (
+            Path(self.runtime_temporary.name) /
+            "snapshot/candle/candle/build/cake"
+        )
+        self.runtime_executable_path.parent.mkdir(parents=True)
+        self.runtime_executable_path.write_bytes(b"compiled Candle test runtime")
+        self.runtime_executable_path.chmod(0o555)
         closure_records = [
             {
                 "index": 0,
@@ -243,8 +252,8 @@ class StratumRuntimeTests(unittest.TestCase):
             "path": "prefix.ml", **copy.deepcopy(digest),
         }
         inputs["runtime_executable"] = {
-            "path": "/attempt/snapshot/candle/candle/build/cake",
-            **copy.deepcopy(digest),
+            "path": str(self.runtime_executable_path),
+            **subject.hash_file(self.runtime_executable_path),
         }
         source_root = "/candle/candle"
         source_bindings = {
@@ -508,6 +517,7 @@ class StratumRuntimeTests(unittest.TestCase):
             log_path.chmod(0o444)
             subject.validate_direct_evidence_v4_artifact(
                 receipt, receipt=True, log_path=log_path,
+                runtime_executable_path=self.runtime_executable_path,
             )
 
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
@@ -953,9 +963,15 @@ class StratumRuntimeTests(unittest.TestCase):
             ("absolute prefix path", lambda item: item["inputs"][
                 "authenticated_prefix"
             ].update(path="/prefix.ml")),
+            ("dot prefix path", lambda item: item["inputs"][
+                "authenticated_prefix"
+            ].update(path=".")),
             ("parent-traversing lock path", lambda item: item[
                 "runtime_lock"
             ].update(path="/candle/../candle/build")),
+            ("double-leading-slash executable", lambda item: item["inputs"][
+                "runtime_executable"
+            ].update(path="//evil/snapshot/candle/candle/build/cake")),
             ("integer final-target flag", lambda item: item[
                 "expected_logical_source_closure"
             ].update(final_target_selected=0)),
@@ -1072,11 +1088,64 @@ class StratumRuntimeTests(unittest.TestCase):
             },
         }
         self.validate_receipt(valid)
+        float_initial_size = copy.deepcopy(valid)
+        float_initial_size["initial_attempt"]["bytes"] = float(
+            float_initial_size["initial_attempt"]["bytes"]
+        )
+        with self.assertRaisesRegex(subject.ContractError, "initial attempt"):
+            self.validate_receipt(float_initial_size)
+        for label, mutate in (
+            ("float closure schema", lambda item: item[
+                "logical_source_closure"
+            ].update(schema=3.0)),
+            ("float closure count", lambda item: item[
+                "logical_source_closure"
+            ].update(record_count=2.0)),
+            ("integer closure boolean", lambda item: item[
+                "logical_source_closure"
+            ].update(physical_loader_cache_trace=0)),
+            ("integer fingerprint boolean", lambda item: item[
+                "semantic_fingerprints"
+            ].update(approved_reference_present=0)),
+            ("infinite child CPU", lambda item: item[
+                "child_resources"
+            ].update(user_cpu_seconds=float("inf"))),
+        ):
+            forged = copy.deepcopy(valid)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                self.validate_receipt(forged)
+        forged_runtime = copy.deepcopy(valid)
+        forged_runtime["inputs"]["runtime_executable"] = {
+            "path": "/forged/snapshot/candle/candle/build/cake",
+            "bytes": 1,
+            "sha256": "0" * 64,
+            "md5": "0" * 32,
+        }
+        forged_runtime["command"][0] = forged_runtime["inputs"][
+            "runtime_executable"
+        ]["path"]
+        initial_projection = {
+            field: forged_runtime[field]
+            for field in subject.DIRECT_ATTEMPT_FIELDS
+        }
+        initial_projection["state"] = "running"
+        forged_runtime["initial_attempt"] = {
+            "path": "attempt.json",
+            **subject.data_record(subject.json_bytes(initial_projection)),
+        }
+        with self.assertRaisesRegex(
+            subject.ContractError, "requires its executable bytes",
+        ):
+            self.validate_receipt(forged_runtime)
         with self.assertRaisesRegex(
             subject.ContractError, "requires its log bytes",
         ):
             subject.validate_direct_evidence_v4_artifact(
                 valid, receipt=True,
+                runtime_executable_path=self.runtime_executable_path,
             )
         empty_log = copy.deepcopy(valid)
         empty_log["log"] = {
@@ -1102,6 +1171,7 @@ class StratumRuntimeTests(unittest.TestCase):
             ):
                 subject.validate_direct_evidence_v4_artifact(
                     forged_log, receipt=True, log_path=forged_path,
+                    runtime_executable_path=self.runtime_executable_path,
                 )
         missing_log = copy.deepcopy(valid)
         missing_log.pop("log")
@@ -1292,6 +1362,7 @@ class StratumRuntimeTests(unittest.TestCase):
             ), self.assertRaises(subject.ContractError):
                 subject.validate_direct_evidence_v4_artifact(
                     forged, receipt=True,
+                    runtime_executable_path=self.runtime_executable_path,
                 )
 
     def test_postlude_uses_actual_v2_theorem_and_state_serializer(self) -> None:
