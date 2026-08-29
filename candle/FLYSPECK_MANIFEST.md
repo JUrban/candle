@@ -295,17 +295,21 @@ stdout lines, one for `Filename.temp_file` and one for
 the preservation scope is the selected proof state, source-action semantics,
 and semantic fingerprints, and excludes consumers of those diagnostics.
 
-The evidence-v3 expected closure separately classifies completed outer roots,
+The evidence-v3 closure separately classifies completed outer roots, selected
+nested `#flyspeck_loadt` sources observed through the logical ledger, other
 expected nested sources, generated executed controls, and derivation-only
 inputs.  `flyspeck_full_build.ml` is derivation-only; the authenticated
 instrumented prefix derived from it is the executed attempt control.  The
 closure follows three selected standalone strictbuild actions, excludes
 `build/use_serialization.hl`, and adds `serialization.hl` plus its selected
-`update_database_400.ml` branch only after action 295.  It remains
-nonpromotable because no loader-owned nested identity trace exists.  Such a
-trace must also canonicalize lexical aliases: action 126 is the first `..`
-target and action 145 begins `../formal_lp/...`, while current source-identity
-and normalization-overlay tables use canonical paths.
+`update_database_400.ml` branch only after action 295.  The pinned CakeML boot
+uses a pending-identity stack for nested actions, and the runtime validates the
+exact final ledger prefix `[serialization, update_database_400]` before
+emitting action 295's delta-bound marker.  It remains nonpromotable because
+ordinary nested loads still have no loader-owned identity trace.  Such a trace
+must also canonicalize lexical aliases: action 126 is the first `..` target and
+action 145 begins `../formal_lp/...`, while current source-identity and
+normalization-overlay tables use canonical paths.
 
 The next G6 slices must turn this inventory into the loader's enforced input
 contract, reject manifest/source reorder and corruption, add relocation and

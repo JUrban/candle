@@ -2298,8 +2298,8 @@
     "site_sha256": "bce30814051df12ea23c14f2918a55e6b839b72760fd58b8996e32f1c05bf282",
     "source_file_count": 234,
     "verified_cakeml_integration": {
-      "branch": "codex/flyspeck-v13-integration",
-      "commit": "36e2245f42d4759063615c97fec51865798ca894",
+      "branch": "codex/flyspeck-direct-nested-identities-v13",
+      "commit": "0e97a1ab86924e905e1d1c893191651197b82f6e",
       "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
       "dopen_proof_theories": 39,
       "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
@@ -2749,7 +2749,7 @@
     ],
     "source_site_count": 731,
     "static_action_gate": "candle:candle/test_flyspeck_needs_directive.sh",
-    "static_action_source": "cakeml:candle/prover/candle_boot.ml@1b17732f",
+    "static_action_source": "cakeml:candle/prover/candle_boot.ml@0e97a1ab",
     "syntax_position_counts": [
       {
         "count": 297,
@@ -20890,7 +20890,7 @@
       "tag": "4.14.1"
     },
     "runtime_selection_policy": "after the original-source preflight, authenticate each normalized MD5 and install one exact original-path to output-path mapping; never add the overlay directory to load_path",
-    "runtime_selection_source": "cakeml:candle/prover/candle_boot.ml@1b17732f and candle:candle/flyspeck_loader.ml",
+    "runtime_selection_source": "cakeml:candle/prover/candle_boot.ml@0e97a1ab and candle:candle/flyspeck_loader.ml",
     "scope_limit": "the rules are site-specific; qmap, unsuppress, and strictbuild's use_file_b are selected-static-route non-use refinements that fail closed on any call; the LP rules require the exact prepared-input contract and static 39-file inventory; the Serialization.St rule implements only the exact selected empty/add/mem observations; dynamic eval_command, obsolete ssreflect lookup, and future theorem-database updates fail closed after the one unobserved initial cache mutation is eliminated; compiled, fingerprint, and performance gates remain open",
     "selected_graph_non_use_bindings": {
       "identifiers": [
