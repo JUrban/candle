@@ -318,6 +318,21 @@ class ParserDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ContractError, "symlink component"):
                 subject.validate_fresh_output_root(alias / "output", "test output")
 
+    def test_materialize_rejects_output_inside_either_authority_root(self) -> None:
+        flyspeck_root = Path("/project/worktrees/flyspeck-v13-source")
+        for label, authority_root in (
+            ("Candle", ROOT), ("Flyspeck", flyspeck_root),
+        ):
+            output = authority_root / f".parser-output-test-{os.getpid()}"
+            self.assertFalse(os.path.lexists(output))
+            with mock.patch.object(subject, "reconstruct_plan_authority") as reconstruct:
+                with self.assertRaisesRegex(
+                    subject.ContractError, f"outside {label} root",
+                ):
+                    subject.materialize(ROOT, flyspeck_root, output)
+            reconstruct.assert_not_called()
+            self.assertFalse(os.path.lexists(output))
+
     def test_fully_rehashed_prepared_input_plan_is_rejected(self) -> None:
         expected_plan, expected_inputs = self.build_real_plan()
         execution = {"test-only": "authenticated controller execution"}

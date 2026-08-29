@@ -193,7 +193,8 @@ every selected source to be exact committed blobs. At run time, the supplied
 Candle and Flyspeck roots and heads independently reconstruct the canonical
 plan, every prepared input, every promotion flag/claim, and the host receipt;
 the published tree must match byte for byte. Fully rehashing a forged tree is
-therefore not authority.
+therefore not authority. Both plan and result destinations must be fresh and
+outside the Candle and Flyspeck authority roots.
 
 The run exact-loads the commit-bound transition/provenance/runtime-lock policy
 from captured source bytes without import or bytecode lookup. It holds a shared

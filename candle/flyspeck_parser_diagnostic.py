@@ -847,6 +847,12 @@ def materialize(
     candle_root = resolve_without_symlinks(candle_root, "Candle root")
     flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
     output_root = validate_fresh_output_root(output_root, "plan output root")
+    for label, authority_root in (
+        ("Candle", candle_root), ("Flyspeck", flyspeck_root),
+    ):
+        require(output_root != authority_root and
+                not output_root.is_relative_to(authority_root),
+                f"plan output root must be outside {label} root")
     candle_head = str(git_output(candle_root, "rev-parse", "HEAD"))
     flyspeck_head = str(git_output(flyspeck_root, "rev-parse", "HEAD"))
     plan, input_files, host, plan_data = reconstruct_plan_authority(
