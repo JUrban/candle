@@ -1220,7 +1220,8 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
         raise CollectionError("could not obtain pinned findlib package path") from error
     if not findlib_paths:
         raise CollectionError("findlib package path is empty")
-    findlib_package_roots = [_pin_tree(path) for path in findlib_paths]
+    findlib_package_roots = [
+        _pin_tree(path) for path in sorted(set(findlib_paths))]
 
     nonce = nonce or secrets.token_hex(32)
     if not re.fullmatch(r"[0-9a-f]{64}", nonce):

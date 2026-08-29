@@ -70,6 +70,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
         runtime_stublib.parent.mkdir()
         ocaml_library = root / "ocaml-library"
         ocaml_library.mkdir()
+        findlib_extra = root / "zz-findlib"
+        findlib_extra.mkdir()
+        (findlib_extra / "META").write_text("version=\"test\"\n")
         (ocaml_library / "topfind").write_text("pinned topfind\n")
         (ocaml_library / "stublibs").mkdir()
         (ocaml_library / "stublibs/dllunix.so").write_bytes(
@@ -102,7 +105,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "#!/bin/sh\n"
             "if [ \"$1\" = query ]; then printf '1.9.6\\n'; "
             f"elif [ \"$2\" = conf ]; then printf '%s\\n' '{findlib_config}'; "
-            f"elif [ \"$2\" = path ]; then printf '%s\\n' '{ocaml_library}'; "
+            f"elif [ \"$2\" = path ]; then printf '%s\\n%s\\n' "
+            f"'{findlib_extra}' '{ocaml_library}'; "
             "else exit 2; fi\n")
         for executable in (runtime, ocamlc, ocamlfind):
             executable.chmod(0o755)
@@ -203,6 +207,10 @@ class ReferenceFingerprintTest(unittest.TestCase):
             plan["reference"]["findlib"]["package_roots"][0]
                 ["inventory_sha256"],
             plan["reference"]["ocaml_library_tree"]["inventory_sha256"])
+        self.assertEqual(
+            [item["root"] for item in
+             plan["reference"]["findlib"]["package_roots"]],
+            sorted((str(root / "ocaml-library"), str(root / "zz-findlib"))))
         external = plan["reference"]["external_runtime"]
         self.assertEqual(
             external["policy"],
