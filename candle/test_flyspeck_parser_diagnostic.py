@@ -281,9 +281,6 @@ class ParserDiagnosticTests(unittest.TestCase):
                 "bytes": entry["source"]["bytes"],
                 "sha256": entry["source"]["sha256"],
             })
-        inventory = subject.snapshot_inventory(
-            {}, [runtime_snapshot, *original_records],
-        )
         runtime_execution = {
             "kind": "sealed-anonymous-runtime-image",
             "bytes": runtime_snapshot["bytes"],
@@ -293,20 +290,71 @@ class ParserDiagnosticTests(unittest.TestCase):
             "required_seals": subject.RUNTIME_MEMFD_SEALS,
             "execution": "inherited-fd-via-/proc/self/fd",
         }
+        attempts = []
+        transcript_files = {
+            "capability.stdout": subject.CAPABILITY_LINE,
+            "capability.stderr": b"",
+        }
+        for index, entry in enumerate(plan["inputs"]):
+            nonce = f"{index:064x}"
+            stdout_path = f"attempts/{index:03d}.stdout"
+            stderr_path = f"attempts/{index:03d}.stderr"
+            stdout = subject.RESULT_PREFIX + nonce.encode() + b"\tOK\n"
+            transcript_files[stdout_path] = stdout
+            transcript_files[stderr_path] = b""
+            attempts.append({
+                "index": index,
+                "source_key": entry["source_key"],
+                "prepared_input": entry["prepared_input"],
+                "nonce": nonce,
+                "command": [
+                    subject.RUNTIME_RELATIVE.as_posix(),
+                    subject.RUN_ARGUMENT,
+                    nonce,
+                ],
+                "exit_code": 0,
+                "outcome": "parse-ok",
+                "controller_stderr_digest": None,
+                "stdout": subject.bytes_record(
+                    stdout, stdout_path,
+                ),
+                "stderr": subject.bytes_record(b"", stderr_path),
+            })
         runtime_result = {
-            "capability": {"fixture": True},
-            "attempt_count": 0,
-            "ordered_attempt_sha256": subject.canonical_sha256([]),
-            "attempts": [],
+            "capability": {
+                "command": [
+                    subject.RUNTIME_RELATIVE.as_posix(),
+                    subject.CAPABILITY_ARGUMENT,
+                ],
+                "exit_code": 0,
+                "stdin": subject.bytes_record(b""),
+                "stdout": subject.bytes_record(
+                    subject.CAPABILITY_LINE, "capability.stdout",
+                ),
+                "stderr": subject.bytes_record(b"", "capability.stderr"),
+            },
+            "attempt_count": len(attempts),
+            "ordered_attempt_sha256": subject.canonical_sha256(attempts),
+            "attempts": attempts,
             "outcome": "parse-pass",
         }
+        inventory = subject.snapshot_inventory(
+            {
+                f"snapshot/runtime/{relative}": data
+                for relative, data in transcript_files.items()
+            },
+            [runtime_snapshot, *original_records],
+        )
 
-        def build(execution=runtime_execution, snapshot=inventory):
+        def build(
+            execution=runtime_execution, snapshot=inventory,
+            result=runtime_result, transcripts=transcript_files,
+        ):
             return subject.build_diagnostic_receipt(
                 plan, subject.json_bytes(plan), {"fixture": "host"},
                 {"fixture": "controller"}, {"fixture": "lock"},
                 1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
-                runtime_snapshot, execution, snapshot, runtime_result,
+                runtime_snapshot, execution, snapshot, result, transcripts,
             )
 
         receipt = build()
@@ -332,6 +380,166 @@ class ParserDiagnosticTests(unittest.TestCase):
         omitted_inventory = subject.snapshot_inventory({}, omitted_records)
         with self.assertRaisesRegex(subject.ContractError, "closure mismatch"):
             build(snapshot=omitted_inventory)
+        omitted_transcript_records = [
+            row for row in inventory["files"]
+            if row["path"] != "snapshot/runtime/capability.stdout"
+        ]
+        omitted_transcript_inventory = subject.snapshot_inventory(
+            {}, omitted_transcript_records,
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "transcript snapshot closure mismatch",
+        ):
+            build(snapshot=omitted_transcript_inventory)
+
+        missing_attempts = copy.deepcopy(runtime_result)
+        missing_attempts["attempt_count"] = 0
+        missing_attempts["attempts"] = []
+        missing_attempts["ordered_attempt_sha256"] = subject.canonical_sha256([])
+        with self.assertRaisesRegex(
+            subject.ContractError, "exactly one attempt",
+        ):
+            build(result=missing_attempts)
+
+        wrong_input = copy.deepcopy(runtime_result)
+        wrong_input["attempts"][0]["source_key"] = "candle:forged.ml"
+        wrong_input["ordered_attempt_sha256"] = subject.canonical_sha256(
+            wrong_input["attempts"],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "does not match its selected plan input",
+        ):
+            build(result=wrong_input)
+
+        boolean_exit = copy.deepcopy(runtime_result)
+        boolean_exit["attempts"][0]["exit_code"] = False
+        boolean_exit["ordered_attempt_sha256"] = subject.canonical_sha256(
+            boolean_exit["attempts"],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "not an exact integer",
+        ):
+            build(result=boolean_exit)
+
+        boolean_capability_bytes = copy.deepcopy(runtime_result)
+        boolean_capability_bytes["capability"]["stdin"]["bytes"] = False
+        with self.assertRaisesRegex(
+            subject.ContractError, "capability stdin byte record is not exact",
+        ):
+            build(result=boolean_capability_bytes)
+
+        float_prepared_bytes = copy.deepcopy(runtime_result)
+        float_prepared_bytes["attempts"][0]["prepared_input"]["bytes"] = float(
+            float_prepared_bytes["attempts"][0]["prepared_input"]["bytes"]
+        )
+        float_prepared_bytes["ordered_attempt_sha256"] = subject.canonical_sha256(
+            float_prepared_bytes["attempts"],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "prepared input byte record shape is not exact",
+        ):
+            build(result=float_prepared_bytes)
+
+        boolean_stderr_bytes = copy.deepcopy(runtime_result)
+        boolean_stderr_bytes["attempts"][0]["stderr"]["bytes"] = False
+        boolean_stderr_bytes["ordered_attempt_sha256"] = subject.canonical_sha256(
+            boolean_stderr_bytes["attempts"],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "attempt stderr byte record is not exact",
+        ):
+            build(result=boolean_stderr_bytes)
+
+        extra_transcript = {
+            **transcript_files,
+            "attempts/extra.stderr": b"",
+        }
+        with self.assertRaisesRegex(
+            subject.ContractError, "byte-map closure mismatch",
+        ):
+            subject.validate_runtime_result(
+                plan, runtime_result, extra_transcript,
+            )
+        tampered_transcript = {
+            **transcript_files,
+            "attempts/000.stdout": b"tampered\n",
+        }
+        with self.assertRaisesRegex(
+            subject.ContractError, "attempt stdout byte record is not exact",
+        ):
+            subject.validate_runtime_result(
+                plan, runtime_result, tampered_transcript,
+            )
+
+        non_json_metadata = copy.deepcopy(runtime_result)
+        non_json_metadata["attempts"][0]["controller_stderr_digest"] = {object()}
+        non_json_metadata["ordered_attempt_sha256"] = "0" * 64
+        with self.assertRaisesRegex(
+            subject.ContractError, "differs from the exact transcript",
+        ):
+            subject.validate_runtime_result(
+                plan, non_json_metadata, transcript_files,
+            )
+
+        boolean_plan_index = copy.deepcopy(plan)
+        boolean_plan_index["inputs"][0]["index"] = False
+        with self.assertRaisesRegex(
+            subject.ContractError, "ordered ready input",
+        ):
+            subject.validate_runtime_result(
+                boolean_plan_index, runtime_result, transcript_files,
+            )
+        with self.assertRaisesRegex(subject.ContractError, "plan is not an object"):
+            subject.validate_runtime_result(
+                None, runtime_result, transcript_files,
+            )
+
+        parse_error_result = copy.deepcopy(runtime_result)
+        parse_error_transcripts = dict(transcript_files)
+        first = parse_error_result["attempts"][0]
+        parse_error_stdout = (
+            subject.RESULT_PREFIX + first["nonce"].encode() +
+            b"\tPARSE_ERROR\n"
+        )
+        parse_error_stderr = b"parser detail\n"
+        parse_error_transcripts["attempts/000.stdout"] = parse_error_stdout
+        parse_error_transcripts["attempts/000.stderr"] = parse_error_stderr
+        derived = subject.parse_protocol_result(
+            first["nonce"],
+            subprocess.CompletedProcess(
+                first["command"], subject.PARSER_ERROR_EXIT,
+                parse_error_stdout, parse_error_stderr,
+            ),
+        )
+        first["exit_code"] = subject.PARSER_ERROR_EXIT
+        first["outcome"] = derived["outcome"]
+        first["controller_stderr_digest"] = derived["controller_stderr_digest"]
+        first["stdout"] = subject.bytes_record(
+            parse_error_stdout, "attempts/000.stdout",
+        )
+        first["stderr"] = subject.bytes_record(
+            parse_error_stderr, "attempts/000.stderr",
+        )
+        parse_error_result["outcome"] = "parse-failure"
+        parse_error_result["ordered_attempt_sha256"] = subject.canonical_sha256(
+            parse_error_result["attempts"],
+        )
+        subject.validate_runtime_result(
+            plan, parse_error_result, parse_error_transcripts,
+        )
+        forged_error_digest = copy.deepcopy(parse_error_result)
+        forged_error_digest["attempts"][0]["controller_stderr_digest"][
+            "sha256"
+        ] = "0" * 64
+        forged_error_digest["ordered_attempt_sha256"] = subject.canonical_sha256(
+            forged_error_digest["attempts"],
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "differs from the exact transcript",
+        ):
+            subject.validate_runtime_result(
+                plan, forged_error_digest, parse_error_transcripts,
+            )
 
     def test_normalized_source_fails_closed_in_pilot(self) -> None:
         altered = copy.deepcopy(self.manifest)

@@ -1884,6 +1884,13 @@ def durable_snapshot_sources(
 RUNTIME_RESULT_FIELDS = frozenset({
     "capability", "attempt_count", "ordered_attempt_sha256", "attempts", "outcome",
 })
+CAPABILITY_RESULT_FIELDS = frozenset({
+    "command", "exit_code", "stdin", "stdout", "stderr",
+})
+ATTEMPT_RESULT_FIELDS = frozenset({
+    "index", "source_key", "prepared_input", "nonce", "command", "exit_code",
+    "outcome", "controller_stderr_digest", "stdout", "stderr",
+})
 DIAGNOSTIC_RECEIPT_FIELDS = frozenset({
     "schema", "kind", "claim", "promotion", "plan", "host_materialization",
     "controller", "controller_execution", "runtime_lock", "resource_limits",
@@ -1896,6 +1903,173 @@ SEALED_RUNTIME_EXECUTION_FIELDS = frozenset({
 })
 
 
+def validate_runtime_result(
+    plan: dict[str, Any], runtime_result: dict[str, Any],
+    transcript_files: dict[str, bytes],
+) -> None:
+    """Bind a receipt to one exact parser attempt for every selected input."""
+    require(isinstance(plan, dict), "parser result plan is not an object")
+    require(isinstance(runtime_result, dict) and
+            set(runtime_result) == RUNTIME_RESULT_FIELDS,
+            "parser runtime result field set is not closed")
+    require(
+        isinstance(transcript_files, dict) and
+        all(type(path) is str and type(data) is bytes
+            for path, data in transcript_files.items()),
+        "parser transcript byte map is malformed",
+    )
+
+    def exact_json_equal(left: Any, right: Any) -> bool:
+        try:
+            return canonical_bytes(left) == canonical_bytes(right)
+        except (TypeError, ValueError):
+            return False
+
+    def exact_record(
+        record: Any, data: bytes, path: str | None, label: str,
+    ) -> None:
+        expected = bytes_record(data, path)
+        require(
+            isinstance(record, dict) and set(record) == set(expected) and
+            type(record.get("bytes")) is int and
+            isinstance(record.get("sha256"), str) and
+            (path is None or type(record.get("path")) is str) and
+            exact_json_equal(record, expected),
+            f"{label} byte record is not exact",
+        )
+
+    def record_shape(record: Any, label: str) -> None:
+        require(
+            isinstance(record, dict) and
+            set(record) == {"path", "bytes", "sha256"} and
+            type(record.get("path")) is str and
+            type(record.get("bytes")) is int and record["bytes"] >= 0 and
+            isinstance(record.get("sha256"), str) and
+            HEX64.fullmatch(record["sha256"]) is not None,
+            f"{label} byte record shape is not exact",
+        )
+
+    inputs = plan.get("inputs")
+    attempts = runtime_result.get("attempts")
+    require(
+        isinstance(inputs, list) and
+        type(plan.get("input_count")) is int and
+        plan["input_count"] == len(inputs) and
+        isinstance(attempts, list) and
+        type(runtime_result.get("attempt_count")) is int and
+        runtime_result["attempt_count"] == len(attempts) == len(inputs) and
+        len(inputs) > 0,
+        "parser result must contain exactly one attempt per selected input",
+    )
+    capability = runtime_result.get("capability")
+    base_transcripts = {"capability.stdout", "capability.stderr"}
+    require(base_transcripts <= set(transcript_files),
+            "parser capability transcript bytes are missing")
+    require(
+        isinstance(capability, dict) and
+        set(capability) == CAPABILITY_RESULT_FIELDS and
+        capability.get("command") == [
+            RUNTIME_RELATIVE.as_posix(), CAPABILITY_ARGUMENT,
+        ] and
+        type(capability.get("exit_code")) is int and
+        capability["exit_code"] == 0,
+        "parser capability result does not match the exact protocol",
+    )
+    exact_record(capability.get("stdin"), b"", None, "parser capability stdin")
+    exact_record(
+        capability.get("stdout"), transcript_files["capability.stdout"],
+        "capability.stdout", "parser capability stdout",
+    )
+    exact_record(
+        capability.get("stderr"), transcript_files["capability.stderr"],
+        "capability.stderr", "parser capability stderr",
+    )
+    require(
+        transcript_files["capability.stdout"] == CAPABILITY_LINE and
+        transcript_files["capability.stderr"] == b"",
+        "parser capability transcript violates the exact protocol",
+    )
+    nonces = set()
+    expected_transcript_paths = set(base_transcripts)
+    for index, (entry, attempt) in enumerate(zip(inputs, attempts, strict=True)):
+        prepared_input = entry.get("prepared_input") if isinstance(entry, dict) else None
+        record_shape(prepared_input, "parser plan prepared input")
+        require(
+            isinstance(entry, dict) and
+            type(entry.get("index")) is int and entry["index"] == index and
+            entry.get("status") == "ready" and
+            isinstance(entry.get("source_key"), str),
+            "parser plan input is not an ordered ready input",
+        )
+        attempt_prepared = attempt.get("prepared_input") if isinstance(attempt, dict) else None
+        record_shape(attempt_prepared, "parser attempt prepared input")
+        require(
+            isinstance(attempt, dict) and
+            set(attempt) == ATTEMPT_RESULT_FIELDS and
+            attempt.get("index") == index and
+            type(attempt.get("index")) is int and
+            attempt.get("source_key") == entry.get("source_key") and
+            exact_json_equal(attempt_prepared, prepared_input),
+            "parser attempt does not match its selected plan input",
+        )
+        nonce = attempt.get("nonce")
+        require(
+            isinstance(nonce, str) and HEX64.fullmatch(nonce) is not None and
+            nonce not in nonces and
+            attempt.get("command") == [
+                RUNTIME_RELATIVE.as_posix(), RUN_ARGUMENT, nonce,
+            ],
+            "parser attempt nonce or command is invalid",
+        )
+        nonces.add(nonce)
+        outcome = attempt.get("outcome")
+        require(isinstance(outcome, str) and
+                outcome in {"parse-ok", "parse-error"},
+                "parser attempt outcome is invalid")
+        exit_code = attempt.get("exit_code")
+        require(type(exit_code) is int,
+                "parser attempt exit code is not an exact integer")
+        stdout = attempt.get("stdout")
+        stderr = attempt.get("stderr")
+        stdout_path = f"attempts/{index:03d}.stdout"
+        stderr_path = f"attempts/{index:03d}.stderr"
+        expected_transcript_paths.update({stdout_path, stderr_path})
+        require(
+            stdout_path in transcript_files and stderr_path in transcript_files,
+            "parser attempt transcript bytes are missing",
+        )
+        stdout_data = transcript_files[stdout_path]
+        stderr_data = transcript_files[stderr_path]
+        exact_record(stdout, stdout_data, stdout_path, "parser attempt stdout")
+        exact_record(stderr, stderr_data, stderr_path, "parser attempt stderr")
+        derived = parse_protocol_result(
+            nonce,
+            subprocess.CompletedProcess(
+                attempt["command"], exit_code, stdout_data, stderr_data,
+            ),
+        )
+        require(
+            outcome == derived["outcome"] and
+            exact_json_equal(
+                attempt.get("controller_stderr_digest"),
+                derived["controller_stderr_digest"],
+            ),
+            "parser attempt metadata differs from the exact transcript",
+        )
+    require(set(transcript_files) == expected_transcript_paths,
+            "parser transcript byte-map closure mismatch")
+    require(runtime_result.get("ordered_attempt_sha256") ==
+            canonical_sha256(attempts),
+            "ordered parser attempt digest mismatch")
+    expected_outcome = (
+        "parse-pass"
+        if all(attempt["outcome"] == "parse-ok" for attempt in attempts)
+        else "parse-failure"
+    )
+    require(runtime_result.get("outcome") == expected_outcome,
+            "aggregate parser outcome mismatch")
+
+
 def build_diagnostic_receipt(
     plan: dict[str, Any], expected_plan_data: bytes, expected_host: dict[str, Any],
     controller_execution: dict[str, Any], runtime_lock_record: dict[str, Any],
@@ -1903,15 +2077,14 @@ def build_diagnostic_receipt(
     max_output_bytes: int, linked_bytes: bytes, linked: dict[str, Any],
     transition_snapshot: dict[str, Any] | None, runtime_snapshot: dict[str, Any],
     runtime_execution: dict[str, Any], inventory: dict[str, Any],
-    runtime_result: dict[str, Any],
+    runtime_result: dict[str, Any], transcript_files: dict[str, bytes],
 ) -> dict[str, Any]:
     """Build schema-4 evidence after checking its new security relationships."""
     protocol = plan.get("parser_runtime_protocol")
     require(isinstance(protocol, dict) and
             protocol.get("schema") == PARSER_RUNTIME_PROTOCOL_SCHEMA,
             "receipt plan does not use parser runtime protocol schema 2")
-    require(set(runtime_result) == RUNTIME_RESULT_FIELDS,
-            "parser runtime result field set is not closed")
+    validate_runtime_result(plan, runtime_result, transcript_files)
     require(set(runtime_execution) == SEALED_RUNTIME_EXECUTION_FIELDS and
             runtime_execution.get("kind") == "sealed-anonymous-runtime-image" and
             runtime_execution.get("mode") == "0500" and
@@ -1943,6 +2116,21 @@ def build_diagnostic_receipt(
             "receipt durable snapshot inventory shape is not closed")
     require(runtime_snapshot in inventory_files,
             "receipt runtime is absent from durable snapshot inventory")
+    expected_transcripts = {
+        canonical_bytes(bytes_record(
+            data, f"snapshot/runtime/{relative}",
+        ))
+        for relative, data in transcript_files.items()
+    }
+    observed_transcripts = {
+        canonical_bytes(record)
+        for record in inventory_files
+        if isinstance(record, dict) and
+        isinstance(record.get("path"), str) and
+        record["path"].startswith("snapshot/runtime/")
+    }
+    require(observed_transcripts == expected_transcripts,
+            "receipt runtime transcript snapshot closure mismatch")
     original_prefix = "snapshot/original-sources/"
     observed_originals = {
         record.get("path"): record
@@ -2107,6 +2295,10 @@ def run(
                 f"snapshot/authority/{relative}": data
                 for relative, data in authority_snapshot.items()
             },
+            **{
+                f"snapshot/runtime/{relative}": data
+                for relative, data in files.items()
+            },
         }
         durable_bytes, snapshot_sources, transition_relative = (
             durable_snapshot_sources(
@@ -2157,7 +2349,7 @@ def run(
             runtime_lock_handle.record, timeout_seconds, max_cpu_seconds,
             max_address_space_gib, max_output_bytes, linked_bytes, linked,
             transition_snapshot, runtime_snapshot, runtime_execution, inventory,
-            runtime_result,
+            runtime_result, files,
         )
         files.update(snapshot_files)
         files[RESULT_NAME] = json_bytes(receipt)
