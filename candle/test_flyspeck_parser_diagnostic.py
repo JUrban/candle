@@ -33,6 +33,10 @@ class ParserDiagnosticTests(unittest.TestCase):
         cls.pilot = subject.load_object(
             ROOT / subject.PILOT_RELATIVE, "test pilot",
         )
+        cls.all_inventory = subject.load_object(
+            ROOT / subject.ALL_INVENTORY_RELATIVE,
+            "test all-inventory selection",
+        )
 
     def build_real_plan(self):
         return subject.build_plan(
@@ -96,6 +100,49 @@ class ParserDiagnosticTests(unittest.TestCase):
             entry["incoming_nontraversed_actions"][0]["status"] == "resolved-dynamic"
             for entry in exclusions
         ))
+
+    def test_committed_all_inventory_selection_is_current(self) -> None:
+        self.assertEqual(
+            self.all_inventory,
+            subject.build_all_inventory_descriptor(
+                self.manifest, self.manifest_data,
+            ),
+        )
+
+    def test_all_inventory_selects_exact_manifest_partition(self) -> None:
+        inputs = self.all_inventory["inputs"]
+        keys = [entry["source_key"] for entry in inputs]
+        selection = self.all_inventory["selection"]
+        self.assertEqual(len(keys), 400)
+        self.assertEqual(len(set(keys)), 400)
+        self.assertEqual(set(keys), set(self.manifest["source_nodes"]))
+        self.assertEqual(selection["inventory_source_count"], 400)
+        self.assertEqual(selection["discovered_source_count"], 392)
+        self.assertEqual(selection["explicit_remainder_source_count"], 8)
+        self.assertEqual(
+            selection["ordered_source_key_sha256"],
+            subject.canonical_sha256(keys),
+        )
+        remainder = inputs[-8:]
+        self.assertTrue(all(
+            entry["discovery"]["kind"] ==
+            "explicit-first-discovery-remainder"
+            for entry in remainder
+        ))
+        self.assertEqual(
+            [entry["source_key"] for entry in remainder],
+            sorted(entry["source_key"] for entry in remainder),
+        )
+        self.assertIn("not a parser run", self.all_inventory["claim"])
+        self.assertIn("non-promotable", selection["coverage"])
+
+    def test_all_inventory_manifest_cardinality_drift_fails_closed(self) -> None:
+        altered = copy.deepcopy(self.manifest)
+        altered["source_node_count"] = 399
+        with self.assertRaisesRegex(
+            subject.ContractError, "requires exactly 400",
+        ):
+            subject.build_all_inventory_descriptor(altered, self.manifest_data)
 
     def test_manifest_action_order_tamper_changes_selection(self) -> None:
         altered = copy.deepcopy(self.manifest)

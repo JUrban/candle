@@ -32,6 +32,16 @@ pilot: the first 20 `repository=flyspeck` entries in the same authenticated
 first-discovery order, followed by the eight bound exclusions under explicit
 handling rules. Do not describe the current core pilot as corpus coverage.
 
+`flyspeck_parser_diagnostic_all_inventory.json` is the separate, committed
+selection foundation for the expansion. It contains the 392 first-discovery
+nodes followed by the eight exclusions in lexicographic source-key order, so
+its 400 inputs are an exact set-equal partition of the authenticated manifest.
+`check-all-inventory` independently regenerates and compares it. This
+descriptor is not yet accepted by `materialize` or `run`, and is therefore not
+a parser result. Runtime support must first define and authenticate handling
+for every dynamic loader action and normalized execution input; merely sending
+the currently preparable subset would not be an all-inventory gate.
+
 For each selected source, the generator:
 
 - authenticates the exact Git blob and manifest byte/MD5/SHA-256 identity;

@@ -78,6 +78,9 @@ ROOT = HERE.parent
 SOURCE_BYTES = Path(__file__).read_bytes()
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 PILOT_RELATIVE = Path("candle/flyspeck_parser_diagnostic_pilot.json")
+ALL_INVENTORY_RELATIVE = Path(
+    "candle/flyspeck_parser_diagnostic_all_inventory.json"
+)
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 RUNTIME_RELATIVE = Path("candle/build/cake")
 CONTROLLER_RELATIVE = Path("candle/flyspeck_parser_diagnostic.py")
@@ -97,6 +100,7 @@ PLAN_NAME = "plan.json"
 HOST_RECEIPT_NAME = "host-materialization.json"
 RESULT_NAME = "receipt.json"
 PILOT_COUNT = 20
+ALL_INVENTORY_COUNT = 400
 CHUNK_BYTES = 1024 * 1024
 PLAN_ROOT_MODE = 0o555
 PLAN_FILE_MODE = 0o444
@@ -483,12 +487,94 @@ def build_pilot_descriptor(manifest: dict[str, Any], manifest_data: bytes) -> di
     }
 
 
+def build_all_inventory_descriptor(
+    manifest: dict[str, Any], manifest_data: bytes,
+) -> dict[str, Any]:
+    """Select every authenticated node without relabeling graph reachability."""
+    ordered, excluded = derive_manifest_node_inventory(manifest)
+    nodes = manifest["source_nodes"]
+    require(
+        len(nodes) == manifest.get("source_node_count") == ALL_INVENTORY_COUNT,
+        "all-inventory parser selection requires exactly 400 manifest nodes",
+    )
+    discoveries = list(ordered)
+    discoveries.extend({
+        "source_key": entry["source_key"],
+        "discovery": {
+            "kind": "explicit-first-discovery-remainder",
+            "exclusion": entry,
+        },
+    } for entry in excluded)
+    require(
+        len(discoveries) == len(nodes) and
+        len({entry["source_key"] for entry in discoveries}) == len(nodes) and
+        {entry["source_key"] for entry in discoveries} == set(nodes),
+        "all-inventory parser selection is not an exact manifest partition",
+    )
+    inputs = []
+    for index, entry in enumerate(discoveries):
+        key = entry["source_key"]
+        node = nodes[key]
+        inputs.append({
+            "index": index,
+            "source_key": key,
+            "repository": node["repository"],
+            "path": node["path"],
+            "bytes": node["bytes"],
+            "md5": node["md5"],
+            "sha256": node["sha256"],
+            "discovery": entry["discovery"],
+        })
+    keys = [entry["source_key"] for entry in inputs]
+    return {
+        "schema": 1,
+        "kind": "candle-flyspeck-parser-diagnostic-all-inventory",
+        "claim": (
+            "predeclared exact-manifest all-inventory parser-only selection; "
+            "not a parser run, inference, execution, theorem, S1, S2, S3, or "
+            "release evidence"
+        ),
+        "selection": {
+            "algorithm": (
+                "first-discovery-preorder-v1 followed by the lexicographically "
+                "ordered explicit first-discovery remainder"
+            ),
+            "inventory_source_count": len(inputs),
+            "discovered_source_count": len(ordered),
+            "explicit_remainder_source_count": len(excluded),
+            "manifest_source_count": len(nodes),
+            "ordered_source_key_sha256": canonical_sha256(keys),
+            "coverage": (
+                "all authenticated manifest source nodes selected explicitly; "
+                "parser-only and categorically non-promotable"
+            ),
+        },
+        "excluded_from_first_discovery": excluded,
+        "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
+        "inputs": inputs,
+    }
+
+
 def validate_pilot(
     pilot_data: bytes, manifest: dict[str, Any], manifest_data: bytes,
 ) -> dict[str, Any]:
     observed = decode_object(pilot_data, "captured parser pilot")
     expected = build_pilot_descriptor(manifest, manifest_data)
     require(observed == expected, "committed parser pilot is stale")
+    return observed
+
+
+def validate_all_inventory(
+    descriptor_data: bytes, manifest: dict[str, Any], manifest_data: bytes,
+) -> dict[str, Any]:
+    observed = decode_object(
+        descriptor_data, "captured all-inventory parser selection",
+    )
+    expected = build_all_inventory_descriptor(manifest, manifest_data)
+    require(
+        observed == expected,
+        "committed all-inventory parser selection is stale",
+    )
     return observed
 
 
@@ -2109,6 +2195,10 @@ def main() -> None:
     check.add_argument("--candle-root", type=Path, default=ROOT)
     write = subparsers.add_parser("write-pilot")
     write.add_argument("--candle-root", type=Path, default=ROOT)
+    check_inventory = subparsers.add_parser("check-all-inventory")
+    check_inventory.add_argument("--candle-root", type=Path, default=ROOT)
+    write_inventory = subparsers.add_parser("write-all-inventory")
+    write_inventory.add_argument("--candle-root", type=Path, default=ROOT)
     materializer = subparsers.add_parser("materialize")
     materializer.add_argument("--candle-root", type=Path, required=True)
     materializer.add_argument("--flyspeck-root", type=Path, required=True)
@@ -2129,18 +2219,37 @@ def main() -> None:
             "controller requires exact PATH=/usr/bin:/bin and LC_ALL=C environment")
     require(not os.path.lexists("/etc/ld.so.preload"),
             "system-wide dynamic-loader preload is outside the controller model")
-    if arguments.command in {"check-pilot", "write-pilot"}:
+    if arguments.command in {
+        "check-pilot", "write-pilot",
+        "check-all-inventory", "write-all-inventory",
+    }:
         candle_root = resolve_without_symlinks(arguments.candle_root, "Candle root")
         path = candle_root / MANIFEST_RELATIVE
         data = _read_stable_source(path)
         manifest = decode_object(data, "captured Flyspeck manifest")
-        expected = build_pilot_descriptor(manifest, data)
-        if arguments.command == "write-pilot":
+        if arguments.command in {"check-pilot", "write-pilot"}:
+            expected = build_pilot_descriptor(manifest, data)
+            descriptor_relative = PILOT_RELATIVE
+            count = PILOT_COUNT
+            label = "pilot"
+        else:
+            expected = build_all_inventory_descriptor(manifest, data)
+            descriptor_relative = ALL_INVENTORY_RELATIVE
+            count = ALL_INVENTORY_COUNT
+            label = "all-inventory selection"
+        if arguments.command in {"write-pilot", "write-all-inventory"}:
             sys.stdout.buffer.write(json_bytes(expected))
         else:
-            pilot_data = _read_stable_source(candle_root / PILOT_RELATIVE)
-            validate_pilot(pilot_data, manifest, data)
-            print(f"parser diagnostic pilot PASS: {PILOT_COUNT} exact manifest nodes")
+            descriptor_data = _read_stable_source(
+                candle_root / descriptor_relative,
+            )
+            if arguments.command == "check-pilot":
+                validate_pilot(descriptor_data, manifest, data)
+            else:
+                validate_all_inventory(descriptor_data, manifest, data)
+            print(
+                f"parser diagnostic {label} PASS: {count} exact manifest nodes"
+            )
         return
     if arguments.command == "materialize":
         receipt = materialize(
