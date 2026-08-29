@@ -48,6 +48,7 @@ class StratumRuntimeTests(unittest.TestCase):
             {
                 "index": 0,
                 "key": "candle:a.ml",
+                "classification": "expected-nested-source",
                 "source_sha256": "5" * 64,
                 "source_md5": "6" * 32,
                 "execution_normalization": None,
@@ -55,6 +56,7 @@ class StratumRuntimeTests(unittest.TestCase):
             {
                 "index": 1,
                 "key": "flyspeck:b.hl",
+                "classification": "observed-outer-source",
                 "source_sha256": "7" * 64,
                 "source_md5": "8" * 32,
                 "execution_normalization": {
@@ -78,6 +80,19 @@ class StratumRuntimeTests(unittest.TestCase):
             "execution_observation": "manifest-derived-expected-only",
             "self_certifies_nested_execution": False,
             "s2_s3_evidence": False,
+        }
+        self.generated_control_records = {
+            "candle:candle/build/insulate.ml": {
+                "bytes": 1,
+                "sha256": "c" * 64,
+                "md5": "d" * 32,
+            },
+            "candle:candle/flyspeck_source_digests.ml": {
+                "bytes": 1,
+                "sha256":
+                    "343ac5686f3163eb4fe6512bdbfe316999aba500d60d40cca4209d7d4263e562",
+                "md5": "6e7e5f9291886516c4daf79605620176",
+            },
         }
 
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
@@ -126,6 +141,62 @@ class StratumRuntimeTests(unittest.TestCase):
         events = subject.validate_log(log, self.actions, boundary, self.nonce)
         self.assertEqual([event["outcome"] for event in events],
                          ["load", "skip-ledger"])
+
+    def test_exact_setup_action_transition_runs_in_compiled_ocaml_fixture(self) -> None:
+        setup = (
+            Path(subject.__file__).parent / "flyspeck_stratum_setup.ml"
+        ).read_text(encoding="utf-8")
+        start_text = (
+            "let candle_flyspeck_stratum_previous_loaded_files = "
+            "ref !loaded_files;;"
+        )
+        end_text = '    print_endline (marker ^ " " ^ outcome);;'
+        start = setup.index(start_text)
+        end = setup.index(end_text, start) + len(end_text)
+        exact_transition_source = setup[start:end]
+        fixture = "\n".join((
+            "let loaded_files = ref ([] : (string * string) list);;",
+            'let first = ("a.hl","11111111111111111111111111111111");;',
+            'let second = ("b.ml","22222222222222222222222222222222");;',
+            "let candle_flyspeck_stratum_action_identities =",
+            "  [first;first;second];;",
+            exact_transition_source,
+            "loaded_files := [first];;",
+            'candle_flyspeck_stratum_commit_action 0 first "ACTION0";;',
+            'candle_flyspeck_stratum_commit_action 1 first "ACTION1";;',
+            "(try",
+            '   candle_flyspeck_stratum_commit_action 2 second "ACTION2"',
+            " with Failure message ->",
+            '   print_endline ("MISMATCH " ^ message));;',
+            "",
+        ))
+        compiler = Path("/usr/bin/ocamlc")
+        self.assertTrue(compiler.is_file(), "missing pinned OCaml compiler")
+        version = subprocess.run(
+            [str(compiler), "-version"], check=True, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        ).stdout.strip()
+        self.assertEqual(version, "4.14.1")
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture_path = Path(temporary) / "action_transition.ml"
+            executable = Path(temporary) / "action_transition"
+            fixture_path.write_text(fixture, encoding="utf-8")
+            subprocess.run(
+                [str(compiler), "-o", str(executable), str(fixture_path)],
+                check=True, text=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            result = subprocess.run(
+                [str(executable)], check=True, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+        self.assertEqual(result.stderr, "")
+        self.assertEqual(result.stdout.splitlines(), [
+            "ACTION0 load",
+            "ACTION1 skip-ledger",
+            "MISMATCH Flyspeck action was skipped by the physical loader "
+            "cache without its logical identity",
+        ])
 
     def test_log_rejects_duplicate_or_late_marker(self) -> None:
         boundary = "00-test-through-001"
@@ -201,23 +272,94 @@ class StratumRuntimeTests(unittest.TestCase):
                 encoding="utf-8",
             )
         )
-        closure = subject.derive_logical_source_closure(manifest, 297, True)
+        closure = subject.derive_logical_source_closure(
+            manifest, 297, True, self.generated_control_records,
+        )
         self.assertEqual(closure["record_count"], 399)
         keys = [record["key"] for record in closure["records"]]
         self.assertEqual(keys, sorted(keys))
         self.assertEqual(closure["order"], subject.SOURCE_CLOSURE_ORDER)
         self.assertNotIn(subject.SOURCE_CLOSURE_EXCLUDED_LOADER, keys)
         self.assertIn(subject.SOURCE_CLOSURE_FINAL_KEY, keys)
+        self.assertNotIn(subject.STRICTBUILD_SERIALIZATION_OPT_IN_KEY, keys)
+        self.assertNotIn(
+            "flyspeck:text_formalization/general/update_database_310.ml", keys,
+        )
+        records = {record["key"]: record for record in closure["records"]}
+        self.assertEqual(
+            records["candle:candle/flyspeck_full_build.ml"]["classification"],
+            "derivation-only-input",
+        )
+        for key in subject.SOURCE_CLOSURE_GENERATED_KEYS:
+            self.assertEqual(
+                records[key]["classification"], "generated-executed-control",
+            )
+        self.assertEqual(
+            records["flyspeck:text_formalization/general/serialization.hl"][
+                "classification"
+            ], "observed-outer-source",
+        )
+        self.assertEqual(
+            records[subject.STRICTBUILD_SOURCE_KEY]["classification"],
+            "expected-nested-source",
+        )
         self.assertEqual(
             closure["ordered_record_sha256"],
             subject.canonical_sha256(closure["records"]),
         )
-        diagnostic = subject.derive_logical_source_closure(manifest, 19, False)
-        self.assertEqual(diagnostic["record_count"], 121)
+        diagnostic = subject.derive_logical_source_closure(
+            manifest, 19, False, self.generated_control_records,
+        )
+        self.assertEqual(diagnostic["record_count"], 117)
         self.assertNotIn(
             subject.SOURCE_CLOSURE_FINAL_KEY,
             [record["key"] for record in diagnostic["records"]],
         )
+
+    def test_manifest_closure_selects_serialization_only_at_action_295(self) -> None:
+        manifest = json.loads(
+            (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
+                encoding="utf-8",
+            )
+        )
+        serialization = subject.SERIALIZATION_SOURCE_KEY
+        selected_branch = (
+            "flyspeck:text_formalization/general/update_database_400.ml"
+        )
+        unselected = "flyspeck:text_formalization/general/update_database_310.ml"
+        strictbuild_actions = {
+            "flyspeck:text_formalization/general/parser_verbose.hl",
+            "flyspeck:text_formalization/general/debug.hl",
+            "flyspeck:text_formalization/general/state_manager.hl",
+        }
+
+        def keys(count: int, final: bool = False) -> set[str]:
+            return {
+                record["key"] for record in
+                subject.derive_logical_source_closure(
+                    manifest, count, final, self.generated_control_records,
+                )["records"]
+            }
+
+        action0 = keys(1)
+        self.assertLessEqual(strictbuild_actions, action0)
+        self.assertTrue({
+            serialization, selected_branch, unselected,
+            subject.STRICTBUILD_SERIALIZATION_OPT_IN_KEY,
+        }.isdisjoint(action0))
+        pre_295 = keys(295)
+        self.assertNotIn(serialization, pre_295)
+        self.assertNotIn(selected_branch, pre_295)
+        post_295 = keys(296)
+        self.assertIn(serialization, post_295)
+        self.assertIn(selected_branch, post_295)
+        self.assertNotIn(unselected, post_295)
+        self.assertNotIn(subject.STRICTBUILD_SERIALIZATION_OPT_IN_KEY, post_295)
+        final = keys(297, True)
+        self.assertIn(subject.SOURCE_CLOSURE_FINAL_KEY, final)
+        self.assertIn(serialization, final)
+        self.assertIn(selected_branch, final)
+        self.assertNotIn(unselected, final)
 
     def test_logical_source_closure_rejects_missing_extra_reorder_and_tamper(self) -> None:
         boundary = "00-test-through-001"
@@ -266,17 +408,19 @@ class StratumRuntimeTests(unittest.TestCase):
             )
 
     def test_evidence_v3_artifact_validator_rejects_schema2_and_partial_upgrade(self) -> None:
-        summary_fields = (
-            "schema", "kind", "policy", "order", "completed_action_count",
-            "final_target_selected", "record_count", "ordered_record_sha256",
-            "physical_loader_cache_trace", "execution_observation",
-            "self_certifies_nested_execution", "s2_s3_evidence",
-        )
+        expected_actions = [
+            {"index": index, "source_sha256": action["source_sha256"]}
+            for index, action in enumerate(self.actions)
+        ]
         attempt = {
             "schema": 3,
             "kind": "candle-flyspeck-compiled-stratum-attempt",
             "state": "running",
+            "boundary_id": "00-test-through-001",
             "action_count": 2,
+            "ordered_expected_action_sha256":
+                subject.canonical_sha256(expected_actions),
+            "expected_action_events": expected_actions,
             "evidence_contract": {
                 "schema": "candle-flyspeck-direct-runtime-evidence-v3",
                 "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
@@ -286,10 +430,11 @@ class StratumRuntimeTests(unittest.TestCase):
                 "physical_loader_cache_trace_included": False,
                 "s2_s3_approval_included": False,
             },
-            "expected_logical_source_closure": {
-                field: self.logical_source_closure[field]
-                for field in summary_fields
-            },
+            "expected_logical_source_closure": self.logical_source_closure,
+            "inputs": {"fingerprint_serializer": {
+                "path": subject.FINGERPRINT_RELATIVE.as_posix(),
+                "sha256": "a" * 64,
+            }},
         }
         subject.validate_direct_evidence_v3_artifact(attempt, receipt=False)
         schema2 = copy.deepcopy(attempt)
@@ -305,19 +450,128 @@ class StratumRuntimeTests(unittest.TestCase):
             **attempt,
             "state": "completed",
             "s2_s3_evidence": False,
+            "timed_out": False,
+            "exit_code": 0,
+            "postflight_reauthenticated": True,
+            "action_markers_validated": 2,
+            "validation_error": None,
             "logical_source_closure": {
                 **self.logical_source_closure,
                 "status": "expected-closure-emitted-unapproved",
             },
             "action_events": [
-                {"index": 0, "outcome": "load"},
-                {"index": 1, "outcome": "skip-ledger"},
+                {"index": 0, "source_sha256": "1" * 64, "outcome": "load"},
+                {"index": 1, "source_sha256": "2" * 64,
+                 "outcome": "skip-ledger"},
             ],
+            "semantic_fingerprints": {
+                "status": "not_requested",
+                "approved_reference_present": False,
+                "serializer": None,
+                "theorems": [],
+                "post_state": None,
+            },
         }
         subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
         receipt["logical_source_closure"]["self_certifies_nested_execution"] = True
-        with self.assertRaisesRegex(subject.ContractError, "expected closure"):
+        with self.assertRaisesRegex(subject.ContractError, "differs"):
             subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
+
+    def test_evidence_v3_completed_receipt_rejects_forged_state_flips(self) -> None:
+        expected_actions = [
+            {"index": index, "source_sha256": action["source_sha256"]}
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = {
+            "schema": 3,
+            "kind": "candle-flyspeck-compiled-stratum-attempt",
+            "state": "running",
+            "boundary_id": "00-test-through-001",
+            "action_count": 2,
+            "ordered_expected_action_sha256":
+                subject.canonical_sha256(expected_actions),
+            "expected_action_events": expected_actions,
+            "evidence_contract": {
+                "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+                "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
+                "physical_loader_cache_skip_allowed": False,
+                "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
+                "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
+                "physical_loader_cache_trace_included": False,
+                "s2_s3_approval_included": False,
+            },
+            "expected_logical_source_closure": self.logical_source_closure,
+            "inputs": {"fingerprint_serializer": {
+                "path": subject.FINGERPRINT_RELATIVE.as_posix(),
+                "sha256": "a" * 64,
+            }},
+        }
+        valid = {
+            **attempt,
+            "state": "completed",
+            "s2_s3_evidence": False,
+            "timed_out": False,
+            "exit_code": 0,
+            "postflight_reauthenticated": True,
+            "action_markers_validated": 2,
+            "validation_error": None,
+            "logical_source_closure": {
+                **self.logical_source_closure,
+                "status": "expected-closure-emitted-unapproved",
+            },
+            "action_events": [
+                {"index": 0, "source_sha256": "1" * 64, "outcome": "load"},
+                {"index": 1, "source_sha256": "2" * 64,
+                 "outcome": "skip-ledger"},
+            ],
+            "semantic_fingerprints": {
+                "status": "not_requested",
+                "approved_reference_present": False,
+                "serializer": None,
+                "theorems": [],
+                "post_state": None,
+            },
+        }
+        subject.validate_direct_evidence_v3_artifact(valid, receipt=True)
+        for label, mutate in (
+            ("exit 137", lambda item: item.update(exit_code=137)),
+            ("timeout", lambda item: item.update(timed_out=True)),
+            ("validation error", lambda item: item.update(
+                validation_error="ContractError: forged")),
+            ("postflight false", lambda item: item.update(
+                postflight_reauthenticated=False)),
+            ("zero markers", lambda item: item.update(
+                action_markers_validated=0)),
+            ("forged event", lambda item: item["action_events"][0].update(
+                source_sha256="f" * 64)),
+            ("empty closure records", lambda item: item[
+                "logical_source_closure"
+            ].update(records=[])),
+            ("failed state flip", lambda item: item.update(state="failed")),
+            ("requested boundary lacks fingerprints", lambda item: item.update(
+                boundary_id="05-lp_support-through-184")),
+        ):
+            forged = copy.deepcopy(valid)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(subject.ContractError):
+                subject.validate_direct_evidence_v3_artifact(
+                    forged, receipt=True,
+                )
+
+        failed = {
+            **attempt,
+            "state": "failed",
+            "s2_s3_evidence": False,
+            "timed_out": True,
+            "exit_code": 137,
+            "postflight_reauthenticated": False,
+            "action_markers_validated": 0,
+            "validation_error": "ContractError: timed out",
+            "logical_source_closure": None,
+            "action_events": None,
+            "semantic_fingerprints": None,
+        }
+        subject.validate_direct_evidence_v3_artifact(failed, receipt=True)
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
