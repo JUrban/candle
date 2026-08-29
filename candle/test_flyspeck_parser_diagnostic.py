@@ -38,6 +38,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         return subject.build_plan(
             ROOT, Path("/unused-flyspeck-root"), "1" * 40,
             self.manifest, self.manifest_data, self.pilot,
+            (ROOT / subject.PILOT_RELATIVE).read_bytes(),
         )
 
     def publish_plan_tree(self, root, plan, inputs, host):
@@ -184,6 +185,27 @@ class ParserDiagnosticTests(unittest.TestCase):
             for row in plan["generated_inputs"]["bindings"]
         ))
 
+    def test_original_source_archive_is_closed_over_exact_pilot(self) -> None:
+        plan, _files = self.build_real_plan()
+        specs = subject.selected_original_source_specs(
+            ROOT, Path("/unused-flyspeck-root"), plan,
+        )
+        self.assertEqual(len(specs), 20)
+        self.assertEqual(
+            {destination for _source, destination, _expected, _label in specs},
+            {
+                f"snapshot/original-sources/{entry['repository']}/"
+                f"{entry['source']['path']}"
+                for entry in plan["inputs"]
+            },
+        )
+        kernel = specs[9]
+        self.assertEqual(kernel[0], ROOT / "candle/kernel.ml")
+        self.assertEqual(
+            kernel[1], "snapshot/original-sources/candle/candle/kernel.ml",
+        )
+        self.assertEqual(kernel[2], plan["inputs"][9]["source"])
+
     def test_normalized_source_fails_closed_in_pilot(self) -> None:
         altered = copy.deepcopy(self.manifest)
         altered["source_nodes"]["candle:candle/kernel.ml"]["execution_normalization"] = {
@@ -192,6 +214,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         plan, files = subject.build_plan(
             ROOT, Path("/unused-flyspeck-root"), "1" * 40,
             altered, self.manifest_data, self.pilot,
+            (ROOT / subject.PILOT_RELATIVE).read_bytes(),
         )
         self.assertEqual(plan["unsupported_count"], 1)
         self.assertEqual(plan["inputs"][9]["status"], "unsupported-no-launch")
@@ -212,6 +235,32 @@ class ParserDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ContractError, "duplicate JSON key"):
                 subject.load_object(path)
 
+    def test_manifest_swap_after_git_validation_never_reaches_masking_semantics(self) -> None:
+        original = b'{"schema":1,"source_nodes":{}}\n'
+        injected = (
+            b'{"schema":1,"source_nodes":{"injected":'
+            b'{"dependencies":[{"kind":"loads","line":1,'
+            b'"status":"resolved","syntax_position":"standalone-phrase"}]}}}\n'
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "manifest.json"
+            path.write_bytes(original)
+
+            def swap_after_validation(*_arguments, **_keywords):
+                path.write_bytes(injected)
+
+            with mock.patch.object(
+                subject, "validate_git_blob", side_effect=swap_after_validation,
+            ), mock.patch.object(subject, "decode_object") as decode:
+                with self.assertRaisesRegex(
+                    subject.ContractError, "changed after Git validation",
+                ):
+                    subject.capture_committed_json(
+                        root, "1" * 40, Path("manifest.json"), "test manifest",
+                    )
+            decode.assert_not_called()
+
     def test_protocol_accepts_only_bound_ok_marker(self) -> None:
         nonce = "a" * 64
         result = subprocess.CompletedProcess(
@@ -219,7 +268,10 @@ class ParserDiagnosticTests(unittest.TestCase):
             subject.RESULT_PREFIX + nonce.encode() + b"\tOK\n",
             b"",
         )
-        self.assertEqual(subject.parse_protocol_result(nonce, result), "parse-ok")
+        self.assertEqual(
+            subject.parse_protocol_result(nonce, result),
+            {"outcome": "parse-ok", "controller_stderr_digest": None},
+        )
         rebound = subprocess.CompletedProcess(
             [], 0,
             subject.RESULT_PREFIX + ("b" * 64).encode() + b"\tOK\n",
@@ -231,25 +283,26 @@ class ParserDiagnosticTests(unittest.TestCase):
     def test_protocol_accepts_bounded_parser_error(self) -> None:
         nonce = "c" * 64
         stderr = b"parser detail\n"
-        digest = subject.hashlib.sha256(
-            subject.ERROR_DIGEST_DOMAIN + stderr,
-        ).hexdigest().encode()
         result = subprocess.CompletedProcess(
             [], subject.PARSER_ERROR_EXIT,
-            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\n",
             stderr,
         )
-        self.assertEqual(subject.parse_protocol_result(nonce, result), "parse-error")
+        observed = subject.parse_protocol_result(nonce, result)
+        self.assertEqual(observed["outcome"], "parse-error")
+        self.assertEqual(
+            observed["controller_stderr_digest"]["sha256"],
+            subject.hashlib.sha256(
+                subject.ERROR_DIGEST_DOMAIN + stderr,
+            ).hexdigest(),
+        )
 
     def test_parser_error_requires_exit_code_exactly_65(self) -> None:
         nonce = "d" * 64
         stderr = b"parse error\n"
-        digest = subject.hashlib.sha256(
-            subject.ERROR_DIGEST_DOMAIN + stderr,
-        ).hexdigest().encode()
         result = subprocess.CompletedProcess(
             [], 1,
-            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\n",
             stderr,
         )
         with self.assertRaisesRegex(subject.ContractError, "violates protocol"):
@@ -258,15 +311,25 @@ class ParserDiagnosticTests(unittest.TestCase):
     def test_parser_error_requires_canonical_utf8_stderr(self) -> None:
         nonce = "e" * 64
         stderr = b"\xff"
-        digest = subject.hashlib.sha256(
-            subject.ERROR_DIGEST_DOMAIN + stderr,
-        ).hexdigest().encode()
         result = subprocess.CompletedProcess(
             [], subject.PARSER_ERROR_EXIT,
-            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\n",
             stderr,
         )
         with self.assertRaisesRegex(subject.ContractError, "well-formed UTF-8"):
+            subject.parse_protocol_result(nonce, result)
+
+    def test_runtime_supplied_parser_error_digest_is_rejected(self) -> None:
+        nonce = "f" * 64
+        stderr = b"parse error\n"
+        legacy_digest = subject.hashlib.sha256(stderr).hexdigest().encode()
+        result = subprocess.CompletedProcess(
+            [], subject.PARSER_ERROR_EXIT,
+            subject.RESULT_PREFIX + nonce.encode() +
+            b"\tPARSE_ERROR\t" + legacy_digest + b"\n",
+            stderr,
+        )
+        with self.assertRaisesRegex(subject.ContractError, "violates protocol"):
             subject.parse_protocol_result(nonce, result)
 
     def test_capability_mismatch_stops_at_empty_handshake(self) -> None:
@@ -280,7 +343,8 @@ class ParserDiagnosticTests(unittest.TestCase):
             ) as invoked:
                 with self.assertRaisesRegex(subject.ContractError, "capability mismatch"):
                     subject.capability_handshake(
-                        Path("/fake/cake"), 1, subject.EXECUTION_ENVIRONMENT,
+                        Path("/fake/cake"), Path("/fake"), 1,
+                        subject.EXECUTION_ENVIRONMENT,
                         sentinel, io_root, 1024,
                     )
         self.assertEqual(invoked.call_count, 1)
@@ -311,7 +375,7 @@ class ParserDiagnosticTests(unittest.TestCase):
                 subject.ContractError, "capability command failed",
             ):
                 subject.capability_handshake(
-                    emitter, 5, subject.EXECUTION_ENVIRONMENT,
+                    emitter, root, 5, subject.EXECUTION_ENVIRONMENT,
                     limit_output, io_root, 1024,
                 )
             self.assertEqual((io_root / "capability.stdout").stat().st_size, 1024)
@@ -322,6 +386,45 @@ class ParserDiagnosticTests(unittest.TestCase):
                 stat.S_IMODE((io_root / "capability.stdout").stat().st_mode),
                 subject.PRIVATE_IO_FILE_MODE,
             )
+
+    def test_sealed_runtime_executes_captured_image_after_source_swap(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            runtime = root / "runtime"
+            source = (
+                b"#!/usr/bin/python3\n"
+                b"import sys\n"
+                b"if sys.argv[1] == '--candle-parser-diagnostic-capability-v1':\n"
+                b"    sys.stdout.buffer.write(" + repr(subject.CAPABILITY_LINE).encode() + b")\n"
+            )
+            runtime.write_bytes(source)
+            runtime.chmod(0o755)
+            descriptor, execution = subject.create_sealed_runtime_image(
+                runtime, subject.bytes_record(source),
+            )
+            try:
+                runtime.write_bytes(b"#!/bin/sh\nprintf 'forged runtime\\n'\n")
+                io_root = root / "io"
+                io_root.mkdir(mode=subject.PRIVATE_IO_MODE)
+
+                def limits() -> None:
+                    resource.setrlimit(resource.RLIMIT_FSIZE, (1024, 1024))
+
+                capability, _files = subject.capability_handshake(
+                    Path(f"/proc/self/fd/{descriptor}"), root, 5,
+                    subject.EXECUTION_ENVIRONMENT, limits, io_root, 1024,
+                    (descriptor,),
+                )
+                self.assertEqual(capability["exit_code"], 0)
+                self.assertEqual(
+                    subject.sealed_runtime_record(descriptor), execution,
+                )
+                self.assertEqual(
+                    execution["seals"] & subject.RUNTIME_MEMFD_SEALS,
+                    subject.RUNTIME_MEMFD_SEALS,
+                )
+            finally:
+                os.close(descriptor)
 
     def test_timeout_kills_spawned_process_group_descendant(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -371,7 +474,8 @@ class ParserDiagnosticTests(unittest.TestCase):
         with mock.patch.object(subject, "capability_handshake") as handshake:
             with self.assertRaisesRegex(subject.ContractError, "unsupported actions"):
                 subject.run_runtime(
-                    Path("/fake/cake"), Path("/fake/plan"), plan, 1,
+                    Path("/fake/cake"), Path("/fake"),
+                    Path("/fake/plan"), plan, 1,
                     subject.EXECUTION_ENVIRONMENT, None, Path("/fake/io"), 1024,
                 )
         handshake.assert_not_called()

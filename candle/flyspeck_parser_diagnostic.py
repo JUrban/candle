@@ -57,6 +57,7 @@ if __name__ == "__main__":
 import argparse
 import ctypes
 import errno
+import fcntl
 import hashlib
 import json
 import os
@@ -480,8 +481,10 @@ def build_pilot_descriptor(manifest: dict[str, Any], manifest_data: bytes) -> di
     }
 
 
-def validate_pilot(candle_root: Path, manifest: dict[str, Any], manifest_data: bytes) -> dict[str, Any]:
-    observed = load_object(candle_root / PILOT_RELATIVE, "parser pilot")
+def validate_pilot(
+    pilot_data: bytes, manifest: dict[str, Any], manifest_data: bytes,
+) -> dict[str, Any]:
+    observed = decode_object(pilot_data, "captured parser pilot")
     expected = build_pilot_descriptor(manifest, manifest_data)
     require(observed == expected, "committed parser pilot is stale")
     return observed
@@ -591,6 +594,7 @@ def build_plan(
     manifest: dict[str, Any],
     manifest_data: bytes,
     pilot: dict[str, Any],
+    pilot_data: bytes,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(HEX40.fullmatch(candle_head) is not None, "invalid Candle head")
     nodes = manifest["source_nodes"]
@@ -691,8 +695,7 @@ def build_plan(
             "path": PILOT_RELATIVE.as_posix(),
             "canonical_sha256": canonical_sha256(pilot),
             "file": bytes_record(
-                (candle_root / PILOT_RELATIVE).read_bytes(),
-                PILOT_RELATIVE.as_posix(),
+                pilot_data, PILOT_RELATIVE.as_posix(),
             ),
             "selection": pilot["selection"],
         },
@@ -705,14 +708,17 @@ def build_plan(
             "run_argument": RUN_ARGUMENT,
             "input": "one exact prepared source on stdin per fresh process",
             "parse_error_exit_code": PARSER_ERROR_EXIT,
-            "parse_error_digest": {
+            "parse_error_stdout": (
+                "CANDLE_CAMLPARSER_DIAGNOSTIC_V1<TAB>NONCE"
+                "<TAB>PARSE_ERROR<LF>"
+            ),
+            "controller_stderr_digest": {
                 "algorithm": "sha256",
                 "domain_hex": ERROR_DIGEST_DOMAIN.hex(),
                 "canonical_preimage": (
                     "ASCII bytes CANDLE_CAMLPARSER_ERROR_V1, one NUL byte, "
                     "then the exact stderr byte stream without decoding or newline changes"
                 ),
-                "wire_encoding": "exactly 64 lowercase ASCII hexadecimal digits",
                 "stderr_encoding": (
                     "runtime emits the caml_parser$run error/location text as UTF-8; "
                     "the controller hashes the resulting bytes without reinterpretation"
@@ -809,6 +815,19 @@ def build_host_receipt(
     }
 
 
+def capture_committed_json(
+    root: Path, head: str, relative_path: Path, label: str,
+) -> tuple[bytes, dict[str, Any]]:
+    """Authenticate, decode, and retain one exact JSON byte capture."""
+    relative = relative_path.as_posix()
+    path = root / relative_path
+    data = _read_stable_source(path)
+    validate_git_blob(root, head, relative, data)
+    require(_read_stable_source(path) == data,
+            f"{label} changed after Git validation")
+    return data, decode_object(data, f"captured {label}")
+
+
 def reconstruct_plan_authority(
     candle_root: Path,
     candle_head: str,
@@ -840,20 +859,17 @@ def reconstruct_plan_authority(
         source_data = (candle_root / relative_path).read_bytes()
         validate_git_blob(candle_root, candle_head, relative, source_data)
 
-    manifest_path = candle_root / MANIFEST_RELATIVE
-    manifest_data = manifest_path.read_bytes()
-    validate_git_blob(
-        candle_root, candle_head, MANIFEST_RELATIVE.as_posix(), manifest_data,
+    manifest_data, manifest = capture_committed_json(
+        candle_root, candle_head, MANIFEST_RELATIVE, "Flyspeck manifest",
     )
-    manifest = load_object(manifest_path, "Flyspeck manifest")
     require(manifest.get("schema") == 1, "unsupported Flyspeck manifest schema")
     require(manifest["repositories"]["flyspeck"]["commit"] == flyspeck_head,
             "explicit Flyspeck authority differs from manifest pin")
 
-    pilot_path = candle_root / PILOT_RELATIVE
-    pilot_data = pilot_path.read_bytes()
-    validate_git_blob(candle_root, candle_head, PILOT_RELATIVE.as_posix(), pilot_data)
-    pilot = validate_pilot(candle_root, manifest, manifest_data)
+    pilot_data, _pilot_object = capture_committed_json(
+        candle_root, candle_head, PILOT_RELATIVE, "parser pilot",
+    )
+    pilot = validate_pilot(pilot_data, manifest, manifest_data)
     for pilot_input in pilot["inputs"]:
         node = manifest["source_nodes"][pilot_input["source_key"]]
         root = candle_root if node["repository"] == "candle" else flyspeck_root
@@ -864,7 +880,8 @@ def reconstruct_plan_authority(
         )
         validate_git_blob(root, head, node["path"], live)
     plan, input_files = build_plan(
-        candle_root, flyspeck_root, candle_head, manifest, manifest_data, pilot,
+        candle_root, flyspeck_root, candle_head, manifest, manifest_data,
+        pilot, pilot_data,
     )
     plan_data = json_bytes(plan)
     policy = _load_direct_runtime_policy(candle_root, candle_head, plan)
@@ -1167,6 +1184,94 @@ def validate_linked_runtime(
     return linked, runtime
 
 
+RUNTIME_MEMFD_SEALS = (
+    fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW |
+    fcntl.F_SEAL_WRITE | fcntl.F_SEAL_SEAL
+)
+
+
+def sealed_runtime_record(descriptor: int) -> dict[str, Any]:
+    status = os.fstat(descriptor)
+    require(stat.S_ISREG(status.st_mode), "sealed runtime image is not ordinary")
+    digest = hashlib.sha256()
+    offset = 0
+    while offset < status.st_size:
+        block = os.pread(descriptor, min(CHUNK_BYTES, status.st_size - offset), offset)
+        require(block, "sealed runtime image truncated during rehash")
+        digest.update(block)
+        offset += len(block)
+    seals = fcntl.fcntl(descriptor, fcntl.F_GET_SEALS)
+    return {
+        "kind": "sealed-anonymous-runtime-image",
+        "bytes": status.st_size,
+        "sha256": digest.hexdigest(),
+        "mode": f"{stat.S_IMODE(status.st_mode):04o}",
+        "seals": seals,
+        "required_seals": RUNTIME_MEMFD_SEALS,
+        "execution": "inherited-fd-via-/proc/self/fd",
+    }
+
+
+def create_sealed_runtime_image(
+    runtime: Path, expected: dict[str, Any],
+) -> tuple[int, dict[str, Any]]:
+    """Capture one verified runtime inode into an immutable executable memfd."""
+    source_fd = os.open(
+        runtime,
+        os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+    )
+    memfd = -1
+    try:
+        before = os.fstat(source_fd)
+        named_before = runtime.stat(follow_symlinks=False)
+        require(stat.S_ISREG(before.st_mode) and
+                (before.st_dev, before.st_ino) ==
+                (named_before.st_dev, named_before.st_ino),
+                "linked runtime capture is not one ordinary named inode")
+        memfd = os.memfd_create(
+            "candle-parser-runtime",
+            os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING,
+        )
+        digest = hashlib.sha256()
+        size = 0
+        while block := os.read(source_fd, CHUNK_BYTES):
+            digest.update(block)
+            size += len(block)
+            offset = 0
+            while offset < len(block):
+                offset += os.write(memfd, block[offset:])
+        after = os.fstat(source_fd)
+        named_after = runtime.stat(follow_symlinks=False)
+        require(
+            (before.st_dev, before.st_ino, before.st_size,
+             before.st_mtime_ns, before.st_ctime_ns) ==
+            (after.st_dev, after.st_ino, after.st_size,
+             after.st_mtime_ns, after.st_ctime_ns) and
+            (after.st_dev, after.st_ino) ==
+            (named_after.st_dev, named_after.st_ino) and
+            size == before.st_size,
+            "linked runtime changed during sealed capture",
+        )
+        require(size == expected.get("bytes") and
+                digest.hexdigest() == expected.get("sha256"),
+                "sealed runtime capture differs from linked identity")
+        os.fchmod(memfd, 0o500)
+        fcntl.fcntl(memfd, fcntl.F_ADD_SEALS, RUNTIME_MEMFD_SEALS)
+        record = sealed_runtime_record(memfd)
+        require(record["bytes"] == expected["bytes"] and
+                record["sha256"] == expected["sha256"] and
+                record["mode"] == "0500" and
+                record["seals"] & RUNTIME_MEMFD_SEALS == RUNTIME_MEMFD_SEALS,
+                "sealed runtime image postcondition mismatch")
+        return memfd, record
+    except BaseException:
+        if memfd >= 0:
+            os.close(memfd)
+        raise
+    finally:
+        os.close(source_fd)
+
+
 def _wait_capped_process_group(
     process: subprocess.Popen[bytes], timeout_seconds: int,
 ) -> int:
@@ -1226,7 +1331,7 @@ def _fresh_private_file(path: Path, data: bytes | None = None) -> int:
 def run_child_capped(
     command: list[str], input_bytes: bytes, cwd: Path, timeout_seconds: int,
     environment: dict[str, str], preexec_fn: Any, io_root: Path, stem: str,
-    max_output_bytes: int,
+    max_output_bytes: int, pass_fds: tuple[int, ...] = (),
 ) -> subprocess.CompletedProcess[bytes]:
     """Run one fresh session with RLIMIT_FSIZE-backed ordinary-file capture."""
     require(re.fullmatch(r"[a-z0-9-]+", stem) is not None,
@@ -1251,7 +1356,7 @@ def run_child_capped(
         process = subprocess.Popen(
             command, stdin=stdin_fd, stdout=stdout_fd, stderr=stderr_fd,
             env=environment, cwd=cwd, preexec_fn=preexec_fn,
-            start_new_session=True,
+            start_new_session=True, pass_fds=pass_fds,
         )
     finally:
         os.close(stdin_fd)
@@ -1280,13 +1385,14 @@ def run_child_capped(
 
 
 def capability_handshake(
-    runtime: Path, timeout_seconds: int, environment: dict[str, str],
-    preexec_fn: Any, io_root: Path, max_output_bytes: int,
+    runtime: Path, runtime_cwd: Path, timeout_seconds: int,
+    environment: dict[str, str], preexec_fn: Any, io_root: Path,
+    max_output_bytes: int, pass_fds: tuple[int, ...] = (),
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     result = run_child_capped(
         [str(runtime), CAPABILITY_ARGUMENT], b"",
-        runtime.parent.parent.parent, timeout_seconds, environment,
-        preexec_fn, io_root, "capability", max_output_bytes,
+        runtime_cwd, timeout_seconds, environment,
+        preexec_fn, io_root, "capability", max_output_bytes, pass_fds,
     )
     stdout_name = "capability.stdout"
     stderr_name = "capability.stderr"
@@ -1306,40 +1412,46 @@ def capability_handshake(
     }
 
 
-def parse_protocol_result(nonce: str, result: subprocess.CompletedProcess[bytes]) -> str:
+def parse_protocol_result(
+    nonce: str, result: subprocess.CompletedProcess[bytes],
+) -> dict[str, Any]:
     require(HEX64.fullmatch(nonce) is not None, "invalid parser request nonce")
     ok = RESULT_PREFIX + nonce.encode() + b"\tOK\n"
-    error_prefix = RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t"
     if result.returncode == 0 and result.stdout == ok and result.stderr == b"":
-        return "parse-ok"
-    if (result.returncode == PARSER_ERROR_EXIT and
-            result.stdout.startswith(error_prefix) and result.stdout.endswith(b"\n")):
+        return {"outcome": "parse-ok", "controller_stderr_digest": None}
+    parse_error = RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\n"
+    if result.returncode == PARSER_ERROR_EXIT and result.stdout == parse_error:
         try:
             result.stderr.decode("utf-8", errors="strict")
         except UnicodeDecodeError as error:
             raise ContractError("parser-error stderr is not well-formed UTF-8") from error
-        digest = result.stdout[len(error_prefix):-1]
-        require(HEX64.fullmatch(digest.decode(errors="replace")) is not None,
-                "malformed parser-error digest")
-        expected_digest = hashlib.sha256(
+        digest = hashlib.sha256(
             ERROR_DIGEST_DOMAIN + result.stderr,
-        ).hexdigest().encode()
-        require(digest == expected_digest,
-                "parser-error digest does not bind exact stderr bytes")
-        return "parse-error"
+        ).hexdigest()
+        return {
+            "outcome": "parse-error",
+            "controller_stderr_digest": {
+                "algorithm": "sha256",
+                "domain_hex": ERROR_DIGEST_DOMAIN.hex(),
+                "sha256": digest,
+                "preimage_bytes": len(ERROR_DIGEST_DOMAIN) + len(result.stderr),
+                "stderr_bytes": len(result.stderr),
+            },
+        }
     raise ContractError("parser runtime response violates protocol")
 
 
 def run_runtime(
-    runtime: Path, plan_root: Path, plan: dict[str, Any], timeout_seconds: int,
+    runtime: Path, runtime_cwd: Path, plan_root: Path,
+    plan: dict[str, Any], timeout_seconds: int,
     environment: dict[str, str], preexec_fn: Any, io_root: Path,
-    max_output_bytes: int,
+    max_output_bytes: int, pass_fds: tuple[int, ...] = (),
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(plan.get("unsupported_count") == 0,
             "plan contains unsupported actions; no parser process launched")
     capability, files = capability_handshake(
-        runtime, timeout_seconds, environment, preexec_fn,
-        io_root, max_output_bytes,
+        runtime, runtime_cwd, timeout_seconds, environment, preexec_fn,
+        io_root, max_output_bytes, pass_fds,
     )
     attempts = []
     for entry in plan["inputs"]:
@@ -1351,11 +1463,11 @@ def run_runtime(
         )
         result = run_child_capped(
             [str(runtime), RUN_ARGUMENT, nonce], source,
-            runtime.parent.parent.parent, timeout_seconds, environment,
+            runtime_cwd, timeout_seconds, environment,
             preexec_fn, io_root, f"attempt-{entry['index']:03d}",
-            max_output_bytes,
+            max_output_bytes, pass_fds,
         )
-        status = parse_protocol_result(nonce, result)
+        protocol = parse_protocol_result(nonce, result)
         stdout_name = f"attempts/{entry['index']:03d}.stdout"
         stderr_name = f"attempts/{entry['index']:03d}.stderr"
         files[stdout_name] = result.stdout
@@ -1364,7 +1476,9 @@ def run_runtime(
             "index": entry["index"], "source_key": entry["source_key"],
             "prepared_input": prepared, "nonce": nonce,
             "command": [RUNTIME_RELATIVE.as_posix(), RUN_ARGUMENT, nonce],
-            "exit_code": result.returncode, "outcome": status,
+            "exit_code": result.returncode,
+            "outcome": protocol["outcome"],
+            "controller_stderr_digest": protocol["controller_stderr_digest"],
             "stdout": bytes_record(result.stdout, stdout_name),
             "stderr": bytes_record(result.stderr, stderr_name),
         })
@@ -1413,7 +1527,11 @@ def copy_snapshot_file(
         destination, expected, f"copied {label}", relative.as_posix(),
     )
     validate_file_record(source, expected, f"post-copy {label}")
-    return observed
+    return {
+        "path": observed["path"],
+        "bytes": observed["bytes"],
+        "sha256": observed["sha256"],
+    }
 
 
 def validate_snapshot_tree(
@@ -1524,8 +1642,45 @@ def parser_process_preexec(
     return install
 
 
+def selected_original_source_specs(
+    candle_root: Path, flyspeck_root: Path, plan: dict[str, Any],
+) -> list[tuple[Path, str, dict[str, Any], str]]:
+    """Return the closed, collision-free original-blob archive specification."""
+    inputs = plan.get("inputs")
+    require(isinstance(inputs, list) and len(inputs) == PILOT_COUNT,
+            "durable source snapshot does not have the exact pilot")
+    copies: list[tuple[Path, str, dict[str, Any], str]] = []
+    destinations = set()
+    for index, entry in enumerate(inputs):
+        require(entry.get("index") == index and
+                entry.get("repository") in {"candle", "flyspeck"},
+                "malformed selected source snapshot binding")
+        repository = entry["repository"]
+        source_record = entry.get("source")
+        require(isinstance(source_record, dict),
+                "selected source snapshot lacks identity")
+        relative = safe_relative_path(
+            source_record.get("path"), "selected original source",
+        )
+        destination = (
+            Path("snapshot/original-sources") / repository / relative
+        ).as_posix()
+        require(destination not in destinations,
+                "selected original source snapshot path collision")
+        destinations.add(destination)
+        source_root = candle_root if repository == "candle" else flyspeck_root
+        copies.append((
+            source_root / relative, destination, source_record,
+            f"selected original source {entry['source_key']}",
+        ))
+    require(len(copies) == PILOT_COUNT and len(destinations) == PILOT_COUNT,
+            "selected original source snapshot inventory is not closed")
+    return copies
+
+
 def durable_snapshot_sources(
-    candle_root: Path, plan: dict[str, Any], linked: dict[str, Any],
+    candle_root: Path, flyspeck_root: Path,
+    plan: dict[str, Any], linked: dict[str, Any],
     controller_execution: dict[str, Any], policy: Any,
 ) -> tuple[dict[str, bytes], list[tuple[Path, str, dict[str, Any], str]], str | None]:
     """Close the durable evidence set over source, link, and ELF authorities."""
@@ -1539,7 +1694,8 @@ def durable_snapshot_sources(
     byte_files["snapshot/authority/candle/flyspeck_manifest.json"] = manifest_data
     byte_files["snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"] = pilot_data
 
-    copies: list[tuple[Path, str, dict[str, Any], str]] = []
+    copies = selected_original_source_specs(candle_root, flyspeck_root, plan)
+
     outputs = linked.get("outputs")
     require(isinstance(outputs, dict), "linked record lacks output closure")
     expected_outputs = set(policy.cakeml_artifact_provenance.LINKED_OUTPUTS)
@@ -1692,6 +1848,7 @@ def run(
     )
 
     runtime_lock_handle = policy.runtime_lock.acquire_build_lock(candle_root)
+    runtime_descriptor = -1
     try:
         linked, runtime = validate_linked_runtime(candle_root, plan, policy)
         linked_path = candle_root / LINKED_RECORD_RELATIVE
@@ -1699,14 +1856,20 @@ def run(
         require(decode_object(linked_bytes, "captured linked provenance") == linked,
                 "linked provenance bytes differ from validated object")
         runtime_before = file_record(runtime, RUNTIME_RELATIVE.as_posix())
+        runtime_expected = linked["outputs"]["cake"]
+        runtime_descriptor, runtime_execution = create_sealed_runtime_image(
+            runtime, runtime_expected,
+        )
+        execution_runtime = Path(f"/proc/self/fd/{runtime_descriptor}")
         with tempfile.TemporaryDirectory(
             prefix=f".{output_root.name}.parser-io-", dir=output_root.parent,
         ) as private_io_string:
             private_io_root = Path(private_io_string)
             private_io_root.chmod(PRIVATE_IO_MODE)
             runtime_result, files = run_runtime(
-                runtime, plan_root, plan, timeout_seconds, environment,
-                preexec_fn, private_io_root, max_output_bytes,
+                execution_runtime, candle_root, plan_root, plan,
+                timeout_seconds, environment, preexec_fn, private_io_root,
+                max_output_bytes, (runtime_descriptor,),
             )
 
         authority_snapshot = capture_authority_snapshot(candle_root, plan)
@@ -1725,7 +1888,8 @@ def run(
         }
         durable_bytes, snapshot_sources, transition_relative = (
             durable_snapshot_sources(
-                candle_root, plan, linked, controller_execution, policy,
+                candle_root, flyspeck_root, plan, linked,
+                controller_execution, policy,
             )
         )
         require(not set(snapshot_files).intersection(durable_bytes),
@@ -1742,6 +1906,8 @@ def run(
         require(runtime_post == runtime and
                 file_record(runtime_post, RUNTIME_RELATIVE.as_posix()) == runtime_before,
                 "linked parser runtime changed during diagnostic")
+        require(sealed_runtime_record(runtime_descriptor) == runtime_execution,
+                "executed sealed runtime changed during diagnostic")
         require(collect_controller_execution(candle_root, policy) == controller_execution,
                 "controller execution changed during parser diagnostic")
 
@@ -1795,6 +1961,7 @@ def run(
             "linked_provenance_schema": linked.get("schema"),
             "bootstrap_transition": transition_snapshot,
             "runtime": runtime_snapshot,
+            "runtime_execution": runtime_execution,
             "snapshot": inventory,
             **runtime_result,
             "limitations": plan["limitations"],
@@ -1810,6 +1977,7 @@ def run(
         require(linked_final == linked and runtime_final == runtime and
                 _read_stable_source(linked_path) == linked_bytes and
                 file_record(runtime_final, RUNTIME_RELATIVE.as_posix()) == runtime_before and
+                sealed_runtime_record(runtime_descriptor) == runtime_execution and
                 capture_authority_snapshot(candle_root, plan) == authority_snapshot and
                 _read_stable_source(candle_root / MANIFEST_RELATIVE) ==
                 durable_bytes["snapshot/authority/candle/flyspeck_manifest.json"] and
@@ -1822,6 +1990,8 @@ def run(
         _rename_noreplace(staging, output_root)
         return receipt
     finally:
+        if runtime_descriptor >= 0:
+            os.close(runtime_descriptor)
         runtime_lock_handle.close()
 
 
@@ -1855,13 +2025,14 @@ def main() -> None:
     if arguments.command in {"check-pilot", "write-pilot"}:
         candle_root = resolve_without_symlinks(arguments.candle_root, "Candle root")
         path = candle_root / MANIFEST_RELATIVE
-        data = path.read_bytes()
-        manifest = load_object(path, "Flyspeck manifest")
+        data = _read_stable_source(path)
+        manifest = decode_object(data, "captured Flyspeck manifest")
         expected = build_pilot_descriptor(manifest, data)
         if arguments.command == "write-pilot":
             sys.stdout.buffer.write(json_bytes(expected))
         else:
-            validate_pilot(candle_root, manifest, data)
+            pilot_data = _read_stable_source(candle_root / PILOT_RELATIVE)
+            validate_pilot(pilot_data, manifest, data)
             print(f"parser diagnostic pilot PASS: {PILOT_COUNT} exact manifest nodes")
         return
     if arguments.command == "materialize":
