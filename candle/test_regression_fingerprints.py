@@ -10,6 +10,14 @@ import regression
 
 
 class FingerprintPlumbingTest(unittest.TestCase):
+    @staticmethod
+    def state_fields(axioms=b"axiom-serialization"):
+        return [
+            regression.STATE_FINGERPRINT_MARKER,
+            b"kernel-state".hex(), b"types".hex(), b"constants".hex(),
+            b"definitions".hex(), axioms.hex(), "11", "22", "33", "3",
+        ]
+
     def test_request_source_accepts_only_safe_value_paths(self):
         self.assertEqual(
             regression._fingerprint_request_source(
@@ -17,7 +25,8 @@ class FingerprintPlumbingTest(unittest.TestCase):
             ('candle_s1_emit_fingerprint "THM" THM;;\n'
              'candle_s1_emit_fingerprint "theorem\'" theorem\';;\n'
              'candle_s1_emit_fingerprint "Finale.TRANSCENDENTAL_E" '
-             'Finale.TRANSCENDENTAL_E;;\n'))
+             'Finale.TRANSCENDENTAL_E;;\n'
+             'candle_s1_emit_state_fingerprint ();;\n'))
         with self.assertRaises(ValueError):
             regression._fingerprint_request_source(("THM; failwith",))
 
@@ -36,6 +45,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("ordinary Candle output\n")
             logfile.write("\t".join(fields) + "\n")
+            logfile.write("\t".join(self.state_fields()) + "\n")
             path = Path(logfile.name)
         try:
             report = regression._read_fingerprint_records(
@@ -51,6 +61,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         self.assertEqual(
             record["theorem_sha256"],
             hashlib.sha256(b"theorem-serialization").hexdigest())
+        self.assertEqual(report["post_state"]["definition_count"], 33)
 
     def test_exact_approved_identity_becomes_a_match(self):
         fields = [
@@ -61,6 +72,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
+            logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
             path = Path(logfile.name)
         serializer_sha256 = hashlib.sha256(
             regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
@@ -73,11 +85,24 @@ class FingerprintPlumbingTest(unittest.TestCase):
             "hypothesis_count": 0,
             "global_axiom_count": 3,
         }
+        post_state = {
+            "kernel_state_sha256": hashlib.sha256(b"kernel-state").hexdigest(),
+            "type_constants_sha256": hashlib.sha256(b"types").hexdigest(),
+            "type_constant_count": 11,
+            "term_constants_sha256": hashlib.sha256(b"constants").hexdigest(),
+            "term_constant_count": 22,
+            "definitions_sha256": hashlib.sha256(b"definitions").hexdigest(),
+            "definition_count": 33,
+            "global_axioms_sha256": hashlib.sha256(b"axioms").hexdigest(),
+            "global_axiom_count": 3,
+        }
         try:
             report = regression._read_fingerprint_records(
                 path, ("THM",), "audited", {
+                    "approval_sha256": "f" * 64,
                     "serializer_sha256": serializer_sha256,
                     "theorems": [record],
+                    "post_state": post_state,
                 })
         finally:
             path.unlink()
@@ -93,6 +118,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
+            logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
             path = Path(logfile.name)
         serializer_sha256 = hashlib.sha256(
             regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
@@ -101,8 +127,10 @@ class FingerprintPlumbingTest(unittest.TestCase):
                     regression.LoadFailure, "fingerprint mismatch"):
                 regression._read_fingerprint_records(
                     path, ("THM",), "audited", {
+                        "approval_sha256": "f" * 64,
                         "serializer_sha256": serializer_sha256,
                         "theorems": [],
+                        "post_state": {},
                     })
         finally:
             path.unlink()
@@ -111,7 +139,10 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with self.assertRaisesRegex(
                 regression.LoadFailure, "manual-review mapping"):
             regression._match_expected_identities(
-                [], {"serializer_sha256": "0" * 64, "theorems": []},
+                [], {}, {
+                    "approval_sha256": "0" * 64,
+                    "serializer_sha256": "0" * 64,
+                    "theorems": [], "post_state": {}},
                 "0" * 64, "manual_review")
 
     def test_report_summary_never_counts_load_only_as_s1(self):
@@ -160,6 +191,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
+            logfile.write("\t".join(self.state_fields()) + "\n")
             path = Path(logfile.name)
         try:
             with self.assertRaisesRegex(

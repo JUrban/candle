@@ -32,8 +32,26 @@ if [[ $lock_fd_identity != "$lock_path_identity" ]]; then
   echo "Candle build directory changed while acquiring its lock" >&2
   exit 1
 fi
+if [[ -v CANDLE_GREAT100_SUITE_NONCE || -v CANDLE_GREAT100_PROCESS_NONCE ]]; then
+  if [[ ! ${CANDLE_GREAT100_SUITE_NONCE:-} =~ ^[0-9a-f]{64}$ ||
+        ! ${CANDLE_GREAT100_PROCESS_NONCE:-} =~ ^[0-9a-f]{64}$ ]]; then
+    echo "invalid Great 100 process marker nonce" >&2
+    exit 1
+  fi
+  printf 'CANDLE_GREAT100_SUITE_V1\t%s\n' "$CANDLE_GREAT100_SUITE_NONCE"
+  printf 'CANDLE_GREAT100_PROCESS_V1\t%s\t%s\tSTART\n' \
+    "$CANDLE_GREAT100_SUITE_NONCE" "$CANDLE_GREAT100_PROCESS_NONCE"
+fi
 /usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
   check-linked --candle-root "$script_dir"
+linked_record="$script_dir/candle/build/cakeml-build-provenance.json"
+linked_record_sha256=$(/usr/bin/sha256sum -- "$linked_record")
+linked_record_sha256=${linked_record_sha256%% *}
+if [[ ! $linked_record_sha256 =~ ^[0-9a-f]{64}$ ]]; then
+  echo "invalid linked CakeML provenance digest" >&2
+  exit 1
+fi
+printf 'CANDLE_LINKED_PROVENANCE_V1\t%s\n' "$linked_record_sha256"
 for generated in config_enc_str.txt candle_boot.ml; do
   expected_link="candle/build/$generated"
   if [[ ! -L "$script_dir/$generated" ]]; then
