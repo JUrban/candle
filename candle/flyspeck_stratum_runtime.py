@@ -65,6 +65,10 @@ cakeml_artifact_provenance = _load_local_source(
     "_candle_stratum_cakeml_artifact_provenance",
     HERE / "cakeml_artifact_provenance.py",
 )
+cakeml_bootstrap_transition = _load_local_source(
+    "_candle_stratum_cakeml_bootstrap_transition",
+    HERE / "cakeml_bootstrap_transition.py",
+)
 flyspeck_stratum_plan = _load_local_source(
     "_candle_stratum_flyspeck_stratum_plan",
     HERE / "flyspeck_stratum_plan.py",
@@ -260,6 +264,7 @@ def data_record(value: bytes) -> dict[str, Any]:
 def local_python_modules() -> tuple[types.ModuleType, ...]:
     return (
         cakeml_artifact_provenance,
+        cakeml_bootstrap_transition,
         flyspeck_stratum_plan,
         reference_protocol,
         runtime_lock,
@@ -413,6 +418,7 @@ def collect_controller_execution(candle_root: Path) -> dict[str, Any]:
     }
     require(set(sources) == {
         "cakeml_artifact_provenance.py",
+        "cakeml_bootstrap_transition.py",
         "flyspeck_stratum_plan.py",
         "flyspeck_stratum_runtime.py",
         "reference_protocol.py",
@@ -1557,6 +1563,8 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
     expected_bindings = {
         "cakeml_artifact_provenance.py":
             "compiled-from-captured-source-bytes",
+        "cakeml_bootstrap_transition.py":
+            "compiled-from-captured-source-bytes",
         "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
         "flyspeck_stratum_runtime.py":
             "startup-captured-after-initial-compilation",
@@ -1774,7 +1782,7 @@ def _run_attempt_impl(
 
     # This must precede interpretation of the host plan: no runtime attempt is
     # prepared for an unbound or stale executable.
-    linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+    linked = cakeml_bootstrap_transition.validate_linked_record(candle_root)
     bind_controller_sources_to_commit(
         controller_execution, candle_root, linked["candle_commit"],
     )
@@ -2019,7 +2027,7 @@ def _run_attempt_impl(
                 f"compiled stratum execution failed: {execution_error}")
         require(not timed_out, "compiled stratum attempt timed out")
         require(exit_code == 0, f"compiled stratum process exited {exit_code}")
-        post_linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+        post_linked = cakeml_bootstrap_transition.validate_linked_record(candle_root)
         require(post_linked == linked, "linked provenance changed during attempt")
         validate_plan(candle_root, post_linked, plan_root, boundary_id)
         validate_file(snapshot_record_path, attempt["inputs"]["runtime_snapshot"],

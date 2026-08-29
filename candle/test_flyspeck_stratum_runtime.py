@@ -361,6 +361,11 @@ class StratumRuntimeTests(unittest.TestCase):
             )
             linked_outputs["bootstrap.log"] = bootstrap_log_record
             linked_outputs["bootstrap-provenance.json"] = bootstrap_record_digest
+            transition_copy, transition_copy_record = write(
+                candle, "candle/build/bootstrap-transition.json",
+                b'{"schema":1,"kind":"retained-transition"}\n',
+            )
+            linked_outputs["bootstrap-transition.json"] = transition_copy_record
             runtime_object, runtime_object_record = write(
                 root, "libc.so.6", b"runtime object",
             )
@@ -477,6 +482,16 @@ class StratumRuntimeTests(unittest.TestCase):
                 }, controller_execution,
             )
             subject.validate_runtime_snapshot(snapshot, output)
+            archived_transition = (
+                output / "snapshot/candle/candle/build/bootstrap-transition.json"
+            )
+            self.assertTrue(
+                archived_transition.is_file(),
+            )
+            self.assertEqual(
+                archived_transition.read_bytes(),
+                transition_copy.read_bytes(),
+            )
             self.assertEqual(
                 runtime["prefix_path"].read_bytes(), prefix.read_bytes(),
             )

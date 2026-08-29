@@ -42,7 +42,7 @@ if [[ -v CANDLE_GREAT100_SUITE_NONCE || -v CANDLE_GREAT100_PROCESS_NONCE ]]; the
   printf 'CANDLE_GREAT100_PROCESS_V1\t%s\t%s\tSTART\n' \
     "$CANDLE_GREAT100_SUITE_NONCE" "$CANDLE_GREAT100_PROCESS_NONCE"
 fi
-/usr/bin/python3 -I "$script_dir/candle/cakeml_artifact_provenance.py" \
+/usr/bin/python3 -I -S "$script_dir/candle/cakeml_bootstrap_transition.py" \
   check-linked --candle-root "$script_dir"
 linked_record="$script_dir/candle/build/cakeml-build-provenance.json"
 linked_record_sha256=$(/usr/bin/sha256sum -- "$linked_record")

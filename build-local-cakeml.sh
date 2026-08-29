@@ -55,7 +55,7 @@ lock_path_identity=$(/usr/bin/stat -Lc '%d:%i' "$build_dir")
 managed_outputs=(
   cake.S cake.S.bootstrap cake config_enc_str.txt candle_boot.ml basis_ffi.c
   Makefile types.txt insulate.ml bootstrap-preflight.json
-  bootstrap-provenance.json bootstrap.log
+  bootstrap-provenance.json bootstrap-transition.json bootstrap.log
   cakeml-build-provenance.json
 )
 for output in "${managed_outputs[@]}"; do
@@ -173,9 +173,17 @@ ln -sfn candle/build/candle_boot.ml "$script_dir/candle_boot.ml"
 # Exercise the same complete provenance and root-alias preflight used by every
 # interactive session.  A linked record is not a successful installation until
 # this post-alias check passes.
-/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
-  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
-  check-linked --candle-root "$script_dir"
+if $transition_mode; then
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S \
+      "$script_dir/candle/cakeml_bootstrap_transition.py" \
+    check-linked --candle-root "$script_dir"
+else
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S \
+      "$script_dir/candle/cakeml_bootstrap_transition.py" \
+    check-linked --candle-root "$script_dir"
+fi
 
 printf 'CakeML head: %s\n' "$actual_head"
 /usr/bin/sha256sum \
