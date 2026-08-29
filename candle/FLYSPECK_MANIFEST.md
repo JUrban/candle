@@ -279,13 +279,33 @@ the original-source generated dependencies remain visible:
 - `candle/build/insulate.ml` must be generated from the pinned compiler's
   `types.txt` by the pinned `insulate.py` recipe.  It remains a generated
   contract even when an ignored local build happens to contain the file, so
-  the source manifest is independent of worktree build state; and
+  the source manifest is independent of worktree build state.  Direct
+  evidence-v3 classifies the exact linked output and the manifest-pinned
+  `candle/flyspeck_source_digests.ml` as generated executed controls; and
 - upstream Flyspeck serialization writes and reloads a temporary theorem-digest
   module.  The exact selected normalization now removes the load-time
   `Filename.temp_file` allocation and makes both deferred output and reload
   fail closed.  Thus the selected direct run creates no such generated runtime;
   re-enabling theorem-digest output would require a separately versioned,
   attempt-local atomic lifecycle.
+
+Removing `Filename.temp_file` also removes exactly its two Candle diagnostic
+stdout lines, one for `Filename.temp_file` and one for
+`Filename.get_temp_dir_name`.  No byte-for-byte stdout equivalence is claimed:
+the preservation scope is the selected proof state, source-action semantics,
+and semantic fingerprints, and excludes consumers of those diagnostics.
+
+The evidence-v3 expected closure separately classifies completed outer roots,
+expected nested sources, generated executed controls, and derivation-only
+inputs.  `flyspeck_full_build.ml` is derivation-only; the authenticated
+instrumented prefix derived from it is the executed attempt control.  The
+closure follows three selected standalone strictbuild actions, excludes
+`build/use_serialization.hl`, and adds `serialization.hl` plus its selected
+`update_database_400.ml` branch only after action 295.  It remains
+nonpromotable because no loader-owned nested identity trace exists.  Such a
+trace must also canonicalize lexical aliases: action 126 is the first `..`
+target and action 145 begins `../formal_lp/...`, while current source-identity
+and normalization-overlay tables use canonical paths.
 
 The next G6 slices must turn this inventory into the loader's enforced input
 contract, reject manifest/source reorder and corruption, add relocation and
