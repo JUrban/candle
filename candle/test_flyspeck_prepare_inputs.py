@@ -5,6 +5,7 @@ import json
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import flyspeck_prepare_inputs
@@ -72,6 +73,11 @@ class FlyspeckPreparedInputTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), payload)
             self.assertEqual(path.stat().st_mode & 0o777, 0o644)
             self.assertEqual(receipt["outputs"][0]["sha256"], hashlib.sha256(payload).hexdigest())
+            self.assertEqual(receipt["schema"], 2)
+            self.assertEqual(
+                receipt["publication"],
+                flyspeck_prepare_inputs.PUBLICATION_RECORD,
+            )
 
     def test_archive_digest_drift_fails_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -150,6 +156,58 @@ class FlyspeckPreparedInputTests(unittest.TestCase):
                 )
             self.assertEqual(
                 (output / "unexpected").read_text(), "must not survive"
+            )
+
+    def test_publication_race_preserves_colliding_destination(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, contract_path, _, _ = self.fixture(root)
+            output = root / "output"
+            rename_noreplace = flyspeck_prepare_inputs._rename_noreplace
+
+            def collide(source_path, destination_path):
+                destination_path.mkdir()
+                (destination_path / "unrelated").write_text("preserved")
+                rename_noreplace(source_path, destination_path)
+
+            with mock.patch.object(
+                flyspeck_prepare_inputs, "_rename_noreplace",
+                side_effect=collide,
+            ), self.assertRaises(FileExistsError):
+                self.run_with_head(
+                    flyspeck_prepare_inputs.materialize,
+                    contract_path, source, output,
+                )
+            self.assertEqual((output / "unrelated").read_text(), "preserved")
+            staging = list(root.glob(".output.tmp.*"))
+            self.assertEqual(len(staging), 1)
+            self.assertTrue(
+                (staging[0] / flyspeck_prepare_inputs.RECEIPT_NAME).is_file()
+            )
+
+    def test_receipt_hashes_the_contract_bytes_that_were_parsed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, contract_path, _, _ = self.fixture(root)
+            contract_bytes = contract_path.read_bytes()
+            original_validate = flyspeck_prepare_inputs._validate_source
+
+            def validate_then_swap(contract, source_root):
+                result = original_validate(contract, source_root)
+                contract_path.write_text("{}", encoding="utf-8")
+                return result
+
+            with mock.patch.object(
+                flyspeck_prepare_inputs, "_validate_source",
+                side_effect=validate_then_swap,
+            ):
+                receipt = self.run_with_head(
+                    flyspeck_prepare_inputs.materialize,
+                    contract_path, source, root / "output",
+                )
+            self.assertEqual(
+                receipt["contract_sha256"],
+                hashlib.sha256(contract_bytes).hexdigest(),
             )
 
 

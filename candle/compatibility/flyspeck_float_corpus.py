@@ -38,7 +38,7 @@ EXPECTED_NORMALIZATION_CONTRACT_SHA256 = (
     "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08"
 )
 EXPECTED_NORMALIZATION_RECEIPT_SHA256 = (
-    "e234c83d12d1b9e6525ed6e92de4244cbe2158634032ed113212d1e318a221d1"
+    "8fd7b9ada83287da7d07ee9d9beb769e76dbf8baffcaa95e4ab194d187e4d702"
 )
 EXPECTED_SOURCE_NODES = 400
 EXPECTED_NORMALIZED_FILES = 18
@@ -59,6 +59,11 @@ EXPECTED_INVALID_SUFFIX_COUNTS = {"comment": 18, "string": 3_404}
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 NORMALIZATION_CONTRACT_RELATIVE = Path("candle/flyspeck_normalizations.json")
 NORMALIZATION_RECEIPT = Path("flyspeck_normalization_receipt.json")
+FRESH_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+}
 ARTIFACT_RELATIVE = Path("candle/compatibility/flyspeck_float_corpus.json")
 
 # CakeML's proved lexer accepts
@@ -220,8 +225,10 @@ def validate_inputs(
             EXPECTED_NORMALIZATION_RECEIPT_SHA256,
             "normalization receipt digest mismatch")
     receipt = load_object(receipt_path, "normalization receipt")
-    require(receipt.get("schema") == 2,
+    require(receipt.get("schema") == 3,
             "unsupported normalization receipt schema")
+    require(receipt.get("publication") == FRESH_PUBLICATION,
+            "normalization publication contract mismatch")
     require(receipt.get("flyspeck_commit") == EXPECTED_FLYSPECK_COMMIT,
             "normalization receipt Flyspeck pin mismatch")
     require(receipt.get("contract_sha256") ==

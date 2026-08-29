@@ -26,6 +26,11 @@ NORMALIZATION_CONTRACT_PATH = "candle/flyspeck_normalizations.json"
 NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
 GENERATED_CONTRACT_PATH = "candle/flyspeck_lp_archive_contract.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
+FRESH_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+}
 PREPARED_INPUT_CLASS = "lp-certificate-prepared"
 CHUNK_BYTES = 1024 * 1024
 GIT_ENVIRONMENT = {
@@ -325,7 +330,9 @@ def validate_inputs(
     )
     normalization_receipt_path = overlay_root / NORMALIZATION_RECEIPT
     receipt = load_json(normalization_receipt_path)
-    require(receipt.get("schema") == 2, "unsupported normalization receipt schema")
+    require(receipt.get("schema") == 3, "unsupported normalization receipt schema")
+    require(receipt.get("publication") == FRESH_PUBLICATION,
+            "normalization publication contract mismatch")
     require(receipt.get("flyspeck_commit") == expected_flyspeck, "overlay Flyspeck pin mismatch")
     require(receipt.get("contract_sha256") == normalization["contract_sha256"],
             "overlay normalization contract mismatch")
@@ -359,7 +366,9 @@ def validate_inputs(
     )
     generated_receipt_path = generated_root / GENERATED_RECEIPT
     generated_receipt = load_json(generated_receipt_path)
-    require(generated_receipt.get("schema") == 1, "unsupported generated-input receipt schema")
+    require(generated_receipt.get("schema") == 2, "unsupported generated-input receipt schema")
+    require(generated_receipt.get("publication") == FRESH_PUBLICATION,
+            "generated-input publication contract mismatch")
     require(generated_receipt.get("flyspeck_commit") == expected_flyspeck,
             "generated-input Flyspeck pin mismatch")
     require(generated_receipt.get("contract_sha256") == generated_contract_sha256,

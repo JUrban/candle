@@ -132,7 +132,7 @@
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "manifest_sha256": "2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380",
     "normalization_contract_sha256": "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08",
-    "normalization_receipt_sha256": "e234c83d12d1b9e6525ed6e92de4244cbe2158634032ed113212d1e318a221d1",
+    "normalization_receipt_sha256": "8fd7b9ada83287da7d07ee9d9beb769e76dbf8baffcaa95e4ab194d187e4d702",
     "normalized_file_count": 18,
     "source_node_count": 400
   },

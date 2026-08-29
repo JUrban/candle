@@ -3,6 +3,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import flyspeck_normalize
@@ -294,6 +295,112 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 ).read_text()
             )
             self.assertEqual(receipt, first)
+            self.assertEqual(receipt["schema"], 3)
+            self.assertEqual(
+                receipt["publication"], flyspeck_normalize.PUBLICATION_RECORD,
+            )
+
+    def test_cli_refuses_dangling_output_symlink(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            contract_path = root / "contract.json"
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            output_root = root / "output"
+            output_root.symlink_to(root / "dangling", target_is_directory=True)
+            arguments = [
+                "flyspeck_normalize.py",
+                "--flyspeck-root", str(source_root),
+                "--contract", str(contract_path),
+                "--write", str(output_root),
+            ]
+            with mock.patch.object(flyspeck_normalize, "_git_head",
+                                   return_value="a" * 40), \
+                    mock.patch("sys.argv", arguments), \
+                    self.assertRaisesRegex(ValueError, "output symlink"):
+                flyspeck_normalize.main()
+            self.assertTrue(output_root.is_symlink())
+            self.assertFalse((root / "dangling").exists())
+
+    def test_publication_race_preserves_colliding_destination(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            contract_path = root / "contract.json"
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            output_root = root / "output"
+            rename_noreplace = flyspeck_normalize._rename_noreplace
+
+            def collide(source_path, destination_path):
+                destination_path.mkdir()
+                (destination_path / "unrelated").write_text("preserved")
+                rename_noreplace(source_path, destination_path)
+
+            with mock.patch.object(flyspeck_normalize, "_git_head",
+                                   return_value="a" * 40), \
+                    mock.patch.object(flyspeck_normalize, "_rename_noreplace",
+                                      side_effect=collide), \
+                    self.assertRaises(FileExistsError):
+                flyspeck_normalize.materialize(
+                    contract_path, source_root, output_root,
+                )
+            self.assertEqual(
+                (output_root / "unrelated").read_text(), "preserved"
+            )
+            staging = list(root.glob(".output.tmp.*"))
+            self.assertEqual(len(staging), 1)
+            self.assertTrue(
+                (staging[0] / flyspeck_normalize.RECEIPT_NAME).is_file()
+            )
+
+    def test_receipt_hashes_the_contract_bytes_that_were_parsed(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        contract_bytes = json.dumps(contract).encode()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            contract_path = root / "contract.json"
+            contract_path.write_bytes(contract_bytes)
+            original_evaluate = flyspeck_normalize.evaluate_contract
+
+            def evaluate_then_swap(path, source, *, contract_bytes):
+                result = original_evaluate(
+                    path, source, contract_bytes=contract_bytes,
+                )
+                path.write_text("{}", encoding="utf-8")
+                return result
+
+            with mock.patch.object(flyspeck_normalize, "_git_head",
+                                   return_value="a" * 40), \
+                    mock.patch.object(flyspeck_normalize, "evaluate_contract",
+                                      side_effect=evaluate_then_swap):
+                receipt = flyspeck_normalize.materialize(
+                    contract_path, source_root, root / "output",
+                )
+            self.assertEqual(
+                receipt["contract_sha256"],
+                hashlib.sha256(contract_bytes).hexdigest(),
+            )
 
     def test_materialization_refuses_existing_output_root(self):
         entry, source, _ = self.fixture_entry()

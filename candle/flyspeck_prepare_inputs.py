@@ -10,12 +10,15 @@ separate, hash-addressed generated-input tree before Candle starts.
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
-import shutil
+import stat
 import subprocess
 import tarfile
+import tempfile
 from pathlib import Path
 from typing import Any, BinaryIO
 
@@ -23,6 +26,13 @@ from typing import Any, BinaryIO
 CONTRACT_NAME = "flyspeck_lp_archive_contract.json"
 RECEIPT_NAME = "flyspeck_lp_archive_receipt.json"
 CHUNK_BYTES = 1024 * 1024
+PUBLICATION_RECORD = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+}
+AT_FDCWD = -100
+RENAME_NOREPLACE = 1
 
 
 def _sha256_file(path: Path) -> tuple[int, str]:
@@ -51,8 +61,8 @@ def _safe_relative(value: object, label: str) -> Path:
     return path
 
 
-def load_contract(path: Path) -> dict[str, Any]:
-    contract = json.loads(path.read_text(encoding="utf-8"))
+def load_contract_bytes(contract_bytes: bytes) -> dict[str, Any]:
+    contract = json.loads(contract_bytes.decode("utf-8"))
     if contract.get("schema") != 1:
         raise ValueError("unsupported LP archive contract schema")
     commit = contract.get("flyspeck_commit")
@@ -94,6 +104,10 @@ def load_contract(path: Path) -> dict[str, Any]:
     if policy != expected_policy:
         raise ValueError("LP archive policy mismatch")
     return contract
+
+
+def load_contract(path: Path) -> dict[str, Any]:
+    return load_contract_bytes(path.read_bytes())
 
 
 def _validate_source(contract: dict[str, Any], source_root: Path) -> Path:
@@ -163,6 +177,31 @@ def _prepare_destination(output_root: Path, relative: Path) -> Path:
     return destination
 
 
+def _rename_noreplace(source: Path, destination: Path) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as error:
+        raise OSError(
+            errno.ENOSYS, "renameat2 is required for fresh-root publication"
+        ) from error
+    renameat2.argtypes = [
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    if renameat2(
+        AT_FDCWD, os.fsencode(source), AT_FDCWD, os.fsencode(destination),
+        RENAME_NOREPLACE,
+    ) != 0:
+        error_number = ctypes.get_errno()
+        if error_number == errno.EEXIST:
+            raise FileExistsError(
+                error_number, os.strerror(error_number), destination,
+            )
+        raise OSError(error_number, os.strerror(error_number), destination)
+
+
 def evaluate(contract_path: Path, source_root: Path) -> dict[str, Any]:
     contract = load_contract(contract_path)
     archive_path = _validate_source(contract, source_root.resolve())
@@ -191,7 +230,8 @@ def materialize(
         or source_root.is_relative_to(output_root)
     ):
         raise ValueError("generated output must be separate from pinned source")
-    contract = load_contract(contract_path)
+    contract_bytes = contract_path.read_bytes()
+    contract = load_contract_bytes(contract_bytes)
     archive_path = _validate_source(contract, source_root)
     expected = contract["members"][0]
     if output_root.exists():
@@ -200,14 +240,15 @@ def materialize(
         raise ValueError(
             f"generated output parent does not exist: {output_root.parent}"
         )
-    temporary_root = output_root.with_name(
-        f"{output_root.name}.tmp.{os.getpid()}"
-    )
-    if temporary_root.exists() or temporary_root.is_symlink():
+    temporary_root = Path(tempfile.mkdtemp(
+        prefix=f".{output_root.name}.tmp.", dir=output_root.parent,
+    ))
+    os.chmod(temporary_root, 0o755)
+    staging_identity = os.stat(temporary_root, follow_symlinks=False)
+    if not stat.S_ISDIR(staging_identity.st_mode):
         raise ValueError(
-            f"generated temporary output already exists: {temporary_root}"
+            f"generated staging root is not a directory: {temporary_root}"
         )
-    temporary_root.mkdir()
     try:
         destination = _prepare_destination(
             temporary_root,
@@ -232,12 +273,11 @@ def materialize(
             source.close()
             archive.close()
         receipt = {
-            "schema": 1,
-            "contract_sha256": hashlib.sha256(
-                contract_path.read_bytes()
-            ).hexdigest(),
+            "schema": 2,
+            "contract_sha256": hashlib.sha256(contract_bytes).hexdigest(),
             "flyspeck_commit": contract["flyspeck_commit"],
             "archive_sha256": contract["archive"]["sha256"],
+            "publication": PUBLICATION_RECORD,
             "outputs": [{
                 "path": expected["output_path"],
                 "bytes": size,
@@ -254,9 +294,20 @@ def materialize(
             encoding="utf-8",
         )
         os.replace(receipt_temp, receipt_path)
-        os.rename(temporary_root, output_root)
-    except BaseException:
-        shutil.rmtree(temporary_root)
+        observed_staging = os.stat(temporary_root, follow_symlinks=False)
+        if (
+            not stat.S_ISDIR(observed_staging.st_mode)
+            or (observed_staging.st_dev, observed_staging.st_ino)
+            != (staging_identity.st_dev, staging_identity.st_ino)
+        ):
+            raise ValueError(
+                f"generated staging identity changed: {temporary_root}"
+            )
+        _rename_noreplace(temporary_root, output_root)
+    except BaseException as error:
+        # Retain failed staging rather than risk deleting a pathname exchanged
+        # by another same-UID process.  Retries use a new final output root.
+        error.add_note(f"failed generated-input staging retained: {temporary_root}")
         raise
     return receipt
 

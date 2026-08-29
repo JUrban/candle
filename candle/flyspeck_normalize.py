@@ -9,17 +9,27 @@ digests recorded here.  Nothing in this module performs a heuristic rewrite.
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
-import shutil
+import stat
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
 
 CONTRACT_NAME = "flyspeck_normalizations.json"
 RECEIPT_NAME = "flyspeck_normalization_receipt.json"
+PUBLICATION_RECORD = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+}
+AT_FDCWD = -100
+RENAME_NOREPLACE = 1
 
 
 def _sha256(data: bytes) -> str:
@@ -34,8 +44,8 @@ def contract_sha256(contract_path: Path) -> str:
     return _sha256(contract_path.read_bytes())
 
 
-def load_contract(contract_path: Path) -> dict[str, Any]:
-    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+def load_contract_bytes(contract_bytes: bytes) -> dict[str, Any]:
+    contract = json.loads(contract_bytes.decode("utf-8"))
     if contract.get("schema") != 2:
         raise ValueError("unsupported Flyspeck normalization schema")
     entries = contract.get("entries")
@@ -122,6 +132,10 @@ def load_contract(contract_path: Path) -> dict[str, Any]:
     return contract
 
 
+def load_contract(contract_path: Path) -> dict[str, Any]:
+    return load_contract_bytes(contract_path.read_bytes())
+
+
 def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
     entry_id = str(entry["id"])
     if _sha256(source) != entry["source_sha256"] or _md5(source) != entry["source_md5"]:
@@ -196,9 +210,12 @@ def _git_head(root: Path) -> str:
 
 
 def evaluate_contract(
-    contract_path: Path, source_root: Path,
+    contract_path: Path, source_root: Path, *, contract_bytes: bytes | None = None,
 ) -> tuple[dict[str, Any], list[tuple[dict[str, Any], bytes]]]:
-    contract = load_contract(contract_path)
+    contract = (
+        load_contract(contract_path)
+        if contract_bytes is None else load_contract_bytes(contract_bytes)
+    )
     observed_commit = _git_head(source_root)
     if observed_commit != contract["flyspeck_commit"]:
         raise ValueError(
@@ -228,6 +245,31 @@ def _prepare_destination(output_root: Path, relative: Path) -> Path:
     return parent / relative.name
 
 
+def _rename_noreplace(source: Path, destination: Path) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as error:
+        raise OSError(
+            errno.ENOSYS, "renameat2 is required for fresh-root publication"
+        ) from error
+    renameat2.argtypes = [
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    if renameat2(
+        AT_FDCWD, os.fsencode(source), AT_FDCWD, os.fsencode(destination),
+        RENAME_NOREPLACE,
+    ) != 0:
+        error_number = ctypes.get_errno()
+        if error_number == errno.EEXIST:
+            raise FileExistsError(
+                error_number, os.strerror(error_number), destination,
+            )
+        raise OSError(error_number, os.strerror(error_number), destination)
+
+
 def materialize(
     contract_path: Path, source_root: Path, output_root: Path,
 ) -> dict[str, Any]:
@@ -244,21 +286,25 @@ def materialize(
             "normalization output must be separate from and must not contain "
             "the pinned source root"
         )
-    contract, outputs = evaluate_contract(contract_path, source_root)
+    contract_bytes = contract_path.read_bytes()
+    contract, outputs = evaluate_contract(
+        contract_path, source_root, contract_bytes=contract_bytes,
+    )
     if output_root.exists():
         raise ValueError(f"normalization output root already exists: {output_root}")
     if not output_root.parent.is_dir():
         raise ValueError(
             f"normalization output parent does not exist: {output_root.parent}"
         )
-    temporary_root = output_root.with_name(
-        f"{output_root.name}.tmp.{os.getpid()}"
-    )
-    if temporary_root.exists() or temporary_root.is_symlink():
+    temporary_root = Path(tempfile.mkdtemp(
+        prefix=f".{output_root.name}.tmp.", dir=output_root.parent,
+    ))
+    os.chmod(temporary_root, 0o755)
+    staging_identity = os.stat(temporary_root, follow_symlinks=False)
+    if not stat.S_ISDIR(staging_identity.st_mode):
         raise ValueError(
-            f"normalization temporary output already exists: {temporary_root}"
+            f"normalization staging root is not a directory: {temporary_root}"
         )
-    temporary_root.mkdir()
     rendered_entries: list[dict[str, Any]] = []
     try:
         for entry, normalized in outputs:
@@ -283,9 +329,10 @@ def materialize(
                 "normalized_md5": _md5(normalized),
             })
         receipt = {
-            "schema": 2,
-            "contract_sha256": contract_sha256(contract_path),
+            "schema": 3,
+            "contract_sha256": _sha256(contract_bytes),
             "flyspeck_commit": contract["flyspeck_commit"],
+            "publication": PUBLICATION_RECORD,
             "entries": rendered_entries,
         }
         receipt_path = temporary_root / RECEIPT_NAME
@@ -295,9 +342,21 @@ def materialize(
             encoding="utf-8",
         )
         os.replace(temporary_receipt, receipt_path)
-        os.rename(temporary_root, output_root)
-    except BaseException:
-        shutil.rmtree(temporary_root)
+        observed_staging = os.stat(temporary_root, follow_symlinks=False)
+        if (
+            not stat.S_ISDIR(observed_staging.st_mode)
+            or (observed_staging.st_dev, observed_staging.st_ino)
+            != (staging_identity.st_dev, staging_identity.st_ino)
+        ):
+            raise ValueError(
+                f"normalization staging identity changed: {temporary_root}"
+            )
+        _rename_noreplace(temporary_root, output_root)
+    except BaseException as error:
+        # Never recursively delete a pathname that a concurrent same-UID
+        # process could have exchanged.  A failed staging tree is retained for
+        # inspection; every retry must use a fresh final output root.
+        error.add_note(f"failed normalization staging retained: {temporary_root}")
         raise
     return receipt
 
@@ -324,7 +383,7 @@ def main() -> None:
     else:
         receipt = materialize(
             arguments.contract.resolve(), arguments.flyspeck_root.resolve(),
-            arguments.write.resolve(),
+            arguments.write,
         )
         print(
             f"normalization overlay written: {len(receipt['entries'])} entries, "
