@@ -133,7 +133,7 @@ field for field.
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v7`, its approval status
+The candidate schema is `candle-s1-reference-candidate-v8`, its approval status
 is always `candidate_unapproved`, `promotion_allowed` is always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
@@ -145,9 +145,17 @@ The candidate binds the canonical JSON plan, exact request, and complete
 transcript by SHA-256. Offline validation now requires all three artifacts and
 reconstructs the complete candidate from them; a changed plan, request,
 transcript, nonce, or fingerprint record fails validation. It also recomputes
-the reference, runtime, library-tree, dynamic-library, and collector pins from
-the current filesystem, so validation fails if the recorded execution closure
-is no longer present exactly.
+the reference, runtime, library-tree, authenticated ELF, and collector pins
+from the current filesystem, so validation fails if the recorded execution
+closure is no longer present exactly. The ELF observer is the explicit command
+`/bin/bash /usr/bin/ldd ABSOLUTE_ELF_ROOT` under the exact
+`PATH=/usr/bin:/bin`, `LC_ALL=C`, `LANG=C` environment. Plans content-bind the
+bash and ldd routes, all three reviewed hardcoded loader routes, the selected
+loader bytes, `/etc/ld.so.cache`, and the required absence of
+`/etc/ld.so.preload`. Every ldd line must match one recognized file or virtual
+object form. Raw stdout is retained; live comparison replaces only validated
+ASLR address tokens and compares the otherwise exact normalized transcript,
+parsed roles, paths, file hashes, and exact sorted closure.
 
 There is intentionally no candidate-to-expected conversion command. Two
 fresh, nonce-distinct reference candidates must agree for every target. An
@@ -155,7 +163,7 @@ independent reviewer must establish reference suitability, inspect the exact
 three source deltas, and create `top100_identity_approval.json`. An approved
 artifact must retain ordinary-file path/byte/SHA records for both candidates,
 plans, requests, transcripts, and source contracts; manifest regeneration
-rehashes every attachment. It also parses every exact schema-v7 plan and
+rehashes every attachment. It also parses every exact schema-v8 plan and
 candidate, mechanically calls `validate_candidate` with the retained request
 and transcript bytes, regenerates the nonce-bound request, and requires the
 replayed identity projection to equal the independently approved theorem and
@@ -165,10 +173,21 @@ cross-bound. Arbitrary hash-consistent attachment text therefore cannot become
 an approval. The unapproved committed template contains no identity data and
 keeps the 65-target runtime gate disabled.
 
+The two-sweep collection contract used by an approval is schema 3. It pins one
+plan-independent `elf_oracle` projection and requires both the core OCaml/HOL
+and external PARI/GP closure in all 130 plans to use that exact projection.
+Approval replay also requires exactly one successful attempt per target,
+canonical artifact paths, and exact collector/validator output naming the
+candidate in the common collection root.
+
 ## Current limitations
 
 - Fresh-process isolation is enforced by spawning the pinned runtime directly,
   but it is not a proof that the runtime implementation is trustworthy.
+- `ldd`, its bash interpreter, the selected dynamic loader, and the loader
+  cache are authenticated observation inputs, not independently verified
+  implementations. The kernel, filesystem namespace, and same-UID mutation
+  boundary remain trusted while a plan is observed and replayed.
 - Direct target files are hash-equal to the manifest. Transitive dependencies
   are pinned collectively by the clean reference git commit, not enumerated in
   the candidate.

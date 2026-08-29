@@ -287,7 +287,7 @@ def _decode_replay_json(source, label):
 
 def _replay_reference_run(target, run, artifact_sources, expected_identity,
                           policy):
-    """Mechanically replay one exact v7 candidate and bind its semantics."""
+    """Mechanically replay one exact v8 candidate and bind its semantics."""
     # Imported only on the approved path.  reference_fingerprints imports the
     # committed regression manifest, not this generator module, so this does
     # not create an import cycle during ordinary unapproved regeneration.
@@ -323,7 +323,7 @@ def _replay_reference_run(target, run, artifact_sources, expected_identity,
     if (not isinstance(plan_reference, dict) or set(plan_reference) != {
             "root", "git_head", "git_status", "runtime_executable",
             "runtime_interpreter", "runtime_stublib", "runtime_library_tree",
-            "runtime_stub_files", "dynamic_libraries", "ocamlc", "findlib",
+            "runtime_stub_files", "elf_runtime", "ocamlc", "findlib",
             "hol_ml", "generated_boot_files", "ocaml_library_tree",
             "external_runtime"} or
             not isinstance(plan_reference.get("root"), str) or
@@ -497,8 +497,8 @@ def _load_collection_evidence(approval, targets):
             "schema", "kind", "approval_status", "promotion_allowed",
             "sweep_count", "target_count", "total_target_runs", "source_mode",
             "project", "candle", "reference", "runtime", "external_runtime",
-            "deadlines", "inventory", "controller"} or
-            contract["schema"] != 2 or
+            "elf_oracle", "deadlines", "inventory", "controller"} or
+            contract["schema"] != 3 or
             contract["kind"] !=
             "candle-great100-two-sweep-reference-collection" or
             contract["approval_status"] !=
@@ -541,10 +541,9 @@ def _load_collection_evidence(approval, targets):
             receipt["approval_status"] != "candidates_unapproved" or
             receipt["promotion_allowed"] is not False or
             type(receipt["failure_attempt_count"]) is not int or
-            receipt["failure_attempt_count"] < 0 or
-            not isinstance(receipt["failures"], list) or
-            len(receipt["failures"]) != receipt["failure_attempt_count"] or
-            not isinstance(receipt["publication_interruptions"], list)):
+            receipt["failure_attempt_count"] != 0 or
+            receipt["failures"] != [] or
+            receipt["publication_interruptions"] != []):
         raise ValueError("reference collection receipt is not closed and exact")
     sweeps = receipt["sweeps"]
     if not isinstance(sweeps, list) or len(sweeps) != 2:
@@ -565,23 +564,22 @@ def _load_collection_evidence(approval, targets):
                     "index", "name", "state", "attempt_count", "success",
                     "attempts"} or row["index"] != target_number or
                     row["name"] != target["name"] or row["state"] != "complete" or
-                    type(row["attempt_count"]) is not int or
-                    row["attempt_count"] < 1 or
-                    not isinstance(row["attempts"], list) or
-                    len(row["attempts"]) != row["attempt_count"] or
+                    row["attempt_count"] != 1 or
+                    row["attempts"] != [{
+                        "attempt": "attempt-0001", "state": "complete"}] or
                     not isinstance(row["success"], dict)):
                 raise ValueError("malformed reference collection target success")
             success = row["success"]
             if (set(success) != {
                     "attempt", "receipt_path", "receipt", "session_nonce",
                     "artifacts"} or
-                    not isinstance(success["attempt"], str) or
-                    re.fullmatch(r"attempt-[0-9]{4}", success["attempt"]) is None or
+                    success["attempt"] != "attempt-0001" or
                     success["receipt_path"] !=
                     (f"sweep-{sweep_number}/target-{target_number:03d}/"
                      f"{success['attempt']}/success.json") or
                     not _is_sha256(success["session_nonce"]) or
                     not isinstance(success["receipt"], dict) or
+                    success["receipt"].get("path") != success["receipt_path"] or
                     not isinstance(success["artifacts"], dict)):
                 raise ValueError("malformed aggregate collection success")
             successes[(sweep_number, target_number)] = success
@@ -611,6 +609,7 @@ def _load_identity_approval(targets):
         return approval, approval_sha256, {}, inventory_sha256
     if isinstance(approval, dict) and approval.get("approval_status") == "unapproved":
         raise ValueError("unapproved identity artifact carries promotable data")
+    import reference_fingerprints as reference  # pylint: disable=import-outside-toplevel
     if not isinstance(approval, dict) or set(approval) != APPROVAL_FIELDS:
         raise ValueError("malformed Great 100 identity approval fields")
     if (approval["schema"] != "candle-s1-identity-approval-v2" or
@@ -694,6 +693,9 @@ def _load_identity_approval(targets):
         raise ValueError("identity approval does not cover 65 targets")
     expected = {}
     artifact_owners = {}
+    collection_core_elf = None
+    collection_external_elf = None
+    collection_artifact_root = None
     for target, approved in zip(targets, approved_targets):
         if not isinstance(approved, dict) or set(approved) != {
                 "name", "reference_runs", "expected_identity"}:
@@ -827,8 +829,17 @@ def _load_identity_approval(targets):
                 aggregate_record = aggregate_success["artifacts"].get(
                     artifact_name)
                 approval_record = artifacts[artifact_name]
+                artifact_filename = {
+                    "candidate": "candidate.json",
+                    "plan": "plan.json",
+                    "request": "request.ml",
+                    "transcript": "transcript.log",
+                }[artifact_name]
                 if (not isinstance(receipt_record, dict) or
                         set(receipt_record) != {"path", "bytes", "sha256"} or
+                        receipt_record.get("path") !=
+                        (f"sweep-{run_index}/target-{target_index:03d}/"
+                         f"attempt-0001/{artifact_filename}") or
                         receipt_record.get("bytes") != approval_record["bytes"] or
                         receipt_record.get("sha256") != approval_record["sha256"] or
                         aggregate_record != receipt_record):
@@ -840,13 +851,60 @@ def _load_identity_approval(targets):
                     "validator_stderr"):
                 receipt_record = success_receipt[artifact_name]
                 approval_record = artifacts[artifact_name]
+                output_name = {
+                    "collector_stdout": "collect.stdout",
+                    "collector_stderr": "collect.stderr",
+                    "validator_stdout": "validate.stdout",
+                    "validator_stderr": "validate.stderr",
+                }[artifact_name]
                 if (not isinstance(receipt_record, dict) or
                         set(receipt_record) != {"path", "bytes", "sha256"} or
+                        receipt_record.get("path") !=
+                        (f"sweep-{run_index}/target-{target_index:03d}/"
+                         f"attempt-0001/{output_name}") or
                         receipt_record.get("bytes") != approval_record["bytes"] or
                         receipt_record.get("sha256") != approval_record["sha256"]):
                     raise ValueError(
                         f"{target['name']}: controller receipt does not bind "
                         f"{artifact_name}")
+            candidate_relative = success_receipt["artifacts"]["candidate"]["path"]
+            def output_root(source, prefix):
+                try:
+                    value = source.decode("utf-8")
+                except UnicodeDecodeError as error:
+                    raise ValueError(
+                        f"{target['name']}: non-UTF-8 controller output") from error
+                if (not value.startswith(prefix) or not value.endswith("\n") or
+                        value.count("\n") != 1):
+                    raise ValueError(
+                        f"{target['name']}: malformed controller output")
+                full = Path(value[len(prefix):-1])
+                relative = Path(candidate_relative)
+                if not full.is_absolute() or full.as_posix() != value[len(prefix):-1]:
+                    raise ValueError(
+                        f"{target['name']}: noncanonical controller output path")
+                root = full
+                for _part in relative.parts:
+                    root = root.parent
+                if root / relative != full:
+                    raise ValueError(
+                        f"{target['name']}: controller output path mismatch")
+                return str(root)
+            observed_collect_root = output_root(
+                artifact_sources["collector_stdout"],
+                "unapproved reference candidate: ")
+            observed_validate_root = output_root(
+                artifact_sources["validator_stdout"],
+                "candidate and linked artifacts valid but unapproved: ")
+            if (artifact_sources["collector_stderr"] != b"" or
+                    artifact_sources["validator_stderr"] != b"" or
+                    observed_collect_root != observed_validate_root):
+                raise ValueError(
+                    f"{target['name']}: controller output causality mismatch")
+            if collection_artifact_root is None:
+                collection_artifact_root = observed_collect_root
+            elif observed_collect_root != collection_artifact_root:
+                raise ValueError("reference runs use different artifact roots")
             plan = json.loads(
                 artifact_sources["plan"].decode("utf-8"),
                 object_pairs_hook=_reject_duplicate_keys)
@@ -854,6 +912,8 @@ def _load_identity_approval(targets):
             reference_contract = collection_contract["reference"]
             external_contract = collection_contract["external_runtime"]
             external_plan = plan["reference"]["external_runtime"]
+            core_elf = plan["reference"]["elf_runtime"]
+            external_elf = external_plan["elf_runtime"]
             if (plan["input"]["collector"]["sha256"] !=
                     candle_contract["collector"]["sha256"] or
                     plan["input"]["collector_repository"]["git_head"] !=
@@ -894,6 +954,36 @@ def _load_identity_approval(targets):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind "
                     "external runtime")
+            oracle = reference.elf_oracle_projection(core_elf)
+            if (reference.elf_oracle_projection(external_elf) != oracle or
+                    collection_contract["elf_oracle"] != oracle):
+                raise ValueError(
+                    f"{target['name']}: collection ELF oracle mismatch")
+            stable_core_elf = reference._stable_elf_evidence(core_elf)
+            stable_external_elf = reference._stable_elf_evidence(external_elf)
+            if collection_core_elf is None:
+                collection_core_elf = stable_core_elf
+                collection_external_elf = stable_external_elf
+            elif (stable_core_elf != collection_core_elf or
+                    stable_external_elf != collection_external_elf):
+                raise ValueError(
+                    "reference runs use different core/external ELF closures")
+            runtime_contract = collection_contract["runtime"]
+            runtime_bindings = {
+                "runtime": plan["reference"]["runtime_executable"],
+                "runtime_stublib": plan["reference"]["runtime_stublib"],
+                "ocamlc": {key: plan["reference"]["ocamlc"][key]
+                           for key in ("path", "sha256")},
+                "ocamlfind": plan["reference"]["findlib"]["executable"],
+            }
+            if (not isinstance(runtime_contract, dict) or
+                    set(runtime_contract) != set(runtime_bindings) or any(
+                        not isinstance(runtime_contract[key], dict) or
+                        runtime_contract[key].get("path") != value["path"] or
+                        runtime_contract[key].get("sha256") != value["sha256"]
+                        for key, value in runtime_bindings.items())):
+                raise ValueError(
+                    f"{target['name']}: collection core runtime mismatch")
             nonces.add(run["session_nonce"])
             identities.add(run["identity_sha256"])
         if len(nonces) != 2 or len(identities) != 1:

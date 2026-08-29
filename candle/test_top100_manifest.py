@@ -330,6 +330,15 @@ class Top100ManifestTest(unittest.TestCase):
                         target, serializer, nonce)
                     package_root = Path("/reference-tools/pari")
                     def route(argument, resolved):
+                        is_symlink = argument != resolved
+                        argument_record = {
+                            "path": argument,
+                            "kind": "symlink" if is_symlink else "file",
+                            "mode": 0o777 if is_symlink else 0o755,
+                            "resolved_path": resolved,
+                        }
+                        if is_symlink:
+                            argument_record["target"] = resolved
                         return {
                             "argument_path": argument,
                             "argument_parent": {
@@ -337,14 +346,84 @@ class Top100ManifestTest(unittest.TestCase):
                                 "kind": "directory", "mode": 0o755,
                                 "resolved_path": str(Path(argument).parent),
                             },
-                            "argument": {
-                                "path": argument, "kind": "file", "mode": 0o755,
-                                "resolved_path": resolved,
-                            },
+                            "argument": argument_record,
                             "resolved_executable": {
                                 "path": resolved, "sha256": "a" * 64,
                                 "mode": 0o755,
                             },
+                        }
+                    def file_pin(path, fill):
+                        return {"path": path, "sha256": fill * 64}
+                    def elf_evidence(root_pins):
+                        bash_route = route("/bin/bash", "/usr/bin/bash")
+                        ldd_route = route("/usr/bin/ldd", "/usr/bin/ldd")
+                        loader_route = route(
+                            "/lib64/ld-linux-x86-64.so.2",
+                            "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                        )
+                        loader_pin = {
+                            "path": loader_route["resolved_executable"]["path"],
+                            "sha256": loader_route["resolved_executable"]["sha256"],
+                        }
+                        raw = (
+                            "\tlinux-vdso.so.1 (0x1)\n"
+                            "\t/lib64/ld-linux-x86-64.so.2 (0x2)\n")
+                        normalized = reference._normalize_ldd_stdout(
+                            raw, "approval fixture")
+                        roots = sorted(root_pins, key=lambda item: item["path"])
+                        observation_roots = {
+                            pin["path"]: pin for pin in roots}
+                        observation_roots["/usr/bin/bash"] = {
+                            "path": "/usr/bin/bash", "sha256": "a" * 64}
+                        observations = []
+                        for root_path in sorted(observation_roots):
+                            observations.append({
+                                "root": observation_roots[root_path],
+                                "argv": ["/bin/bash", "/usr/bin/ldd", root_path],
+                                "environment": dict(
+                                    reference.ELF_OBSERVER_ENVIRONMENT),
+                                "return_code": 0,
+                                "stdout": raw,
+                                "stdout_sha256": top100_manifest.hashlib.sha256(
+                                    raw.encode()).hexdigest(),
+                                "normalized_stdout": normalized,
+                                "normalized_stdout_sha256": top100_manifest.hashlib.sha256(
+                                    normalized.encode()).hexdigest(),
+                                "stderr": "",
+                                "stderr_sha256": top100_manifest.hashlib.sha256(
+                                    b"").hexdigest(),
+                                "resolved_files": [{
+                                    "role": "ld-linux-x86-64.so.2",
+                                    "reported_path":
+                                        "/lib64/ld-linux-x86-64.so.2",
+                                    **loader_pin,
+                                }],
+                                "virtual_objects": ["linux-vdso.so.1"],
+                            })
+                        return {
+                            "policy": reference.ELF_EVIDENCE_POLICY,
+                            "output_normalization":
+                                reference.ELF_OUTPUT_NORMALIZATION_POLICY,
+                            "tools": {"bash": bash_route, "ldd": ldd_route},
+                            "hardcoded_loader_routes": [
+                                {"argument_path": "/lib/ld-linux.so.2",
+                                 "status": "absent"},
+                                {"argument_path":
+                                     "/lib64/ld-linux-x86-64.so.2",
+                                 "status": "present", "route": loader_route},
+                                {"argument_path":
+                                     "/libx32/ld-linux-x32.so.2",
+                                 "status": "absent"},
+                            ],
+                            "ld_so_cache": {
+                                "path": "/etc/ld.so.cache", "sha256": "c" * 64},
+                            "ld_so_preload": {
+                                "path": "/etc/ld.so.preload", "status": "absent"},
+                            "environment": dict(
+                                reference.ELF_OBSERVER_ENVIRONMENT),
+                            "requested_roots": roots,
+                            "observations": observations,
+                            "closure": [loader_pin],
                         }
                     external_environment = {
                         "HOME": "/reference",
@@ -356,7 +435,7 @@ class Top100ManifestTest(unittest.TestCase):
                     probe_source = reference.PARI_GP_PROBE_SOURCE
                     probe_stdout = "1\n[3, 1; 5, 1]\n"
                     external_runtime = {
-                        "policy": "single_private_path_gp_with_pinned_shell_v1",
+                        "policy": "single_private_path_gp_with_pinned_shell_v2",
                         "command_shell": route("/bin/sh", "/usr/bin/dash"),
                         "pari_gp": route(
                             str(package_root / "usr/bin/gp"),
@@ -388,9 +467,11 @@ class Top100ManifestTest(unittest.TestCase):
                             "inventory_policy":
                                 "relative_path_kind_mode_link_target_and_content_v1",
                         },
-                        "dynamic_libraries": [{
-                            "path": "/usr/lib/libc.so.6", "sha256": "f" * 64,
-                        }],
+                        "elf_runtime": elf_evidence([
+                            file_pin("/usr/bin/dash", "a"),
+                            file_pin(
+                                str(package_root / "usr/bin/gp-2.15"), "a"),
+                        ]),
                         "probe": {
                             "shell_argv": ["/bin/sh", "-c", probe_source],
                             "environment": external_environment,
@@ -402,8 +483,6 @@ class Top100ManifestTest(unittest.TestCase):
                                 b"").hexdigest(),
                         },
                     }
-                    def file_pin(path, fill):
-                        return {"path": path, "sha256": fill * 64}
                     def tree_pin(root_path, fill):
                         return {
                             "root": root_path, "root_mode": 0o755,
@@ -456,8 +535,13 @@ class Top100ManifestTest(unittest.TestCase):
                                 file_pin(
                                     "/reference/stublibs/dllzarith.so", "5"),
                             ],
-                            "dynamic_libraries": [
-                                file_pin("/usr/lib/libc.so.6", "7")],
+                            "elf_runtime": elf_evidence([
+                                file_pin("/bin/sh", "4"),
+                                file_pin(
+                                    "/reference/stublibs/dllunix.so", "6"),
+                                file_pin(
+                                    "/reference/stublibs/dllzarith.so", "5"),
+                            ]),
                             "ocamlc": {
                                 **file_pin("/reference/bin/ocamlc", "8"),
                                 "version": "4.14.1",
@@ -567,12 +651,12 @@ class Top100ManifestTest(unittest.TestCase):
                     plan_source = (json.dumps(plan, indent=2) + "\n").encode()
                     artifacts = {
                         "candidate": record(
-                            f"{prefix}-candidate.json", candidate_source),
-                        "plan": record(f"{prefix}-plan.json", plan_source),
+                            f"{prefix}/candidate.json", candidate_source),
+                        "plan": record(f"{prefix}/plan.json", plan_source),
                         "request": record(
-                            f"{prefix}-request.ml", request_source.encode()),
+                            f"{prefix}/request.ml", request_source.encode()),
                         "transcript": record(
-                            f"{prefix}-transcript.log", transcript.encode()),
+                            f"{prefix}/transcript.log", transcript.encode()),
                     }
                     artifacts["source_contract"] = {
                         "path": "candle/evidence/source-contract.json",
@@ -591,10 +675,16 @@ class Top100ManifestTest(unittest.TestCase):
                             "candidate", "plan", "request", "transcript"}
                     }
                     output_records = {}
+                    candidate_output_path = (
+                        f"/reference-evidence/{collection_prefix}/candidate.json")
                     for field, filename, content in (
-                            ("collector_stdout", "collect.stdout", b"collect\n"),
+                            ("collector_stdout", "collect.stdout", (
+                                "unapproved reference candidate: "
+                                f"{candidate_output_path}\n").encode()),
                             ("collector_stderr", "collect.stderr", b""),
-                            ("validator_stdout", "validate.stdout", b"validate\n"),
+                            ("validator_stdout", "validate.stdout", (
+                                "candidate and linked artifacts valid but "
+                                f"unapproved: {candidate_output_path}\n").encode()),
                             ("validator_stderr", "validate.stderr", b"")):
                         value = record(f"{prefix}/{filename}", content)
                         output_records[field] = {
@@ -649,7 +739,7 @@ class Top100ManifestTest(unittest.TestCase):
                     "expected_identity": expected,
                 })
             collection_contract = {
-                "schema": 2,
+                "schema": 3,
                 "kind": "candle-great100-two-sweep-reference-collection",
                 "approval_status": "candidate_collection_only_unapproved",
                 "promotion_allowed": False,
@@ -682,7 +772,13 @@ class Top100ManifestTest(unittest.TestCase):
                             "exact_source_reference_commit",
                             "compatibility_deltas")},
                 },
-                "runtime": {},
+                "runtime": {
+                    "runtime": file_pin("/reference/ocaml-hol", "3"),
+                    "runtime_stublib": file_pin(
+                        "/reference/stublibs/dllzarith.so", "5"),
+                    "ocamlc": file_pin("/reference/bin/ocamlc", "8"),
+                    "ocamlfind": file_pin("/reference/bin/ocamlfind", "9"),
+                },
                 "external_runtime": {
                     "policy": external_runtime["policy"],
                     "command_shell": {"argument_path": "/bin/sh",
@@ -704,6 +800,8 @@ class Top100ManifestTest(unittest.TestCase):
                         key: external_environment[key]
                         for key in ("PATH", "GPRC", "GP_DATA_DIR")},
                 },
+                "elf_oracle": reference.elf_oracle_projection(
+                    external_runtime["elf_runtime"]),
                 "deadlines": collection_deadlines,
                 "inventory": {
                     "target_count": 65, "source_count": 66,
@@ -786,6 +884,107 @@ class Top100ManifestTest(unittest.TestCase):
                 self.assertEqual(
                     expected[targets[0]["name"]]["approval_sha256"],
                     artifact_sha256)
+                def rewrite_collection_evidence():
+                    updated_contract = (
+                        json.dumps(
+                            collection_contract, indent=2, sort_keys=True) +
+                        "\n").encode()
+                    contract_path = root / contract_record["path"]
+                    contract_path.write_bytes(updated_contract)
+                    contract_record.update({
+                        "bytes": len(updated_contract),
+                        "sha256": top100_manifest.hashlib.sha256(
+                            updated_contract).hexdigest(),
+                    })
+                    collection_receipt["contract_sha256"] = \
+                        top100_manifest._canonical_sha256(collection_contract)
+                    collection_receipt["contract"].update({
+                        "bytes": contract_record["bytes"],
+                        "sha256": contract_record["sha256"],
+                    })
+                    updated_receipt = (
+                        json.dumps(
+                            collection_receipt, indent=2, sort_keys=True) +
+                        "\n").encode()
+                    receipt_path = root / receipt_record["path"]
+                    receipt_path.write_bytes(updated_receipt)
+                    receipt_record.update({
+                        "bytes": len(updated_receipt),
+                        "sha256": top100_manifest.hashlib.sha256(
+                            updated_receipt).hexdigest(),
+                    })
+                    approval_path.write_text(
+                        json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                original_cache_sha256 = collection_contract["elf_oracle"][
+                    "ld_so_cache"]["sha256"]
+                collection_contract["elf_oracle"]["ld_so_cache"][
+                    "sha256"] = "0" * 64
+                rewrite_collection_evidence()
+                with self.assertRaisesRegex(ValueError, "ELF oracle mismatch"):
+                    top100_manifest._load_identity_approval(targets)
+                collection_contract["elf_oracle"]["ld_so_cache"][
+                    "sha256"] = original_cache_sha256
+                rewrite_collection_evidence()
+                first_run = approved_targets[0]["reference_runs"][0]
+                first_artifacts = first_run["artifacts"]
+                stdout_record = first_artifacts["collector_stdout"]
+                stdout_path = root / stdout_record["path"]
+                original_stdout = stdout_path.read_bytes()
+                success_record = first_artifacts["controller_success"]
+                success_path = root / success_record["path"]
+                original_success = success_path.read_bytes()
+                aggregate_success_record = collection_rows[1][0]["success"][
+                    "receipt"]
+                changed_stdout = (
+                    b"unapproved reference candidate: "
+                    b"/different-root/sweep-1/target-001/attempt-0001/"
+                    b"candidate.json\n")
+                stdout_path.write_bytes(changed_stdout)
+                stdout_record.update({
+                    "bytes": len(changed_stdout),
+                    "sha256": top100_manifest.hashlib.sha256(
+                        changed_stdout).hexdigest(),
+                })
+                changed_success = json.loads(original_success)
+                changed_success["collector_stdout"].update({
+                    "bytes": stdout_record["bytes"],
+                    "sha256": stdout_record["sha256"],
+                })
+                changed_success_source = (
+                    json.dumps(
+                        changed_success, indent=2, sort_keys=True) +
+                    "\n").encode()
+                success_path.write_bytes(changed_success_source)
+                success_record.update({
+                    "bytes": len(changed_success_source),
+                    "sha256": top100_manifest.hashlib.sha256(
+                        changed_success_source).hexdigest(),
+                })
+                aggregate_success_record.update({
+                    "bytes": success_record["bytes"],
+                    "sha256": success_record["sha256"],
+                })
+                rewrite_collection_evidence()
+                with self.assertRaisesRegex(
+                        ValueError, "output causality mismatch"):
+                    top100_manifest._load_identity_approval(targets)
+                stdout_path.write_bytes(original_stdout)
+                stdout_record.update({
+                    "bytes": len(original_stdout),
+                    "sha256": top100_manifest.hashlib.sha256(
+                        original_stdout).hexdigest(),
+                })
+                success_path.write_bytes(original_success)
+                success_record.update({
+                    "bytes": len(original_success),
+                    "sha256": top100_manifest.hashlib.sha256(
+                        original_success).hexdigest(),
+                })
+                aggregate_success_record.update({
+                    "bytes": success_record["bytes"],
+                    "sha256": success_record["sha256"],
+                })
+                rewrite_collection_evidence()
                 receipt_artifact = approval["collection_evidence"]["receipt"]
                 receipt_path = root / receipt_artifact["path"]
                 original_receipt_source = receipt_path.read_bytes()
@@ -823,8 +1022,6 @@ class Top100ManifestTest(unittest.TestCase):
                     top100_manifest.EXACT_SOURCE_REFERENCE_COMMIT
                 approval_path.write_text(
                     json.dumps(approval, indent=2) + "\n", encoding="utf-8")
-                first_artifacts = approved_targets[0]["reference_runs"][0][
-                    "artifacts"]
                 for artifact_name, replacement in (
                         ("candidate", b"arbitrary candidate text\n"),
                         ("plan", b"arbitrary plan text\n"),
