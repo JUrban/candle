@@ -474,6 +474,21 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     with self.assertRaises(reference.CollectionError):
                         reference.validate_reference_runtime_provenance(changed)
 
+    def test_manifest_envelope_rejects_numeric_type_confusion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "manifest.json"
+            for schema, count in ((1.0, 1), (1, True), (True, 1)):
+                with self.subTest(schema=schema, count=count):
+                    manifest.write_text(json.dumps({
+                        "schema_version": schema,
+                        "target_count": count,
+                        "targets": [{"name": "fixture"}],
+                    }), encoding="utf-8")
+                    with mock.patch.object(reference, "MANIFEST", manifest), \
+                            self.assertRaisesRegex(
+                                reference.CollectionError, "manifest envelope"):
+                        reference._target_from_manifest("fixture")
+
     def test_external_gp_requires_empty_data_and_exact_sys_command_shell(self):
         with tempfile.TemporaryDirectory() as directory:
             root, runtime, runtime_stublib, ocamlc, ocamlfind = \

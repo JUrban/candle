@@ -1597,6 +1597,13 @@ def _ocaml_string(value):
 
 def _target_from_manifest(target_name):
     payload = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    if (not isinstance(payload, dict) or
+            type(payload.get("schema_version")) is not int or
+            payload["schema_version"] != 1 or
+            type(payload.get("target_count")) is not int or
+            not isinstance(payload.get("targets"), list) or
+            payload["target_count"] != len(payload["targets"])):
+        raise CollectionError("malformed Great100 manifest envelope")
     matches = [target for target in payload["targets"]
                if target["name"] == target_name]
     if len(matches) != 1:
