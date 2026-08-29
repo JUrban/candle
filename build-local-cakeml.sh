@@ -15,15 +15,25 @@ done
 }
 
 usage() {
-  printf 'usage: %s <CakeML checkout> <bootstrap-provenance.json>\n' "$0" >&2
+  printf 'usage: %s <CakeML checkout> <bootstrap-provenance.json> [<source Candle checkout> <source Candle head> <bootstrap-transition.json>]\n' "$0" >&2
   exit 2
 }
 
-[[ $# -eq 2 ]] || usage
+[[ $# -eq 2 || $# -eq 5 ]] || usage
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 cakeml_dir=$(realpath -- "$1")
 bootstrap_record=$(/usr/bin/realpath -- "$2")
+transition_mode=false
+source_candle_dir=
+source_candle_head=
+transition_record=
+if [[ $# -eq 5 ]]; then
+  transition_mode=true
+  source_candle_dir=$(/usr/bin/realpath -- "$3")
+  source_candle_head=$4
+  transition_record=$(/usr/bin/realpath -- "$5")
+fi
 manifest=$script_dir/candle/flyspeck_manifest.json
 bootstrap_dir=$cakeml_dir/compiler/bootstrap/compilation/x64/64
 build_dir=$script_dir/candle/build
@@ -83,12 +93,27 @@ actual_head=$(/usr/bin/git -C "$cakeml_dir" rev-parse HEAD)
 /usr/bin/git -C "$cakeml_dir" diff --quiet
 /usr/bin/git -C "$cakeml_dir" diff --cached --quiet
 
-/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
-  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
-  check-bootstrap \
-  --candle-root "$script_dir" \
-  --cakeml-root "$cakeml_dir" \
-  --record "$bootstrap_record"
+if $transition_mode; then
+  final_candle_head=$(/usr/bin/git -C "$script_dir" rev-parse HEAD)
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S \
+      "$script_dir/candle/cakeml_bootstrap_transition.py" \
+    check-transition \
+    --source-candle-root "$source_candle_dir" \
+    --source-candle-head "$source_candle_head" \
+    --final-candle-root "$script_dir" \
+    --final-candle-head "$final_candle_head" \
+    --cakeml-root "$cakeml_dir" \
+    --bootstrap-record "$bootstrap_record" \
+    --record "$transition_record"
+else
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
+    check-bootstrap \
+    --candle-root "$script_dir" \
+    --cakeml-root "$cakeml_dir" \
+    --record "$bootstrap_record"
+fi
 
 required=(cake.S config_enc_str.txt candle_boot.ml basis_ffi.c Makefile)
 for input in "${required[@]}"; do
@@ -119,13 +144,28 @@ cp -- "$build_dir/cake.S" "$build_dir/cake.S.bootstrap"
     /usr/bin/python3 -I ../insulate.py types.txt insulate.ml
 )
 
-/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
-  /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
-  record-linked \
-  --candle-root "$script_dir" \
-  --cakeml-root "$cakeml_dir" \
-  --bootstrap-record "$bootstrap_record" \
-  --write "$build_dir/cakeml-build-provenance.json"
+if $transition_mode; then
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S \
+      "$script_dir/candle/cakeml_bootstrap_transition.py" \
+    record-linked-transition \
+    --source-candle-root "$source_candle_dir" \
+    --source-candle-head "$source_candle_head" \
+    --final-candle-root "$script_dir" \
+    --final-candle-head "$final_candle_head" \
+    --cakeml-root "$cakeml_dir" \
+    --bootstrap-record "$bootstrap_record" \
+    --transition-record "$transition_record" \
+    --write "$build_dir/cakeml-build-provenance.json"
+else
+  /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+    /usr/bin/python3 -I -S "$script_dir/candle/cakeml_artifact_provenance.py" \
+    record-linked \
+    --candle-root "$script_dir" \
+    --cakeml-root "$cakeml_dir" \
+    --bootstrap-record "$bootstrap_record" \
+    --write "$build_dir/cakeml-build-provenance.json"
+fi
 
 ln -sfn candle/build/config_enc_str.txt "$script_dir/config_enc_str.txt"
 ln -sfn candle/build/candle_boot.ml "$script_dir/candle_boot.ml"
