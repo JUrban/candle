@@ -199,6 +199,13 @@ SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
 FINGERPRINT_MARKER = reference_protocol.FINGERPRINT_MARKER
 STATE_FINGERPRINT_MARKER = reference_protocol.STATE_FINGERPRINT_MARKER
 FINGERPRINT_SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_FINGERPRINTS_OK"
+DEPENDENCY_HISTORY_PREFIX = "CANDLE_FLYSPECK_DEPENDENCY_HISTORY_V1"
+DEPENDENCY_HISTORY_SUCCESS_MARKER = (
+    "CANDLE_FLYSPECK_DEPENDENCY_HISTORY_V1_OK"
+)
+DEPENDENCY_HISTORY_POLICY = (
+    "serialization-full-digest-thm-sorted-dependency-history-v1"
+)
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 EXPECTED_PYTHON_RUNTIME = {
     "execution_binding": "/proc/self/exe",
@@ -1641,6 +1648,118 @@ def fingerprint_requests(boundary_id: str) -> list[str]:
     return []
 
 
+def dependency_history_requests(boundary_id: str) -> list[str]:
+    """Return identities for which Serialization is available at the boundary."""
+    if boundary_id.startswith("07-"):
+        return fingerprint_requests(boundary_id)
+    return []
+
+
+def dependency_history_marker_prefix(
+    nonce: str, index: int, theorem_name: str,
+) -> str:
+    return " ".join((
+        DEPENDENCY_HISTORY_PREFIX, nonce, str(index),
+        theorem_name.encode("utf-8").hex(),
+    )) + " "
+
+
+def dependency_history_terminal(
+    nonce: str, boundary_id: str, theorem_names: list[str],
+) -> str:
+    return " ".join((
+        DEPENDENCY_HISTORY_SUCCESS_MARKER, nonce, boundary_id,
+        str(len(theorem_names)), canonical_sha256(theorem_names),
+    ))
+
+
+def dependency_history_not_requested(boundary_id: str) -> dict[str, Any]:
+    return {
+        "schema": 1,
+        "kind": "candle-flyspeck-dependency-history-observation",
+        "policy": DEPENDENCY_HISTORY_POLICY,
+        "status": "not_requested",
+        "boundary_id": boundary_id,
+        "record_count": 0,
+        "ordered_request_sha256": canonical_sha256([]),
+        "ordered_record_sha256": canonical_sha256([]),
+        "records": [],
+        "approved_reference_present": False,
+        "dependency_history_is_kernel_trace": False,
+        "pft_used": False,
+        "s2_s3_evidence": False,
+    }
+
+
+def parse_dependency_history_text(
+    log: str, theorem_names: list[str], boundary_id: str, nonce: str,
+) -> dict[str, Any]:
+    """Parse an exact nonce-bound Serialization.full_digest_thm session."""
+    require(re.fullmatch(r"[0-9a-f]{32}", nonce) is not None,
+            "dependency-history nonce must be 128-bit lowercase hex")
+    namespace_lines = [
+        line for line in log.splitlines()
+        if line.startswith("CANDLE_FLYSPECK_DEPENDENCY_HISTORY_")
+    ]
+    if not theorem_names:
+        require(not namespace_lines,
+                "unexpected dependency-history record at an unrequested boundary")
+        return dependency_history_not_requested(boundary_id)
+    require(boundary_id.startswith("07-") and
+            theorem_names == dependency_history_requests(boundary_id),
+            "dependency history is requested only for the exact final boundary")
+    records = []
+    expected_lines = []
+    for index, theorem_name in enumerate(theorem_names):
+        require(SAFE_VALUE_PATH.fullmatch(theorem_name) is not None,
+                f"unsafe dependency-history theorem value path: {theorem_name}")
+        prefix = dependency_history_marker_prefix(nonce, index, theorem_name)
+        matches = [
+            line for line in namespace_lines if line.startswith(prefix)
+        ]
+        require(len(matches) == 1,
+                f"missing or duplicate dependency-history record: {index}")
+        fields = matches[0].split(" ")
+        require(len(fields) == 5 and fields[:4] == prefix[:-1].split(" ") and
+                re.fullmatch(r"[0-9a-f]{32}", fields[4]) is not None,
+                f"malformed dependency-history record: {index}")
+        records.append({
+            "index": index,
+            "name": theorem_name,
+            "full_digest_md5": fields[4],
+        })
+        expected_lines.append(matches[0])
+    terminal = dependency_history_terminal(nonce, boundary_id, theorem_names)
+    expected_lines.append(terminal)
+    require(namespace_lines == expected_lines,
+            "dependency-history session is missing, extra, or out of order")
+    return {
+        "schema": 1,
+        "kind": "candle-flyspeck-dependency-history-observation",
+        "policy": DEPENDENCY_HISTORY_POLICY,
+        "status": "observed_uncompared",
+        "boundary_id": boundary_id,
+        "record_count": len(records),
+        "ordered_request_sha256": canonical_sha256(theorem_names),
+        "ordered_record_sha256": canonical_sha256(records),
+        "records": records,
+        "approved_reference_present": False,
+        "dependency_history_is_kernel_trace": False,
+        "pft_used": False,
+        "s2_s3_evidence": False,
+    }
+
+
+def parse_dependency_history(
+    log_path: Path, theorem_names: list[str], boundary_id: str, nonce: str,
+) -> dict[str, Any]:
+    try:
+        log = log_path.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeError) as error:
+        raise ContractError(f"cannot read dependency-history log: {error}") from error
+    return parse_dependency_history_text(log, theorem_names, boundary_id, nonce)
+
+
 def write_postlude(
     path: Path,
     candle_root: Path,
@@ -1648,7 +1767,9 @@ def write_postlude(
     theorem_names: list[str],
     nonce: str,
     logical_source_closure: dict[str, Any],
+    dependency_theorem_names: list[str] | None = None,
 ) -> None:
+    dependency_theorem_names = dependency_theorem_names or []
     lines = ["(* Generated theorem-observation postlude; not an approval record. *)"]
     if boundary_id.startswith("07-"):
         lines.append(f"#use {ocaml_string(str(candle_root / L2_TARGET_RELATIVE))};;")
@@ -1671,6 +1792,31 @@ def write_postlude(
             f"{len(theorem_names)}"
         )
         lines.append(f"print_endline {ocaml_string(marker)};;")
+    if dependency_theorem_names:
+        require(dependency_theorem_names == dependency_history_requests(boundary_id),
+                "postlude dependency-history request differs from final contract")
+        for index, name in enumerate(dependency_theorem_names):
+            require(SAFE_VALUE_PATH.fullmatch(name) is not None,
+                    f"unsafe dependency-history theorem value path: {name}")
+            value = f"candle_flyspeck_dependency_history_{index:03d}"
+            lines.append(
+                f"let {value} = Serialization.full_digest_thm {name};;"
+            )
+            lines.append(
+                "if String.length " + value + " <> 32 then failwith " +
+                ocaml_string("malformed Flyspeck dependency-history digest") + ";;"
+            )
+            lines.append(
+                "print_endline (" +
+                ocaml_string(dependency_history_marker_prefix(
+                    nonce, index, name,
+                )) + " ^ " + value + ");;"
+            )
+        lines.append(
+            "print_endline " + ocaml_string(dependency_history_terminal(
+                nonce, boundary_id, dependency_theorem_names,
+            )) + ";;"
+        )
     lines.append(f"Cakeml.requestSourceTraceFinish {ocaml_string(nonce)};;")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -1998,8 +2144,10 @@ def validate_log(
     boundary_id: str,
     nonce: str,
     theorem_names: list[str] | None = None,
+    dependency_theorem_names: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     theorem_names = theorem_names or []
+    dependency_theorem_names = dependency_theorem_names or []
     lines = log.splitlines()
 
     def exact_position(marker: str, label: str) -> int:
@@ -2050,6 +2198,21 @@ def validate_log(
         allowed_control_markers.add(fingerprint_final)
         fingerprint_position = exact_position(fingerprint_final, "fingerprint success")
         positions.append(fingerprint_position)
+    dependency_observation = parse_dependency_history_text(
+        log, dependency_theorem_names, boundary_id, nonce,
+    )
+    dependency_positions = [
+        index for index, line in enumerate(lines)
+        if line.startswith("CANDLE_FLYSPECK_DEPENDENCY_HISTORY_")
+    ]
+    if dependency_theorem_names:
+        require(fingerprint_position is not None and dependency_positions and
+                all(position > fingerprint_position
+                    for position in dependency_positions) and
+                dependency_observation["record_count"] ==
+                len(dependency_theorem_names),
+                "dependency-history protocol is outside its fingerprint session")
+        positions.extend(dependency_positions)
     require(positions == sorted(positions), "stratum markers are out of order")
     control_namespaces = (
         "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_",

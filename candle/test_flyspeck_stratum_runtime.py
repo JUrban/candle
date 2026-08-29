@@ -747,6 +747,87 @@ class StratumRuntimeTests(unittest.TestCase):
         final = subject.fingerprint_requests("07-final_assembly-through-296")
         self.assertEqual(len(final), 4)
         self.assertEqual(final[-1], "Candle_flyspeck_l2.tame_imp_kepler_conjecture")
+        self.assertEqual(
+            subject.dependency_history_requests("05-lp_support-through-184"),
+            [],
+        )
+        self.assertEqual(
+            subject.dependency_history_requests("07-final_assembly-through-296"),
+            final,
+        )
+
+    def test_dependency_history_protocol_is_exact_ordered_and_unapproved(self) -> None:
+        boundary = "07-final_assembly-through-296"
+        names = subject.dependency_history_requests(boundary)
+        records = [
+            subject.dependency_history_marker_prefix(
+                self.nonce, index, name,
+            ) + f"{index + 1:032x}"
+            for index, name in enumerate(names)
+        ]
+        terminal = subject.dependency_history_terminal(
+            self.nonce, boundary, names,
+        )
+        report = subject.parse_dependency_history_text(
+            "\n".join([*records, terminal]) + "\n",
+            names, boundary, self.nonce,
+        )
+        self.assertEqual(report["status"], "observed_uncompared")
+        self.assertEqual(report["record_count"], 4)
+        self.assertFalse(report["approved_reference_present"])
+        self.assertFalse(report["dependency_history_is_kernel_trace"])
+        self.assertFalse(report["pft_used"])
+        self.assertFalse(report["s2_s3_evidence"])
+        for label, forged in (
+            ("missing", records[1:] + [terminal]),
+            ("extra", records + [records[-1], terminal]),
+            ("reordered", [records[1], records[0], *records[2:], terminal]),
+            ("tampered digest", [records[0][:-1] + "g", *records[1:], terminal]),
+            ("wrong nonce", [records[0].replace(self.nonce, "b" * 32),
+                             *records[1:], terminal]),
+            ("wrong terminal", [*records, terminal + "0"]),
+        ):
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.parse_dependency_history_text(
+                    "\n".join(forged) + "\n",
+                    names, boundary, self.nonce,
+                )
+        with self.assertRaisesRegex(
+            subject.ContractError, "unexpected dependency-history",
+        ):
+            subject.parse_dependency_history_text(
+                records[0] + "\n", [], "05-lp_support-through-184",
+                self.nonce,
+            )
+
+    def test_final_postlude_emits_serialization_dependency_history_last(self) -> None:
+        boundary = "07-final_assembly-through-296"
+        names = subject.fingerprint_requests(boundary)
+        dependency_names = subject.dependency_history_requests(boundary)
+        with tempfile.TemporaryDirectory() as temporary:
+            postlude = Path(temporary) / "postlude.ml"
+            subject.write_postlude(
+                postlude, Path(temporary), boundary, names, self.nonce,
+                self.logical_source_closure, dependency_names,
+            )
+            source = postlude.read_text(encoding="utf-8")
+        self.assertEqual(source.count("Serialization.full_digest_thm"), 4)
+        self.assertEqual(
+            source.count(subject.DEPENDENCY_HISTORY_PREFIX + " "), 4,
+        )
+        self.assertEqual(
+            source.count(subject.DEPENDENCY_HISTORY_SUCCESS_MARKER), 1,
+        )
+        self.assertLess(
+            source.index(subject.FINGERPRINT_SUCCESS_MARKER),
+            source.index(subject.DEPENDENCY_HISTORY_PREFIX),
+        )
+        self.assertLess(
+            source.index(subject.DEPENDENCY_HISTORY_SUCCESS_MARKER),
+            source.index("Cakeml.requestSourceTraceFinish"),
+        )
 
     def test_manifest_closure_is_complete_ordered_and_excludes_full_loader(self) -> None:
         manifest = json.loads(
