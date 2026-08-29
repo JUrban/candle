@@ -127,6 +127,77 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "}\n"),
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=True)
+        csdp_executable = gp_bin / "csdp"
+        subprocess.run(
+            ["/usr/bin/cc", "-x", "c", "-O0", "-o",
+             str(csdp_executable), "-"],
+            input=(
+                "#include <stdio.h>\n"
+                "int main(int argc, char **argv) { FILE *out;\n"
+                "  if (argc != 3 || !(out = fopen(argv[2], \"wb\"))) return 2;\n"
+                "  fputs(\"fixture-solution\\n\", out); fclose(out);\n"
+                "  fputs(\"CSDP 6.2.0\\nSuccess: SDP solved\\n\""
+                " \"Primal objective value: 2.3000000e+01 \\n\""
+                " \"Dual objective value: 2.3000000e+01 \\n\""
+                " \"DIMACS error measures: 0 0 0 0 0 0\\n\""
+                " \"Elements time: 0.001000 \\n\""
+                " \"Factor time: 0.002000 \\n\""
+                " \"Other time: 0.003000 \\n\""
+                " \"Total time: 0.006000 \\n\", stdout);\n"
+                "  return 0; }\n"),
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=True)
+        csdp_executable.chmod(0o555)
+        csdp_source = gp_root / "candle-csdp-source.tar.gz"
+        csdp_source.write_bytes(b"pinned csdp source archive\n")
+        csdp_probe = gp_root / "candle-csdp-theta1.dat-s"
+        csdp_probe.write_bytes(b"pinned theta1 input\n")
+        csdp_receipt = gp_root / "candle-csdp-build.json"
+        csdp_receipt.write_text(json.dumps({
+            "schema": 1,
+            "kind": "candle-hol-light-csdp-single-thread-build",
+            "source": {
+                "archive": csdp_source.name,
+                "bytes": csdp_source.stat().st_size,
+                "sha256": hashlib.sha256(csdp_source.read_bytes()).hexdigest(),
+                "upstream_tree": reference.CSDP_BUILD_SOURCE_UPSTREAM_TREE,
+                "ubuntu_source_package": reference.CSDP_BUILD_SOURCE_PACKAGE,
+            },
+            "toolchain": dict(reference.CSDP_BUILD_TOOLCHAIN),
+            "recipe": {
+                "cflags": reference.CSDP_BUILD_CFLAGS,
+                "library_flags": reference.CSDP_BUILD_LIBRARY_FLAGS,
+                "openmp_enabled": False,
+                "native_cpu_flags": False,
+                "commands": list(reference.CSDP_BUILD_COMMANDS),
+            },
+            "outputs": {
+                "static_libsdp_sha256":
+                    reference.CSDP_BUILD_STATIC_LIBSDP_SHA256,
+                "csdp_path": "usr/bin/csdp",
+                "csdp_bytes": csdp_executable.stat().st_size,
+                "csdp_sha256": hashlib.sha256(
+                    csdp_executable.read_bytes()).hexdigest(),
+            },
+            "unit_probe": {
+                "input_path": csdp_probe.name,
+                "input_bytes": csdp_probe.stat().st_size,
+                "input_sha256": hashlib.sha256(
+                    csdp_probe.read_bytes()).hexdigest(),
+                "exit_code": 0,
+                "success_line": "Success: SDP solved",
+                "primal_objective": "2.3000000e+01",
+                "dual_objective": "2.3000000e+01",
+                "maximum_allowed_dimacs_error": "1.0e-6",
+            },
+            "runtime_policy": {
+                "single_process_solver": True,
+                "single_thread_build": True,
+                "external_shared_libraries_closed_separately": True,
+            },
+        }, indent=2) + "\n")
+        for pin in (csdp_source, csdp_probe, csdp_receipt):
+            pin.chmod(0o444)
         (gp_bin / "gp").symlink_to("gp-2.15")
         (gp_root / "candle-gprc").write_text(
             "\\\\ deterministic empty test configuration\n")
@@ -156,6 +227,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             target, root, runtime, runtime_stublib, ocamlc, ocamlfind,
             root.parent / "pari-gp", root.parent / "pari-gp.deb",
             Path("/bin/sh"),
+            root.parent / "pari-gp/candle-csdp-source.tar.gz",
+            root.parent / "pari-gp/candle-csdp-build.json",
+            root.parent / "pari-gp/candle-csdp-theta1.dat-s",
             nonce, source_mode)
 
     def test_plan_pins_clean_tree_order_and_exact_request(self):
@@ -214,8 +288,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
         external = plan["reference"]["external_runtime"]
         self.assertEqual(
             external["policy"],
-            "single_private_path_gp_with_pinned_shell_v2")
-        self.assertEqual(plan["schema"], "candle-s1-reference-plan-v8")
+            reference.CSDP_POLICY)
+        self.assertEqual(plan["schema"], "candle-s1-reference-plan-v9")
         self.assertEqual(
             external["elf_runtime"]["policy"],
             reference.ELF_EVIDENCE_POLICY)
@@ -234,6 +308,12 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.assertEqual(
             plan["fresh_process_contract"]["runtime_environment"]["GPRC"],
             str(root.parent / "pari-gp/candle-gprc"))
+        self.assertEqual(
+            external["csdp"]["argument_path"],
+            str(root.parent / "pari-gp/usr/bin/csdp"))
+        self.assertEqual(external["thread_policy"]["openmp_enabled"], False)
+        self.assertIn(reference.CSDP_PROBE_SUCCESS,
+                      external["csdp_probe"]["normalized_stdout"])
 
     def test_external_gp_bytes_are_rechecked_after_planning(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -247,6 +327,121 @@ class ReferenceFingerprintTest(unittest.TestCase):
             with self.assertRaisesRegex(
                     reference.CollectionError, "inputs differ"):
                 reference._require_current_plan_pins(plan)
+
+    def test_v9_csdp_contract_rejects_omission_rebinding_and_tampering(self):
+        mutations = ("omitted", "rebound", "elf", "path")
+        for mutation in mutations:
+            with self.subTest(mutation=mutation), \
+                    tempfile.TemporaryDirectory() as directory:
+                root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                    self._fake_reference(directory)
+                plan = self._build_plan(
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, NONCE)
+                changed = copy.deepcopy(plan)
+                external = changed["reference"]["external_runtime"]
+                if mutation == "omitted":
+                    external.pop("csdp")
+                elif mutation == "rebound":
+                    external["csdp"]["argument_path"] = "/usr/bin/csdp"
+                elif mutation == "elf":
+                    external["elf_runtime"]["closure"][0]["sha256"] = "0" * 64
+                else:
+                    changed["fresh_process_contract"]["runtime_environment"][
+                        "PATH"] = "/usr/bin"
+                with self.assertRaises(reference.CollectionError):
+                    reference.validate_reference_runtime_provenance(changed)
+
+        for relative in (
+                "usr/bin/csdp", "candle-csdp-source.tar.gz",
+                "candle-csdp-build.json", "candle-csdp-theta1.dat-s"):
+            with self.subTest(tampered=relative), \
+                    tempfile.TemporaryDirectory() as directory:
+                root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                    self._fake_reference(directory)
+                plan = self._build_plan(
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, NONCE)
+                path = root.parent / "pari-gp" / relative
+                path.chmod(0o755 if relative.startswith("usr/") else 0o644)
+                path.write_bytes(path.read_bytes() + b"tampered\n")
+                if not relative.startswith("usr/"):
+                    path.chmod(0o444)
+                with self.assertRaises(reference.CollectionError):
+                    reference._require_current_plan_pins(plan)
+
+    def test_v9_csdp_build_statement_rejects_forged_recipe_and_types(self):
+        def replace(path, value):
+            def mutate(statement):
+                parent = statement
+                for key in path[:-1]:
+                    parent = parent[key]
+                parent[path[-1]] = value
+            return mutate
+
+        def remove(path):
+            def mutate(statement):
+                parent = statement
+                for key in path[:-1]:
+                    parent = parent[key]
+                parent.pop(path[-1])
+            return mutate
+
+        mutations = (
+            ("missing static library hash",
+             remove(("outputs", "static_libsdp_sha256"))),
+            ("boolean static library hash",
+             replace(("outputs", "static_libsdp_sha256"), True)),
+            ("forged static library hash",
+             replace(("outputs", "static_libsdp_sha256"), "0" * 64)),
+            ("empty toolchain", replace(("toolchain",), {})),
+            ("forged compiler",
+             replace(("toolchain", "compiler_sha256"), "0" * 64)),
+            ("missing archiver",
+             remove(("toolchain", "archiver_resolved"))),
+            ("parallel command",
+             replace(("recipe", "commands"), [
+                 reference.CSDP_BUILD_COMMANDS[0] + " -j999",
+                 reference.CSDP_BUILD_COMMANDS[1],
+             ])),
+            ("OpenMP command",
+             replace(("recipe", "commands"), [
+                 reference.CSDP_BUILD_COMMANDS[0],
+                 reference.CSDP_BUILD_COMMANDS[1] + " -fopenmp",
+             ])),
+            ("missing C flags", remove(("recipe", "cflags"))),
+            ("missing library flags", remove(("recipe", "library_flags"))),
+            ("arbitrary C flags", replace(("recipe", "cflags"), "-O0")),
+            ("arbitrary library flags",
+             replace(("recipe", "library_flags"), "-lsdp -lm")),
+            ("boolean schema", replace(("schema",), True)),
+            ("boolean source bytes", replace(("source", "bytes"), True)),
+            ("extra source claim", replace(("source", "vendor"), "unknown")),
+            ("boolean executable bytes",
+             replace(("outputs", "csdp_bytes"), True)),
+            ("non-list commands", replace(("recipe", "commands"), "make")),
+            ("boolean command", replace(("recipe", "commands"), [True, True])),
+            ("integer OpenMP policy",
+             replace(("recipe", "openmp_enabled"), 0)),
+            ("boolean probe exit", replace(("unit_probe", "exit_code"), False)),
+            ("boolean probe bytes", replace(("unit_probe", "input_bytes"), True)),
+            ("integer runtime policy",
+             replace(("runtime_policy", "single_thread_build"), 1)),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            for label, mutate in mutations:
+                with self.subTest(mutation=label):
+                    changed = copy.deepcopy(plan)
+                    statement = changed["reference"]["external_runtime"][
+                        "csdp_build"]["statement"]
+                    mutate(statement)
+                    with self.assertRaises(reference.CollectionError):
+                        reference.validate_reference_runtime_provenance(changed)
 
     def test_external_gp_requires_empty_data_and_exact_sys_command_shell(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -268,7 +463,10 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 reference.build_plan(
                     "100/gcd", root, runtime, runtime_stublib, ocamlc,
                     ocamlfind, root.parent / "pari-gp",
-                    root.parent / "pari-gp.deb", runtime, NONCE,
+                    root.parent / "pari-gp.deb", runtime,
+                    root.parent / "pari-gp/candle-csdp-source.tar.gz",
+                    root.parent / "pari-gp/candle-csdp-build.json",
+                    root.parent / "pari-gp/candle-csdp-theta1.dat-s", NONCE,
                     "manifest-exact")
 
     def test_authenticated_elf_observer_replays_normalized_evidence(self):

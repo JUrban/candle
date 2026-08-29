@@ -64,18 +64,70 @@ SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SOURCE_CONTRACT = ROOT / "candle" / "reference_source_contracts.json"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v8"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v8"
+PLAN_SCHEMA_V8 = "candle-s1-reference-plan-v8"
+CANDIDATE_SCHEMA_V8 = "candle-s1-reference-candidate-v8"
+PLAN_SCHEMA = "candle-s1-reference-plan-v9"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v9"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 CONTROLLER_LOCK_FD_ENV = "CANDLE_REFERENCE_CONTROLLER_LOCK_FD"
 PARI_GP_PROBE_SOURCE = \
     "echo 'print(default(nbthreads)); print(factorint(15))  \n quit' | gp"
-RUNTIME_ENVIRONMENT_KEYS = {
+RUNTIME_ENVIRONMENT_KEYS_V8 = {
     "HOME", "PATH", "LC_ALL", "GPRC", "GP_DATA_DIR", "HOLLIGHT_DIR",
     "HOLLIGHT_USE_MODULE", "OCAMLRUNPARAM", "CAML_LD_LIBRARY_PATH",
     "OCAML_TOPLEVEL_PATH", "OCAMLFIND_CONF",
 }
+RUNTIME_ENVIRONMENT_KEYS = {
+    *RUNTIME_ENVIRONMENT_KEYS_V8, "OMP_NUM_THREADS",
+    "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS",
+    "NUMEXPR_NUM_THREADS",
+}
+THREAD_CAP_ENVIRONMENT = {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+}
+CSDP_POLICY = "single_private_path_gp_csdp_with_pinned_shell_v3"
+CSDP_BUILD_SCHEMA = 1
+CSDP_BUILD_KIND = "candle-hol-light-csdp-single-thread-build"
+CSDP_BUILD_SOURCE_UPSTREAM_TREE = "Csdp-6.2.0"
+CSDP_BUILD_SOURCE_PACKAGE = "coinor-csdp 6.2.0-5build1 (Noble)"
+CSDP_BUILD_TOOLCHAIN = {
+    "compiler_argument": "/usr/bin/gcc",
+    "compiler_resolved": "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "compiler_sha256":
+        "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+    "compiler_version_first_line":
+        "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "archiver_argument": "/usr/bin/ar",
+    "archiver_resolved": "/usr/bin/x86_64-linux-gnu-ar",
+    "archiver_sha256":
+        "534681ac11c18868cfc4fdf98770aa0ba8973eedc90c231e94e6ba96e1a04f27",
+    "binutils_version_first_line":
+        "GNU ld (GNU Binutils for Ubuntu) 2.42",
+}
+CSDP_BUILD_CFLAGS = \
+    "-m64 -O2 -fno-ident -ansi -Wall -DBIT64 -DUSESIGTERM " \
+    "-DUSEGETTIME -I../include"
+CSDP_BUILD_LIBRARY_FLAGS = \
+    "-L../lib -Wl,-Bstatic -lsdp -Wl,-Bdynamic " \
+    "-llapack -lblas -lm -lgfortran"
+CSDP_BUILD_COMMANDS = [
+    "make -C lib clean libsdp.a CC=/usr/bin/gcc CFLAGS=<cflags>",
+    "make -C solver clean csdp CC=/usr/bin/gcc CFLAGS=<cflags> "
+    "LIBS=<library_flags>",
+]
+CSDP_BUILD_STATIC_LIBSDP_SHA256 = \
+    "ede58dd5bf3620aa08045aa767fd1280fefe1e76d6ece276e8a674d6156bca25"
+CSDP_PROBE_SUCCESS = "Success: SDP solved"
+CSDP_PROBE_PRIMAL = "2.3000000e+01"
+CSDP_PROBE_DUAL = "2.3000000e+01"
+CSDP_FORBIDDEN_ELF_FRAGMENTS = (
+    "libgomp", "libomp", "libiomp", "libopenblas", "libpthread",
+)
 ELF_EVIDENCE_POLICY = "authenticated_explicit_bash_ldd_closure_v1"
 ELF_OUTPUT_NORMALIZATION_POLICY = \
     "strict_recognized_lines_replace_only_aslr_addresses_v1"
@@ -100,6 +152,15 @@ class CollectionError(Exception):
 
 def _sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def _reject_duplicate_json_pairs(pairs):
+    value = {}
+    for key, item in pairs:
+        if key in value:
+            raise CollectionError(f"duplicate JSON key: {key}")
+        value[key] = item
+    return value
 
 
 def _git(root, *args):
@@ -676,9 +737,130 @@ def validate_elf_closure_evidence_live(evidence, expected_roots):
     return evidence
 
 
+def _normalize_csdp_probe_stdout(stdout):
+    """Remove only CSDP's four measured wall-time values."""
+    lines = stdout.splitlines(keepends=True)
+    timing = re.compile(
+        r"^(Elements|Factor|Other|Total) time: [0-9]+\.[0-9]+ \n$")
+    normalized = []
+    seen = []
+    for line in lines:
+        match = timing.fullmatch(line)
+        if match is None:
+            normalized.append(line)
+        else:
+            seen.append(match.group(1))
+            normalized.append(f"{match.group(1)} time: <measured>\n")
+    if seen != ["Elements", "Factor", "Other", "Total"]:
+        raise CollectionError("CSDP probe has malformed timing records")
+    return "".join(normalized)
+
+
+def _validate_csdp_build_statement(statement, source_pin, csdp_route,
+                                   csdp_bytes):
+    """Validate the exact semantic claims retained from the build receipt."""
+    if not isinstance(statement, dict) or set(statement) != {
+            "schema", "kind", "source", "toolchain", "recipe", "outputs",
+            "unit_probe", "runtime_policy"}:
+        raise CollectionError("malformed CSDP build statement")
+    if (type(statement["schema"]) is not int or
+            statement["schema"] != CSDP_BUILD_SCHEMA or
+            type(statement["kind"]) is not str or
+            statement["kind"] != CSDP_BUILD_KIND):
+        raise CollectionError("unsupported CSDP build statement identity")
+
+    source = statement["source"]
+    if (not isinstance(source, dict) or set(source) != {
+            "archive", "bytes", "sha256", "upstream_tree",
+            "ubuntu_source_package"} or
+            type(source["archive"]) is not str or
+            source["archive"] != Path(source_pin["path"]).name or
+            type(source["bytes"]) is not int or source["bytes"] <= 0 or
+            type(source_pin["bytes"]) is not int or
+            source["bytes"] != source_pin["bytes"] or
+            type(source["sha256"]) is not str or
+            not _valid_sha256(source["sha256"]) or
+            source["sha256"] != source_pin["sha256"] or
+            type(source["upstream_tree"]) is not str or
+            source["upstream_tree"] != CSDP_BUILD_SOURCE_UPSTREAM_TREE or
+            type(source["ubuntu_source_package"]) is not str or
+            source["ubuntu_source_package"] != CSDP_BUILD_SOURCE_PACKAGE):
+        raise CollectionError("CSDP build statement does not bind its inputs")
+
+    toolchain = statement["toolchain"]
+    if (not isinstance(toolchain, dict) or
+            set(toolchain) != set(CSDP_BUILD_TOOLCHAIN) or
+            any(type(toolchain[key]) is not str or
+                toolchain[key] != expected
+                for key, expected in CSDP_BUILD_TOOLCHAIN.items())):
+        raise CollectionError("CSDP build statement has wrong toolchain")
+
+    recipe = statement["recipe"]
+    if (not isinstance(recipe, dict) or set(recipe) != {
+            "cflags", "library_flags", "openmp_enabled",
+            "native_cpu_flags", "commands"} or
+            type(recipe["cflags"]) is not str or
+            recipe["cflags"] != CSDP_BUILD_CFLAGS or
+            type(recipe["library_flags"]) is not str or
+            recipe["library_flags"] != CSDP_BUILD_LIBRARY_FLAGS or
+            recipe["openmp_enabled"] is not False or
+            recipe["native_cpu_flags"] is not False or
+            not isinstance(recipe["commands"], list) or
+            any(type(command) is not str for command in recipe["commands"]) or
+            recipe["commands"] != CSDP_BUILD_COMMANDS):
+        raise CollectionError("CSDP build is not the portable single-thread recipe")
+
+    outputs = statement["outputs"]
+    if (not isinstance(outputs, dict) or set(outputs) != {
+            "static_libsdp_sha256", "csdp_path", "csdp_bytes",
+            "csdp_sha256"} or
+            type(outputs["static_libsdp_sha256"]) is not str or
+            outputs["static_libsdp_sha256"] !=
+            CSDP_BUILD_STATIC_LIBSDP_SHA256 or
+            type(outputs["csdp_path"]) is not str or
+            outputs["csdp_path"] != "usr/bin/csdp" or
+            type(outputs["csdp_bytes"]) is not int or
+            outputs["csdp_bytes"] <= 0 or outputs["csdp_bytes"] != csdp_bytes or
+            type(outputs["csdp_sha256"]) is not str or
+            not _valid_sha256(outputs["csdp_sha256"]) or
+            outputs["csdp_sha256"] !=
+            csdp_route["resolved_executable"]["sha256"]):
+        raise CollectionError("CSDP build statement does not bind its outputs")
+
+    policy = statement["runtime_policy"]
+    if (not isinstance(policy, dict) or set(policy) != {
+            "single_process_solver", "single_thread_build",
+            "external_shared_libraries_closed_separately"} or
+            policy["single_process_solver"] is not True or
+            policy["single_thread_build"] is not True or
+            policy["external_shared_libraries_closed_separately"] is not True):
+        raise CollectionError("CSDP build has wrong runtime policy")
+
+    unit = statement["unit_probe"]
+    if (not isinstance(unit, dict) or
+            set(unit) != {"input_path", "input_bytes", "input_sha256",
+                         "exit_code", "success_line", "primal_objective",
+                         "dual_objective", "maximum_allowed_dimacs_error"} or
+            type(unit["input_path"]) is not str or
+            type(unit["input_bytes"]) is not int or unit["input_bytes"] <= 0 or
+            type(unit["input_sha256"]) is not str or
+            not _valid_sha256(unit["input_sha256"]) or
+            type(unit["exit_code"]) is not int or unit["exit_code"] != 0 or
+            type(unit["success_line"]) is not str or
+            unit["success_line"] != CSDP_PROBE_SUCCESS or
+            type(unit["primal_objective"]) is not str or
+            unit["primal_objective"] != CSDP_PROBE_PRIMAL or
+            type(unit["dual_objective"]) is not str or
+            unit["dual_objective"] != CSDP_PROBE_DUAL or
+            type(unit["maximum_allowed_dimacs_error"]) is not str or
+            unit["maximum_allowed_dimacs_error"] != "1.0e-6"):
+        raise CollectionError("CSDP build statement has wrong unit-probe policy")
+
+
 def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
-                          command_shell):
-    """Authenticate the exact shell/GP route used by HOL Light's Sys.command."""
+                          command_shell, csdp_source, csdp_build_receipt,
+                          csdp_probe_input):
+    """Authenticate the exact shell/GP/CSDP route used by Sys.command."""
     gp_root_argument = Path(os.path.abspath(pari_gp_root))
     try:
         gp_root_metadata = gp_root_argument.lstat()
@@ -690,6 +872,7 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         raise CollectionError("PARI/GP package root must be a canonical directory")
     gp_bin = gp_root / "usr/bin"
     gp_path = gp_bin / "gp"
+    csdp_path = gp_bin / "csdp"
     gprc = gp_root / "candle-gprc"
     data_root = gp_root / "candle-data"
     if not gp_bin.is_dir() or gp_bin.is_symlink():
@@ -705,6 +888,10 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
     if stat.S_IMODE(gprc.lstat().st_mode) != 0o444:
         raise CollectionError("PARI/GP configuration mode must be exactly 0444")
     gp_route = _pin_executable_route(gp_path, "PARI/GP executable")
+    csdp_route = _pin_executable_route(csdp_path, "CSDP executable")
+    if csdp_route["argument"]["kind"] != "file" or \
+            csdp_route["argument"]["mode"] != 0o555:
+        raise CollectionError("CSDP executable must be a direct 0555 file")
     if Path(os.path.abspath(command_shell)) != Path("/bin/sh"):
         raise CollectionError("Sys.command shell argument must be exactly /bin/sh")
     shell_route = _pin_executable_route(command_shell, "Sys.command shell")
@@ -720,12 +907,34 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         raise CollectionError(
             "PARI/GP package archive must be a canonical 0444 regular file")
     package_pin = _pin_file(package_argument)
+    source_pin = _pin_file(csdp_source)
+    build_pin = _pin_file(csdp_build_receipt)
+    probe_input_pin = _pin_file(csdp_probe_input)
+    for path, label in (
+            (Path(source_pin["path"]), "CSDP source archive"),
+            (Path(build_pin["path"]), "CSDP build receipt"),
+            (Path(probe_input_pin["path"]), "CSDP probe input")):
+        if (path.parent != gp_root or
+                stat.S_IMODE(path.lstat().st_mode) != 0o444):
+            raise CollectionError(f"{label} must be a direct 0444 package file")
+    try:
+        build_statement = json.loads(
+            Path(build_pin["path"]).read_text(encoding="utf-8"),
+            object_pairs_hook=lambda pairs: _reject_duplicate_json_pairs(pairs))
+    except (UnicodeDecodeError, json.JSONDecodeError, OSError) as error:
+        raise CollectionError("malformed CSDP build receipt JSON") from error
+    source_pin_with_bytes = {
+        **source_pin, "bytes": Path(source_pin["path"]).stat().st_size}
+    csdp_bytes = Path(csdp_route["resolved_executable"]["path"]).stat().st_size
+    _validate_csdp_build_statement(
+        build_statement, source_pin_with_bytes, csdp_route, csdp_bytes)
     environment = {
         "HOME": str(Path(reference_root).resolve(strict=True)),
         "PATH": str(gp_bin),
         "LC_ALL": "C",
         "GPRC": gprc_pin["path"],
         "GP_DATA_DIR": str(data_root),
+        **THREAD_CAP_ENVIRONMENT,
     }
     version = subprocess.run(
         [gp_route["argument_path"], "--version-short"],
@@ -748,8 +957,42 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
             "[3, 1; 5, 1]" not in probe.stdout):
         raise CollectionError(
             "PARI/GP single-thread shell-route factor probe failed")
+    with tempfile.TemporaryDirectory(prefix="candle-csdp-probe-") as directory:
+        solution = Path(directory) / "theta1.sol"
+        csdp_probe = subprocess.run(
+            [csdp_route["argument_path"], probe_input_pin["path"],
+             str(solution)],
+            env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, timeout=30, check=False,
+        )
+        try:
+            solution_bytes = solution.read_bytes()
+            solution_pin = {
+                "bytes": len(solution_bytes),
+                "sha256": hashlib.sha256(solution_bytes).hexdigest(),
+            }
+        except OSError as error:
+            raise CollectionError("CSDP probe did not produce a solution") from error
+    normalized_csdp_stdout = _normalize_csdp_probe_stdout(csdp_probe.stdout)
+    if (csdp_probe.returncode != 0 or csdp_probe.stderr != "" or
+            f"{CSDP_PROBE_SUCCESS}\n" not in normalized_csdp_stdout or
+            f"Primal objective value: {CSDP_PROBE_PRIMAL} \n" not in
+            normalized_csdp_stdout or
+            f"Dual objective value: {CSDP_PROBE_DUAL} \n" not in
+            normalized_csdp_stdout):
+        raise CollectionError("CSDP single-thread theta1 probe failed")
+    elf_runtime = _authenticated_elf_closure([
+        shell_route["resolved_executable"]["path"],
+        gp_route["resolved_executable"]["path"],
+        csdp_route["resolved_executable"]["path"],
+    ])
+    closure_names = [Path(item["path"]).name.lower()
+                     for item in elf_runtime["closure"]]
+    if any(fragment in name for name in closure_names
+           for fragment in CSDP_FORBIDDEN_ELF_FRAGMENTS):
+        raise CollectionError("CSDP ELF closure contains a threaded runtime")
     return {
-        "policy": "single_private_path_gp_with_pinned_shell_v2",
+        "policy": CSDP_POLICY,
         "command_shell": shell_route,
         "pari_gp": gp_route,
         "pari_gp_version": {
@@ -760,10 +1003,24 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         "package_tree": _pin_tree(gp_root),
         "configuration": gprc_pin,
         "data_tree": data_tree_pin,
-        "elf_runtime": _authenticated_elf_closure([
-            shell_route["resolved_executable"]["path"],
-            gp_route["resolved_executable"]["path"],
-        ]),
+        "csdp": csdp_route,
+        "csdp_bytes": csdp_bytes,
+        "csdp_source_archive": source_pin_with_bytes,
+        "csdp_build": {"receipt": build_pin, "statement": build_statement},
+        "csdp_probe_input": {
+            **probe_input_pin,
+            "bytes": Path(probe_input_pin["path"]).stat().st_size,
+        },
+        "thread_policy": {
+            "single_process_solver": True,
+            "single_thread_build": True,
+            "openmp_enabled": False,
+            "native_cpu_flags": False,
+            "environment": dict(THREAD_CAP_ENVIRONMENT),
+            "forbidden_elf_dependency_name_fragments":
+                list(CSDP_FORBIDDEN_ELF_FRAGMENTS),
+        },
+        "elf_runtime": elf_runtime,
         "probe": {
             "shell_argv": [
                 shell_route["argument_path"], "-c", PARI_GP_PROBE_SOURCE],
@@ -774,11 +1031,25 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
             "stderr": probe.stderr,
             "stderr_sha256": hashlib.sha256(probe.stderr.encode()).hexdigest(),
         },
+        "csdp_probe": {
+            "argv_template": [
+                csdp_route["argument_path"], probe_input_pin["path"],
+                "<private-temporary-output>"],
+            "environment": environment,
+            "return_code": csdp_probe.returncode,
+            "normalized_stdout": normalized_csdp_stdout,
+            "normalized_stdout_sha256": hashlib.sha256(
+                normalized_csdp_stdout.encode()).hexdigest(),
+            "stderr": csdp_probe.stderr,
+            "stderr_sha256": hashlib.sha256(
+                csdp_probe.stderr.encode()).hexdigest(),
+            "solution": solution_pin,
+        },
     }
 
 
-def validate_external_runtime_provenance(external, reference_root,
-                                         runtime_environment):
+def _validate_external_runtime_provenance_v8(external, reference_root,
+                                             runtime_environment):
     """Validate the closed, non-live v8 shell/GP provenance projection."""
     if not isinstance(external, dict) or set(external) != {
             "policy", "command_shell", "pari_gp", "pari_gp_version",
@@ -867,7 +1138,7 @@ def validate_external_runtime_provenance(external, reference_root,
             probe["stderr_sha256"]):
         raise CollectionError("malformed external PARI/GP probe")
     if (not isinstance(runtime_environment, dict) or
-            set(runtime_environment) != RUNTIME_ENVIRONMENT_KEYS or
+            set(runtime_environment) != RUNTIME_ENVIRONMENT_KEYS_V8 or
             any(runtime_environment.get(key) != value
                 for key, value in expected_environment.items())):
         raise CollectionError("runtime environment differs from exact allowlist")
@@ -885,6 +1156,217 @@ def validate_external_runtime_provenance(external, reference_root,
         if not isinstance(value, str) or not Path(value).is_absolute():
             raise CollectionError("runtime environment has non-absolute OCaml pin")
     return external
+
+
+def _validate_external_runtime_provenance_v9(external, reference_root,
+                                             runtime_environment):
+    """Validate the closed, non-live v9 shell/GP/CSDP provenance."""
+    required = {
+        "policy", "command_shell", "pari_gp", "pari_gp_version",
+        "package_archive", "package_tree", "configuration", "data_tree",
+        "csdp", "csdp_bytes", "csdp_source_archive", "csdp_build",
+        "csdp_probe_input", "thread_policy", "elf_runtime", "probe",
+        "csdp_probe",
+    }
+    if (not isinstance(external, dict) or set(external) != required or
+            external["policy"] != CSDP_POLICY):
+        raise CollectionError("malformed v9 external-runtime provenance")
+    for label in ("command_shell", "pari_gp", "csdp"):
+        _validate_executable_route(external[label], f"external {label}")
+    if (external["csdp"]["argument"]["kind"] != "file" or
+            external["csdp"]["argument"]["mode"] != 0o555 or
+            type(external["csdp_bytes"]) is not int or
+            external["csdp_bytes"] <= 0):
+        raise CollectionError("malformed CSDP executable policy")
+
+    version = external["pari_gp_version"]
+    if (not isinstance(version, dict) or set(version) != {"stdout", "sha256"} or
+            not isinstance(version["stdout"], str) or
+            re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+\n", version["stdout"]) is None or
+            hashlib.sha256(version["stdout"].encode()).hexdigest() !=
+            version["sha256"]):
+        raise CollectionError("malformed external PARI/GP version")
+
+    for label in ("package_archive", "configuration"):
+        value = external[label]
+        if (not isinstance(value, dict) or set(value) != {"path", "sha256"} or
+                not isinstance(value["path"], str) or
+                not Path(value["path"]).is_absolute() or
+                not _valid_sha256(value["sha256"])):
+            raise CollectionError(f"malformed external {label}")
+    for label in ("csdp_source_archive", "csdp_probe_input"):
+        value = external[label]
+        if (not isinstance(value, dict) or set(value) != {
+                "path", "sha256", "bytes"} or
+                not isinstance(value["path"], str) or
+                not Path(value["path"]).is_absolute() or
+                not _valid_sha256(value["sha256"]) or
+                type(value["bytes"]) is not int or value["bytes"] <= 0):
+            raise CollectionError(f"malformed external {label}")
+    for label in ("package_tree", "data_tree"):
+        value = external[label]
+        if (not isinstance(value, dict) or set(value) != {
+                "root", "root_mode", "entry_count", "inventory_sha256",
+                "inventory_policy"} or
+                not isinstance(value["root"], str) or
+                not Path(value["root"]).is_absolute() or
+                type(value["root_mode"]) is not int or
+                type(value["entry_count"]) is not int or
+                value["entry_count"] < 0 or
+                not _valid_sha256(value["inventory_sha256"]) or
+                value["inventory_policy"] !=
+                "relative_path_kind_mode_link_target_and_content_v1"):
+            raise CollectionError(f"malformed external {label}")
+    package_root = Path(external["package_tree"]["root"])
+    if (external["command_shell"]["argument_path"] != "/bin/sh" or
+            external["pari_gp"]["argument_path"] !=
+            str(package_root / "usr/bin/gp") or
+            external["csdp"]["argument_path"] !=
+            str(package_root / "usr/bin/csdp") or
+            external["configuration"]["path"] !=
+            str(package_root / "candle-gprc") or
+            external["data_tree"]["root"] !=
+            str(package_root / "candle-data") or
+            external["csdp_source_archive"]["path"] !=
+            str(package_root / "candle-csdp-source.tar.gz") or
+            external["csdp_build"].get("receipt", {}).get("path") !=
+            str(package_root / "candle-csdp-build.json") or
+            external["csdp_probe_input"]["path"] !=
+            str(package_root / "candle-csdp-theta1.dat-s") or
+            external["data_tree"]["root_mode"] != 0o555 or
+            external["data_tree"]["entry_count"] != 0):
+        raise CollectionError("external GP/CSDP package path contract mismatch")
+
+    build = external["csdp_build"]
+    if (not isinstance(build, dict) or set(build) != {"receipt", "statement"} or
+            not isinstance(build["receipt"], dict) or
+            set(build["receipt"]) != {"path", "sha256"} or
+            not _valid_sha256(build["receipt"].get("sha256"))):
+        raise CollectionError("malformed CSDP build receipt pin")
+    _validate_csdp_build_statement(
+        build["statement"], external["csdp_source_archive"], external["csdp"],
+        external["csdp_bytes"])
+    unit = build["statement"]["unit_probe"]
+    if (unit.get("input_path") != Path(
+            external["csdp_probe_input"]["path"]).name or
+            unit.get("input_bytes") != external["csdp_probe_input"]["bytes"] or
+            unit.get("input_sha256") != external["csdp_probe_input"]["sha256"]):
+        raise CollectionError("CSDP build statement does not bind probe input")
+
+    expected_thread_policy = {
+        "single_process_solver": True,
+        "single_thread_build": True,
+        "openmp_enabled": False,
+        "native_cpu_flags": False,
+        "environment": dict(THREAD_CAP_ENVIRONMENT),
+        "forbidden_elf_dependency_name_fragments":
+            list(CSDP_FORBIDDEN_ELF_FRAGMENTS),
+    }
+    if external["thread_policy"] != expected_thread_policy:
+        raise CollectionError("malformed CSDP single-thread policy")
+
+    external_elf_roots = sorted(({
+        key: external[label]["resolved_executable"][key]
+        for key in ("path", "sha256")}
+        for label in ("command_shell", "pari_gp", "csdp")),
+        key=lambda item: item["path"])
+    validate_elf_closure_evidence(
+        external["elf_runtime"], [item["path"] for item in external_elf_roots])
+    if external["elf_runtime"]["requested_roots"] != external_elf_roots:
+        raise CollectionError("external ELF roots differ from executable pins")
+    closure_names = [Path(item["path"]).name.lower()
+                     for item in external["elf_runtime"]["closure"]]
+    if any(fragment in name for name in closure_names
+           for fragment in CSDP_FORBIDDEN_ELF_FRAGMENTS):
+        raise CollectionError("CSDP ELF closure contains a threaded runtime")
+
+    expected_environment = {
+        "HOME": str(reference_root),
+        "PATH": str(package_root / "usr/bin"),
+        "LC_ALL": "C",
+        "GPRC": str(package_root / "candle-gprc"),
+        "GP_DATA_DIR": str(package_root / "candle-data"),
+        **THREAD_CAP_ENVIRONMENT,
+    }
+    probe = external["probe"]
+    expected_stderr = (
+        f"Reading GPRC: {expected_environment['GPRC']}\nGPRC Done.\n\n")
+    if (not isinstance(probe, dict) or set(probe) != {
+            "shell_argv", "environment", "return_code", "stdout",
+            "stdout_sha256", "stderr", "stderr_sha256"} or
+            probe["shell_argv"] != ["/bin/sh", "-c", PARI_GP_PROBE_SOURCE] or
+            probe["environment"] != expected_environment or
+            probe["return_code"] != 0 or
+            not isinstance(probe["stdout"], str) or
+            re.search(r"(?:^|\n)1\n", probe["stdout"]) is None or
+            "[3, 1; 5, 1]" not in probe["stdout"] or
+            hashlib.sha256(probe["stdout"].encode()).hexdigest() !=
+            probe["stdout_sha256"] or
+            probe["stderr"] not in {"", expected_stderr} or
+            hashlib.sha256(probe["stderr"].encode()).hexdigest() !=
+            probe["stderr_sha256"]):
+        raise CollectionError("malformed external PARI/GP probe")
+    csdp_probe = external["csdp_probe"]
+    expected_argv = [
+        str(package_root / "usr/bin/csdp"),
+        external["csdp_probe_input"]["path"],
+        "<private-temporary-output>",
+    ]
+    if (not isinstance(csdp_probe, dict) or set(csdp_probe) != {
+            "argv_template", "environment", "return_code",
+            "normalized_stdout", "normalized_stdout_sha256", "stderr",
+            "stderr_sha256", "solution"} or
+            csdp_probe["argv_template"] != expected_argv or
+            csdp_probe["environment"] != expected_environment or
+            csdp_probe["return_code"] != 0 or
+            not isinstance(csdp_probe["normalized_stdout"], str) or
+            f"{CSDP_PROBE_SUCCESS}\n" not in csdp_probe["normalized_stdout"] or
+            f"Primal objective value: {CSDP_PROBE_PRIMAL} \n" not in
+            csdp_probe["normalized_stdout"] or
+            f"Dual objective value: {CSDP_PROBE_DUAL} \n" not in
+            csdp_probe["normalized_stdout"] or
+            hashlib.sha256(csdp_probe["normalized_stdout"].encode()).hexdigest()
+            != csdp_probe["normalized_stdout_sha256"] or
+            csdp_probe["stderr"] != "" or
+            csdp_probe["stderr_sha256"] != hashlib.sha256(b"").hexdigest() or
+            not isinstance(csdp_probe["solution"], dict) or
+            set(csdp_probe["solution"]) != {"bytes", "sha256"} or
+            type(csdp_probe["solution"]["bytes"]) is not int or
+            csdp_probe["solution"]["bytes"] <= 0 or
+            not _valid_sha256(csdp_probe["solution"]["sha256"])):
+        raise CollectionError("malformed external CSDP probe")
+    if (not isinstance(runtime_environment, dict) or
+            set(runtime_environment) != RUNTIME_ENVIRONMENT_KEYS or
+            any(runtime_environment.get(key) != value
+                for key, value in expected_environment.items())):
+        raise CollectionError("runtime environment differs from v9 allowlist")
+    expected_internal_environment = {
+        "HOLLIGHT_DIR": str(reference_root),
+        "HOLLIGHT_USE_MODULE": "0",
+        "OCAMLRUNPARAM": "l=2000000000",
+    }
+    if any(runtime_environment.get(key) != value
+           for key, value in expected_internal_environment.items()):
+        raise CollectionError("runtime environment has malformed HOL pins")
+    for key in ("CAML_LD_LIBRARY_PATH", "OCAML_TOPLEVEL_PATH",
+                "OCAMLFIND_CONF"):
+        value = runtime_environment.get(key)
+        if not isinstance(value, str) or not Path(value).is_absolute():
+            raise CollectionError("runtime environment has non-absolute OCaml pin")
+    return external
+
+
+def validate_external_runtime_provenance(external, reference_root,
+                                         runtime_environment):
+    """Dispatch exact v8 or v9 external provenance without schema coercion."""
+    policy = external.get("policy") if isinstance(external, dict) else None
+    if policy == "single_private_path_gp_with_pinned_shell_v2":
+        return _validate_external_runtime_provenance_v8(
+            external, reference_root, runtime_environment)
+    if policy == CSDP_POLICY:
+        return _validate_external_runtime_provenance_v9(
+            external, reference_root, runtime_environment)
+    raise CollectionError("unsupported external-runtime policy")
 
 
 def validate_reference_runtime_provenance(plan):
@@ -906,6 +1388,15 @@ def validate_reference_runtime_provenance(plan):
             "hol_ml", "generated_boot_files", "ocaml_library_tree",
             "external_runtime"}:
         raise CollectionError("malformed reference runtime fields")
+    schema_policy = {
+        PLAN_SCHEMA_V8: "single_private_path_gp_with_pinned_shell_v2",
+        PLAN_SCHEMA: CSDP_POLICY,
+    }
+    if (plan["schema"] not in schema_policy or
+            not isinstance(reference["external_runtime"], dict) or
+            reference["external_runtime"].get("policy") !=
+            schema_policy[plan["schema"]]):
+        raise CollectionError("reference plan schema/external policy mismatch")
 
     def file_pin(value, label):
         if (not isinstance(value, dict) or set(value) != {"path", "sha256"} or
@@ -1125,6 +1616,7 @@ def _request_source(target, serializer_path, nonce):
 
 def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
                ocamlfind, pari_gp_root, pari_gp_package, command_shell,
+               csdp_source, csdp_build_receipt, csdp_probe_input,
                nonce=None, source_mode="manifest-exact"):
     """Pin a clean reference tree and generate, but do not execute, a request."""
     manifest, target = _target_from_manifest(target_name)
@@ -1248,13 +1740,15 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     ])
     collector_repository = _collector_repository_pin()
     external_runtime = _pin_external_runtime(
-        reference_root, pari_gp_root, pari_gp_package, command_shell)
+        reference_root, pari_gp_root, pari_gp_package, command_shell,
+        csdp_source, csdp_build_receipt, csdp_probe_input)
     runtime_environment = {
         "HOME": str(reference_root),
         "PATH": external_runtime["probe"]["environment"]["PATH"],
         "LC_ALL": "C",
         "GPRC": external_runtime["configuration"]["path"],
         "GP_DATA_DIR": external_runtime["data_tree"]["root"],
+        **THREAD_CAP_ENVIRONMENT,
         "HOLLIGHT_DIR": str(reference_root),
         "HOLLIGHT_USE_MODULE": "0",
         "OCAMLRUNPARAM": "l=2000000000",
@@ -1359,6 +1853,9 @@ def _rebuild_plan(plan):
         plan["reference"]["external_runtime"]["package_tree"]["root"],
         plan["reference"]["external_runtime"]["package_archive"]["path"],
         plan["reference"]["external_runtime"]["command_shell"]["argument_path"],
+        plan["reference"]["external_runtime"]["csdp_source_archive"]["path"],
+        plan["reference"]["external_runtime"]["csdp_build"]["receipt"]["path"],
+        plan["reference"]["external_runtime"]["csdp_probe_input"]["path"],
         plan["session_nonce"], plan["input"]["source_mode"])
 
 
@@ -1370,7 +1867,11 @@ def _require_current_plan_pins(plan):
 
 def candidate_from_transcript(plan, transcript, exit_code=0):
     """Validate a completed transcript and return an unapproved candidate."""
-    if plan.get("schema") != PLAN_SCHEMA:
+    candidate_schema_by_plan = {
+        PLAN_SCHEMA_V8: CANDIDATE_SCHEMA_V8,
+        PLAN_SCHEMA: CANDIDATE_SCHEMA,
+    }
+    if plan.get("schema") not in candidate_schema_by_plan:
         raise CollectionError("unsupported collection plan")
     if exit_code != 0:
         raise CollectionError(f"reference process exited with status {exit_code}")
@@ -1409,7 +1910,7 @@ def candidate_from_transcript(plan, transcript, exit_code=0):
     if identities["status"] != "observed_uncompared":
         raise CollectionError("reference collection unexpectedly compared identities")
     return {
-        "schema": CANDIDATE_SCHEMA,
+        "schema": candidate_schema_by_plan[plan["schema"]],
         "artifact_kind": "reference_identity_candidate",
         "approval_status": "candidate_unapproved",
         "promotion_allowed": False,
@@ -1439,7 +1940,7 @@ def validate_candidate(candidate, plan=None, request=None, transcript=None):
     }
     if set(candidate) != required:
         raise CollectionError("malformed reference candidate fields")
-    if candidate["schema"] != CANDIDATE_SCHEMA:
+    if candidate["schema"] not in {CANDIDATE_SCHEMA_V8, CANDIDATE_SCHEMA}:
         raise CollectionError("unsupported reference candidate schema")
     if (candidate["artifact_kind"] != "reference_identity_candidate"
             or candidate["approval_status"] != "candidate_unapproved"
@@ -1466,6 +1967,12 @@ def validate_candidate(candidate, plan=None, request=None, transcript=None):
     if any(supplied) and not all(supplied):
         raise CollectionError("plan, request, and transcript must be supplied together")
     if all(supplied):
+        expected_pair = {
+            PLAN_SCHEMA_V8: CANDIDATE_SCHEMA_V8,
+            PLAN_SCHEMA: CANDIDATE_SCHEMA,
+        }
+        if expected_pair.get(plan.get("schema")) != candidate["schema"]:
+            raise CollectionError("candidate/plan schema mismatch")
         try:
             validate_reference_runtime_provenance(plan)
         except (KeyError, TypeError) as error:
@@ -1527,6 +2034,9 @@ def main():
         sub.add_argument("--pari-gp-root", type=Path, required=True)
         sub.add_argument("--pari-gp-package", type=Path, required=True)
         sub.add_argument("--command-shell", type=Path, required=True)
+        sub.add_argument("--csdp-source", type=Path, required=True)
+        sub.add_argument("--csdp-build-receipt", type=Path, required=True)
+        sub.add_argument("--csdp-probe-input", type=Path, required=True)
         sub.add_argument("--plan", type=Path, required=True)
         sub.add_argument("--request", type=Path, required=True)
         sub.add_argument(
@@ -1557,6 +2067,7 @@ def main():
             args.target, args.reference_root, args.runtime,
             args.runtime_stublib, args.ocamlc, args.ocamlfind,
             args.pari_gp_root, args.pari_gp_package, args.command_shell,
+            args.csdp_source, args.csdp_build_receipt, args.csdp_probe_input,
             source_mode=args.source_mode)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         args.request.write_text(plan["request"]["source"], encoding="utf-8")
