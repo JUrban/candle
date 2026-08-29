@@ -494,7 +494,7 @@ class Top100ManifestTest(unittest.TestCase):
                     runtime_tree = tree_pin("/reference/stublibs", "1")
                     ocaml_tree = tree_pin("/reference/ocaml", "2")
                     plan = {
-                        "schema": reference.PLAN_SCHEMA,
+                        "schema": reference.PLAN_SCHEMA_V8,
                         "status": "planned_not_executed",
                         "session_nonce": nonce,
                         "fresh_process_contract": {

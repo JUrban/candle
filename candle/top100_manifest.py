@@ -287,7 +287,7 @@ def _decode_replay_json(source, label):
 
 def _replay_reference_run(target, run, artifact_sources, expected_identity,
                           policy):
-    """Mechanically replay one exact v8 candidate and bind its semantics."""
+    """Mechanically replay one exact supported candidate and bind semantics."""
     # Imported only on the approved path.  reference_fingerprints imports the
     # committed regression manifest, not this generator module, so this does
     # not create an import cycle during ordinary unapproved regeneration.
@@ -315,7 +315,8 @@ def _replay_reference_run(target, run, artifact_sources, expected_identity,
             "schema", "status", "session_nonce", "fresh_process_contract",
             "reference", "input", "request"}:
         raise ValueError(f"{target['name']}: malformed replay plan fields")
-    if (plan["schema"] != reference.PLAN_SCHEMA or
+    if (plan["schema"] not in {
+                reference.PLAN_SCHEMA_V8, reference.PLAN_SCHEMA} or
             plan["status"] != "planned_not_executed" or
             plan["session_nonce"] != run["session_nonce"]):
         raise ValueError(f"{target['name']}: replay plan session mismatch")
