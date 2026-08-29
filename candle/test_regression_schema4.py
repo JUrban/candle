@@ -7,6 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest import mock
+from datetime import datetime, timezone
 
 import regression
 
@@ -123,6 +124,85 @@ class Great100Schema4Test(unittest.TestCase):
             record = regression._ordinary_file_record(target)
             self.assertEqual(record["bytes"], 8)
             self.assertEqual(record["sha256"], hashlib.sha256(b"evidence").hexdigest())
+
+    def test_completed_suite_rehashes_transcripts_and_rejects_nonce_reuse(self):
+        suite_nonce = "a" * 64
+        approval_sha256 = "b" * 64
+        linked_sha256 = "c" * 64
+        contract = {
+            "linked_record": {"sha256": linked_sha256},
+            "independent_approval": {"sha256": approval_sha256},
+        }
+        runtime = {
+            "candle_git_head": "d" * 40, "candle_git_status": [],
+            "linked_record_sha256": linked_sha256,
+            "candle_executable": {"path": "/cake", "bytes": 1,
+                                  "sha256": "e" * 64},
+            "execution_contract_sha256": "f" * 64,
+            "source_closure_sha256": "0" * 64,
+        }
+        expected = {
+            "approval_sha256": approval_sha256,
+            "serializer_sha256": "1" * 64,
+            "theorems": [], "post_state": {},
+        }
+        tests = []
+        results = []
+        with tempfile.TemporaryDirectory() as temporary:
+            for index in range(65):
+                name = f"100/t{index:02d}"
+                log_path = Path(temporary) / f"{index}.log"
+                log_path.write_text(f"transcript {index}\n", encoding="utf-8")
+                transcript = regression._ordinary_file_record(log_path)
+                process_nonce = f"{index + 1:064x}"
+                evidence = {
+                    "suite_nonce": suite_nonce,
+                    "process_nonce": process_nonce,
+                    "pid": index + 100,
+                    "started_utc": datetime.now(timezone.utc).isoformat(),
+                    "completed_utc": datetime.now(timezone.utc).isoformat(),
+                    "exit_code": 0,
+                    "markers": {"suite_line": 0, "start_line": 1,
+                                "linked_line": 2, "complete_line": 5},
+                    "linked_record_sha256": linked_sha256,
+                    "transcript": transcript,
+                    "pre_runtime_state": runtime,
+                    "post_runtime_state": runtime,
+                    "resource_sampling": {
+                        "interval_seconds": 0.25, "sample_count": 2,
+                        "root_observed": True, "sampler_completed": True,
+                        "peak_process_rss_kib": 1,
+                        "peak_tree_rss_kib": 1,
+                    },
+                }
+                tests.append(regression.Test(
+                    name, (), (), "audited", expected))
+                results.append(regression.TestResult(
+                    name, regression.TestStatus.PASS, log_path=str(log_path),
+                    fingerprints={
+                        "status": "matched", "mapping_status": "audited",
+                        "expected_identities_present": True,
+                        "serializer": {"path": "candle/fingerprint.ml",
+                                       "sha256": "1" * 64},
+                        "theorems": [], "post_state": {},
+                        "approval_sha256": approval_sha256,
+                    }, process_evidence=evidence))
+            with mock.patch.object(
+                    regression, "_runtime_state", return_value=runtime):
+                regression._validate_top100_results(
+                    results, tests, suite_nonce, contract)
+                Path(results[0].log_path).write_text(
+                    "persistent mutation\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "transcript changed"):
+                    regression._validate_top100_results(
+                        results, tests, suite_nonce, contract)
+                Path(results[0].log_path).write_text(
+                    "transcript 0\n", encoding="utf-8")
+                results[1].process_evidence["process_nonce"] = \
+                    results[0].process_evidence["process_nonce"]
+                with self.assertRaisesRegex(ValueError, "reused process nonce"):
+                    regression._validate_top100_results(
+                        results, tests, suite_nonce, contract)
 
 
 if __name__ == "__main__":

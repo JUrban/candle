@@ -156,6 +156,21 @@ python3 -I candle/regression.py --top100 -j 1 \
 The report path must not exist. The committed approval template is currently
 unapproved, so this command intentionally fails before starting Candle today.
 
+The controller rehashes the clean source/runtime contract before and after
+every process and rehashes each retained transcript again while writing the
+report. It does not provide OS-level isolation from a hostile same-UID process
+that transiently replaces a source after the precheck and restores it before
+the postcheck; excluding such interference is an explicit host trust
+assumption. Kernel-state fingerprints make an accidental semantic substitution
+observable but are not a substitute for sealed filesystem execution.
+
+The Candle source wrapper retains the primitive definition theorem returned by
+each `new_basic_definition` call solely to reproduce HOL Light's
+`definitions()` audit view. Definition construction remains in the verified
+CakeML kernel. This observational registry and the structural serializer have
+not yet been exercised by a compiled 65-target run, so this work does not by
+itself establish S1, S2, or S3.
+
 Suite S1 closes only at 65/65 load passes, 65/65 approved mappings, 65/65
 expected identity sets, and 65/65 exact matches, with zero skips, mismatches,
 timeouts, stale identities, or unexplained global axioms.
