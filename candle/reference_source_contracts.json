@@ -1,7 +1,7 @@
 {
   "schema": "candle-s1-reference-source-contract-v1",
   "historical_upstream_commit": "3170739521d88d04580f61385c95b497690b7002",
-  "exact_source_reference_commit": "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d",
+  "exact_source_reference_commit": "6ce6fc15ed6a399902757a294bc59c954ebbbd85",
   "compatibility_deltas": [
     {
       "path": "100/e_is_transcendental.ml",
