@@ -49,6 +49,15 @@ canonical bootstrap at the final Candle head and the original two-argument
 exact-root link.  Removing the schema-7 discriminator or transition copy makes
 the diagnostic artifact fail closed rather than resemble schema 6.
 
+The dispatcher also requires an ordinary schema-6 record's retained bootstrap
+root/head to equal its live linked root/head, which prevents deletion-only or
+partial-wrapper downgrades.  This is not a signature and cannot defeat an
+attacker who can replace and consistently rehash the entire ignored linked
+artifact, retained preflight, and bootstrap copy.  Promotion therefore still
+depends on live validation of the externally retained canonical final-head
+receipt (or an independently authorized immutable evidence root), not merely a
+durable schema-6 JSON file.
+
 After the canonical receipt exists, create the transition record outside every
 worktree:
 
