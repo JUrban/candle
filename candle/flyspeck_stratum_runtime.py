@@ -90,6 +90,19 @@ CHUNK_BYTES = 1024 * 1024
 GIB = 1024 * 1024 * 1024
 ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
 ACTION_OUTCOMES = ("load", "skip-ledger")
+SOURCE_CLOSURE_PREFIX = "CANDLE_FLYSPECK_LOGICAL_SOURCE_V3"
+SOURCE_CLOSURE_SUCCESS_MARKER = "CANDLE_FLYSPECK_LOGICAL_SOURCE_CLOSURE_V3_OK"
+SOURCE_CLOSURE_POLICY = "manifest-selected-nested-logical-reachability-v1"
+SOURCE_CLOSURE_HARNESS_KEYS = (
+    "candle:candle/flyspeck_source_integrity.ml",
+    "candle:candle/flyspeck_full_build.ml",
+)
+SOURCE_CLOSURE_FINAL_KEY = "candle:candle/flyspeck_l2_target.ml"
+SOURCE_CLOSURE_EXCLUDED_LOADER = "candle:candle/flyspeck_loader.ml"
+NON_SOURCE_DEPENDENCY_STATUSES = {
+    "function-alias", "generated-contract", "generated-runtime",
+    "loader-definition", "root-driver", "runtime-library",
+}
 PREFLIGHT_MARKER = "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK"
 SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
 FINGERPRINT_MARKER = reference_protocol.FINGERPRINT_MARKER
@@ -826,6 +839,9 @@ def validate_plan(
             "identity_basename": Path(source["path"]).name,
             "identity_md5": source["md5"],
         })
+    logical_source_closure = derive_logical_source_closure(
+        manifest, count, boundary_id.startswith("07-"),
+    )
 
     return {
         "plan": plan,
@@ -843,6 +859,7 @@ def validate_plan(
         "boundary": boundary,
         "diagnostic_only": boundary.get("diagnostic_only") is True,
         "actions": action_runtime,
+        "logical_source_closure": logical_source_closure,
         "source_runtime": source_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
@@ -889,6 +906,143 @@ def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]], nonce: str) 
     return "".join(output).encode()
 
 
+def derive_logical_source_closure(
+    manifest: dict[str, Any], completed_action_count: int, final_boundary: bool,
+) -> dict[str, Any]:
+    """Derive the exact selected/nested logical source closure from the manifest."""
+    nodes = manifest.get("source_nodes")
+    bootstrap_roots = manifest.get("bootstrap_roots")
+    action_roots = manifest.get("build_sequence_roots")
+    require(isinstance(nodes, dict) and nodes, "missing manifest source nodes")
+    require(isinstance(bootstrap_roots, list) and bootstrap_roots,
+            "missing manifest bootstrap roots")
+    require(isinstance(action_roots, list), "missing manifest action roots")
+    require(0 <= completed_action_count <= len(action_roots),
+            "invalid closure action count")
+
+    selected: set[str] = set()
+
+    def visit(key: str) -> None:
+        require(isinstance(key, str) and key in nodes,
+                f"unbound logical source closure key: {key}")
+        if key in selected:
+            return
+        selected.add(key)
+        dependencies = nodes[key].get("dependencies")
+        require(isinstance(dependencies, list),
+                f"missing dependencies for logical source: {key}")
+        for dependency in dependencies:
+            require(isinstance(dependency, dict),
+                    f"malformed dependency for logical source: {key}")
+            status = dependency.get("status")
+            if status == "resolved":
+                target = dependency.get("selected")
+                require(isinstance(target, str),
+                        f"resolved dependency has no target: {key}")
+                visit(target)
+            elif status == "resolved-dynamic":
+                targets = dependency.get("selected_targets")
+                require(isinstance(targets, list) and targets and
+                        all(isinstance(target, str) for target in targets),
+                        f"dynamic dependency has no exact targets: {key}")
+                for target in targets:
+                    visit(target)
+            else:
+                require(status in NON_SOURCE_DEPENDENCY_STATUSES,
+                        f"unsupported dependency status in logical closure: {status}")
+
+    roots = list(bootstrap_roots)
+    for index, root in enumerate(action_roots[:completed_action_count]):
+        require(isinstance(root, dict) and root.get("index") == index and
+                root.get("status") == "resolved" and
+                isinstance(root.get("selected"), str),
+                f"malformed selected action root: {index}")
+        roots.append(root["selected"])
+    for root in roots:
+        visit(root)
+
+    # These are selected runtime sources but not graph roots: source-integrity
+    # is loaded by setup, while the executed prefix is authenticated material
+    # derived from the full-build driver.  Traversing that driver would falsely
+    # claim actions beyond a non-final boundary.
+    for key in SOURCE_CLOSURE_HARNESS_KEYS:
+        require(key in nodes, f"missing logical source harness: {key}")
+        selected.add(key)
+    if final_boundary:
+        require(SOURCE_CLOSURE_FINAL_KEY in nodes,
+                "missing final logical source target")
+        selected.add(SOURCE_CLOSURE_FINAL_KEY)
+    require(SOURCE_CLOSURE_EXCLUDED_LOADER not in selected,
+            "non-executing full loader entered logical source closure")
+
+    records: list[dict[str, Any]] = []
+    for key in sorted(selected):
+        node = nodes[key]
+        record: dict[str, Any] = {
+            "index": len(records),
+            "key": key,
+            "source_sha256": node.get("sha256"),
+            "source_md5": node.get("md5"),
+            "execution_normalization": None,
+        }
+        require(re.fullmatch(r"[0-9a-f]{64}", str(record["source_sha256"])) is not None and
+                re.fullmatch(r"[0-9a-f]{32}", str(record["source_md5"])) is not None,
+                f"malformed logical source digest: {key}")
+        normalization = node.get("execution_normalization")
+        if isinstance(normalization, dict):
+            normalized = {
+                field: normalization.get(field)
+                for field in ("id", "normalized_sha256", "normalized_md5")
+            }
+            require(isinstance(normalized["id"], str) and normalized["id"] and
+                    re.fullmatch(r"[0-9a-f]{64}",
+                                 str(normalized["normalized_sha256"])) is not None and
+                    re.fullmatch(r"[0-9a-f]{32}",
+                                 str(normalized["normalized_md5"])) is not None,
+                    f"malformed logical source normalization: {key}")
+            record["execution_normalization"] = normalized
+        records.append(record)
+    return {
+        "schema": 3,
+        "kind": "candle-flyspeck-selected-nested-logical-source-closure",
+        "policy": SOURCE_CLOSURE_POLICY,
+        "completed_action_count": completed_action_count,
+        "final_target_selected": final_boundary,
+        "record_count": len(records),
+        "ordered_record_sha256": canonical_sha256(records),
+        "records": records,
+        "physical_loader_cache_trace": False,
+        "execution_observation": "manifest-derived-expected-only",
+        "self_certifies_nested_execution": False,
+        "s2_s3_evidence": False,
+    }
+
+
+def logical_source_marker(nonce: str, record: dict[str, Any]) -> str:
+    normalization = record["execution_normalization"]
+    normalized_fields = ("-", "-", "-")
+    if normalization is not None:
+        normalized_fields = (
+            normalization["id"].encode("utf-8").hex(),
+            normalization["normalized_sha256"],
+            normalization["normalized_md5"],
+        )
+    return " ".join((
+        SOURCE_CLOSURE_PREFIX, nonce, f"{record['index']:03d}",
+        record["key"].encode("utf-8").hex(), record["source_sha256"],
+        record["source_md5"], *normalized_fields,
+    ))
+
+
+def logical_source_terminal(
+    nonce: str, boundary_id: str, closure: dict[str, Any],
+) -> str:
+    return (
+        f"{SOURCE_CLOSURE_SUCCESS_MARKER} {nonce} {boundary_id} "
+        f"{closure['record_count']} {closure['ordered_record_sha256']}"
+    )
+
+
 def fingerprint_requests(boundary_id: str) -> list[str]:
     """Return ordered candidate identities available at an exact boundary."""
     boundary_number = boundary_id.split("-", 1)[0]
@@ -910,10 +1064,18 @@ def write_postlude(
     boundary_id: str,
     theorem_names: list[str],
     nonce: str,
+    logical_source_closure: dict[str, Any],
 ) -> None:
     lines = ["(* Generated theorem-observation postlude; not an approval record. *)"]
     if boundary_id.startswith("07-"):
         lines.append(f"#use {ocaml_string(str(candle_root / L2_TARGET_RELATIVE))};;")
+    for record in logical_source_closure["records"]:
+        lines.append(
+            f"print_endline {ocaml_string(logical_source_marker(nonce, record))};;"
+        )
+    lines.append(
+        f"print_endline {ocaml_string(logical_source_terminal(nonce, boundary_id, logical_source_closure))};;"
+    )
     if theorem_names:
         lines.append(f"#use {ocaml_string(str(candle_root / FINGERPRINT_RELATIVE))};;")
         for name in theorem_names:
@@ -1115,6 +1277,132 @@ def validate_log(
     require(not re.search(r"^(?:ERROR|EXCEPTION):|Parsing failed", log, re.MULTILINE),
             "compiled stratum log contains a top-level error")
     return action_events
+
+
+def validate_logical_source_closure(
+    log: str,
+    expected: dict[str, Any],
+    boundary_id: str,
+    nonce: str,
+) -> dict[str, Any]:
+    """Require one exact, complete, ordered logical-closure session."""
+    require(expected.get("schema") == 3 and
+            expected.get("kind") ==
+            "candle-flyspeck-selected-nested-logical-source-closure" and
+            expected.get("policy") == SOURCE_CLOSURE_POLICY and
+            expected.get("physical_loader_cache_trace") is False and
+            expected.get("execution_observation") ==
+            "manifest-derived-expected-only" and
+            expected.get("self_certifies_nested_execution") is False and
+            expected.get("s2_s3_evidence") is False,
+            "unsupported expected logical source closure")
+    records = expected.get("records")
+    require(isinstance(records, list) and
+            expected.get("record_count") == len(records) and
+            expected.get("ordered_record_sha256") == canonical_sha256(records),
+            "malformed expected logical source closure")
+    lines = log.splitlines()
+
+    def exact_position(marker: str, label: str) -> int:
+        positions = [index for index, line in enumerate(lines) if line == marker]
+        require(len(positions) == 1, f"missing or duplicate {label}")
+        return positions[0]
+
+    boundary = (
+        f"{SUCCESS_MARKER} {nonce} {boundary_id} "
+        f"{expected['completed_action_count']}"
+    )
+    boundary_position = exact_position(boundary, "boundary success marker")
+    expected_markers = [logical_source_marker(nonce, record) for record in records]
+    record_positions = [
+        exact_position(marker, f"logical source record {index}")
+        for index, marker in enumerate(expected_markers)
+    ]
+    terminal = logical_source_terminal(nonce, boundary_id, expected)
+    terminal_position = exact_position(terminal, "logical source closure terminal marker")
+    positions = [boundary_position, *record_positions, terminal_position]
+    require(positions == sorted(positions),
+            "logical source closure records are out of order")
+    allowed = {*expected_markers, terminal}
+    namespaces = (SOURCE_CLOSURE_PREFIX + " ", SOURCE_CLOSURE_SUCCESS_MARKER + " ")
+    for line in lines:
+        if line.startswith(namespaces):
+            require(line in allowed,
+                    "unsupported or unexpected logical source closure record")
+    for index, line in enumerate(lines):
+        if line.startswith((FINGERPRINT_MARKER + "\t",
+                            STATE_FINGERPRINT_MARKER + "\t",
+                            FINGERPRINT_SUCCESS_MARKER + " ")):
+            require(index > terminal_position,
+                    "fingerprint record precedes logical source closure terminal")
+    return {
+        **expected,
+        "status": "expected-closure-emitted-unapproved",
+    }
+
+
+def validate_direct_evidence_v3_artifact(
+    artifact: dict[str, Any], *, receipt: bool,
+) -> None:
+    """Reject schema-2 or partially upgraded direct-attempt artifacts."""
+    require(artifact.get("schema") == 3,
+            "direct runtime evidence requires disjoint schema 3")
+    require(artifact.get("kind") == "candle-flyspeck-compiled-stratum-attempt",
+            "wrong direct runtime evidence kind")
+    contract = artifact.get("evidence_contract")
+    require(isinstance(contract, dict) and
+            contract.get("schema") ==
+            "candle-flyspeck-direct-runtime-evidence-v3" and
+            contract.get("allowed_action_outcomes") == list(ACTION_OUTCOMES) and
+            contract.get("physical_loader_cache_skip_allowed") is False and
+            contract.get("logical_source_closure_policy") ==
+            SOURCE_CLOSURE_POLICY and
+            contract.get("physical_loader_cache_trace_included") is False and
+            contract.get("s2_s3_approval_included") is False,
+            "malformed direct runtime evidence-v3 contract")
+    expected = artifact.get("expected_logical_source_closure")
+    require(isinstance(expected, dict) and expected.get("schema") == 3 and
+            expected.get("kind") ==
+            "candle-flyspeck-selected-nested-logical-source-closure" and
+            expected.get("policy") == SOURCE_CLOSURE_POLICY and
+            expected.get("physical_loader_cache_trace") is False and
+            expected.get("execution_observation") ==
+            "manifest-derived-expected-only" and
+            expected.get("self_certifies_nested_execution") is False and
+            expected.get("s2_s3_evidence") is False,
+            "malformed direct runtime expected closure summary")
+    require(expected.get("completed_action_count") ==
+            artifact.get("action_count"),
+            "direct runtime closure/action count mismatch")
+    if not receipt:
+        require(artifact.get("state") == "running",
+                "initial direct runtime artifact is not running")
+        require("s2_s3_evidence" not in artifact,
+                "initial direct runtime artifact claims release evidence")
+        return
+    require(artifact.get("state") in ("completed", "failed"),
+            "direct runtime receipt state mismatch")
+    require(artifact.get("s2_s3_evidence") is False,
+            "direct runtime receipt must remain nonpromotable")
+    observed = artifact.get("logical_source_closure")
+    if artifact["state"] == "completed":
+        require(isinstance(observed, dict) and
+                observed.get("status") ==
+                "expected-closure-emitted-unapproved" and
+                observed.get("ordered_record_sha256") ==
+                expected.get("ordered_record_sha256") and
+                observed.get("record_count") == expected.get("record_count") and
+                observed.get("self_certifies_nested_execution") is False,
+                "completed direct runtime receipt lacks exact expected closure")
+        events = artifact.get("action_events")
+        require(isinstance(events, list) and
+                len(events) == artifact.get("action_count") and
+                all(event.get("outcome") in ACTION_OUTCOMES for event in events),
+                "completed direct runtime receipt lacks exact action events")
+    else:
+        require(observed is None or
+                observed.get("self_certifies_nested_execution") is False,
+                "failed direct runtime receipt claims nested execution")
 
 
 def utc_now() -> str:
@@ -1875,8 +2163,10 @@ def _run_attempt_impl(
         program_path, program_record["md5"],
     )
     theorem_names = fingerprint_requests(boundary_id)
+    logical_source_closure = prepared["logical_source_closure"]
     write_postlude(
         postlude_path, runtime_candle_root, boundary_id, theorem_names, nonce,
+        logical_source_closure,
     )
     stdin_path.write_text(
         f"#use {ocaml_string(str(config_path))};;\n"
@@ -1926,7 +2216,19 @@ def _run_attempt_impl(
             "schema": "candle-flyspeck-direct-runtime-evidence-v3",
             "allowed_action_outcomes": list(ACTION_OUTCOMES),
             "physical_loader_cache_skip_allowed": False,
+            "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
+            "physical_loader_cache_trace_included": False,
             "s2_s3_approval_included": False,
+        },
+        "expected_logical_source_closure": {
+            field: logical_source_closure[field]
+            for field in (
+                "schema", "kind", "policy", "completed_action_count",
+                "final_target_selected", "record_count",
+                "ordered_record_sha256", "physical_loader_cache_trace",
+                "execution_observation", "self_certifies_nested_execution",
+                "s2_s3_evidence",
+            )
         },
         "runtime_environment_policy": (
             "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
@@ -1963,6 +2265,7 @@ def _run_attempt_impl(
             "flyspeck": prepared["plan"]["repositories"]["flyspeck_commit"],
         },
     }
+    validate_direct_evidence_v3_artifact(attempt, receipt=False)
     atomic_write_json(attempt_path, attempt)
     if output_ownership is not None:
         output_ownership["marker_path"].unlink()
@@ -1984,6 +2287,7 @@ def _run_attempt_impl(
     validation_error: str | None = None
     fingerprints: dict[str, Any] | None = None
     action_events: list[dict[str, Any]] | None = None
+    observed_source_closure: dict[str, Any] | None = None
     postflight_reauthenticated = False
     handled_signals = {signal.SIGTERM, signal.SIGINT}
     previous_mask: set[signal.Signals] | None = None
@@ -2053,6 +2357,10 @@ def _run_attempt_impl(
         validate_file(snapshot_record_path, attempt["inputs"]["runtime_snapshot"],
                       "runtime snapshot record")
         validate_file(attempt_path, attempt_record, "initial attempt record")
+        archived_attempt = load_object(attempt_path, "initial attempt record")
+        require(archived_attempt == attempt,
+                "initial direct runtime attempt changed after publication")
+        validate_direct_evidence_v3_artifact(archived_attempt, receipt=False)
         validate_runtime_snapshot(snapshot_record, output_root)
         validate_controller_execution(
             controller_execution, candle_root, linked["candle_commit"],
@@ -2075,9 +2383,13 @@ def _run_attempt_impl(
         ):
             validate_file(path, control_records[label], f"attempt control {label}")
         postflight_reauthenticated = True
+        log_text = log_path.read_text(encoding="utf-8", errors="replace")
         action_events = validate_log(
-            log_path.read_text(encoding="utf-8", errors="replace"),
+            log_text,
             prepared["actions"], boundary_id, nonce, theorem_names,
+        )
+        observed_source_closure = validate_logical_source_closure(
+            log_text, logical_source_closure, boundary_id, nonce,
         )
         fingerprints = parse_fingerprints(
             log_path, theorem_names,
@@ -2128,11 +2440,13 @@ def _run_attempt_impl(
                 len(prepared["actions"]) if validation_error is None else 0
             ),
             "action_events": action_events,
+            "logical_source_closure": observed_source_closure,
             "semantic_fingerprints": fingerprints,
             "s2_s3_evidence": False,
             "validation_error": validation_error,
             "postflight_reauthenticated": postflight_reauthenticated,
         }
+        validate_direct_evidence_v3_artifact(receipt, receipt=True)
         atomic_write_json(receipt_path, receipt)
     finally:
         signal.signal(signal.SIGTERM, previous_sigterm)

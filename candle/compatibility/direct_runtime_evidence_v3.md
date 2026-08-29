@@ -41,9 +41,13 @@ SHA-256.
 
 This is a **manifest-derived logical reachability closure**, justified by the
 authenticated source graph and successful outer-action ledger.  It is not a
-loader-owned trace of Candle's private physical-path cache.  That distinction
-remains an explicit assurance boundary until the verified boot exports such a
-trace.
+loader-owned observation of nested source execution and cannot self-certify
+that execution.  The verified boot's ordinary `needs` / `loads` cache is a
+closure-local string list; only the custom outer actions update the exported
+logical-identity ledger.  Closing this hard promotion blocker therefore
+requires a newly built verified boot to export nonce-bound, authenticated
+nested load events (or equivalent exact evidence).  Re-emitting this expected
+closure is deliberately marked nonpromotable until then.
 
 ## Generated theorem-digest output
 

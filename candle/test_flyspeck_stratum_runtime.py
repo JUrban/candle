@@ -44,6 +44,40 @@ class StratumRuntimeTests(unittest.TestCase):
             b'#flyspeck_needs "../formal_lp/b.ml";;\n'
         )
         self.nonce = "a" * 32
+        closure_records = [
+            {
+                "index": 0,
+                "key": "candle:a.ml",
+                "source_sha256": "5" * 64,
+                "source_md5": "6" * 32,
+                "execution_normalization": None,
+            },
+            {
+                "index": 1,
+                "key": "flyspeck:b.hl",
+                "source_sha256": "7" * 64,
+                "source_md5": "8" * 32,
+                "execution_normalization": {
+                    "id": "TEST-NORMALIZATION-001",
+                    "normalized_sha256": "9" * 64,
+                    "normalized_md5": "b" * 32,
+                },
+            },
+        ]
+        self.logical_source_closure = {
+            "schema": 3,
+            "kind": "candle-flyspeck-selected-nested-logical-source-closure",
+            "policy": subject.SOURCE_CLOSURE_POLICY,
+            "completed_action_count": 2,
+            "final_target_selected": False,
+            "record_count": len(closure_records),
+            "ordered_record_sha256": subject.canonical_sha256(closure_records),
+            "records": closure_records,
+            "physical_loader_cache_trace": False,
+            "execution_observation": "manifest-derived-expected-only",
+            "self_certifies_nested_execution": False,
+            "s2_s3_evidence": False,
+        }
 
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
         closure = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
@@ -160,6 +194,128 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertEqual(len(final), 4)
         self.assertEqual(final[-1], "Candle_flyspeck_l2.tame_imp_kepler_conjecture")
 
+    def test_manifest_closure_is_complete_ordered_and_excludes_full_loader(self) -> None:
+        manifest = json.loads(
+            (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
+                encoding="utf-8",
+            )
+        )
+        closure = subject.derive_logical_source_closure(manifest, 297, True)
+        self.assertEqual(closure["record_count"], 399)
+        keys = [record["key"] for record in closure["records"]]
+        self.assertEqual(keys, sorted(keys))
+        self.assertNotIn(subject.SOURCE_CLOSURE_EXCLUDED_LOADER, keys)
+        self.assertIn(subject.SOURCE_CLOSURE_FINAL_KEY, keys)
+        self.assertEqual(
+            closure["ordered_record_sha256"],
+            subject.canonical_sha256(closure["records"]),
+        )
+        diagnostic = subject.derive_logical_source_closure(manifest, 19, False)
+        self.assertEqual(diagnostic["record_count"], 121)
+        self.assertNotIn(
+            subject.SOURCE_CLOSURE_FINAL_KEY,
+            [record["key"] for record in diagnostic["records"]],
+        )
+
+    def test_logical_source_closure_rejects_missing_extra_reorder_and_tamper(self) -> None:
+        boundary = "00-test-through-001"
+        success = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
+        records = [
+            subject.logical_source_marker(self.nonce, record)
+            for record in self.logical_source_closure["records"]
+        ]
+        terminal = subject.logical_source_terminal(
+            self.nonce, boundary, self.logical_source_closure,
+        )
+        valid = [success, *records, terminal]
+        observed = subject.validate_logical_source_closure(
+            "\n".join(valid), self.logical_source_closure, boundary, self.nonce,
+        )
+        self.assertEqual(observed["status"],
+                         "expected-closure-emitted-unapproved")
+        self.assertFalse(observed["physical_loader_cache_trace"])
+        self.assertFalse(observed["self_certifies_nested_execution"])
+        self.assertEqual(observed["execution_observation"],
+                         "manifest-derived-expected-only")
+
+        invalid_cases = (
+            ([success, records[1], terminal], "logical source record 0"),
+            ([success, *records, records[0], terminal], "logical source record 0"),
+            ([success, records[1], records[0], terminal], "out of order"),
+            ([success, records[0][:-1] + "0", records[1], terminal],
+             "logical source record 0"),
+        )
+        for lines, message in invalid_cases:
+            with self.subTest(message=message, lines=lines):
+                with self.assertRaisesRegex(subject.ContractError, message):
+                    subject.validate_logical_source_closure(
+                        "\n".join(lines), self.logical_source_closure,
+                        boundary, self.nonce,
+                    )
+
+        forged = records[0].replace("candle:a.ml".encode().hex(),
+                                    "candle:extra.ml".encode().hex())
+        with self.assertRaisesRegex(
+            subject.ContractError, "unexpected logical source closure record",
+        ):
+            subject.validate_logical_source_closure(
+                "\n".join([success, *records, forged, terminal]),
+                self.logical_source_closure, boundary, self.nonce,
+            )
+
+    def test_evidence_v3_artifact_validator_rejects_schema2_and_partial_upgrade(self) -> None:
+        summary_fields = (
+            "schema", "kind", "policy", "completed_action_count",
+            "final_target_selected", "record_count", "ordered_record_sha256",
+            "physical_loader_cache_trace", "execution_observation",
+            "self_certifies_nested_execution", "s2_s3_evidence",
+        )
+        attempt = {
+            "schema": 3,
+            "kind": "candle-flyspeck-compiled-stratum-attempt",
+            "state": "running",
+            "action_count": 2,
+            "evidence_contract": {
+                "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+                "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
+                "physical_loader_cache_skip_allowed": False,
+                "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
+                "physical_loader_cache_trace_included": False,
+                "s2_s3_approval_included": False,
+            },
+            "expected_logical_source_closure": {
+                field: self.logical_source_closure[field]
+                for field in summary_fields
+            },
+        }
+        subject.validate_direct_evidence_v3_artifact(attempt, receipt=False)
+        schema2 = copy.deepcopy(attempt)
+        schema2["schema"] = 2
+        with self.assertRaisesRegex(subject.ContractError, "disjoint schema 3"):
+            subject.validate_direct_evidence_v3_artifact(schema2, receipt=False)
+        partial = copy.deepcopy(attempt)
+        partial["evidence_contract"].pop("physical_loader_cache_trace_included")
+        with self.assertRaisesRegex(subject.ContractError, "evidence-v3 contract"):
+            subject.validate_direct_evidence_v3_artifact(partial, receipt=False)
+
+        receipt = {
+            **attempt,
+            "state": "completed",
+            "s2_s3_evidence": False,
+            "logical_source_closure": {
+                **self.logical_source_closure,
+                "status": "expected-closure-emitted-unapproved",
+            },
+            "action_events": [
+                {"index": 0, "outcome": "load"},
+                {"index": 1, "outcome": "skip-ledger"},
+            ],
+        }
+        subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
+        receipt["logical_source_closure"]["self_certifies_nested_execution"] = True
+        with self.assertRaisesRegex(subject.ContractError, "expected closure"):
+            subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
+
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
         axioms = b"axioms"
@@ -213,9 +369,16 @@ class StratumRuntimeTests(unittest.TestCase):
                 postlude, Path(temporary), "05-lp_support-through-184",
                 ["Linear_programming_results.linear_programming_results_th"],
                 self.nonce,
+                self.logical_source_closure,
             )
             source = postlude.read_text(encoding="utf-8")
         self.assertIn("candle_s1_emit_fingerprint", source)
+        self.assertEqual(source.count(subject.SOURCE_CLOSURE_PREFIX), 2)
+        self.assertEqual(source.count(subject.SOURCE_CLOSURE_SUCCESS_MARKER), 1)
+        self.assertLess(
+            source.index(subject.SOURCE_CLOSURE_SUCCESS_MARKER),
+            source.index("candle_s1_emit_fingerprint"),
+        )
         self.assertEqual(source.count("candle_s1_emit_state_fingerprint ();;"), 1)
         self.assertLess(
             source.index("candle_s1_emit_fingerprint"),
