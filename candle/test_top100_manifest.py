@@ -219,6 +219,126 @@ class Top100ManifestTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
                     top100_manifest._load_identity_approval(targets)
 
+    def test_approved_artifact_requires_two_retained_independent_runs(self):
+        targets = top100_manifest.build_manifest()["targets"]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "candle/evidence").mkdir(parents=True)
+            serializer = root / "candle/fingerprint.ml"
+            serializer.write_bytes(top100_manifest.ROOT.joinpath(
+                "candle/fingerprint.ml").read_bytes())
+            serializer_sha256 = top100_manifest._sha256(serializer)
+            source_contract = root / "candle/evidence/source-contract.json"
+            source_contract.write_text("{}\n", encoding="utf-8")
+
+            def record(relative, content):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+                return {
+                    "path": relative,
+                    "bytes": len(content),
+                    "sha256": top100_manifest.hashlib.sha256(content).hexdigest(),
+                }
+
+            approved_targets = []
+            for target_index, target in enumerate(targets):
+                axioms_sha256 = "a" * 64
+                expected = {
+                    "serializer_sha256": serializer_sha256,
+                    "theorems": [{
+                        "name": theorem["name"],
+                        "theorem_sha256": "1" * 64,
+                        "hypotheses_sha256": "2" * 64,
+                        "conclusion_sha256": "3" * 64,
+                        "global_axioms_sha256": axioms_sha256,
+                        "hypothesis_count": 0,
+                        "global_axiom_count": 3,
+                    } for theorem in target["fingerprint_request"]["theorems"]],
+                    "post_state": {
+                        "kernel_state_sha256": "4" * 64,
+                        "type_constants_sha256": "5" * 64,
+                        "type_constant_count": 10,
+                        "term_constants_sha256": "6" * 64,
+                        "term_constant_count": 20,
+                        "definitions_sha256": "7" * 64,
+                        "definition_count": 30,
+                        "global_axioms_sha256": axioms_sha256,
+                        "global_axiom_count": 3,
+                    },
+                }
+                identity_sha256 = top100_manifest._canonical_sha256(expected)
+                runs = []
+                for run_index in range(2):
+                    prefix = f"candle/evidence/t{target_index}-r{run_index}"
+                    artifacts = {
+                        name: record(
+                            f"{prefix}-{name}",
+                            f"{target_index}:{run_index}:{name}\n".encode())
+                        for name in ("candidate", "plan", "request", "transcript")
+                    }
+                    artifacts["source_contract"] = {
+                        "path": "candle/evidence/source-contract.json",
+                        "bytes": source_contract.stat().st_size,
+                        "sha256": top100_manifest._sha256(source_contract),
+                    }
+                    runs.append({
+                        "artifacts": artifacts,
+                        "reference_git_head": "8" * 40,
+                        "session_nonce": ("9" if run_index == 0 else "b") * 64,
+                        "identity_sha256": identity_sha256,
+                    })
+                approved_targets.append({
+                    "name": target["name"], "reference_runs": runs,
+                    "expected_identity": expected,
+                })
+            _, inventory_sha256 = top100_manifest._inventory_contract(targets)
+            approval = {
+                "schema": "candle-s1-identity-approval-v1",
+                "artifact_kind":
+                    "independently-reviewed-ocaml-reference-identities",
+                "approval_status": "approved", "promotion_allowed": True,
+                "inventory_contract_sha256": inventory_sha256,
+                "serializer_sha256": serializer_sha256,
+                "reference_policy": {
+                    "historical_upstream_commit":
+                        top100_manifest.HISTORICAL_REFERENCE_COMMIT,
+                    "exact_source_reference_commit": "c" * 40,
+                    "compatibility_deltas": [{
+                        "path": path, "historical_sha256": "d" * 64,
+                        "selected_sha256": "e" * 64, "reason": "reviewed"
+                    } for path in (
+                        "100/e_is_transcendental.ml", "100/euler.ml",
+                        "100/lagrange.ml")],
+                },
+                "review": {
+                    "reviewer": "independent-reviewer",
+                    "approved_utc": "2026-08-29T00:00:00+00:00",
+                    "review_commit": "f" * 40,
+                    "decision":
+                        "two-reference-runs-identical-and-source-deltas-reviewed",
+                },
+                "targets": approved_targets,
+            }
+            approval_path = root / "candle/top100_identity_approval.json"
+            approval_path.write_text(
+                json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+            with (mock.patch.object(top100_manifest, "ROOT", root),
+                  mock.patch.object(
+                      top100_manifest, "IDENTITY_APPROVAL", approval_path)):
+                loaded, artifact_sha256, expected, _ = \
+                    top100_manifest._load_identity_approval(targets)
+                self.assertTrue(loaded["promotion_allowed"])
+                self.assertEqual(len(expected), 65)
+                self.assertEqual(
+                    expected[targets[0]["name"]]["approval_sha256"],
+                    artifact_sha256)
+                changed = root / approved_targets[0]["reference_runs"][0][
+                    "artifacts"]["transcript"]["path"]
+                changed.write_bytes(changed.read_bytes() + b"mutation")
+                with self.assertRaisesRegex(ValueError, "changed transcript"):
+                    top100_manifest._load_identity_approval(targets)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -18,6 +18,14 @@ NONCE = "ab" * 32
 
 
 class ReferenceFingerprintTest(unittest.TestCase):
+    @staticmethod
+    def _state_record(axioms=b"axioms"):
+        return "\t".join([
+            regression.STATE_FINGERPRINT_MARKER,
+            b"state".hex(), b"types".hex(), b"constants".hex(),
+            b"definitions".hex(), axioms.hex(), "1", "2", "3", "3",
+        ])
+
     def setUp(self):
         collector_sha256 = reference._sha256(Path(reference.__file__))
         self.collector_patch = mock.patch.object(
@@ -68,6 +76,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "cat >/dev/null\n"
             f"printf '%s\\n' '{reference.SESSION_MARKER}\t{NONCE}'\n"
             f"printf '%s\\n' '{record}'\n"
+            f"printf '%s\\n' '{self._state_record()}'\n"
             f"printf '%s\\n' '{reference.COMPLETE_MARKER}\t{NONCE}'\n")
         runtime_stublib.write_text("pinned runtime stub\n")
         ocamlc.write_text(
@@ -113,6 +122,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             [item["relative_path"] for item in plan["input"]["load_files"]],
             ["100/gcd.ml"])
         self.assertEqual(plan["input"]["theorem_names"], ["EGCD"])
+        self.assertEqual(plan["input"]["source_mode"], "manifest-exact")
+        self.assertEqual(
+            len(plan["input"]["source_contract"]["compatibility_deltas"]), 3)
         source = plan["request"]["source"]
         self.assertLess(source.index("candle/fingerprint.ml"),
                         source.index('loadt "100/gcd.ml"'))
@@ -167,6 +179,16 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     "manual-fixture", "/missing", "/missing", "/missing",
                     "/missing", "/missing", NONCE)
 
+    def test_historical_mode_requires_exact_historical_head(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "exact upstream HEAD"):
+                reference.build_plan(
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, NONCE, source_mode="historical-original")
+
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {
             "schema": reference.PLAN_SCHEMA,
@@ -186,6 +208,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         transcript = "\n".join([
             f"{reference.SESSION_MARKER}\t{NONCE}",
             "\t".join(fields),
+            self._state_record(),
             f"{reference.COMPLETE_MARKER}\t{NONCE}",
             "",
         ])
@@ -200,7 +223,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         with self.assertRaisesRegex(
                 regression.LoadFailure, "malformed expected"):
             regression._match_expected_identities(
-                [], candidate, reference._sha256(reference.SERIALIZER),
+                [], {}, candidate, reference._sha256(reference.SERIALIZER),
                 "audited")
 
     def test_collect_spawns_process_rechecks_pins_and_writes_candidate(self):
@@ -271,12 +294,22 @@ class ReferenceFingerprintTest(unittest.TestCase):
         transcript = "\n".join([
             record,
             f"{reference.SESSION_MARKER}\t{NONCE}",
+            self._state_record(),
             f"{reference.COMPLETE_MARKER}\t{NONCE}",
             "",
         ])
         with self.assertRaisesRegex(
                 reference.CollectionError, "outside reference session"):
             reference.candidate_from_transcript(plan, transcript)
+
+        state_outside = "\n".join([
+            self._state_record(),
+            f"{reference.SESSION_MARKER}\t{NONCE}", record,
+            f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
+        ])
+        with self.assertRaisesRegex(
+                reference.CollectionError, "outside reference session"):
+            reference.candidate_from_transcript(plan, state_outside)
 
     def test_linked_artifact_validation_rejects_tampering(self):
         plan = {
@@ -298,6 +331,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ])
         transcript = "\n".join([
             f"{reference.SESSION_MARKER}\t{NONCE}", record,
+            self._state_record(),
             f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
         ])
         candidate = reference.candidate_from_transcript(plan, transcript)
