@@ -30,6 +30,7 @@ PLAN_SCHEMA = "candle-s1-reference-plan-v6"
 CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v6"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
+CONTROLLER_LOCK_FD_ENV = "CANDLE_REFERENCE_CONTROLLER_LOCK_FD"
 
 
 class CollectionError(Exception):
@@ -138,6 +139,23 @@ def _runtime_interpreter(runtime):
     if not match:
         raise CollectionError("runtime must have an absolute shebang interpreter")
     return _pin_file(Path(os.fsdecode(match.group(1))))
+
+
+def _controller_lock_pass_fds():
+    """Preserve an outer controller's flock through this process and HOL."""
+    value = os.environ.get(CONTROLLER_LOCK_FD_ENV)
+    if value is None:
+        return ()
+    if re.fullmatch(r"[1-9][0-9]*", value) is None:
+        raise CollectionError("malformed inherited controller lock descriptor")
+    descriptor = int(value)
+    try:
+        metadata = os.fstat(descriptor)
+    except OSError as error:
+        raise CollectionError("closed inherited controller lock descriptor") from error
+    if not stat.S_ISREG(metadata.st_mode):
+        raise CollectionError("controller lock descriptor is not a regular file")
+    return (descriptor,)
 
 
 def _elf_dependencies(paths):
@@ -592,7 +610,8 @@ def collect(plan, transcript_path, candidate_path, wall_timeout):
         argv, input=plan["request"]["source"], text=True,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         cwd=plan["fresh_process_contract"]["working_directory"], env=env,
-        timeout=wall_timeout, check=False)
+        timeout=wall_timeout, check=False,
+        pass_fds=_controller_lock_pass_fds())
     transcript_path.write_text(completed.stdout, encoding="utf-8")
 
     _require_current_plan_pins(plan)

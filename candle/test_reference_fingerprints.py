@@ -2,8 +2,10 @@
 """Lightweight tests for fail-closed HOL Light reference collection."""
 
 import copy
+import fcntl
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -212,6 +214,31 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     reference.build_plan(
                         "100/gcd", root, runtime, runtime_stublib, ocamlc,
                         ocamlfind, NONCE)
+
+    def test_controller_lock_descriptor_is_checked_and_inheritable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            lock_path = Path(directory) / "controller.lock"
+            lock_path.write_text("lock\n")
+            descriptor = os.open(lock_path, os.O_RDONLY)
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                with mock.patch.dict(os.environ, {
+                        reference.CONTROLLER_LOCK_FD_ENV: str(descriptor)}):
+                    self.assertEqual(
+                        reference._controller_lock_pass_fds(), (descriptor,))
+                    completed = subprocess.run(
+                        ["/bin/sh", "-c",
+                         f"test -f /proc/self/fd/{descriptor}"],
+                        pass_fds=reference._controller_lock_pass_fds(),
+                        check=False)
+                    self.assertEqual(completed.returncode, 0)
+            finally:
+                os.close(descriptor)
+        with mock.patch.dict(os.environ, {
+                reference.CONTROLLER_LOCK_FD_ENV: "not-a-descriptor"}):
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "malformed inherited"):
+                reference._controller_lock_pass_fds()
 
     def test_exact_three_delta_contract_matches_both_git_sides(self):
         contract = reference._load_source_contract()

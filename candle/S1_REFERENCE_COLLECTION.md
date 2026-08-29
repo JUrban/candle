@@ -51,6 +51,14 @@ between the nonce-bound start and completion markers. Missing/duplicate markers,
 a record outside that interval, a nonzero exit, missing/extra fingerprint
 records, inconsistent global axioms, or any changed pin fails collection.
 
+When a resumable outer controller supplies its already-locked ordinary-file
+descriptor through `CANDLE_REFERENCE_CONTROLLER_LOCK_FD`, the collector checks
+that descriptor and passes the same open file description into the HOL runtime.
+The variable is controller metadata only and is not added to HOL's sanitized
+environment. Thus an uncatchable controller exit cannot release the artifact
+root lock while its collector or HOL descendant is still running. Direct
+standalone collection omits the variable and retains the same runtime inputs.
+
 ## Commands
 
 Generate and inspect a plan without starting HOL Light:
