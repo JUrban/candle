@@ -16,7 +16,7 @@ candle_root=$(cd -- "$(dirname -- "$candle_script")" && pwd)
   printf 'Candle launcher is not executable: %s\n' "$candle_script" >&2
   exit 2
 }
-python3 "$loader_dir/cakeml_artifact_provenance.py" \
+/usr/bin/python3 -I -S "$loader_dir/cakeml_bootstrap_transition.py" \
   check-linked --candle-root "$candle_root"
 
 work=$(mktemp -d /tmp/candle-flyspeck-dopen-prefix.XXXXXX)

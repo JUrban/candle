@@ -12,7 +12,7 @@ candle_script=$(realpath -- "$1")
   exit 2
 }
 candle_root=$(cd -- "$(dirname -- "$candle_script")" && pwd)
-python3 "$candle_root/candle/cakeml_artifact_provenance.py" \
+/usr/bin/python3 -I -S "$candle_root/candle/cakeml_bootstrap_transition.py" \
   check-linked --candle-root "$candle_root"
 
 source_file=$(mktemp /tmp/candle-dopen-runtime.XXXXXX.ml)

@@ -34,9 +34,20 @@ authenticated worktrees.
 The transition JSON is proof data, not a signature and not an authority.  Its
 checker reconstructs the complete record from the explicit roots and heads and
 the live original receipt.  Editing all claimed hashes therefore does not make
-a forged record acceptable.  Preserve the transition record alongside the
-original bootstrap evidence; a schema-6 linked record alone does not record the
-transition derivation.
+a forged record acceptable.  Transition linking materializes an ordinary
+`candle/build/bootstrap-transition.json` copy and emits the distinct schema-7
+`candle-linked-pinned-cakeml-transition` linked record.  That record binds the
+copy, the transition/link controller source closure, the retained canonical
+bootstrap evidence, and both committed closure sides.  Direct diagnostic
+runtime snapshots archive the transition copy through the linked-output
+inventory.
+
+Schema 7 is explicitly diagnostic-only.  It is never interchangeable with the
+ordinary exact-root schema-6 record: the Great 100 promotion gate continues to
+require schema 6.  A final S1/S2 release therefore still requires a new
+canonical bootstrap at the final Candle head and the original two-argument
+exact-root link.  Removing the schema-7 discriminator or transition copy makes
+the diagnostic artifact fail closed rather than resemble schema 6.
 
 After the canonical receipt exists, create the transition record outside every
 worktree:
@@ -62,10 +73,12 @@ FINAL_CANDLE/build-local-cakeml.sh \
   CAKEML BOOTSTRAP_RECEIPT SOURCE_CANDLE SOURCE_HEAD TRANSITION_RECEIPT
 ```
 
-The original two-argument command remains the exact-root path.  Transition mode
-checks the proof before copying bootstrap outputs and checks it again in the
-linked-record controller.  If the bootstrap receipt is absent, neither command
-is authorized and no transition/link should be attempted.
+The original two-argument command remains the promotable exact-root schema-6
+path.  Transition mode checks the proof before copying bootstrap outputs,
+checks it again in the schema-7 linked-record controller, and uses the schema
+6/7 dispatcher for later diagnostic launches.  If the bootstrap receipt is
+absent, neither command is authorized and no transition/link should be
+attempted.
 
 Trust assumptions retained from the canonical receipt include kernel,
 filesystem, process, exact host-tool semantics, and absence of hostile

@@ -76,6 +76,10 @@ provenance = _load_local_source(
     "_candle_float_performance_provenance",
     HERE.parent / "cakeml_artifact_provenance.py",
 )
+bootstrap_transition = _load_local_source(
+    "_candle_float_performance_bootstrap_transition",
+    HERE.parent / "cakeml_bootstrap_transition.py",
+)
 
 # Loaded only after its complete pinned source set has been copied into the
 # retained evidence directory.  This deliberately has no ambient import.
@@ -353,7 +357,7 @@ def validate_python_runtime() -> dict[str, Any]:
 
 
 def local_python_modules() -> tuple[types.ModuleType, ...]:
-    return inputs, provenance, runtime_lock
+    return inputs, provenance, bootstrap_transition, runtime_lock
 
 
 def _git_bytes(root: Path, *arguments: str) -> bytes:
@@ -406,6 +410,7 @@ def collect_controller_execution(
     }
     require(set(sources) == {
         "cakeml_artifact_provenance.py",
+        "cakeml_bootstrap_transition.py",
         "generate_flyspeck_float_performance.py",
         "run_flyspeck_float_performance_gate.py",
         "runtime_lock.py",
@@ -1473,7 +1478,7 @@ def _run_attempt(
     evidence_dir = arguments.evidence_dir.resolve()
 
     try:
-        linked = provenance.validate_linked_record(candle_root)
+        linked = bootstrap_transition.validate_linked_record(candle_root)
         runtime_environment = provenance.runtime_environment({
             "CML_HEAP_SIZE": str(arguments.heap_mb),
         })
@@ -1586,7 +1591,7 @@ def _run_attempt(
         scenario_path.chmod(0o444)
 
     try:
-        linked_postflight = provenance.validate_linked_record(candle_root)
+        linked_postflight = bootstrap_transition.validate_linked_record(candle_root)
     except Exception as error:  # provenance package owns its exception type
         raise GateError(
             f"linked Candle provenance postflight failed: {error}"
@@ -1813,7 +1818,7 @@ def _failure_postflight(
     if linked_archive.is_file() and not linked_archive.is_symlink():
         try:
             archived = json.loads(linked_archive.read_text(encoding="utf-8"))
-            current = provenance.validate_linked_record(
+            current = bootstrap_transition.validate_linked_record(
                 arguments.candle_root.resolve()
             )
             result["linked_provenance_valid"] = True
