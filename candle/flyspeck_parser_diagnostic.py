@@ -118,6 +118,8 @@ CAPABILITY_LINE = (
 RESULT_PREFIX = b"CANDLE_CAMLPARSER_DIAGNOSTIC_V1\t"
 ERROR_DIGEST_DOMAIN = b"CANDLE_CAMLPARSER_ERROR_V1\0"
 PARSER_ERROR_EXIT = 65
+PARSER_RUNTIME_PROTOCOL_SCHEMA = 2
+DIAGNOSTIC_RECEIPT_SCHEMA = 4
 EXECUTION_ENVIRONMENT = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
 GIT_ENVIRONMENT = {
     **EXECUTION_ENVIRONMENT,
@@ -700,7 +702,7 @@ def build_plan(
             "selection": pilot["selection"],
         },
         "parser_runtime_protocol": {
-            "schema": 1,
+            "schema": PARSER_RUNTIME_PROTOCOL_SCHEMA,
             "function": "caml_parser$run",
             "language": "CakeML Candle OCaml parser",
             "capability_argument": CAPABILITY_ARGUMENT,
@@ -1793,6 +1795,140 @@ def durable_snapshot_sources(
     return byte_files, copies, transition_relative
 
 
+RUNTIME_RESULT_FIELDS = frozenset({
+    "capability", "attempt_count", "ordered_attempt_sha256", "attempts", "outcome",
+})
+DIAGNOSTIC_RECEIPT_FIELDS = frozenset({
+    "schema", "kind", "claim", "promotion", "plan", "host_materialization",
+    "controller", "controller_execution", "runtime_lock", "resource_limits",
+    "linked_provenance", "linked_provenance_schema", "bootstrap_transition",
+    "runtime", "runtime_execution", "snapshot", "capability", "attempt_count",
+    "ordered_attempt_sha256", "attempts", "outcome", "limitations",
+})
+SEALED_RUNTIME_EXECUTION_FIELDS = frozenset({
+    "kind", "bytes", "sha256", "mode", "seals", "required_seals", "execution",
+})
+
+
+def build_diagnostic_receipt(
+    plan: dict[str, Any], expected_plan_data: bytes, expected_host: dict[str, Any],
+    controller_execution: dict[str, Any], runtime_lock_record: dict[str, Any],
+    timeout_seconds: int, max_cpu_seconds: int, max_address_space_gib: int,
+    max_output_bytes: int, linked_bytes: bytes, linked: dict[str, Any],
+    transition_snapshot: dict[str, Any] | None, runtime_snapshot: dict[str, Any],
+    runtime_execution: dict[str, Any], inventory: dict[str, Any],
+    runtime_result: dict[str, Any],
+) -> dict[str, Any]:
+    """Build schema-4 evidence after checking its new security relationships."""
+    protocol = plan.get("parser_runtime_protocol")
+    require(isinstance(protocol, dict) and
+            protocol.get("schema") == PARSER_RUNTIME_PROTOCOL_SCHEMA,
+            "receipt plan does not use parser runtime protocol schema 2")
+    require(set(runtime_result) == RUNTIME_RESULT_FIELDS,
+            "parser runtime result field set is not closed")
+    require(set(runtime_execution) == SEALED_RUNTIME_EXECUTION_FIELDS and
+            runtime_execution.get("kind") == "sealed-anonymous-runtime-image" and
+            runtime_execution.get("mode") == "0500" and
+            runtime_execution.get("execution") == "inherited-fd-via-/proc/self/fd" and
+            runtime_execution.get("required_seals") == RUNTIME_MEMFD_SEALS and
+            isinstance(runtime_execution.get("seals"), int) and
+            runtime_execution["seals"] & RUNTIME_MEMFD_SEALS == RUNTIME_MEMFD_SEALS,
+            "receipt sealed runtime execution record is malformed")
+    require(set(runtime_snapshot) == {"path", "bytes", "sha256"} and
+            runtime_snapshot.get("path") == "snapshot/linked/outputs/cake" and
+            runtime_execution["bytes"] == runtime_snapshot["bytes"] and
+            runtime_execution["sha256"] == runtime_snapshot["sha256"],
+            "receipt executed runtime is not bound to archived linked runtime")
+
+    inventory_files = inventory.get("files") if isinstance(inventory, dict) else None
+    require(isinstance(inventory, dict) and set(inventory) == {
+                "schema", "kind", "file_count", "ordered_file_sha256",
+                "closed_file_inventory", "files",
+            } and inventory.get("schema") == 1 and
+            inventory.get("kind") == "candle-parser-diagnostic-durable-snapshot" and
+            inventory.get("closed_file_inventory") is True and
+            isinstance(inventory_files, list) and
+            inventory.get("file_count") == len(inventory_files) and
+            inventory.get("ordered_file_sha256") == canonical_sha256(inventory_files) and
+            all(isinstance(record, dict) and
+                isinstance(record.get("path"), str)
+                for record in inventory_files) and
+            len({record["path"] for record in inventory_files}) == len(inventory_files),
+            "receipt durable snapshot inventory shape is not closed")
+    require(runtime_snapshot in inventory_files,
+            "receipt runtime is absent from durable snapshot inventory")
+    original_prefix = "snapshot/original-sources/"
+    observed_originals = {
+        record.get("path"): record
+        for record in inventory_files
+        if isinstance(record, dict) and
+        isinstance(record.get("path"), str) and
+        record["path"].startswith(original_prefix)
+    }
+    expected_originals: dict[str, dict[str, Any]] = {}
+    inputs = plan.get("inputs")
+    require(isinstance(inputs, list) and len(inputs) == PILOT_COUNT,
+            "receipt plan does not contain the exact parser pilot")
+    for index, entry in enumerate(inputs):
+        require(entry.get("index") == index and
+                entry.get("repository") in {"candle", "flyspeck"} and
+                isinstance(entry.get("source"), dict),
+                "receipt plan has malformed selected source")
+        source = entry["source"]
+        relative = safe_relative_path(source.get("path"), "receipt original source")
+        destination = (
+            Path(original_prefix) / entry["repository"] / relative
+        ).as_posix()
+        require(destination not in expected_originals,
+                "receipt original source snapshot path collision")
+        expected_originals[destination] = {
+            "path": destination,
+            "bytes": source.get("bytes"),
+            "sha256": source.get("sha256"),
+        }
+    require(observed_originals == expected_originals,
+            "receipt original source snapshot closure mismatch")
+
+    receipt = {
+        "schema": DIAGNOSTIC_RECEIPT_SCHEMA,
+        "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
+        "claim": "parser-only diagnostic; categorically non-promotable",
+        "promotion": plan["promotion"],
+        "plan": bytes_record(
+            expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
+        ),
+        "host_materialization": bytes_record(
+            json_bytes(expected_host), f"snapshot/plan/{HOST_RECEIPT_NAME}",
+        ),
+        "controller": plan["controller"],
+        "controller_execution": controller_execution,
+        "runtime_lock": runtime_lock_record,
+        "resource_limits": {
+            "timeout_seconds": timeout_seconds,
+            "cpu_seconds": max_cpu_seconds,
+            "address_space_bytes": max_address_space_gib * 1024 * 1024 * 1024,
+            "effective_stdout_file_bytes": max_output_bytes,
+            "effective_stderr_file_bytes": max_output_bytes,
+            "capture": "fresh-private-ordinary-files-rlimit-fsize",
+            "child_process_creation_rlimit_nproc": 0,
+            "core_file_bytes": 0,
+        },
+        "linked_provenance": bytes_record(
+            linked_bytes, "snapshot/linked/cakeml-build-provenance.json",
+        ),
+        "linked_provenance_schema": linked.get("schema"),
+        "bootstrap_transition": transition_snapshot,
+        "runtime": runtime_snapshot,
+        "runtime_execution": runtime_execution,
+        "snapshot": inventory,
+        **runtime_result,
+        "limitations": plan["limitations"],
+    }
+    require(set(receipt) == DIAGNOSTIC_RECEIPT_FIELDS,
+            "diagnostic receipt field set is not closed")
+    return receipt
+
+
 def run(
     plan_root: Path,
     candle_root: Path,
@@ -1930,42 +2066,13 @@ def run(
             record for record in inventory["files"]
             if record["path"] == "snapshot/linked/outputs/cake"
         )
-        receipt = {
-            "schema": 3,
-            "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
-            "claim": "parser-only diagnostic; categorically non-promotable",
-            "promotion": plan["promotion"],
-            "plan": bytes_record(
-                expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
-            ),
-            "host_materialization": bytes_record(
-                json_bytes(expected_host),
-                f"snapshot/plan/{HOST_RECEIPT_NAME}",
-            ),
-            "controller": plan["controller"],
-            "controller_execution": controller_execution,
-            "runtime_lock": runtime_lock_handle.record,
-            "resource_limits": {
-                "timeout_seconds": timeout_seconds,
-                "cpu_seconds": max_cpu_seconds,
-                "address_space_bytes": max_address_space_gib * 1024 * 1024 * 1024,
-                "effective_stdout_file_bytes": max_output_bytes,
-                "effective_stderr_file_bytes": max_output_bytes,
-                "capture": "fresh-private-ordinary-files-rlimit-fsize",
-                "child_process_creation_rlimit_nproc": 0,
-                "core_file_bytes": 0,
-            },
-            "linked_provenance": bytes_record(
-                linked_bytes, "snapshot/linked/cakeml-build-provenance.json",
-            ),
-            "linked_provenance_schema": linked.get("schema"),
-            "bootstrap_transition": transition_snapshot,
-            "runtime": runtime_snapshot,
-            "runtime_execution": runtime_execution,
-            "snapshot": inventory,
-            **runtime_result,
-            "limitations": plan["limitations"],
-        }
+        receipt = build_diagnostic_receipt(
+            plan, expected_plan_data, expected_host, controller_execution,
+            runtime_lock_handle.record, timeout_seconds, max_cpu_seconds,
+            max_address_space_gib, max_output_bytes, linked_bytes, linked,
+            transition_snapshot, runtime_snapshot, runtime_execution, inventory,
+            runtime_result,
+        )
         files.update(snapshot_files)
         files[RESULT_NAME] = json_bytes(receipt)
         _write_tree(staging, files, RESULT_ROOT_MODE, RESULT_FILE_MODE)

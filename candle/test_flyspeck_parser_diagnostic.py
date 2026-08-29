@@ -173,6 +173,17 @@ class ParserDiagnosticTests(unittest.TestCase):
         self.assertFalse(plan["promotion"]["eligible"])
         self.assertFalse(plan["promotion"]["s2_evidence"])
 
+    def test_runtime_protocol_schema_two_binds_controller_digest_contract(self) -> None:
+        plan, _files = self.build_real_plan()
+        protocol = plan["parser_runtime_protocol"]
+        self.assertEqual(protocol["schema"], 2)
+        self.assertEqual(
+            protocol["parse_error_stdout"],
+            "CANDLE_CAMLPARSER_DIAGNOSTIC_V1<TAB>NONCE<TAB>PARSE_ERROR<LF>",
+        )
+        self.assertIn("controller_stderr_digest", protocol)
+        self.assertNotIn("parse_error_digest", protocol)
+
     def test_real_plan_masks_loader_lines_and_binds_generated_inventory(self) -> None:
         plan, files = self.build_real_plan()
         hol = plan["inputs"][0]
@@ -205,6 +216,75 @@ class ParserDiagnosticTests(unittest.TestCase):
             kernel[1], "snapshot/original-sources/candle/candle/kernel.ml",
         )
         self.assertEqual(kernel[2], plan["inputs"][9]["source"])
+
+    def test_receipt_schema_four_closes_runtime_and_original_source_shape(self) -> None:
+        plan, _files = self.build_real_plan()
+        runtime_data = b"sealed runtime fixture\n"
+        runtime_snapshot = subject.bytes_record(
+            runtime_data, "snapshot/linked/outputs/cake",
+        )
+        original_records = []
+        for entry in plan["inputs"]:
+            destination = (
+                Path("snapshot/original-sources") /
+                entry["repository"] / entry["source"]["path"]
+            ).as_posix()
+            original_records.append({
+                "path": destination,
+                "bytes": entry["source"]["bytes"],
+                "sha256": entry["source"]["sha256"],
+            })
+        inventory = subject.snapshot_inventory(
+            {}, [runtime_snapshot, *original_records],
+        )
+        runtime_execution = {
+            "kind": "sealed-anonymous-runtime-image",
+            "bytes": runtime_snapshot["bytes"],
+            "sha256": runtime_snapshot["sha256"],
+            "mode": "0500",
+            "seals": subject.RUNTIME_MEMFD_SEALS,
+            "required_seals": subject.RUNTIME_MEMFD_SEALS,
+            "execution": "inherited-fd-via-/proc/self/fd",
+        }
+        runtime_result = {
+            "capability": {"fixture": True},
+            "attempt_count": 0,
+            "ordered_attempt_sha256": subject.canonical_sha256([]),
+            "attempts": [],
+            "outcome": "parse-pass",
+        }
+
+        def build(execution=runtime_execution, snapshot=inventory):
+            return subject.build_diagnostic_receipt(
+                plan, subject.json_bytes(plan), {"fixture": "host"},
+                {"fixture": "controller"}, {"fixture": "lock"},
+                1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
+                runtime_snapshot, execution, snapshot, runtime_result,
+            )
+
+        receipt = build()
+        self.assertEqual(receipt["schema"], 4)
+        self.assertEqual(set(receipt), subject.DIAGNOSTIC_RECEIPT_FIELDS)
+        self.assertEqual(receipt["runtime_execution"]["sha256"],
+                         receipt["runtime"]["sha256"])
+        self.assertEqual(
+            {
+                row["path"] for row in receipt["snapshot"]["files"]
+                if row["path"].startswith("snapshot/original-sources/")
+            },
+            {row["path"] for row in original_records},
+        )
+
+        rebound_execution = {**runtime_execution, "sha256": "0" * 64}
+        with self.assertRaisesRegex(subject.ContractError, "not bound"):
+            build(execution=rebound_execution)
+        omitted_records = [
+            row for row in inventory["files"]
+            if row["path"] != original_records[0]["path"]
+        ]
+        omitted_inventory = subject.snapshot_inventory({}, omitted_records)
+        with self.assertRaisesRegex(subject.ContractError, "closure mismatch"):
+            build(snapshot=omitted_inventory)
 
     def test_normalized_source_fails_closed_in_pilot(self) -> None:
         altered = copy.deepcopy(self.manifest)
