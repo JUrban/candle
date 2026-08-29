@@ -336,6 +336,16 @@ def _capture_suite_contract(require_approved=True):
             any(target["fingerprint_request"].get("expected_identities") is None
                 for target in manifest["targets"])):
         raise ValueError("Great 100 identities are not independently approved")
+    if require_approved:
+        serializer_sha256 = execution_contract["candle/fingerprint.ml"]["sha256"]
+        for target in manifest["targets"]:
+            expected = target["fingerprint_request"]["expected_identities"]
+            if (not isinstance(expected, dict) or
+                    expected.get("approval_sha256") != approval["sha256"] or
+                    expected.get("serializer_sha256") != serializer_sha256):
+                raise ValueError(
+                    f"Great 100 expected identity provenance mismatch: "
+                    f"{target['name']}")
     linked = _ordinary_file_record(
         LINKED_RECORD_PATH,
         LINKED_RECORD_PATH.relative_to(CANDLE_ROOT).as_posix())
@@ -1173,6 +1183,8 @@ class Reporter:
                     r"[0-9a-f]{64}", suite_nonce or ""):
                 raise ValueError("schema-4 Great 100 report lacks suite evidence")
             _runtime_state(suite_contract)
+            _validate_top100_results(
+                results, tests, suite_nonce, suite_contract)
         files_by_name = {test.name: list(test.files) for test in tests}
         counts = {
             status.value: sum(result.status == status for result in results)
@@ -1239,6 +1251,91 @@ class Reporter:
             report_file.write("\n")
         print(f"Machine-readable report: {path}")
         return payload
+
+
+PROCESS_EVIDENCE_KEYS = {
+    "suite_nonce", "process_nonce", "pid", "started_utc", "completed_utc",
+    "exit_code", "markers", "linked_record_sha256", "transcript",
+    "pre_runtime_state", "post_runtime_state", "resource_sampling",
+}
+FINGERPRINT_REPORT_KEYS = {
+    "status", "mapping_status", "expected_identities_present", "serializer",
+    "theorems", "post_state", "approval_sha256",
+}
+RESOURCE_EVIDENCE_KEYS = {
+    "interval_seconds", "sample_count", "root_observed", "sampler_completed",
+    "peak_process_rss_kib", "peak_tree_rss_kib",
+}
+
+
+def _validate_top100_results(results, tests, suite_nonce, suite_contract):
+    """Rehash persistent evidence and reject a structurally false PASS."""
+    if len(tests) != 65 or [result.name for result in results] != [
+            test.name for test in tests]:
+        raise ValueError("schema-4 report is not the ordered 65-target suite")
+    expected_runtime = _runtime_state(suite_contract)
+    process_nonces = set()
+    for result, test in zip(results, tests):
+        if result.status is not TestStatus.PASS:
+            continue
+        evidence = result.process_evidence
+        if not isinstance(evidence, dict) or set(evidence) != PROCESS_EVIDENCE_KEYS:
+            raise ValueError(f"{result.name}: malformed process evidence")
+        if (evidence["suite_nonce"] != suite_nonce or
+                not re.fullmatch(r"[0-9a-f]{64}", evidence["process_nonce"]) or
+                evidence["process_nonce"] in process_nonces):
+            raise ValueError(f"{result.name}: invalid or reused process nonce")
+        process_nonces.add(evidence["process_nonce"])
+        if (isinstance(evidence["pid"], bool) or
+                not isinstance(evidence["pid"], int) or evidence["pid"] <= 0 or
+                evidence["exit_code"] != 0):
+            raise ValueError(f"{result.name}: process did not complete normally")
+        try:
+            started = datetime.fromisoformat(evidence["started_utc"])
+            completed = datetime.fromisoformat(evidence["completed_utc"])
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"{result.name}: malformed process time") from error
+        if (started.tzinfo is None or completed.tzinfo is None or
+                completed < started):
+            raise ValueError(f"{result.name}: invalid process time interval")
+        markers = evidence["markers"]
+        if not isinstance(markers, dict) or set(markers) != {
+                "suite_line", "start_line", "linked_line", "complete_line"}:
+            raise ValueError(f"{result.name}: malformed process marker record")
+        positions = [markers[key] for key in (
+            "suite_line", "start_line", "linked_line", "complete_line")]
+        if (any(isinstance(value, bool) or not isinstance(value, int)
+                for value in positions) or positions != sorted(set(positions))):
+            raise ValueError(f"{result.name}: process markers are not ordered")
+        transcript = _ordinary_file_record(result.log_path)
+        if (evidence["transcript"] != transcript or
+                transcript["path"] != str(Path(result.log_path).resolve())):
+            raise ValueError(f"{result.name}: transcript changed after validation")
+        if (evidence["linked_record_sha256"] !=
+                suite_contract["linked_record"]["sha256"] or
+                evidence["pre_runtime_state"] != expected_runtime or
+                evidence["post_runtime_state"] != expected_runtime):
+            raise ValueError(f"{result.name}: runtime provenance mismatch")
+        resource = evidence["resource_sampling"]
+        if (not isinstance(resource, dict) or set(resource) !=
+                RESOURCE_EVIDENCE_KEYS or resource["sample_count"] <= 0 or
+                not resource["root_observed"] or
+                not resource["sampler_completed"] or
+                resource["peak_process_rss_kib"] <= 0 or
+                resource["peak_tree_rss_kib"] <= 0):
+            raise ValueError(f"{result.name}: incomplete resource sampling")
+        fingerprints = result.fingerprints
+        expected = test.fingerprint_expected_identities
+        if (not isinstance(fingerprints, dict) or
+                set(fingerprints) != FINGERPRINT_REPORT_KEYS or
+                fingerprints["status"] != "matched" or
+                fingerprints["expected_identities_present"] is not True or
+                fingerprints["approval_sha256"] !=
+                suite_contract["independent_approval"]["sha256"] or
+                expected is None or fingerprints["theorems"] !=
+                expected["theorems"] or fingerprints["post_state"] !=
+                expected["post_state"]):
+            raise ValueError(f"{result.name}: fingerprint evidence mismatch")
 
 
 # ---------------------------------------------------------------------------
