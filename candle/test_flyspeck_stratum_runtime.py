@@ -852,6 +852,24 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertFalse(report["dependency_history_is_kernel_trace"])
         self.assertFalse(report["pft_used"])
         self.assertFalse(report["s2_s3_evidence"])
+        for label, mutate in (
+            ("boolean index", lambda item: item["records"][0].update(index=False)),
+            ("integer digest", lambda item: item["records"][0].update(
+                full_digest_md5=1,
+            )),
+            ("integer approval flag", lambda item: item.update(
+                approved_reference_present=0,
+            )),
+            ("extra field", lambda item: item.update(forged=True)),
+        ):
+            forged_report = copy.deepcopy(report)
+            mutate(forged_report)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.validate_dependency_history_observation(
+                    forged_report, names, boundary, self.nonce,
+                )
         for label, forged in (
             ("missing", records[1:] + [terminal]),
             ("extra", records + [records[-1], terminal]),
