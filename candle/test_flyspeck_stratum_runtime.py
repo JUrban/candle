@@ -572,6 +572,13 @@ class StratumRuntimeTests(unittest.TestCase):
             "semantic_fingerprints": None,
         }
         subject.validate_direct_evidence_v3_artifact(failed, receipt=True)
+        late_failed = {
+            **copy.deepcopy(valid),
+            "state": "failed",
+            "action_markers_validated": 0,
+            "validation_error": "InterruptedError: pending signal after validation",
+        }
+        subject.validate_direct_evidence_v3_artifact(late_failed, receipt=True)
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"

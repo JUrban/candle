@@ -1767,20 +1767,21 @@ def validate_direct_evidence_v3_artifact(
                         for record in theorems),
                     "malformed post-state fingerprint receipt record")
 
+    complete_success = (
+        validation_error is None and timed_out is False and
+        exit_code == 0 and postflight is True and
+        marker_count == action_count and exact_events and
+        exact_closure and exact_fingerprints
+    )
     if artifact["state"] == "completed":
-        require(validation_error is None and timed_out is False and
-                exit_code == 0 and postflight is True and
-                marker_count == action_count and exact_events and
-                exact_closure and exact_fingerprints,
+        require(complete_success,
                 "completed direct runtime receipt violates success invariants")
     else:
         require(isinstance(validation_error, str) and bool(validation_error) and
                 marker_count == 0,
                 "failed direct runtime receipt violates failure invariants")
-        require(not (
-                    timed_out is False and exit_code == 0 and postflight is True and
-                    exact_events and exact_closure and exact_fingerprints
-                ), "failed direct runtime receipt has complete success evidence")
+        require(not complete_success,
+                "failed direct runtime receipt has complete success evidence")
 
 
 def utc_now() -> str:
