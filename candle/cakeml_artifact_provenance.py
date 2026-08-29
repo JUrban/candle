@@ -37,6 +37,24 @@ HOL_BOOTSTRAP_ELF_FILES = (
     "bin/Holmake",
     "bin/hol",
 )
+HOL_GENERATED_PROOF_INPUTS = (
+    "src/parse/base_lexer.sml",
+    "src/portableML/HOLsexp.grm-sig.sml",
+    "src/portableML/HOLsexp.grm.sml",
+    "src/portableML/HOLsexp.lex.sml",
+    "src/portableML/poly/SHA1_ML.sml",
+    "src/thm/Thm-sig.sml",
+    "src/thm/Thm.sml",
+)
+HOL_PROOF_OBJECT_COUNT = 2907
+HOL_SIGOBJ_ORDINARY_COUNT = 6
+HOL_SIGOBJ_SYMLINK_COUNT = 2401
+HOL_PROOF_OBJECT_PATHS_SHA256 = (
+    "0afa5a9326b4de1fc1c3f97824fb30c26455c5f3f1b20528812792c27bf384ce"
+)
+HOL_SIGOBJ_CONTRACTS_SHA256 = (
+    "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
+)
 HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
     "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
 }
@@ -139,9 +157,9 @@ LINKED_OUTPUTS = (
 BOOTSTRAP_RELATIVE = Path("compiler/bootstrap/compilation/x64/64")
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
-BOOTSTRAP_PREFLIGHT_SCHEMA = 1
-BOOTSTRAP_PROVENANCE_SCHEMA = 3
-LINKED_PROVENANCE_SCHEMA = 4
+BOOTSTRAP_PREFLIGHT_SCHEMA = 2
+BOOTSTRAP_PROVENANCE_SCHEMA = 4
+LINKED_PROVENANCE_SCHEMA = 5
 ELF_DYNAMIC_CLOSURE_POLICY = "ldd_roles_resolved_absolute_paths_and_content_v3"
 ELF_DYNAMIC_CLOSURE_FIELDS = frozenset({
     "policy", "dynamic_path_tags", "files", "roles", "virtual_objects",
@@ -221,6 +239,8 @@ BOOTSTRAP_TRUST_BOUNDARY = {
         "clean Candle, CakeML, and HOL4 revisions and controller sources",
         "fixed controller tool paths and resolved executable bytes",
         "env, time, Holmake, and hol ELF closures plus hol.state bytes",
+        "the complete HOL4 .hol/objs file set, exact sigobj link contracts "
+        "and resolved payloads, and exact generated HOL proof inputs",
         "preflight, exact launch environment/argv/cwd, transcript, and outputs",
     ],
     "trusted_not_independently_authenticated": [
@@ -233,6 +253,8 @@ BOOTSTRAP_TRUST_BOUNDARY = {
         "absence of hostile same-UID transient mutation between guarded observations",
         "derivation and semantics of content-bound pre-existing CakeML .hol/objs "
         "ancestor artifacts outside the freshly rebuilt 18-target stratum",
+        "derivation and semantics of the content-bound HOL4 proof-artifact "
+        "closure; those artifacts are not independently rebuilt here",
     ],
 }
 
@@ -984,6 +1006,303 @@ def validate_hol_runtime_record(
             )
 
 
+def _ordinary_identity_is_well_formed(value: Any) -> bool:
+    return (
+        isinstance(value, dict) and
+        set(value) == {
+            "device", "inode", "mtime_ns", "ctime_ns", "bytes", "sha256",
+        } and
+        all(isinstance(value[field], int) and not isinstance(value[field], bool)
+            and value[field] >= 0
+            for field in (
+                "device", "inode", "mtime_ns", "ctime_ns", "bytes",
+            )) and
+        isinstance(value["sha256"], str) and
+        re.fullmatch(r"[0-9a-f]{64}", value["sha256"]) is not None
+    )
+
+
+def _relative_path_is_canonical(relative: str) -> bool:
+    path = Path(relative)
+    return (
+        isinstance(relative, str) and relative != "" and
+        not path.is_absolute() and
+        all(part not in {"", ".", ".."} for part in path.parts) and
+        str(path) == relative
+    )
+
+
+def _canonical_json_sha256(value: Any) -> str:
+    encoded = json.dumps(
+        value, ensure_ascii=True, separators=(",", ":"), sort_keys=False,
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _captured_in_root_symlink(
+    path: Path,
+    root: Path,
+) -> dict[str, Any]:
+    """Capture one stable symlink contract and its in-root ordinary payload."""
+    before = path.lstat()
+    require(stat.S_ISLNK(before.st_mode), f"not a symlink: {path}")
+    link_text = os.readlink(path)
+    after_readlink = path.lstat()
+    link_fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+    require(
+        tuple(getattr(before, field) for field in link_fields) ==
+        tuple(getattr(after_readlink, field) for field in link_fields),
+        f"symlink changed while being captured: {path}",
+    )
+    target = path.resolve(strict=True)
+    root = root.resolve(strict=True)
+    require(target.is_relative_to(root) and target.is_file() and
+            not target.is_symlink(),
+            f"symlink target escapes or is not ordinary: {path}")
+    target_identity = ordinary_file_identity(target)
+    final = path.lstat()
+    require(
+        tuple(getattr(before, field) for field in link_fields) ==
+        tuple(getattr(final, field) for field in link_fields) and
+        os.readlink(path) == link_text and path.resolve(strict=True) == target,
+        f"symlink changed while its target was being captured: {path}",
+    )
+    return {
+        "link_text": link_text,
+        "link_identity": {
+            "device": final.st_dev,
+            "inode": final.st_ino,
+            "mtime_ns": final.st_mtime_ns,
+            "ctime_ns": final.st_ctime_ns,
+        },
+        "target_relative": str(target.relative_to(root)),
+        "target_path": str(target),
+        "target_identity": target_identity,
+    }
+
+
+def hol_proof_artifact_inventory(hol_root: Path) -> dict[str, Any]:
+    """Bind the conservative pre-existing HOL proof-artifact closure.
+
+    This deliberately makes no source-derivation claim. It captures every
+    ordinary file below every HOL ``.hol/objs`` directory, every direct
+    ``sigobj`` entry (including the exact symlink text and resolved ordinary
+    payload), and the generated sources known to be read by this bootstrap.
+    """
+    hol_root = hol_root.resolve(strict=True)
+    object_entries = []
+    object_directories = sorted(hol_root.rglob(".hol/objs"))
+    for object_directory in object_directories:
+        metadata = object_directory.stat(follow_symlinks=False)
+        require(stat.S_ISDIR(metadata.st_mode) and
+                not object_directory.is_symlink(),
+                f"HOL object directory is not ordinary: {object_directory}")
+        for current, directories, files in os.walk(
+            object_directory, topdown=True, followlinks=False,
+        ):
+            current_path = Path(current)
+            for directory in directories:
+                child = current_path / directory
+                require(not child.is_symlink(),
+                        f"symlink inside HOL object inventory: {child}")
+            for filename in sorted(files):
+                path = current_path / filename
+                require(not path.is_symlink(),
+                        f"symlink inside HOL object inventory: {path}")
+                relative = str(path.relative_to(hol_root))
+                object_entries.append({
+                    "relative": relative,
+                    "path": str(path),
+                    "identity": ordinary_file_identity(path),
+                })
+    object_entries.sort(key=lambda entry: entry["relative"])
+    require(len(object_entries) == HOL_PROOF_OBJECT_COUNT,
+            "HOL proof-object inventory count mismatch")
+    require(len({entry["relative"] for entry in object_entries}) ==
+            len(object_entries),
+            "duplicate HOL proof-object path")
+    object_paths_sha256 = _canonical_json_sha256([
+        entry["relative"] for entry in object_entries
+    ])
+    require(object_paths_sha256 == HOL_PROOF_OBJECT_PATHS_SHA256,
+            "HOL proof-object path set mismatch")
+
+    sigobj = hol_root / "sigobj"
+    metadata = sigobj.stat(follow_symlinks=False)
+    require(stat.S_ISDIR(metadata.st_mode) and not sigobj.is_symlink(),
+            f"HOL sigobj is not an ordinary directory: {sigobj}")
+    sigobj_entries = []
+    ordinary_count = 0
+    symlink_count = 0
+    for path in sorted(sigobj.iterdir(), key=lambda item: item.name):
+        relative = str(path.relative_to(hol_root))
+        metadata = path.lstat()
+        if stat.S_ISREG(metadata.st_mode):
+            ordinary_count += 1
+            sigobj_entries.append({
+                "kind": "ordinary",
+                "relative": relative,
+                "path": str(path),
+                "identity": ordinary_file_identity(path),
+            })
+        elif stat.S_ISLNK(metadata.st_mode):
+            symlink_count += 1
+            sigobj_entries.append({
+                "kind": "symlink",
+                "relative": relative,
+                "path": str(path),
+                **_captured_in_root_symlink(path, hol_root),
+            })
+        else:
+            raise ProvenanceError(f"unsupported HOL sigobj entry: {path}")
+    require(ordinary_count == HOL_SIGOBJ_ORDINARY_COUNT and
+            symlink_count == HOL_SIGOBJ_SYMLINK_COUNT,
+            "HOL sigobj inventory count mismatch")
+    sigobj_contracts = [
+        (["ordinary", entry["relative"]]
+         if entry["kind"] == "ordinary" else
+         ["symlink", entry["relative"], entry["link_text"],
+          entry["target_relative"]])
+        for entry in sigobj_entries
+    ]
+    sigobj_contracts_sha256 = _canonical_json_sha256(sigobj_contracts)
+    require(sigobj_contracts_sha256 == HOL_SIGOBJ_CONTRACTS_SHA256,
+            "HOL sigobj role/target contract mismatch")
+
+    generated_sources = []
+    for relative in HOL_GENERATED_PROOF_INPUTS:
+        path = hol_root / relative
+        generated_sources.append({
+            "relative": relative,
+            "path": str(path),
+            "identity": ordinary_file_identity(path),
+        })
+    return {
+        "policy": "all_hol_objs_sigobj_and_generated_proof_inputs_v1",
+        "derivation_claim": "content_bound_not_independently_rebuilt",
+        "structure": {
+            "object_paths_sha256": object_paths_sha256,
+            "sigobj_contracts_sha256": sigobj_contracts_sha256,
+        },
+        "object_files": object_entries,
+        "sigobj_entries": sigobj_entries,
+        "generated_sources": generated_sources,
+    }
+
+
+def validate_hol_proof_artifact_inventory(
+    record: Any,
+    hol_root: Path,
+    *,
+    require_live: bool,
+) -> None:
+    require(isinstance(record, dict) and set(record) == {
+        "policy", "derivation_claim", "structure", "object_files",
+        "sigobj_entries", "generated_sources",
+    } and record.get("policy") ==
+            "all_hol_objs_sigobj_and_generated_proof_inputs_v1" and
+            record.get("derivation_claim") ==
+            "content_bound_not_independently_rebuilt",
+            "malformed HOL proof-artifact inventory")
+    hol_root = Path(hol_root)
+    require(record.get("structure") == {
+        "object_paths_sha256": HOL_PROOF_OBJECT_PATHS_SHA256,
+        "sigobj_contracts_sha256": HOL_SIGOBJ_CONTRACTS_SHA256,
+    }, "HOL proof-artifact structure digest mismatch")
+    object_files = record.get("object_files")
+    require(isinstance(object_files, list) and
+            len(object_files) == HOL_PROOF_OBJECT_COUNT,
+            "HOL proof-object inventory count mismatch")
+    prior = None
+    for entry in object_files:
+        require(isinstance(entry, dict) and set(entry) == {
+            "relative", "path", "identity",
+        }, "malformed HOL proof-object entry")
+        relative = entry.get("relative")
+        require(isinstance(relative, str) and
+                _relative_path_is_canonical(relative) and
+                relative > (prior or "") and
+                "/.hol/objs/" in f"/{relative}" and
+                entry.get("path") == str(hol_root / relative) and
+                _ordinary_identity_is_well_formed(entry.get("identity")),
+                "malformed HOL proof-object entry")
+        prior = relative
+    require(_canonical_json_sha256([
+        entry["relative"] for entry in object_files
+    ]) == HOL_PROOF_OBJECT_PATHS_SHA256,
+            "HOL proof-object path set mismatch")
+
+    sigobj_entries = record.get("sigobj_entries")
+    require(isinstance(sigobj_entries, list) and
+            len(sigobj_entries) ==
+            HOL_SIGOBJ_ORDINARY_COUNT + HOL_SIGOBJ_SYMLINK_COUNT,
+            "HOL sigobj inventory count mismatch")
+    prior = None
+    ordinary_count = 0
+    symlink_count = 0
+    for entry in sigobj_entries:
+        require(isinstance(entry, dict), "malformed HOL sigobj entry")
+        relative = entry.get("relative")
+        require(isinstance(relative, str) and
+                _relative_path_is_canonical(relative) and
+                relative > (prior or "") and
+                Path(relative).parent == Path("sigobj") and
+                entry.get("path") == str(hol_root / relative),
+                "malformed HOL sigobj entry")
+        prior = relative
+        if entry.get("kind") == "ordinary":
+            ordinary_count += 1
+            require(set(entry) == {"kind", "relative", "path", "identity"} and
+                    _ordinary_identity_is_well_formed(entry.get("identity")),
+                    "malformed ordinary HOL sigobj entry")
+            continue
+        require(entry.get("kind") == "symlink" and set(entry) == {
+            "kind", "relative", "path", "link_text", "link_identity",
+            "target_relative", "target_path", "target_identity",
+        }, "malformed symlink HOL sigobj entry")
+        symlink_count += 1
+        link_identity = entry.get("link_identity")
+        target_relative = entry.get("target_relative")
+        require(isinstance(entry.get("link_text"), str) and
+                isinstance(link_identity, dict) and set(link_identity) == {
+                    "device", "inode", "mtime_ns", "ctime_ns",
+                } and
+                all(isinstance(value, int) and not isinstance(value, bool) and
+                    value >= 0 for value in link_identity.values()) and
+                isinstance(target_relative, str) and
+                _relative_path_is_canonical(target_relative) and
+                entry.get("target_path") == str(hol_root / target_relative) and
+                _ordinary_identity_is_well_formed(
+                    entry.get("target_identity")),
+                "malformed symlink HOL sigobj entry")
+    require(ordinary_count == HOL_SIGOBJ_ORDINARY_COUNT and
+            symlink_count == HOL_SIGOBJ_SYMLINK_COUNT,
+            "HOL sigobj kind count mismatch")
+    require(_canonical_json_sha256([
+        (["ordinary", entry["relative"]]
+         if entry["kind"] == "ordinary" else
+         ["symlink", entry["relative"], entry["link_text"],
+          entry["target_relative"]])
+        for entry in sigobj_entries
+    ]) == HOL_SIGOBJ_CONTRACTS_SHA256,
+            "HOL sigobj role/target contract mismatch")
+
+    generated_sources = record.get("generated_sources")
+    require(isinstance(generated_sources, list) and
+            [entry.get("relative") if isinstance(entry, dict) else None
+             for entry in generated_sources] == list(HOL_GENERATED_PROOF_INPUTS),
+            "HOL generated proof-input set mismatch")
+    for entry in generated_sources:
+        relative = entry["relative"]
+        require(set(entry) == {"relative", "path", "identity"} and
+                entry.get("path") == str(hol_root / relative) and
+                _ordinary_identity_is_well_formed(entry.get("identity")),
+                f"malformed HOL generated proof input: {relative}")
+    if require_live:
+        require(record == hol_proof_artifact_inventory(hol_root),
+                "HOL proof-artifact inventory changed")
+
+
 def validate_executable_tool_record(record: dict[str, Any], label: str) -> None:
     require(isinstance(record, dict) and set(record) == {
         "requested_path", "symlink_target", "resolved_path", "file",
@@ -1169,10 +1488,7 @@ def bootstrap_dependency_output_paths(
     for suffix in ("Script.sml.d", "Theory.sig.d", "Theory.sml.d"):
         relative = final / f"x64Bootstrap{suffix}"
         result.append((str(relative), cakeml_root / relative))
-    for directory in (translation, final):
-        relative = directory / "lastmaker"
-        result.append((str(relative), cakeml_root / relative))
-    require(len(result) == 18 * 3 + 2,
+    require(len(result) == 18 * 3,
             "internal bootstrap dependency-output inventory mismatch")
     return result
 
@@ -1383,6 +1699,7 @@ def record_bootstrap_preflight(
         "ancestor_artifacts": bootstrap_ancestor_artifact_inventory(cakeml_root),
         "host_runtime": bootstrap_host_runtime_record(),
         "hol_runtime": hol_runtime_record(hol_root),
+        "hol_proof_artifacts": hol_proof_artifact_inventory(hol_root),
         "trusted_host_boundary": copy.deepcopy(BOOTSTRAP_TRUST_BOUNDARY),
     }
     write_new_json(output_path, record)
@@ -1398,7 +1715,8 @@ def _validate_bootstrap_preflight_structure(
         "receipt_path", "final_record_path", "controller_sources", "lock",
         "controller_environment", "python_controller", "launch",
         "forced_outputs", "preserved_symlink_inputs", "ancestor_artifacts",
-        "host_runtime", "hol_runtime", "trusted_host_boundary",
+        "host_runtime", "hol_runtime", "hol_proof_artifacts",
+        "trusted_host_boundary",
     }, "malformed bootstrap preflight record")
     require(record.get("schema") == BOOTSTRAP_PREFLIGHT_SCHEMA,
             "unsupported bootstrap preflight schema")
@@ -1440,7 +1758,7 @@ def _validate_bootstrap_preflight_structure(
             "malformed bootstrap forced-output preflight")
     entries = outputs.get("entries")
     require(isinstance(entries, list) and
-            len(entries) == 108 + 18 * 2 + 18 * 3 + 2,
+            len(entries) == 108 + 18 * 2 + 18 * 3,
             "bootstrap forced-output inventory size mismatch")
     for output in entries:
         require(isinstance(output, dict) and set(output) == {
@@ -1472,6 +1790,10 @@ def _validate_bootstrap_preflight_structure(
         record.get("host_runtime"), require_live=False,
     )
     validate_hol_runtime_record(record.get("hol_runtime"))
+    validate_hol_proof_artifact_inventory(
+        record.get("hol_proof_artifacts"), Path(record["hol4_root"]),
+        require_live=False,
+    )
 
 
 def validate_bootstrap_preflight(
@@ -1529,6 +1851,10 @@ def validate_bootstrap_preflight(
             record["ancestor_artifacts"], Path(cakeml_string),
             require_live=False,
         )
+        validate_hol_proof_artifact_inventory(
+            record["hol_proof_artifacts"], Path(hol_string),
+            require_live=False,
+        )
         require(record["lock"]["path"] == cakeml_string,
                 "retained bootstrap lock path mismatch")
         return
@@ -1566,6 +1892,9 @@ def validate_bootstrap_preflight(
         record["host_runtime"], require_live=True,
     )
     validate_hol_runtime_record(record["hol_runtime"], hol_root=hol_root)
+    validate_hol_proof_artifact_inventory(
+        record["hol_proof_artifacts"], hol_root, require_live=True,
+    )
     outputs = record["forced_outputs"]
     archive_root = Path(outputs["preimage_archive_root"])
     validate_bootstrap_output_path_inventory(record, cakeml_root)
@@ -1846,6 +2175,8 @@ def validate_bootstrap_log(
             "bootstrap log lacks unique cake.S emission evidence")
     require(lines.count('Exporting theory "x64Bootstrap" ... done.') == 1,
             "bootstrap log lacks unique x64Bootstrap export evidence")
+    require(lines.count("Holmake: Building 18 theory files") == 1,
+            "bootstrap planner did not report exactly 18 theory targets")
     target_pattern = re.compile(r"Holmake: \[([0-9]+)/([0-9]+)\] ([A-Za-z0-9_]+)")
     observed_targets = [
         (index, int(match.group(1)), int(match.group(2)), match.group(3))

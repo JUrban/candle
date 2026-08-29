@@ -63,6 +63,12 @@ All other pre-existing CakeML `.hol/objs` files are fully inventoried and
 content-bound before and after the run. They are explicitly recorded as
 authenticated inputs whose derivation was not independently replayed, rather
 than being implied by the Git revision.
+The same pre/post inventory conservatively binds every ordinary file under the
+pinned HOL4 tree's `.hol/objs` directories, all direct `sigobj` entries (exact
+symlink text and resolved in-tree payload included), and the exact generated
+HOL sources used outside those sets. These HOL proof artifacts are retained as
+content-bound inputs; the controller does not claim to rederive them from
+source.
 
 The bootstrap record includes ordinary-file identities for `bin/Holmake`,
 `bin/hol`, and `bin/hol.state`, the two launchers' exact ELF closures, and one

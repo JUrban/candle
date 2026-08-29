@@ -74,7 +74,7 @@ archives and removes only `cake.S`, `config_enc_str.txt`, the exact 18-target
 `*Script.ui`/`*Script.uo` transients. The tracked `candle_boot.ml`, `basis_ffi.c`,
 and `Makefile` links are preserved and bound to their exact commit blobs and
 in-root ordinary targets. Failure retains the archive, log, and partial outputs;
-there is no automatic restore mutation. The schema-3 final bootstrap record
+there is no automatic restore mutation. The schema-4 final bootstrap record
 authenticates the ordinary bytes of `bin/Holmake`, `bin/hol`, and
 `bin/hol.state`, the exact resolved ELF closures of both launchers (including
 their fixed absolute RUNPATH), and exactly one complete trailing GNU `time -v`
@@ -84,10 +84,16 @@ x64Bootstrap completion evidence, including the exact ordered `[1/18]` through
 Every other pre-existing CakeML `.hol/objs` ordinary file is content-inventoried
 before and after. Its bytes are authenticated, but its derivation is expressly
 not claimed to have been replayed and remains in the documented boundary.
+The controller likewise inventories all ordinary files recursively under every
+pinned HOL4 `.hol/objs` directory, all 2,407 direct `sigobj` entries (including
+exact link text and each symlink's resolved in-root ordinary payload), and the
+seven generated HOL sources used outside those sets. This conservative HOL
+proof-artifact closure is validated before and after and retained with the
+receipt, but is explicitly content-bound rather than independently rederived.
 
 The local build revalidates that record before copying ignored generated files,
 then links with a fixed single-job GNU make and C-compiler command.  Before its
-schema-4 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
+schema-5 `candle/build/cakeml-build-provenance.json` is accepted, it copies the
 authenticated patched `cake.S`, `basis_ffi.c`, and `Makefile` to a fresh private
 directory, forcibly relinks them, captures and re-derives the exact make, CC,
 cc1, assembler, collect2, and linker argv, binds the corresponding tool files,

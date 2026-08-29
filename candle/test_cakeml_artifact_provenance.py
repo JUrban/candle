@@ -2,6 +2,7 @@
 
 import copy
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -15,7 +16,7 @@ import cakeml_artifact_provenance as subject
 
 
 def successful_bootstrap_log(build_command: str) -> str:
-    lines = [
+    lines = ["Holmake: Building 18 theory files"] + [
         f"Holmake: [{index}/18] {target}"
         for index, target in enumerate(subject.BOOTSTRAP_TARGETS[:-1], 1)
     ] + [
@@ -83,14 +84,31 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
     def test_documented_linked_schema_tracks_implementation(self) -> None:
         candle_root = Path(__file__).resolve().parent.parent
         current = f"schema-{subject.LINKED_PROVENANCE_SCHEMA} linked-provenance"
+        current_bootstrap = (
+            f"schema-{subject.BOOTSTRAP_PROVENANCE_SCHEMA} final bootstrap record"
+        )
         performance = (
             candle_root / "candle/compatibility/flyspeck_float_performance.md"
         ).read_text(encoding="utf-8")
         self.assertIn(current, performance)
+        acceptance = (
+            candle_root / "candle/compatibility/dopen_direct_acceptance.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(current_bootstrap, acceptance)
+        self.assertIn(
+            f"schema-{subject.LINKED_PROVENANCE_SCHEMA} "
+            "`candle/build/cakeml-build-provenance.json`",
+            acceptance,
+        )
         for path in candle_root.rglob("*.md"):
-            self.assertNotIn("schema-2 linked-provenance", path.read_text(
-                encoding="utf-8",
-            ))
+            text = path.read_text(encoding="utf-8")
+            for match in re.finditer(
+                r"schema-([0-9]+) linked-provenance", text,
+            ):
+                self.assertEqual(
+                    int(match.group(1)), subject.LINKED_PROVENANCE_SCHEMA,
+                    f"stale linked schema in {path}",
+                )
 
     def test_file_record_rejects_tampering(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -435,6 +453,102 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                 subject.validate_bootstrap_ancestor_artifact_inventory(
                     inventory, root, require_live=True,
                 )
+
+    def test_hol_proof_artifact_inventory_binds_objects_links_and_generated(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            objects = root / "src/theory/.hol/objs"
+            objects.mkdir(parents=True)
+            object_file = objects / "ObjectTheory.uo"
+            object_file.write_bytes(b"object")
+            payload = root / "src/theory/Payload.sml"
+            payload.write_bytes(b"payload")
+            generated = root / "generated.sml"
+            generated.write_bytes(b"generated")
+            sigobj = root / "sigobj"
+            sigobj.mkdir()
+            (sigobj / "Systeml.sig").write_bytes(b"ordinary sigobj")
+            (sigobj / "Payload.sml").symlink_to("../src/theory/Payload.sml")
+            object_paths_digest = subject._canonical_json_sha256([
+                "src/theory/.hol/objs/ObjectTheory.uo",
+            ])
+            sigobj_contracts_digest = subject._canonical_json_sha256([
+                ["symlink", "sigobj/Payload.sml", "../src/theory/Payload.sml",
+                 "src/theory/Payload.sml"],
+                ["ordinary", "sigobj/Systeml.sig"],
+            ])
+            with mock.patch.object(
+                subject, "HOL_PROOF_OBJECT_COUNT", 1,
+            ), mock.patch.object(
+                subject, "HOL_SIGOBJ_ORDINARY_COUNT", 1,
+            ), mock.patch.object(
+                subject, "HOL_SIGOBJ_SYMLINK_COUNT", 1,
+            ), mock.patch.object(
+                subject, "HOL_GENERATED_PROOF_INPUTS", ("generated.sml",),
+            ), mock.patch.object(
+                subject, "HOL_PROOF_OBJECT_PATHS_SHA256", object_paths_digest,
+            ), mock.patch.object(
+                subject, "HOL_SIGOBJ_CONTRACTS_SHA256", sigobj_contracts_digest,
+            ):
+                inventory = subject.hol_proof_artifact_inventory(root)
+                subject.validate_hol_proof_artifact_inventory(
+                    inventory, root, require_live=True,
+                )
+                link = next(
+                    entry for entry in inventory["sigobj_entries"]
+                    if entry["kind"] == "symlink"
+                )
+                self.assertEqual(link["link_text"], "../src/theory/Payload.sml")
+                self.assertEqual(
+                    link["target_relative"], "src/theory/Payload.sml",
+                )
+                tampered = copy.deepcopy(inventory)
+                tampered_link = next(
+                    entry for entry in tampered["sigobj_entries"]
+                    if entry["kind"] == "symlink"
+                )
+                tampered_link["target_relative"] = "generated.sml"
+                tampered_link["target_path"] = str(root / "generated.sml")
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "role/target contract mismatch",
+                ):
+                    subject.validate_hol_proof_artifact_inventory(
+                        tampered, root, require_live=False,
+                    )
+                payload.write_bytes(b"changed")
+                with self.assertRaisesRegex(
+                    subject.ProvenanceError, "inventory changed",
+                ):
+                    subject.validate_hol_proof_artifact_inventory(
+                        inventory, root, require_live=True,
+                    )
+
+    def test_hol_proof_artifact_inventory_rejects_external_sigobj_target(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            outside = root.parent / f"{root.name}-outside"
+            outside.write_bytes(b"outside")
+            try:
+                (root / "sigobj").mkdir()
+                (root / "sigobj/escape").symlink_to(outside)
+                with mock.patch.object(
+                    subject, "HOL_PROOF_OBJECT_COUNT", 0,
+                ), mock.patch.object(
+                    subject, "HOL_SIGOBJ_ORDINARY_COUNT", 0,
+                ), mock.patch.object(
+                    subject, "HOL_SIGOBJ_SYMLINK_COUNT", 1,
+                ), mock.patch.object(
+                    subject, "HOL_GENERATED_PROOF_INPUTS", (),
+                ), mock.patch.object(
+                    subject, "HOL_PROOF_OBJECT_PATHS_SHA256",
+                    subject._canonical_json_sha256([]),
+                ):
+                    with self.assertRaisesRegex(
+                        subject.ProvenanceError, "target escapes",
+                    ):
+                        subject.hol_proof_artifact_inventory(root)
+            finally:
+                outside.unlink(missing_ok=True)
 
     def test_obsolete_manual_bootstrap_phases_are_not_public_commands(self) -> None:
         script = Path(subject.__file__).resolve()
