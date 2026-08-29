@@ -119,7 +119,9 @@ let candle_flyspeck_stratum_commit_action index expected_identity marker =
     let outcome =
       if current = previous then
         if List.mem expected_identity previous then "skip-ledger"
-        else "skip-loader-cache"
+        else
+          failwith
+            "Flyspeck action was skipped by the physical loader cache without its logical identity"
       else if not (List.mem expected_identity previous) &&
               current = expected_identity :: previous then "load"
       else failwith "Flyspeck action has an unexpected loader identity delta" in
@@ -127,7 +129,7 @@ let candle_flyspeck_stratum_commit_action index expected_identity marker =
       (index,expected_identity,outcome) ::
       !candle_flyspeck_stratum_action_events;
     candle_flyspeck_stratum_previous_loaded_files := current;
-    print_endline marker;;
+    print_endline (marker ^ " " ^ outcome);;
 
 print_endline
   ("CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK " ^

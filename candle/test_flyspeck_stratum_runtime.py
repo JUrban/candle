@@ -84,16 +84,18 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "00-test-through-001"
         log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}",
+            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
+            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} skip-ledger",
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
         ])
-        subject.validate_log(log, self.actions, boundary, self.nonce)
+        events = subject.validate_log(log, self.actions, boundary, self.nonce)
+        self.assertEqual([event["outcome"] for event in events],
+                         ["load", "skip-ledger"])
 
     def test_log_rejects_duplicate_or_late_marker(self) -> None:
         boundary = "00-test-through-001"
-        marker0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}"
-        marker1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}"
+        marker0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load"
+        marker1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
         final = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
         preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
         with self.assertRaisesRegex(subject.ContractError, "duplicate action 0 marker"):
@@ -107,12 +109,29 @@ class StratumRuntimeTests(unittest.TestCase):
                 self.actions, boundary, self.nonce,
             )
 
+    def test_log_rejects_loader_cache_skip_and_unknown_action_outcomes(self) -> None:
+        boundary = "00-test-through-001"
+        preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
+        marker1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
+        final = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
+        for outcome in ("skip-loader-cache", "forged"):
+            marker0 = (
+                f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} {outcome}"
+            )
+            with self.assertRaisesRegex(
+                subject.ContractError, f"unsupported action 0 outcome: {outcome}",
+            ):
+                subject.validate_log(
+                    "\n".join([preflight, marker0, marker1, final]),
+                    self.actions, boundary, self.nonce,
+                )
+
     def test_log_rejects_top_level_exception(self) -> None:
         boundary = "00-test-through-001"
         log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}",
+            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
+            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load",
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
             "EXCEPTION: injected",
         ])
@@ -123,8 +142,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "00-test-through-001"
         quoted = "\n".join([
             f'source "{subject.PREFLIGHT_MARKER} {self.nonce}"',
-            f'print_endline "{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}";;',
-            f'prefix {subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}',
+            f'print_endline "{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load";;',
+            f'prefix {subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load',
             f'quoted {subject.SUCCESS_MARKER} {self.nonce} {boundary} 2',
         ])
         with self.assertRaisesRegex(subject.ContractError, "stratum preflight marker"):
@@ -208,8 +227,8 @@ class StratumRuntimeTests(unittest.TestCase):
         theorem_names = subject.fingerprint_requests(boundary)
         source_log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}",
+            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
+            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load",
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
         ])
         with self.assertRaisesRegex(subject.ContractError, "fingerprint success marker"):
@@ -226,8 +245,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "05-lp_support-through-184"
         theorem_names = subject.fingerprint_requests(boundary)
         preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
-        action0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}"
-        action1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}"
+        action0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load"
+        action1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
         success = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
         terminal = (
             f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} {boundary} 1"

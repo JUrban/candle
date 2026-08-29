@@ -89,6 +89,7 @@ GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
 CHUNK_BYTES = 1024 * 1024
 GIB = 1024 * 1024 * 1024
 ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
+ACTION_OUTCOMES = ("load", "skip-ledger")
 PREFLIGHT_MARKER = "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK"
 SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
 FINGERPRINT_MARKER = reference_protocol.FINGERPRINT_MARKER
@@ -1041,7 +1042,7 @@ def validate_log(
     boundary_id: str,
     nonce: str,
     theorem_names: list[str] | None = None,
-) -> None:
+) -> list[dict[str, Any]]:
     theorem_names = theorem_names or []
     lines = log.splitlines()
 
@@ -1052,18 +1053,37 @@ def validate_log(
 
     preflight = f"{PREFLIGHT_MARKER} {nonce}"
     positions = [exact_position(preflight, "stratum preflight")]
+    action_events: list[dict[str, Any]] = []
+    allowed_action_markers: set[str] = set()
     for index, action in enumerate(actions):
-        marker = f"{ACTION_PREFIX} {nonce} {index:03d} {action['source_sha256']}"
-        positions.append(exact_position(marker, f"action {index}"))
+        prefix = (
+            f"{ACTION_PREFIX} {nonce} {index:03d} "
+            f"{action['source_sha256']} "
+        )
+        matches = [
+            (position, line[len(prefix):])
+            for position, line in enumerate(lines)
+            if line.startswith(prefix)
+        ]
+        require(len(matches) == 1,
+                f"missing or duplicate action {index} marker")
+        position, outcome = matches[0]
+        require(outcome in ACTION_OUTCOMES,
+                f"unsupported action {index} outcome: {outcome}")
+        marker = prefix + outcome
+        allowed_action_markers.add(marker)
+        action_events.append({
+            "index": index,
+            "source_sha256": action["source_sha256"],
+            "outcome": outcome,
+        })
+        positions.append(position)
     final = f"{SUCCESS_MARKER} {nonce} {boundary_id} {len(actions)}"
     boundary_position = exact_position(final, "boundary success")
     positions.append(boundary_position)
     fingerprint_position: int | None = None
     allowed_control_markers = {preflight, final}
-    allowed_control_markers.update(
-        f"{ACTION_PREFIX} {nonce} {index:03d} {action['source_sha256']}"
-        for index, action in enumerate(actions)
-    )
+    allowed_control_markers.update(allowed_action_markers)
     if theorem_names:
         fingerprint_final = (
             f"{FINGERPRINT_SUCCESS_MARKER} {nonce} {boundary_id} {len(theorem_names)}"
@@ -1094,6 +1114,7 @@ def validate_log(
                 "fingerprint protocol record is outside its boundary session")
     require(not re.search(r"^(?:ERROR|EXCEPTION):|Parsing failed", log, re.MULTILINE),
             "compiled stratum log contains a top-level error")
+    return action_events
 
 
 def utc_now() -> str:
@@ -1878,7 +1899,7 @@ def _run_attempt_impl(
     runtime_env = cakeml_artifact_provenance.runtime_environment()
     started = utc_now()
     attempt = {
-        "schema": 2,
+        "schema": 3,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
         "claim": "compiled cumulative source-action attempt; not S2/S3 without semantic fingerprints",
         "state": "running",
@@ -1901,6 +1922,12 @@ def _run_attempt_impl(
             "path mutation is outside this evidence model"
         ),
         "process_state_checkpoint": None,
+        "evidence_contract": {
+            "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+            "allowed_action_outcomes": list(ACTION_OUTCOMES),
+            "physical_loader_cache_skip_allowed": False,
+            "s2_s3_approval_included": False,
+        },
         "runtime_environment_policy": (
             "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
             "BASH_ENV, and ENV"
@@ -1956,6 +1983,7 @@ def _run_attempt_impl(
     log_record: dict[str, Any] | None = None
     validation_error: str | None = None
     fingerprints: dict[str, Any] | None = None
+    action_events: list[dict[str, Any]] | None = None
     postflight_reauthenticated = False
     handled_signals = {signal.SIGTERM, signal.SIGINT}
     previous_mask: set[signal.Signals] | None = None
@@ -2047,7 +2075,7 @@ def _run_attempt_impl(
         ):
             validate_file(path, control_records[label], f"attempt control {label}")
         postflight_reauthenticated = True
-        validate_log(
+        action_events = validate_log(
             log_path.read_text(encoding="utf-8", errors="replace"),
             prepared["actions"], boundary_id, nonce, theorem_names,
         )
@@ -2099,6 +2127,7 @@ def _run_attempt_impl(
             "action_markers_validated": (
                 len(prepared["actions"]) if validation_error is None else 0
             ),
+            "action_events": action_events,
             "semantic_fingerprints": fingerprints,
             "s2_s3_evidence": False,
             "validation_error": validation_error,
