@@ -2,11 +2,13 @@
 
 import copy
 import hashlib
+import json
 import os
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import flyspeck_stratum_plan as subject
@@ -109,6 +111,134 @@ class StratumPlanTests(unittest.TestCase):
                     root, {"flyspeck_normalization_receipt.json": 0o444},
                     "normalization overlay",
                 )
+
+    def materialization_fixture(
+        self, root: Path,
+    ) -> tuple[list[Path], dict, dict, dict[str, bytes]]:
+        candle = root / "candle"
+        flyspeck = root / "flyspeck"
+        overlay = root / "overlay"
+        generated = root / "generated"
+        for directory in (candle, flyspeck, overlay, generated):
+            directory.mkdir()
+        audit = {"actions": [{"index": 0}]}
+        validated = {
+            "source_bindings": [{}],
+            "normalization_bindings": [{}],
+            "generated_bindings": [{}],
+        }
+        prefix = b"#use authenticated-prefix;;\n"
+        plan = {
+            "schema": 1,
+            "kind": "candle-flyspeck-cumulative-stratum-plan",
+            "boundaries": [{
+                "boundary_id": "s0",
+                "cumulative_prefix": {
+                    "path": "stratum-s0.ml",
+                    "sha256": hashlib.sha256(prefix).hexdigest(),
+                },
+            }],
+            "diagnostic_cutpoints": [],
+        }
+        return [candle, flyspeck, overlay, generated], audit, validated, {
+            "stratum-s0.ml": prefix,
+        } | {"__plan__": plan}
+
+    def materialize_fixture_plan(self, root: Path, output: Path) -> dict:
+        roots, audit, validated, combined = self.materialization_fixture(root)
+        plan = combined.pop("__plan__")
+        with (
+            mock.patch.object(subject, "audit_manifest", return_value=audit),
+            mock.patch.object(subject, "validate_inputs", return_value=validated),
+            mock.patch.object(subject, "make_plan", return_value=(plan, combined)),
+        ):
+            return subject.materialize(
+                roots[0], "a" * 40, roots[1], roots[2], roots[3], output,
+            )
+
+    def test_plan_publication_is_exact_and_umask_independent(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output = root / "plan-output"
+            original_umask = os.umask(0)
+            try:
+                result = self.materialize_fixture_plan(root, output)
+            finally:
+                os.umask(original_umask)
+            self.assertEqual(output.stat().st_mode & 0o777, subject.PLAN_ROOT_MODE)
+            expected = {
+                "stratum-s0.ml", "plan.json", "host-schedule-template.json",
+                subject.HOST_MATERIALIZATION,
+            }
+            self.assertEqual({path.name for path in output.iterdir()}, expected)
+            for path in output.iterdir():
+                self.assertTrue(path.is_file() and not path.is_symlink())
+                self.assertEqual(path.stat().st_mode & 0o777,
+                                 subject.PLAN_FILE_MODE)
+            receipt = json.loads(
+                (output / subject.HOST_MATERIALIZATION).read_text(
+                    encoding="utf-8",
+                )
+            )
+            self.assertEqual(receipt["schema"], 2)
+            self.assertEqual(receipt["publication"], subject.PLAN_PUBLICATION)
+            self.assertEqual(receipt["plan_sha256"], result["plan_sha256"])
+
+    def test_plan_publication_race_preserves_collision_and_staging(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output = root / "plan-output"
+            original_rename = subject._rename_noreplace
+
+            def collide(source_path: Path, destination_path: Path) -> None:
+                destination_path.mkdir()
+                (destination_path / "unrelated").write_text(
+                    "preserved", encoding="utf-8",
+                )
+                original_rename(source_path, destination_path)
+
+            with (
+                mock.patch.object(subject, "_rename_noreplace",
+                                  side_effect=collide),
+                self.assertRaises(FileExistsError),
+            ):
+                self.materialize_fixture_plan(root, output)
+            self.assertEqual((output / "unrelated").read_text(encoding="utf-8"),
+                             "preserved")
+            staging = list(root.glob(".plan-output.tmp.*"))
+            self.assertEqual(len(staging), 1)
+            self.assertTrue((staging[0] / subject.PENDING_HOST_MATERIALIZATION).is_file())
+            self.assertFalse((staging[0] / subject.HOST_MATERIALIZATION).exists())
+
+    def test_plan_output_symlink_fails_before_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            roots, _, _, _ = self.materialization_fixture(root)
+            output = root / "plan-output"
+            output.symlink_to(roots[0], target_is_directory=True)
+            with self.assertRaisesRegex(subject.ContractError,
+                                        "plan output root is a symlink"):
+                subject.materialize(
+                    roots[0], "a" * 40, roots[1], roots[2], roots[3], output,
+                )
+
+    def test_plan_tree_validator_rejects_extra_and_wrong_mode(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output = root / "plan-output"
+            self.materialize_fixture_plan(root, output)
+            expected = {
+                path.name: subject.PLAN_FILE_MODE for path in output.iterdir()
+            }
+            os.chmod(output, 0o755)
+            with self.assertRaisesRegex(subject.ContractError, "root mode mismatch"):
+                subject.validate_materialized_tree(output, expected, "stratum plan")
+            extra = output / "extra"
+            extra.write_bytes(b"unrecorded")
+            os.chmod(extra, subject.PLAN_FILE_MODE)
+            os.chmod(output, subject.PLAN_ROOT_MODE)
+            with self.assertRaisesRegex(subject.ContractError, "unexpected file"):
+                subject.validate_materialized_tree(output, expected, "stratum plan")
 
 
 if __name__ == "__main__":

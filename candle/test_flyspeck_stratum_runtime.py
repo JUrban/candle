@@ -739,6 +739,21 @@ class StratumRuntimeTests(unittest.TestCase):
             signal.pthread_sigmask(signal.SIG_BLOCK, set()), original_mask,
         )
 
+    def test_internal_attempt_rejects_raw_plan_root_symlink(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            target = root / "plan-target"
+            target.mkdir()
+            plan_link = root / "plan-link"
+            plan_link.symlink_to(target, target_is_directory=True)
+            with self.assertRaisesRegex(
+                subject.ContractError, "stratum plan root must not be a symlink",
+            ):
+                subject._run_attempt_impl(
+                    root / "missing-candle.sh", plan_link, "boundary",
+                    root / "attempt", 1, 1, 1, 1,
+                )
+
     def test_child_resource_limiter_installs_all_three_limits(self) -> None:
         cpu_seconds = 17
         address_space = 2 * subject.GIB

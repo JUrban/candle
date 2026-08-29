@@ -10,13 +10,15 @@ nor restores CakeML process state.
 from __future__ import annotations
 
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
-import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -27,6 +29,18 @@ NORMALIZATION_CONTRACT_PATH = "candle/flyspeck_normalizations.json"
 NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
 GENERATED_CONTRACT_PATH = "candle/flyspeck_lp_archive_contract.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
+HOST_MATERIALIZATION = "host-materialization.json"
+PENDING_HOST_MATERIALIZATION = f".{HOST_MATERIALIZATION}.pending"
+PLAN_FILE_MODE = 0o444
+PLAN_ROOT_MODE = 0o555
+PLAN_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+    "modes": {"root": "0555", "files": "0444"},
+}
+AT_FDCWD = -100
+RENAME_NOREPLACE = 1
 NORMALIZATION_PUBLICATION = {
     "policy": "fresh-root-renameat2-noreplace",
     "failed_staging": "retained",
@@ -205,6 +219,31 @@ def validate_materialized_tree(
     require(observed_directories == expected_directories,
             f"{label} directory set mismatch")
     require(observed_files == expected_paths, f"{label} file set mismatch")
+
+
+def _rename_noreplace(source: Path, destination: Path) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as error:
+        raise OSError(
+            errno.ENOSYS, "renameat2 is required for fresh-root publication"
+        ) from error
+    renameat2.argtypes = [
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p,
+        ctypes.c_uint,
+    ]
+    renameat2.restype = ctypes.c_int
+    if renameat2(
+        AT_FDCWD, os.fsencode(source), AT_FDCWD, os.fsencode(destination),
+        RENAME_NOREPLACE,
+    ) != 0:
+        error_number = ctypes.get_errno()
+        if error_number == errno.EEXIST:
+            raise FileExistsError(
+                error_number, os.strerror(error_number), destination,
+            )
+        raise OSError(error_number, os.strerror(error_number), destination)
 
 
 def action_marker(index: int, root: dict[str, Any], node: dict[str, Any]) -> str:
@@ -645,32 +684,10 @@ def make_plan(
     return plan, prefixes
 
 
-def materialize(
-    candle_root: Path,
-    expected_candle_base: str,
-    flyspeck_root: Path,
-    overlay_root: Path,
-    generated_root: Path,
-    output_root: Path,
+def make_host_schedule(
+    plan: dict[str, Any], plan_sha256: str,
 ) -> dict[str, Any]:
-    require(not overlay_root.is_symlink(),
-            "normalization overlay root is a symlink")
-    require(not generated_root.is_symlink(),
-            "generated-input root is a symlink")
-    roots = [candle_root, flyspeck_root, overlay_root, generated_root]
-    candle_root, flyspeck_root, overlay_root, generated_root = [root.resolve() for root in roots]
-    output_root = output_root.resolve()
-    require(len(expected_candle_base) == 40 and all(c in "0123456789abcdef" for c in expected_candle_base),
-            "expected Candle base must be a lowercase 40-character hex commit")
-    audit = audit_manifest(candle_root)
-    validated = validate_inputs(
-        candle_root, expected_candle_base, flyspeck_root, overlay_root,
-        generated_root, audit,
-    )
-    plan, prefixes = make_plan(expected_candle_base, audit, validated)
-    plan_data = json_bytes(plan)
-    plan_sha256 = hashlib.sha256(plan_data).hexdigest()
-    schedule = {
+    return {
         "schema": 1,
         "kind": "candle-flyspeck-host-schedule-template",
         "claim": "host scheduling state only; never S2/S3 evidence",
@@ -678,7 +695,10 @@ def materialize(
         "plan_sha256": plan_sha256,
         "allowed_states": ["not-started", "running", "failed", "completed"],
         "initial_state": "not-started",
-        "failure_restart": "fresh-process replay of an authenticated cumulative prefix from action 0",
+        "failure_restart": (
+            "fresh-process replay of an authenticated cumulative prefix "
+            "from action 0"
+        ),
         "process_state_checkpoint": None,
         "boundaries": [
             {
@@ -703,11 +723,25 @@ def materialize(
             for entry in plan["diagnostic_cutpoints"]
         ],
     }
-    host_materialization = {
-        "schema": 1,
+
+
+def make_host_materialization(
+    plan_sha256: str,
+    planner_source_sha256: str,
+    candle_root: Path,
+    flyspeck_root: Path,
+    overlay_root: Path,
+    generated_root: Path,
+    validated: dict[str, Any],
+    audit: dict[str, Any],
+    plan: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema": 2,
         "claim": "host path and validation receipt only; not S2/S3 evidence",
         "plan_sha256": plan_sha256,
-        "planner_source_sha256": sha256_file(Path(__file__)),
+        "planner_source_sha256": planner_source_sha256,
+        "publication": PLAN_PUBLICATION,
         "host_roots": {
             "candle": str(candle_root),
             "flyspeck": str(flyspeck_root),
@@ -724,20 +758,76 @@ def materialize(
         },
     }
 
+
+def materialize(
+    candle_root: Path,
+    expected_candle_base: str,
+    flyspeck_root: Path,
+    overlay_root: Path,
+    generated_root: Path,
+    output_root: Path,
+) -> dict[str, Any]:
+    require(not overlay_root.is_symlink(),
+            "normalization overlay root is a symlink")
+    require(not generated_root.is_symlink(),
+            "generated-input root is a symlink")
+    require(not output_root.is_symlink(), "plan output root is a symlink")
+    roots = [candle_root, flyspeck_root, overlay_root, generated_root]
+    candle_root, flyspeck_root, overlay_root, generated_root = [root.resolve() for root in roots]
+    output_root = output_root.resolve()
+    require(len(expected_candle_base) == 40 and all(c in "0123456789abcdef" for c in expected_candle_base),
+            "expected Candle base must be a lowercase 40-character hex commit")
+    audit = audit_manifest(candle_root)
+    validated = validate_inputs(
+        candle_root, expected_candle_base, flyspeck_root, overlay_root,
+        generated_root, audit,
+    )
+    plan, prefixes = make_plan(expected_candle_base, audit, validated)
+    plan_data = json_bytes(plan)
+    plan_sha256 = hashlib.sha256(plan_data).hexdigest()
+    schedule = make_host_schedule(plan, plan_sha256)
+    host_materialization = make_host_materialization(
+        plan_sha256, sha256_file(Path(__file__)), candle_root, flyspeck_root,
+        overlay_root, generated_root, validated, audit, plan,
+    )
+
     require(not output_root.exists(), f"output root already exists: {output_root}")
     require(output_root.parent.is_dir(), f"output parent does not exist: {output_root.parent}")
-    temporary = output_root.with_name(f"{output_root.name}.tmp.{os.getpid()}")
-    require(not temporary.exists(), f"temporary output already exists: {temporary}")
-    temporary.mkdir()
+    temporary = Path(tempfile.mkdtemp(
+        prefix=f".{output_root.name}.tmp.", dir=output_root.parent,
+    ))
+    staging_identity = os.stat(temporary, follow_symlinks=False)
     try:
         for filename, content in prefixes.items():
-            (temporary / filename).write_bytes(content)
-        (temporary / "plan.json").write_bytes(plan_data)
-        (temporary / "host-schedule-template.json").write_bytes(json_bytes(schedule))
-        (temporary / "host-materialization.json").write_bytes(json_bytes(host_materialization))
-        os.rename(temporary, output_root)
-    except BaseException:
-        shutil.rmtree(temporary)
+            relative = Path(filename)
+            require(relative.parent == Path(".") and not relative.is_absolute(),
+                    f"unsafe plan output path: {filename}")
+            path = temporary / relative
+            path.write_bytes(content)
+            os.chmod(path, PLAN_FILE_MODE)
+        for filename, content in (
+            ("plan.json", plan_data),
+            ("host-schedule-template.json", json_bytes(schedule)),
+            (PENDING_HOST_MATERIALIZATION, json_bytes(host_materialization)),
+        ):
+            path = temporary / filename
+            path.write_bytes(content)
+            os.chmod(path, PLAN_FILE_MODE)
+        observed_staging = os.stat(temporary, follow_symlinks=False)
+        require(
+            stat.S_ISDIR(observed_staging.st_mode)
+            and (observed_staging.st_dev, observed_staging.st_ino)
+            == (staging_identity.st_dev, staging_identity.st_ino),
+            f"plan staging identity changed: {temporary}",
+        )
+        _rename_noreplace(temporary, output_root)
+        os.replace(
+            output_root / PENDING_HOST_MATERIALIZATION,
+            output_root / HOST_MATERIALIZATION,
+        )
+        os.chmod(output_root, PLAN_ROOT_MODE)
+    except BaseException as error:
+        error.add_note(f"failed plan staging retained: {temporary}")
         raise
     return {
         "plan_sha256": plan_sha256,

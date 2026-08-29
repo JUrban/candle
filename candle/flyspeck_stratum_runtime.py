@@ -524,16 +524,39 @@ def validate_plan(
     boundary_id: str,
 ) -> dict[str, Any]:
     """Reauthenticate a host plan and return exact runtime material."""
+    require(plan_root.is_dir() and not plan_root.is_symlink(),
+            f"missing ordinary stratum plan root: {plan_root}")
+    plan_root_status = os.stat(plan_root, follow_symlinks=False)
+    require(
+        (plan_root_status.st_mode & 0o170000) == 0o040000
+        and plan_root_status.st_mode & 0o777
+        == flyspeck_stratum_plan.PLAN_ROOT_MODE,
+        f"stratum plan root mode mismatch: {plan_root}",
+    )
     plan_path = plan_root / "plan.json"
-    materialization_path = plan_root / "host-materialization.json"
+    schedule_path = plan_root / "host-schedule-template.json"
+    materialization_path = plan_root / flyspeck_stratum_plan.HOST_MATERIALIZATION
+    for path, label in (
+        (plan_path, "stratum plan"),
+        (schedule_path, "host schedule template"),
+        (materialization_path, "host materialization"),
+    ):
+        observed = os.stat(path, follow_symlinks=False)
+        require(
+            not path.is_symlink() and (observed.st_mode & 0o170000) == 0o100000,
+            f"missing ordinary {label}: {path}",
+        )
+        require(observed.st_mode & 0o777 == flyspeck_stratum_plan.PLAN_FILE_MODE,
+                f"{label} mode mismatch: {path}")
     plan = load_object(plan_path, "stratum plan")
+    schedule = load_object(schedule_path, "host schedule template")
     materialization = load_object(materialization_path, "host materialization")
     require(plan.get("schema") == 1, "unsupported stratum plan schema")
     require(plan.get("kind") == "candle-flyspeck-cumulative-stratum-plan",
             "wrong stratum plan kind")
     require("not Candle execution" in plan.get("claim", ""), "stratum plan claim drift")
     plan_hash = hash_file(plan_path)
-    require(materialization.get("schema") == 1, "unsupported materialization schema")
+    require(materialization.get("schema") == 2, "unsupported materialization schema")
     require(materialization.get("plan_sha256") == plan_hash["sha256"],
             "materialization plan digest mismatch")
 
@@ -569,30 +592,32 @@ def validate_plan(
     )
     require(plan == derived_plan,
             "stored stratum plan differs from independently reconstructed plan")
-    expected_materialization = {
-        "schema": 1,
-        "claim": "host path and validation receipt only; not S2/S3 evidence",
-        "plan_sha256": plan_hash["sha256"],
-        "planner_source_sha256": hash_file(
-            candle_root / "candle/flyspeck_stratum_plan.py"
-        )["sha256"],
-        "host_roots": {
-            "candle": str(candle_root),
-            "flyspeck": str(flyspeck_root),
-            "normalization_overlay": str(overlay_root),
-            "generated_inputs": str(generated_root),
-        },
-        "validated_counts": {
-            "source_nodes": len(derived_validated["source_bindings"]),
-            "normalization_outputs": len(derived_validated["normalization_bindings"]),
-            "generated_inputs": len(derived_validated["generated_bindings"]),
-            "actions": len(derived_audit["actions"]),
-            "boundaries": len(derived_plan["boundaries"]),
-            "diagnostic_cutpoints": len(derived_plan["diagnostic_cutpoints"]),
-        },
-    }
+    expected_schedule = flyspeck_stratum_plan.make_host_schedule(
+        derived_plan, plan_hash["sha256"],
+    )
+    require(schedule == expected_schedule,
+            "stored host schedule differs from independent reconstruction")
+    expected_materialization = flyspeck_stratum_plan.make_host_materialization(
+        plan_hash["sha256"],
+        hash_file(candle_root / "candle/flyspeck_stratum_plan.py")["sha256"],
+        candle_root, flyspeck_root, overlay_root, generated_root,
+        derived_validated, derived_audit, derived_plan,
+    )
     require(materialization == expected_materialization,
             "stored host materialization differs from independent reconstruction")
+    expected_plan_files = {
+        filename: flyspeck_stratum_plan.PLAN_FILE_MODE
+        for filename in derived_prefixes
+    }
+    expected_plan_files.update({
+        "plan.json": flyspeck_stratum_plan.PLAN_FILE_MODE,
+        "host-schedule-template.json": flyspeck_stratum_plan.PLAN_FILE_MODE,
+        flyspeck_stratum_plan.HOST_MATERIALIZATION:
+            flyspeck_stratum_plan.PLAN_FILE_MODE,
+    })
+    flyspeck_stratum_plan.validate_materialized_tree(
+        plan_root, expected_plan_files, "stratum plan",
+    )
     for filename, content in derived_prefixes.items():
         relative = Path(filename)
         require(not relative.is_absolute() and ".." not in relative.parts,
@@ -1706,6 +1731,8 @@ def _run_attempt_impl(
 ) -> dict[str, Any]:
     require(not Path(output_root).is_symlink(),
             "attempt output path must not be a symlink")
+    require(not Path(plan_root).is_symlink(),
+            "stratum plan root must not be a symlink")
     candle_script = candle_script.resolve()
     plan_root = plan_root.resolve()
     output_root = output_root.resolve()

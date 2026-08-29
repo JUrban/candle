@@ -61,6 +61,17 @@ in the two companion files.  Each action binds its selected original source
 digest and, where applicable, its normalization identity and output digest.
 Each boundary binds the exact cumulative program bytes and ordered action
 prefix.  `host-materialization.json` records machine paths separately.
+Its schema-2 receipt also records the publication policy.  The planner writes
+all content into a private randomly named staging directory, publishes the
+fresh root with Linux `renameat2(RENAME_NOREPLACE)`, retains failed staging
+rather than deleting a possibly exchanged pathname, and only then promotes
+the hidden pending receipt to its canonical name.  The final root is exactly
+`0555` and every plan, prefix, schedule, and receipt file is exactly `0444`,
+independent of the caller's umask.  The direct runner rejects symlink roots,
+wrong modes, missing files, extra files, stale pending receipts, and any plan
+or schedule that differs from independent reconstruction.  As with the other
+host materializers, concurrent mutation by another process under the same UID
+is outside this publication boundary and must be excluded operationally.
 
 `host-schedule-template.json` is only a scheduling template.  Its
 `not-started`, `running`, `failed`, and `completed` labels can never establish
