@@ -370,6 +370,79 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 with self.assertRaises(reference.CollectionError):
                     reference._require_current_plan_pins(plan)
 
+    def test_v9_csdp_build_statement_rejects_forged_recipe_and_types(self):
+        def replace(path, value):
+            def mutate(statement):
+                parent = statement
+                for key in path[:-1]:
+                    parent = parent[key]
+                parent[path[-1]] = value
+            return mutate
+
+        def remove(path):
+            def mutate(statement):
+                parent = statement
+                for key in path[:-1]:
+                    parent = parent[key]
+                parent.pop(path[-1])
+            return mutate
+
+        mutations = (
+            ("missing static library hash",
+             remove(("outputs", "static_libsdp_sha256"))),
+            ("boolean static library hash",
+             replace(("outputs", "static_libsdp_sha256"), True)),
+            ("forged static library hash",
+             replace(("outputs", "static_libsdp_sha256"), "0" * 64)),
+            ("empty toolchain", replace(("toolchain",), {})),
+            ("forged compiler",
+             replace(("toolchain", "compiler_sha256"), "0" * 64)),
+            ("missing archiver",
+             remove(("toolchain", "archiver_resolved"))),
+            ("parallel command",
+             replace(("recipe", "commands"), [
+                 reference.CSDP_BUILD_COMMANDS[0] + " -j999",
+                 reference.CSDP_BUILD_COMMANDS[1],
+             ])),
+            ("OpenMP command",
+             replace(("recipe", "commands"), [
+                 reference.CSDP_BUILD_COMMANDS[0],
+                 reference.CSDP_BUILD_COMMANDS[1] + " -fopenmp",
+             ])),
+            ("missing C flags", remove(("recipe", "cflags"))),
+            ("missing library flags", remove(("recipe", "library_flags"))),
+            ("arbitrary C flags", replace(("recipe", "cflags"), "-O0")),
+            ("arbitrary library flags",
+             replace(("recipe", "library_flags"), "-lsdp -lm")),
+            ("boolean schema", replace(("schema",), True)),
+            ("boolean source bytes", replace(("source", "bytes"), True)),
+            ("extra source claim", replace(("source", "vendor"), "unknown")),
+            ("boolean executable bytes",
+             replace(("outputs", "csdp_bytes"), True)),
+            ("non-list commands", replace(("recipe", "commands"), "make")),
+            ("boolean command", replace(("recipe", "commands"), [True, True])),
+            ("integer OpenMP policy",
+             replace(("recipe", "openmp_enabled"), 0)),
+            ("boolean probe exit", replace(("unit_probe", "exit_code"), False)),
+            ("boolean probe bytes", replace(("unit_probe", "input_bytes"), True)),
+            ("integer runtime policy",
+             replace(("runtime_policy", "single_thread_build"), 1)),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            for label, mutate in mutations:
+                with self.subTest(mutation=label):
+                    changed = copy.deepcopy(plan)
+                    statement = changed["reference"]["external_runtime"][
+                        "csdp_build"]["statement"]
+                    mutate(statement)
+                    with self.assertRaises(reference.CollectionError):
+                        reference.validate_reference_runtime_provenance(changed)
+
     def test_external_gp_requires_empty_data_and_exact_sys_command_shell(self):
         with tempfile.TemporaryDirectory() as directory:
             root, runtime, runtime_stublib, ocamlc, ocamlfind = \
