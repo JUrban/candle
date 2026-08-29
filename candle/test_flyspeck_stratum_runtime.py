@@ -256,17 +256,7 @@ class StratumRuntimeTests(unittest.TestCase):
             **subject.hash_file(self.runtime_executable_path),
         }
         source_root = "/candle/candle"
-        source_bindings = {
-            "cakeml_artifact_provenance.py":
-                "compiled-from-captured-source-bytes",
-            "flyspeck_stratum_plan.py":
-                "compiled-from-captured-source-bytes",
-            "flyspeck_stratum_runtime.py":
-                "startup-captured-after-initial-compilation",
-            "reference_protocol.py":
-                "compiled-from-captured-source-bytes",
-            "runtime_lock.py": "compiled-from-captured-source-bytes",
-        }
+        source_bindings = subject.CONTROLLER_SOURCE_EXECUTION_BINDINGS
         local_sources = []
         committed_sources = {}
         for index, (label, binding) in enumerate(source_bindings.items(), start=1):
@@ -2199,6 +2189,12 @@ class StratumRuntimeTests(unittest.TestCase):
                 }, controller_execution,
             )
             subject.validate_runtime_snapshot(snapshot, output)
+            # The same six-source record enters the schema-5 receipt.  Keep
+            # snapshot construction and receipt validation on one exact
+            # controller-source closure.
+            subject.validate_direct_controller_binding(
+                snapshot["controller_execution"], "f" * 40,
+            )
             archived_transition = (
                 output / "snapshot/candle/candle/build/bootstrap-transition.json"
             )

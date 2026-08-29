@@ -157,6 +157,17 @@ DIRECT_INPUT_FIELDS = frozenset({
     "runtime_config", "stdin", "postlude", "setup", "check",
     "fingerprint_serializer", "l2_target",
 })
+CONTROLLER_SOURCE_EXECUTION_BINDINGS = {
+    "cakeml_artifact_provenance.py":
+        "compiled-from-captured-source-bytes",
+    "cakeml_bootstrap_transition.py":
+        "compiled-from-captured-source-bytes",
+    "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
+    "flyspeck_stratum_runtime.py":
+        "startup-captured-after-initial-compilation",
+    "reference_protocol.py": "compiled-from-captured-source-bytes",
+    "runtime_lock.py": "compiled-from-captured-source-bytes",
+}
 SOURCE_CLOSURE_CLASSIFICATIONS = (
     "observed-outer-source",
     "observed-nested-source",
@@ -562,14 +573,8 @@ def collect_controller_execution(candle_root: Path) -> dict[str, Any]:
         "source_bytes": RUNNER_SOURCE_BYTES,
         **runner_record,
     }
-    require(set(sources) == {
-        "cakeml_artifact_provenance.py",
-        "cakeml_bootstrap_transition.py",
-        "flyspeck_stratum_plan.py",
-        "flyspeck_stratum_runtime.py",
-        "reference_protocol.py",
-        "runtime_lock.py",
-    }, "unexpected local Python controller source set")
+    require(set(sources) == set(CONTROLLER_SOURCE_EXECUTION_BINDINGS),
+            "unexpected local Python controller source set")
     return {
         "source_root": str(expected_directory),
         "direct_script_startup": direct_startup,
@@ -2958,15 +2963,7 @@ def validate_direct_controller_binding(
                 f"malformed direct runtime retained {label}")
         return item
 
-    expected_bindings = {
-        "cakeml_artifact_provenance.py":
-            "compiled-from-captured-source-bytes",
-        "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
-        "flyspeck_stratum_runtime.py":
-            "startup-captured-after-initial-compilation",
-        "reference_protocol.py": "compiled-from-captured-source-bytes",
-        "runtime_lock.py": "compiled-from-captured-source-bytes",
-    }
+    expected_bindings = CONTROLLER_SOURCE_EXECUTION_BINDINGS
     sources = controller["local_sources"]
     require(isinstance(sources, list) and len(sources) == len(expected_bindings) and
             all(isinstance(item, dict) and
@@ -4251,17 +4248,7 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
         "argv0": str(direct_source),
         "source_path": str(direct_source),
     }, "controller direct-script startup binding mismatch")
-    expected_bindings = {
-        "cakeml_artifact_provenance.py":
-            "compiled-from-captured-source-bytes",
-        "cakeml_bootstrap_transition.py":
-            "compiled-from-captured-source-bytes",
-        "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
-        "flyspeck_stratum_runtime.py":
-            "startup-captured-after-initial-compilation",
-        "reference_protocol.py": "compiled-from-captured-source-bytes",
-        "runtime_lock.py": "compiled-from-captured-source-bytes",
-    }
+    expected_bindings = CONTROLLER_SOURCE_EXECUTION_BINDINGS
     require(isinstance(sources, list) and
             len(sources) == len(expected_bindings),
             "malformed controller local-source closure")
