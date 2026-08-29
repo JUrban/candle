@@ -94,7 +94,7 @@ List.iter candle_flyspeck_stratum_add_load_path
 
 needs "build/strictbuild.hl";;
 
-if !Cakeml.pendingLoadedSourceId <> None then
+if !Cakeml.pendingLoadedSourceIds <> [] then
   failwith "pending Flyspeck source identity after strictbuild";;
 
 let candle_flyspeck_stratum_initial_loaded_files = !loaded_files;;
@@ -103,9 +103,13 @@ if List.length candle_flyspeck_stratum_action_identities <>
      candle_flyspeck_stratum_action_count then
   failwith "Flyspeck stratum action identity count mismatch";;
 
+if List.length candle_flyspeck_stratum_action_ledger_deltas <>
+     candle_flyspeck_stratum_action_count then
+  failwith "Flyspeck stratum action ledger-delta count mismatch";;
+
 let candle_flyspeck_stratum_previous_loaded_files = ref !loaded_files;;
 let candle_flyspeck_stratum_action_events =
-  ref ([]:(int * (string * string) * string) list);;
+  ref ([]:(int * (string * string) * (string * string) list * string) list);;
 
 let candle_flyspeck_stratum_commit_action index expected_identity marker =
   if index <> List.length !candle_flyspeck_stratum_action_events then
@@ -114,22 +118,30 @@ let candle_flyspeck_stratum_commit_action index expected_identity marker =
           expected_identity then
     failwith "Flyspeck stratum action event identity mismatch"
   else
-    let previous = !candle_flyspeck_stratum_previous_loaded_files in
-    let current = !loaded_files in
-    let outcome =
-      if current = previous then
-        if List.mem expected_identity previous then "skip-ledger"
+    match List.nth candle_flyspeck_stratum_action_ledger_deltas index with
+    | [] -> failwith "Flyspeck action has an empty expected ledger delta"
+    | outer_identity::_ as expected_delta ->
+        if outer_identity <> expected_identity then
+          failwith "Flyspeck action ledger outer identity mismatch"
         else
-          failwith
-            "Flyspeck action was skipped by the physical loader cache without its logical identity"
-      else if not (List.mem expected_identity previous) &&
-              current = expected_identity :: previous then "load"
-      else failwith "Flyspeck action has an unexpected loader identity delta" in
-    candle_flyspeck_stratum_action_events :=
-      (index,expected_identity,outcome) ::
-      !candle_flyspeck_stratum_action_events;
-    candle_flyspeck_stratum_previous_loaded_files := current;
-    print_endline (marker ^ " " ^ outcome);;
+          let previous = !candle_flyspeck_stratum_previous_loaded_files in
+          let current = !loaded_files in
+          let outcome =
+            if current = previous then
+              if not (List.mem expected_identity previous) then
+                failwith
+                  "Flyspeck action was skipped by the physical loader cache without its logical identity"
+              else if expected_delta <> [expected_identity] then
+                failwith "Flyspeck action skipped its expected nested ledger delta"
+              else "skip-ledger"
+            else if not (List.mem expected_identity previous) &&
+                    current = expected_delta @ previous then "load"
+            else failwith "Flyspeck action has an unexpected loader identity delta" in
+          candle_flyspeck_stratum_action_events :=
+            (index,expected_identity,expected_delta,outcome) ::
+            !candle_flyspeck_stratum_action_events;
+          candle_flyspeck_stratum_previous_loaded_files := current;
+          print_endline (marker ^ " " ^ outcome);;
 
 print_endline
   ("CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK " ^

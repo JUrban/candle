@@ -37,6 +37,18 @@ class StratumRuntimeTests(unittest.TestCase):
                 "identity_md5": "4" * 32,
             },
         ]
+        for action in self.actions:
+            ledger_delta = [{
+                "key": f"flyspeck:{action['target']}",
+                "classification": "observed-outer-source",
+                "source_sha256": action["source_sha256"],
+                "identity_basename": action["identity_basename"],
+                "identity_md5": action["identity_md5"],
+            }]
+            action["logical_source_delta"] = ledger_delta
+            action["logical_source_delta_sha256"] = subject.canonical_sha256(
+                ledger_delta
+            )
         self.prefix = (
             b"(* exact leading material *)\n"
             b'#flyspeck_needs "general/a.hl";;\n'
@@ -47,23 +59,23 @@ class StratumRuntimeTests(unittest.TestCase):
         closure_records = [
             {
                 "index": 0,
-                "key": "candle:a.ml",
-                "classification": "expected-nested-source",
-                "source_sha256": "5" * 64,
-                "source_md5": "6" * 32,
-                "execution_normalization": None,
-            },
-            {
-                "index": 1,
-                "key": "flyspeck:b.hl",
+                "key": "flyspeck:../formal_lp/b.ml",
                 "classification": "observed-outer-source",
-                "source_sha256": "7" * 64,
-                "source_md5": "8" * 32,
+                "source_sha256": "2" * 64,
+                "source_md5": "4" * 32,
                 "execution_normalization": {
                     "id": "TEST-NORMALIZATION-001",
                     "normalized_sha256": "9" * 64,
                     "normalized_md5": "b" * 32,
                 },
+            },
+            {
+                "index": 1,
+                "key": "flyspeck:general/a.hl",
+                "classification": "observed-outer-source",
+                "source_sha256": "1" * 64,
+                "source_md5": "3" * 32,
+                "execution_normalization": None,
             },
         ]
         self.logical_source_closure = {
@@ -77,7 +89,7 @@ class StratumRuntimeTests(unittest.TestCase):
             "ordered_record_sha256": subject.canonical_sha256(closure_records),
             "records": closure_records,
             "physical_loader_cache_trace": False,
-            "execution_observation": "manifest-derived-expected-only",
+            "execution_observation": subject.SOURCE_CLOSURE_OBSERVATION,
             "self_certifies_nested_execution": False,
             "s2_s3_evidence": False,
         }
@@ -94,6 +106,14 @@ class StratumRuntimeTests(unittest.TestCase):
                 "md5": "6e7e5f9291886516c4daf79605620176",
             },
         }
+
+    def action_marker(self, index: int, outcome: str) -> str:
+        action = self.actions[index]
+        return (
+            f"{subject.ACTION_PREFIX} {self.nonce} {index:03d} "
+            f"{action['source_sha256']} "
+            f"{action['logical_source_delta_sha256']} {outcome}"
+        )
 
     def test_pinned_python_elf_contract_tracks_provenance_schema(self) -> None:
         closure = subject.EXPECTED_PYTHON_RUNTIME["elf_closure"]
@@ -134,8 +154,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "00-test-through-001"
         log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} skip-ledger",
+            self.action_marker(0, "load"),
+            self.action_marker(1, "skip-ledger"),
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
         ])
         events = subject.validate_log(log, self.actions, boundary, self.nonce)
@@ -158,14 +178,21 @@ class StratumRuntimeTests(unittest.TestCase):
             "let loaded_files = ref ([] : (string * string) list);;",
             'let first = ("a.hl","11111111111111111111111111111111");;',
             'let second = ("b.ml","22222222222222222222222222222222");;',
+            'let outer = ("serialization.hl","33333333333333333333333333333333");;',
+            'let nested = ("update_database_400.ml",',
+            '              "44444444444444444444444444444444");;',
             "let candle_flyspeck_stratum_action_identities =",
-            "  [first;first;second];;",
+            "  [first;first;outer;second];;",
+            "let candle_flyspeck_stratum_action_ledger_deltas =",
+            "  [[first];[first];[outer;nested];[second]];;",
             exact_transition_source,
             "loaded_files := [first];;",
             'candle_flyspeck_stratum_commit_action 0 first "ACTION0";;',
             'candle_flyspeck_stratum_commit_action 1 first "ACTION1";;',
+            "loaded_files := outer :: nested :: !loaded_files;;",
+            'candle_flyspeck_stratum_commit_action 2 outer "ACTION2";;',
             "(try",
-            '   candle_flyspeck_stratum_commit_action 2 second "ACTION2"',
+            '   candle_flyspeck_stratum_commit_action 3 second "ACTION3"',
             " with Failure message ->",
             '   print_endline ("MISMATCH " ^ message));;',
             "",
@@ -194,14 +221,15 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertEqual(result.stdout.splitlines(), [
             "ACTION0 load",
             "ACTION1 skip-ledger",
+            "ACTION2 load",
             "MISMATCH Flyspeck action was skipped by the physical loader "
             "cache without its logical identity",
         ])
 
     def test_log_rejects_duplicate_or_late_marker(self) -> None:
         boundary = "00-test-through-001"
-        marker0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load"
-        marker1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
+        marker0 = self.action_marker(0, "load")
+        marker1 = self.action_marker(1, "load")
         final = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
         preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
         with self.assertRaisesRegex(subject.ContractError, "duplicate action 0 marker"):
@@ -218,11 +246,11 @@ class StratumRuntimeTests(unittest.TestCase):
     def test_log_rejects_loader_cache_skip_and_unknown_action_outcomes(self) -> None:
         boundary = "00-test-through-001"
         preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
-        marker1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
+        marker1 = self.action_marker(1, "load")
         final = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
         for outcome in ("skip-loader-cache", "forged"):
             marker0 = (
-                f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} {outcome}"
+                self.action_marker(0, outcome)
             )
             with self.assertRaisesRegex(
                 subject.ContractError, f"unsupported action 0 outcome: {outcome}",
@@ -236,8 +264,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "00-test-through-001"
         log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load",
+            self.action_marker(0, "load"),
+            self.action_marker(1, "load"),
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
             "EXCEPTION: injected",
         ])
@@ -248,8 +276,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "00-test-through-001"
         quoted = "\n".join([
             f'source "{subject.PREFLIGHT_MARKER} {self.nonce}"',
-            f'print_endline "{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load";;',
-            f'prefix {subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load',
+            f'print_endline "{self.action_marker(0, "load")}";;',
+            f'prefix {self.action_marker(1, "load")}',
             f'quoted {subject.SUCCESS_MARKER} {self.nonce} {boundary} 2',
         ])
         with self.assertRaisesRegex(subject.ContractError, "stratum preflight marker"):
@@ -300,6 +328,12 @@ class StratumRuntimeTests(unittest.TestCase):
             ], "observed-outer-source",
         )
         self.assertEqual(
+            records[
+                "flyspeck:text_formalization/general/update_database_400.ml"
+            ]["classification"],
+            "observed-nested-source",
+        )
+        self.assertEqual(
             records[subject.STRICTBUILD_SOURCE_KEY]["classification"],
             "expected-nested-source",
         )
@@ -332,6 +366,9 @@ class StratumRuntimeTests(unittest.TestCase):
             "flyspeck:text_formalization/general/debug.hl",
             "flyspeck:text_formalization/general/state_manager.hl",
         }
+        deltas = subject.derive_action_ledger_delta_keys(manifest, 296)
+        self.assertTrue(all(len(delta) == 1 for delta in deltas[:295]))
+        self.assertEqual(deltas[295], [serialization, selected_branch])
 
         def keys(count: int, final: bool = False) -> set[str]:
             return {
@@ -355,6 +392,16 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertIn(selected_branch, post_295)
         self.assertNotIn(unselected, post_295)
         self.assertNotIn(subject.STRICTBUILD_SERIALIZATION_OPT_IN_KEY, post_295)
+        post_295_records = {
+            record["key"]: record
+            for record in subject.derive_logical_source_closure(
+                manifest, 296, False, self.generated_control_records,
+            )["records"]
+        }
+        self.assertEqual(
+            post_295_records[selected_branch]["classification"],
+            "observed-nested-source",
+        )
         final = keys(297, True)
         self.assertIn(subject.SOURCE_CLOSURE_FINAL_KEY, final)
         self.assertIn(serialization, final)
@@ -380,7 +427,7 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertFalse(observed["physical_loader_cache_trace"])
         self.assertFalse(observed["self_certifies_nested_execution"])
         self.assertEqual(observed["execution_observation"],
-                         "manifest-derived-expected-only")
+                         subject.SOURCE_CLOSURE_OBSERVATION)
 
         invalid_cases = (
             ([success, records[1], terminal], "logical source record 0"),
@@ -397,7 +444,8 @@ class StratumRuntimeTests(unittest.TestCase):
                         boundary, self.nonce,
                     )
 
-        forged = records[0].replace("candle:a.ml".encode().hex(),
+        forged = records[0].replace(
+                                    "flyspeck:../formal_lp/b.ml".encode().hex(),
                                     "candle:extra.ml".encode().hex())
         with self.assertRaisesRegex(
             subject.ContractError, "unexpected logical source closure record",
@@ -409,7 +457,13 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_evidence_v3_artifact_validator_rejects_schema2_and_partial_upgrade(self) -> None:
         expected_actions = [
-            {"index": index, "source_sha256": action["source_sha256"]}
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
             for index, action in enumerate(self.actions)
         ]
         attempt = {
@@ -427,6 +481,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "physical_loader_cache_skip_allowed": False,
                 "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
                 "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
+                "selected_loadt_ledger_delta_included": True,
                 "physical_loader_cache_trace_included": False,
                 "s2_s3_approval_included": False,
             },
@@ -460,8 +515,13 @@ class StratumRuntimeTests(unittest.TestCase):
                 "status": "expected-closure-emitted-unapproved",
             },
             "action_events": [
-                {"index": 0, "source_sha256": "1" * 64, "outcome": "load"},
+                {"index": 0, "source_sha256": "1" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[0]["logical_source_delta_sha256"],
+                 "outcome": "load"},
                 {"index": 1, "source_sha256": "2" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[1]["logical_source_delta_sha256"],
                  "outcome": "skip-ledger"},
             ],
             "semantic_fingerprints": {
@@ -479,7 +539,13 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_evidence_v3_completed_receipt_rejects_forged_state_flips(self) -> None:
         expected_actions = [
-            {"index": index, "source_sha256": action["source_sha256"]}
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
             for index, action in enumerate(self.actions)
         ]
         attempt = {
@@ -497,6 +563,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "physical_loader_cache_skip_allowed": False,
                 "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
                 "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
+                "selected_loadt_ledger_delta_included": True,
                 "physical_loader_cache_trace_included": False,
                 "s2_s3_approval_included": False,
             },
@@ -520,8 +587,13 @@ class StratumRuntimeTests(unittest.TestCase):
                 "status": "expected-closure-emitted-unapproved",
             },
             "action_events": [
-                {"index": 0, "source_sha256": "1" * 64, "outcome": "load"},
+                {"index": 0, "source_sha256": "1" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[0]["logical_source_delta_sha256"],
+                 "outcome": "load"},
                 {"index": 1, "source_sha256": "2" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[1]["logical_source_delta_sha256"],
                  "outcome": "skip-ledger"},
             ],
             "semantic_fingerprints": {
@@ -654,8 +726,8 @@ class StratumRuntimeTests(unittest.TestCase):
         theorem_names = subject.fingerprint_requests(boundary)
         source_log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
-            f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load",
-            f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load",
+            self.action_marker(0, "load"),
+            self.action_marker(1, "load"),
             f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2",
         ])
         with self.assertRaisesRegex(subject.ContractError, "fingerprint success marker"):
@@ -672,8 +744,8 @@ class StratumRuntimeTests(unittest.TestCase):
         boundary = "05-lp_support-through-184"
         theorem_names = subject.fingerprint_requests(boundary)
         preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
-        action0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64} load"
-        action1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64} load"
+        action0 = self.action_marker(0, "load")
+        action1 = self.action_marker(1, "load")
         success = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
         terminal = (
             f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} {boundary} 1"
@@ -719,7 +791,14 @@ class StratumRuntimeTests(unittest.TestCase):
             "generated_root": Path("/generated"),
             "boundary": {"boundary_id": "05-lp_support-through-184"},
             "actions": [
-                {"identity_basename": "a.hl", "identity_md5": "1" * 32},
+                {
+                    "identity_basename": "a.hl",
+                    "identity_md5": "1" * 32,
+                    "logical_source_delta": [{
+                        "identity_basename": "a.hl",
+                        "identity_md5": "1" * 32,
+                    }],
+                },
             ],
             "attempt_nonce": self.nonce,
             "normalized_runtime": [
@@ -749,6 +828,9 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertEqual(certificate_block.count("/inputs/easy_"), 39)
         self.assertNotIn("/inputs/other_", certificate_block)
         self.assertIn("let candle_flyspeck_stratum_normalization_count = 18;;", source)
+        self.assertIn(
+            "let candle_flyspeck_stratum_action_ledger_deltas = [", source,
+        )
 
     def test_snapshot_is_complete_deduplicated_and_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

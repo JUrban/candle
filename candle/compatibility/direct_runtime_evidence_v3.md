@@ -8,7 +8,9 @@ emitted only by schema 3.
 ## Action outcomes
 
 Every completed outer action emits its exact index, authenticated original
-source SHA-256, and one outcome:
+source SHA-256, the canonical SHA-256 of its exact logical-ledger delta, and one
+outcome.  The delta is written in final list-prefix order: normally `[outer]`;
+for action 295 it is exactly `[serialization, update_database_400]`.
 
 - `load`: the original logical identity was absent and became the unique new
   head of the logical ledger; or
@@ -20,12 +22,22 @@ meant that the private physical-path cache skipped a file while its original
 logical identity was absent, so it could not establish the required source
 execution.
 
+The CakeML boot dependency `0e97a1ab8` keeps pending logical identities on a
+LIFO stack parallel to nested source evaluation.  Thus the selected nested
+`#flyspeck_loadt "general/update_database_400.ml"` commits first and the outer
+serialization identity commits second, producing the declared final prefix.
+Evaluator failure clears the whole pending stack.  The setup transition then
+accepts only the complete authenticated prefix; a reordered, missing, extra,
+or skipped nested delta fails before its action marker.
+
 `test_exact_setup_action_transition_runs_in_compiled_ocaml_fixture` extracts
 the exact production transition definition from `flyspeck_stratum_setup.ml`,
-compiles it with pinned OCaml 4.14.1, and exercises `load`, `skip-ledger`, and
-the physical-cache/logical-ledger mismatch failure.  This is an exact unit
-fixture for the transition function, not a claim that a linked CakeML run has
-yet emitted nested loader events.
+compiles it with pinned OCaml 4.14.1, and exercises `load`, `skip-ledger`, the
+two-record serialization/update400 prefix, and the physical-cache/logical-
+ledger mismatch failure.  CakeML's separate exact-source fixture compiles the
+production identity-stack functions and proves nested push/commit order,
+complete drain, and underflow rejection.  These are exact unit fixtures; a new
+linked CakeML build and full attempt are still required for runtime evidence.
 
 ## Selected logical source closure
 
@@ -49,7 +61,7 @@ and its pinned OCaml 4.14.1 branch selects `update_database_400.ml`, never
 The executing `flyspeck_loader.ml` is excluded because the stratum runner uses
 `flyspeck_stratum_setup.ml`, not that full-loader entry point.  Records use the
 declared `canonical-source-key-lexicographic-v1` order and bind the source key,
-one of `observed-outer-source`, `expected-nested-source`,
+one of `observed-outer-source`, `observed-nested-source`, `expected-nested-source`,
 `generated-executed-control`, or `derivation-only-input`, original
 SHA-256/MD5, and optional normalization id and output SHA-256/MD5.  The
 instrumented cumulative prefix, not `flyspeck_full_build.ml`, is executed; its
@@ -58,15 +70,16 @@ compiled process emits every record in that order followed by a nonce- and
 boundary-bound terminal marker.  The host reparses the exact records and
 independently recomputes their canonical SHA-256.
 
-This is a **manifest-derived logical reachability closure**, justified by the
-authenticated source graph and successful outer-action ledger.  It is not a
-loader-owned observation of nested source execution and cannot self-certify
-that execution.  The verified boot's ordinary `needs` / `loads` cache is a
-closure-local string list; only the custom outer actions update the exported
-logical-identity ledger.  Closing this hard promotion blocker therefore
-requires a newly built verified boot to export nonce-bound, authenticated
-nested load events (or equivalent exact evidence).  Re-emitting this expected
-closure is deliberately marked nonpromotable until then.
+This is a **manifest-derived logical reachability closure** with ledger
+observation for outer actions and selected nested `#flyspeck_loadt` actions.
+In particular, `update_database_400.ml` becomes `observed-nested-source` only
+after action 295.  Ordinary nested `needs` / `loads` remain expected graph
+reachability: their private physical cache does not export logical identities.
+The closure therefore still cannot self-certify complete nested execution and
+remains deliberately nonpromotable.  Closing that hard blocker requires a
+newly built verified boot to export nonce-bound authenticated events for every
+selected nested load (or equivalent exact evidence), not merely the selected
+`loadt` subset.
 
 That future trace also needs a single lexical-to-canonical identity resolver.
 The first `..` outer target occurs at action 126

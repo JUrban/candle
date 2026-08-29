@@ -1,7 +1,7 @@
 (* Loaded only after every action and its exact loader-ledger transition check
    in the selected cumulative prefix has returned successfully. *)
 
-if !Cakeml.pendingLoadedSourceId <> None then
+if !Cakeml.pendingLoadedSourceIds <> [] then
   failwith "pending Flyspeck source identity at stratum boundary";;
 
 if List.length !candle_flyspeck_stratum_action_events <>

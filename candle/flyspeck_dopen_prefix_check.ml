@@ -14,7 +14,7 @@ if candle_flyspeck_dopen_identity_count
      candle_flyspeck_dopen_parser_identity <> 1 ||
    candle_flyspeck_dopen_identity_count
      candle_flyspeck_dopen_debug_identity <> 1 ||
-   !Cakeml.pendingLoadedSourceId <> None then
+   !Cakeml.pendingLoadedSourceIds <> [] then
   failwith "Dopen prefix loader action commit mismatch";;
 
 if Parser_verbose.string_of_lexcodel [Ident "x"] <> "x   " ||

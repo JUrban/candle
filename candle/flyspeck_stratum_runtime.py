@@ -92,10 +92,14 @@ ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
 ACTION_OUTCOMES = ("load", "skip-ledger")
 SOURCE_CLOSURE_PREFIX = "CANDLE_FLYSPECK_LOGICAL_SOURCE_V3"
 SOURCE_CLOSURE_SUCCESS_MARKER = "CANDLE_FLYSPECK_LOGICAL_SOURCE_CLOSURE_V3_OK"
-SOURCE_CLOSURE_POLICY = "manifest-selected-nested-logical-reachability-v2"
+SOURCE_CLOSURE_POLICY = "manifest-selected-nested-logical-reachability-v3"
 SOURCE_CLOSURE_ORDER = "canonical-source-key-lexicographic-v1"
+SOURCE_CLOSURE_OBSERVATION = (
+    "outer-and-selected-loadt-ledger-observed-other-nested-expected"
+)
 SOURCE_CLOSURE_CLASSIFICATIONS = (
     "observed-outer-source",
+    "observed-nested-source",
     "expected-nested-source",
     "generated-executed-control",
     "derivation-only-input",
@@ -855,13 +859,35 @@ def validate_plan(
     prefix_path = plan_root / prefix_record["path"]
     validate_file(prefix_path, prefix_record, "selected cumulative prefix")
 
+    action_ledger_delta_keys = derive_action_ledger_delta_keys(manifest, count)
     action_runtime = []
-    for action in actions[:count]:
+    for action, delta_keys in zip(
+        actions[:count], action_ledger_delta_keys, strict=True,
+    ):
         source = source_by_key[action["selected_source"]]
+        require(delta_keys[0] == action["selected_source"],
+                f"action ledger outer source mismatch: {action['index']}")
+        ledger_delta = []
+        for delta_index, key in enumerate(delta_keys):
+            delta_source = source_by_key.get(key)
+            require(isinstance(delta_source, dict),
+                    f"unbound action ledger source: {action['index']}:{key}")
+            ledger_delta.append({
+                "key": key,
+                "classification": (
+                    "observed-outer-source" if delta_index == 0 else
+                    "observed-nested-source"
+                ),
+                "source_sha256": delta_source["sha256"],
+                "identity_basename": Path(delta_source["path"]).name,
+                "identity_md5": delta_source["md5"],
+            })
         action_runtime.append({
             **action,
             "identity_basename": Path(source["path"]).name,
             "identity_md5": source["md5"],
+            "logical_source_delta": ledger_delta,
+            "logical_source_delta_sha256": canonical_sha256(ledger_delta),
         })
     linked_outputs = linked_record.get("outputs")
     require(isinstance(linked_outputs, dict) and
@@ -926,7 +952,8 @@ def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]], nonce: str) 
             require(line.rstrip("\r\n") == expected, f"prefix directive drift: {action_index}")
             marker = (
                 f"{ACTION_PREFIX} {nonce} {action_index:03d} "
-                f"{actions[action_index]['source_sha256']}"
+                f"{actions[action_index]['source_sha256']} "
+                f"{actions[action_index]['logical_source_delta_sha256']}"
             )
             identity = (
                 f"({ocaml_string(actions[action_index]['identity_basename'])},"
@@ -941,53 +968,16 @@ def instrument_prefix(prefix: bytes, actions: list[dict[str, Any]], nonce: str) 
     return "".join(output).encode()
 
 
-def derive_logical_source_closure(
-    manifest: dict[str, Any], completed_action_count: int, final_boundary: bool,
-    generated_control_records: dict[str, dict[str, Any]],
+def selected_execution_edges(
+    manifest: dict[str, Any], nodes: dict[str, Any],
 ) -> dict[str, Any]:
-    """Derive the exact classified expected closure from authenticated inputs."""
-    nodes = manifest.get("source_nodes")
-    bootstrap_roots = manifest.get("bootstrap_roots")
-    action_roots = manifest.get("build_sequence_roots")
-    require(isinstance(nodes, dict) and nodes, "missing manifest source nodes")
-    require(isinstance(bootstrap_roots, list) and bootstrap_roots,
-            "missing manifest bootstrap roots")
-    require(isinstance(action_roots, list), "missing manifest action roots")
-    require(0 <= completed_action_count <= len(action_roots),
-            "invalid closure action count")
-
+    """Authenticate normalization-selected edges that differ from raw syntax."""
     normalization_contract = manifest.get("source_normalization_contract")
     require(isinstance(normalization_contract, dict),
             "missing source normalization contract")
     normalization_entries = normalization_contract.get("entries")
     require(isinstance(normalization_entries, list),
             "missing source normalization entries")
-
-    generated_dependencies = manifest.get("generated_dependency_contracts")
-    require(isinstance(generated_dependencies, list),
-            "missing generated dependency contracts")
-    insulate_dependencies = [
-        entry for entry in generated_dependencies
-        if isinstance(entry, dict) and
-        entry.get("literal") == "candle/build/insulate.ml"
-    ]
-    require(len(insulate_dependencies) == 1 and
-            insulate_dependencies[0].get("source") == "candle:hol_lib.ml" and
-            insulate_dependencies[0].get("kind") == "loads" and
-            insulate_dependencies[0].get("line") == 23 and
-            insulate_dependencies[0].get("status") == "generated-contract" and
-            insulate_dependencies[0].get("generation") == {
-                "generator": "candle/insulate.py",
-                "recipe": "build-instructions.sh",
-                "runtime_input": "candle/build/types.txt",
-            }, "malformed insulate generated dependency contract")
-    digest_contract = manifest.get("source_digest_contract")
-    require(isinstance(digest_contract, dict) and
-            digest_contract.get("generated_source") ==
-            "candle:candle/flyspeck_source_digests.ml" and
-            digest_contract.get("preload_authentication") ==
-            "loader checks generated_source_md5 before executing the program",
-            "malformed source-digest generated control contract")
 
     def exact_normalization(source_key: str, entry_id: str) -> dict[str, Any]:
         matches = [
@@ -1031,14 +1021,11 @@ def derive_logical_source_closure(
             disposition.get("serialization_branch_action") ==
             "PROJECT-MODULE-S3-SET-MAKE-001",
             "malformed serialization selected branch contract")
-    selected_serialization_branch = branch.get("selected")
-    unselected_serialization_branch = branch.get("unselected")
-    require(isinstance(selected_serialization_branch, str) and
-            isinstance(unselected_serialization_branch, str) and
-            selected_serialization_branch in nodes and
-            unselected_serialization_branch in nodes and
-            disposition.get("unselected_original_source") ==
-            unselected_serialization_branch,
+    selected = branch.get("selected")
+    unselected = branch.get("unselected")
+    require(isinstance(selected, str) and isinstance(unselected, str) and
+            selected in nodes and unselected in nodes and
+            disposition.get("unselected_original_source") == unselected,
             "unbound serialization branch selection")
     serialization_normalization = exact_normalization(
         SERIALIZATION_SOURCE_KEY,
@@ -1049,17 +1036,98 @@ def derive_logical_source_closure(
         if isinstance(operation, dict) and
         operation.get("id") == SERIALIZATION_STATIC_BRANCH_OPERATION
     ]
+    expected_directive = (
+        '#flyspeck_loadt "' +
+        selected.split(":", 1)[1].removeprefix("text_formalization/") +
+        '";;'
+    )
     require(len(branch_operations) == 1 and
-            selected_serialization_branch.split(":", 1)[1].removeprefix(
-                "text_formalization/"
-            ) in str(branch_operations[0].get("after", "")) and
-            unselected_serialization_branch.split(":", 1)[1].removeprefix(
-                "text_formalization/"
-            ) not in str(branch_operations[0].get("after", "")),
+            branch_operations[0].get("after") == expected_directive and
+            unselected.split(":", 1)[1].removeprefix("text_formalization/")
+            not in expected_directive,
             "serialization static branch operation mismatch")
+    return {
+        "serialization_selected": selected,
+        "serialization_unselected": unselected,
+        "nested_loadt_by_outer": {SERIALIZATION_SOURCE_KEY: [selected]},
+    }
+
+
+def derive_action_ledger_delta_keys(
+    manifest: dict[str, Any], completed_action_count: int,
+) -> list[list[str]]:
+    """Return exact post-action logical-ledger prefixes in head-first order."""
+    nodes = manifest.get("source_nodes")
+    action_roots = manifest.get("build_sequence_roots")
+    require(isinstance(nodes, dict) and nodes and
+            isinstance(action_roots, list) and
+            0 <= completed_action_count <= len(action_roots),
+            "malformed action-ledger inputs")
+    execution = selected_execution_edges(manifest, nodes)
+    nested_by_outer = execution["nested_loadt_by_outer"]
+    deltas: list[list[str]] = []
+    for index, root in enumerate(action_roots[:completed_action_count]):
+        require(isinstance(root, dict) and root.get("index") == index and
+                root.get("status") == "resolved" and
+                isinstance(root.get("selected"), str) and
+                root["selected"] in nodes,
+                f"malformed selected action root: {index}")
+        outer = root["selected"]
+        nested = nested_by_outer.get(outer, [])
+        require(all(key in nodes for key in nested),
+                f"unbound nested action-ledger source: {index}")
+        deltas.append([outer, *nested])
+    return deltas
+
+
+def derive_logical_source_closure(
+    manifest: dict[str, Any], completed_action_count: int, final_boundary: bool,
+    generated_control_records: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Derive the exact classified expected closure from authenticated inputs."""
+    nodes = manifest.get("source_nodes")
+    bootstrap_roots = manifest.get("bootstrap_roots")
+    action_roots = manifest.get("build_sequence_roots")
+    require(isinstance(nodes, dict) and nodes, "missing manifest source nodes")
+    require(isinstance(bootstrap_roots, list) and bootstrap_roots,
+            "missing manifest bootstrap roots")
+    require(isinstance(action_roots, list), "missing manifest action roots")
+    require(0 <= completed_action_count <= len(action_roots),
+            "invalid closure action count")
+
+    execution = selected_execution_edges(manifest, nodes)
+    selected_serialization_branch = execution["serialization_selected"]
+    unselected_serialization_branch = execution["serialization_unselected"]
+
+    generated_dependencies = manifest.get("generated_dependency_contracts")
+    require(isinstance(generated_dependencies, list),
+            "missing generated dependency contracts")
+    insulate_dependencies = [
+        entry for entry in generated_dependencies
+        if isinstance(entry, dict) and
+        entry.get("literal") == "candle/build/insulate.ml"
+    ]
+    require(len(insulate_dependencies) == 1 and
+            insulate_dependencies[0].get("source") == "candle:hol_lib.ml" and
+            insulate_dependencies[0].get("kind") == "loads" and
+            insulate_dependencies[0].get("line") == 23 and
+            insulate_dependencies[0].get("status") == "generated-contract" and
+            insulate_dependencies[0].get("generation") == {
+                "generator": "candle/insulate.py",
+                "recipe": "build-instructions.sh",
+                "runtime_input": "candle/build/types.txt",
+            }, "malformed insulate generated dependency contract")
+    digest_contract = manifest.get("source_digest_contract")
+    require(isinstance(digest_contract, dict) and
+            digest_contract.get("generated_source") ==
+            "candle:candle/flyspeck_source_digests.ml" and
+            digest_contract.get("preload_authentication") ==
+            "loader checks generated_source_md5 before executing the program",
+            "malformed source-digest generated control contract")
 
     selected: set[str] = set()
     observed_outer_sources: set[str] = set()
+    observed_nested_sources: set[str] = set()
 
     def visit(key: str) -> None:
         require(isinstance(key, str) and key in nodes,
@@ -1109,13 +1177,13 @@ def derive_logical_source_closure(
                 visit(target)
 
     roots = list(bootstrap_roots)
-    for index, root in enumerate(action_roots[:completed_action_count]):
-        require(isinstance(root, dict) and root.get("index") == index and
-                root.get("status") == "resolved" and
-                isinstance(root.get("selected"), str),
-                f"malformed selected action root: {index}")
-        roots.append(root["selected"])
-        observed_outer_sources.add(root["selected"])
+    action_ledger_deltas = derive_action_ledger_delta_keys(
+        manifest, completed_action_count,
+    )
+    for delta in action_ledger_deltas:
+        roots.append(delta[0])
+        observed_outer_sources.add(delta[0])
+        observed_nested_sources.update(delta[1:])
     for root in roots:
         visit(root)
 
@@ -1164,6 +1232,8 @@ def derive_logical_source_closure(
             classification = "derivation-only-input"
         elif key in observed_outer_sources:
             classification = "observed-outer-source"
+        elif key in observed_nested_sources:
+            classification = "observed-nested-source"
         else:
             classification = "expected-nested-source"
         record: dict[str, Any] = {
@@ -1202,7 +1272,7 @@ def derive_logical_source_closure(
         "ordered_record_sha256": canonical_sha256(records),
         "records": records,
         "physical_loader_cache_trace": False,
-        "execution_observation": "manifest-derived-expected-only",
+        "execution_observation": SOURCE_CLOSURE_OBSERVATION,
         "self_certifies_nested_execution": False,
         "s2_s3_evidence": False,
     }
@@ -1343,6 +1413,18 @@ def write_config(
         )
     lines.extend([
         "];;",
+        "let candle_flyspeck_stratum_action_ledger_deltas = [",
+    ])
+    for action in prepared["actions"]:
+        lines.append("  [")
+        for record in action["logical_source_delta"]:
+            lines.append(
+                f"    ({string(record['identity_basename'])},"
+                f"{string(record['identity_md5'])});"
+            )
+        lines.append("  ];")
+    lines.extend([
+        "];;",
         "",
     ])
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -1413,6 +1495,7 @@ def validate_log(
         prefix = (
             f"{ACTION_PREFIX} {nonce} {index:03d} "
             f"{action['source_sha256']} "
+            f"{action['logical_source_delta_sha256']} "
         )
         matches = [
             (position, line[len(prefix):])
@@ -1429,6 +1512,8 @@ def validate_log(
         action_events.append({
             "index": index,
             "source_sha256": action["source_sha256"],
+            "logical_source_delta_sha256":
+                action["logical_source_delta_sha256"],
             "outcome": outcome,
         })
         positions.append(position)
@@ -1484,8 +1569,7 @@ def validate_logical_source_closure(
             expected.get("policy") == SOURCE_CLOSURE_POLICY and
             expected.get("order") == SOURCE_CLOSURE_ORDER and
             expected.get("physical_loader_cache_trace") is False and
-            expected.get("execution_observation") ==
-            "manifest-derived-expected-only" and
+            expected.get("execution_observation") == SOURCE_CLOSURE_OBSERVATION and
             expected.get("self_certifies_nested_execution") is False and
             expected.get("s2_s3_evidence") is False,
             "unsupported expected logical source closure")
@@ -1552,6 +1636,7 @@ def validate_direct_evidence_v3_artifact(
             SOURCE_CLOSURE_POLICY and
             contract.get("logical_source_closure_order") ==
             SOURCE_CLOSURE_ORDER and
+            contract.get("selected_loadt_ledger_delta_included") is True and
             contract.get("physical_loader_cache_trace_included") is False and
             contract.get("s2_s3_approval_included") is False,
             "malformed direct runtime evidence-v3 contract")
@@ -1570,11 +1655,35 @@ def validate_direct_evidence_v3_artifact(
             "malformed authenticated action-event projection")
     for index, action in enumerate(expected_actions):
         require(isinstance(action, dict) and set(action) == {
-                    "index", "source_sha256",
+                    "index", "source_sha256", "logical_source_delta",
+                    "logical_source_delta_sha256",
                 } and action.get("index") == index and
                 re.fullmatch(r"[0-9a-f]{64}",
                              str(action.get("source_sha256"))) is not None,
                 f"malformed authenticated action-event projection: {index}")
+        delta = action["logical_source_delta"]
+        require(isinstance(delta, list) and bool(delta) and
+                action["logical_source_delta_sha256"] == canonical_sha256(delta),
+                f"malformed authenticated logical-source delta: {index}")
+        for delta_index, record in enumerate(delta):
+            require(isinstance(record, dict) and set(record) == {
+                        "key", "classification", "source_sha256",
+                        "identity_basename", "identity_md5",
+                    } and isinstance(record.get("key"), str) and
+                    bool(record["key"]) and
+                    record.get("classification") == (
+                        "observed-outer-source" if delta_index == 0 else
+                        "observed-nested-source"
+                    ) and
+                    re.fullmatch(r"[0-9a-f]{64}",
+                                 str(record.get("source_sha256"))) is not None and
+                    isinstance(record.get("identity_basename"), str) and
+                    bool(record["identity_basename"]) and
+                    re.fullmatch(r"[0-9a-f]{32}",
+                                 str(record.get("identity_md5"))) is not None,
+                    f"malformed logical-source delta record: {index}:{delta_index}")
+        require(delta[0]["source_sha256"] == action["source_sha256"],
+                f"logical-source delta outer digest mismatch: {index}")
 
     expected = artifact.get("expected_logical_source_closure")
     expected_fields = {
@@ -1592,8 +1701,7 @@ def validate_direct_evidence_v3_artifact(
             expected.get("final_target_selected") ==
             boundary_id.startswith("07-") and
             expected.get("physical_loader_cache_trace") is False and
-            expected.get("execution_observation") ==
-            "manifest-derived-expected-only" and
+            expected.get("execution_observation") == SOURCE_CLOSURE_OBSERVATION and
             expected.get("self_certifies_nested_execution") is False and
             expected.get("s2_s3_evidence") is False,
             "malformed direct runtime expected closure")
@@ -1633,6 +1741,18 @@ def validate_direct_evidence_v3_artifact(
                     is not None
                 ), f"malformed closure normalization record: {index}")
         previous_key = record["key"]
+    closure_by_key = {record["key"]: record for record in expected_records}
+    for action in expected_actions:
+        for delta_record in action["logical_source_delta"]:
+            closure_record = closure_by_key.get(delta_record["key"])
+            require(isinstance(closure_record, dict) and
+                    closure_record["classification"] ==
+                    delta_record["classification"] and
+                    closure_record["source_sha256"] ==
+                    delta_record["source_sha256"] and
+                    closure_record["source_md5"] ==
+                    delta_record["identity_md5"],
+                    "action logical-source delta differs from expected closure")
     if not receipt:
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
@@ -1665,10 +1785,13 @@ def validate_direct_evidence_v3_artifact(
             events, expected_actions, strict=True,
         )):
             require(isinstance(event, dict) and set(event) == {
-                        "index", "source_sha256", "outcome",
+                        "index", "source_sha256",
+                        "logical_source_delta_sha256", "outcome",
                     } and event.get("index") == index and
                     event.get("source_sha256") ==
                     expected_action["source_sha256"] and
+                    event.get("logical_source_delta_sha256") ==
+                    expected_action["logical_source_delta_sha256"] and
                     event.get("outcome") in ACTION_OUTCOMES,
                     f"receipt action event differs from authenticated action: {index}")
 
@@ -2571,6 +2694,9 @@ def _run_attempt_impl(
         {
             "index": index,
             "source_sha256": action["source_sha256"],
+            "logical_source_delta": action["logical_source_delta"],
+            "logical_source_delta_sha256":
+                action["logical_source_delta_sha256"],
         }
         for index, action in enumerate(prepared["actions"])
     ]
@@ -2608,6 +2734,7 @@ def _run_attempt_impl(
             "physical_loader_cache_skip_allowed": False,
             "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
             "logical_source_closure_order": SOURCE_CLOSURE_ORDER,
+            "selected_loadt_ledger_delta_included": True,
             "physical_loader_cache_trace_included": False,
             "s2_s3_approval_included": False,
         },
