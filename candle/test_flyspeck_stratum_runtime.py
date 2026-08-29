@@ -754,6 +754,27 @@ class StratumRuntimeTests(unittest.TestCase):
                     root / "attempt", 1, 1, 1, 1,
                 )
 
+    def test_lp_certificate_runtime_uses_contract_order_not_source_order(self) -> None:
+        expected = [f"easy_{index}.dat" for index in range(1, 39)] + [
+            "hard_7.dat",
+        ]
+        source_order = [
+            {
+                "class": "lp-certificate-prepared" if name == "hard_7.dat"
+                else "lp-certificate",
+                "relative": f"formal_lp/glpk/binary/{name}",
+            }
+            for name in reversed(expected)
+        ]
+        ordered = subject.order_lp_certificate_runtime(source_order, expected)
+        self.assertEqual(
+            [Path(item["relative"]).name for item in ordered], expected,
+        )
+        source_order[-1]["relative"] = "formal_lp/glpk/binary/unexpected.dat"
+        with self.assertRaisesRegex(subject.ContractError,
+                                    "certificate basename set mismatch"):
+            subject.order_lp_certificate_runtime(source_order, expected)
+
     def test_child_resource_limiter_installs_all_three_limits(self) -> None:
         cpu_seconds = 17
         address_space = 2 * subject.GIB

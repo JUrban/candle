@@ -517,6 +517,30 @@ def resolve_source(binding: dict[str, Any], candle_root: Path, flyspeck_root: Pa
     return root / binding["path"]
 
 
+def order_lp_certificate_runtime(
+    generated_runtime: list[dict[str, Any]],
+    expected_basenames: Any,
+) -> list[dict[str, Any]]:
+    require(
+        isinstance(expected_basenames, list)
+        and len(expected_basenames) == 39
+        and all(isinstance(name, str) and name for name in expected_basenames)
+        and len(set(expected_basenames)) == len(expected_basenames),
+        "invalid LP certificate basename contract",
+    )
+    certificate_by_basename: dict[str, dict[str, Any]] = {}
+    for item in generated_runtime:
+        if item["class"] not in ("lp-certificate", "lp-certificate-prepared"):
+            continue
+        basename = Path(item["relative"]).name
+        require(basename not in certificate_by_basename,
+                f"duplicate LP certificate basename: {basename}")
+        certificate_by_basename[basename] = item
+    require(set(certificate_by_basename) == set(expected_basenames),
+            "LP certificate basename set mismatch")
+    return [certificate_by_basename[name] for name in expected_basenames]
+
+
 def validate_plan(
     candle_root: Path,
     linked_record: dict[str, Any],
@@ -733,19 +757,9 @@ def validate_plan(
     expected_certificate_basenames = manifest["lp_archive_preparation_contract"][
         "runtime_certificate_basenames"
     ]
-    certificate_by_basename: dict[str, dict[str, str]] = {}
-    for item in generated_runtime:
-        if item["class"] not in ("lp-certificate", "lp-certificate-prepared"):
-            continue
-        basename = Path(item["relative"]).name
-        require(basename not in certificate_by_basename,
-                f"duplicate LP certificate basename: {basename}")
-        certificate_by_basename[basename] = item
-    require(list(certificate_by_basename) == expected_certificate_basenames,
-            "LP certificate basename order/set mismatch")
-    lp_certificate_runtime = [
-        certificate_by_basename[basename] for basename in expected_certificate_basenames
-    ]
+    lp_certificate_runtime = order_lp_certificate_runtime(
+        generated_runtime, expected_certificate_basenames,
+    )
     require(len(lp_certificate_runtime) == 39, "LP certificate runtime count mismatch")
 
     process_records = manifest["static_library_contract"]["binding_evidence"]["unix.cma"][
