@@ -27,6 +27,13 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ])
 
     def setUp(self):
+        real_git = reference._git
+        self.git_patch = mock.patch.object(
+            reference, "_git",
+            side_effect=lambda root, *args:
+                reference.EXACT_SOURCE_REFERENCE_COMMIT
+                if args == ("rev-parse", "HEAD") else real_git(root, *args))
+        self.git_patch.start()
         collector_sha256 = reference._sha256(Path(reference.__file__))
         self.collector_patch = mock.patch.object(
             reference, "_collector_repository_pin", return_value={
@@ -41,6 +48,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
 
     def tearDown(self):
         self.collector_patch.stop()
+        self.git_patch.stop()
 
     def _fake_reference(self, directory, matching_source=True):
         root = Path(directory)
@@ -190,8 +198,26 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     "100/gcd", root, runtime, runtime_stublib, ocamlc,
                     ocamlfind, NONCE, source_mode="historical-original")
 
+    def test_manifest_exact_mode_rejects_reduced_candle_fork_head(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            with mock.patch.object(
+                    reference, "_git",
+                    side_effect=lambda _root, *args:
+                        "6ce6fc15ed6a399902757a294bc59c954ebbbd85"
+                        if args == ("rev-parse", "HEAD") else ""):
+                with self.assertRaisesRegex(
+                        reference.CollectionError, "exact reference HEAD"):
+                    reference.build_plan(
+                        "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                        ocamlfind, NONCE)
+
     def test_exact_three_delta_contract_matches_both_git_sides(self):
         contract = reference._load_source_contract()
+        self.assertEqual(
+            contract["exact_source_reference_commit"],
+            reference.EXACT_SOURCE_REFERENCE_COMMIT)
         self.assertEqual(len(contract["compatibility_deltas"]), 3)
         for delta in contract["compatibility_deltas"]:
             historical = subprocess.check_output([
@@ -210,13 +236,34 @@ class ReferenceFingerprintTest(unittest.TestCase):
             ])
             self.assertEqual(
                 hashlib.sha256(selected).hexdigest(), delta["selected_sha256"])
-        changed = subprocess.check_output([
-            "/usr/bin/git", "-C", str(reference.ROOT), "diff", "--name-only",
+        parents = subprocess.check_output([
+            "/usr/bin/git", "-C", str(reference.ROOT), "rev-list",
+            "--parents", "-n1", contract["exact_source_reference_commit"],
+        ], text=True).split()
+        self.assertEqual(parents, [
+            contract["exact_source_reference_commit"],
             contract["historical_upstream_commit"],
-            contract["exact_source_reference_commit"], "--", "100/*.ml",
+        ])
+        changed = subprocess.check_output([
+            "/usr/bin/git", "-C", str(reference.ROOT), "diff-tree",
+            "--no-commit-id", "--name-only", "-r",
+            contract["exact_source_reference_commit"],
         ], text=True).splitlines()
         self.assertEqual(set(changed), {
             delta["path"] for delta in contract["compatibility_deltas"]})
+
+    def test_rejected_candle_fork_reference_contract_fails(self):
+        contract = json.loads(reference.SOURCE_CONTRACT.read_text())
+        contract["exact_source_reference_commit"] = \
+            "6ce6fc15ed6a399902757a294bc59c954ebbbd85"
+        with tempfile.TemporaryDirectory() as directory:
+            source_contract = Path(directory) / "source-contract.json"
+            source_contract.write_text(json.dumps(contract) + "\n")
+            with mock.patch.object(
+                    reference, "SOURCE_CONTRACT", source_contract):
+                with self.assertRaisesRegex(
+                        reference.CollectionError, "unsupported exact"):
+                    reference._load_source_contract()
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {

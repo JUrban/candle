@@ -28,6 +28,8 @@ SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
 PLAN_SCHEMA = "candle-s1-reference-plan-v6"
 CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v6"
+HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
+EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 
 
 class CollectionError(Exception):
@@ -63,8 +65,10 @@ def _load_source_contract():
         raise CollectionError("malformed reference source contract")
     if (contract["schema"] != "candle-s1-reference-source-contract-v1" or
             contract["historical_upstream_commit"] !=
-            "3170739521d88d04580f61385c95b497690b7002"):
-        raise CollectionError("unsupported historical reference contract")
+            HISTORICAL_REFERENCE_COMMIT or
+            contract["exact_source_reference_commit"] !=
+            EXACT_SOURCE_REFERENCE_COMMIT):
+        raise CollectionError("unsupported exact reference source contract")
     deltas = contract["compatibility_deltas"]
     if not isinstance(deltas, list) or len(deltas) != 3:
         raise CollectionError("reference contract must contain three deltas")
@@ -255,8 +259,12 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     if source_mode not in {"manifest-exact", "historical-original"}:
         raise CollectionError("unsupported reference source mode")
     source_contract = _load_source_contract()
+    if (source_mode == "manifest-exact" and reference_head !=
+            EXACT_SOURCE_REFERENCE_COMMIT):
+        raise CollectionError(
+            "manifest-exact source mode requires exact reference HEAD")
     if (source_mode == "historical-original" and reference_head !=
-            source_contract["historical_upstream_commit"]):
+            HISTORICAL_REFERENCE_COMMIT):
         raise CollectionError("historical source mode requires exact upstream HEAD")
     delta_by_path = {
         delta["path"]: delta for delta in source_contract["compatibility_deltas"]}

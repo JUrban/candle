@@ -485,6 +485,19 @@ class Top100ManifestTest(unittest.TestCase):
                 self.assertEqual(
                     expected[targets[0]["name"]]["approval_sha256"],
                     artifact_sha256)
+                approval["reference_policy"][
+                    "exact_source_reference_commit"] = \
+                    "6ce6fc15ed6a399902757a294bc59c954ebbbd85"
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                with self.assertRaisesRegex(
+                        ValueError, "reference commits are not pinned"):
+                    top100_manifest._load_identity_approval(targets)
+                approval["reference_policy"][
+                    "exact_source_reference_commit"] = \
+                    top100_manifest.EXACT_SOURCE_REFERENCE_COMMIT
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
                 first_artifacts = approved_targets[0]["reference_runs"][0][
                     "artifacts"]
                 for artifact_name, replacement in (

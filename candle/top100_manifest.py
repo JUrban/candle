@@ -22,6 +22,7 @@ IDENTITY_APPROVAL = ROOT / "candle/top100_identity_approval.json"
 REFERENCE_SOURCE_CONTRACT = ROOT / "candle/reference_source_contracts.json"
 AUDITED_BASE_COMMIT = "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
+EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 NEEDS_RE = re.compile(r'^\s*needs\s*"([^"]+)"\s*;;', re.MULTILINE)
 LET_BINDING_RE = re.compile(
     r"^[ \t]*let[ \t]+([A-Za-z][A-Za-z0-9_']*)[ \t]*=", re.MULTILINE)
@@ -491,8 +492,8 @@ def _load_identity_approval(targets):
             "compatibility_deltas"}:
         raise ValueError("malformed identity reference policy")
     if (policy["historical_upstream_commit"] != HISTORICAL_REFERENCE_COMMIT or
-            not isinstance(policy["exact_source_reference_commit"], str) or
-            COMMIT_RE.fullmatch(policy["exact_source_reference_commit"]) is None):
+            policy["exact_source_reference_commit"] !=
+            EXACT_SOURCE_REFERENCE_COMMIT):
         raise ValueError("identity reference commits are not pinned")
     source_contract = json.loads(
         REFERENCE_SOURCE_CONTRACT.read_text(encoding="utf-8"),
@@ -502,6 +503,10 @@ def _load_identity_approval(targets):
             "exact_source_reference_commit", "compatibility_deltas"} or
             source_contract["schema"] !=
             "candle-s1-reference-source-contract-v1" or
+            source_contract["historical_upstream_commit"] !=
+            HISTORICAL_REFERENCE_COMMIT or
+            source_contract["exact_source_reference_commit"] !=
+            EXACT_SOURCE_REFERENCE_COMMIT or
             policy != {key: source_contract[key] for key in (
                 "historical_upstream_commit", "exact_source_reference_commit",
                 "compatibility_deltas")}):
