@@ -37,6 +37,25 @@ class ParserDiagnosticTests(unittest.TestCase):
             self.manifest, self.manifest_data, self.pilot,
         )
 
+    def publish_plan_tree(self, root, plan, inputs, host):
+        root.mkdir()
+        subject._write_tree(
+            root,
+            {
+                subject.PLAN_NAME: subject.json_bytes(plan),
+                subject.HOST_RECEIPT_NAME: subject.json_bytes(host),
+                **inputs,
+            },
+            subject.PLAN_ROOT_MODE,
+            subject.PLAN_FILE_MODE,
+        )
+
+    def make_tree_removable(self, root):
+        for current, directories, _files in os.walk(root):
+            Path(current).chmod(0o755)
+            for name in directories:
+                (Path(current) / name).chmod(0o755)
+
     def test_committed_pilot_is_current(self) -> None:
         self.assertEqual(
             self.pilot,
@@ -208,27 +227,66 @@ class ParserDiagnosticTests(unittest.TestCase):
 
     def test_protocol_accepts_bounded_parser_error(self) -> None:
         nonce = "c" * 64
+        stderr = b"parser detail\n"
+        digest = subject.hashlib.sha256(
+            subject.ERROR_DIGEST_DOMAIN + stderr,
+        ).hexdigest().encode()
         result = subprocess.CompletedProcess(
             [], subject.PARSER_ERROR_EXIT,
-            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + b"d" * 64 + b"\n",
-            b"parser detail\n",
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            stderr,
         )
         self.assertEqual(subject.parse_protocol_result(nonce, result), "parse-error")
 
+    def test_parser_error_requires_exit_code_exactly_65(self) -> None:
+        nonce = "d" * 64
+        stderr = b"parse error\n"
+        digest = subject.hashlib.sha256(
+            subject.ERROR_DIGEST_DOMAIN + stderr,
+        ).hexdigest().encode()
+        result = subprocess.CompletedProcess(
+            [], 1,
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            stderr,
+        )
+        with self.assertRaisesRegex(subject.ContractError, "violates protocol"):
+            subject.parse_protocol_result(nonce, result)
+
+    def test_parser_error_requires_canonical_utf8_stderr(self) -> None:
+        nonce = "e" * 64
+        stderr = b"\xff"
+        digest = subject.hashlib.sha256(
+            subject.ERROR_DIGEST_DOMAIN + stderr,
+        ).hexdigest().encode()
+        result = subprocess.CompletedProcess(
+            [], subject.PARSER_ERROR_EXIT,
+            subject.RESULT_PREFIX + nonce.encode() + b"\tPARSE_ERROR\t" + digest + b"\n",
+            stderr,
+        )
+        with self.assertRaisesRegex(subject.ContractError, "well-formed UTF-8"):
+            subject.parse_protocol_result(nonce, result)
+
     def test_capability_mismatch_stops_at_empty_handshake(self) -> None:
         response = subprocess.CompletedProcess([], 0, b"generic compiler\n", b"")
+        sentinel = object()
         with mock.patch.object(subject.subprocess, "run", return_value=response) as invoked:
             with self.assertRaisesRegex(subject.ContractError, "capability mismatch"):
-                subject.capability_handshake(Path("/fake/cake"), 1)
+                subject.capability_handshake(
+                    Path("/fake/cake"), 1, subject.EXECUTION_ENVIRONMENT, sentinel,
+                )
         self.assertEqual(invoked.call_count, 1)
         self.assertEqual(invoked.call_args.kwargs["input"], b"")
+        self.assertIs(invoked.call_args.kwargs["preexec_fn"], sentinel)
         self.assertEqual(invoked.call_args.args[0][-1], subject.CAPABILITY_ARGUMENT)
 
     def test_unsupported_plan_launches_no_process(self) -> None:
         plan = {"unsupported_count": 1}
         with mock.patch.object(subject, "capability_handshake") as handshake:
             with self.assertRaisesRegex(subject.ContractError, "unsupported actions"):
-                subject.run_runtime(Path("/fake/cake"), Path("/fake/plan"), plan, 1)
+                subject.run_runtime(
+                    Path("/fake/cake"), Path("/fake/plan"), plan, 1,
+                    subject.EXECUTION_ENVIRONMENT, None,
+                )
         handshake.assert_not_called()
 
     def test_plan_root_symlink_alias_is_rejected_before_resolution(self) -> None:
@@ -240,7 +298,196 @@ class ParserDiagnosticTests(unittest.TestCase):
             alias = base / "alias"
             os.symlink(real, alias)
             with self.assertRaisesRegex(subject.ContractError, "symlink component"):
-                subject.validate_plan_root(alias)
+                subject.validate_plan_root(alias, {}, {}, {})
+
+    def test_output_root_final_dangling_symlink_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / "output"
+            os.symlink(root / "missing", output)
+            with self.assertRaisesRegex(subject.ContractError, "symlink alias"):
+                subject.validate_fresh_output_root(output, "test output")
+
+    def test_output_root_symlink_ancestor_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            real = root / "real"
+            real.mkdir()
+            alias = root / "alias"
+            os.symlink(real, alias)
+            with self.assertRaisesRegex(subject.ContractError, "symlink component"):
+                subject.validate_fresh_output_root(alias / "output", "test output")
+
+    def test_fully_rehashed_prepared_input_plan_is_rejected(self) -> None:
+        expected_plan, expected_inputs = self.build_real_plan()
+        execution = {"test-only": "authenticated controller execution"}
+        expected_host = subject.build_host_receipt(
+            ROOT, Path("/unused-flyspeck-root"),
+            subject.json_bytes(expected_plan), execution,
+        )
+        forged_plan = copy.deepcopy(expected_plan)
+        forged_inputs = dict(expected_inputs)
+        selected = forged_plan["inputs"][0]
+        relative = selected["prepared_input"]["path"]
+        forged_inputs[relative] += b" (* forged *)"
+        selected["prepared_input"] = subject.bytes_record(
+            forged_inputs[relative], relative,
+        )
+        forged_plan["ordered_input_sha256"] = subject.canonical_sha256(
+            forged_plan["inputs"],
+        )
+        forged_host = subject.build_host_receipt(
+            ROOT, Path("/unused-flyspeck-root"),
+            subject.json_bytes(forged_plan), execution,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            plan_root = Path(directory) / "forged-plan"
+            self.publish_plan_tree(
+                plan_root, forged_plan, forged_inputs, forged_host,
+            )
+            try:
+                with self.assertRaisesRegex(
+                    subject.ContractError, "differs from reconstructed authority",
+                ):
+                    subject.validate_plan_root(
+                        plan_root, expected_plan, expected_inputs, expected_host,
+                    )
+            finally:
+                self.make_tree_removable(plan_root)
+
+    def test_fully_rehashed_controller_and_promotion_claims_are_rejected(self) -> None:
+        expected_plan, expected_inputs = self.build_real_plan()
+        execution = {"test-only": "authenticated controller execution"}
+        expected_host = subject.build_host_receipt(
+            ROOT, Path("/unused-flyspeck-root"),
+            subject.json_bytes(expected_plan), execution,
+        )
+        forged_plan = copy.deepcopy(expected_plan)
+        forged_plan["controller"] = subject.bytes_record(
+            b"forged controller", subject.CONTROLLER_RELATIVE.as_posix(),
+        )
+        forged_plan["promotion"] = {
+            "eligible": False,
+            "s1_evidence": True,
+            "s2_evidence": True,
+            "s3_evidence": True,
+            "reason": "forged promotion claim",
+        }
+        forged_host = subject.build_host_receipt(
+            ROOT, Path("/unused-flyspeck-root"),
+            subject.json_bytes(forged_plan), execution,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            plan_root = Path(directory) / "forged-controller-plan"
+            self.publish_plan_tree(
+                plan_root, forged_plan, expected_inputs, forged_host,
+            )
+            try:
+                with self.assertRaisesRegex(
+                    subject.ContractError, "differs from reconstructed authority",
+                ):
+                    subject.validate_plan_root(
+                        plan_root, expected_plan, expected_inputs, expected_host,
+                    )
+            finally:
+                self.make_tree_removable(plan_root)
+
+    def test_fully_rehashed_host_root_rebinding_is_rejected(self) -> None:
+        plan, inputs = self.build_real_plan()
+        execution = {"test-only": "authenticated controller execution"}
+        expected_host = subject.build_host_receipt(
+            ROOT, Path("/unused-flyspeck-root"), subject.json_bytes(plan), execution,
+        )
+        forged_host = subject.build_host_receipt(
+            Path("/forged/candle"), Path("/forged/flyspeck"),
+            subject.json_bytes(plan), execution,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            plan_root = Path(directory) / "forged-host-plan"
+            self.publish_plan_tree(plan_root, plan, inputs, forged_host)
+            try:
+                with self.assertRaisesRegex(
+                    subject.ContractError, "differs from reconstructed authority",
+                ):
+                    subject.validate_plan_root(
+                        plan_root, plan, inputs, expected_host,
+                    )
+            finally:
+                self.make_tree_removable(plan_root)
+
+    def test_rehashed_transition_checker_binding_is_rejected(self) -> None:
+        plan, _inputs = self.build_real_plan()
+        forged = copy.deepcopy(plan)
+        relative = subject.TRANSITION_CHECKER_RELATIVE.as_posix()
+        forged["authority_sources"][relative] = subject.bytes_record(
+            b"forged transition checker", relative,
+        )
+        head = subprocess.run(
+            ["/usr/bin/git", "-C", str(ROOT), "rev-parse", "HEAD"],
+            check=True, stdout=subprocess.PIPE, text=True,
+        ).stdout.strip()
+        with self.assertRaisesRegex(
+            subject.ContractError, "plan authority source differs from commit",
+        ):
+            subject._load_direct_runtime_policy(ROOT, head, forged)
+
+    def test_exact_module_loader_rejects_same_bytes_from_rebound_root(self) -> None:
+        module_name = "_candle_parser_diagnostic_test_collision"
+        source = b"VALUE = 1\n"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            first = root / "first.py"
+            second = root / "second.py"
+            first.write_bytes(source)
+            second.write_bytes(source)
+            try:
+                subject._load_exact_source_module(module_name, first, source)
+                with self.assertRaisesRegex(
+                    subject.ContractError, "untrusted preloaded local module",
+                ):
+                    subject._load_exact_source_module(module_name, second, source)
+            finally:
+                subject.sys.modules.pop(module_name, None)
+
+    def test_executing_controller_bytes_must_match_authenticated_blob(self) -> None:
+        candle_head = subprocess.run(
+            ["/usr/bin/git", "-C", str(ROOT), "rev-parse", "HEAD"],
+            check=True, stdout=subprocess.PIPE, text=True,
+        ).stdout.strip()
+        flyspeck_root = Path("/project/worktrees/flyspeck-v13-source")
+        flyspeck_head = self.manifest["repositories"]["flyspeck"]["commit"]
+        with mock.patch.object(subject, "validate_git_blob"), mock.patch.object(
+            subject, "SOURCE_BYTES", b"forged executing controller",
+        ):
+            with self.assertRaisesRegex(
+                subject.ContractError, "executing controller differs",
+            ):
+                subject.reconstruct_plan_authority(
+                    ROOT, candle_head, flyspeck_root, flyspeck_head,
+                )
+
+    def test_authenticated_candle_root_symlink_rebinding_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            alias = Path(directory) / "candle-alias"
+            os.symlink(ROOT, alias)
+            with self.assertRaisesRegex(subject.ContractError, "symlink component"):
+                subject.reconstruct_plan_authority(
+                    alias, "1" * 40,
+                    Path("/project/worktrees/flyspeck-v13-source"), "2" * 40,
+                )
+
+    def test_direct_cli_rejects_nonisolated_python_before_work(self) -> None:
+        result = subprocess.run(
+            [
+                "/usr/bin/python3",
+                str(ROOT / subject.CONTROLLER_RELATIVE),
+                "check-pilot", "--candle-root", str(ROOT),
+            ],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            env=subject.EXECUTION_ENVIRONMENT,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(b"requires /usr/bin/python3 -I -S", result.stderr)
 
 
 if __name__ == "__main__":

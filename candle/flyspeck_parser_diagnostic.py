@@ -16,6 +16,28 @@ identifies itself as parser-only, without inference or evaluation.
 
 from __future__ import annotations
 
+import sys
+
+# On direct execution, reject a non-isolated interpreter before importing any
+# module other than the built-in ``sys``.  Tests may import this module under a
+# normal harness, but no materialize/run CLI action is reachable that way.
+_EARLY_REQUIRED_FLAGS = {
+    "isolated": 1,
+    "ignore_environment": 1,
+    "no_user_site": 1,
+    "no_site": 1,
+    "safe_path": True,
+}
+if __name__ == "__main__":
+    _early_observed = {
+        name: getattr(sys.flags, name) for name in _EARLY_REQUIRED_FLAGS
+    }
+    if _early_observed != _EARLY_REQUIRED_FLAGS:
+        raise SystemExit(
+            "parser diagnostic rejected: direct execution requires "
+            "/usr/bin/python3 -I -S"
+        )
+
 import argparse
 import ctypes
 import errno
@@ -25,7 +47,6 @@ import os
 import re
 import stat
 import subprocess
-import sys
 import tempfile
 import types
 from pathlib import Path
@@ -39,6 +60,19 @@ MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 PILOT_RELATIVE = Path("candle/flyspeck_parser_diagnostic_pilot.json")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 RUNTIME_RELATIVE = Path("candle/build/cake")
+CONTROLLER_RELATIVE = Path("candle/flyspeck_parser_diagnostic.py")
+RUNTIME_LOCK_RELATIVE = Path("candle/runtime_lock.py")
+TRANSITION_CHECKER_RELATIVE = Path("candle/cakeml_bootstrap_transition.py")
+PROVENANCE_RELATIVE = Path("candle/cakeml_artifact_provenance.py")
+DIRECT_POLICY_RELATIVE = Path("candle/flyspeck_stratum_runtime.py")
+AUTHORITY_SOURCE_RELATIVES = (
+    PROVENANCE_RELATIVE,
+    TRANSITION_CHECKER_RELATIVE,
+    Path("candle/flyspeck_stratum_plan.py"),
+    Path("candle/reference_protocol.py"),
+    RUNTIME_LOCK_RELATIVE,
+    DIRECT_POLICY_RELATIVE,
+)
 PLAN_NAME = "plan.json"
 HOST_RECEIPT_NAME = "host-materialization.json"
 RESULT_NAME = "receipt.json"
@@ -60,6 +94,7 @@ CAPABILITY_LINE = (
     b"no-inference\tno-evaluation\n"
 )
 RESULT_PREFIX = b"CANDLE_CAMLPARSER_DIAGNOSTIC_V1\t"
+ERROR_DIGEST_DOMAIN = b"CANDLE_CAMLPARSER_ERROR_V1\0"
 PARSER_ERROR_EXIT = 65
 EXECUTION_ENVIRONMENT = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
 GIT_ENVIRONMENT = {
@@ -100,11 +135,19 @@ def _pairs_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
 
 def load_object(path: Path, label: str = "JSON input") -> dict[str, Any]:
     try:
-        value = json.loads(
-            path.read_text(encoding="utf-8"), object_pairs_hook=_pairs_object,
-        )
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        data = path.read_bytes()
+    except OSError as error:
         raise ContractError(f"cannot read {label}: {path}: {error}") from error
+    return decode_object(data, f"{label}: {path}")
+
+
+def decode_object(data: bytes, label: str = "JSON input") -> dict[str, Any]:
+    try:
+        value = json.loads(
+            data.decode("utf-8"), object_pairs_hook=_pairs_object,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ContractError(f"cannot decode {label}: {error}") from error
     require(isinstance(value, dict), f"{label} is not an object")
     return value
 
@@ -188,6 +231,25 @@ def safe_relative_path(relative: Any, label: str) -> Path:
     require(not path.is_absolute() and ".." not in path.parts and path.as_posix() == relative,
             f"unsafe {label} path: {relative}")
     return path
+
+
+def validate_fresh_output_root(path: Path, label: str) -> Path:
+    """Reject final or ancestor symlinks without resolving the destination."""
+    candidate = path if path.is_absolute() else Path.cwd() / path
+    require(".." not in candidate.parts, f"{label} contains parent traversal")
+    parent = resolve_without_symlinks(candidate.parent, f"{label} parent")
+    destination = parent / candidate.name
+    try:
+        destination.lstat()
+    except FileNotFoundError:
+        pass
+    except OSError as error:
+        raise ContractError(f"cannot inspect {label}: {destination}: {error}") from error
+    else:
+        require(not stat.S_ISLNK(destination.lstat().st_mode),
+                f"symlink alias in {label}: {destination}")
+        raise ContractError(f"{label} already exists")
+    return destination
 
 
 def git_output(root: Path, *arguments: str, binary: bool = False) -> bytes | str:
@@ -548,6 +610,12 @@ def build_plan(
         }
         for entry in build_roots
     ]
+    authority_sources = {
+        relative.as_posix(): bytes_record(
+            (candle_root / relative).read_bytes(), relative.as_posix(),
+        )
+        for relative in AUTHORITY_SOURCE_RELATIVES
+    }
     plan = {
         "schema": 1,
         "kind": "candle-flyspeck-caml-parser-diagnostic-plan",
@@ -571,6 +639,7 @@ def build_plan(
         "controller": bytes_record(
             SOURCE_BYTES, "candle/flyspeck_parser_diagnostic.py",
         ),
+        "authority_sources": authority_sources,
         "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
         "pilot": {
             "path": PILOT_RELATIVE.as_posix(),
@@ -585,6 +654,20 @@ def build_plan(
             "capability_stdout_sha256": hashlib.sha256(CAPABILITY_LINE).hexdigest(),
             "run_argument": RUN_ARGUMENT,
             "input": "one exact prepared source on stdin per fresh process",
+            "parse_error_exit_code": PARSER_ERROR_EXIT,
+            "parse_error_digest": {
+                "algorithm": "sha256",
+                "domain_hex": ERROR_DIGEST_DOMAIN.hex(),
+                "canonical_preimage": (
+                    "ASCII bytes CANDLE_CAMLPARSER_ERROR_V1, one NUL byte, "
+                    "then the exact stderr byte stream without decoding or newline changes"
+                ),
+                "wire_encoding": "exactly 64 lowercase ASCII hexadecimal digits",
+                "stderr_encoding": (
+                    "runtime emits the caml_parser$run error/location text as UTF-8; "
+                    "the controller hashes the resulting bytes without reinterpretation"
+                ),
+            },
             "forbidden_substitutes": [
                 "--print_sexp/parse_prog", "--candle REPL", "host OCaml parser",
             ],
@@ -653,58 +736,107 @@ def _write_tree(root: Path, files: dict[str, bytes], root_mode: int, file_mode: 
     root.chmod(root_mode)
 
 
-def materialize(
-    candle_root: Path, flyspeck_root: Path, output_root: Path,
+def build_host_receipt(
+    candle_root: Path,
+    flyspeck_root: Path,
+    plan_data: bytes,
+    controller_execution: dict[str, Any],
 ) -> dict[str, Any]:
-    candle_root = resolve_without_symlinks(candle_root, "Candle root")
-    flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
-    output_root = output_root.resolve()
-    require(not output_root.exists() and not output_root.is_symlink(),
-            "output root already exists")
-    validate_no_git_rebinding(candle_root)
-    validate_no_git_rebinding(flyspeck_root)
-    candle_head = str(git_output(candle_root, "rev-parse", "HEAD"))
-    flyspeck_head = str(git_output(flyspeck_root, "rev-parse", "HEAD"))
-    require(HEX40.fullmatch(candle_head) is not None, "invalid Candle Git head")
-    manifest_path = candle_root / MANIFEST_RELATIVE
-    manifest_data = manifest_path.read_bytes()
-    manifest = load_object(manifest_path, "Flyspeck manifest")
-    require(manifest.get("schema") == 1, "unsupported Flyspeck manifest schema")
-    expected_flyspeck = manifest["repositories"]["flyspeck"]["commit"]
-    require(flyspeck_head == expected_flyspeck, "Flyspeck revision mismatch")
-    pilot = validate_pilot(candle_root, manifest, manifest_data)
-    for relative in (
-        MANIFEST_RELATIVE.as_posix(), PILOT_RELATIVE.as_posix(),
-        "candle/flyspeck_parser_diagnostic.py",
-    ):
-        live = (candle_root / relative).read_bytes()
-        validate_git_blob(candle_root, candle_head, relative, live)
-    for pilot_input in pilot["inputs"]:
-        node = manifest["source_nodes"][pilot_input["source_key"]]
-        root = candle_root if node["repository"] == "candle" else flyspeck_root
-        head = candle_head if node["repository"] == "candle" else flyspeck_head
-        live = validate_file(root / node["path"], node, f"pilot source {pilot_input['source_key']}")
-        validate_git_blob(root, head, node["path"], live)
-    plan, input_files = build_plan(
-        candle_root, flyspeck_root, candle_head, manifest, manifest_data, pilot,
-    )
-    plan_data = json_bytes(plan)
     plan_sha256 = hashlib.sha256(plan_data).hexdigest()
-    host = {
+    return {
         "schema": 1,
         "kind": "candle-flyspeck-parser-diagnostic-host-materialization",
         "claim": "host paths and immutable publication only; not parser or release evidence",
         "plan": bytes_record(plan_data, PLAN_NAME),
         "plan_sha256": plan_sha256,
         "controller_source_sha256": hashlib.sha256(SOURCE_BYTES).hexdigest(),
+        "controller_execution": controller_execution,
         "host_roots": {"candle": str(candle_root), "flyspeck": str(flyspeck_root)},
         "publication": {
             "policy": "fresh-root-renameat2-noreplace",
             "root_mode": "0555", "file_mode": "0444",
         },
     }
+
+
+def reconstruct_plan_authority(
+    candle_root: Path,
+    candle_head: str,
+    flyspeck_root: Path,
+    flyspeck_head: str,
+) -> tuple[dict[str, Any], dict[str, bytes], dict[str, Any], bytes]:
+    """Rebuild the only accepted plan from explicit Git-root authorities."""
+    require(HEX40.fullmatch(candle_head) is not None,
+            "expected Candle head must be lowercase 40-hex")
+    require(HEX40.fullmatch(flyspeck_head) is not None,
+            "expected Flyspeck head must be lowercase 40-hex")
+    candle_root = resolve_without_symlinks(candle_root, "Candle root")
+    flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
+    validate_no_git_rebinding(candle_root)
+    validate_no_git_rebinding(flyspeck_root)
+    require(str(git_output(candle_root, "rev-parse", "HEAD")) == candle_head,
+            "Candle revision differs from explicit authority")
+    require(str(git_output(flyspeck_root, "rev-parse", "HEAD")) == flyspeck_head,
+            "Flyspeck revision differs from explicit authority")
+
+    controller_relative = CONTROLLER_RELATIVE.as_posix()
+    controller_path = candle_root / controller_relative
+    controller_data = controller_path.read_bytes()
+    validate_git_blob(candle_root, candle_head, controller_relative, controller_data)
+    require(controller_data == SOURCE_BYTES,
+            "executing controller differs from authenticated Candle controller blob")
+    for relative_path in AUTHORITY_SOURCE_RELATIVES:
+        relative = relative_path.as_posix()
+        source_data = (candle_root / relative_path).read_bytes()
+        validate_git_blob(candle_root, candle_head, relative, source_data)
+
+    manifest_path = candle_root / MANIFEST_RELATIVE
+    manifest_data = manifest_path.read_bytes()
+    validate_git_blob(
+        candle_root, candle_head, MANIFEST_RELATIVE.as_posix(), manifest_data,
+    )
+    manifest = load_object(manifest_path, "Flyspeck manifest")
+    require(manifest.get("schema") == 1, "unsupported Flyspeck manifest schema")
+    require(manifest["repositories"]["flyspeck"]["commit"] == flyspeck_head,
+            "explicit Flyspeck authority differs from manifest pin")
+
+    pilot_path = candle_root / PILOT_RELATIVE
+    pilot_data = pilot_path.read_bytes()
+    validate_git_blob(candle_root, candle_head, PILOT_RELATIVE.as_posix(), pilot_data)
+    pilot = validate_pilot(candle_root, manifest, manifest_data)
+    for pilot_input in pilot["inputs"]:
+        node = manifest["source_nodes"][pilot_input["source_key"]]
+        root = candle_root if node["repository"] == "candle" else flyspeck_root
+        head = candle_head if node["repository"] == "candle" else flyspeck_head
+        source_path = root / safe_relative_path(node["path"], "pilot source")
+        live = validate_file(
+            source_path, node, f"pilot source {pilot_input['source_key']}",
+        )
+        validate_git_blob(root, head, node["path"], live)
+    plan, input_files = build_plan(
+        candle_root, flyspeck_root, candle_head, manifest, manifest_data, pilot,
+    )
+    plan_data = json_bytes(plan)
+    policy = _load_direct_runtime_policy(candle_root, candle_head, plan)
+    controller_execution = collect_controller_execution(candle_root, policy)
+    host = build_host_receipt(
+        candle_root, flyspeck_root, plan_data, controller_execution,
+    )
+    return plan, input_files, host, plan_data
+
+
+def materialize(
+    candle_root: Path, flyspeck_root: Path, output_root: Path,
+) -> dict[str, Any]:
+    candle_root = resolve_without_symlinks(candle_root, "Candle root")
+    flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
+    output_root = validate_fresh_output_root(output_root, "plan output root")
+    candle_head = str(git_output(candle_root, "rev-parse", "HEAD"))
+    flyspeck_head = str(git_output(flyspeck_root, "rev-parse", "HEAD"))
+    plan, input_files, host, plan_data = reconstruct_plan_authority(
+        candle_root, candle_head, flyspeck_root, flyspeck_head,
+    )
     parent = output_root.parent
-    parent.mkdir(parents=True, exist_ok=True)
     staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.pending-", dir=parent))
     try:
         files = {
@@ -720,29 +852,71 @@ def materialize(
     return host
 
 
-def validate_plan_root(plan_root: Path) -> tuple[dict[str, Any], bytes]:
+def validate_plan_root(
+    plan_root: Path,
+    expected_plan: dict[str, Any],
+    expected_inputs: dict[str, bytes],
+    expected_host: dict[str, Any],
+) -> tuple[dict[str, Any], bytes]:
+    """Compare the published tree to an independently reconstructed authority."""
     plan_root = resolve_without_symlinks(plan_root, "plan root")
     require(stat.S_IMODE(plan_root.stat().st_mode) == PLAN_ROOT_MODE,
             "plan root mode mismatch")
     plan_path = plan_root / PLAN_NAME
     host_path = plan_root / HOST_RECEIPT_NAME
-    for path in (plan_path, host_path):
-        require(path.is_file() and not path.is_symlink(), f"missing ordinary plan file: {path}")
-        require(stat.S_IMODE(path.stat().st_mode) == PLAN_FILE_MODE,
-                f"plan file mode mismatch: {path}")
+    expected_plan_data = json_bytes(expected_plan)
+    expected_host_data = json_bytes(expected_host)
+    expected_files = {
+        PLAN_NAME: expected_plan_data,
+        HOST_RECEIPT_NAME: expected_host_data,
+        **expected_inputs,
+    }
+    expected_paths = {Path(relative) for relative in expected_files}
+    expected_directories = {Path(".")}
+    for relative in expected_paths:
+        require(not relative.is_absolute() and ".." not in relative.parts,
+                f"unsafe reconstructed plan path: {relative}")
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    observed_paths: set[Path] = set()
+    observed_directories = {Path(".")}
+    for current, directory_names, file_names in os.walk(
+        plan_root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            observed = path.lstat()
+            require(stat.S_ISDIR(observed.st_mode),
+                    f"non-directory or symlink in plan tree: {path}")
+            require(stat.S_IMODE(observed.st_mode) == PLAN_ROOT_MODE,
+                    f"plan directory mode mismatch: {path}")
+            observed_directories.add(path.relative_to(plan_root))
+        for name in file_names:
+            path = current_path / name
+            observed = path.lstat()
+            require(stat.S_ISREG(observed.st_mode),
+                    f"non-ordinary file in plan tree: {path}")
+            require(stat.S_IMODE(observed.st_mode) == PLAN_FILE_MODE,
+                    f"plan file mode mismatch: {path}")
+            relative = path.relative_to(plan_root)
+            require(relative in expected_paths,
+                    f"unexpected file in parser plan: {relative}")
+            observed_paths.add(relative)
+            require(path.read_bytes() == expected_files[relative.as_posix()],
+                    f"parser plan file differs from reconstructed authority: {relative}")
+    require(observed_directories == expected_directories,
+            "parser plan directory set differs from reconstructed authority")
+    require(observed_paths == expected_paths,
+            "parser plan file set differs from reconstructed authority")
     plan_data = plan_path.read_bytes()
     plan = load_object(plan_path, "parser diagnostic plan")
     host = load_object(host_path, "parser diagnostic host receipt")
-    require(plan.get("schema") == 1 and
-            plan.get("kind") == "candle-flyspeck-caml-parser-diagnostic-plan",
-            "unsupported parser diagnostic plan")
-    require(host.get("plan") == bytes_record(plan_data, PLAN_NAME),
-            "host receipt plan binding mismatch")
-    require(plan.get("controller") == bytes_record(
-        SOURCE_BYTES, "candle/flyspeck_parser_diagnostic.py"),
-        "executed controller source mismatch")
-    require(plan.get("promotion", {}).get("eligible") is False,
-            "parser plan is not explicitly non-promotable")
+    require(plan == expected_plan and plan_data == expected_plan_data,
+            "parser plan differs from reconstructed authority")
+    require(host == expected_host and host_path.read_bytes() == expected_host_data,
+            "host receipt differs from reconstructed authority")
     inputs = plan.get("inputs")
     require(isinstance(inputs, list) and len(inputs) == plan.get("input_count") == PILOT_COUNT,
             "parser plan input count mismatch")
@@ -752,13 +926,8 @@ def validate_plan_root(plan_root: Path) -> tuple[dict[str, Any], bytes]:
         if entry.get("status") == "ready":
             require(isinstance(prepared, dict), "ready parser input is missing")
             relative = safe_relative_path(prepared.get("path"), "prepared input")
-            path = resolve_without_symlinks(
-                plan_root / relative, f"prepared input {index}",
-            )
-            require(path.is_relative_to(plan_root), "prepared input escapes plan root")
-            require(stat.S_IMODE(path.stat().st_mode) == PLAN_FILE_MODE,
-                    f"prepared input mode mismatch: {path}")
-            validate_file(path, prepared, f"prepared parser input {index}")
+            require(relative.as_posix() in expected_inputs,
+                    "prepared input is absent from reconstruction")
         else:
             require(prepared is None and entry.get("unsupported_reasons"),
                     "unsupported input lacks an explicit reason")
@@ -767,13 +936,54 @@ def validate_plan_root(plan_root: Path) -> tuple[dict[str, Any], bytes]:
     return plan, plan_data
 
 
-def _load_transition_checker():
-    path = HERE / "cakeml_bootstrap_transition.py"
-    source = path.read_bytes()
-    name = "_candle_parser_diagnostic_transition"
+def _read_stable_source(path: Path) -> bytes:
+    try:
+        descriptor = os.open(
+            path, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+        )
+    except OSError as error:
+        raise ContractError(f"cannot open exact controller source: {path}: {error}") from error
+    try:
+        before = os.fstat(descriptor)
+        chunks = []
+        while block := os.read(descriptor, CHUNK_BYTES):
+            chunks.append(block)
+        after = os.fstat(descriptor)
+        named = path.stat(follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    source = b"".join(chunks)
+    require(
+        stat.S_ISREG(before.st_mode) and
+        (before.st_dev, before.st_ino, before.st_size,
+         before.st_mtime_ns, before.st_ctime_ns) ==
+        (after.st_dev, after.st_ino, after.st_size,
+         after.st_mtime_ns, after.st_ctime_ns) and
+        (named.st_dev, named.st_ino) == (after.st_dev, after.st_ino) and
+        len(source) == before.st_size,
+        f"controller source changed while loading: {path}",
+    )
+    return source
+
+
+def _load_exact_source_module(name: str, path: Path, expected: bytes):
+    source = _read_stable_source(path)
+    require(source == expected, f"captured controller source mismatch: {path.name}")
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        require(
+            getattr(existing, "__candle_source_sha256__", None) == source_sha256 and
+            getattr(existing, "__candle_source_bytes__", None) == source and
+            Path(getattr(existing, "__file__", "")).resolve() == path,
+            f"untrusted preloaded local module: {name}",
+        )
+        return existing
     module = types.ModuleType(name)
     module.__file__ = str(path)
     module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
     sys.modules[name] = module
     try:
         exec(compile(source, str(path), "exec", dont_inherit=True), module.__dict__)
@@ -783,8 +993,105 @@ def _load_transition_checker():
     return module
 
 
-def validate_linked_runtime(candle_root: Path, plan: dict[str, Any]) -> tuple[dict[str, Any], Path]:
-    checker = _load_transition_checker()
+def _load_direct_runtime_policy(
+    candle_root: Path, candle_head: str, plan: dict[str, Any],
+):
+    captured: dict[str, bytes] = {}
+    bindings = plan.get("authority_sources")
+    require(isinstance(bindings, dict) and
+            set(bindings) == {path.as_posix() for path in AUTHORITY_SOURCE_RELATIVES},
+            "malformed parser-controller authority source closure")
+    for relative_path in AUTHORITY_SOURCE_RELATIVES:
+        relative = relative_path.as_posix()
+        path = candle_root / relative_path
+        source = _read_stable_source(path)
+        validate_git_blob(candle_root, candle_head, relative, source)
+        require(bindings[relative] == bytes_record(source, relative),
+                f"plan authority source differs from commit: {relative}")
+        captured[relative] = source
+
+    # Preload every helper from the already captured, commit-authenticated
+    # bytes.  The direct runner's own exact-source loader then encounters only
+    # these same path/byte identities; neither import lookup nor a second
+    # filesystem read gets to select the transition checker or build lock.
+    provenance_path = candle_root / PROVENANCE_RELATIVE
+    provenance_source = captured[PROVENANCE_RELATIVE.as_posix()]
+    _load_exact_source_module(
+        "_candle_bootstrap_transition_provenance",
+        provenance_path, provenance_source,
+    )
+    private_modules = (
+        ("_candle_stratum_cakeml_artifact_provenance", PROVENANCE_RELATIVE),
+        ("_candle_stratum_cakeml_bootstrap_transition", TRANSITION_CHECKER_RELATIVE),
+        ("_candle_stratum_flyspeck_stratum_plan", Path("candle/flyspeck_stratum_plan.py")),
+        ("_candle_stratum_reference_protocol", Path("candle/reference_protocol.py")),
+        ("_candle_stratum_runtime_lock", RUNTIME_LOCK_RELATIVE),
+    )
+    for name, relative_path in private_modules:
+        _load_exact_source_module(
+            name, candle_root / relative_path, captured[relative_path.as_posix()],
+        )
+    policy_path = candle_root / DIRECT_POLICY_RELATIVE
+    policy = _load_exact_source_module(
+        "_candle_parser_diagnostic_direct_policy",
+        policy_path, captured[DIRECT_POLICY_RELATIVE.as_posix()],
+    )
+    require(policy.RUNNER_SOURCE_BYTES == captured[DIRECT_POLICY_RELATIVE.as_posix()],
+            "direct-runtime policy startup capture mismatch")
+    expected_modules = {
+        "cakeml_artifact_provenance.py": PROVENANCE_RELATIVE,
+        "cakeml_bootstrap_transition.py": TRANSITION_CHECKER_RELATIVE,
+        "flyspeck_stratum_plan.py": Path("candle/flyspeck_stratum_plan.py"),
+        "reference_protocol.py": Path("candle/reference_protocol.py"),
+        "runtime_lock.py": RUNTIME_LOCK_RELATIVE,
+    }
+    observed_modules = {Path(module.__file__).name: module
+                        for module in policy.local_python_modules()}
+    require(set(observed_modules) == set(expected_modules),
+            "direct-runtime policy loaded unexpected source modules")
+    for name, relative_path in expected_modules.items():
+        module = observed_modules[name]
+        expected_path = candle_root / relative_path
+        expected_source = captured[relative_path.as_posix()]
+        require(Path(module.__file__).resolve() == expected_path and
+                module.__candle_source_bytes__ == expected_source and
+                module.__candle_source_sha256__ ==
+                hashlib.sha256(expected_source).hexdigest(),
+                f"direct-runtime policy source rebinding: {name}")
+    return policy
+
+
+def collect_controller_execution(candle_root: Path, policy: Any) -> dict[str, Any]:
+    source = candle_root / CONTROLLER_RELATIVE
+    require(
+        __name__ == "__main__" and __spec__ is None and
+        globals().get("__cached__") is None and
+        Path(sys.argv[0]).resolve() == source and Path(__file__).resolve() == source,
+        "parser controller must execute directly from authenticated source",
+    )
+    require(policy.python_startup_flags() == policy.EXPECTED_PYTHON_STARTUP_FLAGS,
+            "parser-controller Python startup flags mismatch")
+    require(policy.python_startup_options() == policy.EXPECTED_PYTHON_STARTUP_OPTIONS,
+            "parser-controller Python startup options mismatch")
+    environment = policy.cakeml_artifact_provenance.bootstrap_controller_environment()
+    return {
+        "direct_script_startup": {
+            "module_name": "__main__", "spec_is_none": True,
+            "cached_is_none": True, "argv0": str(source),
+            "source_path": str(source),
+        },
+        "python_startup_flags": policy.python_startup_flags(),
+        "python_startup_options": policy.python_startup_options(),
+        "python_runtime": policy.validate_python_runtime(),
+        "host_tools": policy.validate_controller_tools(),
+        "environment": environment,
+    }
+
+
+def validate_linked_runtime(
+    candle_root: Path, plan: dict[str, Any], policy: Any,
+) -> tuple[dict[str, Any], Path]:
+    checker = policy.cakeml_bootstrap_transition
     linked = checker.validate_linked_record(candle_root)
     require(linked.get("candle_commit") == plan["repositories"]["candle_commit"],
             "linked runtime Candle commit mismatch")
@@ -802,16 +1109,20 @@ def validate_linked_runtime(candle_root: Path, plan: dict[str, Any]) -> tuple[di
     return linked, runtime
 
 
-def capability_handshake(runtime: Path, timeout_seconds: int) -> dict[str, Any]:
+def capability_handshake(
+    runtime: Path, timeout_seconds: int, environment: dict[str, str],
+    preexec_fn: Any,
+) -> dict[str, Any]:
     result = subprocess.run(
         [str(runtime), CAPABILITY_ARGUMENT], input=b"",
         stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        env=EXECUTION_ENVIRONMENT, cwd=runtime.parent.parent.parent,
-        timeout=timeout_seconds,
+        env=environment, cwd=runtime.parent.parent.parent,
+        timeout=timeout_seconds, preexec_fn=preexec_fn,
     )
     record = {
         "command": [RUNTIME_RELATIVE.as_posix(), CAPABILITY_ARGUMENT],
         "exit_code": result.returncode,
+        "stdin": bytes_record(b""),
         "stdout": bytes_record(result.stdout),
         "stderr": bytes_record(result.stderr),
     }
@@ -829,19 +1140,31 @@ def parse_protocol_result(nonce: str, result: subprocess.CompletedProcess[bytes]
         return "parse-ok"
     if (result.returncode == PARSER_ERROR_EXIT and
             result.stdout.startswith(error_prefix) and result.stdout.endswith(b"\n")):
+        try:
+            result.stderr.decode("utf-8", errors="strict")
+        except UnicodeDecodeError as error:
+            raise ContractError("parser-error stderr is not well-formed UTF-8") from error
         digest = result.stdout[len(error_prefix):-1]
         require(HEX64.fullmatch(digest.decode(errors="replace")) is not None,
                 "malformed parser-error digest")
+        expected_digest = hashlib.sha256(
+            ERROR_DIGEST_DOMAIN + result.stderr,
+        ).hexdigest().encode()
+        require(digest == expected_digest,
+                "parser-error digest does not bind exact stderr bytes")
         return "parse-error"
     raise ContractError("parser runtime response violates protocol")
 
 
 def run_runtime(
     runtime: Path, plan_root: Path, plan: dict[str, Any], timeout_seconds: int,
+    environment: dict[str, str], preexec_fn: Any,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(plan.get("unsupported_count") == 0,
             "plan contains unsupported actions; no parser process launched")
-    capability = capability_handshake(runtime, timeout_seconds)
+    capability = capability_handshake(
+        runtime, timeout_seconds, environment, preexec_fn,
+    )
     attempts = []
     files: dict[str, bytes] = {}
     for entry in plan["inputs"]:
@@ -854,8 +1177,8 @@ def run_runtime(
         result = subprocess.run(
             [str(runtime), RUN_ARGUMENT, nonce], input=source,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=EXECUTION_ENVIRONMENT, cwd=runtime.parent.parent.parent,
-            timeout=timeout_seconds,
+            env=environment, cwd=runtime.parent.parent.parent,
+            timeout=timeout_seconds, preexec_fn=preexec_fn,
         )
         status = parse_protocol_result(nonce, result)
         stdout_name = f"attempts/{entry['index']:03d}.stdout"
@@ -880,36 +1203,195 @@ def run_runtime(
     }, files
 
 
-def run(plan_root: Path, candle_root: Path, output_root: Path, timeout_seconds: int) -> dict[str, Any]:
+def snapshot_inventory(files: dict[str, bytes]) -> dict[str, Any]:
+    records = [bytes_record(data, relative) for relative, data in sorted(files.items())]
+    return {
+        "file_count": len(records),
+        "ordered_file_sha256": canonical_sha256(records),
+        "files": records,
+    }
+
+
+def capture_authority_snapshot(
+    candle_root: Path, plan: dict[str, Any],
+) -> dict[str, bytes]:
+    """Capture only bytes equal to the reconstructed controller authority."""
+    bindings = {
+        CONTROLLER_RELATIVE.as_posix(): plan.get("controller"),
+        **plan.get("authority_sources", {}),
+    }
+    expected_paths = {
+        CONTROLLER_RELATIVE.as_posix(),
+        *(relative.as_posix() for relative in AUTHORITY_SOURCE_RELATIVES),
+    }
+    require(set(bindings) == expected_paths,
+            "malformed authority snapshot closure")
+    captured = {}
+    for relative in sorted(expected_paths):
+        data = _read_stable_source(candle_root / relative)
+        require(bindings[relative] == bytes_record(data, relative),
+                f"authority source changed before snapshot: {relative}")
+        captured[relative] = data
+    return captured
+
+
+def run(
+    plan_root: Path,
+    candle_root: Path,
+    candle_head: str,
+    flyspeck_root: Path,
+    flyspeck_head: str,
+    output_root: Path,
+    timeout_seconds: int,
+    max_cpu_seconds: int,
+    max_address_space_gib: int,
+    max_output_file_gib: int,
+) -> dict[str, Any]:
     plan_root = resolve_without_symlinks(plan_root, "plan root")
     candle_root = resolve_without_symlinks(candle_root, "Candle root")
-    output_root = output_root.resolve()
-    require(not output_root.exists() and not output_root.is_symlink(),
-            "result output root already exists")
-    plan, plan_data = validate_plan_root(plan_root)
-    linked, runtime = validate_linked_runtime(candle_root, plan)
-    runtime_result, files = run_runtime(runtime, plan_root, plan, timeout_seconds)
-    receipt = {
-        "schema": 1,
-        "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
-        "claim": "parser-only diagnostic; categorically non-promotable",
-        "promotion": plan["promotion"],
-        "plan": bytes_record(plan_data, PLAN_NAME),
-        "controller": plan["controller"],
-        "linked_provenance": file_record(candle_root / LINKED_RECORD_RELATIVE),
-        "linked_provenance_schema": linked.get("schema"),
-        "runtime": file_record(runtime, RUNTIME_RELATIVE.as_posix()),
-        **runtime_result,
-        "limitations": plan["limitations"],
-    }
-    files[RESULT_NAME] = json_bytes(receipt)
-    output_root.parent.mkdir(parents=True, exist_ok=True)
-    staging = Path(tempfile.mkdtemp(
-        prefix=f".{output_root.name}.pending-", dir=output_root.parent,
-    ))
-    _write_tree(staging, files, RESULT_ROOT_MODE, RESULT_FILE_MODE)
-    _rename_noreplace(staging, output_root)
-    return receipt
+    flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
+    output_root = validate_fresh_output_root(output_root, "result output root")
+    for label, authority_root in (
+        ("plan", plan_root), ("Candle", candle_root),
+        ("Flyspeck", flyspeck_root),
+    ):
+        require(output_root != authority_root and
+                not output_root.is_relative_to(authority_root),
+                f"result output root must be outside {label} root")
+    require(timeout_seconds > 0, "timeout must be positive")
+    require(0 < max_cpu_seconds <= 172800,
+            "CPU-time limit must be between 1 and 172800 seconds")
+    require(0 < max_address_space_gib <= 120,
+            "address-space limit must be between 1 and 120 GiB")
+    require(0 < max_output_file_gib <= 16,
+            "output-file limit must be between 1 and 16 GiB")
+
+    expected_plan, expected_inputs, expected_host, expected_plan_data = (
+        reconstruct_plan_authority(
+            candle_root, candle_head, flyspeck_root, flyspeck_head,
+        )
+    )
+    plan, plan_data = validate_plan_root(
+        plan_root, expected_plan, expected_inputs, expected_host,
+    )
+    require(plan_data == expected_plan_data,
+            "validated plan bytes differ from authority reconstruction")
+    policy = _load_direct_runtime_policy(candle_root, candle_head, plan)
+    controller_execution = collect_controller_execution(candle_root, policy)
+    require(controller_execution == expected_host["controller_execution"],
+            "controller execution changed after plan reconstruction")
+    environment = policy.cakeml_artifact_provenance.runtime_environment()
+    preexec_fn = policy.process_limit_preexec(
+        max_cpu_seconds,
+        max_address_space_gib * 1024 * 1024 * 1024,
+        max_output_file_gib * 1024 * 1024 * 1024,
+    )
+
+    runtime_lock_handle = policy.runtime_lock.acquire_build_lock(candle_root)
+    try:
+        linked, runtime = validate_linked_runtime(candle_root, plan, policy)
+        linked_path = candle_root / LINKED_RECORD_RELATIVE
+        linked_bytes = _read_stable_source(linked_path)
+        require(decode_object(linked_bytes, "captured linked provenance") == linked,
+                "linked provenance bytes differ from validated object")
+        runtime_before = file_record(runtime, RUNTIME_RELATIVE.as_posix())
+        runtime_result, files = run_runtime(
+            runtime, plan_root, plan, timeout_seconds, environment, preexec_fn,
+        )
+
+        authority_snapshot = capture_authority_snapshot(candle_root, plan)
+        snapshot_files = {
+            f"snapshot/plan/{PLAN_NAME}": expected_plan_data,
+            f"snapshot/plan/{HOST_RECEIPT_NAME}": json_bytes(expected_host),
+            **{
+                f"snapshot/plan/{relative}": data
+                for relative, data in expected_inputs.items()
+            },
+            "snapshot/linked/cakeml-build-provenance.json": linked_bytes,
+            **{
+                f"snapshot/authority/{relative}": data
+                for relative, data in authority_snapshot.items()
+            },
+        }
+        transition_snapshot = None
+        if linked.get("schema") == policy.cakeml_bootstrap_transition.TRANSITION_LINKED_SCHEMA:
+            transition_path = candle_root / "candle/build/bootstrap-transition.json"
+            transition_bytes = _read_stable_source(transition_path)
+            transition_expected = linked.get("transition_record")
+            require(isinstance(transition_expected, dict),
+                    "schema-7 linked record lacks transition identity")
+            require(bytes_record(transition_bytes) == transition_expected,
+                    "schema-7 bootstrap transition evidence changed")
+            transition_relative = "snapshot/linked/bootstrap-transition.json"
+            snapshot_files[transition_relative] = transition_bytes
+            transition_snapshot = bytes_record(
+                transition_bytes, transition_relative,
+            )
+
+        linked_post, runtime_post = validate_linked_runtime(
+            candle_root, plan, policy,
+        )
+        require(linked_post == linked,
+                "linked provenance changed during parser diagnostic")
+        require(_read_stable_source(linked_path) == linked_bytes,
+                "linked provenance bytes changed during parser diagnostic")
+        require(runtime_post == runtime and
+                file_record(runtime_post, RUNTIME_RELATIVE.as_posix()) == runtime_before,
+                "linked parser runtime changed during diagnostic")
+        require(collect_controller_execution(candle_root, policy) == controller_execution,
+                "controller execution changed during parser diagnostic")
+
+        inventory = snapshot_inventory(snapshot_files)
+        receipt = {
+            "schema": 2,
+            "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
+            "claim": "parser-only diagnostic; categorically non-promotable",
+            "promotion": plan["promotion"],
+            "plan": bytes_record(
+                expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
+            ),
+            "host_materialization": bytes_record(
+                json_bytes(expected_host),
+                f"snapshot/plan/{HOST_RECEIPT_NAME}",
+            ),
+            "controller": plan["controller"],
+            "controller_execution": controller_execution,
+            "runtime_lock": runtime_lock_handle.record,
+            "resource_limits": {
+                "timeout_seconds": timeout_seconds,
+                "cpu_seconds": max_cpu_seconds,
+                "address_space_bytes": max_address_space_gib * 1024 * 1024 * 1024,
+                "output_file_bytes": max_output_file_gib * 1024 * 1024 * 1024,
+            },
+            "linked_provenance": bytes_record(
+                linked_bytes, "snapshot/linked/cakeml-build-provenance.json",
+            ),
+            "linked_provenance_schema": linked.get("schema"),
+            "bootstrap_transition": transition_snapshot,
+            "runtime": runtime_before,
+            "snapshot": inventory,
+            **runtime_result,
+            "limitations": plan["limitations"],
+        }
+        files.update(snapshot_files)
+        files[RESULT_NAME] = json_bytes(receipt)
+        staging = Path(tempfile.mkdtemp(
+            prefix=f".{output_root.name}.pending-", dir=output_root.parent,
+        ))
+        _write_tree(staging, files, RESULT_ROOT_MODE, RESULT_FILE_MODE)
+        # One final in-lock validation precedes publication of the captured receipt.
+        linked_final, runtime_final = validate_linked_runtime(
+            candle_root, plan, policy,
+        )
+        require(linked_final == linked and runtime_final == runtime and
+                _read_stable_source(linked_path) == linked_bytes and
+                file_record(runtime_final, RUNTIME_RELATIVE.as_posix()) == runtime_before and
+                capture_authority_snapshot(candle_root, plan) == authority_snapshot,
+                "linked authority changed before receipt publication")
+        _rename_noreplace(staging, output_root)
+        return receipt
+    finally:
+        runtime_lock_handle.close()
 
 
 def main() -> None:
@@ -926,11 +1408,21 @@ def main() -> None:
     runner = subparsers.add_parser("run")
     runner.add_argument("--plan-root", type=Path, required=True)
     runner.add_argument("--candle-root", type=Path, required=True)
+    runner.add_argument("--candle-head", required=True)
+    runner.add_argument("--flyspeck-root", type=Path, required=True)
+    runner.add_argument("--flyspeck-head", required=True)
     runner.add_argument("--output-root", type=Path, required=True)
     runner.add_argument("--timeout-seconds", type=int, default=600)
+    runner.add_argument("--max-cpu-seconds", type=int, default=600)
+    runner.add_argument("--max-address-space-gib", type=int, default=16)
+    runner.add_argument("--max-output-file-gib", type=int, default=1)
     arguments = parser.parse_args()
+    require(dict(os.environ) == EXECUTION_ENVIRONMENT,
+            "controller requires exact PATH=/usr/bin:/bin and LC_ALL=C environment")
+    require(not os.path.lexists("/etc/ld.so.preload"),
+            "system-wide dynamic-loader preload is outside the controller model")
     if arguments.command in {"check-pilot", "write-pilot"}:
-        candle_root = arguments.candle_root.resolve(strict=True)
+        candle_root = resolve_without_symlinks(arguments.candle_root, "Candle root")
         path = candle_root / MANIFEST_RELATIVE
         data = path.read_bytes()
         manifest = load_object(path, "Flyspeck manifest")
@@ -947,10 +1439,13 @@ def main() -> None:
         )
         print(f"parser diagnostic plan materialized: {receipt['plan_sha256']}")
         return
-    require(arguments.timeout_seconds > 0, "timeout must be positive")
     receipt = run(
-        arguments.plan_root, arguments.candle_root,
+        arguments.plan_root,
+        arguments.candle_root, arguments.candle_head,
+        arguments.flyspeck_root, arguments.flyspeck_head,
         arguments.output_root, arguments.timeout_seconds,
+        arguments.max_cpu_seconds, arguments.max_address_space_gib,
+        arguments.max_output_file_gib,
     )
     print(f"parser diagnostic {receipt['outcome']}: {receipt['attempt_count']} inputs")
 

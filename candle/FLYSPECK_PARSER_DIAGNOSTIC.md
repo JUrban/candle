@@ -59,11 +59,36 @@ and emit exactly:
 CANDLE_CAMLPARSER_DIAGNOSTIC_CAPABILITY_V1	caml_parser$run	stdin-exact-bytes	parser-only	no-inference	no-evaluation
 ```
 
-Only then may the controller send one prepared source per fresh process using
-`cake --candle-parser-diagnostic-v1 NONCE`. Success and parser-error replies
-bind that nonce and are fail-closed. A generic compiler, old compiler, REPL, or
-protocol variation is rejected during the empty handshake before any corpus
-bytes are sent.
+The capability process must exit 0, write that one line to stdout, write no
+stderr, and must not read stdin. Only then may the controller send one prepared
+source per fresh process using
+`cake --candle-parser-diagnostic-v1 NONCE`, where `NONCE` is exactly 64
+lowercase hexadecimal characters. The only accepted replies are:
+
+```text
+CANDLE_CAMLPARSER_DIAGNOSTIC_V1	NONCE	OK
+CANDLE_CAMLPARSER_DIAGNOSTIC_V1	NONCE	PARSE_ERROR	DIGEST
+```
+
+`OK` requires exit code 0 and empty stderr. `PARSE_ERROR` requires exit code
+**exactly 65**, not merely a nonzero code. Its stderr must be well-formed UTF-8
+(the protocol does not perform Unicode normalization).
+`DIGEST` is the lowercase 64-hex encoding of:
+
+```text
+SHA256(ASCII("CANDLE_CAMLPARSER_ERROR_V1") || byte(0x00) || STDERR_BYTES)
+```
+
+`STDERR_BYTES` is the exact UTF-8 byte stream emitted on stderr, including any
+newlines; there is no decoding, newline conversion, length prefix, or terminal
+NUL in the digest preimage. The newline terminating the stdout protocol record
+is not part of the preimage. Any other exit code, output byte, nonce, digest,
+or encoding is rejected.
+
+A generic compiler, old compiler, REPL, or protocol variation is rejected
+during the empty handshake before any corpus bytes are sent. Both the
+capability process and every parser process run with fixed environment and
+CPU, address-space, and output-file resource limits.
 
 The CakeML integration commit currently pinned by the manifest does **not**
 implement these two options. Therefore the exact blocking condition is:
@@ -77,41 +102,56 @@ No parser pilot was launched while implementing this controller.
 
 ## Smallest CakeML entrypoint change
 
-The smallest entrypoint compatible with this controller is confined at source
-level to
+The smallest entrypoint compatible with this controller can be confined at
+source level to
 `compiler/bootstrap/translation/compiler64ProgScript.sml`, where
 `parse_ocaml_syntax` already directly calls `caml_parser$run` and `main` already
 owns stdin and command-line dispatch:
 
-1. translate exact-argument predicates for the capability form and the run
-   form (the latter carries one 64-hex nonce);
-2. add a pure parser-diagnostic function whose only semantic call is
-   `caml_parser$run (explode input)` and whose result is an OK or parser-error
-   protocol record;
-3. put those two branches before REPL/general compilation dispatch; the
-   capability branch must not open stdin, and the run branch reads stdin once;
-4. on a parser error, write diagnostics and use a dedicated nonzero-exit path;
-   do not invoke `infertype_prog`, `check_and_tweak`, `eval`, `compile_64`, or
-   `parse_prog`; and
-5. prove the translated parser-diagnostic function and new `main` branches,
-   while strengthening the existing ordinary-compiler `main_spec`,
+1. Translate exact-list argument predicates: the capability form is the sole
+   argument, and the run form is exactly the option plus one validated 64-hex
+   nonce. A `MEM`-style flag test is insufficient.
+2. Add a pure parser-diagnostic function whose only semantic parser call is
+   `caml_parser$run (explode input)`. Format its success or parser failure using
+   the exact wire bytes above. Do not route through `parse_ocaml_syntax` if that
+   would obscure the direct call in its specification.
+3. Add the protocol's SHA-256 function in the same theory (or import a separately
+   proved equivalent). The pinned tree has no existing translated SHA-256
+   helper, so a claim that only dispatch glue is needed would be incomplete.
+   Prove its byte/list implementation against the HOL digest definition and
+   translate it before the diagnostic function.
+4. Put the two branches before REPL/general compilation dispatch. The
+   capability branch must not open stdin; the run branch reads stdin exactly
+   once and parses exactly those bytes.
+5. On parser error, emit the canonical UTF-8 diagnostic, compute the domain-
+   separated digest over those exact emitted bytes, and invoke an exact exit
+   FFI path carrying byte value 65. The existing
+   `nonzero_exit_code_for_error_msg` helper is insufficient because it does not
+   promise exit status 65.
+6. Do not invoke `infertype_prog`, `check_and_tweak`, `eval`, `compile_64`, or
+   `parse_prog` in either diagnostic branch.
+7. Prove the translated hash/parser-diagnostic functions and both new `main`
+   branches. Add separate capability and run-mode STDIO/COMMANDLINE/exit-event
+   specifications that establish empty-stdin behavior, exact parser input,
+   output bytes, and absence of inference/evaluation by construction.
+   Strengthen the existing ordinary-compiler `main_spec`,
    `main_whole_prog_spec`, and `semantics_compiler64_prog` assumptions to
-   exclude the two diagnostic modes. Add a diagnostic-mode STDIO/COMMANDLINE
-   specification so the capability's no-inference/no-evaluation claim is not
-   based only on its output string.
+   exclude both exact diagnostic modes.
 
 No parser grammar or parser translation theory needs a new API:
 `caml_parserProgTheory` already translates `caml_parser$run`, and
 `compiler64ProgScript.sml` already consumes it. The directly affected build
-frontier is `compiler64ProgTheory.uo`, then
-`compiler/bootstrap/compilation/x64/64/x64BootstrapTheory.uo`/`cake.S`; the
-end-to-end compiler proof in
+frontier is `compiler64ProgTheory.uo`, then the x64 bootstrap evaluation
+`compiler/bootstrap/compilation/x64/64/x64BootstrapTheory.uo` and its `cake.S`;
+the end-to-end compiler proof in
 `compiler/bootstrap/compilation/x64/64/proofs/x64BootstrapProofScript.sml`
-must also be replayed or extended for the new mode. An incremental development
-checkout may reuse unchanged predecessors, but the project's canonical
-bootstrap controller qualifies `cake.S` by rebuilding its exact forced
-18-target closure, so release qualification still requires another full
-canonical bootstrap.
+consumes `semantics_compiler64_prog` and must also be replayed or extended for
+the new mode. Other architecture bootstraps that consume `compiler64ProgTheory`
+are downstream too, although they are not needed for this x64 pilot. An
+incremental development checkout may reuse unchanged predecessors, but the
+project's canonical bootstrap controller qualifies `cake.S` by rebuilding its
+exact forced 18-target closure, so release qualification still requires
+another full canonical bootstrap.
 
 This change necessarily creates a new CakeML commit, changes the manifest's
 pinned CakeML identity, changes the Candle manifest/pilot digest, and requires
@@ -123,20 +163,44 @@ validate the new parser or satisfy the capability handshake.
 From the exact committed Candle checkout, using fresh destination paths:
 
 ```sh
-/usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py check-pilot \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py check-pilot \
   --candle-root /absolute/candle
 
-/usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py materialize \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py materialize \
   --candle-root /absolute/candle \
   --flyspeck-root /absolute/flyspeck \
   --output-root /fresh/parser-pilot-plan
 
-/usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py run \
+/usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C \
+  /usr/bin/python3 -I -S candle/flyspeck_parser_diagnostic.py run \
   --plan-root /fresh/parser-pilot-plan \
   --candle-root /absolute/candle \
+  --candle-head CANDLE_40_HEX_COMMIT \
+  --flyspeck-root /absolute/flyspeck \
+  --flyspeck-head FLYSPECK_40_HEX_COMMIT \
   --output-root /fresh/parser-pilot-result
 ```
 
-`materialize` requires the controller, pilot, manifest, and every selected
-source to be exact committed blobs. `run` revalidates the immutable plan and
-linked compiler provenance before the empty capability handshake.
+The controller rejects any other Python flags or environment, any system-wide
+`/etc/ld.so.preload`, symlinked authority/output path component, or changed
+authenticated Python/runtime dependency. It binds `/proc/self/exe`, the Python
+ELF closure and controller tools using the established direct-runner policy.
+
+`materialize` requires the controller, pilot, manifest, policy helpers, and
+every selected source to be exact committed blobs. At run time, the supplied
+Candle and Flyspeck roots and heads independently reconstruct the canonical
+plan, every prepared input, every promotion flag/claim, and the host receipt;
+the published tree must match byte for byte. Fully rehashing a forged tree is
+therefore not authority.
+
+The run exact-loads the commit-bound transition/provenance/runtime-lock policy
+from captured source bytes without import or bytecode lookup. It holds a shared
+lock on the authenticated `candle/build` inode across linked-provenance
+validation, the empty capability handshake, all parser attempts, postflight
+runtime validation, evidence capture, and result publication. A result embeds
+read-only snapshots of the exact plan and inputs, host receipt, linked
+provenance, controller/policy sources, and schema-7 transition record when
+applicable, plus their inventory hashes. None of these measures changes the
+categorically non-promotable claim boundary.
