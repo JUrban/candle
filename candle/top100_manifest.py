@@ -8,6 +8,7 @@ one deterministic artifact.
 """
 
 import argparse
+from datetime import datetime
 import hashlib
 import json
 import re
@@ -17,7 +18,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = Path(__file__).with_suffix(".json")
+IDENTITY_APPROVAL = ROOT / "candle/top100_identity_approval.json"
 AUDITED_BASE_COMMIT = "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d"
+HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 NEEDS_RE = re.compile(r'^\s*needs\s*"([^"]+)"\s*;;', re.MULTILINE)
 LET_BINDING_RE = re.compile(
     r"^[ \t]*let[ \t]+([A-Za-z][A-Za-z0-9_']*)[ \t]*=", re.MULTILINE)
@@ -152,30 +155,66 @@ AUDITED_MAPPING_RATIONALES = {
     ),
 }
 
-# Approved reference identities belong here only after a pinned, independently
-# reviewed reference run.  Each value has exactly ``serializer_sha256`` and an
-# ordered ``theorems`` list in the format emitted by regression.py.  Keeping
-# this empty makes every current observation explicitly incomparable.
-EXPECTED_IDENTITIES = {}
-
 EXPECTED_RECORD_FIELDS = {
     "name", "theorem_sha256", "hypotheses_sha256", "conclusion_sha256",
     "global_axioms_sha256", "hypothesis_count", "global_axiom_count",
 }
+POST_STATE_FIELDS = {
+    "kernel_state_sha256",
+    "type_constants_sha256", "type_constant_count",
+    "term_constants_sha256", "term_constant_count",
+    "definitions_sha256", "definition_count",
+    "global_axioms_sha256", "global_axiom_count",
+}
+EXPECTED_IDENTITY_FIELDS = {
+    "approval_sha256", "serializer_sha256", "theorems", "post_state",
+}
+APPROVAL_FIELDS = {
+    "schema", "artifact_kind", "approval_status", "promotion_allowed",
+    "inventory_contract_sha256", "serializer_sha256", "reference_policy",
+    "review", "targets",
+}
+REFERENCE_RUN_FIELDS = {
+    "candidate_sha256", "plan_sha256", "request_sha256",
+    "transcript_sha256", "reference_git_head", "source_contract_sha256",
+    "session_nonce", "identity_sha256",
+}
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
+COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 
 
 def _is_sha256(value):
     return isinstance(value, str) and SHA256_RE.fullmatch(value) is not None
 
 
-def _validate_expected_identity_object(target, theorem_names, expected):
+def _validate_post_state(target, value):
+    if not isinstance(value, dict) or set(value) != POST_STATE_FIELDS:
+        raise ValueError(f"{target}: malformed expected post-state identity")
+    for field in POST_STATE_FIELDS:
+        if field.endswith("_sha256"):
+            if not _is_sha256(value[field]):
+                raise ValueError(f"{target}: malformed expected state hash: {field}")
+        else:
+            count = value[field]
+            if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+                raise ValueError(f"{target}: malformed expected state count: {field}")
+    if value["global_axiom_count"] != 3:
+        raise ValueError(f"{target}: expected post-state must use three axioms")
+    return value
+
+
+def _validate_expected_identity_object(target, theorem_names, expected,
+                                       approval_sha256=None):
     """Reject candidates or malformed approvals before manifest generation."""
     if expected is None:
         return None
-    if not isinstance(expected, dict) or set(expected) != {
-            "serializer_sha256", "theorems"}:
+    if not isinstance(expected, dict) or set(expected) != EXPECTED_IDENTITY_FIELDS:
         raise ValueError(f"{target}: malformed expected identity object")
+    if not _is_sha256(expected["approval_sha256"]):
+        raise ValueError(f"{target}: malformed expected approval identity")
+    if (approval_sha256 is not None and
+            expected["approval_sha256"] != approval_sha256):
+        raise ValueError(f"{target}: expected approval identity mismatch")
     if not _is_sha256(expected["serializer_sha256"]):
         raise ValueError(f"{target}: malformed expected serializer identity")
     records = expected["theorems"]
@@ -195,7 +234,181 @@ def _validate_expected_identity_object(target, theorem_names, expected):
             value = record[field]
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 raise ValueError(f"{target}: malformed expected count: {field}")
+    _validate_post_state(target, expected["post_state"])
+    axiom_identities = {
+        (record["global_axioms_sha256"], record["global_axiom_count"])
+        for record in records
+    }
+    state_axiom = (expected["post_state"]["global_axioms_sha256"],
+                   expected["post_state"]["global_axiom_count"])
+    if axiom_identities != {state_axiom}:
+        raise ValueError(f"{target}: theorem/post-state axiom identity mismatch")
     return expected
+
+
+def _reject_duplicate_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key in identity approval: {key}")
+        result[key] = value
+    return result
+
+
+def _canonical_sha256(value):
+    encoded = json.dumps(
+        value, ensure_ascii=True, separators=(",", ":"), sort_keys=True,
+    ).encode("ascii")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _inventory_contract(targets):
+    projection = {
+        "schema": "candle-great100-inventory-contract-v1",
+        "target_count": len(targets),
+        "covered_source_count": len({
+            path for target in targets for path in target["load_files"]}),
+        "theorem_request_count": sum(
+            len(target["fingerprint_request"]["theorems"])
+            for target in targets),
+        "targets": [{
+            "name": target["name"],
+            "load_files": target["load_files"],
+            "load_file_sha256": target["load_file_sha256"],
+            "mapping_status": target["fingerprint_request"]["mapping_status"],
+            "theorem_names": [
+                theorem["name"]
+                for theorem in target["fingerprint_request"]["theorems"]
+            ],
+        } for target in targets],
+    }
+    if (projection["target_count"], projection["covered_source_count"],
+            projection["theorem_request_count"]) != (65, 66, 97):
+        raise ValueError("Great 100 canonical inventory is not 65/66/97")
+    return projection, _canonical_sha256(projection)
+
+
+def _load_identity_approval(targets):
+    source = IDENTITY_APPROVAL.read_bytes()
+    try:
+        approval = json.loads(
+            source.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("malformed Great 100 identity approval artifact") from error
+    approval_sha256 = hashlib.sha256(source).hexdigest()
+    if not isinstance(approval, dict) or set(approval) != APPROVAL_FIELDS:
+        raise ValueError("malformed Great 100 identity approval fields")
+    if (approval["schema"] != "candle-s1-identity-approval-v1" or
+            approval["artifact_kind"] !=
+            "independently-reviewed-ocaml-reference-identities"):
+        raise ValueError("unsupported Great 100 identity approval artifact")
+    _, inventory_sha256 = _inventory_contract(targets)
+    if approval["approval_status"] == "unapproved":
+        if approval != {
+                "schema": "candle-s1-identity-approval-v1",
+                "artifact_kind":
+                    "independently-reviewed-ocaml-reference-identities",
+                "approval_status": "unapproved",
+                "promotion_allowed": False,
+                "inventory_contract_sha256": None,
+                "serializer_sha256": None,
+                "reference_policy": None,
+                "review": None,
+                "targets": [],
+        }:
+            raise ValueError("unapproved identity artifact carries promotable data")
+        return approval, approval_sha256, {}, inventory_sha256
+
+    if approval["approval_status"] != "approved" or \
+            approval["promotion_allowed"] is not True:
+        raise ValueError("identity approval is not fail-closed")
+    if approval["inventory_contract_sha256"] != inventory_sha256:
+        raise ValueError("identity approval inventory contract mismatch")
+    serializer_sha256 = _sha256(ROOT / "candle/fingerprint.ml")
+    if approval["serializer_sha256"] != serializer_sha256:
+        raise ValueError("identity approval serializer mismatch")
+    policy = approval["reference_policy"]
+    if not isinstance(policy, dict) or set(policy) != {
+            "historical_upstream_commit", "exact_source_reference_commit",
+            "compatibility_deltas"}:
+        raise ValueError("malformed identity reference policy")
+    if (policy["historical_upstream_commit"] != HISTORICAL_REFERENCE_COMMIT or
+            not isinstance(policy["exact_source_reference_commit"], str) or
+            COMMIT_RE.fullmatch(policy["exact_source_reference_commit"]) is None):
+        raise ValueError("identity reference commits are not pinned")
+    deltas = policy["compatibility_deltas"]
+    if not isinstance(deltas, list) or len(deltas) != 3:
+        raise ValueError("identity reference policy must review three source deltas")
+    expected_delta_paths = {
+        "100/e_is_transcendental.ml", "100/euler.ml", "100/lagrange.ml"}
+    observed_delta_paths = set()
+    for delta in deltas:
+        if not isinstance(delta, dict) or set(delta) != {
+                "path", "historical_sha256", "selected_sha256", "reason"}:
+            raise ValueError("malformed identity reference source delta")
+        observed_delta_paths.add(delta["path"])
+        if (not _is_sha256(delta["historical_sha256"]) or
+                not _is_sha256(delta["selected_sha256"]) or
+                not isinstance(delta["reason"], str) or not delta["reason"]):
+            raise ValueError("malformed identity reference source delta value")
+    if observed_delta_paths != expected_delta_paths:
+        raise ValueError("identity reference source delta set mismatch")
+    review = approval["review"]
+    if not isinstance(review, dict) or set(review) != {
+            "reviewer", "approved_utc", "review_commit", "decision"}:
+        raise ValueError("malformed independent identity review")
+    if (not isinstance(review["reviewer"], str) or not review["reviewer"] or
+            not isinstance(review["decision"], str) or
+            review["decision"] !=
+            "two-reference-runs-identical-and-source-deltas-reviewed" or
+            not isinstance(review["review_commit"], str) or
+            COMMIT_RE.fullmatch(review["review_commit"]) is None):
+        raise ValueError("identity approval lacks an independent review")
+    try:
+        approved_time = datetime.fromisoformat(review["approved_utc"])
+    except (TypeError, ValueError) as error:
+        raise ValueError("malformed identity approval time") from error
+    if approved_time.tzinfo is None:
+        raise ValueError("identity approval time lacks timezone")
+
+    approved_targets = approval["targets"]
+    if not isinstance(approved_targets, list) or len(approved_targets) != 65:
+        raise ValueError("identity approval does not cover 65 targets")
+    expected = {}
+    for target, approved in zip(targets, approved_targets):
+        if not isinstance(approved, dict) or set(approved) != {
+                "name", "reference_runs", "expected_identity"}:
+            raise ValueError("malformed approved target identity")
+        if approved["name"] != target["name"]:
+            raise ValueError("approved target order mismatch")
+        runs = approved["reference_runs"]
+        if not isinstance(runs, list) or len(runs) != 2:
+            raise ValueError(f"{target['name']}: two reference runs required")
+        nonces = set()
+        identities = set()
+        for run in runs:
+            if not isinstance(run, dict) or set(run) != REFERENCE_RUN_FIELDS:
+                raise ValueError(f"{target['name']}: malformed reference run")
+            for field, value in run.items():
+                if field == "reference_git_head":
+                    if not isinstance(value, str) or COMMIT_RE.fullmatch(value) is None:
+                        raise ValueError(f"{target['name']}: malformed reference head")
+                elif not _is_sha256(value):
+                    raise ValueError(f"{target['name']}: malformed reference run hash")
+            nonces.add(run["session_nonce"])
+            identities.add(run["identity_sha256"])
+        if len(nonces) != 2 or len(identities) != 1:
+            raise ValueError(f"{target['name']}: reference runs are not independent/equal")
+        identity = dict(approved["expected_identity"])
+        identity["approval_sha256"] = approval_sha256
+        _validate_expected_identity_object(
+            target["name"],
+            [item["name"] for item in target["fingerprint_request"]["theorems"]],
+            identity, approval_sha256)
+        if _canonical_sha256(approved["expected_identity"]) != next(iter(identities)):
+            raise ValueError(f"{target['name']}: approved identity evidence mismatch")
+        expected[target["name"]] = identity
+    return approval, approval_sha256, expected, inventory_sha256
 
 
 # Observations are evidence, not acceptance-policy exceptions.  Keep expected
@@ -642,9 +855,14 @@ def _theorem_request(target, load_files):
         "review_note": review_note,
         "theorems": theorems,
         "identity_contract": {
+            "serializer_wire": "candle structural fingerprint v2",
             "theorem": "canonical structural theorem serialization",
             "hypotheses": "canonical sorted structural term serializations",
             "assumptions": "canonical sorted global HOL axiom serializations",
+            "post_state": (
+                "canonical sorted type declarations, term declarations, "
+                "primitive definition theorems, and global axioms"
+            ),
         },
         "expected_identities": None,
     }
@@ -657,11 +875,6 @@ def build_manifest():
         raise ValueError(
             "named theorem requests are not Great 100 targets: "
             + ", ".join(sorted(unknown_mapping_targets)))
-    unknown_expected_targets = set(EXPECTED_IDENTITIES) - set(names)
-    if unknown_expected_targets:
-        raise ValueError(
-            "expected identities are not Great 100 targets: "
-            + ", ".join(sorted(unknown_expected_targets)))
     targets = []
     covered_sources = set()
     for name in names:
@@ -677,10 +890,6 @@ def build_manifest():
             else "missing"
         )
         fingerprint_request = _theorem_request(name, load_files)
-        expected_identities = _validate_expected_identity_object(
-            name,
-            [theorem["name"] for theorem in fingerprint_request["theorems"]],
-            EXPECTED_IDENTITIES.get(name))
         targets.append({
             "name": name,
             "load_files": load_files,
@@ -692,15 +901,22 @@ def build_manifest():
             "skip": None,
             "fingerprint_request": {
                 **fingerprint_request,
-                "expected_identities": expected_identities,
+                "expected_identities": None,
             },
             "fingerprints": {
                 "status": fingerprint_status,
                 "theorems": None,
                 "assumptions": None,
+                "post_state": None,
             },
             "baseline_observation": observation,
         })
+
+    approval, approval_sha256, expected_identities, inventory_sha256 = \
+        _load_identity_approval(targets)
+    for target in targets:
+        target["fingerprint_request"]["expected_identities"] = \
+            expected_identities.get(target["name"])
 
     all_sources = {
         path.relative_to(ROOT).as_posix() for path in (ROOT / "100").glob("*.ml")
@@ -725,6 +941,20 @@ def build_manifest():
             "variable": "GREAT_100_THEOREMS",
         },
         "dependency_scan": "direct literal needs \"path\";; calls in load_files",
+        "inventory_contract": {
+            "schema": "candle-great100-inventory-contract-v1",
+            "sha256": inventory_sha256,
+            "target_count": 65,
+            "covered_source_count": 66,
+            "theorem_request_count": 97,
+        },
+        "identity_approval": {
+            "path": IDENTITY_APPROVAL.relative_to(ROOT).as_posix(),
+            "sha256": approval_sha256,
+            "schema": approval["schema"],
+            "approval_status": approval["approval_status"],
+            "promotion_allowed": approval["promotion_allowed"],
+        },
         "execution_contract": {
             "baseline": "hol.ml",
             "isolation": "fresh Candle process per target",
