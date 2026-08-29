@@ -786,6 +786,30 @@ class Top100ManifestTest(unittest.TestCase):
                 self.assertEqual(
                     expected[targets[0]["name"]]["approval_sha256"],
                     artifact_sha256)
+                receipt_artifact = approval["collection_evidence"]["receipt"]
+                receipt_path = root / receipt_artifact["path"]
+                original_receipt_source = receipt_path.read_bytes()
+                changed_receipt = json.loads(original_receipt_source)
+                changed_receipt["closed"] = False
+                changed_receipt_source = (
+                    json.dumps(changed_receipt, indent=2, sort_keys=True) +
+                    "\n").encode()
+                receipt_path.write_bytes(changed_receipt_source)
+                receipt_artifact["bytes"] = len(changed_receipt_source)
+                receipt_artifact["sha256"] = \
+                    top100_manifest.hashlib.sha256(
+                        changed_receipt_source).hexdigest()
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "not closed and exact"):
+                    top100_manifest._load_identity_approval(targets)
+                receipt_path.write_bytes(original_receipt_source)
+                receipt_artifact["bytes"] = len(original_receipt_source)
+                receipt_artifact["sha256"] = \
+                    top100_manifest.hashlib.sha256(
+                        original_receipt_source).hexdigest()
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
                 approval["reference_policy"][
                     "exact_source_reference_commit"] = \
                     "6ce6fc15ed6a399902757a294bc59c954ebbbd85"
