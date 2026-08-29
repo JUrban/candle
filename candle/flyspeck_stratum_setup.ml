@@ -46,6 +46,12 @@ Cakeml.configureSourceIdentities
   (map candle_flyspeck_stratum_source_identity
        candle_flyspeck_source_digests);;
 
+if List.length candle_flyspeck_stratum_source_aliases <>
+     candle_flyspeck_stratum_source_alias_count then
+  failwith "incomplete Flyspeck stratum source-alias table";;
+
+Cakeml.configureSourceAliases candle_flyspeck_stratum_source_aliases;;
+
 if List.length candle_flyspeck_stratum_normalized_sources <>
      candle_flyspeck_stratum_normalization_count then
   failwith "incomplete Flyspeck stratum normalized source table";;

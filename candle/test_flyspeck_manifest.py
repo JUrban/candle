@@ -175,6 +175,24 @@ class SyntaxTests(unittest.TestCase):
             )
             self.assertEqual(resolver.resolve("/tmp/x.ml"), ([], "absolute source dependency"))
 
+            (flyspeck / "external").mkdir()
+            (flyspeck / "external/y.ml").write_text("alias", encoding="utf-8")
+            matches, error = resolver.resolve("../external/y.ml")
+            self.assertIsNone(error)
+            self.assertEqual(matches[0].key, "flyspeck:external/y.ml")
+            self.assertEqual(
+                resolver.selected_lookup("../external/y.ml", matches[0]),
+                {
+                    "target": "../external/y.ml",
+                    "search_root_index": 0,
+                    "alias_repository": "flyspeck",
+                    "alias_path": "text_formalization/../external/y.ml",
+                    "selected": "flyspeck:external/y.ml",
+                    "canonical_repository": "flyspeck",
+                    "canonical_path": "external/y.ml",
+                },
+            )
+
 
 class GeneratedManifestTests(unittest.TestCase):
     @classmethod
@@ -199,6 +217,49 @@ class GeneratedManifestTests(unittest.TestCase):
                 "flyspeck:text_formalization/build/strictbuild.hl",
             ],
         )
+
+    def test_source_alias_contract_closes_every_lexical_selection(self):
+        contract = self.payload["source_alias_contract"]
+        self.assertEqual(contract["schema"], 1)
+        self.assertEqual(contract["record_count"], 37)
+        self.assertEqual(contract["occurrence_count"], 153)
+        records = contract["records"]
+        self.assertEqual(len(records), contract["record_count"])
+        aliases = {
+            (record["alias_repository"], record["alias_path"]): record
+            for record in records
+        }
+        self.assertEqual(len(aliases), len(records))
+        self.assertEqual(
+            sum(record["occurrence_count"] for record in records),
+            contract["occurrence_count"],
+        )
+        for record in records:
+            self.assertEqual(len(record["uses"]), record["occurrence_count"])
+            self.assertEqual(
+                record["selected"],
+                f"{record['canonical_repository']}:{record['canonical_path']}",
+            )
+            self.assertNotEqual(
+                (record["alias_repository"], record["alias_path"]),
+                (record["canonical_repository"], record["canonical_path"]),
+            )
+            self.assertIn("..", Path(record["alias_path"]).parts)
+        ssreflect = aliases[
+            (
+                "flyspeck",
+                "text_formalization/../jHOLLight/caml/ssreflect.hl",
+            )
+        ]
+        self.assertEqual(ssreflect["canonical_path"], "jHOLLight/caml/ssreflect.hl")
+        self.assertEqual(ssreflect["occurrence_count"], 2)
+        setup = Path(__file__).with_name(
+            "flyspeck_stratum_setup.ml"
+        ).read_text(encoding="utf-8")
+        alias_configuration = setup.index("Cakeml.configureSourceAliases")
+        overlay_configuration = setup.index("Cakeml.configureNormalizationOverlay")
+        self.assertLess(alias_configuration, overlay_configuration)
+        self.assertIn("candle_flyspeck_stratum_source_alias_count", setup)
 
     def test_build_strata_cover_order_and_dependency_graph(self):
         strata = self.payload["build_strata"]

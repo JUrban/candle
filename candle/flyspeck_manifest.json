@@ -6994,6 +6994,1284 @@
     }
   },
   "schema": 1,
+  "source_alias_contract": {
+    "occurrence_count": 153,
+    "policy": "resolve each authenticated lexical alias to its manifest-selected canonical source before normalization, logical identity lookup, and physical loader-cache lookup",
+    "record_count": 37,
+    "records": [
+      {
+        "alias_path": "text_formalization/../formal_graph/archive/archive_all.ml",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_graph/archive/archive_all.ml",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 4,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_graph/archive/archive_all.ml",
+        "target": "../formal_graph/archive/archive_all.ml",
+        "uses": [
+          {
+            "action_index": 154,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 326,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "reviewed-dynamic-source-action",
+            "line": 54,
+            "parent_source": "flyspeck:formal_lp/glpk/lpproc.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/glpk/glpk_link.ml",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/glpk/glpk_link.ml",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/glpk/glpk_link.ml",
+        "target": "../formal_lp/glpk/glpk_link.ml",
+        "uses": [
+          {
+            "action_index": 153,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 324,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "reviewed-dynamic-source-action",
+            "line": 53,
+            "parent_source": "flyspeck:formal_lp/glpk/lpproc.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/glpk/lpproc.ml",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/glpk/lpproc.ml",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/glpk/lpproc.ml",
+        "target": "../formal_lp/glpk/lpproc.ml",
+        "uses": [
+          {
+            "action_index": 155,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 328,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/arith_link.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/arith_link.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 5,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/arith_link.hl",
+        "target": "../formal_lp/hypermap/arith_link.hl",
+        "uses": [
+          {
+            "action_index": 152,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 322,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/more_arith/arith_int.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 7,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/list_conversions2.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 7,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/computations/informal_computations.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/computations/informal_computations.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/computations/informal_computations.hl",
+        "target": "../formal_lp/hypermap/computations/informal_computations.hl",
+        "uses": [
+          {
+            "action_index": 178,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 374,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 6,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/computations/list_conversions2.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/computations/list_conversions2.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/computations/list_conversions2.hl",
+        "target": "../formal_lp/hypermap/computations/list_conversions2.hl",
+        "uses": [
+          {
+            "action_index": 168,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 354,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 6,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/computations/list_hypermap_computations.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/computations/list_hypermap_computations.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 4,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl",
+        "target": "../formal_lp/hypermap/computations/list_hypermap_computations.hl",
+        "uses": [
+          {
+            "action_index": 169,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 356,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 5,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 6,
+            "parent_source": "flyspeck:text_formalization/tame/good_list_archive.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/computations/more_theory-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/computations/more_theory-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 5,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl",
+        "target": "../formal_lp/hypermap/computations/more_theory-compiled.hl",
+        "uses": [
+          {
+            "action_index": 166,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 233,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 350,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 486,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 7,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
+        "uses": [
+          {
+            "action_index": 172,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 362,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "uses": [
+          {
+            "action_index": 176,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 370,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
+        "uses": [
+          {
+            "action_index": 175,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 368,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 6,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
+        "uses": [
+          {
+            "action_index": 171,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 360,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 5,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
+        "uses": [
+          {
+            "action_index": 167,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 231,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 352,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 482,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
+        "uses": [
+          {
+            "action_index": 174,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 366,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 6,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "uses": [
+          {
+            "action_index": 173,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 364,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 8,
+            "parent_source": "flyspeck:text_formalization/general/the_kepler_conjecture.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 5,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 7,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
+        "uses": [
+          {
+            "action_index": 158,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 283,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 334,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 586,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 11,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
+        "uses": [
+          {
+            "action_index": 160,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 285,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 338,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 590,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/MQMSMAB-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 4,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 4,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
+        "uses": [
+          {
+            "action_index": 164,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 346,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 5,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 6,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        "uses": [
+          {
+            "action_index": 165,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 287,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 348,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 594,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 4,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 9,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
+        "target": "../formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
+        "uses": [
+          {
+            "action_index": 162,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 286,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 342,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 592,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/MQMSMAB-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 6,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/main/lp_certificate.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/main/lp_certificate.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
+        "target": "../formal_lp/hypermap/main/lp_certificate.hl",
+        "uses": [
+          {
+            "action_index": 177,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 372,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 4,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "target": "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "uses": [
+          {
+            "action_index": 182,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 382,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/verify_all.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 4,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "target": "../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "uses": [
+          {
+            "action_index": 145,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 306,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 7,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
+        "target": "../formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
+        "uses": [
+          {
+            "action_index": 156,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 230,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 330,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 480,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 11,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
+        "target": "../formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
+        "uses": [
+          {
+            "action_index": 157,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 232,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 332,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 484,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 12,
+            "parent_source": "flyspeck:text_formalization/tame/WMLNYMD.hl"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 13,
+            "parent_source": "flyspeck:text_formalization/tame/tame_defs2.hl"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 16,
+            "parent_source": "flyspeck:text_formalization/tame/more_tame_concl.hl"
+          },
+          {
+            "action_kind": "flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 17,
+            "parent_source": "flyspeck:text_formalization/tame/reduction2.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 5,
+            "parent_source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/hypermap/verify_all.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/hypermap/verify_all.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/hypermap/verify_all.hl",
+        "target": "../formal_lp/hypermap/verify_all.hl",
+        "uses": [
+          {
+            "action_index": 183,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 384,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/ineqs/constants_approx.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/ineqs/constants_approx.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 6,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/ineqs/constants_approx.hl",
+        "target": "../formal_lp/ineqs/constants_approx.hl",
+        "uses": [
+          {
+            "action_index": 159,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_index": 284,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 336,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 588,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/ineqs/delta_ineq.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/ineqs/delta_ineq.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/ineqs/delta_ineq.hl",
+        "target": "../formal_lp/ineqs/delta_ineq.hl",
+        "uses": [
+          {
+            "action_index": 163,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 344,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 3,
+            "parent_source": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/more_arith/arith_int.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/more_arith/arith_int.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/more_arith/arith_int.hl",
+        "target": "../formal_lp/more_arith/arith_int.hl",
+        "uses": [
+          {
+            "action_index": 180,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 378,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 2,
+            "parent_source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/more_arith/lin_f.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/more_arith/lin_f.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/more_arith/lin_f.hl",
+        "target": "../formal_lp/more_arith/lin_f.hl",
+        "uses": [
+          {
+            "action_index": 179,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 376,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 1,
+            "parent_source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../formal_lp/more_arith/prove_lp.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "formal_lp/more_arith/prove_lp.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 3,
+        "search_root_index": 0,
+        "selected": "flyspeck:formal_lp/more_arith/prove_lp.hl",
+        "target": "../formal_lp/more_arith/prove_lp.hl",
+        "uses": [
+          {
+            "action_index": 181,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 380,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          },
+          {
+            "action_kind": "needs",
+            "kind": "literal-source-action",
+            "line": 7,
+            "parent_source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/Examples/seq-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/Examples/seq-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/Examples/seq-compiled.hl",
+        "target": "../jHOLLight/Examples/seq-compiled.hl",
+        "uses": [
+          {
+            "action_index": 141,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 298,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/Examples/ssrbool-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/Examples/ssrbool-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl",
+        "target": "../jHOLLight/Examples/ssrbool-compiled.hl",
+        "uses": [
+          {
+            "action_index": 129,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 274,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/Examples/ssrfun-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/Examples/ssrfun-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl",
+        "target": "../jHOLLight/Examples/ssrfun-compiled.hl",
+        "uses": [
+          {
+            "action_index": 128,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 272,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/Examples/ssrnat-compiled.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/Examples/ssrnat-compiled.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl",
+        "target": "../jHOLLight/Examples/ssrnat-compiled.hl",
+        "uses": [
+          {
+            "action_index": 130,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 276,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/caml/sections.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/caml/sections.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/caml/sections.hl",
+        "target": "../jHOLLight/caml/sections.hl",
+        "uses": [
+          {
+            "action_index": 127,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 270,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      },
+      {
+        "alias_path": "text_formalization/../jHOLLight/caml/ssreflect.hl",
+        "alias_repository": "flyspeck",
+        "canonical_path": "jHOLLight/caml/ssreflect.hl",
+        "canonical_repository": "flyspeck",
+        "occurrence_count": 2,
+        "search_root_index": 0,
+        "selected": "flyspeck:jHOLLight/caml/ssreflect.hl",
+        "target": "../jHOLLight/caml/ssreflect.hl",
+        "uses": [
+          {
+            "action_index": 126,
+            "kind": "build-sequence-root"
+          },
+          {
+            "action_kind": "#flyspeck_needs",
+            "kind": "literal-source-action",
+            "line": 268,
+            "parent_source": "candle:candle/flyspeck_full_build.ml"
+          }
+        ]
+      }
+    ],
+    "schema": 1
+  },
   "source_digest_contract": {
     "activation_status": "preflight-before-strictbuild",
     "algorithm": "MD5 for OCaml Digest.file compatibility",

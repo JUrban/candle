@@ -565,6 +565,83 @@ def resolve_source(binding: dict[str, Any], candle_root: Path, flyspeck_root: Pa
     return root / binding["path"]
 
 
+def validate_source_alias_contract(
+    manifest: dict[str, Any], source_by_key: dict[str, dict[str, Any]],
+    candle_root: Path, flyspeck_root: Path,
+) -> list[dict[str, str]]:
+    """Bind every lexical loader alias to one authenticated canonical source."""
+    alias_contract = manifest.get("source_alias_contract")
+    require(isinstance(alias_contract, dict) and set(alias_contract) == {
+        "schema", "policy", "record_count", "occurrence_count", "records",
+    }, "malformed source alias contract")
+    alias_records = alias_contract.get("records")
+    require(alias_contract.get("schema") == 1 and
+            isinstance(alias_records, list) and
+            all(isinstance(record, dict) for record in alias_records) and
+            alias_contract.get("record_count") == len(alias_records),
+            "source alias contract count mismatch")
+    require(alias_contract.get("occurrence_count") == sum(
+        record.get("occurrence_count", -1) for record in alias_records
+    ), "source alias occurrence count mismatch")
+    source_alias_runtime: list[dict[str, str]] = []
+    seen_aliases: set[tuple[str, str]] = set()
+    for record in alias_records:
+        require(set(record) == {
+            "target", "search_root_index", "alias_repository", "alias_path",
+            "selected", "canonical_repository", "canonical_path",
+            "occurrence_count", "uses",
+        }, "malformed source alias record")
+        alias_repository = record.get("alias_repository")
+        canonical_repository = record.get("canonical_repository")
+        alias_value = record.get("alias_path")
+        canonical_value = record.get("canonical_path")
+        require(alias_repository in {"candle", "flyspeck"} and
+                canonical_repository in {"candle", "flyspeck"} and
+                isinstance(alias_value, str) and
+                isinstance(canonical_value, str),
+                "malformed source alias path binding")
+        alias_relative = Path(alias_value)
+        canonical_relative = safe_relative(
+            canonical_value, "canonical source alias",
+        )
+        require(not alias_relative.is_absolute() and
+                alias_relative.parts and
+                all(part not in {"", "."} for part in alias_relative.parts) and
+                ".." in alias_relative.parts,
+                f"source alias is not an explicit lexical alias: {alias_value}")
+        alias_key = (alias_repository, alias_value)
+        require(alias_key not in seen_aliases, "duplicate source alias record")
+        seen_aliases.add(alias_key)
+        selected = record.get("selected")
+        require(selected == f"{canonical_repository}:{canonical_value}" and
+                selected in source_by_key,
+                "source alias canonical selection is unbound")
+        uses = record.get("uses")
+        require(isinstance(uses, list) and uses and
+                record.get("occurrence_count") == len(uses),
+                "source alias occurrence closure mismatch")
+        alias_root = candle_root if alias_repository == "candle" else flyspeck_root
+        canonical_root = (
+            candle_root if canonical_repository == "candle" else flyspeck_root
+        )
+        alias_path = alias_root / alias_relative
+        canonical_path = canonical_root / canonical_relative
+        require(alias_path.is_file() and not alias_path.is_symlink() and
+                alias_path.resolve(strict=True) == canonical_path.resolve(strict=True),
+                f"source alias no longer selects canonical source: {alias_value}")
+        source_alias_runtime.append({
+            "alias_repository": alias_repository,
+            "alias_relative": alias_value,
+            "canonical_repository": canonical_repository,
+            "canonical_relative": canonical_value,
+            "alias": str(alias_path),
+            "canonical": str(canonical_path),
+        })
+    require(len(source_alias_runtime) == alias_contract["record_count"],
+            "source alias runtime closure mismatch")
+    return source_alias_runtime
+
+
 def order_lp_certificate_runtime(
     generated_runtime: list[dict[str, Any]],
     expected_basenames: Any,
@@ -724,6 +801,10 @@ def validate_plan(
                       f"source binding {key}")
         source_by_key[key] = binding
         source_runtime.append({**binding, "absolute": str(source_path)})
+
+    source_alias_runtime = validate_source_alias_contract(
+        manifest, source_by_key, candle_root, flyspeck_root,
+    )
 
     digest_contract = manifest.get("source_digest_contract")
     require(isinstance(digest_contract, dict), "missing source digest contract")
@@ -922,6 +1003,7 @@ def validate_plan(
         "actions": action_runtime,
         "logical_source_closure": logical_source_closure,
         "source_runtime": source_runtime,
+        "source_alias_runtime": source_alias_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
         "lp_certificate_runtime": lp_certificate_runtime,
@@ -1376,11 +1458,23 @@ def write_config(
             "let candle_flyspeck_stratum_normalization_count = "
             f"{len(prepared['normalized_runtime'])};;"
         ),
+        (
+            "let candle_flyspeck_stratum_source_alias_count = "
+            f"{len(prepared['source_alias_runtime'])};;"
+        ),
         f"let candle_flyspeck_stratum_attempt_nonce = {string(prepared['attempt_nonce'])};;",
         f"let candle_flyspeck_stratum_program = {string(execution_program)};;",
         f"let candle_flyspeck_stratum_program_md5 = {string(execution_md5)};;",
-        "let candle_flyspeck_stratum_normalized_sources = [",
+        "let candle_flyspeck_stratum_source_aliases = [",
     ]
+    for item in prepared["source_alias_runtime"]:
+        lines.append(
+            f"  ({string(item['alias'])},{string(item['canonical'])});"
+        )
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_stratum_normalized_sources = [",
+    ])
     for item in prepared["normalized_runtime"]:
         lines.append(
             f"  ({string(item['original'])},{string(item['output'])},{string(item['md5'])});"
@@ -2014,6 +2108,27 @@ def create_runtime_snapshot(
         )
         add_record(binding["repository"], f"source:{binding['repository']}", record)
 
+    source_alias_runtime = []
+    for item in prepared["source_alias_runtime"]:
+        alias_root = (
+            candle_snapshot
+            if item["alias_repository"] == "candle" else flyspeck_snapshot
+        )
+        canonical_root = (
+            candle_snapshot
+            if item["canonical_repository"] == "candle" else flyspeck_snapshot
+        )
+        alias = alias_root / Path(item["alias_relative"])
+        canonical = canonical_root / safe_relative(
+            item["canonical_relative"], "snapshot canonical source alias",
+        )
+        require(alias.is_file() and not alias.is_symlink() and
+                alias.resolve(strict=True) == canonical.resolve(strict=True),
+                f"snapshot source alias differs from canonical source: {alias}")
+        source_alias_runtime.append({
+            **item, "alias": str(alias), "canonical": str(canonical),
+        })
+
     for relative in (SOURCE_DIGEST_RELATIVE, SETUP_RELATIVE, CHECK_RELATIVE,
                      FINGERPRINT_RELATIVE, L2_TARGET_RELATIVE):
         record = snapshot_copy(
@@ -2236,6 +2351,7 @@ def create_runtime_snapshot(
         "flyspeck_root": flyspeck_snapshot,
         "overlay_root": overlay_snapshot,
         "generated_root": generated_snapshot,
+        "source_alias_runtime": source_alias_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
         "lp_certificate_runtime": lp_certificate_runtime,

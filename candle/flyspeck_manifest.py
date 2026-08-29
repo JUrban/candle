@@ -771,10 +771,12 @@ class Resolver:
         self.candle_root = candle_root.resolve()
         self.flyspeck_root = flyspeck_root.resolve()
         self.search_roots = (
-            self.flyspeck_root / "text_formalization",
-            self.flyspeck_root / "formal_ineqs",
-            self.flyspeck_root / "jHOLLight",
-            self.candle_root,
+            ("flyspeck", "text_formalization",
+             self.flyspeck_root / "text_formalization"),
+            ("flyspeck", "formal_ineqs",
+             self.flyspeck_root / "formal_ineqs"),
+            ("flyspeck", "jHOLLight", self.flyspeck_root / "jHOLLight"),
+            ("candle", "", self.candle_root),
         )
 
     def path(self, ref: SourceRef) -> Path:
@@ -792,7 +794,7 @@ class Resolver:
         if os.path.isabs(target):
             return [], "absolute source dependency"
         matches: list[SourceRef] = []
-        for root in self.search_roots:
+        for _repository, _prefix, root in self.search_roots:
             candidate = (root / target).resolve()
             if not candidate.is_file():
                 continue
@@ -802,6 +804,84 @@ class Resolver:
             if ref not in matches:
                 matches.append(ref)
         return matches, None
+
+    def selected_lookup(self, target: str, selected: SourceRef) -> dict[str, object]:
+        """Describe the exact first lexical path that selects one source."""
+        if os.path.isabs(target):
+            raise ValueError(f"absolute selected source target: {target}")
+        for index, (repository, prefix, root) in enumerate(self.search_roots):
+            lexical = root / target
+            if not lexical.is_file():
+                continue
+            observed = self.ref(lexical)
+            if observed != selected:
+                raise ValueError(
+                    f"first lexical source differs from selected source: "
+                    f"{target}: {observed.key} != {selected.key}"
+                )
+            alias_path = (Path(prefix) / target).as_posix()
+            return {
+                "target": target,
+                "search_root_index": index,
+                "alias_repository": repository,
+                "alias_path": alias_path,
+                "selected": selected.key,
+                "canonical_repository": selected.repository,
+                "canonical_path": selected.path,
+            }
+        raise ValueError(f"selected source target no longer resolves: {target}")
+
+
+def _source_alias_contract(
+    occurrences: list[dict[str, object]],
+) -> dict[str, object]:
+    grouped: dict[tuple[str, str], dict[str, object]] = {}
+    for occurrence in occurrences:
+        lookup = occurrence["lookup"]
+        if not isinstance(lookup, dict):
+            raise ValueError("malformed source alias lookup occurrence")
+        alias_key = (
+            str(lookup["alias_repository"]), str(lookup["alias_path"]),
+        )
+        canonical_key = (
+            str(lookup["canonical_repository"]),
+            str(lookup["canonical_path"]),
+        )
+        if alias_key == canonical_key:
+            continue
+        use = {key: value for key, value in occurrence.items() if key != "lookup"}
+        prior = grouped.get(alias_key)
+        if prior is None:
+            grouped[alias_key] = {**lookup, "uses": [use]}
+        else:
+            for field in (
+                "target", "search_root_index", "selected",
+                "canonical_repository", "canonical_path",
+            ):
+                if prior[field] != lookup[field]:
+                    raise ValueError(
+                        f"source alias has conflicting selections: {alias_key}"
+                    )
+            prior["uses"].append(use)
+    records = []
+    for key in sorted(grouped):
+        record = grouped[key]
+        uses = sorted(
+            record.pop("uses"),
+            key=lambda use: json.dumps(use, sort_keys=True, separators=(",", ":")),
+        )
+        records.append({**record, "occurrence_count": len(uses), "uses": uses})
+    return {
+        "schema": 1,
+        "policy": (
+            "resolve each authenticated lexical alias to its manifest-selected "
+            "canonical source before normalization, logical identity lookup, "
+            "and physical loader-cache lookup"
+        ),
+        "record_count": len(records),
+        "occurrence_count": sum(record["occurrence_count"] for record in records),
+        "records": records,
+    }
 
 
 def _cycles(edges: dict[str, list[str]]) -> list[list[str]]:
@@ -1025,6 +1105,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     roots = list(bootstrap)
     build_roots: list[dict[str, object]] = []
     unresolved_roots: list[dict[str, object]] = []
+    source_alias_occurrences: list[dict[str, object]] = []
     for index, target in enumerate(sequence):
         matches, error = resolver.resolve(target)
         if error or not matches:
@@ -1032,14 +1113,20 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             build_roots.append(root_entry)
             unresolved_roots.append(root_entry)
         else:
-            roots.append(matches[0])
+            selected = matches[0]
+            roots.append(selected)
             root_entry = {
                 "index": index,
                 "target": target,
                 "status": "resolved" if len(matches) == 1 else "ambiguous",
-                "selected": matches[0].key,
+                "selected": selected.key,
             }
             build_roots.append(root_entry)
+            source_alias_occurrences.append({
+                "kind": "build-sequence-root",
+                "action_index": index,
+                "lookup": resolver.selected_lookup(target, selected),
+            })
             if len(matches) > 1:
                 root_entry["matches"] = [match.key for match in matches]
                 unresolved_roots.append(root_entry)
@@ -1144,6 +1231,15 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         selected_targets.append(matches[0].key)
                         edge_targets.append(matches[0].key)
                         pending.append(matches[0])
+                        source_alias_occurrences.append({
+                            "kind": "reviewed-dynamic-source-action",
+                            "parent_source": ref.key,
+                            "line": int(call["line"]),
+                            "action_kind": str(call["kind"]),
+                            "lookup": resolver.selected_lookup(
+                                str(target), matches[0],
+                            ),
+                        })
                     if selected_targets:
                         dependency["selected_targets"] = selected_targets
             elif call["kind"] == "#load":
@@ -1171,6 +1267,13 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         selected=selected.key,
                         matches=[match.key for match in matches],
                     )
+                    source_alias_occurrences.append({
+                        "kind": "literal-source-action",
+                        "parent_source": ref.key,
+                        "line": int(call["line"]),
+                        "action_kind": str(call["kind"]),
+                        "lookup": resolver.selected_lookup(literal, selected),
+                    })
                     edge_targets.append(selected.key)
                     pending.append(selected)
             dependencies.append(dependency)
@@ -1590,6 +1693,9 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "flyspeck:jHOLLight",
             "candle:.",
         ],
+        "source_alias_contract": _source_alias_contract(
+            source_alias_occurrences,
+        ),
         "build_sequence_source": {
             "path": "flyspeck:text_formalization/build/build.hl",
             "sha256": _sha256(build_file),

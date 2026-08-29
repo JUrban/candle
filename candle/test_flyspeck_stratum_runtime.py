@@ -850,6 +850,10 @@ class StratumRuntimeTests(unittest.TestCase):
                 },
             ],
             "attempt_nonce": self.nonce,
+            "source_alias_runtime": [{
+                "alias": "/flyspeck/text/../canonical/a.hl",
+                "canonical": "/flyspeck/canonical/a.hl",
+            }],
             "normalized_runtime": [
                 {"original": f"/o/{index}", "output": f"/n/{index}", "md5": "2" * 32}
                 for index in range(18)
@@ -877,9 +881,61 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertEqual(certificate_block.count("/inputs/easy_"), 39)
         self.assertNotIn("/inputs/other_", certificate_block)
         self.assertIn("let candle_flyspeck_stratum_normalization_count = 18;;", source)
+        self.assertIn("let candle_flyspeck_stratum_source_alias_count = 1;;", source)
+        self.assertIn(
+            '("/flyspeck/text/../canonical/a.hl",'
+            '"/flyspeck/canonical/a.hl");',
+            source,
+        )
         self.assertIn(
             "let candle_flyspeck_stratum_action_ledger_deltas = [", source,
         )
+
+    def test_source_alias_contract_binds_one_lexical_path_to_canonical(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            candle = root / "candle"
+            flyspeck = root / "flyspeck"
+            candle.mkdir()
+            (flyspeck / "text_formalization").mkdir(parents=True)
+            canonical = flyspeck / "external/a.ml"
+            canonical.parent.mkdir()
+            canonical.write_bytes(b"source")
+            record = {
+                "target": "../external/a.ml",
+                "search_root_index": 0,
+                "alias_repository": "flyspeck",
+                "alias_path": "text_formalization/../external/a.ml",
+                "selected": "flyspeck:external/a.ml",
+                "canonical_repository": "flyspeck",
+                "canonical_path": "external/a.ml",
+                "occurrence_count": 1,
+                "uses": [{"kind": "test", "action_index": 0}],
+            }
+            manifest = {
+                "source_alias_contract": {
+                    "schema": 1,
+                    "policy": "test",
+                    "record_count": 1,
+                    "occurrence_count": 1,
+                    "records": [record],
+                },
+            }
+            observed = subject.validate_source_alias_contract(
+                manifest, {"flyspeck:external/a.ml": {}}, candle, flyspeck,
+            )
+            self.assertEqual(len(observed), 1)
+            self.assertEqual(observed[0]["canonical"], str(canonical))
+            forged = copy.deepcopy(manifest)
+            forged["source_alias_contract"]["records"][0][
+                "canonical_path"
+            ] = "external/other.ml"
+            with self.assertRaisesRegex(
+                subject.ContractError, "canonical selection is unbound",
+            ):
+                subject.validate_source_alias_contract(
+                    forged, {"flyspeck:external/a.ml": {}}, candle, flyspeck,
+                )
 
     def test_snapshot_is_complete_deduplicated_and_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -1018,6 +1074,7 @@ class StratumRuntimeTests(unittest.TestCase):
                     "repository": "flyspeck", "path": "source.ml",
                     "absolute": str(source), **source_record,
                 }],
+                "source_alias_runtime": [],
                 "harness_records": harness_records,
                 "normalized_runtime": [{
                     "relative": "source.ml", "original_relative": "source.ml",
