@@ -131,7 +131,7 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "f87a9a3f7ed42149eb0c4d9c25898c6d" then
+     "2b99c8e3c32b8fc7a76d99b042ce2712" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
