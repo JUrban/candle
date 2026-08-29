@@ -499,7 +499,7 @@ def _load_collection_evidence(approval, targets):
             "sweep_count", "target_count", "total_target_runs", "source_mode",
             "project", "candle", "reference", "runtime", "external_runtime",
             "elf_oracle", "deadlines", "inventory", "controller"} or
-            contract["schema"] != 3 or
+            contract["schema"] not in {3, 4} or
             contract["kind"] !=
             "candle-great100-two-sweep-reference-collection" or
             contract["approval_status"] !=
@@ -509,6 +509,13 @@ def _load_collection_evidence(approval, targets):
             contract["total_target_runs"] != 130 or
             contract["source_mode"] != "manifest-exact"):
         raise ValueError("malformed reference collection contract")
+    external_policy = contract["external_runtime"].get("policy") \
+        if isinstance(contract["external_runtime"], dict) else None
+    if ((contract["schema"] == 3 and external_policy !=
+         "single_private_path_gp_with_pinned_shell_v2") or
+            (contract["schema"] == 4 and external_policy !=
+             "single_private_path_gp_csdp_with_pinned_shell_v3")):
+        raise ValueError("reference collection schema/policy mismatch")
     inventory = contract["inventory"]
     if (not isinstance(inventory, dict) or
             inventory.get("target_count") != 65 or
@@ -931,6 +938,9 @@ def _load_identity_approval(targets):
                     reference_contract["git_head"]):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind plan")
+            route_keys = ("command_shell", "pari_gp", "csdp") \
+                if collection_contract["schema"] == 4 else \
+                ("command_shell", "pari_gp")
             if (external_plan["policy"] != external_contract["policy"] or
                     any(external_plan[key]["argument_path"] !=
                         external_contract[key]["argument_path"] or
@@ -938,7 +948,7 @@ def _load_identity_approval(targets):
                         external_contract[key]["path"] or
                         external_plan[key]["resolved_executable"]["sha256"] !=
                         external_contract[key]["sha256"]
-                        for key in ("command_shell", "pari_gp")) or
+                        for key in route_keys) or
                     external_plan["package_archive"] != {
                         "path": external_contract["package_archive"]["path"],
                         "sha256":
@@ -955,6 +965,28 @@ def _load_identity_approval(targets):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind "
                     "external runtime")
+            if collection_contract["schema"] == 4:
+                csdp_projection = {
+                    "csdp_bytes": external_contract["csdp"]["bytes"],
+                    "csdp_source_archive": {
+                        key: external_contract["csdp_source_archive"][key]
+                        for key in ("path", "sha256", "bytes")},
+                    "csdp_build": {
+                        "receipt": {
+                            key: external_contract["csdp_build"]["receipt"][key]
+                            for key in ("path", "sha256")},
+                        "statement": external_contract["csdp_build"]["statement"],
+                    },
+                    "csdp_probe_input": {
+                        key: external_contract["csdp_probe_input"][key]
+                        for key in ("path", "sha256", "bytes")},
+                    "thread_policy": external_contract["thread_policy"],
+                    "csdp_probe": external_contract["csdp_probe"],
+                }
+                if any(external_plan.get(key) != value
+                       for key, value in csdp_projection.items()):
+                    raise ValueError(
+                        f"{target['name']}: collection contract does not bind CSDP")
             oracle = reference.elf_oracle_projection(core_elf)
             if (reference.elf_oracle_projection(external_elf) != oracle or
                     collection_contract["elf_oracle"] != oracle):
