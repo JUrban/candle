@@ -25,11 +25,22 @@ from typing import Any, BinaryIO
 
 CONTRACT_NAME = "flyspeck_lp_archive_contract.json"
 RECEIPT_NAME = "flyspeck_lp_archive_receipt.json"
+PENDING_RECEIPT_NAME = f".{RECEIPT_NAME}.pending"
 CHUNK_BYTES = 1024 * 1024
+ROOT_MODE = 0o555
+DIRECTORY_MODE = 0o555
+PREPARED_FILE_MODE = 0o644
+RECEIPT_MODE = 0o444
 PUBLICATION_RECORD = {
     "policy": "fresh-root-renameat2-noreplace",
     "failed_staging": "retained",
     "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555",
+        "directories": "0555",
+        "prepared_files": "0644",
+        "receipt": "0444",
+    },
 }
 AT_FDCWD = -100
 RENAME_NOREPLACE = 1
@@ -97,8 +108,8 @@ def load_contract_bytes(contract_bytes: bytes) -> dict[str, Any]:
         "archive_member_set": "exact",
         "links": "forbidden",
         "absolute_or_parent_paths": "forbidden",
-        "output_root": "separate generated-input tree",
-        "overwrite": "atomic after complete digest validation",
+        "output_root": "new separate generated-input tree",
+        "overwrite": "forbidden; atomic no-replace publication after validation",
         "runtime_shell_or_extraction": "forbidden",
     }
     if policy != expected_policy:
@@ -170,7 +181,7 @@ def _prepare_destination(output_root: Path, relative: Path) -> Path:
             if not parent.is_dir():
                 raise ValueError(f"generated-input parent is not a directory: {parent}")
         else:
-            parent.mkdir()
+            parent.mkdir(mode=0o700)
     destination = parent / relative.name
     if destination.is_symlink():
         raise ValueError(f"refusing generated-input symlink: {destination}")
@@ -243,7 +254,6 @@ def materialize(
     temporary_root = Path(tempfile.mkdtemp(
         prefix=f".{output_root.name}.tmp.", dir=output_root.parent,
     ))
-    os.chmod(temporary_root, 0o755)
     staging_identity = os.stat(temporary_root, follow_symlinks=False)
     if not stat.S_ISDIR(staging_identity.st_mode):
         raise ValueError(
@@ -267,7 +277,9 @@ def materialize(
                 os.fsync(output.fileno())
             if size != expected["bytes"] or digest != expected["sha256"]:
                 raise ValueError("LP certificate digest or byte count mismatch")
-            os.chmod(temporary, expected["mode"])
+            if expected["mode"] != PREPARED_FILE_MODE:
+                raise ValueError("unexpected prepared-file mode")
+            os.chmod(temporary, PREPARED_FILE_MODE)
             os.replace(temporary, destination)
         finally:
             source.close()
@@ -285,15 +297,27 @@ def materialize(
                 "mode": expected["mode"],
             }],
         }
-        receipt_path = temporary_root / RECEIPT_NAME
-        receipt_temp = receipt_path.with_name(
-            receipt_path.name + f".tmp.{os.getpid()}"
+        pending_receipt = temporary_root / PENDING_RECEIPT_NAME
+        receipt_temp = pending_receipt.with_name(
+            pending_receipt.name + f".tmp.{os.getpid()}"
         )
         receipt_temp.write_text(
             json.dumps(receipt, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        os.replace(receipt_temp, receipt_path)
+        os.chmod(receipt_temp, RECEIPT_MODE)
+        os.replace(receipt_temp, pending_receipt)
+        for current, directory_names, _ in os.walk(
+            temporary_root, topdown=False, followlinks=False,
+        ):
+            for directory_name in directory_names:
+                directory = Path(current) / directory_name
+                observed = os.stat(directory, follow_symlinks=False)
+                if not stat.S_ISDIR(observed.st_mode):
+                    raise ValueError(
+                        f"generated staging entry is not a directory: {directory}"
+                    )
+                os.chmod(directory, DIRECTORY_MODE)
         observed_staging = os.stat(temporary_root, follow_symlinks=False)
         if (
             not stat.S_ISDIR(observed_staging.st_mode)
@@ -304,6 +328,11 @@ def materialize(
                 f"generated staging identity changed: {temporary_root}"
             )
         _rename_noreplace(temporary_root, output_root)
+        os.replace(
+            output_root / PENDING_RECEIPT_NAME,
+            output_root / RECEIPT_NAME,
+        )
+        os.chmod(output_root, ROOT_MODE)
     except BaseException as error:
         # Retain failed staging rather than risk deleting a pathname exchanged
         # by another same-UID process.  Retries use a new final output root.

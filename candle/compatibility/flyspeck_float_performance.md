@@ -12,7 +12,7 @@ a clean Flyspeck worktree at pinned commit
 `1ce0353008eba83d3c76ae9a25c3c242e4802d53`.  It authenticates
 the manifest at branch base `5358f96fd52191a321893db8db25810efaafbbbb`
 with SHA-256
-`2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380`
+`1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1`
 and authenticates
 `text_formalization/nonlinear/break_case_log.hl` as:
 

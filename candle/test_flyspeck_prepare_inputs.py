@@ -2,6 +2,7 @@ import copy
 import hashlib
 import io
 import json
+import os
 import tarfile
 import tempfile
 import unittest
@@ -43,8 +44,8 @@ class FlyspeckPreparedInputTests(unittest.TestCase):
                 "archive_member_set": "exact",
                 "links": "forbidden",
                 "absolute_or_parent_paths": "forbidden",
-                "output_root": "separate generated-input tree",
-                "overwrite": "atomic after complete digest validation",
+                "output_root": "new separate generated-input tree",
+                "overwrite": "forbidden; atomic no-replace publication after validation",
                 "runtime_shell_or_extraction": "forbidden",
             },
         }
@@ -181,9 +182,38 @@ class FlyspeckPreparedInputTests(unittest.TestCase):
             self.assertEqual((output / "unrelated").read_text(), "preserved")
             staging = list(root.glob(".output.tmp.*"))
             self.assertEqual(len(staging), 1)
-            self.assertTrue(
-                (staging[0] / flyspeck_prepare_inputs.RECEIPT_NAME).is_file()
+            self.assertFalse(
+                (staging[0] / flyspeck_prepare_inputs.RECEIPT_NAME).exists()
             )
+            self.assertTrue(
+                (staging[0] / flyspeck_prepare_inputs.PENDING_RECEIPT_NAME).is_file()
+            )
+
+    def test_materialization_modes_ignore_permissive_umask(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, contract_path, contract, _ = self.fixture(root)
+            output = root / "output"
+            original_umask = os.umask(0)
+            try:
+                self.run_with_head(
+                    flyspeck_prepare_inputs.materialize,
+                    contract_path, source, output,
+                )
+            finally:
+                os.umask(original_umask)
+            generated = output / contract["members"][0]["output_path"]
+            self.assertEqual(output.stat().st_mode & 0o777, 0o555)
+            self.assertEqual(generated.stat().st_mode & 0o777, 0o644)
+            self.assertEqual(
+                (output / flyspeck_prepare_inputs.RECEIPT_NAME).stat().st_mode
+                & 0o777,
+                0o444,
+            )
+            for parent in generated.parents:
+                if parent == output:
+                    break
+                self.assertEqual(parent.stat().st_mode & 0o777, 0o555)
 
     def test_receipt_hashes_the_contract_bytes_that_were_parsed(self):
         with tempfile.TemporaryDirectory() as temporary:

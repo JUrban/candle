@@ -21,8 +21,8 @@
     "archive_member_set": "exact",
     "links": "forbidden",
     "absolute_or_parent_paths": "forbidden",
-    "output_root": "separate generated-input tree",
-    "overwrite": "atomic after complete digest validation",
+    "output_root": "new separate generated-input tree",
+    "overwrite": "forbidden; atomic no-replace publication after validation",
     "runtime_shell_or_extraction": "forbidden"
   }
 }

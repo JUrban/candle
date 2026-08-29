@@ -2,7 +2,9 @@
 
 import copy
 import hashlib
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -93,6 +95,20 @@ class StratumPlanTests(unittest.TestCase):
         self.assertEqual(len(plan["diagnostic_cutpoints"]), 2)
         self.assertEqual(plan["evidence_boundary"]["host_plan_or_schedule"],
                          "not S2/S3 evidence")
+
+    def test_rejects_failed_staging_with_only_pending_receipt(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "overlay.tmp.nonce"
+            root.mkdir(mode=0o700)
+            pending = root / ".flyspeck_normalization_receipt.json.pending"
+            pending.write_text("{}", encoding="utf-8")
+            os.chmod(pending, 0o444)
+            os.chmod(root, 0o555)
+            with self.assertRaises(subject.ContractError):
+                subject.validate_materialized_tree(
+                    root, {"flyspeck_normalization_receipt.json": 0o444},
+                    "normalization overlay",
+                )
 
 
 if __name__ == "__main__":

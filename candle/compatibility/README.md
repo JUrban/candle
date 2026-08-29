@@ -36,14 +36,16 @@ python3 candle/compatibility/test_float_literals.py --candle-root /path/to/candl
 
 The direct-source corpus gate is separate from that small grammar/boundary
 suite. `flyspeck_float_corpus.json` binds manifest SHA-256
-`2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380`,
+`1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1`,
 Flyspeck `1ce0353008eba83d3c76ae9a25c3c242e4802d53`, and normalization
 contract `ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08`.
 It records 15,775 decimal-float code occurrences in nine selected runtime
 files and all 1,741 exact spellings. The scanner follows the proved CakeML
 decimal grammar and excludes nested comments, strings, and HOL backtick
 quotations. Before scanning, it authenticates all 400 original manifest nodes,
-the exact schema-2 normalization receipt, and all 18 normalized outputs.
+the exact schema-3 normalization receipt, all 18 normalized outputs, and the
+complete no-extra-file tree and deterministic 0555/0444 mode closure. Failed
+staging trees contain no canonical receipt and are rejected.
 
 An independent completeness gate snapshots the authenticated runtime bytes
 once and lexes those read-only copies with the OCaml 4.14.1 compiler-libs

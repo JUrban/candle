@@ -54,7 +54,7 @@
       "direct_corpus_inventory": {
         "artifact": "candle/compatibility/flyspeck_float_corpus.json",
         "generator": "candle/compatibility/flyspeck_float_corpus.py",
-        "manifest_sha256": "2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380",
+        "manifest_sha256": "1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1",
         "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
         "normalization_contract_sha256": "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08",
         "occurrence_count": 15775,

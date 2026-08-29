@@ -2608,7 +2608,7 @@
     {
       "bytes": 119855733,
       "class": "lp-certificate-prepared",
-      "derivation_contract_sha256": "fdebe3aca0b693f367ac284c28d2b2e01f1b00b5342a4366d4cdd093016f5024",
+      "derivation_contract_sha256": "dc9f9e5d60b3b43a1275a450e643bb1d8ce4843d517cdf4d84a6dc5c318a8816",
       "derived_from": "formal_lp/glpk/binary/hard_7.tar.gz",
       "path": "formal_lp/glpk/binary/hard_7.dat",
       "sha256": "0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526"
@@ -2816,7 +2816,7 @@
       "path": "formal_lp/glpk/binary/hard_7.tar.gz",
       "sha256": "7056e306a03d7eb02db3c0bed898f3eef6f84f06556c040ac38ba93eb0a12453"
     },
-    "contract_sha256": "fdebe3aca0b693f367ac284c28d2b2e01f1b00b5342a4366d4cdd093016f5024",
+    "contract_sha256": "dc9f9e5d60b3b43a1275a450e643bb1d8ce4843d517cdf4d84a6dc5c318a8816",
     "contract_source": "candle:candle/flyspeck_lp_archive_contract.json",
     "evidence_boundary": "preparation authenticates bytes and container shape; the HOL-side LP verifier remains responsible for certificate validity",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
@@ -2834,8 +2834,8 @@
       "absolute_or_parent_paths": "forbidden",
       "archive_member_set": "exact",
       "links": "forbidden",
-      "output_root": "separate generated-input tree",
-      "overwrite": "atomic after complete digest validation",
+      "output_root": "new separate generated-input tree",
+      "overwrite": "forbidden; atomic no-replace publication after validation",
       "runtime_shell_or_extraction": "forbidden"
     },
     "runtime_certificate_basenames": [

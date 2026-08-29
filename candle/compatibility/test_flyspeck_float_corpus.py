@@ -2,8 +2,10 @@
 """Static fail-closed tests for the direct Flyspeck float corpus."""
 
 import json
+import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 HERE = Path(__file__).resolve().parent
@@ -12,6 +14,20 @@ import flyspeck_float_corpus as subject
 
 
 class FlyspeckFloatCorpusTests(unittest.TestCase):
+    def test_rejects_failed_staging_with_only_pending_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "overlay.tmp.nonce"
+            root.mkdir(mode=0o700)
+            pending = root / ".flyspeck_normalization_receipt.json.pending"
+            pending.write_text("{}", encoding="utf-8")
+            os.chmod(pending, 0o444)
+            os.chmod(root, 0o555)
+            with self.assertRaises(subject.CorpusError):
+                subject.validate_materialized_tree(
+                    root, {"flyspeck_normalization_receipt.json": 0o444},
+                    "normalization overlay",
+                )
+
     def test_scanner_separates_code_from_non_ocaml_float_contexts(self):
         source = (
             b"let a = 2.;;\n"

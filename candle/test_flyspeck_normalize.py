@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import os
 import tempfile
 import unittest
 from unittest import mock
@@ -363,9 +364,49 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             )
             staging = list(root.glob(".output.tmp.*"))
             self.assertEqual(len(staging), 1)
-            self.assertTrue(
-                (staging[0] / flyspeck_normalize.RECEIPT_NAME).is_file()
+            self.assertFalse(
+                (staging[0] / flyspeck_normalize.RECEIPT_NAME).exists()
             )
+            self.assertTrue(
+                (staging[0] / flyspeck_normalize.PENDING_RECEIPT_NAME).is_file()
+            )
+
+    def test_materialization_modes_ignore_permissive_umask(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            contract_path = root / "contract.json"
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            output_root = root / "output"
+            original_umask = os.umask(0)
+            try:
+                with mock.patch.object(flyspeck_normalize, "_git_head",
+                                       return_value="a" * 40):
+                    flyspeck_normalize.materialize(
+                        contract_path, source_root, output_root,
+                    )
+            finally:
+                os.umask(original_umask)
+            self.assertEqual(output_root.stat().st_mode & 0o777, 0o555)
+            self.assertEqual(
+                (output_root / entry["path"]).stat().st_mode & 0o777, 0o444,
+            )
+            self.assertEqual(
+                (output_root / flyspeck_normalize.RECEIPT_NAME).stat().st_mode
+                & 0o777,
+                0o444,
+            )
+            for parent in (output_root / entry["path"]).parents:
+                if parent == output_root:
+                    break
+                self.assertEqual(parent.stat().st_mode & 0o777, 0o555)
 
     def test_receipt_hashes_the_contract_bytes_that_were_parsed(self):
         entry, source, _ = self.fixture_entry()

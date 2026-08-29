@@ -130,9 +130,9 @@
   "provenance": {
     "candle_base_commit": "5358f96fd52191a321893db8db25810efaafbbbb",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
-    "manifest_sha256": "2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380",
+    "manifest_sha256": "1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1",
     "normalization_contract_sha256": "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08",
-    "normalization_receipt_sha256": "8fd7b9ada83287da7d07ee9d9beb769e76dbf8baffcaa95e4ab194d187e4d702",
+    "normalization_receipt_sha256": "852ccd8b086377ebdb7654d1709c6a1916a865f693da12aa749bcfb30a0c71c4",
     "normalized_file_count": 18,
     "source_node_count": 400
   },

@@ -12,6 +12,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import stat
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -22,10 +24,23 @@ NORMALIZATION_CONTRACT = "flyspeck_normalizations.json"
 NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
 GENERATED_CONTRACT = "flyspeck_lp_archive_contract.json"
 GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
-FRESH_PUBLICATION = {
+NORMALIZATION_PUBLICATION = {
     "policy": "fresh-root-renameat2-noreplace",
     "failed_staging": "retained",
     "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555", "directories": "0555",
+        "normalized_files": "0444", "receipt": "0444",
+    },
+}
+GENERATED_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555", "directories": "0555",
+        "prepared_files": "0644", "receipt": "0444",
+    },
 }
 STRICTBUILD_KEY = "flyspeck:text_formalization/build/strictbuild.hl"
 PARSER_KEY = "flyspeck:text_formalization/general/parser_verbose.hl"
@@ -102,6 +117,53 @@ def validate_record(path: Path, record: dict[str, Any], label: str) -> str:
     if "normalized_md5" in record:
         require(md5 == record["normalized_md5"], f"{label} MD5 mismatch: {path}")
     return md5
+
+
+def validate_materialized_tree(
+    root: Path, expected_files: dict[str, int], label: str,
+) -> None:
+    require(root.is_dir() and not root.is_symlink(),
+            f"missing ordinary {label} root: {root}")
+    expected_paths = {Path(relative) for relative in expected_files}
+    expected_directories = {Path(".")}
+    for relative in expected_paths:
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    observed_files: set[Path] = set()
+    observed_directories: set[Path] = {Path(".")}
+    root_status = os.stat(root, follow_symlinks=False)
+    require(stat.S_ISDIR(root_status.st_mode), f"non-directory {label} root")
+    require(stat.S_IMODE(root_status.st_mode) == 0o555,
+            f"{label} root mode mismatch")
+    for current, directory_names, file_names in os.walk(
+        root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISDIR(observed.st_mode),
+                    f"non-directory or symlink in {label}: {path}")
+            require(stat.S_IMODE(observed.st_mode) == 0o555,
+                    f"{label} directory mode mismatch: {path}")
+            observed_directories.add(path.relative_to(root))
+        for name in file_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISREG(observed.st_mode),
+                    f"non-regular or symlink in {label}: {path}")
+            relative = path.relative_to(root)
+            observed_files.add(relative)
+            require(relative in expected_paths,
+                    f"unexpected file in {label}: {relative}")
+            require(
+                stat.S_IMODE(observed.st_mode) == expected_files[str(relative)],
+                f"{label} file mode mismatch: {relative}",
+            )
+    require(observed_directories == expected_directories,
+            f"{label} directory set mismatch")
+    require(observed_files == expected_paths, f"{label} file set mismatch")
 
 
 def extract_strictbuild_prefix(source: bytes) -> bytes:
@@ -187,6 +249,10 @@ def prepare(
     generated_root: Path,
     output_root: Path,
 ) -> dict[str, Any]:
+    require(not overlay_root.is_symlink(),
+            "normalization overlay root is a symlink")
+    require(not generated_root.is_symlink(),
+            "generated-input root is a symlink")
     candle_root = candle_root.resolve()
     flyspeck_root = flyspeck_root.resolve()
     overlay_root = overlay_root.resolve()
@@ -207,9 +273,16 @@ def prepare(
         sha256_file(contract_path) == normalization["contract_sha256"],
         "normalization contract digest mismatch",
     )
+    normalization_files = {
+        entry["path"]: 0o444 for entry in normalization["entries"]
+    }
+    normalization_files[NORMALIZATION_RECEIPT] = 0o444
+    validate_materialized_tree(
+        overlay_root, normalization_files, "normalization overlay",
+    )
     receipt = load_json(overlay_root / NORMALIZATION_RECEIPT)
     require(receipt.get("schema") == 3, "unsupported normalization receipt schema")
-    require(receipt.get("publication") == FRESH_PUBLICATION,
+    require(receipt.get("publication") == NORMALIZATION_PUBLICATION,
             "normalization publication contract mismatch")
     require(receipt.get("flyspeck_commit") == flyspeck_commit, "overlay Flyspeck pin mismatch")
     require(
@@ -258,9 +331,14 @@ def prepare(
 
     generated_contract_path = candle_dir / GENERATED_CONTRACT
     generated_contract_sha = sha256_file(generated_contract_path)
+    validate_materialized_tree(
+        generated_root,
+        {GENERATED_PATH: 0o644, GENERATED_RECEIPT: 0o444},
+        "generated-input",
+    )
     generated_receipt = load_json(generated_root / GENERATED_RECEIPT)
     require(generated_receipt.get("schema") == 2, "unsupported generated-input receipt schema")
-    require(generated_receipt.get("publication") == FRESH_PUBLICATION,
+    require(generated_receipt.get("publication") == GENERATED_PUBLICATION,
             "generated-input publication contract mismatch")
     require(generated_receipt.get("flyspeck_commit") == flyspeck_commit, "generated-input Flyspeck pin mismatch")
     require(

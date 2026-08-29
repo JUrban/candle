@@ -20,6 +20,7 @@ import locale
 import os
 from pathlib import Path
 import re
+import stat
 import struct
 import subprocess
 import tempfile
@@ -31,14 +32,14 @@ LEDGER_ID = "CANDLE-OCAML-FLOAT-LITERAL-001"
 EXPECTED_OCAML_VERSION = "4.14.1"
 EXPECTED_CANDLE_BASE = "5358f96fd52191a321893db8db25810efaafbbbb"
 EXPECTED_MANIFEST_SHA256 = (
-    "2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380"
+    "1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1"
 )
 EXPECTED_FLYSPECK_COMMIT = "1ce0353008eba83d3c76ae9a25c3c242e4802d53"
 EXPECTED_NORMALIZATION_CONTRACT_SHA256 = (
     "ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08"
 )
 EXPECTED_NORMALIZATION_RECEIPT_SHA256 = (
-    "8fd7b9ada83287da7d07ee9d9beb769e76dbf8baffcaa95e4ab194d187e4d702"
+    "852ccd8b086377ebdb7654d1709c6a1916a865f693da12aa749bcfb30a0c71c4"
 )
 EXPECTED_SOURCE_NODES = 400
 EXPECTED_NORMALIZED_FILES = 18
@@ -59,10 +60,14 @@ EXPECTED_INVALID_SUFFIX_COUNTS = {"comment": 18, "string": 3_404}
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
 NORMALIZATION_CONTRACT_RELATIVE = Path("candle/flyspeck_normalizations.json")
 NORMALIZATION_RECEIPT = Path("flyspeck_normalization_receipt.json")
-FRESH_PUBLICATION = {
+NORMALIZATION_PUBLICATION = {
     "policy": "fresh-root-renameat2-noreplace",
     "failed_staging": "retained",
     "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555", "directories": "0555",
+        "normalized_files": "0444", "receipt": "0444",
+    },
 }
 ARTIFACT_RELATIVE = Path("candle/compatibility/flyspeck_float_corpus.json")
 
@@ -144,6 +149,53 @@ def validate_record(path: Path, expected: dict[str, Any], label: str) -> None:
             f"{label} byte identity mismatch: {path}")
 
 
+def validate_materialized_tree(
+    root: Path, expected_files: dict[str, int], label: str,
+) -> None:
+    require(root.is_dir() and not root.is_symlink(),
+            f"missing ordinary {label} root: {root}")
+    expected_paths = {Path(relative) for relative in expected_files}
+    expected_directories = {Path(".")}
+    for relative in expected_paths:
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    observed_files: set[Path] = set()
+    observed_directories: set[Path] = {Path(".")}
+    root_status = os.stat(root, follow_symlinks=False)
+    require(stat.S_ISDIR(root_status.st_mode), f"non-directory {label} root")
+    require(stat.S_IMODE(root_status.st_mode) == 0o555,
+            f"{label} root mode mismatch")
+    for current, directory_names, file_names in os.walk(
+        root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISDIR(observed.st_mode),
+                    f"non-directory or symlink in {label}: {path}")
+            require(stat.S_IMODE(observed.st_mode) == 0o555,
+                    f"{label} directory mode mismatch: {path}")
+            observed_directories.add(path.relative_to(root))
+        for name in file_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISREG(observed.st_mode),
+                    f"non-regular or symlink in {label}: {path}")
+            relative = path.relative_to(root)
+            observed_files.add(relative)
+            require(relative in expected_paths,
+                    f"unexpected file in {label}: {relative}")
+            require(
+                stat.S_IMODE(observed.st_mode) == expected_files[str(relative)],
+                f"{label} file mode mismatch: {relative}",
+            )
+    require(observed_directories == expected_directories,
+            f"{label} directory set mismatch")
+    require(observed_files == expected_paths, f"{label} file set mismatch")
+
+
 def git_output(root: Path, *arguments: str) -> str:
     try:
         return subprocess.run(
@@ -189,6 +241,8 @@ def validate_inputs(
     overlay_root: Path,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Authenticate the manifest, all original nodes, and all overlay bytes."""
+    require(not overlay_root.is_symlink(),
+            "normalization overlay root is a symlink")
     candle_root = candle_root.resolve()
     flyspeck_root = flyspeck_root.resolve()
     overlay_root = overlay_root.resolve()
@@ -221,13 +275,20 @@ def validate_inputs(
             "normalization contract byte digest mismatch")
 
     receipt_path = overlay_root / NORMALIZATION_RECEIPT
+    normalization_files = {
+        entry["path"]: 0o444 for entry in normalization["entries"]
+    }
+    normalization_files[str(NORMALIZATION_RECEIPT)] = 0o444
+    validate_materialized_tree(
+        overlay_root, normalization_files, "normalization overlay",
+    )
     require(sha256_file(receipt_path) ==
             EXPECTED_NORMALIZATION_RECEIPT_SHA256,
             "normalization receipt digest mismatch")
     receipt = load_object(receipt_path, "normalization receipt")
     require(receipt.get("schema") == 3,
             "unsupported normalization receipt schema")
-    require(receipt.get("publication") == FRESH_PUBLICATION,
+    require(receipt.get("publication") == NORMALIZATION_PUBLICATION,
             "normalization publication contract mismatch")
     require(receipt.get("flyspeck_commit") == EXPECTED_FLYSPECK_COMMIT,
             "normalization receipt Flyspeck pin mismatch")

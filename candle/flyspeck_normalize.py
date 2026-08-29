@@ -23,10 +23,21 @@ from typing import Any
 
 CONTRACT_NAME = "flyspeck_normalizations.json"
 RECEIPT_NAME = "flyspeck_normalization_receipt.json"
+PENDING_RECEIPT_NAME = f".{RECEIPT_NAME}.pending"
+ROOT_MODE = 0o555
+DIRECTORY_MODE = 0o555
+NORMALIZED_FILE_MODE = 0o444
+RECEIPT_MODE = 0o444
 PUBLICATION_RECORD = {
     "policy": "fresh-root-renameat2-noreplace",
     "failed_staging": "retained",
     "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555",
+        "directories": "0555",
+        "normalized_files": "0444",
+        "receipt": "0444",
+    },
 }
 AT_FDCWD = -100
 RENAME_NOREPLACE = 1
@@ -241,7 +252,7 @@ def _prepare_destination(output_root: Path, relative: Path) -> Path:
                     f"normalization output parent is not a directory: {parent}"
                 )
         else:
-            parent.mkdir()
+            parent.mkdir(mode=0o700)
     return parent / relative.name
 
 
@@ -299,7 +310,6 @@ def materialize(
     temporary_root = Path(tempfile.mkdtemp(
         prefix=f".{output_root.name}.tmp.", dir=output_root.parent,
     ))
-    os.chmod(temporary_root, 0o755)
     staging_identity = os.stat(temporary_root, follow_symlinks=False)
     if not stat.S_ISDIR(staging_identity.st_mode):
         raise ValueError(
@@ -317,6 +327,7 @@ def materialize(
                     f"refusing normalization output symlink: {destination}"
                 )
             temporary.write_bytes(normalized)
+            os.chmod(temporary, NORMALIZED_FILE_MODE)
             os.replace(temporary, destination)
             rendered_entries.append({
                 "id": entry["id"],
@@ -335,13 +346,27 @@ def materialize(
             "publication": PUBLICATION_RECORD,
             "entries": rendered_entries,
         }
-        receipt_path = temporary_root / RECEIPT_NAME
-        temporary_receipt = receipt_path.with_name(receipt_path.name + ".tmp")
+        pending_receipt = temporary_root / PENDING_RECEIPT_NAME
+        temporary_receipt = pending_receipt.with_name(
+            pending_receipt.name + ".tmp"
+        )
         temporary_receipt.write_text(
             json.dumps(receipt, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        os.replace(temporary_receipt, receipt_path)
+        os.chmod(temporary_receipt, RECEIPT_MODE)
+        os.replace(temporary_receipt, pending_receipt)
+        for current, directory_names, _ in os.walk(
+            temporary_root, topdown=False, followlinks=False,
+        ):
+            for directory_name in directory_names:
+                directory = Path(current) / directory_name
+                observed = os.stat(directory, follow_symlinks=False)
+                if not stat.S_ISDIR(observed.st_mode):
+                    raise ValueError(
+                        f"normalization staging entry is not a directory: {directory}"
+                    )
+                os.chmod(directory, DIRECTORY_MODE)
         observed_staging = os.stat(temporary_root, follow_symlinks=False)
         if (
             not stat.S_ISDIR(observed_staging.st_mode)
@@ -352,6 +377,11 @@ def materialize(
                 f"normalization staging identity changed: {temporary_root}"
             )
         _rename_noreplace(temporary_root, output_root)
+        os.replace(
+            output_root / PENDING_RECEIPT_NAME,
+            output_root / RECEIPT_NAME,
+        )
+        os.chmod(output_root, ROOT_MODE)
     except BaseException as error:
         # Never recursively delete a pathname that a concurrent same-UID
         # process could have exchanged.  A failed staging tree is retained for

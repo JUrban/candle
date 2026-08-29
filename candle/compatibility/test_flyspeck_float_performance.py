@@ -40,7 +40,7 @@ class FloatPerformanceInputTests(unittest.TestCase):
         self.assertEqual(generator.EXPECTED_UNIQUE_FLOAT_SPELLINGS, 1705)
         self.assertEqual(
             generator.EXPECTED_MANIFEST_SHA256,
-            "2bb61e249baa2e8158da4b57f419a269504c7617f6bccefdec5465fcaab85380",
+            "1521484e31ae03404d5395dfa4c3496e6cc9f3f213f2017422709fc86b7838d1",
         )
         self.assertEqual(
             generator.EXPECTED_SOURCE["sha256"],

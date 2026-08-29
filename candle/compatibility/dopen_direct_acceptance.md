@@ -19,12 +19,14 @@ Dopen; this is not a synthetic module smoke test.
 - direct Flyspeck: `1ce0353008eba83d3c76ae9a25c3c242e4802d53`;
 - normalization contract SHA-256:
   `ac925270aa6a8605a8f70ab170ff965c3e4a4d6410623e3d3a6d51976ff1da08`;
-- current authenticated overlay root:
-  `/project/flyspeck-candle-runs/v13-normalized-overlay-f7dac3a-ac925270`;
+- normalization receipt schema: `3`, requiring fresh no-replace publication
+  and deterministic tree modes;
 - prepared `hard_7.dat` SHA-256:
   `0ca1b5b6ceba53537ac5d95ffddd883bb297e7d48c30ac241de4f3ec71ab5526`;
-- current authenticated generated-input root:
-  `/project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6`.
+- generated-input receipt schema: `2`, with the same fresh-publication closure.
+
+Historical schema-2/schema-1 materializations are deliberately rejected.
+Generate both roots freshly from the final clean Candle head before this gate.
 
 The preparation tool re-derives these facts from
 `flyspeck_manifest.json`, both contract files, both receipts, the clean
@@ -51,12 +53,20 @@ cd /project/worktrees/candle-integration-v13
 ./build-local-cakeml.sh \
   /project/worktrees/cakeml-flyspeck-v13-integration \
   /project/flyspeck-candle-runs/v13-dopen-bootstrap-provenance.json
+materialization=/project/flyspeck-candle-runs/v13-final-materialization-attempt-001
+mkdir "$materialization"
+/usr/bin/python3 -I -S candle/flyspeck_normalize.py \
+  --flyspeck-root /project/worktrees/flyspeck-v13-source \
+  --write "$materialization/normalized-overlay"
+/usr/bin/python3 -I -S candle/flyspeck_prepare_inputs.py \
+  --flyspeck-root /project/worktrees/flyspeck-v13-source \
+  --write "$materialization/generated-inputs"
 CANDLE_FLYSPECK_DOPEN_LOG=/project/flyspeck-candle-runs/v13-dopen-direct-prefix.log \
   candle/test_flyspeck_dopen_prefix.sh \
   ./candle.sh \
   /project/worktrees/flyspeck-v13-source \
-  /project/flyspeck-candle-runs/v13-normalized-overlay-f7dac3a-ac925270 \
-  /project/flyspeck-candle-runs/v13-generated-lp-0ca1b5b6
+  "$materialization/normalized-overlay" \
+  "$materialization/generated-inputs"
 ```
 
 Do not run this command concurrently with a build or another compiled Candle
