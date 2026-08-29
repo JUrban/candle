@@ -64,8 +64,8 @@ SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SOURCE_CONTRACT = ROOT / "candle" / "reference_source_contracts.json"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v6"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v6"
+PLAN_SCHEMA = "candle-s1-reference-plan-v7"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v7"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 CONTROLLER_LOCK_FD_ENV = "CANDLE_REFERENCE_CONTROLLER_LOCK_FD"
@@ -165,9 +165,148 @@ def _pin_tree(path):
         digest.update(b"\n")
     return {
         "root": str(root),
+        "root_mode": stat.S_IMODE(root.lstat().st_mode),
         "entry_count": len(records),
         "inventory_sha256": digest.hexdigest(),
         "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1",
+    }
+
+
+def _pin_executable_route(path, label):
+    """Pin a PATH or fixed-shell route as well as its resolved executable."""
+    argument = Path(os.path.abspath(path))
+    try:
+        metadata = argument.lstat()
+        parent_metadata = argument.parent.lstat()
+        resolved = argument.resolve(strict=True)
+        resolved_metadata = resolved.lstat()
+    except (FileNotFoundError, RuntimeError, OSError) as error:
+        raise CollectionError(f"could not resolve {label}: {argument}") from error
+    if not stat.S_ISREG(resolved_metadata.st_mode):
+        raise CollectionError(f"resolved {label} is not a regular file: {resolved}")
+    if stat.S_IMODE(resolved_metadata.st_mode) & 0o111 == 0:
+        raise CollectionError(f"resolved {label} is not executable: {resolved}")
+
+    def route_record(route, route_metadata):
+        if stat.S_ISLNK(route_metadata.st_mode):
+            return {
+                "path": str(route), "kind": "symlink",
+                "mode": stat.S_IMODE(route_metadata.st_mode),
+                "target": os.readlink(route),
+                "resolved_path": str(route.resolve(strict=True)),
+            }
+        if stat.S_ISDIR(route_metadata.st_mode):
+            return {
+                "path": str(route), "kind": "directory",
+                "mode": stat.S_IMODE(route_metadata.st_mode),
+                "resolved_path": str(route.resolve(strict=True)),
+            }
+        if stat.S_ISREG(route_metadata.st_mode):
+            return {
+                "path": str(route), "kind": "file",
+                "mode": stat.S_IMODE(route_metadata.st_mode),
+                "resolved_path": str(route.resolve(strict=True)),
+            }
+        raise CollectionError(f"unsupported {label} route component: {route}")
+
+    return {
+        "argument_path": str(argument),
+        "argument_parent": route_record(argument.parent, parent_metadata),
+        "argument": route_record(argument, metadata),
+        "resolved_executable": {
+            **_pin_file(resolved),
+            "mode": stat.S_IMODE(resolved_metadata.st_mode),
+        },
+    }
+
+
+def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
+                          command_shell):
+    """Authenticate the exact shell/GP route used by HOL Light's Sys.command."""
+    gp_root_argument = Path(os.path.abspath(pari_gp_root))
+    try:
+        gp_root_metadata = gp_root_argument.lstat()
+        gp_root = gp_root_argument.resolve(strict=True)
+    except (FileNotFoundError, RuntimeError, OSError) as error:
+        raise CollectionError("could not resolve PARI/GP package root") from error
+    if (not stat.S_ISDIR(gp_root_metadata.st_mode) or
+            gp_root != gp_root_argument):
+        raise CollectionError("PARI/GP package root must be a canonical directory")
+    gp_bin = gp_root / "usr/bin"
+    gp_path = gp_bin / "gp"
+    gprc = gp_root / "candle-gprc"
+    data_root = gp_root / "candle-data"
+    if not gp_bin.is_dir() or gp_bin.is_symlink():
+        raise CollectionError("PARI/GP bin path must be an ordinary directory")
+    if not data_root.is_dir() or data_root.is_symlink():
+        raise CollectionError("PARI/GP data path must be an ordinary directory")
+    if stat.S_IMODE(data_root.lstat().st_mode) != 0o555:
+        raise CollectionError("PARI/GP data path mode must be exactly 0555")
+    gprc_pin = _pin_file(gprc)
+    if stat.S_IMODE(gprc.lstat().st_mode) != 0o444:
+        raise CollectionError("PARI/GP configuration mode must be exactly 0444")
+    gp_route = _pin_executable_route(gp_path, "PARI/GP executable")
+    shell_route = _pin_executable_route(command_shell, "Sys.command shell")
+    package_argument = Path(os.path.abspath(pari_gp_package))
+    try:
+        package_metadata = package_argument.lstat()
+        package_resolved = package_argument.resolve(strict=True)
+    except (FileNotFoundError, RuntimeError, OSError) as error:
+        raise CollectionError("could not resolve PARI/GP package archive") from error
+    if (not stat.S_ISREG(package_metadata.st_mode) or
+            package_resolved != package_argument or
+            stat.S_IMODE(package_metadata.st_mode) != 0o444):
+        raise CollectionError(
+            "PARI/GP package archive must be a canonical 0444 regular file")
+    package_pin = _pin_file(package_argument)
+    environment = {
+        "HOME": str(Path(reference_root).resolve(strict=True)),
+        "PATH": str(gp_bin),
+        "LC_ALL": "C",
+        "GPRC": gprc_pin["path"],
+        "GP_DATA_DIR": str(data_root),
+    }
+    version = subprocess.run(
+        [gp_route["argument_path"], "--version-short"],
+        env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, timeout=30, check=False,
+    )
+    if (version.returncode != 0 or version.stderr != "" or
+            re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+\n", version.stdout) is None):
+        raise CollectionError("could not obtain exact PARI/GP version")
+    probe_source = "echo 'print(factorint(15))  \n quit' | gp"
+    probe = subprocess.run(
+        [shell_route["argument_path"], "-c", probe_source],
+        env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        text=True, timeout=30, check=False,
+    )
+    if (probe.returncode != 0 or probe.stderr != "" or
+            "[3, 1; 5, 1]" not in probe.stdout):
+        raise CollectionError("PARI/GP shell-route factor probe failed")
+    return {
+        "policy": "single_private_path_gp_with_pinned_shell_v1",
+        "command_shell": shell_route,
+        "pari_gp": gp_route,
+        "pari_gp_version": {
+            "stdout": version.stdout,
+            "sha256": hashlib.sha256(version.stdout.encode()).hexdigest(),
+        },
+        "package_archive": package_pin,
+        "package_tree": _pin_tree(gp_root),
+        "configuration": gprc_pin,
+        "data_tree": _pin_tree(data_root),
+        "dynamic_libraries": _elf_dependencies([
+            shell_route["resolved_executable"]["path"],
+            gp_route["resolved_executable"]["path"],
+        ]),
+        "probe": {
+            "shell_argv": [shell_route["argument_path"], "-c", probe_source],
+            "environment": environment,
+            "return_code": probe.returncode,
+            "stdout": probe.stdout,
+            "stdout_sha256": hashlib.sha256(probe.stdout.encode()).hexdigest(),
+            "stderr_sha256": hashlib.sha256(probe.stderr.encode()).hexdigest(),
+        },
     }
 
 
@@ -304,7 +443,8 @@ def _request_source(target, serializer_path, nonce):
 
 
 def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
-               ocamlfind, nonce=None, source_mode="manifest-exact"):
+               ocamlfind, pari_gp_root, pari_gp_package, command_shell,
+               nonce=None, source_mode="manifest-exact"):
     """Pin a clean reference tree and generate, but do not execute, a request."""
     manifest, target = _target_from_manifest(target_name)
     request = target["fingerprint_request"]
@@ -425,10 +565,14 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
         *(pin["path"] for pin in runtime_stub_files),
     ])
     collector_repository = _collector_repository_pin()
+    external_runtime = _pin_external_runtime(
+        reference_root, pari_gp_root, pari_gp_package, command_shell)
     runtime_environment = {
         "HOME": str(reference_root),
-        "PATH": "/usr/bin:/bin",
+        "PATH": external_runtime["probe"]["environment"]["PATH"],
         "LC_ALL": "C",
+        "GPRC": external_runtime["configuration"]["path"],
+        "GP_DATA_DIR": external_runtime["data_tree"]["root"],
         "HOLLIGHT_DIR": str(reference_root),
         "HOLLIGHT_USE_MODULE": "0",
         "OCAMLRUNPARAM": "l=2000000000",
@@ -475,6 +619,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "hol_ml": hol_ml_pin,
             "generated_boot_files": boot_files,
             "ocaml_library_tree": ocaml_library_tree,
+            "external_runtime": external_runtime,
         },
         "input": {
             "collector": _pin_file(Path(__file__)),
@@ -522,6 +667,9 @@ def _rebuild_plan(plan):
         plan["reference"]["runtime_stublib"]["path"],
         plan["reference"]["ocamlc"]["path"],
         plan["reference"]["findlib"]["executable"]["path"],
+        plan["reference"]["external_runtime"]["package_tree"]["root"],
+        plan["reference"]["external_runtime"]["package_archive"]["path"],
+        plan["reference"]["external_runtime"]["command_shell"]["argument_path"],
         plan["session_nonce"], plan["input"]["source_mode"])
 
 
@@ -682,6 +830,9 @@ def main():
         sub.add_argument("--runtime-stublib", type=Path, required=True)
         sub.add_argument("--ocamlc", type=Path, required=True)
         sub.add_argument("--ocamlfind", type=Path, required=True)
+        sub.add_argument("--pari-gp-root", type=Path, required=True)
+        sub.add_argument("--pari-gp-package", type=Path, required=True)
+        sub.add_argument("--command-shell", type=Path, required=True)
         sub.add_argument("--plan", type=Path, required=True)
         sub.add_argument("--request", type=Path, required=True)
         sub.add_argument(
@@ -711,6 +862,7 @@ def main():
         plan = build_plan(
             args.target, args.reference_root, args.runtime,
             args.runtime_stublib, args.ocamlc, args.ocamlfind,
+            args.pari_gp_root, args.pari_gp_package, args.command_shell,
             source_mode=args.source_mode)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         args.request.write_text(plan["request"]["source"], encoding="utf-8")

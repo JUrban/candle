@@ -26,6 +26,12 @@ Before execution, the tool requires and records:
   stub directories, including the dynamic loader, libc, libm, GMP, and any
   transitive native libraries those candidate stubs can select on the current
   host;
+- an ordinary project-local PARI/GP package tree and signed-package archive,
+  the exact `gp` symlink route and version output, a read-only deterministic
+  `GPRC`, a read-only empty optional-data root, `/bin/sh` and its resolved
+  executable, their recursive ELF closure, and an exact shell-route
+  `factorint(15)` probe; the HOL process receives a single-directory `PATH`
+  containing only that `gp` route;
 - the collector repository commit, status, committed collector hash, and an
   assertion that the executing collector equals that committed file;
 - the probed OCaml compiler version;
@@ -71,6 +77,9 @@ python3 candle/reference_fingerprints.py plan \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
   --ocamlfind /usr/bin/ocamlfind \
+  --pari-gp-root /project/deps/pari-gp-2.15.4-2.1build1 \
+  --pari-gp-package /project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb \
+  --command-shell /bin/sh \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml
 ```
@@ -86,6 +95,9 @@ python3 candle/reference_fingerprints.py collect \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
   --ocamlc /usr/bin/ocamlc \
   --ocamlfind /usr/bin/ocamlfind \
+  --pari-gp-root /project/deps/pari-gp-2.15.4-2.1build1 \
+  --pari-gp-package /project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb \
+  --command-shell /bin/sh \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml \
   --transcript /tmp/gcd-reference.log \
@@ -118,7 +130,7 @@ field for field.
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v6`, its approval status
+The candidate schema is `candle-s1-reference-candidate-v7`, its approval status
 is always `candidate_unapproved`, `promotion_allowed` is always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
@@ -140,7 +152,7 @@ independent reviewer must establish reference suitability, inspect the exact
 three source deltas, and create `top100_identity_approval.json`. An approved
 artifact must retain ordinary-file path/byte/SHA records for both candidates,
 plans, requests, transcripts, and source contracts; manifest regeneration
-rehashes every attachment. It also parses every exact schema-v6 plan and
+rehashes every attachment. It also parses every exact schema-v7 plan and
 candidate, mechanically calls `validate_candidate` with the retained request
 and transcript bytes, regenerates the nonce-bound request, and requires the
 replayed identity projection to equal the independently approved theorem and
@@ -182,6 +194,10 @@ keeps the 65-target runtime gate disabled.
   remains review-only. A schema-v4 plan then pinned findlib selection but was
   not executed; a final critical pass observed that system OCaml stub files
   were tree-pinned while their ELF dependencies were not enumerated. A
-  schema-v6 candidate must repeat the pristine run, include the full structural
+  schema-v6 collection then failed closed at `100/bertrand-primerecip` because
+  the intended PARI/GP prerequisite was absent and not modeled by its plan.
+  Schema v7 adds the shell/GP/config/data/ELF closure and factor probe. A v7
+  candidate must repeat the pristine run, include the full structural
   post-state identity, and still match an independent second reference run
-  before any identity can be considered for approval.
+  before any identity can be considered for approval. No v6 root may be
+  resumed after introducing GP.

@@ -53,7 +53,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.git_patch.stop()
 
     def _fake_reference(self, directory, matching_source=True):
-        root = Path(directory)
+        container = Path(directory)
+        root = container / "reference"
+        root.mkdir()
         (root / "100").mkdir()
         source = (reference.ROOT / "100/gcd.ml").read_bytes()
         if not matching_source:
@@ -102,6 +104,25 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "else exit 2; fi\n")
         for executable in (runtime, ocamlc, ocamlfind):
             executable.chmod(0o755)
+        gp_root = container / "pari-gp"
+        gp_bin = gp_root / "usr/bin"
+        gp_bin.mkdir(parents=True)
+        gp_executable = gp_bin / "gp-2.15"
+        gp_executable.write_text(
+            "#!/bin/sh\n"
+            "if [ \"$1\" = --version-short ]; then "
+            "printf '2.15.4\\n'; exit 0; fi\n"
+            "while IFS= read -r ignored; do :; done\n"
+            "printf '[3, 1; 5, 1]\\n'\n")
+        gp_executable.chmod(0o755)
+        (gp_bin / "gp").symlink_to("gp-2.15")
+        (gp_root / "candle-gprc").write_text(
+            "\\\\ deterministic empty test configuration\n")
+        (gp_root / "candle-gprc").chmod(0o444)
+        (gp_root / "candle-data").mkdir()
+        (gp_root / "candle-data").chmod(0o555)
+        (container / "pari-gp.deb").write_text("pinned package archive\n")
+        (container / "pari-gp.deb").chmod(0o444)
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         subprocess.run(
             ["git", "-C", str(root), "config", "user.email", "test@example"],
@@ -116,11 +137,20 @@ class ReferenceFingerprintTest(unittest.TestCase):
             check=True)
         return root, runtime, runtime_stublib, ocamlc, ocamlfind
 
+    def _build_plan(self, target, root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, nonce=NONCE, source_mode="manifest-exact"):
+        root = Path(root)
+        return reference.build_plan(
+            target, root, runtime, runtime_stublib, ocamlc, ocamlfind,
+            root.parent / "pari-gp", root.parent / "pari-gp.deb",
+            Path("/bin/sh"),
+            nonce, source_mode)
+
     def test_plan_pins_clean_tree_order_and_exact_request(self):
         with tempfile.TemporaryDirectory() as directory:
             root, runtime, runtime_stublib, ocamlc, ocamlfind = self._fake_reference(
                 directory)
-            plan = reference.build_plan(
+            plan = self._build_plan(
                 "100/gcd", root, runtime, runtime_stublib, ocamlc,
                 ocamlfind, NONCE)
         self.assertEqual(plan["status"], "planned_not_executed")
@@ -165,6 +195,31 @@ class ReferenceFingerprintTest(unittest.TestCase):
             plan["reference"]["findlib"]["package_roots"][0]
                 ["inventory_sha256"],
             plan["reference"]["ocaml_library_tree"]["inventory_sha256"])
+        external = plan["reference"]["external_runtime"]
+        self.assertEqual(
+            external["policy"],
+            "single_private_path_gp_with_pinned_shell_v1")
+        self.assertEqual(external["pari_gp_version"]["stdout"], "2.15.4\n")
+        self.assertIn("[3, 1; 5, 1]", external["probe"]["stdout"])
+        self.assertEqual(
+            plan["fresh_process_contract"]["runtime_environment"]["PATH"],
+            str(root.parent / "pari-gp/usr/bin"))
+        self.assertEqual(
+            plan["fresh_process_contract"]["runtime_environment"]["GPRC"],
+            str(root.parent / "pari-gp/candle-gprc"))
+
+    def test_external_gp_bytes_are_rechecked_after_planning(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            gp = root.parent / "pari-gp/usr/bin/gp-2.15"
+            gp.write_bytes(gp.read_bytes() + b"\n# changed after plan\n")
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "inputs differ"):
+                reference._require_current_plan_pins(plan)
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -172,7 +227,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 directory, matching_source=False)
             with self.assertRaisesRegex(
                     reference.CollectionError, "differs from manifest"):
-                reference.build_plan(
+                self._build_plan(
                     "100/gcd", root, runtime, runtime_stublib, ocamlc,
                     ocamlfind, NONCE)
         manual_target = {
@@ -186,7 +241,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 return_value=({}, manual_target)):
             with self.assertRaisesRegex(
                     reference.CollectionError, "manual-review"):
-                reference.build_plan(
+                self._build_plan(
                     "manual-fixture", "/missing", "/missing", "/missing",
                     "/missing", "/missing", NONCE)
 
@@ -196,7 +251,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 self._fake_reference(directory)
             with self.assertRaisesRegex(
                     reference.CollectionError, "exact upstream HEAD"):
-                reference.build_plan(
+                self._build_plan(
                     "100/gcd", root, runtime, runtime_stublib, ocamlc,
                     ocamlfind, NONCE, source_mode="historical-original")
 
@@ -211,7 +266,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
                         if args == ("rev-parse", "HEAD") else ""):
                 with self.assertRaisesRegex(
                         reference.CollectionError, "exact reference HEAD"):
-                    reference.build_plan(
+                    self._build_plan(
                         "100/gcd", root, runtime, runtime_stublib, ocamlc,
                         ocamlfind, NONCE)
 
@@ -375,7 +430,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root, runtime, runtime_stublib, ocamlc, ocamlfind = \
                 self._fake_reference(directory)
-            plan = reference.build_plan(
+            plan = self._build_plan(
                 "100/gcd", root, runtime, runtime_stublib, ocamlc,
                 ocamlfind, NONCE)
             transcript = root.parent / "transcript.log"

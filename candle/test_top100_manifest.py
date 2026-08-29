@@ -347,6 +347,7 @@ class Top100ManifestTest(unittest.TestCase):
                             "hol_ml": {},
                             "generated_boot_files": [],
                             "ocaml_library_tree": {},
+                            "external_runtime": {},
                         },
                         "input": {
                             "collector": {

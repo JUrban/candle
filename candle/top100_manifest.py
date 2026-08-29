@@ -283,7 +283,7 @@ def _decode_replay_json(source, label):
 
 def _replay_reference_run(target, run, artifact_sources, expected_identity,
                           policy):
-    """Mechanically replay one exact v6 candidate and bind its semantics."""
+    """Mechanically replay one exact v7 candidate and bind its semantics."""
     # Imported only on the approved path.  reference_fingerprints imports the
     # committed regression manifest, not this generator module, so this does
     # not create an import cycle during ordinary unapproved regeneration.
@@ -320,7 +320,8 @@ def _replay_reference_run(target, run, artifact_sources, expected_identity,
             "root", "git_head", "git_status", "runtime_executable",
             "runtime_interpreter", "runtime_stublib", "runtime_library_tree",
             "runtime_stub_files", "dynamic_libraries", "ocamlc", "findlib",
-            "hol_ml", "generated_boot_files", "ocaml_library_tree"} or
+            "hol_ml", "generated_boot_files", "ocaml_library_tree",
+            "external_runtime"} or
             not isinstance(plan_reference.get("root"), str) or
             not Path(plan_reference["root"]).is_absolute() or
             plan_reference.get("git_head") != run["reference_git_head"] or
