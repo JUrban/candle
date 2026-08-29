@@ -2633,7 +2633,7 @@
     }
   ],
   "load_path_order": [
-    "flyspeck:text_formalization/../jHOLLight",
+    "flyspeck:text_formalization/../jHOLLight/",
     "flyspeck:text_formalization/../formal_ineqs",
     "flyspeck:jHOLLight",
     "flyspeck:formal_ineqs",
@@ -7152,7 +7152,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_graph/archive/archive_all.ml",
+        "alias_path": "text_formalization/../jHOLLight//../formal_graph/archive/archive_all.ml",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_graph/archive/archive_all.ml",
         "canonical_repository": "flyspeck",
@@ -7186,7 +7186,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/glpk/glpk_link.ml",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/glpk/glpk_link.ml",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/glpk/glpk_link.ml",
         "canonical_repository": "flyspeck",
@@ -7214,7 +7214,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/glpk/lpproc.ml",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/glpk/lpproc.ml",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/glpk/lpproc.ml",
         "canonical_repository": "flyspeck",
@@ -7236,7 +7236,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/arith_link.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/arith_link.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/arith_link.hl",
         "canonical_repository": "flyspeck",
@@ -7276,7 +7276,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/computations/informal_computations.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/computations/informal_computations.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/computations/informal_computations.hl",
         "canonical_repository": "flyspeck",
@@ -7304,7 +7304,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/computations/list_conversions2.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/computations/list_conversions2.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/computations/list_conversions2.hl",
         "canonical_repository": "flyspeck",
@@ -7332,7 +7332,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/computations/list_hypermap_computations.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/computations/list_hypermap_computations.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/computations/list_hypermap_computations.hl",
         "canonical_repository": "flyspeck",
@@ -7366,7 +7366,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/computations/more_theory-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/computations/more_theory-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/computations/more_theory-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7404,7 +7404,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_approx_ineqs.hl",
         "canonical_repository": "flyspeck",
@@ -7432,7 +7432,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
         "canonical_repository": "flyspeck",
@@ -7460,7 +7460,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl",
         "canonical_repository": "flyspeck",
@@ -7488,7 +7488,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_gen_ineqs.hl",
         "canonical_repository": "flyspeck",
@@ -7516,7 +7516,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_gen_theory-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7554,7 +7554,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_head_ineqs.hl",
         "canonical_repository": "flyspeck",
@@ -7582,7 +7582,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_ineqs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
         "canonical_repository": "flyspeck",
@@ -7628,7 +7628,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_defs.hl",
         "canonical_repository": "flyspeck",
@@ -7678,7 +7678,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7752,7 +7752,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7786,7 +7786,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7830,7 +7830,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7892,7 +7892,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/main/lp_certificate.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/main/lp_certificate.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/main/lp_certificate.hl",
         "canonical_repository": "flyspeck",
@@ -7920,7 +7920,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "canonical_repository": "flyspeck",
@@ -7948,7 +7948,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -7982,7 +7982,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ssreflect/list_hypermap-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8032,7 +8032,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8106,7 +8106,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/hypermap/verify_all.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/hypermap/verify_all.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/hypermap/verify_all.hl",
         "canonical_repository": "flyspeck",
@@ -8134,7 +8134,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/ineqs/constants_approx.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/ineqs/constants_approx.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/ineqs/constants_approx.hl",
         "canonical_repository": "flyspeck",
@@ -8178,7 +8178,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/ineqs/delta_ineq.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/ineqs/delta_ineq.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/ineqs/delta_ineq.hl",
         "canonical_repository": "flyspeck",
@@ -8206,7 +8206,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/more_arith/arith_int.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/more_arith/arith_int.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/more_arith/arith_int.hl",
         "canonical_repository": "flyspeck",
@@ -8234,7 +8234,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/more_arith/lin_f.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/more_arith/lin_f.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/more_arith/lin_f.hl",
         "canonical_repository": "flyspeck",
@@ -8262,7 +8262,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../formal_lp/more_arith/prove_lp.hl",
+        "alias_path": "text_formalization/../jHOLLight//../formal_lp/more_arith/prove_lp.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "formal_lp/more_arith/prove_lp.hl",
         "canonical_repository": "flyspeck",
@@ -8290,7 +8290,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/Examples/seq-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/Examples/seq-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/seq-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8312,7 +8312,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/Examples/ssrbool-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/Examples/ssrbool-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrbool-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8334,7 +8334,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/Examples/ssrfun-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/Examples/ssrfun-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrfun-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8356,7 +8356,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/Examples/ssrnat-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/Examples/ssrnat-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrnat-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8378,7 +8378,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/caml/sections.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/caml/sections.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/caml/sections.hl",
         "canonical_repository": "flyspeck",
@@ -8400,7 +8400,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/../jHOLLight/caml/ssreflect.hl",
+        "alias_path": "text_formalization/../jHOLLight//../jHOLLight/caml/ssreflect.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/caml/ssreflect.hl",
         "canonical_repository": "flyspeck",
@@ -8422,7 +8422,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/Examples/seq-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//Examples/seq-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/seq-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8446,7 +8446,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/Examples/ssrbool-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//Examples/ssrbool-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrbool-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8464,7 +8464,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/Examples/ssrfun-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//Examples/ssrfun-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrfun-compiled.hl",
         "canonical_repository": "flyspeck",
@@ -8482,7 +8482,7 @@
         ]
       },
       {
-        "alias_path": "text_formalization/../jHOLLight/Examples/ssrnat-compiled.hl",
+        "alias_path": "text_formalization/../jHOLLight//Examples/ssrnat-compiled.hl",
         "alias_repository": "flyspeck",
         "canonical_path": "jHOLLight/Examples/ssrnat-compiled.hl",
         "canonical_repository": "flyspeck",

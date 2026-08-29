@@ -776,7 +776,7 @@ class Resolver:
         # action.  Model that exact final lookup order and spelling; resolving
         # the roots here would erase the aliases that compiled Candle sees.
         self.search_roots = (
-            ("flyspeck", "text_formalization/../jHOLLight",
+            ("flyspeck", "text_formalization/../jHOLLight/",
              text_root / "../jHOLLight"),
             ("flyspeck", "text_formalization/../formal_ineqs",
              text_root / "../formal_ineqs"),
@@ -827,7 +827,9 @@ class Resolver:
                     f"first lexical source differs from selected source: "
                     f"{target}: {observed.key} != {selected.key}"
                 )
-            alias_path = (Path(prefix) / target).as_posix()
+            alias_path = (
+                target if not prefix else prefix + "/" + target
+            )
             return {
                 "target": target,
                 "search_root_index": index,
@@ -1696,7 +1698,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "flyspeck": {"commit": _git_head(flyspeck_root)},
         },
         "load_path_order": [
-            "flyspeck:text_formalization/../jHOLLight",
+            "flyspeck:text_formalization/../jHOLLight/",
             "flyspeck:text_formalization/../formal_ineqs",
             "flyspeck:jHOLLight",
             "flyspeck:formal_ineqs",
