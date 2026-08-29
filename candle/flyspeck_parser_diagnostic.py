@@ -2,11 +2,10 @@
 """Materialize and run a non-promotable Flyspeck OCaml-parser diagnostic.
 
 The diagnostic is deliberately narrower than a Candle run.  It authenticates
-an exact manifest-selected pilot, masks only manifest-classified standalone
-loader phrases (which the Candle loader consumes before the OCaml parser), and
-submits the remaining exact bytes to a dedicated ``caml_parser$run`` runtime
-protocol.  It never substitutes CakeML's ``parse_prog`` parser and never uses
-the Candle REPL as a parser oracle.
+an explicitly selected pilot or all-inventory profile, prepares only the exact
+profile-bound source bytes, and submits them to a dedicated
+``caml_parser$run`` runtime protocol.  It never substitutes CakeML's
+``parse_prog`` parser and never uses the Candle REPL as a parser oracle.
 
 No current linked compiler is assumed to implement that protocol.  The
 controller first performs a capability handshake with an empty stdin and
@@ -81,6 +80,11 @@ PILOT_RELATIVE = Path("candle/flyspeck_parser_diagnostic_pilot.json")
 ALL_INVENTORY_RELATIVE = Path(
     "candle/flyspeck_parser_diagnostic_all_inventory.json"
 )
+NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
+ALL_INVENTORY_SOURCES_RELATIVE = Path(
+    "candle/flyspeck_all_inventory_sources.py"
+)
+NORMALIZATION_CONTROLLER_RELATIVE = Path("candle/flyspeck_normalize.py")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 RUNTIME_RELATIVE = Path("candle/build/cake")
 CONTROLLER_RELATIVE = Path("candle/flyspeck_parser_diagnostic.py")
@@ -96,11 +100,19 @@ AUTHORITY_SOURCE_RELATIVES = (
     RUNTIME_LOCK_RELATIVE,
     DIRECT_POLICY_RELATIVE,
 )
+ALL_INVENTORY_AUTHORITY_SOURCE_RELATIVES = (
+    *AUTHORITY_SOURCE_RELATIVES,
+    NORMALIZATION_CONTROLLER_RELATIVE,
+    ALL_INVENTORY_SOURCES_RELATIVE,
+)
 PLAN_NAME = "plan.json"
 HOST_RECEIPT_NAME = "host-materialization.json"
 RESULT_NAME = "receipt.json"
 PILOT_COUNT = 20
 ALL_INVENTORY_COUNT = 400
+PILOT_PROFILE = "pilot"
+ALL_INVENTORY_PROFILE = "all-inventory"
+RUNTIME_PROFILES = (PILOT_PROFILE, ALL_INVENTORY_PROFILE)
 CHUNK_BYTES = 1024 * 1024
 PLAN_ROOT_MODE = 0o555
 PLAN_FILE_MODE = 0o444
@@ -124,6 +136,8 @@ ERROR_DIGEST_DOMAIN = b"CANDLE_CAMLPARSER_ERROR_V1\0"
 PARSER_ERROR_EXIT = 65
 PARSER_RUNTIME_PROTOCOL_SCHEMA = 2
 DIAGNOSTIC_RECEIPT_SCHEMA = 4
+ALL_INVENTORY_PLAN_SCHEMA = 2
+ALL_INVENTORY_RECEIPT_SCHEMA = 5
 EXECUTION_ENVIRONMENT = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
 GIT_ENVIRONMENT = {
     **EXECUTION_ENVIRONMENT,
@@ -578,6 +592,148 @@ def validate_all_inventory(
     return observed
 
 
+def profile_authority_source_relatives(profile: str) -> tuple[Path, ...]:
+    require(profile in RUNTIME_PROFILES, f"unsupported parser profile: {profile}")
+    return (
+        AUTHORITY_SOURCE_RELATIVES
+        if profile == PILOT_PROFILE
+        else ALL_INVENTORY_AUTHORITY_SOURCE_RELATIVES
+    )
+
+
+def plan_profile(plan: dict[str, Any]) -> str:
+    """Recognize only the two closed, non-relabelable runtime plan shapes."""
+    require(isinstance(plan, dict), "parser plan is not an object")
+    if (
+        plan.get("schema") == 1
+        and plan.get("kind") == "candle-flyspeck-caml-parser-diagnostic-plan"
+        and "pilot" in plan
+        and "profile" not in plan
+        and "source_preparation" not in plan
+    ):
+        return PILOT_PROFILE
+    profile = plan.get("profile")
+    descriptor = profile.get("descriptor") if isinstance(profile, dict) else None
+    source_preparation = plan.get("source_preparation")
+    descriptor_file = (
+        descriptor.get("file") if isinstance(descriptor, dict) else None
+    )
+    require(
+        plan.get("schema") == ALL_INVENTORY_PLAN_SCHEMA
+        and plan.get("kind")
+        == "candle-flyspeck-caml-parser-all-inventory-diagnostic-plan"
+        and isinstance(profile, dict)
+        and set(profile) == {
+            "id", "descriptor", "input_count", "ready_count",
+            "one_attempt_per_ready_input",
+        }
+        and profile.get("id") == ALL_INVENTORY_PROFILE
+        and type(profile.get("input_count")) is int
+        and profile["input_count"] == ALL_INVENTORY_COUNT
+        and type(profile.get("ready_count")) is int
+        and profile["ready_count"] == ALL_INVENTORY_COUNT
+        and profile.get("one_attempt_per_ready_input") is True
+        and isinstance(descriptor, dict)
+        and set(descriptor) == {
+            "path", "canonical_sha256", "file", "selection",
+        }
+        and descriptor.get("path") == ALL_INVENTORY_RELATIVE.as_posix()
+        and isinstance(descriptor.get("canonical_sha256"), str)
+        and HEX64.fullmatch(descriptor["canonical_sha256"]) is not None
+        and isinstance(descriptor_file, dict)
+        and set(descriptor_file) == {"path", "bytes", "sha256"}
+        and descriptor_file.get("path") == ALL_INVENTORY_RELATIVE.as_posix()
+        and type(descriptor_file.get("bytes")) is int
+        and descriptor_file["bytes"] > 0
+        and isinstance(descriptor_file.get("sha256"), str)
+        and HEX64.fullmatch(descriptor_file["sha256"]) is not None
+        and isinstance(descriptor.get("selection"), dict)
+        and "pilot" not in plan
+        and isinstance(source_preparation, dict)
+        and set(source_preparation) == {
+            "schema", "kind", "claim", "promotion_allowed", "parser_run",
+            "runtime_execution", "canonical_sha256", "authorities",
+            "input_count", "effective_kind_counts", "non_utf8_source_keys",
+            "loader_actions", "prepared_inputs",
+        }
+        and source_preparation.get("schema") == 1
+        and source_preparation.get("kind")
+        == "candle-flyspeck-all-inventory-source-preparation"
+        and source_preparation.get("promotion_allowed") is False
+        and source_preparation.get("parser_run") is False
+        and source_preparation.get("runtime_execution") is False
+        and source_preparation.get("input_count") == ALL_INVENTORY_COUNT
+        and type(source_preparation.get("input_count")) is int
+        and isinstance(source_preparation.get("canonical_sha256"), str)
+        and HEX64.fullmatch(source_preparation["canonical_sha256"]) is not None,
+        "parser plan has an unknown or relabeled profile",
+    )
+    inputs = plan.get("inputs")
+    prepared_summary = source_preparation.get("prepared_inputs")
+    authorities = source_preparation.get("authorities")
+    require(
+        isinstance(inputs, list)
+        and len(inputs) == ALL_INVENTORY_COUNT
+        and plan.get("input_count") == ALL_INVENTORY_COUNT
+        and type(plan.get("input_count")) is int
+        and plan.get("ready_count") == ALL_INVENTORY_COUNT
+        and type(plan.get("ready_count")) is int
+        and plan.get("unsupported_count") == 0
+        and type(plan.get("unsupported_count")) is int
+        and all(
+            isinstance(entry, dict)
+            and type(entry.get("index")) is int
+            and entry["index"] == index
+            and isinstance(entry.get("source_key"), str)
+            and entry.get("repository") in {"candle", "flyspeck"}
+            and entry.get("status") == "ready"
+            and isinstance(entry.get("prepared_input"), dict)
+            and entry["prepared_input"].get("path") == f"inputs/{index:03d}.ml"
+            and type(entry["prepared_input"].get("bytes")) is int
+            and isinstance(entry["prepared_input"].get("sha256"), str)
+            and HEX64.fullmatch(entry["prepared_input"]["sha256"]) is not None
+            for index, entry in enumerate(inputs)
+        )
+        and len({entry["source_key"] for entry in inputs})
+        == ALL_INVENTORY_COUNT
+        and len({entry["prepared_input"]["path"] for entry in inputs})
+        == ALL_INVENTORY_COUNT
+        and len({entry["prepared_input"]["sha256"] for entry in inputs})
+        == ALL_INVENTORY_COUNT
+        and plan.get("ordered_input_sha256") == canonical_sha256(inputs)
+        and descriptor["selection"].get("ordered_source_key_sha256")
+        == canonical_sha256([entry["source_key"] for entry in inputs])
+        and isinstance(prepared_summary, dict)
+        and prepared_summary.get("count") == ALL_INVENTORY_COUNT
+        and prepared_summary.get("paths_unique") is True
+        and prepared_summary.get("sha256_unique") is True
+        and prepared_summary.get("ordered_path_sha256")
+        == canonical_sha256([
+            entry["prepared_input"]["path"] for entry in inputs
+        ])
+        and prepared_summary.get("ordered_prepared_sha256")
+        == canonical_sha256([
+            entry["prepared_input"]["sha256"] for entry in inputs
+        ])
+        and isinstance(authorities, dict)
+        and authorities.get("descriptor") == descriptor_file
+        and authorities.get("manifest") == plan.get("manifest")
+        and isinstance(authorities.get("normalization_contract"), dict)
+        and authorities["normalization_contract"].get("path")
+        == NORMALIZATION_RELATIVE.as_posix(),
+        "all-inventory plan input/profile closure mismatch",
+    )
+    return ALL_INVENTORY_PROFILE
+
+
+def profile_input_count(plan: dict[str, Any]) -> int:
+    return (
+        PILOT_COUNT
+        if plan_profile(plan) == PILOT_PROFILE
+        else ALL_INVENTORY_COUNT
+    )
+
+
 def classify_dependency(dependency: dict[str, Any]) -> dict[str, Any]:
     position = dependency.get("syntax_position")
     status = dependency.get("status")
@@ -847,6 +1003,274 @@ def build_plan(
     return plan, files
 
 
+def _prepare_all_inventory_sources(
+    candle_root: Path,
+    flyspeck_root: Path,
+    normalization_source: bytes,
+    preparation_source: bytes,
+    descriptor_data: bytes,
+    manifest_data: bytes,
+    normalization_data: bytes,
+) -> tuple[dict[str, Any], dict[str, bytes]]:
+    """Execute the exact authenticated source-only foundation in-process."""
+    normalization_path = candle_root / NORMALIZATION_CONTROLLER_RELATIVE
+    preparation_path = candle_root / ALL_INVENTORY_SOURCES_RELATIVE
+    missing = object()
+    previous_normalization = sys.modules.get("flyspeck_normalize", missing)
+    normalization = _load_exact_source_module(
+        "_candle_parser_flyspeck_normalize",
+        normalization_path, normalization_source,
+    )
+    sys.modules["flyspeck_normalize"] = normalization
+    try:
+        preparation = _load_exact_source_module(
+            "_candle_parser_all_inventory_sources",
+            preparation_path, preparation_source,
+        )
+        require(
+            preparation.flyspeck_normalize is normalization,
+            "all-inventory preparation normalization module was rebound",
+        )
+        try:
+            return preparation.prepare_all_sources(
+                candle_root,
+                flyspeck_root,
+                descriptor_data=descriptor_data,
+                manifest_data=manifest_data,
+                normalization_data=normalization_data,
+            )
+        except preparation.ContractError as error:
+            raise ContractError(
+                f"all-inventory source preparation rejected: {error}"
+            ) from error
+    finally:
+        if previous_normalization is missing:
+            sys.modules.pop("flyspeck_normalize", None)
+        else:
+            sys.modules["flyspeck_normalize"] = previous_normalization
+
+
+def build_all_inventory_plan(
+    candle_root: Path,
+    flyspeck_root: Path,
+    candle_head: str,
+    manifest: dict[str, Any],
+    manifest_data: bytes,
+    descriptor: dict[str, Any],
+    descriptor_data: bytes,
+    normalization_data: bytes,
+    normalization_source: bytes,
+    preparation_source: bytes,
+) -> tuple[dict[str, Any], dict[str, bytes]]:
+    """Build the distinct schema-2 runtime plan over all 400 ready inputs."""
+    require(HEX40.fullmatch(candle_head) is not None, "invalid Candle head")
+    require(
+        decode_object(manifest_data, "captured all-inventory manifest") == manifest
+        and validate_all_inventory(
+            descriptor_data, manifest, manifest_data,
+        ) == descriptor,
+        "all-inventory descriptor object/byte authority drift",
+    )
+    require(
+        normalization_source
+        == _read_stable_source(candle_root / NORMALIZATION_CONTROLLER_RELATIVE)
+        and preparation_source
+        == _read_stable_source(candle_root / ALL_INVENTORY_SOURCES_RELATIVE),
+        "all-inventory source-preparation controller bytes changed",
+    )
+    source_plan, files = _prepare_all_inventory_sources(
+        candle_root, flyspeck_root, normalization_source, preparation_source,
+        descriptor_data, manifest_data, normalization_data,
+    )
+    source_inputs = source_plan.get("inputs")
+    require(
+        source_plan.get("schema") == 1
+        and source_plan.get("kind")
+        == "candle-flyspeck-all-inventory-source-preparation"
+        and source_plan.get("promotion_allowed") is False
+        and source_plan.get("parser_run") is False
+        and source_plan.get("runtime_execution") is False
+        and isinstance(source_inputs, list)
+        and len(source_inputs) == ALL_INVENTORY_COUNT
+        and len(files) == ALL_INVENTORY_COUNT,
+        "all-inventory source-preparation plan shape drift",
+    )
+    inputs: list[dict[str, Any]] = []
+    for index, (source, selected) in enumerate(zip(
+        source_inputs, descriptor["inputs"], strict=True,
+    )):
+        require(
+            isinstance(source, dict)
+            and source.get("index") == index
+            and source.get("source_key") == selected.get("source_key")
+            and source.get("repository") == selected.get("repository")
+            and source.get("source", {}).get("path") == selected.get("path")
+            and source.get("prepared_input", {}).get("path")
+            == f"inputs/{index:03d}.ml"
+            and source.get("parser_or_runtime_invoked") is False,
+            f"all-inventory prepared source/descriptor drift: {index}",
+        )
+        prepared = source["prepared_input"]
+        require(
+            files.get(prepared["path"]) is not None
+            and bytes_record(files[prepared["path"]], prepared["path"])
+            == prepared,
+            f"all-inventory prepared file identity drift: {index}",
+        )
+        inputs.append({**source, "status": "ready"})
+
+    generated = [
+        {
+            **{
+                field: entry[field]
+                for field in ("class", "path", "bytes", "sha256")
+            },
+            "handling": "not-consumed-by-parser-only-diagnostic",
+            "semantics_checked": False,
+        }
+        for entry in manifest.get("generated_inputs", [])
+    ]
+    action_projection = [
+        {
+            "index": entry["index"], "target": entry["target"],
+            "selected": entry["selected"], "status": entry["status"],
+        }
+        for entry in manifest.get("build_sequence_roots", [])
+    ]
+    authority_sources = {
+        relative.as_posix(): bytes_record(
+            _read_stable_source(candle_root / relative), relative.as_posix(),
+        )
+        for relative in ALL_INVENTORY_AUTHORITY_SOURCE_RELATIVES
+    }
+    descriptor_record = {
+        "path": ALL_INVENTORY_RELATIVE.as_posix(),
+        "canonical_sha256": canonical_sha256(descriptor),
+        "file": bytes_record(
+            descriptor_data, ALL_INVENTORY_RELATIVE.as_posix(),
+        ),
+        "selection": descriptor["selection"],
+    }
+    source_preparation = {
+        "schema": source_plan["schema"],
+        "kind": source_plan["kind"],
+        "claim": source_plan["claim"],
+        "promotion_allowed": source_plan["promotion_allowed"],
+        "parser_run": source_plan["parser_run"],
+        "runtime_execution": source_plan["runtime_execution"],
+        "canonical_sha256": canonical_sha256(source_plan),
+        "authorities": source_plan["authorities"],
+        "input_count": source_plan["input_count"],
+        "effective_kind_counts": source_plan["effective_kind_counts"],
+        "non_utf8_source_keys": source_plan["non_utf8_source_keys"],
+        "loader_actions": source_plan["loader_actions"],
+        "prepared_inputs": source_plan["prepared_inputs"],
+    }
+    profile = {
+        "id": ALL_INVENTORY_PROFILE,
+        "descriptor": descriptor_record,
+        "input_count": ALL_INVENTORY_COUNT,
+        "ready_count": ALL_INVENTORY_COUNT,
+        "one_attempt_per_ready_input": True,
+    }
+    plan = {
+        "schema": ALL_INVENTORY_PLAN_SCHEMA,
+        "kind": "candle-flyspeck-caml-parser-all-inventory-diagnostic-plan",
+        "profile": profile,
+        "claim": (
+            "all-inventory parser-only diagnostic acceptance; never inference, "
+            "execution, theorem, S1, S2, S3, checkpoint, fingerprint, "
+            "equivalence, or release evidence"
+        ),
+        "promotion": {
+            "eligible": False,
+            "s1_evidence": False,
+            "s2_evidence": False,
+            "s3_evidence": False,
+            "reason": (
+                "parser-only result omits action semantics, inference, "
+                "evaluation, and theorem identity"
+            ),
+        },
+        "repositories": {
+            "candle_commit": candle_head,
+            "flyspeck_commit": manifest["repositories"]["flyspeck"]["commit"],
+            "cakeml_commit": manifest["dopen_corpus_contract"]
+            ["verified_cakeml_integration"]["commit"],
+            "hol4_commit": manifest["dopen_corpus_contract"]
+            ["verified_cakeml_integration"]["proof_hol4_commit"],
+        },
+        "controller": bytes_record(
+            SOURCE_BYTES, CONTROLLER_RELATIVE.as_posix(),
+        ),
+        "authority_sources": authority_sources,
+        "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
+        "source_preparation": source_preparation,
+        "parser_runtime_protocol": {
+            "schema": PARSER_RUNTIME_PROTOCOL_SCHEMA,
+            "function": "caml_parser$run",
+            "language": "CakeML Candle OCaml parser",
+            "capability_argument": CAPABILITY_ARGUMENT,
+            "capability_stdout_sha256": hashlib.sha256(CAPABILITY_LINE).hexdigest(),
+            "run_argument": RUN_ARGUMENT,
+            "input": "one exact prepared source on stdin per fresh process",
+            "parse_error_exit_code": PARSER_ERROR_EXIT,
+            "parse_error_stdout": (
+                "CANDLE_CAMLPARSER_DIAGNOSTIC_V1<TAB>NONCE"
+                "<TAB>PARSE_ERROR<LF>"
+            ),
+            "controller_stderr_digest": {
+                "algorithm": "sha256",
+                "domain_hex": ERROR_DIGEST_DOMAIN.hex(),
+                "canonical_preimage": (
+                    "ASCII bytes CANDLE_CAMLPARSER_ERROR_V1, one NUL byte, "
+                    "then the exact stderr byte stream without decoding or "
+                    "newline changes"
+                ),
+                "stderr_encoding": (
+                    "runtime emits the caml_parser$run error/location text as "
+                    "UTF-8; the controller hashes the resulting bytes without "
+                    "reinterpretation"
+                ),
+            },
+            "forbidden_substitutes": [
+                "--print_sexp/parse_prog", "--candle REPL", "host OCaml parser",
+            ],
+            "required_properties": [
+                "parser-only", "no-inference", "no-evaluation", "no-source-actions",
+            ],
+        },
+        "manifest_action_order": {
+            "bootstrap_roots": manifest["bootstrap_roots"],
+            "build_action_count": len(action_projection),
+            "ordered_build_action_sha256": canonical_sha256(action_projection),
+            "all_inventory_selection_preserves_descriptor_order": True,
+        },
+        "generated_inputs": {
+            "entry_count": len(generated),
+            "ordered_binding_sha256": canonical_sha256(generated),
+            "bindings": generated,
+            "semantics_checked": False,
+        },
+        "input_count": len(inputs),
+        "ready_count": len(inputs),
+        "unsupported_count": 0,
+        "ordered_input_sha256": canonical_sha256(inputs),
+        "inputs": inputs,
+        "limitations": [
+            "all recognized standalone source actions are masked but never executed",
+            "embedded loading expressions are parsed but never evaluated",
+            "generated inputs are identity-bound from the manifest but never consumed",
+            "normalizations are exact hash-bound lexical repairs, not source semantics",
+            "the all-inventory profile does not model an incremental type or value environment",
+            "a parser pass cannot establish source execution or theorem equivalence",
+        ],
+    }
+    require(plan_profile(plan) == ALL_INVENTORY_PROFILE,
+            "constructed all-inventory profile is not closed")
+    return plan, files
+
+
 def _rename_noreplace(source: Path, destination: Path) -> None:
     libc = ctypes.CDLL(None, use_errno=True)
     try:
@@ -921,8 +1345,10 @@ def reconstruct_plan_authority(
     candle_head: str,
     flyspeck_root: Path,
     flyspeck_head: str,
+    profile: str,
 ) -> tuple[dict[str, Any], dict[str, bytes], dict[str, Any], bytes]:
     """Rebuild the only accepted plan from explicit Git-root authorities."""
+    profile_authorities = profile_authority_source_relatives(profile)
     require(HEX40.fullmatch(candle_head) is not None,
             "expected Candle head must be lowercase 40-hex")
     require(HEX40.fullmatch(flyspeck_head) is not None,
@@ -942,10 +1368,12 @@ def reconstruct_plan_authority(
     validate_git_blob(candle_root, candle_head, controller_relative, controller_data)
     require(controller_data == SOURCE_BYTES,
             "executing controller differs from authenticated Candle controller blob")
-    for relative_path in AUTHORITY_SOURCE_RELATIVES:
+    authority_source_data: dict[str, bytes] = {}
+    for relative_path in profile_authorities:
         relative = relative_path.as_posix()
-        source_data = (candle_root / relative_path).read_bytes()
+        source_data = _read_stable_source(candle_root / relative_path)
         validate_git_blob(candle_root, candle_head, relative, source_data)
+        authority_source_data[relative] = source_data
 
     manifest_data, manifest = capture_committed_json(
         candle_root, candle_head, MANIFEST_RELATIVE, "Flyspeck manifest",
@@ -954,23 +1382,45 @@ def reconstruct_plan_authority(
     require(manifest["repositories"]["flyspeck"]["commit"] == flyspeck_head,
             "explicit Flyspeck authority differs from manifest pin")
 
-    pilot_data, _pilot_object = capture_committed_json(
-        candle_root, candle_head, PILOT_RELATIVE, "parser pilot",
+    if profile == PILOT_PROFILE:
+        descriptor_relative = PILOT_RELATIVE
+        descriptor_label = "parser pilot"
+    else:
+        descriptor_relative = ALL_INVENTORY_RELATIVE
+        descriptor_label = "all-inventory parser selection"
+    descriptor_data, _descriptor_object = capture_committed_json(
+        candle_root, candle_head, descriptor_relative, descriptor_label,
     )
-    pilot = validate_pilot(pilot_data, manifest, manifest_data)
-    for pilot_input in pilot["inputs"]:
-        node = manifest["source_nodes"][pilot_input["source_key"]]
+    descriptor = (
+        validate_pilot(descriptor_data, manifest, manifest_data)
+        if profile == PILOT_PROFILE
+        else validate_all_inventory(descriptor_data, manifest, manifest_data)
+    )
+    for selected in descriptor["inputs"]:
+        node = manifest["source_nodes"][selected["source_key"]]
         root = candle_root if node["repository"] == "candle" else flyspeck_root
         head = candle_head if node["repository"] == "candle" else flyspeck_head
-        source_path = root / safe_relative_path(node["path"], "pilot source")
+        source_path = root / safe_relative_path(node["path"], "selected source")
         live = validate_file(
-            source_path, node, f"pilot source {pilot_input['source_key']}",
+            source_path, node, f"selected source {selected['source_key']}",
         )
         validate_git_blob(root, head, node["path"], live)
-    plan, input_files = build_plan(
-        candle_root, flyspeck_root, candle_head, manifest, manifest_data,
-        pilot, pilot_data,
-    )
+    if profile == PILOT_PROFILE:
+        plan, input_files = build_plan(
+            candle_root, flyspeck_root, candle_head, manifest, manifest_data,
+            descriptor, descriptor_data,
+        )
+    else:
+        normalization_data, _normalization = capture_committed_json(
+            candle_root, candle_head, NORMALIZATION_RELATIVE,
+            "Flyspeck normalization contract",
+        )
+        plan, input_files = build_all_inventory_plan(
+            candle_root, flyspeck_root, candle_head, manifest, manifest_data,
+            descriptor, descriptor_data, normalization_data,
+            authority_source_data[NORMALIZATION_CONTROLLER_RELATIVE.as_posix()],
+            authority_source_data[ALL_INVENTORY_SOURCES_RELATIVE.as_posix()],
+        )
     plan_data = json_bytes(plan)
     policy = _load_direct_runtime_policy(candle_root, candle_head, plan)
     controller_execution = collect_controller_execution(candle_root, policy)
@@ -981,8 +1431,9 @@ def reconstruct_plan_authority(
 
 
 def materialize(
-    candle_root: Path, flyspeck_root: Path, output_root: Path,
+    candle_root: Path, flyspeck_root: Path, output_root: Path, profile: str,
 ) -> dict[str, Any]:
+    profile_authority_source_relatives(profile)
     candle_root = resolve_without_symlinks(candle_root, "Candle root")
     flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
     output_root = validate_fresh_output_root(output_root, "plan output root")
@@ -995,7 +1446,7 @@ def materialize(
     candle_head = str(git_output(candle_root, "rev-parse", "HEAD"))
     flyspeck_head = str(git_output(flyspeck_root, "rev-parse", "HEAD"))
     plan, input_files, host, plan_data = reconstruct_plan_authority(
-        candle_root, candle_head, flyspeck_root, flyspeck_head,
+        candle_root, candle_head, flyspeck_root, flyspeck_head, profile,
     )
     parent = output_root.parent
     staging = Path(tempfile.mkdtemp(prefix=f".{output_root.name}.pending-", dir=parent))
@@ -1078,8 +1529,10 @@ def validate_plan_root(
             "parser plan differs from reconstructed authority")
     require(host == expected_host and host_path.read_bytes() == expected_host_data,
             "host receipt differs from reconstructed authority")
+    count = profile_input_count(plan)
     inputs = plan.get("inputs")
-    require(isinstance(inputs, list) and len(inputs) == plan.get("input_count") == PILOT_COUNT,
+    require(isinstance(inputs, list) and
+            len(inputs) == plan.get("input_count") == count,
             "parser plan input count mismatch")
     for index, entry in enumerate(inputs):
         require(entry.get("index") == index, "parser plan input order mismatch")
@@ -1092,6 +1545,14 @@ def validate_plan_root(
         else:
             require(prepared is None and entry.get("unsupported_reasons"),
                     "unsupported input lacks an explicit reason")
+    if plan_profile(plan) == ALL_INVENTORY_PROFILE:
+        require(
+            plan.get("ready_count") == count
+            and plan.get("unsupported_count") == 0
+            and all(entry.get("status") == "ready" for entry in inputs)
+            and len(expected_inputs) == count,
+            "all-inventory plan is not exactly 400 ready inputs",
+        )
     require(canonical_sha256(inputs) == plan.get("ordered_input_sha256"),
             "ordered parser input digest mismatch")
     return plan, plan_data
@@ -1159,10 +1620,11 @@ def _load_direct_runtime_policy(
 ):
     captured: dict[str, bytes] = {}
     bindings = plan.get("authority_sources")
+    profile_authorities = profile_authority_source_relatives(plan_profile(plan))
     require(isinstance(bindings, dict) and
-            set(bindings) == {path.as_posix() for path in AUTHORITY_SOURCE_RELATIVES},
+            set(bindings) == {path.as_posix() for path in profile_authorities},
             "malformed parser-controller authority source closure")
-    for relative_path in AUTHORITY_SOURCE_RELATIVES:
+    for relative_path in profile_authorities:
         relative = relative_path.as_posix()
         path = candle_root / relative_path
         source = _read_stable_source(path)
@@ -1537,12 +1999,25 @@ def run_runtime(
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(plan.get("unsupported_count") == 0,
             "plan contains unsupported actions; no parser process launched")
+    count = profile_input_count(plan)
+    inputs = plan.get("inputs")
+    require(
+            plan.get("ready_count") == count
+            and plan.get("input_count") == count
+            and isinstance(inputs, list) and len(inputs) == count
+            and all(
+                isinstance(entry, dict)
+                and entry.get("status") == "ready"
+                and isinstance(entry.get("prepared_input"), dict)
+                for entry in inputs
+            ),
+            "plan contains unsupported actions; no parser process launched")
     capability, files = capability_handshake(
         runtime, runtime_cwd, timeout_seconds, environment, preexec_fn,
         io_root, max_output_bytes, pass_fds,
     )
     attempts = []
-    for entry in plan["inputs"]:
+    for entry in inputs:
         nonce = os.urandom(32).hex()
         prepared = entry["prepared_input"]
         source = validate_file(
@@ -1698,9 +2173,10 @@ def capture_authority_snapshot(
         CONTROLLER_RELATIVE.as_posix(): plan.get("controller"),
         **plan.get("authority_sources", {}),
     }
+    profile_authorities = profile_authority_source_relatives(plan_profile(plan))
     expected_paths = {
         CONTROLLER_RELATIVE.as_posix(),
-        *(relative.as_posix() for relative in AUTHORITY_SOURCE_RELATIVES),
+        *(relative.as_posix() for relative in profile_authorities),
     }
     require(set(bindings) == expected_paths,
             "malformed authority snapshot closure")
@@ -1734,9 +2210,10 @@ def selected_original_source_specs(
     candle_root: Path, flyspeck_root: Path, plan: dict[str, Any],
 ) -> list[tuple[Path, str, dict[str, Any], str]]:
     """Return the closed, collision-free original-blob archive specification."""
+    count = profile_input_count(plan)
     inputs = plan.get("inputs")
-    require(isinstance(inputs, list) and len(inputs) == PILOT_COUNT,
-            "durable source snapshot does not have the exact pilot")
+    require(isinstance(inputs, list) and len(inputs) == count,
+            "durable source snapshot does not have the exact profile")
     copies: list[tuple[Path, str, dict[str, Any], str]] = []
     destinations = set()
     for index, entry in enumerate(inputs):
@@ -1761,7 +2238,7 @@ def selected_original_source_specs(
             source_root / relative, destination, source_record,
             f"selected original source {entry['source_key']}",
         ))
-    require(len(copies) == PILOT_COUNT and len(destinations) == PILOT_COUNT,
+    require(len(copies) == count and len(destinations) == count,
             "selected original source snapshot inventory is not closed")
     return copies
 
@@ -1776,11 +2253,42 @@ def durable_snapshot_sources(
     manifest_data = _read_stable_source(candle_root / MANIFEST_RELATIVE)
     require(bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()) ==
             plan["manifest"], "manifest changed before durable snapshot")
-    pilot_data = _read_stable_source(candle_root / PILOT_RELATIVE)
-    require(bytes_record(pilot_data, PILOT_RELATIVE.as_posix()) ==
-            plan["pilot"]["file"], "pilot changed before durable snapshot")
     byte_files["snapshot/authority/candle/flyspeck_manifest.json"] = manifest_data
-    byte_files["snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"] = pilot_data
+    if plan_profile(plan) == PILOT_PROFILE:
+        pilot_data = _read_stable_source(candle_root / PILOT_RELATIVE)
+        require(bytes_record(pilot_data, PILOT_RELATIVE.as_posix()) ==
+                plan["pilot"]["file"], "pilot changed before durable snapshot")
+        byte_files[
+            "snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"
+        ] = pilot_data
+    else:
+        descriptor_data = _read_stable_source(
+            candle_root / ALL_INVENTORY_RELATIVE,
+        )
+        descriptor_record = plan["profile"]["descriptor"]["file"]
+        require(
+            bytes_record(descriptor_data, ALL_INVENTORY_RELATIVE.as_posix())
+            == descriptor_record,
+            "all-inventory descriptor changed before durable snapshot",
+        )
+        normalization_data = _read_stable_source(
+            candle_root / NORMALIZATION_RELATIVE,
+        )
+        normalization_record = plan["source_preparation"]["authorities"][
+            "normalization_contract"
+        ]
+        require(
+            bytes_record(normalization_data, NORMALIZATION_RELATIVE.as_posix())
+            == normalization_record,
+            "normalization contract changed before durable snapshot",
+        )
+        byte_files[
+            "snapshot/authority/candle/"
+            "flyspeck_parser_diagnostic_all_inventory.json"
+        ] = descriptor_data
+        byte_files[
+            "snapshot/authority/candle/flyspeck_normalizations.json"
+        ] = normalization_data
 
     copies = selected_original_source_specs(candle_root, flyspeck_root, plan)
 
@@ -1897,6 +2405,10 @@ DIAGNOSTIC_RECEIPT_FIELDS = frozenset({
     "linked_provenance", "linked_provenance_schema", "bootstrap_transition",
     "runtime", "runtime_execution", "snapshot", "capability", "attempt_count",
     "ordered_attempt_sha256", "attempts", "outcome", "limitations",
+})
+ALL_INVENTORY_RECEIPT_FIELDS = frozenset({
+    *DIAGNOSTIC_RECEIPT_FIELDS,
+    "profile", "source_preparation",
 })
 SEALED_RUNTIME_EXECUTION_FIELDS = frozenset({
     "kind", "bytes", "sha256", "mode", "seals", "required_seals", "execution",
@@ -2079,7 +2591,13 @@ def build_diagnostic_receipt(
     runtime_execution: dict[str, Any], inventory: dict[str, Any],
     runtime_result: dict[str, Any], transcript_files: dict[str, bytes],
 ) -> dict[str, Any]:
-    """Build schema-4 evidence after checking its new security relationships."""
+    """Build closed profile-specific parser-only diagnostic evidence."""
+    profile_id = plan_profile(plan)
+    count = profile_input_count(plan)
+    require(
+        decode_object(expected_plan_data, "captured receipt plan") == plan,
+        "receipt plan bytes differ from selected plan object",
+    )
     protocol = plan.get("parser_runtime_protocol")
     require(isinstance(protocol, dict) and
             protocol.get("schema") == PARSER_RUNTIME_PROTOCOL_SCHEMA,
@@ -2116,6 +2634,48 @@ def build_diagnostic_receipt(
             "receipt durable snapshot inventory shape is not closed")
     require(runtime_snapshot in inventory_files,
             "receipt runtime is absent from durable snapshot inventory")
+    if profile_id == ALL_INVENTORY_PROFILE:
+        descriptor_file = plan["profile"]["descriptor"]["file"]
+        normalization_file = plan["source_preparation"]["authorities"][
+            "normalization_contract"
+        ]
+        preparation_file = plan["authority_sources"][
+            ALL_INVENTORY_SOURCES_RELATIVE.as_posix()
+        ]
+        required_profile_authorities = {
+            canonical_bytes(bytes_record(
+                expected_plan_data, f"snapshot/plan/{PLAN_NAME}",
+            )),
+            canonical_bytes(bytes_record(
+                json_bytes(expected_host),
+                f"snapshot/plan/{HOST_RECEIPT_NAME}",
+            )),
+            canonical_bytes({
+                **descriptor_file,
+                "path": (
+                    "snapshot/authority/candle/"
+                    "flyspeck_parser_diagnostic_all_inventory.json"
+                ),
+            }),
+            canonical_bytes({
+                **normalization_file,
+                "path": "snapshot/authority/candle/flyspeck_normalizations.json",
+            }),
+            canonical_bytes({
+                **preparation_file,
+                "path": (
+                    "snapshot/authority/candle/"
+                    "flyspeck_all_inventory_sources.py"
+                ),
+            }),
+        }
+        observed_inventory_records = {
+            canonical_bytes(record) for record in inventory_files
+        }
+        require(
+            required_profile_authorities <= observed_inventory_records,
+            "all-inventory durable profile authority closure mismatch",
+        )
     expected_transcripts = {
         canonical_bytes(bytes_record(
             data, f"snapshot/runtime/{relative}",
@@ -2141,8 +2701,8 @@ def build_diagnostic_receipt(
     }
     expected_originals: dict[str, dict[str, Any]] = {}
     inputs = plan.get("inputs")
-    require(isinstance(inputs, list) and len(inputs) == PILOT_COUNT,
-            "receipt plan does not contain the exact parser pilot")
+    require(isinstance(inputs, list) and len(inputs) == count,
+            "receipt plan does not contain the exact parser profile")
     for index, entry in enumerate(inputs):
         require(entry.get("index") == index and
                 entry.get("repository") in {"candle", "flyspeck"} and
@@ -2163,9 +2723,17 @@ def build_diagnostic_receipt(
     require(observed_originals == expected_originals,
             "receipt original source snapshot closure mismatch")
 
-    receipt = {
-        "schema": DIAGNOSTIC_RECEIPT_SCHEMA,
-        "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
+    receipt: dict[str, Any] = {
+        "schema": (
+            DIAGNOSTIC_RECEIPT_SCHEMA
+            if profile_id == PILOT_PROFILE
+            else ALL_INVENTORY_RECEIPT_SCHEMA
+        ),
+        "kind": (
+            "candle-flyspeck-caml-parser-diagnostic-receipt"
+            if profile_id == PILOT_PROFILE
+            else "candle-flyspeck-caml-parser-all-inventory-diagnostic-receipt"
+        ),
         "claim": "parser-only diagnostic; categorically non-promotable",
         "promotion": plan["promotion"],
         "plan": bytes_record(
@@ -2198,7 +2766,12 @@ def build_diagnostic_receipt(
         **runtime_result,
         "limitations": plan["limitations"],
     }
-    require(set(receipt) == DIAGNOSTIC_RECEIPT_FIELDS,
+    expected_fields = DIAGNOSTIC_RECEIPT_FIELDS
+    if profile_id == ALL_INVENTORY_PROFILE:
+        receipt["profile"] = plan["profile"]
+        receipt["source_preparation"] = plan["source_preparation"]
+        expected_fields = ALL_INVENTORY_RECEIPT_FIELDS
+    require(set(receipt) == expected_fields,
             "diagnostic receipt field set is not closed")
     return receipt
 
@@ -2214,7 +2787,9 @@ def run(
     max_cpu_seconds: int,
     max_address_space_gib: int,
     max_output_mib: int,
+    profile: str,
 ) -> dict[str, Any]:
+    profile_authority_source_relatives(profile)
     plan_root = resolve_without_symlinks(plan_root, "plan root")
     candle_root = resolve_without_symlinks(candle_root, "Candle root")
     flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
@@ -2236,7 +2811,7 @@ def run(
 
     expected_plan, expected_inputs, expected_host, expected_plan_data = (
         reconstruct_plan_authority(
-            candle_root, candle_head, flyspeck_root, flyspeck_head,
+            candle_root, candle_head, flyspeck_root, flyspeck_head, profile,
         )
     )
     plan, plan_data = validate_plan_root(
@@ -2359,17 +2934,40 @@ def run(
         linked_final, runtime_final = validate_linked_runtime(
             candle_root, plan, policy,
         )
+        durable_authority_unchanged = (
+            _read_stable_source(candle_root / MANIFEST_RELATIVE)
+            == durable_bytes[
+                "snapshot/authority/candle/flyspeck_manifest.json"
+            ]
+        )
+        if profile == PILOT_PROFILE:
+            durable_authority_unchanged = (
+                durable_authority_unchanged
+                and _read_stable_source(candle_root / PILOT_RELATIVE)
+                == durable_bytes[
+                    "snapshot/authority/candle/"
+                    "flyspeck_parser_diagnostic_pilot.json"
+                ]
+            )
+        else:
+            durable_authority_unchanged = (
+                durable_authority_unchanged
+                and _read_stable_source(candle_root / ALL_INVENTORY_RELATIVE)
+                == durable_bytes[
+                    "snapshot/authority/candle/"
+                    "flyspeck_parser_diagnostic_all_inventory.json"
+                ]
+                and _read_stable_source(candle_root / NORMALIZATION_RELATIVE)
+                == durable_bytes[
+                    "snapshot/authority/candle/flyspeck_normalizations.json"
+                ]
+            )
         require(linked_final == linked and runtime_final == runtime and
                 _read_stable_source(linked_path) == linked_bytes and
                 file_record(runtime_final, RUNTIME_RELATIVE.as_posix()) == runtime_before and
                 sealed_runtime_record(runtime_descriptor) == runtime_execution and
                 capture_authority_snapshot(candle_root, plan) == authority_snapshot and
-                _read_stable_source(candle_root / MANIFEST_RELATIVE) ==
-                durable_bytes["snapshot/authority/candle/flyspeck_manifest.json"] and
-                _read_stable_source(candle_root / PILOT_RELATIVE) ==
-                durable_bytes[
-                    "snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"
-                ],
+                durable_authority_unchanged,
                 "linked authority changed before receipt publication")
         validate_snapshot_tree(staging, inventory)
         _rename_noreplace(staging, output_root)
@@ -2392,10 +2990,14 @@ def main() -> None:
     write_inventory = subparsers.add_parser("write-all-inventory")
     write_inventory.add_argument("--candle-root", type=Path, default=ROOT)
     materializer = subparsers.add_parser("materialize")
+    materializer.add_argument(
+        "--profile", choices=RUNTIME_PROFILES, required=True,
+    )
     materializer.add_argument("--candle-root", type=Path, required=True)
     materializer.add_argument("--flyspeck-root", type=Path, required=True)
     materializer.add_argument("--output-root", type=Path, required=True)
     runner = subparsers.add_parser("run")
+    runner.add_argument("--profile", choices=RUNTIME_PROFILES, required=True)
     runner.add_argument("--plan-root", type=Path, required=True)
     runner.add_argument("--candle-root", type=Path, required=True)
     runner.add_argument("--candle-head", required=True)
@@ -2446,6 +3048,7 @@ def main() -> None:
     if arguments.command == "materialize":
         receipt = materialize(
             arguments.candle_root, arguments.flyspeck_root, arguments.output_root,
+            arguments.profile,
         )
         print(f"parser diagnostic plan materialized: {receipt['plan_sha256']}")
         return
@@ -2455,7 +3058,7 @@ def main() -> None:
         arguments.flyspeck_root, arguments.flyspeck_head,
         arguments.output_root, arguments.timeout_seconds,
         arguments.max_cpu_seconds, arguments.max_address_space_gib,
-        arguments.max_output_mib,
+        arguments.max_output_mib, arguments.profile,
     )
     print(f"parser diagnostic {receipt['outcome']}: {receipt['attempt_count']} inputs")
 

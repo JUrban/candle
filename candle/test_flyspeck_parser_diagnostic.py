@@ -45,6 +45,84 @@ class ParserDiagnosticTests(unittest.TestCase):
             (ROOT / subject.PILOT_RELATIVE).read_bytes(),
         )
 
+    @classmethod
+    def build_real_all_inventory_plan(cls):
+        cached = getattr(cls, "_all_inventory_plan_cache", None)
+        if cached is None:
+            descriptor_data = (
+                ROOT / subject.ALL_INVENTORY_RELATIVE
+            ).read_bytes()
+            normalization_data = (
+                ROOT / subject.NORMALIZATION_RELATIVE
+            ).read_bytes()
+            candle_head = subprocess.run(
+                ["/usr/bin/git", "-C", str(ROOT), "rev-parse", "HEAD"],
+                check=True, stdout=subprocess.PIPE, text=True,
+            ).stdout.strip()
+            cached = subject.build_all_inventory_plan(
+                ROOT,
+                Path("/project/worktrees/flyspeck-v13-source"),
+                candle_head,
+                cls.manifest,
+                cls.manifest_data,
+                cls.all_inventory,
+                descriptor_data,
+                normalization_data,
+                (ROOT / subject.NORMALIZATION_CONTROLLER_RELATIVE).read_bytes(),
+                (ROOT / subject.ALL_INVENTORY_SOURCES_RELATIVE).read_bytes(),
+            )
+            cls._all_inventory_plan_cache = cached
+        return cached
+
+    @staticmethod
+    def runtime_fixture(plan):
+        attempts = []
+        transcript_files = {
+            "capability.stdout": subject.CAPABILITY_LINE,
+            "capability.stderr": b"",
+        }
+        for index, entry in enumerate(plan["inputs"]):
+            nonce = f"{index:064x}"
+            stdout_path = f"attempts/{index:03d}.stdout"
+            stderr_path = f"attempts/{index:03d}.stderr"
+            stdout = subject.RESULT_PREFIX + nonce.encode() + b"\tOK\n"
+            transcript_files[stdout_path] = stdout
+            transcript_files[stderr_path] = b""
+            attempts.append({
+                "index": index,
+                "source_key": entry["source_key"],
+                "prepared_input": entry["prepared_input"],
+                "nonce": nonce,
+                "command": [
+                    subject.RUNTIME_RELATIVE.as_posix(),
+                    subject.RUN_ARGUMENT,
+                    nonce,
+                ],
+                "exit_code": 0,
+                "outcome": "parse-ok",
+                "controller_stderr_digest": None,
+                "stdout": subject.bytes_record(stdout, stdout_path),
+                "stderr": subject.bytes_record(b"", stderr_path),
+            })
+        return {
+            "capability": {
+                "command": [
+                    subject.RUNTIME_RELATIVE.as_posix(),
+                    subject.CAPABILITY_ARGUMENT,
+                ],
+                "exit_code": 0,
+                "stdin": subject.bytes_record(b""),
+                "stdout": subject.bytes_record(
+                    subject.CAPABILITY_LINE, "capability.stdout",
+                ),
+                "stderr": subject.bytes_record(b"", "capability.stderr"),
+            },
+            "attempt_count": len(attempts),
+            "ordered_attempt_sha256": subject.canonical_sha256(attempts),
+            "attempts": attempts,
+            "outcome": "parse-pass",
+        }, transcript_files
+
     def publish_plan_tree(self, root, plan, inputs, host):
         root.mkdir()
         subject._write_tree(
@@ -219,6 +297,248 @@ class ParserDiagnosticTests(unittest.TestCase):
         self.assertIn(b"Kernel.EQ_MP", kernel_bytes)
         self.assertFalse(plan["promotion"]["eligible"])
         self.assertFalse(plan["promotion"]["s2_evidence"])
+        self.assertEqual(subject.plan_profile(plan), subject.PILOT_PROFILE)
+        self.assertNotIn("profile", plan)
+        self.assertNotIn("source_preparation", plan)
+
+    def test_all_inventory_profile_is_exactly_400_ready_prepared_inputs(self) -> None:
+        plan, files = self.build_real_all_inventory_plan()
+        self.assertEqual(plan["schema"], 2)
+        self.assertEqual(
+            plan["kind"],
+            "candle-flyspeck-caml-parser-all-inventory-diagnostic-plan",
+        )
+        self.assertEqual(
+            subject.plan_profile(plan), subject.ALL_INVENTORY_PROFILE,
+        )
+        self.assertEqual(
+            (plan["input_count"], plan["ready_count"],
+             plan["unsupported_count"], len(files)),
+            (400, 400, 0, 400),
+        )
+        self.assertTrue(all(
+            entry["status"] == "ready"
+            and entry["prepared_input"] is not None
+            and "unsupported_reasons" not in entry
+            for entry in plan["inputs"]
+        ))
+        self.assertEqual(
+            [entry["source_key"] for entry in plan["inputs"]],
+            [entry["source_key"] for entry in self.all_inventory["inputs"]],
+        )
+        self.assertEqual(
+            plan["source_preparation"]["effective_kind_counts"],
+            {"exact-normalized": 18, "exact-original": 382},
+        )
+        self.assertEqual(
+            plan["source_preparation"]["loader_actions"]
+            ["recognized_site_count"],
+            727,
+        )
+        self.assertEqual(
+            plan["source_preparation"]["non_utf8_source_keys"],
+            ["flyspeck:text_formalization/leg/collect_geom.hl"],
+        )
+        descriptor_data = (ROOT / subject.ALL_INVENTORY_RELATIVE).read_bytes()
+        self.assertEqual(
+            plan["profile"]["descriptor"]["file"],
+            subject.bytes_record(
+                descriptor_data, subject.ALL_INVENTORY_RELATIVE.as_posix(),
+            ),
+        )
+        self.assertFalse(plan["promotion"]["eligible"])
+        self.assertIn("parser-only", plan["claim"])
+
+    def test_all_inventory_profile_rejects_relabel_count_and_order_drift(self) -> None:
+        plan, _files = self.build_real_all_inventory_plan()
+        mutations = []
+        relabeled = copy.deepcopy(plan)
+        relabeled["profile"]["id"] = subject.PILOT_PROFILE
+        mutations.append(relabeled)
+        boolean_count = copy.deepcopy(plan)
+        boolean_count["profile"]["input_count"] = True
+        mutations.append(boolean_count)
+        unsupported = copy.deepcopy(plan)
+        unsupported["inputs"][0]["status"] = "unsupported-no-launch"
+        unsupported["inputs"][0]["prepared_input"] = None
+        unsupported["ready_count"] = 399
+        unsupported["unsupported_count"] = 1
+        unsupported["ordered_input_sha256"] = subject.canonical_sha256(
+            unsupported["inputs"],
+        )
+        mutations.append(unsupported)
+        duplicate = copy.deepcopy(plan)
+        duplicate["inputs"][1]["source_key"] = duplicate["inputs"][0]["source_key"]
+        duplicate["ordered_input_sha256"] = subject.canonical_sha256(
+            duplicate["inputs"],
+        )
+        mutations.append(duplicate)
+        reordered = copy.deepcopy(plan)
+        reordered["inputs"][0], reordered["inputs"][1] = (
+            reordered["inputs"][1], reordered["inputs"][0]
+        )
+        for index, entry in enumerate(reordered["inputs"][:2]):
+            entry["index"] = index
+            entry["prepared_input"]["path"] = f"inputs/{index:03d}.ml"
+        reordered["ordered_input_sha256"] = subject.canonical_sha256(
+            reordered["inputs"],
+        )
+        mutations.append(reordered)
+        descriptor_rebound = copy.deepcopy(plan)
+        descriptor_rebound["profile"]["descriptor"]["file"]["sha256"] = "0" * 64
+        mutations.append(descriptor_rebound)
+        for index, mutation in enumerate(mutations):
+            with self.subTest(index=index), self.assertRaises(subject.ContractError):
+                subject.plan_profile(mutation)
+
+    def test_all_inventory_launch_guard_rejects_placeholder_before_handshake(self) -> None:
+        plan, _files = self.build_real_all_inventory_plan()
+        forged = copy.deepcopy(plan)
+        forged["unsupported_count"] = 1
+        forged["ready_count"] = 399
+        forged["inputs"][0]["status"] = "unsupported-no-launch"
+        forged["inputs"][0]["prepared_input"] = None
+        with mock.patch.object(subject, "capability_handshake") as handshake:
+            with self.assertRaisesRegex(subject.ContractError, "unsupported actions"):
+                subject.run_runtime(
+                    Path("/fake/cake"), Path("/fake"), Path("/fake/plan"),
+                    forged, 1, subject.EXECUTION_ENVIRONMENT, None,
+                    Path("/fake/io"), 1024,
+                )
+        handshake.assert_not_called()
+
+    def test_all_inventory_original_archive_and_attempt_closures_are_exact(self) -> None:
+        plan, _files = self.build_real_all_inventory_plan()
+        specs = subject.selected_original_source_specs(
+            ROOT, Path("/project/worktrees/flyspeck-v13-source"), plan,
+        )
+        self.assertEqual(len(specs), 400)
+        self.assertEqual(
+            len({destination for _path, destination, _record, _label in specs}),
+            400,
+        )
+        runtime_result, transcripts = self.runtime_fixture(plan)
+        subject.validate_runtime_result(plan, runtime_result, transcripts)
+        omitted = copy.deepcopy(runtime_result)
+        omitted["attempts"].pop()
+        omitted["attempt_count"] = len(omitted["attempts"])
+        omitted["ordered_attempt_sha256"] = subject.canonical_sha256(
+            omitted["attempts"],
+        )
+        with self.assertRaisesRegex(subject.ContractError, "exactly one attempt"):
+            subject.validate_runtime_result(plan, omitted, transcripts)
+
+    def test_all_inventory_receipt_schema_five_binds_profile_and_durable_authority(self) -> None:
+        plan, _files = self.build_real_all_inventory_plan()
+        plan_data = subject.json_bytes(plan)
+        host = {"fixture": "all-inventory-host"}
+        runtime_result, transcripts = self.runtime_fixture(plan)
+        runtime_data = b"sealed runtime fixture\n"
+        runtime_snapshot = subject.bytes_record(
+            runtime_data, "snapshot/linked/outputs/cake",
+        )
+        runtime_execution = {
+            "kind": "sealed-anonymous-runtime-image",
+            "bytes": runtime_snapshot["bytes"],
+            "sha256": runtime_snapshot["sha256"],
+            "mode": "0500",
+            "seals": subject.RUNTIME_MEMFD_SEALS,
+            "required_seals": subject.RUNTIME_MEMFD_SEALS,
+            "execution": "inherited-fd-via-/proc/self/fd",
+        }
+        original_records = []
+        for entry in plan["inputs"]:
+            original_records.append({
+                "path": (
+                    Path("snapshot/original-sources") /
+                    entry["repository"] / entry["source"]["path"]
+                ).as_posix(),
+                "bytes": entry["source"]["bytes"],
+                "sha256": entry["source"]["sha256"],
+            })
+        descriptor = plan["profile"]["descriptor"]["file"]
+        normalization = plan["source_preparation"]["authorities"][
+            "normalization_contract"
+        ]
+        preparation = plan["authority_sources"][
+            subject.ALL_INVENTORY_SOURCES_RELATIVE.as_posix()
+        ]
+        authority_records = [
+            subject.bytes_record(plan_data, "snapshot/plan/plan.json"),
+            subject.bytes_record(
+                subject.json_bytes(host),
+                "snapshot/plan/host-materialization.json",
+            ),
+            {
+                **descriptor,
+                "path": (
+                    "snapshot/authority/candle/"
+                    "flyspeck_parser_diagnostic_all_inventory.json"
+                ),
+            },
+            {
+                **normalization,
+                "path": "snapshot/authority/candle/flyspeck_normalizations.json",
+            },
+            {
+                **preparation,
+                "path": (
+                    "snapshot/authority/candle/"
+                    "flyspeck_all_inventory_sources.py"
+                ),
+            },
+        ]
+        inventory = subject.snapshot_inventory(
+            {
+                f"snapshot/runtime/{relative}": data
+                for relative, data in transcripts.items()
+            },
+            [runtime_snapshot, *original_records, *authority_records],
+        )
+
+        def build(snapshot=inventory, candidate_plan=plan):
+            return subject.build_diagnostic_receipt(
+                candidate_plan, subject.json_bytes(candidate_plan), host,
+                {"fixture": "controller"}, {"fixture": "lock"},
+                1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
+                runtime_snapshot, runtime_execution, snapshot,
+                runtime_result, transcripts,
+            )
+
+        receipt = build()
+        self.assertEqual(receipt["schema"], 5)
+        self.assertEqual(
+            receipt["kind"],
+            "candle-flyspeck-caml-parser-all-inventory-diagnostic-receipt",
+        )
+        self.assertEqual(set(receipt), subject.ALL_INVENTORY_RECEIPT_FIELDS)
+        self.assertEqual(receipt["profile"], plan["profile"])
+        self.assertEqual(
+            receipt["source_preparation"], plan["source_preparation"],
+        )
+        self.assertEqual(
+            receipt["plan"],
+            subject.bytes_record(plan_data, "snapshot/plan/plan.json"),
+        )
+
+        for required in authority_records:
+            omitted_inventory = subject.snapshot_inventory(
+                {}, [
+                    row for row in inventory["files"]
+                    if row["path"] != required["path"]
+                ],
+            )
+            with self.subTest(path=required["path"]), self.assertRaisesRegex(
+                subject.ContractError, "profile authority closure mismatch",
+            ):
+                build(snapshot=omitted_inventory)
+
+        relabeled = copy.deepcopy(plan)
+        relabeled["schema"] = 1
+        relabeled["kind"] = "candle-flyspeck-caml-parser-diagnostic-plan"
+        relabeled["pilot"] = relabeled.pop("profile")
+        with self.assertRaises(subject.ContractError):
+            build(candidate_plan=relabeled)
 
     def test_runtime_protocol_schema_two_binds_controller_digest_contract(self) -> None:
         plan, _files = self.build_real_plan()
@@ -855,7 +1175,9 @@ class ParserDiagnosticTests(unittest.TestCase):
                 with self.assertRaisesRegex(
                     subject.ContractError, f"outside {label} root",
                 ):
-                    subject.materialize(ROOT, flyspeck_root, output)
+                    subject.materialize(
+                        ROOT, flyspeck_root, output, subject.PILOT_PROFILE,
+                    )
             reconstruct.assert_not_called()
             self.assertFalse(os.path.lexists(output))
 
@@ -1054,6 +1376,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             ):
                 subject.reconstruct_plan_authority(
                     ROOT, candle_head, flyspeck_root, flyspeck_head,
+                    subject.PILOT_PROFILE,
                 )
 
     def test_authenticated_candle_root_symlink_rebinding_is_rejected(self) -> None:
@@ -1064,6 +1387,7 @@ class ParserDiagnosticTests(unittest.TestCase):
                 subject.reconstruct_plan_authority(
                     alias, "1" * 40,
                     Path("/project/worktrees/flyspeck-v13-source"), "2" * 40,
+                    subject.PILOT_PROFILE,
                 )
 
     def test_direct_cli_rejects_nonisolated_python_before_work(self) -> None:
@@ -1078,6 +1402,32 @@ class ParserDiagnosticTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn(b"requires /usr/bin/python3 -I -S", result.stderr)
+
+    def test_materialize_and_run_cli_require_explicit_profile(self) -> None:
+        controller = str(ROOT / subject.CONTROLLER_RELATIVE)
+        commands = (
+            [
+                "materialize", "--candle-root", str(ROOT),
+                "--flyspeck-root", "/missing/flyspeck",
+                "--output-root", "/missing/output",
+            ],
+            [
+                "run", "--plan-root", "/missing/plan",
+                "--candle-root", str(ROOT), "--candle-head", "1" * 40,
+                "--flyspeck-root", "/missing/flyspeck",
+                "--flyspeck-head", "2" * 40,
+                "--output-root", "/missing/output",
+            ],
+        )
+        for arguments in commands:
+            with self.subTest(command=arguments[0]):
+                result = subprocess.run(
+                    ["/usr/bin/python3", "-I", "-S", controller, *arguments],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    env=subject.EXECUTION_ENVIRONMENT,
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn(b"--profile", result.stderr)
 
 
 if __name__ == "__main__":
