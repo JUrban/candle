@@ -164,6 +164,32 @@ def validate_file(path: Path, expected: dict[str, Any], label: str) -> bytes:
     return data
 
 
+def resolve_without_symlinks(path: Path, label: str) -> Path:
+    """Resolve an existing path only after rejecting symlink path components."""
+    candidate = path if path.is_absolute() else Path.cwd() / path
+    require(".." not in candidate.parts, f"{label} contains parent traversal")
+    current = Path(candidate.anchor)
+    for part in candidate.parts[1:]:
+        if part in {"", "."}:
+            continue
+        current /= part
+        try:
+            observed = current.lstat()
+        except OSError as error:
+            raise ContractError(f"missing {label} path component: {current}: {error}") from error
+        require(not stat.S_ISLNK(observed.st_mode),
+                f"symlink component in {label}: {current}")
+    return candidate.resolve(strict=True)
+
+
+def safe_relative_path(relative: Any, label: str) -> Path:
+    require(isinstance(relative, str) and relative, f"missing {label} path")
+    path = Path(relative)
+    require(not path.is_absolute() and ".." not in path.parts and path.as_posix() == relative,
+            f"unsafe {label} path: {relative}")
+    return path
+
+
 def git_output(root: Path, *arguments: str, binary: bool = False) -> bytes | str:
     try:
         result = subprocess.run(
@@ -195,7 +221,11 @@ def validate_git_blob(root: Path, head: str, relative: str, live: bytes) -> None
     require(len(records) == 1, f"missing or ambiguous Git blob: {relative}")
     prefix, observed_path = records[0].split(b"\t", 1)
     mode, kind, _object = prefix.split(b" ", 2)
-    require(mode == b"100644" and kind == b"blob", f"non-100644 Git blob: {relative}")
+    # The inherited HOL Light tree tracks a few ML sources executable.  Both
+    # ordinary blob modes are content-authenticated by the bound commit; links,
+    # submodules, and other tree entries remain inadmissible.
+    require(mode in {b"100644", b"100755"} and kind == b"blob",
+            f"non-ordinary Git blob: {relative}")
     require(observed_path.decode() == relative, f"Git path mismatch: {relative}")
     committed = bytes(git_output(root, "show", f"{head}:{relative}", binary=True))
     require(committed == live, f"live file differs from Git blob: {relative}")
@@ -208,8 +238,10 @@ def _dependency_child(dependency: dict[str, Any], nodes: dict[str, Any]) -> str 
     return selected if isinstance(selected, str) and selected in nodes else None
 
 
-def derive_manifest_node_order(manifest: dict[str, Any]) -> list[dict[str, Any]]:
-    """Derive first-discovery order from authoritative roots and dependency order."""
+def derive_manifest_node_inventory(
+    manifest: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Derive first-discovery order and bind every unreachable inventory node."""
     nodes = manifest.get("source_nodes")
     roots = manifest.get("build_sequence_roots")
     bootstrap = manifest.get("bootstrap_roots")
@@ -255,11 +287,46 @@ def derive_manifest_node_order(manifest: dict[str, Any]) -> list[dict[str, Any]]
 
     for key, discovery in root_entries:
         visit(key, discovery)
-    return ordered
+    excluded = []
+    for missing in sorted(set(nodes) - seen):
+        incoming = []
+        for parent, parent_node in sorted(nodes.items()):
+            for dependency_index, dependency in enumerate(parent_node["dependencies"]):
+                selected_targets = dependency.get("selected_targets")
+                if isinstance(selected_targets, list) and missing in selected_targets:
+                    incoming.append({
+                        "parent_source": parent,
+                        "dependency_index": dependency_index,
+                        "kind": dependency.get("kind"),
+                        "line": dependency.get("line"),
+                        "status": dependency.get("status"),
+                        "syntax_position": dependency.get("syntax_position"),
+                    })
+        reason = (
+            "referenced only through non-resolved dynamic/generated actions"
+            if incoming else
+            "not reachable from bootstrap/build roots through resolved selected dependencies"
+        )
+        excluded.append({
+            "source_key": missing,
+            "repository": nodes[missing]["repository"],
+            "path": nodes[missing]["path"],
+            "sha256": nodes[missing]["sha256"],
+            "reason": reason,
+            "incoming_nontraversed_actions": incoming,
+        })
+    require(len(ordered) + len(excluded) == len(nodes),
+            "source discovery/exclusion partition mismatch")
+    return ordered, excluded
+
+
+def derive_manifest_node_order(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    """Compatibility projection of the authenticated first-discovery order."""
+    return derive_manifest_node_inventory(manifest)[0]
 
 
 def build_pilot_descriptor(manifest: dict[str, Any], manifest_data: bytes) -> dict[str, Any]:
-    ordered = derive_manifest_node_order(manifest)
+    ordered, excluded = derive_manifest_node_inventory(manifest)
     require(len(ordered) >= PILOT_COUNT, "manifest graph is smaller than pilot")
     nodes = manifest["source_nodes"]
     selected = []
@@ -292,9 +359,14 @@ def build_pilot_descriptor(manifest: dict[str, Any], manifest_data: bytes) -> di
             ),
             "pilot_source_count": PILOT_COUNT,
             "discovered_source_count": len(ordered),
+            "excluded_source_count": len(excluded),
             "manifest_source_count": len(nodes),
             "ordered_source_key_sha256": canonical_sha256(keys),
+            "coverage": (
+                "bootstrap/core smoke pilot only; not representative Flyspeck corpus coverage"
+            ),
         },
+        "excluded_from_first_discovery": excluded,
         "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
         "inputs": selected,
     }
@@ -584,8 +656,8 @@ def _write_tree(root: Path, files: dict[str, bytes], root_mode: int, file_mode: 
 def materialize(
     candle_root: Path, flyspeck_root: Path, output_root: Path,
 ) -> dict[str, Any]:
-    candle_root = candle_root.resolve(strict=True)
-    flyspeck_root = flyspeck_root.resolve(strict=True)
+    candle_root = resolve_without_symlinks(candle_root, "Candle root")
+    flyspeck_root = resolve_without_symlinks(flyspeck_root, "Flyspeck root")
     output_root = output_root.resolve()
     require(not output_root.exists() and not output_root.is_symlink(),
             "output root already exists")
@@ -649,8 +721,7 @@ def materialize(
 
 
 def validate_plan_root(plan_root: Path) -> tuple[dict[str, Any], bytes]:
-    plan_root = plan_root.resolve(strict=True)
-    require(not plan_root.is_symlink(), "plan root is a symlink")
+    plan_root = resolve_without_symlinks(plan_root, "plan root")
     require(stat.S_IMODE(plan_root.stat().st_mode) == PLAN_ROOT_MODE,
             "plan root mode mismatch")
     plan_path = plan_root / PLAN_NAME
@@ -680,7 +751,11 @@ def validate_plan_root(plan_root: Path) -> tuple[dict[str, Any], bytes]:
         prepared = entry.get("prepared_input")
         if entry.get("status") == "ready":
             require(isinstance(prepared, dict), "ready parser input is missing")
-            path = plan_root / prepared["path"]
+            relative = safe_relative_path(prepared.get("path"), "prepared input")
+            path = resolve_without_symlinks(
+                plan_root / relative, f"prepared input {index}",
+            )
+            require(path.is_relative_to(plan_root), "prepared input escapes plan root")
             require(stat.S_IMODE(path.stat().st_mode) == PLAN_FILE_MODE,
                     f"prepared input mode mismatch: {path}")
             validate_file(path, prepared, f"prepared parser input {index}")
@@ -806,8 +881,8 @@ def run_runtime(
 
 
 def run(plan_root: Path, candle_root: Path, output_root: Path, timeout_seconds: int) -> dict[str, Any]:
-    plan_root = plan_root.resolve(strict=True)
-    candle_root = candle_root.resolve(strict=True)
+    plan_root = resolve_without_symlinks(plan_root, "plan root")
+    candle_root = resolve_without_symlinks(candle_root, "Candle root")
     output_root = output_root.resolve()
     require(not output_root.exists() and not output_root.is_symlink(),
             "result output root already exists")

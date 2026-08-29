@@ -3,6 +3,7 @@
 import copy
 import importlib.util
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -52,6 +53,26 @@ class ParserDiagnosticTests(unittest.TestCase):
             self.pilot["selection"]["ordered_source_key_sha256"],
             subject.canonical_sha256(keys),
         )
+        self.assertIn("bootstrap/core", self.pilot["selection"]["coverage"])
+        self.assertIn("not representative", self.pilot["selection"]["coverage"])
+
+    def test_all_eight_non_discovered_nodes_are_bound_with_reasons(self) -> None:
+        exclusions = self.pilot["excluded_from_first_discovery"]
+        self.assertEqual(self.pilot["selection"]["excluded_source_count"], 8)
+        self.assertEqual(len(exclusions), 8)
+        self.assertEqual(
+            {entry["source_key"] for entry in exclusions},
+            set(self.manifest["source_nodes"]) - {
+                entry["source_key"]
+                for entry in subject.derive_manifest_node_order(self.manifest)
+            },
+        )
+        self.assertTrue(all(entry["reason"] for entry in exclusions))
+        self.assertTrue(any(
+            entry["source_key"].endswith("parser_verbose.hl") and
+            entry["incoming_nontraversed_actions"][0]["status"] == "resolved-dynamic"
+            for entry in exclusions
+        ))
 
     def test_manifest_action_order_tamper_changes_selection(self) -> None:
         altered = copy.deepcopy(self.manifest)
@@ -209,6 +230,17 @@ class ParserDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ContractError, "unsupported actions"):
                 subject.run_runtime(Path("/fake/cake"), Path("/fake/plan"), plan, 1)
         handshake.assert_not_called()
+
+    def test_plan_root_symlink_alias_is_rejected_before_resolution(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            real = base / "real"
+            real.mkdir()
+            real.chmod(subject.PLAN_ROOT_MODE)
+            alias = base / "alias"
+            os.symlink(real, alias)
+            with self.assertRaisesRegex(subject.ContractError, "symlink component"):
+                subject.validate_plan_root(alias)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,79 @@
 {
   "claim": "predeclared exact-manifest parser-only diagnostic selection; not inference, execution, theorem, S1, S2, S3, or release evidence",
+  "excluded_from_first_discovery": [
+    {
+      "incoming_nontraversed_actions": [],
+      "path": "candle/flyspeck_full_build.ml",
+      "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
+      "repository": "candle",
+      "sha256": "1a86ee399ae3f2a19387aad5a058a8f51de1ebf85baea6b6045e4897a6077b32",
+      "source_key": "candle:candle/flyspeck_full_build.ml"
+    },
+    {
+      "incoming_nontraversed_actions": [],
+      "path": "candle/flyspeck_l2_target.ml",
+      "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
+      "repository": "candle",
+      "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051",
+      "source_key": "candle:candle/flyspeck_l2_target.ml"
+    },
+    {
+      "incoming_nontraversed_actions": [],
+      "path": "candle/flyspeck_loader.ml",
+      "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
+      "repository": "candle",
+      "sha256": "f1f17f83b71c89aa56f1ba3128456a5c83b5175bb763d62875a30a2c67cff951",
+      "source_key": "candle:candle/flyspeck_loader.ml"
+    },
+    {
+      "incoming_nontraversed_actions": [],
+      "path": "candle/flyspeck_source_integrity.ml",
+      "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
+      "repository": "candle",
+      "sha256": "7004ab29e2755221e7a01db77db2a305ab3afbd1da09fb96211069f6fc86cbc6",
+      "source_key": "candle:candle/flyspeck_source_integrity.ml"
+    },
+    {
+      "incoming_nontraversed_actions": [
+        {"dependency_index": 3, "kind": "loadt", "line": 104, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+      ],
+      "path": "text_formalization/general/debug.hl",
+      "reason": "referenced only through non-resolved dynamic/generated actions",
+      "repository": "flyspeck",
+      "sha256": "b19e1e179b0863e551671688d76c24b13498965b460c0f514b9065a1bb8a8483",
+      "source_key": "flyspeck:text_formalization/general/debug.hl"
+    },
+    {
+      "incoming_nontraversed_actions": [
+        {"dependency_index": 0, "kind": "needs", "line": 15, "parent_source": "flyspeck:text_formalization/general/flyspeck_lib.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+      ],
+      "path": "text_formalization/general/flyspeck_eval_4.14.hl",
+      "reason": "referenced only through non-resolved dynamic/generated actions",
+      "repository": "flyspeck",
+      "sha256": "602d1d0e3e224d742fb412e0fb7bd88b4c176a1aa713bb4f6dc7d6ff350eae15",
+      "source_key": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl"
+    },
+    {
+      "incoming_nontraversed_actions": [
+        {"dependency_index": 2, "kind": "loadt", "line": 103, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+      ],
+      "path": "text_formalization/general/parser_verbose.hl",
+      "reason": "referenced only through non-resolved dynamic/generated actions",
+      "repository": "flyspeck",
+      "sha256": "c999e6428ff402a781db826ca3b4c3e4b7ad400c9f549b6e964b4798e4981ba5",
+      "source_key": "flyspeck:text_formalization/general/parser_verbose.hl"
+    },
+    {
+      "incoming_nontraversed_actions": [
+        {"dependency_index": 14, "kind": "loadt", "line": 167, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+      ],
+      "path": "text_formalization/general/state_manager.hl",
+      "reason": "referenced only through non-resolved dynamic/generated actions",
+      "repository": "flyspeck",
+      "sha256": "fc42ed39dd706761f7210eb40d4ac21d03016c713752849e039ab08eaf36fdb3",
+      "source_key": "flyspeck:text_formalization/general/state_manager.hl"
+    }
+  ],
   "inputs": [
     {
       "bytes": 3177,
@@ -211,7 +285,9 @@
   "schema": 1,
   "selection": {
     "algorithm": "first-discovery-preorder-v1: bootstrap_roots, then build_sequence_roots in action order; recurse through resolved selected dependencies in manifest list order",
+    "coverage": "bootstrap/core smoke pilot only; not representative Flyspeck corpus coverage",
     "discovered_source_count": 392,
+    "excluded_source_count": 8,
     "manifest_source_count": 400,
     "ordered_source_key_sha256": "ec93d476933a0780aff5db2f85bec027f9b519e755fd6a3c187a59d962f1af2a",
     "pilot_source_count": 20
