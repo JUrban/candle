@@ -124,16 +124,21 @@ execution proof.  An independent verifier should recheck the raw snapshot,
 log, attempt, and receipt before promoting an approved fingerprint result.
 
 The read-only content-addressed snapshot closes ordinary mutable-input races,
-and the action checker now distinguishes each outer action's exact logical-
-ledger load or skip transition.  It is still not a loader-owned trace of the
-internal physical-path cache and does not expose every ordinary nested
-`needs`/`loads` event.  Filesystem modes also are not a kernel-level immutable
-snapshot against a hostile same-UID process that can change and later restore
-them. Build, repository-launcher, and direct-attempt processes take a
-cooperative exclusive/shared lock to prevent accidental concurrent mutation;
+and the action checker distinguishes each outer action's exact logical-ledger
+load or skip transition.  Schema 4 also configures a nonce-bound, loader-owned
+physical trace for `#use`, `needs`, `loads`, `#flyspeck_needs`, and
+`#flyspeck_loadt`.  It records exact source bindings, request parents, cache
+state, identities, and outcomes.  Receipt validation requires the actual
+read-only log and independently rederives its physical trace, action stream,
+logical closure, and fingerprints from those bytes.  This is loader-execution
+evidence, but it does not by itself approve the semantic fingerprints or grant
+S2/S3 status.  Filesystem modes also are not a kernel-level immutable snapshot
+against a hostile same-UID process that can change and later restore them.
+Build, repository-launcher, and direct-attempt processes take a cooperative
+exclusive/shared lock to prevent accidental concurrent mutation;
 noncooperating hostile same-user mutation remains outside the evidence model.
-Consequently a successful receipt remains diagnostic and
-`s2_s3_evidence` stays false pending approved semantic identities and the
-release coverage gates.  The per-file limit is not an aggregate disk quota,
-and process-count/aggregate descendant RSS remain external-supervisor
-responsibilities in this revision.
+Consequently a successful receipt remains diagnostic and `s2_s3_evidence`
+stays false pending approved semantic identities and the release coverage
+gates.  The per-file limit is not an aggregate disk quota, and process-count/
+aggregate descendant RSS remain external-supervisor responsibilities in this
+revision.

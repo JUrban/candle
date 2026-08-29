@@ -273,14 +273,14 @@ unrestricted `system` bridge, custom-FFI C patch, and their call sites are not
 part of the source tree or build recipe.  Relocation of the complete checkout
 therefore preserves startup without granting an ambient process capability.
 
-This artifact is deliberately not loader-execution evidence.  In particular,
-the original-source generated dependencies remain visible:
+Schema-4 direct evidence supplies loader-execution evidence while retaining
+the original-source generated dependencies explicitly:
 
 - `candle/build/insulate.ml` must be generated from the pinned compiler's
   `types.txt` by the pinned `insulate.py` recipe.  It remains a generated
   contract even when an ignored local build happens to contain the file, so
   the source manifest is independent of worktree build state.  Direct
-  evidence-v3 classifies the exact linked output and the manifest-pinned
+  evidence-v4 classifies the exact linked output and the manifest-pinned
   `candle/flyspeck_source_digests.ml` as generated executed controls; and
 - upstream Flyspeck serialization writes and reloads a temporary theorem-digest
   module.  The exact selected normalization now removes the load-time
@@ -295,7 +295,7 @@ stdout lines, one for `Filename.temp_file` and one for
 the preservation scope is the selected proof state, source-action semantics,
 and semantic fingerprints, and excludes consumers of those diagnostics.
 
-The evidence-v3 closure separately classifies completed outer roots, selected
+The evidence-v4 closure separately classifies completed outer roots, selected
 nested `#flyspeck_loadt` sources observed through the logical ledger, other
 expected nested sources, generated executed controls, and derivation-only
 inputs.  `flyspeck_full_build.ml` is derivation-only; the authenticated
@@ -305,14 +305,14 @@ closure follows three selected standalone strictbuild actions, excludes
 `update_database_400.ml` branch only after action 295.  The pinned CakeML boot
 uses a pending-identity stack for nested actions, and the runtime validates the
 exact final ledger prefix `[serialization, update_database_400]` before
-emitting action 295's delta-bound marker.  It remains nonpromotable because
-ordinary nested loads still have no loader-owned identity trace.  Such a trace
-must also canonicalize lexical aliases: action 126 is the first `..` target and
-action 145 begins `../formal_lp/...`, while current source-identity and
-normalization-overlay tables use canonical paths.
+emitting action 295's delta-bound marker.  Schema 4 adds the exact nonce-bound,
+loader-owned physical trace for ordinary nested directives and the host replays
+its parent stack and canonical cache.  Exact lexical aliases are preserved in
+the source bindings while sharing one canonical logical identity: action 126's
+`Filename.concat` spelling includes the repeated separator before `..`, and
+action 145 begins `../formal_lp/...`.
 
-The next G6 slices must turn this inventory into the loader's enforced input
-contract, reject manifest/source reorder and corruption, add relocation and
-clean/resume tests, and prove that generated inputs are linked to the theorem
-artifacts consumed in the direct run.  Until those gates pass, the manifest
-does not advance S1, S2, or S3.
+Promotion still requires the proof-built and exactly linked CakeML binary,
+clean and repeated direct strata, approved semantic fingerprints, and the
+remaining release gates.  Until those gates pass, the manifest does not
+advance S1, S2, or S3.
