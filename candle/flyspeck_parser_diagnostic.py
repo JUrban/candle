@@ -22,17 +22,33 @@ import sys
 # module other than the built-in ``sys``.  Tests may import this module under a
 # normal harness, but no materialize/run CLI action is reachable that way.
 _EARLY_REQUIRED_FLAGS = {
-    "isolated": 1,
-    "ignore_environment": 1,
+    "debug": 0,
+    "inspect": 0,
+    "interactive": 0,
+    "optimize": 0,
+    "dont_write_bytecode": 0,
     "no_user_site": 1,
     "no_site": 1,
+    "ignore_environment": 1,
+    "verbose": 0,
+    "bytes_warning": 0,
+    "quiet": 0,
+    "hash_randomization": 1,
+    "isolated": 1,
+    "dev_mode": False,
+    # The pinned interpreter enables UTF-8 mode under this controller's exact
+    # LC_ALL=C startup.  Record and require that observed mode explicitly.
+    "utf8_mode": 1,
+    "warn_default_encoding": 0,
     "safe_path": True,
+    "int_max_str_digits": 4300,
 }
 if __name__ == "__main__":
     _early_observed = {
         name: getattr(sys.flags, name) for name in _EARLY_REQUIRED_FLAGS
     }
-    if _early_observed != _EARLY_REQUIRED_FLAGS:
+    if (_early_observed != _EARLY_REQUIRED_FLAGS or
+            dict(sys._xoptions) != {} or list(sys.warnoptions) != []):
         raise SystemExit(
             "parser diagnostic rejected: direct execution requires "
             "/usr/bin/python3 -I -S"
@@ -1069,7 +1085,9 @@ def collect_controller_execution(candle_root: Path, policy: Any) -> dict[str, An
         Path(sys.argv[0]).resolve() == source and Path(__file__).resolve() == source,
         "parser controller must execute directly from authenticated source",
     )
-    require(policy.python_startup_flags() == policy.EXPECTED_PYTHON_STARTUP_FLAGS,
+    require(set(_EARLY_REQUIRED_FLAGS) == set(policy.EXPECTED_PYTHON_STARTUP_FLAGS),
+            "parser-controller startup flag policy shape mismatch")
+    require(policy.python_startup_flags() == _EARLY_REQUIRED_FLAGS,
             "parser-controller Python startup flags mismatch")
     require(policy.python_startup_options() == policy.EXPECTED_PYTHON_STARTUP_OPTIONS,
             "parser-controller Python startup options mismatch")
