@@ -201,6 +201,13 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
                     fixture.cakeml, fixture.receipt, fixture.transition,
                 )
             with self.assertRaisesRegex(
+                subject.provenance.ProvenanceError, "revision mismatch",
+            ):
+                subject.validate_transition_record(
+                    fixture.source, fixture.source_head, fixture.final, wrong_head,
+                    fixture.cakeml, fixture.receipt, fixture.transition,
+                )
+            with self.assertRaisesRegex(
                 subject.provenance.ProvenanceError,
                 "source Candle authority mismatch",
             ):
@@ -217,6 +224,25 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
                     fixture.cakeml, fixture.receipt, fixture.transition,
                 )
         self.assertEqual(record["source_candle"]["root"], str(fixture.source))
+
+    def test_final_root_rebinding_rejects_against_explicit_authority(self) -> None:
+        fixture = self.make_fixture()
+        with fixture.authenticated_receipt():
+            subject.record_transition(*fixture.arguments(), fixture.transition)
+            rebound = fixture.root / "rebound-final"
+            subprocess.run(
+                ["/usr/bin/git", "clone", "-q", str(fixture.final), str(rebound)],
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                env=GIT_ENV,
+            )
+            with self.assertRaisesRegex(
+                subject.provenance.ProvenanceError, "live reconstruction",
+            ):
+                subject.validate_transition_record(
+                    fixture.source, fixture.source_head,
+                    rebound, fixture.final_head,
+                    fixture.cakeml, fixture.receipt, fixture.transition,
+                )
 
     def test_dirty_git_rejects(self) -> None:
         for checkout_name in ("source", "final"):
