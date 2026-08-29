@@ -69,6 +69,13 @@ CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v7"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 CONTROLLER_LOCK_FD_ENV = "CANDLE_REFERENCE_CONTROLLER_LOCK_FD"
+PARI_GP_PROBE_SOURCE = \
+    "echo 'print(default(nbthreads)); print(factorint(15))  \n quit' | gp"
+RUNTIME_ENVIRONMENT_KEYS = {
+    "HOME", "PATH", "LC_ALL", "GPRC", "GP_DATA_DIR", "HOLLIGHT_DIR",
+    "HOLLIGHT_USE_MODULE", "OCAMLRUNPARAM", "CAML_LD_LIBRARY_PATH",
+    "OCAML_TOPLEVEL_PATH", "OCAMLFIND_CONF",
+}
 
 
 class CollectionError(Exception):
@@ -242,10 +249,15 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         raise CollectionError("PARI/GP data path must be an ordinary directory")
     if stat.S_IMODE(data_root.lstat().st_mode) != 0o555:
         raise CollectionError("PARI/GP data path mode must be exactly 0555")
+    data_tree_pin = _pin_tree(data_root)
+    if data_tree_pin["entry_count"] != 0:
+        raise CollectionError("PARI/GP data path must be empty")
     gprc_pin = _pin_file(gprc)
     if stat.S_IMODE(gprc.lstat().st_mode) != 0o444:
         raise CollectionError("PARI/GP configuration mode must be exactly 0444")
     gp_route = _pin_executable_route(gp_path, "PARI/GP executable")
+    if Path(os.path.abspath(command_shell)) != Path("/bin/sh"):
+        raise CollectionError("Sys.command shell argument must be exactly /bin/sh")
     shell_route = _pin_executable_route(command_shell, "Sys.command shell")
     package_argument = Path(os.path.abspath(pari_gp_package))
     try:
@@ -274,9 +286,8 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
     if (version.returncode != 0 or version.stderr != "" or
             re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+\n", version.stdout) is None):
         raise CollectionError("could not obtain exact PARI/GP version")
-    probe_source = "echo 'print(factorint(15))  \n quit' | gp"
     probe = subprocess.run(
-        [shell_route["argument_path"], "-c", probe_source],
+        [shell_route["argument_path"], "-c", PARI_GP_PROBE_SOURCE],
         env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, timeout=30, check=False,
     )
@@ -284,8 +295,10 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         f"Reading GPRC: {gprc_pin['path']}\nGPRC Done.\n\n")
     if (probe.returncode != 0 or
             probe.stderr not in {"", expected_gprc_stderr} or
+            re.search(r"(?:^|\n)1\n", probe.stdout) is None or
             "[3, 1; 5, 1]" not in probe.stdout):
-        raise CollectionError("PARI/GP shell-route factor probe failed")
+        raise CollectionError(
+            "PARI/GP single-thread shell-route factor probe failed")
     return {
         "policy": "single_private_path_gp_with_pinned_shell_v1",
         "command_shell": shell_route,
@@ -297,13 +310,14 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         "package_archive": package_pin,
         "package_tree": _pin_tree(gp_root),
         "configuration": gprc_pin,
-        "data_tree": _pin_tree(data_root),
+        "data_tree": data_tree_pin,
         "dynamic_libraries": _elf_dependencies([
             shell_route["resolved_executable"]["path"],
             gp_route["resolved_executable"]["path"],
         ]),
         "probe": {
-            "shell_argv": [shell_route["argument_path"], "-c", probe_source],
+            "shell_argv": [
+                shell_route["argument_path"], "-c", PARI_GP_PROBE_SOURCE],
             "environment": environment,
             "return_code": probe.returncode,
             "stdout": probe.stdout,
@@ -312,6 +326,284 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
             "stderr_sha256": hashlib.sha256(probe.stderr.encode()).hexdigest(),
         },
     }
+
+
+def validate_external_runtime_provenance(external, reference_root,
+                                         runtime_environment):
+    """Validate the closed, non-live v7 shell/GP provenance projection."""
+    if not isinstance(external, dict) or set(external) != {
+            "policy", "command_shell", "pari_gp", "pari_gp_version",
+            "package_archive", "package_tree", "configuration", "data_tree",
+            "dynamic_libraries", "probe"} or external["policy"] != \
+            "single_private_path_gp_with_pinned_shell_v1":
+        raise CollectionError("malformed external-runtime provenance")
+
+    def valid_sha(value):
+        return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+
+    for label in ("command_shell", "pari_gp"):
+        route = external[label]
+        if not isinstance(route, dict) or set(route) != {
+                "argument_path", "argument_parent", "argument",
+                "resolved_executable"}:
+            raise CollectionError(f"malformed external {label} route")
+        if (not isinstance(route["argument_path"], str) or
+                not Path(route["argument_path"]).is_absolute()):
+            raise CollectionError(f"malformed external {label} argument")
+        for component_label in ("argument_parent", "argument"):
+            component = route[component_label]
+            kind = component.get("kind") if isinstance(component, dict) else None
+            expected = ({"path", "kind", "mode", "resolved_path", "target"}
+                        if kind == "symlink" else
+                        {"path", "kind", "mode", "resolved_path"})
+            if (kind not in {"symlink", "directory", "file"} or
+                    set(component) != expected or
+                    not isinstance(component["path"], str) or
+                    not Path(component["path"]).is_absolute() or
+                    type(component["mode"]) is not int or
+                    not isinstance(component["resolved_path"], str) or
+                    not Path(component["resolved_path"]).is_absolute() or
+                    (kind == "symlink" and
+                     not isinstance(component["target"], str))):
+                raise CollectionError(
+                    f"malformed external {label} {component_label}")
+        resolved = route["resolved_executable"]
+        if (not isinstance(resolved, dict) or set(resolved) != {
+                "path", "sha256", "mode"} or
+                not isinstance(resolved["path"], str) or
+                not Path(resolved["path"]).is_absolute() or
+                not valid_sha(resolved["sha256"]) or
+                type(resolved["mode"]) is not int):
+            raise CollectionError(f"malformed external {label} executable")
+        if (route["argument"]["path"] != route["argument_path"] or
+                route["argument_parent"]["path"] !=
+                str(Path(route["argument_path"]).parent) or
+                route["argument"]["resolved_path"] != resolved["path"]):
+            raise CollectionError(f"inconsistent external {label} route")
+
+    version = external["pari_gp_version"]
+    if (not isinstance(version, dict) or set(version) != {"stdout", "sha256"} or
+            not isinstance(version["stdout"], str) or
+            re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+\n", version["stdout"]) is None or
+            hashlib.sha256(version["stdout"].encode()).hexdigest() !=
+            version["sha256"]):
+        raise CollectionError("malformed external PARI/GP version")
+    for label in ("package_archive", "configuration"):
+        value = external[label]
+        if (not isinstance(value, dict) or set(value) != {"path", "sha256"} or
+                not isinstance(value["path"], str) or
+                not Path(value["path"]).is_absolute() or
+                not valid_sha(value["sha256"])):
+            raise CollectionError(f"malformed external {label}")
+    for label in ("package_tree", "data_tree"):
+        value = external[label]
+        if (not isinstance(value, dict) or set(value) != {
+                "root", "root_mode", "entry_count", "inventory_sha256",
+                "inventory_policy"} or
+                not isinstance(value["root"], str) or
+                not Path(value["root"]).is_absolute() or
+                type(value["root_mode"]) is not int or
+                type(value["entry_count"]) is not int or
+                value["entry_count"] < 0 or
+                not valid_sha(value["inventory_sha256"]) or
+                value["inventory_policy"] !=
+                "relative_path_kind_mode_link_target_and_content_v1"):
+            raise CollectionError(f"malformed external {label}")
+    package_root = Path(external["package_tree"]["root"])
+    if (external["command_shell"]["argument_path"] != "/bin/sh" or
+            external["pari_gp"]["argument_path"] !=
+            str(package_root / "usr/bin/gp") or
+            external["configuration"]["path"] !=
+            str(package_root / "candle-gprc") or
+            external["data_tree"]["root"] !=
+            str(package_root / "candle-data") or
+            external["data_tree"]["root_mode"] != 0o555 or
+            external["data_tree"]["entry_count"] != 0):
+        raise CollectionError("external PARI/GP package path contract mismatch")
+    libraries = external["dynamic_libraries"]
+    if (not isinstance(libraries, list) or not libraries or
+            any(not isinstance(value, dict) or
+                set(value) != {"path", "sha256"} or
+                not isinstance(value["path"], str) or
+                not Path(value["path"]).is_absolute() or
+                not valid_sha(value["sha256"]) for value in libraries) or
+            [value["path"] for value in libraries] !=
+            sorted({value["path"] for value in libraries})):
+        raise CollectionError("malformed external ELF closure")
+    probe = external["probe"]
+    expected_environment = {
+        "HOME": str(reference_root),
+        "PATH": str(package_root / "usr/bin"),
+        "LC_ALL": "C",
+        "GPRC": str(package_root / "candle-gprc"),
+        "GP_DATA_DIR": str(package_root / "candle-data"),
+    }
+    expected_stderr = (
+        f"Reading GPRC: {expected_environment['GPRC']}\nGPRC Done.\n\n")
+    if (not isinstance(probe, dict) or set(probe) != {
+            "shell_argv", "environment", "return_code", "stdout",
+            "stdout_sha256", "stderr", "stderr_sha256"} or
+            probe["shell_argv"] != [
+                "/bin/sh", "-c", PARI_GP_PROBE_SOURCE] or
+            probe["environment"] != expected_environment or
+            probe["return_code"] != 0 or
+            not isinstance(probe["stdout"], str) or
+            re.search(r"(?:^|\n)1\n", probe["stdout"]) is None or
+            "[3, 1; 5, 1]" not in probe["stdout"] or
+            hashlib.sha256(probe["stdout"].encode()).hexdigest() !=
+            probe["stdout_sha256"] or
+            probe["stderr"] not in {"", expected_stderr} or
+            hashlib.sha256(probe["stderr"].encode()).hexdigest() !=
+            probe["stderr_sha256"]):
+        raise CollectionError("malformed external PARI/GP probe")
+    if (not isinstance(runtime_environment, dict) or
+            set(runtime_environment) != RUNTIME_ENVIRONMENT_KEYS or
+            any(runtime_environment.get(key) != value
+                for key, value in expected_environment.items())):
+        raise CollectionError("runtime environment differs from exact allowlist")
+    expected_internal_environment = {
+        "HOLLIGHT_DIR": str(reference_root),
+        "HOLLIGHT_USE_MODULE": "0",
+        "OCAMLRUNPARAM": "l=2000000000",
+    }
+    if any(runtime_environment.get(key) != value
+           for key, value in expected_internal_environment.items()):
+        raise CollectionError("runtime environment has malformed HOL pins")
+    for key in ("CAML_LD_LIBRARY_PATH", "OCAML_TOPLEVEL_PATH",
+                "OCAMLFIND_CONF"):
+        value = runtime_environment.get(key)
+        if not isinstance(value, str) or not Path(value).is_absolute():
+            raise CollectionError("runtime environment has non-absolute OCaml pin")
+    return external
+
+
+def validate_reference_runtime_provenance(plan):
+    """Validate the complete non-live HOL/OCaml fresh-process projection."""
+    if not isinstance(plan, dict) or set(plan) != {
+            "schema", "status", "session_nonce", "fresh_process_contract",
+            "reference", "input", "request"}:
+        raise CollectionError("malformed reference plan fields")
+    reference_root = plan["reference"].get("root") \
+        if isinstance(plan.get("reference"), dict) else None
+    if (not isinstance(reference_root, str) or
+            not Path(reference_root).is_absolute()):
+        raise CollectionError("malformed reference root")
+    reference = plan["reference"]
+    if set(reference) != {
+            "root", "git_head", "git_status", "runtime_executable",
+            "runtime_interpreter", "runtime_stublib", "runtime_library_tree",
+            "runtime_stub_files", "dynamic_libraries", "ocamlc", "findlib",
+            "hol_ml", "generated_boot_files", "ocaml_library_tree",
+            "external_runtime"}:
+        raise CollectionError("malformed reference runtime fields")
+
+    def file_pin(value, label):
+        if (not isinstance(value, dict) or set(value) != {"path", "sha256"} or
+                not isinstance(value["path"], str) or
+                not Path(value["path"]).is_absolute() or
+                re.fullmatch(r"[0-9a-f]{64}", value["sha256"]) is None):
+            raise CollectionError(f"malformed {label} file pin")
+
+    def tree_pin(value, label):
+        if (not isinstance(value, dict) or set(value) != {
+                "root", "root_mode", "entry_count", "inventory_sha256",
+                "inventory_policy"} or
+                not isinstance(value["root"], str) or
+                not Path(value["root"]).is_absolute() or
+                type(value["root_mode"]) is not int or
+                type(value["entry_count"]) is not int or
+                value["entry_count"] < 0 or
+                re.fullmatch(r"[0-9a-f]{64}",
+                             value["inventory_sha256"]) is None or
+                value["inventory_policy"] !=
+                "relative_path_kind_mode_link_target_and_content_v1"):
+            raise CollectionError(f"malformed {label} tree pin")
+
+    for key in ("runtime_executable", "runtime_interpreter", "runtime_stublib",
+                "hol_ml"):
+        file_pin(reference[key], key.replace("_", " "))
+    for key in ("runtime_library_tree", "ocaml_library_tree"):
+        tree_pin(reference[key], key.replace("_", " "))
+    for key in ("runtime_stub_files", "dynamic_libraries"):
+        values = reference[key]
+        if not isinstance(values, list) or not values:
+            raise CollectionError(f"empty reference {key.replace('_', ' ')}")
+        for value in values:
+            file_pin(value, key.replace("_", " "))
+        paths = [value["path"] for value in values]
+        if paths != sorted(set(paths)):
+            raise CollectionError(
+                f"reference {key.replace('_', ' ')} is not unique and sorted")
+    if (reference["runtime_library_tree"]["root"] !=
+            str(Path(reference["runtime_stublib"]["path"]).parent) or
+            not all(Path(value["path"]).parent ==
+                    Path(reference["runtime_library_tree"]["root"])
+                    or Path(value["path"]).parent.name == "stublibs"
+                    for value in reference["runtime_stub_files"])):
+        raise CollectionError("reference runtime stub closure mismatch")
+
+    ocamlc = reference["ocamlc"]
+    if (not isinstance(ocamlc, dict) or set(ocamlc) != {
+            "path", "sha256", "version", "stdlib_directory"}):
+        raise CollectionError("malformed OCaml compiler provenance")
+    file_pin({key: ocamlc[key] for key in ("path", "sha256")}, "OCaml compiler")
+    if (not isinstance(ocamlc["version"], str) or not ocamlc["version"] or
+            not isinstance(ocamlc["stdlib_directory"], str) or
+            not Path(ocamlc["stdlib_directory"]).is_absolute()):
+        raise CollectionError("malformed OCaml compiler metadata")
+    findlib = reference["findlib"]
+    if (not isinstance(findlib, dict) or set(findlib) != {
+            "executable", "version", "configuration", "package_roots"}):
+        raise CollectionError("malformed findlib provenance")
+    file_pin(findlib["executable"], "findlib executable")
+    file_pin(findlib["configuration"], "findlib configuration")
+    if not isinstance(findlib["version"], str) or not findlib["version"]:
+        raise CollectionError("malformed findlib version")
+    package_roots = findlib["package_roots"]
+    if not isinstance(package_roots, list) or not package_roots:
+        raise CollectionError("empty findlib package roots")
+    for root in package_roots:
+        tree_pin(root, "findlib package root")
+    if ([root["root"] for root in package_roots] !=
+            sorted({root["root"] for root in package_roots}) or
+            reference["ocaml_library_tree"] not in package_roots):
+        raise CollectionError("findlib package roots are inconsistent")
+    boot_files = reference["generated_boot_files"]
+    expected_boots = [
+        str(Path(reference_root) / "hol_loader.cmo"),
+        str(Path(reference_root) / "pa_j.cmo"),
+        str(Path(reference_root) / "load_camlp5_topfind.ml"),
+    ]
+    if not isinstance(boot_files, list) or len(boot_files) != 3:
+        raise CollectionError("malformed generated boot-file provenance")
+    for value in boot_files:
+        file_pin(value, "generated boot")
+    if [value["path"] for value in boot_files] != expected_boots:
+        raise CollectionError("generated boot-file set mismatch")
+
+    fresh = plan["fresh_process_contract"]
+    if (not isinstance(fresh, dict) or set(fresh) != {
+            "required", "preloaded_checkpoint_allowed", "working_directory",
+            "environment_policy", "runtime_argv", "runtime_environment"} or
+            fresh["required"] is not True or
+            fresh["preloaded_checkpoint_allowed"] is not False or
+            fresh["working_directory"] != reference_root or
+            fresh["environment_policy"] !=
+            "sanitized_allowlist_no_inherited_overrides" or
+            fresh["runtime_argv"] != [
+                reference["runtime_executable"]["path"], "-init",
+                reference["hol_ml"]["path"], "-I", reference_root,
+                "-noprompt"]):
+        raise CollectionError("malformed fresh-process runtime contract")
+    environment = fresh["runtime_environment"]
+    validate_external_runtime_provenance(
+        reference["external_runtime"], reference_root, environment)
+    if (environment["CAML_LD_LIBRARY_PATH"] !=
+            reference["runtime_library_tree"]["root"] or
+            environment["OCAML_TOPLEVEL_PATH"] != ocamlc["stdlib_directory"] or
+            environment["OCAMLFIND_CONF"] != findlib["configuration"]["path"]):
+        raise CollectionError("fresh-process OCaml environment mismatch")
+    return plan
 
 
 def _runtime_interpreter(runtime):
@@ -781,6 +1073,11 @@ def validate_candidate(candidate, plan=None, request=None, transcript=None):
     if any(supplied) and not all(supplied):
         raise CollectionError("plan, request, and transcript must be supplied together")
     if all(supplied):
+        try:
+            validate_reference_runtime_provenance(plan)
+        except (KeyError, TypeError) as error:
+            raise CollectionError(
+                "malformed external-runtime plan binding") from error
         if hashes["plan_sha256"] != _json_sha256(plan):
             raise CollectionError("candidate plan artifact hash mismatch")
         request_sha256 = hashlib.sha256(request.encode("utf-8")).hexdigest()

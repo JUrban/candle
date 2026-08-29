@@ -26,12 +26,15 @@ Before execution, the tool requires and records:
   stub directories, including the dynamic loader, libc, libm, GMP, and any
   transitive native libraries those candidate stubs can select on the current
   host;
-- an ordinary project-local PARI/GP package tree and signed-package archive,
+- an ordinary project-local PARI/GP package tree and independently reviewed,
+  hash-pinned package archive (without claiming an archived distribution
+  signature chain),
   the exact `gp` symlink route and version output, a read-only deterministic
   `GPRC`, a read-only empty optional-data root, `/bin/sh` and its resolved
   executable, their recursive ELF closure, and an exact shell-route
-  `factorint(15)` probe; the HOL process receives a single-directory `PATH`
-  containing only that `gp` route;
+  probe that requires both `default(nbthreads) = 1` and `factorint(15)`; the
+  HOL process receives a single-directory `PATH` containing only that `gp`
+  route;
 - the collector repository commit, status, committed collector hash, and an
   assertion that the executing collector equals that committed file;
 - the probed OCaml compiler version;
@@ -201,3 +204,8 @@ keeps the 65-target runtime gate disabled.
   post-state identity, and still match an independent second reference run
   before any identity can be considered for approval. No v6 root may be
   resumed after introducing GP.
+- Promotion uses approval schema v2. It binds every run to its controller
+  `success.json`, collector/validator stdout and stderr, the exact collection
+  contract, and a closed 130/130 aggregate receipt. The approval consumer also
+  validates the exact fresh-process HOL/OCaml/GP runtime projections; the
+  project finalizer reauthenticates and retains their file and tree bytes.

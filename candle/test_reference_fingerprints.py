@@ -113,7 +113,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "if [ \"$1\" = --version-short ]; then "
             "printf '2.15.4\\n'; exit 0; fi\n"
             "while IFS= read -r ignored; do :; done\n"
-            "printf '[3, 1; 5, 1]\\n'\n")
+            "printf '1\\n[3, 1; 5, 1]\\n'\n")
         gp_executable.chmod(0o755)
         (gp_bin / "gp").symlink_to("gp-2.15")
         (gp_root / "candle-gprc").write_text(
@@ -200,6 +200,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
             external["policy"],
             "single_private_path_gp_with_pinned_shell_v1")
         self.assertEqual(external["pari_gp_version"]["stdout"], "2.15.4\n")
+        self.assertRegex(external["probe"]["stdout"], r"(?:^|\n)1\n")
         self.assertIn("[3, 1; 5, 1]", external["probe"]["stdout"])
         self.assertEqual(external["probe"]["stderr"], "")
         self.assertEqual(
@@ -223,6 +224,29 @@ class ReferenceFingerprintTest(unittest.TestCase):
             with self.assertRaisesRegex(
                     reference.CollectionError, "inputs differ"):
                 reference._require_current_plan_pins(plan)
+
+    def test_external_gp_requires_empty_data_and_exact_sys_command_shell(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            data = root.parent / "pari-gp/candle-data"
+            data.chmod(0o755)
+            (data / "unreviewed-table").write_text("unexpected\n")
+            data.chmod(0o555)
+            with self.assertRaisesRegex(reference.CollectionError, "must be empty"):
+                self._build_plan(
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, NONCE)
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "exactly /bin/sh"):
+                reference.build_plan(
+                    "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                    ocamlfind, root.parent / "pari-gp",
+                    root.parent / "pari-gp.deb", runtime, NONCE,
+                    "manifest-exact")
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -516,34 +540,30 @@ class ReferenceFingerprintTest(unittest.TestCase):
             reference.candidate_from_transcript(plan, state_outside)
 
     def test_linked_artifact_validation_rejects_tampering(self):
-        plan = {
-            "schema": reference.PLAN_SCHEMA,
-            "session_nonce": NONCE,
-            "fresh_process_contract": {"required": True},
-            "reference": {"git_head": "1" * 40},
-            "input": {
-                "target": "100/gcd", "theorem_names": ["EGCD"],
-                "mapping_status": "audited"},
-            "request": {"source": "pinned request\n"},
-        }
-        plan["request"]["sha256"] = hashlib.sha256(
-            plan["request"]["source"].encode()).hexdigest()
-        record = "\t".join([
-            regression.FINGERPRINT_MARKER,
-            b"EGCD".hex(), b"theorem".hex(),
-            regression.EMPTY_HYPOTHESES_WIRE.hex(),
-            b"conclusion".hex(), b"axioms".hex(), "0", "3",
-        ])
-        transcript = "\n".join([
-            f"{reference.SESSION_MARKER}\t{NONCE}", record,
-            self._state_record(),
-            f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
-        ])
-        candidate = reference.candidate_from_transcript(plan, transcript)
-        with self.assertRaisesRegex(
-                reference.CollectionError, "transcript artifact hash mismatch"):
-            reference.validate_candidate(
-                candidate, plan, plan["request"]["source"], transcript + "x")
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            record = "\t".join([
+                regression.FINGERPRINT_MARKER,
+                b"EGCD".hex(), b"theorem".hex(),
+                regression.EMPTY_HYPOTHESES_WIRE.hex(),
+                b"conclusion".hex(), b"axioms".hex(), "0", "3",
+            ])
+            transcript = "\n".join([
+                f"{reference.SESSION_MARKER}\t{NONCE}", record,
+                self._state_record(),
+                f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
+            ])
+            candidate = reference.candidate_from_transcript(plan, transcript)
+            with self.assertRaisesRegex(
+                    reference.CollectionError,
+                    "transcript artifact hash mismatch"):
+                reference.validate_candidate(
+                    candidate, plan, plan["request"]["source"],
+                    transcript + "x")
 
 
 if __name__ == "__main__":
