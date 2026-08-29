@@ -44,14 +44,16 @@ candidate and cannot be consumed as an expected identity object.
    reuse, then request every named result in manifest order.
 4. Capture, for every theorem, the theorem, sorted hypotheses, conclusion, and
    sorted global-axiom SHA-256 identities plus both counts.
-5. Review reference records before adding them to
-   `top100_manifest.EXPECTED_IDENTITIES`. Never promote hashes observed first
-   from the Candle-under-test run into their own expected values.
+5. Repeat collection with a distinct 256-bit nonce and require exact identity
+   equality. Preserve both linked evidence sets and have an independent
+   reviewer create `top100_identity_approval.json`. Never promote hashes
+   observed first from the Candle-under-test run into their own expectations.
 
 The expected object for one target has exactly this shape:
 
 ```json
 {
+  "approval_sha256": "<exact independent approval artifact sha256>",
   "serializer_sha256": "<64 lowercase hexadecimal characters>",
   "theorems": [
     {
@@ -63,9 +65,24 @@ The expected object for one target has exactly this shape:
       "hypothesis_count": 0,
       "global_axiom_count": 3
     }
-  ]
+  ],
+  "post_state": {
+    "kernel_state_sha256": "<sha256>",
+    "type_constants_sha256": "<sha256>",
+    "type_constant_count": 0,
+    "term_constants_sha256": "<sha256>",
+    "term_constant_count": 0,
+    "definitions_sha256": "<sha256>",
+    "definition_count": 0,
+    "global_axioms_sha256": "<sha256>",
+    "global_axiom_count": 3
+  }
 }
 ```
+
+The approval artifact itself omits `approval_sha256` from each
+`expected_identity`; manifest generation injects the artifact hash after
+validation, avoiding a circular self-hash.
 
 ## Candle rerun scope
 
@@ -93,14 +110,18 @@ A target is S1-accepted only when all of the following are true:
 
 - target status is `PASS`, all requested files reach their exact finished-load
   markers, and the process is a clean isolated session;
-- source commit/status, load-file hashes, executable SHA-256, serializer
-  SHA-256, timeout policy, and resource evidence are present in the report;
+- schema-6 linked provenance, clean pre/post Git and runtime state, exact
+  65/66/97 source closure, executable/manifest/runner/launcher/serializer
+  identities, transcript byte identity, timeout policy, and complete resource
+  sampling are present in the report;
 - mapping status is `audited`, every requested theorem appears exactly once,
   and no unexpected theorem record appears;
 - observed theorem order and all seven record fields exactly equal the approved
   expected records;
 - every theorem request in the target sees the same global-axiom identity and
   count;
+- the post-load type, constant, primitive-definition, and global-axiom tables
+  exactly match the independently approved structural state identity;
 - fingerprint report status is `matched` and
   `expected_identities_present` is true;
 - no load-only pass, `observed_uncompared` record, missing fingerprint, timeout,
@@ -116,6 +137,24 @@ The final S1 report must contain all 65 ordered targets and state separately:
 - observed fingerprint coverage and exact matches;
 - invalidated/stale targets caused by identity changes;
 - exclusions (`100/sqrt.ml` remains unreviewed for Great-100/Flyspeck scope).
+
+The schema-4 runner also requires nonce-bound ordered suite/start/linked/
+complete markers, an ordinary zero process exit, a persistent report/log
+directory, and a positive total wall deadline. It exits nonzero unless
+`suite_closed` is true.
+
+After approval and a schema-6 linked build, a canonical low-parallelism launch
+is:
+
+```sh
+python3 -I candle/regression.py --top100 -j 1 \
+  --inactivity-timeout 1800 --wall-timeout 14400 \
+  --json-report /absolute/new/great100-run.json \
+  --log-dir /absolute/new/great100-run-logs
+```
+
+The report path must not exist. The committed approval template is currently
+unapproved, so this command intentionally fails before starting Candle today.
 
 Suite S1 closes only at 65/65 load passes, 65/65 approved mappings, 65/65
 expected identity sets, and 65/65 exact matches, with zero skips, mismatches,

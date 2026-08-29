@@ -175,10 +175,10 @@ APPROVAL_FIELDS = {
     "review", "targets",
 }
 REFERENCE_RUN_FIELDS = {
-    "candidate_sha256", "plan_sha256", "request_sha256",
-    "transcript_sha256", "reference_git_head", "source_contract_sha256",
-    "session_nonce", "identity_sha256",
+    "artifacts", "reference_git_head", "session_nonce", "identity_sha256",
 }
+REFERENCE_ARTIFACT_NAMES = {
+    "candidate", "plan", "request", "transcript", "source_contract"}
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 
@@ -386,19 +386,56 @@ def _load_identity_approval(targets):
             raise ValueError(f"{target['name']}: two reference runs required")
         nonces = set()
         identities = set()
+        independent_artifacts = {
+            name: set() for name in
+            ("candidate", "plan", "request", "transcript")}
         for run in runs:
             if not isinstance(run, dict) or set(run) != REFERENCE_RUN_FIELDS:
                 raise ValueError(f"{target['name']}: malformed reference run")
-            for field, value in run.items():
-                if field == "reference_git_head":
-                    if not isinstance(value, str) or COMMIT_RE.fullmatch(value) is None:
-                        raise ValueError(f"{target['name']}: malformed reference head")
-                elif not _is_sha256(value):
+            if (not isinstance(run["reference_git_head"], str) or
+                    COMMIT_RE.fullmatch(run["reference_git_head"]) is None):
+                raise ValueError(f"{target['name']}: malformed reference head")
+            for field in ("session_nonce", "identity_sha256"):
+                if not _is_sha256(run[field]):
                     raise ValueError(f"{target['name']}: malformed reference run hash")
+            artifacts = run["artifacts"]
+            if not isinstance(artifacts, dict) or set(artifacts) != \
+                    REFERENCE_ARTIFACT_NAMES:
+                raise ValueError(f"{target['name']}: malformed reference artifacts")
+            for artifact_name, record in artifacts.items():
+                if not isinstance(record, dict) or set(record) != {
+                        "path", "bytes", "sha256"}:
+                    raise ValueError(
+                        f"{target['name']}: malformed {artifact_name} artifact")
+                if not isinstance(record["path"], str):
+                    raise ValueError(
+                        f"{target['name']}: unsafe {artifact_name} artifact path")
+                relative = Path(record["path"])
+                if (relative.is_absolute() or
+                        ".." in relative.parts or relative.as_posix() != record["path"]):
+                    raise ValueError(
+                        f"{target['name']}: unsafe {artifact_name} artifact path")
+                artifact_path = ROOT / relative
+                if artifact_path.is_symlink() or not artifact_path.is_file():
+                    raise ValueError(
+                        f"{target['name']}: missing ordinary {artifact_name} artifact")
+                source = artifact_path.read_bytes()
+                if (isinstance(record["bytes"], bool) or
+                        record["bytes"] != len(source) or
+                        not _is_sha256(record["sha256"]) or
+                        record["sha256"] != hashlib.sha256(source).hexdigest()):
+                    raise ValueError(
+                        f"{target['name']}: changed {artifact_name} artifact")
+                if artifact_name in independent_artifacts:
+                    independent_artifacts[artifact_name].add(
+                        (record["path"], record["sha256"]))
             nonces.add(run["session_nonce"])
             identities.add(run["identity_sha256"])
         if len(nonces) != 2 or len(identities) != 1:
             raise ValueError(f"{target['name']}: reference runs are not independent/equal")
+        if any(len(records) != 2 for records in independent_artifacts.values()):
+            raise ValueError(
+                f"{target['name']}: reference run artifacts are not independent")
         identity = dict(approved["expected_identity"])
         identity["approval_sha256"] = approval_sha256
         _validate_expected_identity_object(

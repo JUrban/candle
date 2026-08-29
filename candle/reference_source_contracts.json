@@ -1,0 +1,25 @@
+{
+  "schema": "candle-s1-reference-source-contract-v1",
+  "historical_upstream_commit": "3170739521d88d04580f61385c95b497690b7002",
+  "exact_source_reference_commit": "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d",
+  "compatibility_deltas": [
+    {
+      "path": "100/e_is_transcendental.ml",
+      "historical_sha256": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839",
+      "selected_sha256": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0",
+      "reason": "remove one rejected trailing semicolon without changing the surrounding expression"
+    },
+    {
+      "path": "100/euler.ml",
+      "historical_sha256": "8314a6861d34d69aac320b5a0205d0c2bc15f552f25beb7ff031665d10a2e5dc",
+      "selected_sha256": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88",
+      "reason": "replace loadt dependency loading with the idempotent needs contract"
+    },
+    {
+      "path": "100/lagrange.ml",
+      "historical_sha256": "8a9969fa8d185126a3612903a259227130a20d612eb3c5975c1c1350953f7c84",
+      "selected_sha256": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8",
+      "reason": "replace loadt dependency loading with the idempotent needs contract"
+    }
+  ]
+}

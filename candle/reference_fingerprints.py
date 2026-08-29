@@ -23,10 +23,11 @@ import regression
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "candle" / "top100_manifest.json"
 SERIALIZER = ROOT / "candle" / "fingerprint.ml"
+SOURCE_CONTRACT = ROOT / "candle" / "reference_source_contracts.json"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v5"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v5"
+PLAN_SCHEMA = "candle-s1-reference-plan-v6"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v6"
 
 
 class CollectionError(Exception):
@@ -52,6 +53,35 @@ def _pin_file(path):
 def _json_sha256(value):
     encoded = (json.dumps(value, indent=2) + "\n").encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _load_source_contract():
+    contract = json.loads(SOURCE_CONTRACT.read_text(encoding="utf-8"))
+    if not isinstance(contract, dict) or set(contract) != {
+            "schema", "historical_upstream_commit",
+            "exact_source_reference_commit", "compatibility_deltas"}:
+        raise CollectionError("malformed reference source contract")
+    if (contract["schema"] != "candle-s1-reference-source-contract-v1" or
+            contract["historical_upstream_commit"] !=
+            "3170739521d88d04580f61385c95b497690b7002"):
+        raise CollectionError("unsupported historical reference contract")
+    deltas = contract["compatibility_deltas"]
+    if not isinstance(deltas, list) or len(deltas) != 3:
+        raise CollectionError("reference contract must contain three deltas")
+    expected = {
+        "100/e_is_transcendental.ml", "100/euler.ml", "100/lagrange.ml"}
+    if {delta.get("path") for delta in deltas if isinstance(delta, dict)} != expected:
+        raise CollectionError("reference source delta set mismatch")
+    for delta in deltas:
+        if set(delta) != {
+                "path", "historical_sha256", "selected_sha256", "reason"}:
+            raise CollectionError("malformed reference source delta")
+        if any(re.fullmatch(r"[0-9a-f]{64}", delta[field]) is None
+               for field in ("historical_sha256", "selected_sha256")):
+            raise CollectionError("malformed reference source delta hash")
+        if not isinstance(delta["reason"], str) or not delta["reason"]:
+            raise CollectionError("reference source delta lacks rationale")
+    return contract
 
 
 def _pin_tree(path):
@@ -203,7 +233,7 @@ def _request_source(target, serializer_path, nonce):
 
 
 def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
-               ocamlfind, nonce=None):
+               ocamlfind, nonce=None, source_mode="manifest-exact"):
     """Pin a clean reference tree and generate, but do not execute, a request."""
     manifest, target = _target_from_manifest(target_name)
     request = target["fingerprint_request"]
@@ -222,10 +252,26 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
     if not re.fullmatch(r"[0-9a-f]{40}", reference_head):
         raise CollectionError("reference git HEAD is not a full SHA-1")
 
+    if source_mode not in {"manifest-exact", "historical-original"}:
+        raise CollectionError("unsupported reference source mode")
+    source_contract = _load_source_contract()
+    if (source_mode == "historical-original" and reference_head !=
+            source_contract["historical_upstream_commit"]):
+        raise CollectionError("historical source mode requires exact upstream HEAD")
+    delta_by_path = {
+        delta["path"]: delta for delta in source_contract["compatibility_deltas"]}
     load_files = []
     for relative in target["load_files"]:
         pin = _pin_file(reference_root / relative)
         expected_sha256 = target["load_file_sha256"][relative]
+        source_role = "selected-manifest-source"
+        if source_mode == "historical-original" and relative in delta_by_path:
+            delta = delta_by_path[relative]
+            if delta["selected_sha256"] != expected_sha256:
+                raise CollectionError(
+                    f"selected source differs from delta contract: {relative}")
+            expected_sha256 = delta["historical_sha256"]
+            source_role = "reviewed-historical-side-of-exact-delta"
         if pin["sha256"] != expected_sha256:
             raise CollectionError(
                 f"reference source differs from manifest: {relative}")
@@ -233,6 +279,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "relative_path": relative,
             "path": pin["path"],
             "sha256": pin["sha256"],
+            "source_role": source_role,
         })
 
     runtime_pin = _pin_file(runtime)
@@ -364,6 +411,17 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "theorem_names": theorem_names,
             "mapping_status": request["mapping_status"],
             "serializer": serializer_pin,
+            "source_mode": source_mode,
+            "source_contract": {
+                "path": str(SOURCE_CONTRACT),
+                "sha256": _sha256(SOURCE_CONTRACT),
+                "historical_upstream_commit":
+                    source_contract["historical_upstream_commit"],
+                "exact_source_reference_commit":
+                    source_contract["exact_source_reference_commit"],
+                "compatibility_deltas":
+                    source_contract["compatibility_deltas"],
+            },
         },
         "request": {
             "source": source,
@@ -389,7 +447,7 @@ def _rebuild_plan(plan):
         plan["reference"]["runtime_stublib"]["path"],
         plan["reference"]["ocamlc"]["path"],
         plan["reference"]["findlib"]["executable"]["path"],
-        plan["session_nonce"])
+        plan["session_nonce"], plan["input"]["source_mode"])
 
 
 def _require_current_plan_pins(plan):
@@ -414,9 +472,11 @@ def candidate_from_transcript(plan, transcript, exit_code=0):
     complete_index = lines.index(complete)
     if start_index >= complete_index:
         raise CollectionError("reference completion marker precedes session marker")
-    wire_prefix = regression.FINGERPRINT_MARKER + "\t"
+    wire_prefixes = (
+        regression.FINGERPRINT_MARKER + "\t",
+        regression.STATE_FINGERPRINT_MARKER + "\t")
     outside_session = lines[:start_index] + lines[complete_index + 1:]
-    if any(line.startswith(wire_prefix) for line in outside_session):
+    if any(line.startswith(wire_prefixes) for line in outside_session):
         raise CollectionError("fingerprint record outside reference session")
     session_transcript = "\n".join(
         lines[start_index + 1:complete_index]) + "\n"
@@ -548,6 +608,9 @@ def main():
         sub.add_argument("--ocamlfind", type=Path, required=True)
         sub.add_argument("--plan", type=Path, required=True)
         sub.add_argument("--request", type=Path, required=True)
+        sub.add_argument(
+            "--source-mode", choices=("manifest-exact", "historical-original"),
+            default="manifest-exact")
         if command == "collect":
             sub.add_argument("--transcript", type=Path, required=True)
             sub.add_argument("--candidate", type=Path, required=True)
@@ -571,7 +634,8 @@ def main():
             return 0
         plan = build_plan(
             args.target, args.reference_root, args.runtime,
-            args.runtime_stublib, args.ocamlc, args.ocamlfind)
+            args.runtime_stublib, args.ocamlc, args.ocamlfind,
+            source_mode=args.source_mode)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
         args.request.write_text(plan["request"]["source"], encoding="utf-8")
         if args.command == "plan":
