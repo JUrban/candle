@@ -337,6 +337,22 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
                     *fixture.arguments(), fixture.transition,
                 )
 
+    def test_transition_record_inside_authenticated_git_metadata_rejects(self) -> None:
+        fixture = self.make_fixture()
+        hidden_record = fixture.final / ".git/bootstrap-transition.json"
+        with fixture.authenticated_receipt():
+            record = subject.transition_derivation(*fixture.arguments())
+            hidden_record.write_text(
+                json.dumps(record, sort_keys=True) + "\n", encoding="utf-8",
+            )
+            with self.assertRaisesRegex(
+                subject.provenance.ProvenanceError,
+                "outside authenticated worktrees",
+            ):
+                subject.validate_transition_record(
+                    *fixture.arguments(), hidden_record,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

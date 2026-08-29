@@ -277,6 +277,12 @@ def transition_derivation(
         cakeml_root.resolve(strict=True), "CakeML checkout",
     )
     bootstrap_record_path = bootstrap_record_path.resolve(strict=True)
+    provenance.require(
+        not any(bootstrap_record_path.is_relative_to(root) for root in (
+            source_candle_root, final_candle_root, cakeml_root,
+        )),
+        "bootstrap receipt must be outside transition worktrees",
+    )
     bootstrap = provenance.validate_bootstrap_record(
         source_candle_root, cakeml_root, bootstrap_record_path,
     )
@@ -383,14 +389,21 @@ def validate_transition_record(
     bootstrap_record_path: Path,
     transition_record_path: Path,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    transition, _ = provenance.load_captured_object(
-        transition_record_path.resolve(strict=True),
-    )
     expected = transition_derivation(
         source_candle_root, source_candle_head,
         final_candle_root, final_candle_head,
         cakeml_root, bootstrap_record_path,
     )
+    transition_record_path = transition_record_path.resolve(strict=True)
+    authenticated_roots = tuple(Path(expected[key]["root"]) for key in (
+        "source_candle", "final_candle", "cakeml",
+    ))
+    provenance.require(
+        not any(transition_record_path.is_relative_to(root)
+                for root in authenticated_roots),
+        "bootstrap transition record must be outside authenticated worktrees",
+    )
+    transition, _ = provenance.load_captured_object(transition_record_path)
     provenance.require(
         transition == expected,
         "bootstrap transition record differs from live reconstruction",
