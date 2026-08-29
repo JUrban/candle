@@ -852,6 +852,8 @@ def _load_identity_approval(targets):
                 object_pairs_hook=_reject_duplicate_keys)
             candle_contract = collection_contract["candle"]
             reference_contract = collection_contract["reference"]
+            external_contract = collection_contract["external_runtime"]
+            external_plan = plan["reference"]["external_runtime"]
             if (plan["input"]["collector"]["sha256"] !=
                     candle_contract["collector"]["sha256"] or
                     plan["input"]["collector_repository"]["git_head"] !=
@@ -868,6 +870,30 @@ def _load_identity_approval(targets):
                     reference_contract["git_head"]):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind plan")
+            if (external_plan["policy"] != external_contract["policy"] or
+                    any(external_plan[key]["argument_path"] !=
+                        external_contract[key]["argument_path"] or
+                        external_plan[key]["resolved_executable"]["path"] !=
+                        external_contract[key]["path"] or
+                        external_plan[key]["resolved_executable"]["sha256"] !=
+                        external_contract[key]["sha256"]
+                        for key in ("command_shell", "pari_gp")) or
+                    external_plan["package_archive"] != {
+                        "path": external_contract["package_archive"]["path"],
+                        "sha256":
+                            external_contract["package_archive"]["sha256"]} or
+                    external_plan["package_tree"] !=
+                    external_contract["package_tree"] or
+                    external_plan["configuration"] != {
+                        "path": external_contract["configuration"]["path"],
+                        "sha256": external_contract["configuration"]["sha256"]} or
+                    external_plan["data_tree"] != external_contract["data_tree"] or
+                    any(plan["fresh_process_contract"]["runtime_environment"].get(
+                        key) != value for key, value in
+                        external_contract["runtime_environment"].items())):
+                raise ValueError(
+                    f"{target['name']}: collection contract does not bind "
+                    "external runtime")
             nonces.add(run["session_nonce"])
             identities.add(run["identity_sha256"])
         if len(nonces) != 2 or len(identities) != 1:
