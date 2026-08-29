@@ -657,6 +657,7 @@ def validate_elf_closure_evidence(evidence, expected_roots=None):
         if (observation["argv"] != [
                 str(ELF_BASH_PATH), str(ELF_LDD_PATH), root["path"]] or
                 observation["environment"] != ELF_OBSERVER_ENVIRONMENT or
+                type(observation["return_code"]) is not int or
                 observation["return_code"] != 0 or
                 not isinstance(observation["stdout"], str) or
                 hashlib.sha256(observation["stdout"].encode()).hexdigest() !=
@@ -1127,6 +1128,7 @@ def _validate_external_runtime_provenance_v8(external, reference_root,
             probe["shell_argv"] != [
                 "/bin/sh", "-c", PARI_GP_PROBE_SOURCE] or
             probe["environment"] != expected_environment or
+            type(probe["return_code"]) is not int or
             probe["return_code"] != 0 or
             not isinstance(probe["stdout"], str) or
             re.search(r"(?:^|\n)1\n", probe["stdout"]) is None or
@@ -1262,7 +1264,10 @@ def _validate_external_runtime_provenance_v9(external, reference_root,
         "forbidden_elf_dependency_name_fragments":
             list(CSDP_FORBIDDEN_ELF_FRAGMENTS),
     }
-    if external["thread_policy"] != expected_thread_policy:
+    if (external["thread_policy"] != expected_thread_policy or
+            any(external["thread_policy"].get(key) is not value
+                for key, value in expected_thread_policy.items()
+                if isinstance(value, bool))):
         raise CollectionError("malformed CSDP single-thread policy")
 
     external_elf_roots = sorted(({
@@ -1296,6 +1301,7 @@ def _validate_external_runtime_provenance_v9(external, reference_root,
             "stdout_sha256", "stderr", "stderr_sha256"} or
             probe["shell_argv"] != ["/bin/sh", "-c", PARI_GP_PROBE_SOURCE] or
             probe["environment"] != expected_environment or
+            type(probe["return_code"]) is not int or
             probe["return_code"] != 0 or
             not isinstance(probe["stdout"], str) or
             re.search(r"(?:^|\n)1\n", probe["stdout"]) is None or
@@ -1318,6 +1324,7 @@ def _validate_external_runtime_provenance_v9(external, reference_root,
             "stderr_sha256", "solution"} or
             csdp_probe["argv_template"] != expected_argv or
             csdp_probe["environment"] != expected_environment or
+            type(csdp_probe["return_code"]) is not int or
             csdp_probe["return_code"] != 0 or
             not isinstance(csdp_probe["normalized_stdout"], str) or
             f"{CSDP_PROBE_SUCCESS}\n" not in csdp_probe["normalized_stdout"] or
@@ -1946,7 +1953,8 @@ def validate_candidate(candidate, plan=None, request=None, transcript=None):
             or candidate["approval_status"] != "candidate_unapproved"
             or candidate["promotion_allowed"] is not False):
         raise CollectionError("reference artifact is not fail-closed")
-    if candidate["process_exit_code"] != 0:
+    if (type(candidate["process_exit_code"]) is not int or
+            candidate["process_exit_code"] != 0):
         raise CollectionError("reference candidate records a failed process")
     if not re.fullmatch(r"[0-9a-f]{64}", candidate["session_nonce"]):
         raise CollectionError("malformed candidate session nonce")

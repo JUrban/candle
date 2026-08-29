@@ -443,6 +443,37 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     with self.assertRaises(reference.CollectionError):
                         reference.validate_reference_runtime_provenance(changed)
 
+    def test_v9_runtime_provenance_rejects_numeric_type_confusion(self):
+        def mutate_gp_return_code(external):
+            external["probe"]["return_code"] = False
+
+        def mutate_csdp_return_code(external):
+            external["csdp_probe"]["return_code"] = False
+
+        def mutate_thread_policy(external):
+            external["thread_policy"]["single_process_solver"] = 1
+            external["thread_policy"]["openmp_enabled"] = 0
+
+        def mutate_elf_return_code(external):
+            external["elf_runtime"]["observations"][0]["return_code"] = 0.0
+
+        mutations = (
+            mutate_gp_return_code, mutate_csdp_return_code,
+            mutate_thread_policy, mutate_elf_return_code,
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            for mutate in mutations:
+                with self.subTest(mutation=mutate.__name__):
+                    changed = copy.deepcopy(plan)
+                    mutate(changed["reference"]["external_runtime"])
+                    with self.assertRaises(reference.CollectionError):
+                        reference.validate_reference_runtime_provenance(changed)
+
     def test_external_gp_requires_empty_data_and_exact_sys_command_shell(self):
         with tempfile.TemporaryDirectory() as directory:
             root, runtime, runtime_stublib, ocamlc, ocamlfind = \
@@ -805,6 +836,11 @@ class ReferenceFingerprintTest(unittest.TestCase):
         extra["expected_identities"] = {}
         with self.assertRaisesRegex(reference.CollectionError, "fields"):
             reference.validate_candidate(extra)
+        invalid_exit = copy.deepcopy(candidate)
+        invalid_exit["promotion_allowed"] = False
+        invalid_exit["process_exit_code"] = False
+        with self.assertRaisesRegex(reference.CollectionError, "failed process"):
+            reference.validate_candidate(invalid_exit)
 
     def test_fingerprint_outside_nonce_markers_fails_closed(self):
         plan = {
