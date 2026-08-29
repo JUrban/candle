@@ -226,6 +226,55 @@ class StratumRuntimeTests(unittest.TestCase):
             "cache without its logical identity",
         ])
 
+    def test_exact_check_action_identity_projection_compiles_and_runs(self) -> None:
+        check = (
+            Path(subject.__file__).parent / "flyspeck_stratum_check.ml"
+        ).read_text(encoding="utf-8")
+        start_text = (
+            "let candle_flyspeck_stratum_observed_action_identities ="
+        )
+        end_text = (
+            '  failwith "Flyspeck stratum action event order mismatch";;'
+        )
+        start = check.index(start_text)
+        end = check.index(end_text, start) + len(end_text)
+        exact_projection_source = check[start:end]
+        fixture = "\n".join((
+            "let rev = List.rev;;",
+            "let map = List.map;;",
+            'let first = ("a.hl","11111111111111111111111111111111");;',
+            'let second = ("b.ml","22222222222222222222222222222222");;',
+            "let candle_flyspeck_stratum_action_events =",
+            '  ref [(1,second,[second],"load");',
+            '       (0,first,[first],"load")];;',
+            "let candle_flyspeck_stratum_action_identities = [first;second];;",
+            exact_projection_source,
+            'print_endline "PROJECTION_OK";;',
+            "",
+        ))
+        compiler = Path("/usr/bin/ocamlc")
+        self.assertTrue(compiler.is_file(), "missing pinned OCaml compiler")
+        version = subprocess.run(
+            [str(compiler), "-version"], check=True, text=True,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+        ).stdout.strip()
+        self.assertEqual(version, "4.14.1")
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture_path = Path(temporary) / "action_projection.ml"
+            executable = Path(temporary) / "action_projection"
+            fixture_path.write_text(fixture, encoding="utf-8")
+            subprocess.run(
+                [str(compiler), "-o", str(executable), str(fixture_path)],
+                check=True, text=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            result = subprocess.run(
+                [str(executable)], check=True, text=True,
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            )
+        self.assertEqual(result.stdout, "PROJECTION_OK\n")
+        self.assertEqual(result.stderr, "")
+
     def test_log_rejects_duplicate_or_late_marker(self) -> None:
         boundary = "00-test-through-001"
         marker0 = self.action_marker(0, "load")

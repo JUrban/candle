@@ -9,7 +9,7 @@ if List.length !candle_flyspeck_stratum_action_events <>
   failwith "incomplete Flyspeck stratum action event ledger";;
 
 let candle_flyspeck_stratum_observed_action_identities =
-  rev (map (fun (_,identity,_) -> identity)
+  rev (map (fun (_,identity,_,_) -> identity)
            !candle_flyspeck_stratum_action_events);;
 
 if candle_flyspeck_stratum_observed_action_identities <>
