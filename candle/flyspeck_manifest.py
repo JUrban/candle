@@ -770,12 +770,20 @@ class Resolver:
     def __init__(self, candle_root: Path, flyspeck_root: Path):
         self.candle_root = candle_root.resolve()
         self.flyspeck_root = flyspeck_root.resolve()
+        text_root = self.flyspeck_root / "text_formalization"
+        # Runtime setup first prepends canonical roots, then strictbuild
+        # prepends its two distinct lexical [..] roots before its first source
+        # action.  Model that exact final lookup order and spelling; resolving
+        # the roots here would erase the aliases that compiled Candle sees.
         self.search_roots = (
-            ("flyspeck", "text_formalization",
-             self.flyspeck_root / "text_formalization"),
+            ("flyspeck", "text_formalization/../jHOLLight",
+             text_root / "../jHOLLight"),
+            ("flyspeck", "text_formalization/../formal_ineqs",
+             text_root / "../formal_ineqs"),
+            ("flyspeck", "jHOLLight", self.flyspeck_root / "jHOLLight"),
             ("flyspeck", "formal_ineqs",
              self.flyspeck_root / "formal_ineqs"),
-            ("flyspeck", "jHOLLight", self.flyspeck_root / "jHOLLight"),
+            ("flyspeck", "text_formalization", text_root),
             ("candle", "", self.candle_root),
         )
 
@@ -1688,9 +1696,11 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             "flyspeck": {"commit": _git_head(flyspeck_root)},
         },
         "load_path_order": [
-            "flyspeck:text_formalization",
-            "flyspeck:formal_ineqs",
+            "flyspeck:text_formalization/../jHOLLight",
+            "flyspeck:text_formalization/../formal_ineqs",
             "flyspeck:jHOLLight",
+            "flyspeck:formal_ineqs",
+            "flyspeck:text_formalization",
             "candle:.",
         ],
         "source_alias_contract": _source_alias_contract(

@@ -115,6 +115,19 @@ SOURCE_CLOSURE_GENERATED_KEYS = (
 )
 SOURCE_CLOSURE_FINAL_KEY = "candle:candle/flyspeck_l2_target.ml"
 SOURCE_CLOSURE_EXCLUDED_LOADER = "candle:candle/flyspeck_loader.ml"
+SOURCE_ALIAS_POLICY = (
+    "resolve each authenticated lexical alias to its manifest-selected "
+    "canonical source before normalization, logical identity lookup, "
+    "and physical loader-cache lookup"
+)
+SOURCE_ALIAS_LOAD_PATH_ORDER = (
+    "flyspeck:text_formalization/../jHOLLight",
+    "flyspeck:text_formalization/../formal_ineqs",
+    "flyspeck:jHOLLight",
+    "flyspeck:formal_ineqs",
+    "flyspeck:text_formalization",
+    "candle:.",
+)
 STRICTBUILD_SOURCE_KEY = "flyspeck:text_formalization/build/strictbuild.hl"
 STRICTBUILD_SERIALIZATION_OPT_IN_KEY = (
     "flyspeck:text_formalization/build/use_serialization.hl"
@@ -565,32 +578,168 @@ def resolve_source(binding: dict[str, Any], candle_root: Path, flyspeck_root: Pa
     return root / binding["path"]
 
 
+def derive_source_alias_contract(
+    manifest: dict[str, Any], candle_root: Path, flyspeck_root: Path,
+) -> dict[str, Any]:
+    """Reconstruct alias provenance from the independently recorded load graph."""
+    require(manifest.get("load_path_order") == list(SOURCE_ALIAS_LOAD_PATH_ORDER),
+            "source alias load-path order mismatch")
+    search_roots = (
+        ("flyspeck", "text_formalization/../jHOLLight",
+         flyspeck_root / "text_formalization/../jHOLLight"),
+        ("flyspeck", "text_formalization/../formal_ineqs",
+         flyspeck_root / "text_formalization/../formal_ineqs"),
+        ("flyspeck", "jHOLLight", flyspeck_root / "jHOLLight"),
+        ("flyspeck", "formal_ineqs", flyspeck_root / "formal_ineqs"),
+        ("flyspeck", "text_formalization",
+         flyspeck_root / "text_formalization"),
+        ("candle", "", candle_root),
+    )
+
+    def selected_lookup(target: Any, selected: Any) -> dict[str, Any]:
+        require(isinstance(target, str) and target and
+                not os.path.isabs(target) and isinstance(selected, str),
+                "malformed source alias selection")
+        for search_root_index, (repository, prefix, root) in enumerate(search_roots):
+            lexical = root / target
+            if not lexical.is_file():
+                continue
+            resolved = lexical.resolve(strict=True)
+            observed_repository = ""
+            observed_relative: Path | None = None
+            for candidate_repository, candidate_root in (
+                ("candle", candle_root), ("flyspeck", flyspeck_root),
+            ):
+                try:
+                    observed_relative = resolved.relative_to(candidate_root)
+                    observed_repository = candidate_repository
+                    break
+                except ValueError:
+                    pass
+            require(observed_relative is not None,
+                    "source alias selection escapes pinned repositories")
+            observed = f"{observed_repository}:{observed_relative.as_posix()}"
+            require(observed == selected,
+                    "source alias first lexical selection mismatch")
+            return {
+                "target": target,
+                "search_root_index": search_root_index,
+                "alias_repository": repository,
+                "alias_path": (Path(prefix) / target).as_posix(),
+                "selected": selected,
+                "canonical_repository": observed_repository,
+                "canonical_path": observed_relative.as_posix(),
+            }
+        raise ContractError(f"source alias target no longer resolves: {target}")
+
+    occurrences: list[dict[str, Any]] = []
+    action_roots = manifest.get("build_sequence_roots")
+    require(isinstance(action_roots, list),
+            "missing source alias build-sequence provenance")
+    for action_index, root in enumerate(action_roots):
+        require(isinstance(root, dict) and root.get("index") == action_index and
+                root.get("status") in {"resolved", "ambiguous"},
+                "malformed source alias build-sequence provenance")
+        occurrences.append({
+            "kind": "build-sequence-root",
+            "action_index": action_index,
+            "lookup": selected_lookup(root.get("target"), root.get("selected")),
+        })
+
+    nodes = manifest.get("source_nodes")
+    require(isinstance(nodes, dict) and
+            all(isinstance(key, str) and isinstance(node, dict)
+                for key, node in nodes.items()),
+            "missing source alias graph provenance")
+    for parent_source, node in nodes.items():
+        dependencies = node.get("dependencies")
+        require(isinstance(dependencies, list) and
+                all(isinstance(dependency, dict) for dependency in dependencies),
+                "malformed source alias graph provenance")
+        for dependency in dependencies:
+            kind = dependency.get("kind")
+            line = dependency.get("line")
+            require(isinstance(kind, str) and type(line) is int and line > 0,
+                    "malformed source alias dependency provenance")
+            selected_targets = dependency.get("selected_targets")
+            if selected_targets is not None:
+                targets = dependency.get("targets")
+                require(dependency.get("status") == "resolved-dynamic" and
+                        isinstance(targets, list) and
+                        isinstance(selected_targets, list) and targets and
+                        len(targets) == len(selected_targets),
+                        "malformed reviewed dynamic source alias provenance")
+                for target, selected in zip(targets, selected_targets, strict=True):
+                    occurrences.append({
+                        "kind": "reviewed-dynamic-source-action",
+                        "parent_source": parent_source,
+                        "line": line,
+                        "action_kind": kind,
+                        "lookup": selected_lookup(target, selected),
+                    })
+            elif dependency.get("status") in {"resolved", "ambiguous"}:
+                occurrences.append({
+                    "kind": "literal-source-action",
+                    "parent_source": parent_source,
+                    "line": line,
+                    "action_kind": kind,
+                    "lookup": selected_lookup(
+                        dependency.get("literal"), dependency.get("selected"),
+                    ),
+                })
+
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for occurrence in occurrences:
+        lookup = occurrence["lookup"]
+        alias_key = (lookup["alias_repository"], lookup["alias_path"])
+        canonical_key = (
+            lookup["canonical_repository"], lookup["canonical_path"],
+        )
+        if alias_key == canonical_key:
+            continue
+        use = {key: value for key, value in occurrence.items() if key != "lookup"}
+        prior = grouped.get(alias_key)
+        if prior is None:
+            grouped[alias_key] = {**lookup, "uses": [use]}
+        else:
+            require(all(prior[field] == lookup[field] for field in (
+                "target", "search_root_index", "selected",
+                "canonical_repository", "canonical_path",
+            )), "source alias has conflicting derived selections")
+            prior["uses"].append(use)
+    records = []
+    for alias_key in sorted(grouped):
+        record = grouped[alias_key]
+        uses = sorted(
+            record.pop("uses"),
+            key=lambda use: json.dumps(use, sort_keys=True, separators=(",", ":")),
+        )
+        records.append({**record, "occurrence_count": len(uses), "uses": uses})
+    return {
+        "schema": 1,
+        "policy": SOURCE_ALIAS_POLICY,
+        "record_count": len(records),
+        "occurrence_count": sum(record["occurrence_count"] for record in records),
+        "records": records,
+    }
+
+
 def validate_source_alias_contract(
     manifest: dict[str, Any], source_by_key: dict[str, dict[str, Any]],
     candle_root: Path, flyspeck_root: Path,
 ) -> list[dict[str, str]]:
     """Bind every lexical loader alias to one authenticated canonical source."""
     alias_contract = manifest.get("source_alias_contract")
-    require(isinstance(alias_contract, dict) and set(alias_contract) == {
-        "schema", "policy", "record_count", "occurrence_count", "records",
-    }, "malformed source alias contract")
-    alias_records = alias_contract.get("records")
-    require(alias_contract.get("schema") == 1 and
-            isinstance(alias_records, list) and
-            all(isinstance(record, dict) for record in alias_records) and
-            alias_contract.get("record_count") == len(alias_records),
-            "source alias contract count mismatch")
-    require(alias_contract.get("occurrence_count") == sum(
-        record.get("occurrence_count", -1) for record in alias_records
-    ), "source alias occurrence count mismatch")
+    expected_contract = derive_source_alias_contract(
+        manifest, candle_root, flyspeck_root,
+    )
+    require(isinstance(alias_contract, dict) and
+            canonical_bytes(alias_contract) == canonical_bytes(expected_contract),
+            "source alias contract differs from derived provenance closure")
+    alias_records = expected_contract["records"]
     source_alias_runtime: list[dict[str, str]] = []
     seen_aliases: set[tuple[str, str]] = set()
     for record in alias_records:
-        require(set(record) == {
-            "target", "search_root_index", "alias_repository", "alias_path",
-            "selected", "canonical_repository", "canonical_path",
-            "occurrence_count", "uses",
-        }, "malformed source alias record")
         alias_repository = record.get("alias_repository")
         canonical_repository = record.get("canonical_repository")
         alias_value = record.get("alias_path")
@@ -616,10 +765,6 @@ def validate_source_alias_contract(
         require(selected == f"{canonical_repository}:{canonical_value}" and
                 selected in source_by_key,
                 "source alias canonical selection is unbound")
-        uses = record.get("uses")
-        require(isinstance(uses, list) and uses and
-                record.get("occurrence_count") == len(uses),
-                "source alias occurrence closure mismatch")
         alias_root = candle_root if alias_repository == "candle" else flyspeck_root
         canonical_root = (
             candle_root if canonical_repository == "candle" else flyspeck_root
@@ -637,7 +782,7 @@ def validate_source_alias_contract(
             "alias": str(alias_path),
             "canonical": str(canonical_path),
         })
-    require(len(source_alias_runtime) == alias_contract["record_count"],
+    require(len(source_alias_runtime) == expected_contract["record_count"],
             "source alias runtime closure mismatch")
     return source_alias_runtime
 

@@ -898,6 +898,8 @@ class StratumRuntimeTests(unittest.TestCase):
             flyspeck = root / "flyspeck"
             candle.mkdir()
             (flyspeck / "text_formalization").mkdir(parents=True)
+            (flyspeck / "jHOLLight").mkdir()
+            (flyspeck / "formal_ineqs").mkdir()
             canonical = flyspeck / "external/a.ml"
             canonical.parent.mkdir()
             canonical.write_bytes(b"source")
@@ -905,17 +907,27 @@ class StratumRuntimeTests(unittest.TestCase):
                 "target": "../external/a.ml",
                 "search_root_index": 0,
                 "alias_repository": "flyspeck",
-                "alias_path": "text_formalization/../external/a.ml",
+                "alias_path": (
+                    "text_formalization/../jHOLLight/../external/a.ml"
+                ),
                 "selected": "flyspeck:external/a.ml",
                 "canonical_repository": "flyspeck",
                 "canonical_path": "external/a.ml",
                 "occurrence_count": 1,
-                "uses": [{"kind": "test", "action_index": 0}],
+                "uses": [{"kind": "build-sequence-root", "action_index": 0}],
             }
             manifest = {
+                "load_path_order": list(subject.SOURCE_ALIAS_LOAD_PATH_ORDER),
+                "build_sequence_roots": [{
+                    "index": 0,
+                    "target": "../external/a.ml",
+                    "status": "resolved",
+                    "selected": "flyspeck:external/a.ml",
+                }],
+                "source_nodes": {},
                 "source_alias_contract": {
                     "schema": 1,
-                    "policy": "test",
+                    "policy": subject.SOURCE_ALIAS_POLICY,
                     "record_count": 1,
                     "occurrence_count": 1,
                     "records": [record],
@@ -926,16 +938,40 @@ class StratumRuntimeTests(unittest.TestCase):
             )
             self.assertEqual(len(observed), 1)
             self.assertEqual(observed[0]["canonical"], str(canonical))
-            forged = copy.deepcopy(manifest)
-            forged["source_alias_contract"]["records"][0][
-                "canonical_path"
-            ] = "external/other.ml"
-            with self.assertRaisesRegex(
-                subject.ContractError, "canonical selection is unbound",
-            ):
-                subject.validate_source_alias_contract(
-                    forged, {"flyspeck:external/a.ml": {}}, candle, flyspeck,
-                )
+            mutations = {
+                "policy": lambda value: value["source_alias_contract"].__setitem__(
+                    "policy", "forged",
+                ),
+                "target": lambda value: value["source_alias_contract"]["records"][
+                    0
+                ].__setitem__("target", "../external/forged.ml"),
+                "search root": lambda value: value["source_alias_contract"][
+                    "records"
+                ][0].__setitem__("search_root_index", 1),
+                "uses": lambda value: value["source_alias_contract"]["records"][
+                    0
+                ].__setitem__("uses", [{"kind": "forged"}]),
+                "boolean count": lambda value: value["source_alias_contract"][
+                    "records"
+                ][0].__setitem__("occurrence_count", True),
+                "string count": lambda value: value["source_alias_contract"].__setitem__(
+                    "occurrence_count", "1",
+                ),
+                "canonical path": lambda value: value["source_alias_contract"][
+                    "records"
+                ][0].__setitem__("canonical_path", "external/other.ml"),
+            }
+            for label, mutate in mutations.items():
+                with self.subTest(label=label):
+                    forged = copy.deepcopy(manifest)
+                    mutate(forged)
+                    with self.assertRaisesRegex(
+                        subject.ContractError,
+                        "source alias contract differs from derived provenance closure",
+                    ):
+                        subject.validate_source_alias_contract(
+                            forged, {"flyspeck:external/a.ml": {}}, candle, flyspeck,
+                        )
 
     def test_snapshot_is_complete_deduplicated_and_fail_closed(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

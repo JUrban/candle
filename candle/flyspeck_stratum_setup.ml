@@ -100,6 +100,29 @@ List.iter candle_flyspeck_stratum_add_load_path
 
 needs "build/strictbuild.hl";;
 
+(* [strictbuild.hl] prepends its lexical [..] roots.  Alias authentication is
+   generated for this exact post-strictbuild lookup prefix, so fail before any
+   cumulative action if either setup or upstream path-order behavior drifts. *)
+let candle_flyspeck_stratum_expected_load_path_prefix =
+  [Filename.concat candle_flyspeck_text_root "../jHOLLight/";
+   Filename.concat candle_flyspeck_text_root "../formal_ineqs";
+   Filename.concat candle_flyspeck_root "jHOLLight";
+   Filename.concat candle_flyspeck_root "formal_ineqs";
+   candle_flyspeck_text_root];;
+
+let rec candle_flyspeck_stratum_has_load_path_prefix expected observed =
+  match expected,observed with
+  | [],_ -> true
+  | expected_path::expected_rest,observed_path::observed_rest ->
+      expected_path = observed_path &&
+      candle_flyspeck_stratum_has_load_path_prefix
+        expected_rest observed_rest
+  | _ -> false;;
+
+if not (candle_flyspeck_stratum_has_load_path_prefix
+          candle_flyspeck_stratum_expected_load_path_prefix !load_path) then
+  failwith "Flyspeck stratum post-strictbuild load-path order mismatch";;
+
 if !Cakeml.pendingLoadedSourceIds <> [] then
   failwith "pending Flyspeck source identity after strictbuild";;
 

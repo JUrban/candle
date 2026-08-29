@@ -186,7 +186,9 @@ class SyntaxTests(unittest.TestCase):
                     "target": "../external/y.ml",
                     "search_root_index": 0,
                     "alias_repository": "flyspeck",
-                    "alias_path": "text_formalization/../external/y.ml",
+                    "alias_path": (
+                        "text_formalization/../jHOLLight/../external/y.ml"
+                    ),
                     "selected": "flyspeck:external/y.ml",
                     "canonical_repository": "flyspeck",
                     "canonical_path": "external/y.ml",
@@ -221,8 +223,8 @@ class GeneratedManifestTests(unittest.TestCase):
     def test_source_alias_contract_closes_every_lexical_selection(self):
         contract = self.payload["source_alias_contract"]
         self.assertEqual(contract["schema"], 1)
-        self.assertEqual(contract["record_count"], 37)
-        self.assertEqual(contract["occurrence_count"], 153)
+        self.assertEqual(contract["record_count"], 47)
+        self.assertEqual(contract["occurrence_count"], 172)
         records = contract["records"]
         self.assertEqual(len(records), contract["record_count"])
         aliases = {
@@ -248,11 +250,48 @@ class GeneratedManifestTests(unittest.TestCase):
         ssreflect = aliases[
             (
                 "flyspeck",
-                "text_formalization/../jHOLLight/caml/ssreflect.hl",
+                "text_formalization/../jHOLLight/../jHOLLight/caml/ssreflect.hl",
             )
         ]
         self.assertEqual(ssreflect["canonical_path"], "jHOLLight/caml/ssreflect.hl")
         self.assertEqual(ssreflect["occurrence_count"], 2)
+        self.assertEqual(
+            ssreflect["uses"],
+            [
+                {"action_index": 126, "kind": "build-sequence-root"},
+                {
+                    "action_kind": "#flyspeck_needs",
+                    "kind": "literal-source-action",
+                    "line": 268,
+                    "parent_source": "candle:candle/flyspeck_full_build.ml",
+                },
+            ],
+        )
+        self.assertIn(
+            (
+                "flyspeck",
+                "text_formalization/../jHOLLight/Examples/seq-compiled.hl",
+            ),
+            aliases,
+        )
+        self.assertIn(
+            (
+                "flyspeck",
+                "text_formalization/../formal_ineqs/arith/arith_cache.hl",
+            ),
+            aliases,
+        )
+        self.assertEqual(
+            self.payload["load_path_order"],
+            [
+                "flyspeck:text_formalization/../jHOLLight",
+                "flyspeck:text_formalization/../formal_ineqs",
+                "flyspeck:jHOLLight",
+                "flyspeck:formal_ineqs",
+                "flyspeck:text_formalization",
+                "candle:.",
+            ],
+        )
         setup = Path(__file__).with_name(
             "flyspeck_stratum_setup.ml"
         ).read_text(encoding="utf-8")
@@ -260,6 +299,35 @@ class GeneratedManifestTests(unittest.TestCase):
         overlay_configuration = setup.index("Cakeml.configureNormalizationOverlay")
         self.assertLess(alias_configuration, overlay_configuration)
         self.assertIn("candle_flyspeck_stratum_source_alias_count", setup)
+
+    def test_alias_load_path_order_emulates_exact_prepend_transitions(self):
+        observed = ["candle:."]
+
+        def prepend_distinct(additions):
+            for path in additions:
+                if path not in observed:
+                    observed.insert(0, path)
+
+        prepend_distinct([
+            "flyspeck:text_formalization",
+            "flyspeck:formal_ineqs",
+            "flyspeck:jHOLLight",
+        ])
+        self.assertEqual(
+            observed,
+            [
+                "flyspeck:jHOLLight",
+                "flyspeck:formal_ineqs",
+                "flyspeck:text_formalization",
+                "candle:.",
+            ],
+        )
+        prepend_distinct([
+            "flyspeck:text_formalization",
+            "flyspeck:text_formalization/../formal_ineqs",
+            "flyspeck:text_formalization/../jHOLLight",
+        ])
+        self.assertEqual(observed, self.payload["load_path_order"])
 
     def test_build_strata_cover_order_and_dependency_graph(self):
         strata = self.payload["build_strata"]
