@@ -93,6 +93,35 @@ THREAD_CAP_ENVIRONMENT = {
 CSDP_POLICY = "single_private_path_gp_csdp_with_pinned_shell_v3"
 CSDP_BUILD_SCHEMA = 1
 CSDP_BUILD_KIND = "candle-hol-light-csdp-single-thread-build"
+CSDP_BUILD_SOURCE_UPSTREAM_TREE = "Csdp-6.2.0"
+CSDP_BUILD_SOURCE_PACKAGE = "coinor-csdp 6.2.0-5build1 (Noble)"
+CSDP_BUILD_TOOLCHAIN = {
+    "compiler_argument": "/usr/bin/gcc",
+    "compiler_resolved": "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "compiler_sha256":
+        "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+    "compiler_version_first_line":
+        "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "archiver_argument": "/usr/bin/ar",
+    "archiver_resolved": "/usr/bin/x86_64-linux-gnu-ar",
+    "archiver_sha256":
+        "534681ac11c18868cfc4fdf98770aa0ba8973eedc90c231e94e6ba96e1a04f27",
+    "binutils_version_first_line":
+        "GNU ld (GNU Binutils for Ubuntu) 2.42",
+}
+CSDP_BUILD_CFLAGS = \
+    "-m64 -O2 -fno-ident -ansi -Wall -DBIT64 -DUSESIGTERM " \
+    "-DUSEGETTIME -I../include"
+CSDP_BUILD_LIBRARY_FLAGS = \
+    "-L../lib -Wl,-Bstatic -lsdp -Wl,-Bdynamic " \
+    "-llapack -lblas -lm -lgfortran"
+CSDP_BUILD_COMMANDS = [
+    "make -C lib clean libsdp.a CC=/usr/bin/gcc CFLAGS=<cflags>",
+    "make -C solver clean csdp CC=/usr/bin/gcc CFLAGS=<cflags> "
+    "LIBS=<library_flags>",
+]
+CSDP_BUILD_STATIC_LIBSDP_SHA256 = \
+    "ede58dd5bf3620aa08045aa767fd1280fefe1e76d6ece276e8a674d6156bca25"
 CSDP_PROBE_SUCCESS = "Success: SDP solved"
 CSDP_PROBE_PRIMAL = "2.3000000e+01"
 CSDP_PROBE_DUAL = "2.3000000e+01"
@@ -734,42 +763,97 @@ def _validate_csdp_build_statement(statement, source_pin, csdp_route,
             "schema", "kind", "source", "toolchain", "recipe", "outputs",
             "unit_probe", "runtime_policy"}:
         raise CollectionError("malformed CSDP build statement")
+    if (type(statement["schema"]) is not int or
+            statement["schema"] != CSDP_BUILD_SCHEMA or
+            type(statement["kind"]) is not str or
+            statement["kind"] != CSDP_BUILD_KIND):
+        raise CollectionError("unsupported CSDP build statement identity")
+
     source = statement["source"]
-    outputs = statement["outputs"]
-    recipe = statement["recipe"]
-    policy = statement["runtime_policy"]
-    unit = statement["unit_probe"]
-    if (statement["schema"] != CSDP_BUILD_SCHEMA or
-            statement["kind"] != CSDP_BUILD_KIND or
-            not isinstance(source, dict) or
-            source.get("archive") != Path(source_pin["path"]).name or
-            source.get("bytes") != source_pin["bytes"] or
-            source.get("sha256") != source_pin["sha256"] or
-            source.get("upstream_tree") != "Csdp-6.2.0" or
-            not isinstance(outputs, dict) or
-            outputs.get("csdp_path") != "usr/bin/csdp" or
-            outputs.get("csdp_bytes") != csdp_bytes or
-            outputs.get("csdp_sha256") !=
-            csdp_route["resolved_executable"]["sha256"]):
+    if (not isinstance(source, dict) or set(source) != {
+            "archive", "bytes", "sha256", "upstream_tree",
+            "ubuntu_source_package"} or
+            type(source["archive"]) is not str or
+            source["archive"] != Path(source_pin["path"]).name or
+            type(source["bytes"]) is not int or source["bytes"] <= 0 or
+            type(source_pin["bytes"]) is not int or
+            source["bytes"] != source_pin["bytes"] or
+            type(source["sha256"]) is not str or
+            not _valid_sha256(source["sha256"]) or
+            source["sha256"] != source_pin["sha256"] or
+            type(source["upstream_tree"]) is not str or
+            source["upstream_tree"] != CSDP_BUILD_SOURCE_UPSTREAM_TREE or
+            type(source["ubuntu_source_package"]) is not str or
+            source["ubuntu_source_package"] != CSDP_BUILD_SOURCE_PACKAGE):
         raise CollectionError("CSDP build statement does not bind its inputs")
-    cflags = recipe.get("cflags") if isinstance(recipe, dict) else None
-    if (not isinstance(cflags, str) or "-fopenmp" in cflags or
-            "-DUSEOPENMP" in cflags or "-march=native" in cflags or
-            "-mtune=native" in cflags or
-            recipe.get("openmp_enabled") is not False or
-            recipe.get("native_cpu_flags") is not False or
-            policy != {
-                "single_process_solver": True,
-                "single_thread_build": True,
-                "external_shared_libraries_closed_separately": True,
-            }):
+
+    toolchain = statement["toolchain"]
+    if (not isinstance(toolchain, dict) or
+            set(toolchain) != set(CSDP_BUILD_TOOLCHAIN) or
+            any(type(toolchain[key]) is not str or
+                toolchain[key] != expected
+                for key, expected in CSDP_BUILD_TOOLCHAIN.items())):
+        raise CollectionError("CSDP build statement has wrong toolchain")
+
+    recipe = statement["recipe"]
+    if (not isinstance(recipe, dict) or set(recipe) != {
+            "cflags", "library_flags", "openmp_enabled",
+            "native_cpu_flags", "commands"} or
+            type(recipe["cflags"]) is not str or
+            recipe["cflags"] != CSDP_BUILD_CFLAGS or
+            type(recipe["library_flags"]) is not str or
+            recipe["library_flags"] != CSDP_BUILD_LIBRARY_FLAGS or
+            recipe["openmp_enabled"] is not False or
+            recipe["native_cpu_flags"] is not False or
+            not isinstance(recipe["commands"], list) or
+            any(type(command) is not str for command in recipe["commands"]) or
+            recipe["commands"] != CSDP_BUILD_COMMANDS):
         raise CollectionError("CSDP build is not the portable single-thread recipe")
+
+    outputs = statement["outputs"]
+    if (not isinstance(outputs, dict) or set(outputs) != {
+            "static_libsdp_sha256", "csdp_path", "csdp_bytes",
+            "csdp_sha256"} or
+            type(outputs["static_libsdp_sha256"]) is not str or
+            outputs["static_libsdp_sha256"] !=
+            CSDP_BUILD_STATIC_LIBSDP_SHA256 or
+            type(outputs["csdp_path"]) is not str or
+            outputs["csdp_path"] != "usr/bin/csdp" or
+            type(outputs["csdp_bytes"]) is not int or
+            outputs["csdp_bytes"] <= 0 or outputs["csdp_bytes"] != csdp_bytes or
+            type(outputs["csdp_sha256"]) is not str or
+            not _valid_sha256(outputs["csdp_sha256"]) or
+            outputs["csdp_sha256"] !=
+            csdp_route["resolved_executable"]["sha256"]):
+        raise CollectionError("CSDP build statement does not bind its outputs")
+
+    policy = statement["runtime_policy"]
+    if (not isinstance(policy, dict) or set(policy) != {
+            "single_process_solver", "single_thread_build",
+            "external_shared_libraries_closed_separately"} or
+            policy["single_process_solver"] is not True or
+            policy["single_thread_build"] is not True or
+            policy["external_shared_libraries_closed_separately"] is not True):
+        raise CollectionError("CSDP build has wrong runtime policy")
+
+    unit = statement["unit_probe"]
     if (not isinstance(unit, dict) or
-            unit.get("success_line") != CSDP_PROBE_SUCCESS or
-            unit.get("primal_objective") != CSDP_PROBE_PRIMAL or
-            unit.get("dual_objective") != CSDP_PROBE_DUAL or
-            unit.get("exit_code") != 0 or
-            unit.get("maximum_allowed_dimacs_error") != "1.0e-6"):
+            set(unit) != {"input_path", "input_bytes", "input_sha256",
+                         "exit_code", "success_line", "primal_objective",
+                         "dual_objective", "maximum_allowed_dimacs_error"} or
+            type(unit["input_path"]) is not str or
+            type(unit["input_bytes"]) is not int or unit["input_bytes"] <= 0 or
+            type(unit["input_sha256"]) is not str or
+            not _valid_sha256(unit["input_sha256"]) or
+            type(unit["exit_code"]) is not int or unit["exit_code"] != 0 or
+            type(unit["success_line"]) is not str or
+            unit["success_line"] != CSDP_PROBE_SUCCESS or
+            type(unit["primal_objective"]) is not str or
+            unit["primal_objective"] != CSDP_PROBE_PRIMAL or
+            type(unit["dual_objective"]) is not str or
+            unit["dual_objective"] != CSDP_PROBE_DUAL or
+            type(unit["maximum_allowed_dimacs_error"]) is not str or
+            unit["maximum_allowed_dimacs_error"] != "1.0e-6"):
         raise CollectionError("CSDP build statement has wrong unit-probe policy")
 
 

@@ -160,15 +160,20 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "archive": csdp_source.name,
                 "bytes": csdp_source.stat().st_size,
                 "sha256": hashlib.sha256(csdp_source.read_bytes()).hexdigest(),
-                "upstream_tree": "Csdp-6.2.0",
+                "upstream_tree": reference.CSDP_BUILD_SOURCE_UPSTREAM_TREE,
+                "ubuntu_source_package": reference.CSDP_BUILD_SOURCE_PACKAGE,
             },
-            "toolchain": {"fixture": True},
+            "toolchain": dict(reference.CSDP_BUILD_TOOLCHAIN),
             "recipe": {
-                "cflags": "-O2 -ansi -DBIT64",
+                "cflags": reference.CSDP_BUILD_CFLAGS,
+                "library_flags": reference.CSDP_BUILD_LIBRARY_FLAGS,
                 "openmp_enabled": False,
                 "native_cpu_flags": False,
+                "commands": list(reference.CSDP_BUILD_COMMANDS),
             },
             "outputs": {
+                "static_libsdp_sha256":
+                    reference.CSDP_BUILD_STATIC_LIBSDP_SHA256,
                 "csdp_path": "usr/bin/csdp",
                 "csdp_bytes": csdp_executable.stat().st_size,
                 "csdp_sha256": hashlib.sha256(
