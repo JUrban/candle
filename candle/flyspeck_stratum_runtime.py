@@ -5,9 +5,9 @@ The input is a materialized plan produced by ``flyspeck_stratum_plan.py``.
 Every attempt starts a fresh process, reauthenticates the linked CakeML
 artifact and all plan inputs, and writes an authenticated read-only runtime
 snapshot plus an append-only-by-convention attempt directory.  A
-successful receipt proves only that the selected source actions completed; it
-does not become S2/S3 evidence without the separately specified semantic
-fingerprints.
+successful receipt proves only that the selected source actions completed. A
+schema-5 receipt adds unapproved semantic observations; it does not become
+S2/S3 evidence without separate independent approval.
 """
 
 from __future__ import annotations
@@ -123,6 +123,10 @@ DIRECT_EVIDENCE_CLAIM = (
     "compiled cumulative source-action attempt; not S2/S3 without semantic "
     "fingerprints"
 )
+DIRECT_V5_EVIDENCE_CLAIM = (
+    "compiled cumulative source-action and semantic observation attempt; "
+    "not S2/S3 without independent approval"
+)
 DIRECT_ATTEMPT_FIELDS = frozenset({
     "schema", "kind", "claim", "state", "started_utc", "boundary_id",
     "diagnostic_only", "attempt_nonce", "action_count",
@@ -138,6 +142,12 @@ DIRECT_RECEIPT_ONLY_FIELDS = frozenset({
     "log", "initial_attempt", "action_markers_validated", "action_events",
     "logical_source_closure", "physical_source_trace", "semantic_fingerprints",
     "s2_s3_evidence", "validation_error", "postflight_reauthenticated",
+})
+DIRECT_V5_ATTEMPT_FIELDS = DIRECT_ATTEMPT_FIELDS | frozenset({
+    "semantic_evidence_plan",
+})
+DIRECT_V5_RECEIPT_ONLY_FIELDS = DIRECT_RECEIPT_ONLY_FIELDS | frozenset({
+    "dependency_history", "semantic_coverage",
 })
 DIRECT_INPUT_FIELDS = frozenset({
     "plan", "host_materialization", "manifest", "linked_provenance",
@@ -205,6 +215,9 @@ DEPENDENCY_HISTORY_SUCCESS_MARKER = (
 )
 DEPENDENCY_HISTORY_POLICY = (
     "serialization-full-digest-thm-sorted-dependency-history-v1"
+)
+SEMANTIC_COVERAGE_POLICY = (
+    "authenticated-direct-source-lp-nonlinear-observation-v1"
 )
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 EXPECTED_PYTHON_RUNTIME = {
@@ -1760,6 +1773,281 @@ def parse_dependency_history(
     return parse_dependency_history_text(log, theorem_names, boundary_id, nonce)
 
 
+def validate_dependency_history_observation(
+    observation: object, theorem_names: list[str], boundary_id: str, nonce: str,
+) -> dict[str, Any]:
+    fields = {
+        "schema", "kind", "policy", "status", "boundary_id",
+        "record_count", "ordered_request_sha256", "ordered_record_sha256",
+        "records", "approved_reference_present",
+        "dependency_history_is_kernel_trace", "pft_used", "s2_s3_evidence",
+    }
+    require(isinstance(observation, dict) and set(observation) == fields,
+            "malformed dependency-history observation")
+    if not theorem_names:
+        expected = dependency_history_not_requested(boundary_id)
+    else:
+        records = observation.get("records")
+        require(isinstance(records, list) and len(records) == len(theorem_names),
+                "malformed dependency-history observation records")
+        synthetic_lines = []
+        for index, (record, name) in enumerate(zip(
+            records, theorem_names, strict=True,
+        )):
+            require(isinstance(record, dict) and set(record) == {
+                        "index", "name", "full_digest_md5",
+                    } and type(record.get("index")) is int and
+                    record["index"] == index and record.get("name") == name and
+                    isinstance(record.get("full_digest_md5"), str) and
+                    re.fullmatch(r"[0-9a-f]{32}", record["full_digest_md5"])
+                    is not None,
+                    f"malformed dependency-history observation record: {index}")
+            synthetic_lines.append(
+                dependency_history_marker_prefix(nonce, index, name) +
+                record["full_digest_md5"]
+            )
+        synthetic_lines.append(
+            dependency_history_terminal(nonce, boundary_id, theorem_names)
+        )
+        expected = parse_dependency_history_text(
+            "\n".join(synthetic_lines) + "\n",
+            theorem_names, boundary_id, nonce,
+        )
+    require(exact_json_equal(observation, expected),
+            "dependency-history observation differs from exact protocol")
+    return expected
+
+
+def build_semantic_evidence_plan(
+    boundary_id: str,
+    action_count: int,
+    logical_source_closure: dict[str, Any],
+    physical_source_trace: dict[str, Any],
+    lp_certificate_runtime: list[dict[str, Any]],
+    authenticated_inputs: dict[str, str],
+) -> dict[str, Any]:
+    certificate_records = [
+        {
+            "index": index,
+            "class": item["class"],
+            "relative": item["relative"],
+            "bytes": item["bytes"],
+            "sha256": item["sha256"],
+            "md5": item["md5"],
+        }
+        for index, item in enumerate(lp_certificate_runtime)
+    ]
+    plan = {
+        "schema": 1,
+        "kind": "candle-flyspeck-direct-semantic-evidence-plan",
+        "policy": SEMANTIC_COVERAGE_POLICY,
+        "boundary_id": boundary_id,
+        "completed_action_count": action_count,
+        "logical_source": {
+            "record_count": logical_source_closure["record_count"],
+            "ordered_record_sha256":
+                logical_source_closure["ordered_record_sha256"],
+        },
+        "physical_source_trace": {
+            "required_key_count": physical_source_trace["required_key_count"],
+            "ordered_required_key_sha256":
+                physical_source_trace["ordered_required_key_sha256"],
+        },
+        "structural_fingerprint_requests": fingerprint_requests(boundary_id),
+        "dependency_history_requests": dependency_history_requests(boundary_id),
+        "authenticated_inputs": authenticated_inputs,
+        "lp_certificate_inputs": {
+            "status": "authenticated-runtime-inputs-not-consumption-traced",
+            "record_count": len(certificate_records),
+            "ordered_record_sha256": canonical_sha256(certificate_records),
+            "records": certificate_records,
+        },
+        "approval_included": False,
+        "pft_used": False,
+        "s2_s3_evidence": False,
+    }
+    return validate_semantic_evidence_plan(
+        plan, boundary_id, action_count,
+        logical_source_closure, physical_source_trace, authenticated_inputs,
+    )
+
+
+def validate_semantic_evidence_plan(
+    plan: object,
+    boundary_id: str,
+    action_count: int,
+    logical_source_closure: dict[str, Any],
+    physical_source_trace: dict[str, Any],
+    authenticated_inputs: dict[str, str],
+) -> dict[str, Any]:
+    fields = {
+        "schema", "kind", "policy", "boundary_id", "completed_action_count",
+        "logical_source", "physical_source_trace",
+        "structural_fingerprint_requests", "dependency_history_requests",
+        "authenticated_inputs", "lp_certificate_inputs", "approval_included", "pft_used",
+        "s2_s3_evidence",
+    }
+    require(isinstance(plan, dict) and set(plan) == fields and
+            type(plan.get("schema")) is int and plan["schema"] == 1 and
+            plan.get("kind") ==
+            "candle-flyspeck-direct-semantic-evidence-plan" and
+            plan.get("policy") == SEMANTIC_COVERAGE_POLICY and
+            plan.get("boundary_id") == boundary_id and
+            type(plan.get("completed_action_count")) is int and
+            plan["completed_action_count"] == action_count and
+            plan.get("approval_included") is False and
+            plan.get("pft_used") is False and
+            plan.get("s2_s3_evidence") is False,
+            "malformed direct semantic-evidence plan")
+    require(exact_json_equal(plan.get("logical_source"), {
+                "record_count": logical_source_closure["record_count"],
+                "ordered_record_sha256":
+                    logical_source_closure["ordered_record_sha256"],
+            }) and
+            exact_json_equal(plan.get("physical_source_trace"), {
+                "required_key_count":
+                    physical_source_trace["required_key_count"],
+                "ordered_required_key_sha256":
+                    physical_source_trace["ordered_required_key_sha256"],
+            }) and
+            exact_json_equal(plan.get("structural_fingerprint_requests"),
+                             fingerprint_requests(boundary_id)) and
+            exact_json_equal(plan.get("dependency_history_requests"),
+                             dependency_history_requests(boundary_id)) and
+            isinstance(authenticated_inputs, dict) and
+            set(authenticated_inputs) == {
+                "plan_sha256", "host_materialization_sha256", "manifest_sha256",
+            } and all(isinstance(value, str) and
+                      re.fullmatch(r"[0-9a-f]{64}", value) is not None
+                      for value in authenticated_inputs.values()) and
+            exact_json_equal(plan.get("authenticated_inputs"),
+                             authenticated_inputs),
+            "semantic-evidence plan differs from authenticated runtime boundary")
+    certificates = plan.get("lp_certificate_inputs")
+    require(isinstance(certificates, dict) and set(certificates) == {
+                "status", "record_count", "ordered_record_sha256", "records",
+            } and certificates.get("status") ==
+            "authenticated-runtime-inputs-not-consumption-traced" and
+            type(certificates.get("record_count")) is int and
+            certificates["record_count"] == 39 and
+            isinstance(certificates.get("records"), list) and
+            len(certificates["records"]) == 39 and
+            isinstance(certificates.get("ordered_record_sha256"), str) and
+            re.fullmatch(r"[0-9a-f]{64}",
+                         certificates["ordered_record_sha256"]) is not None and
+            certificates["ordered_record_sha256"] ==
+            canonical_sha256(certificates["records"]),
+            "malformed semantic-evidence LP-certificate input projection")
+    relatives = []
+    for index, record in enumerate(certificates["records"]):
+        require(isinstance(record, dict) and set(record) == {
+                    "index", "class", "relative", "bytes", "sha256", "md5",
+                } and type(record.get("index")) is int and
+                record["index"] == index and
+                record.get("class") == "lp-certificate-prepared" and
+                isinstance(record.get("relative"), str) and
+                bool(record["relative"]) and
+                not Path(record["relative"]).is_absolute() and
+                ".." not in Path(record["relative"]).parts and
+                Path(record["relative"]).as_posix() == record["relative"] and
+                type(record.get("bytes")) is int and record["bytes"] > 0 and
+                isinstance(record.get("sha256"), str) and
+                re.fullmatch(r"[0-9a-f]{64}", record["sha256"]) is not None and
+                isinstance(record.get("md5"), str) and
+                re.fullmatch(r"[0-9a-f]{32}", record["md5"]) is not None,
+                f"malformed semantic-evidence LP-certificate record: {index}")
+        relatives.append(record["relative"])
+    require(len(relatives) == len(set(relatives)),
+            "duplicate semantic-evidence LP-certificate path")
+    return plan
+
+
+def derive_semantic_coverage(
+    plan: dict[str, Any],
+    logical_source_observation: dict[str, Any],
+    physical_source_observation: dict[str, Any],
+    structural_fingerprints: dict[str, Any],
+    dependency_history: dict[str, Any],
+) -> dict[str, Any]:
+    structural_names = plan["structural_fingerprint_requests"]
+    dependency_names = plan["dependency_history_requests"]
+    require(logical_source_observation.get("status") ==
+            "expected-closure-emitted-unapproved" and
+            logical_source_observation.get("record_count") ==
+            plan["logical_source"]["record_count"] and
+            logical_source_observation.get("ordered_record_sha256") ==
+            plan["logical_source"]["ordered_record_sha256"] and
+            physical_source_observation.get("status") ==
+            "closed-loader-owned-session" and
+            physical_source_observation.get("observed_key_count") ==
+            plan["physical_source_trace"]["required_key_count"] and
+            physical_source_observation.get("ordered_observed_key_sha256") ==
+            plan["physical_source_trace"]["ordered_required_key_sha256"],
+            "semantic coverage lacks exact source observations")
+    expected_fingerprint_status = (
+        "observed_uncompared" if structural_names else "not_requested"
+    )
+    expected_dependency_status = (
+        "observed_uncompared" if dependency_names else "not_requested"
+    )
+    require(structural_fingerprints.get("status") ==
+            expected_fingerprint_status and
+            structural_fingerprints.get("approved_reference_present") is False and
+            dependency_history.get("status") == expected_dependency_status and
+            dependency_history.get("approved_reference_present") is False and
+            dependency_history.get("pft_used") is False and
+            dependency_history.get("s2_s3_evidence") is False,
+            "semantic coverage contains an unexpected observation state")
+    fingerprint_records = structural_fingerprints.get("theorems")
+    require(isinstance(fingerprint_records, list) and
+            [record.get("name") for record in fingerprint_records
+             if isinstance(record, dict)] == structural_names,
+            "semantic coverage structural identities differ")
+    lp_requested = (
+        "Linear_programming_results.linear_programming_results_th"
+        in structural_names
+    )
+    final_requested = bool(dependency_names)
+    return {
+        "schema": 1,
+        "kind": "candle-flyspeck-direct-semantic-coverage-observation",
+        "policy": SEMANTIC_COVERAGE_POLICY,
+        "status": (
+            "observed_uncompared" if structural_names else
+            "source-observed-semantic-not-requested"
+        ),
+        "boundary_id": plan["boundary_id"],
+        "semantic_evidence_plan_sha256": canonical_sha256(plan),
+        "logical_source_observation_sha256":
+            canonical_sha256(logical_source_observation),
+        "physical_source_observation_sha256":
+            canonical_sha256(physical_source_observation),
+        "structural_fingerprint_observation_sha256":
+            canonical_sha256(structural_fingerprints),
+        "dependency_history_observation_sha256":
+            canonical_sha256(dependency_history),
+        "lp_certificate_input_sha256": plan["lp_certificate_inputs"][
+            "ordered_record_sha256"
+        ],
+        "source": "loader-observed-exact-unapproved",
+        "lp": "observed-uncompared" if lp_requested else "not_requested",
+        "nonlinear": (
+            "observed-uncompared" if final_requested else "not_requested"
+        ),
+        "final_implication": (
+            "observed-uncompared" if final_requested else "not_requested"
+        ),
+        "lp_certificate_consumption_trace_included": False,
+        "dependency_history_is_kernel_trace": False,
+        "approved_reference_present": False,
+        "approval_sha256": None,
+        "pft_used": False,
+        "s2_eligible": False,
+        "s3_eligible": False,
+        "s2_s3_evidence": False,
+    }
+
+
 def write_postlude(
     path: Path,
     candle_root: Path,
@@ -2797,23 +3085,37 @@ def validate_direct_controller_binding(
                 ), f"direct runtime controller host tool differs: {label}")
 
 
-def validate_direct_evidence_v4_artifact(
+def _validate_direct_evidence_artifact(
     artifact: dict[str, Any], *, receipt: bool,
+    evidence_schema: int,
     log_path: Path | None = None,
     runtime_executable_path: Path | None = None,
 ) -> None:
-    """Reject legacy or partially upgraded direct-attempt artifacts."""
+    """Validate one exact, disjoint direct-attempt evidence schema."""
+    require(evidence_schema in (4, 5), "unsupported direct evidence schema")
+    attempt_fields = (
+        DIRECT_V5_ATTEMPT_FIELDS
+        if evidence_schema == 5 else DIRECT_ATTEMPT_FIELDS
+    )
+    receipt_only_fields = (
+        DIRECT_V5_RECEIPT_ONLY_FIELDS
+        if evidence_schema == 5 else DIRECT_RECEIPT_ONLY_FIELDS
+    )
     expected_fields = (
-        DIRECT_ATTEMPT_FIELDS | DIRECT_RECEIPT_ONLY_FIELDS
-        if receipt else DIRECT_ATTEMPT_FIELDS
+        attempt_fields | receipt_only_fields if receipt else attempt_fields
     )
     require(isinstance(artifact, dict) and set(artifact) == expected_fields,
             "malformed direct runtime evidence envelope")
-    require(type(artifact["schema"]) is int and artifact["schema"] == 4,
-            "direct runtime evidence requires disjoint schema 4")
+    require(type(artifact["schema"]) is int and
+            artifact["schema"] == evidence_schema,
+            f"direct runtime evidence requires disjoint schema {evidence_schema}")
     require(artifact.get("kind") == "candle-flyspeck-compiled-stratum-attempt",
             "wrong direct runtime evidence kind")
-    require(artifact.get("claim") == DIRECT_EVIDENCE_CLAIM and
+    expected_claim = (
+        DIRECT_V5_EVIDENCE_CLAIM
+        if evidence_schema == 5 else DIRECT_EVIDENCE_CLAIM
+    )
+    require(artifact.get("claim") == expected_claim and
             isinstance(artifact.get("diagnostic_only"), bool) and
             isinstance(artifact.get("started_utc"), str) and
             artifact["started_utc"].endswith("Z"),
@@ -2911,17 +3213,26 @@ def validate_direct_evidence_v4_artifact(
         inputs["controller_execution"], repositories["candle"],
     )
     contract = artifact.get("evidence_contract")
-    require(isinstance(contract, dict) and set(contract) == {
-                "schema", "allowed_action_outcomes",
-                "physical_loader_cache_skip_allowed",
-                "logical_source_closure_policy", "logical_source_closure_order",
-                "selected_loadt_ledger_delta_included",
-                "physical_loader_cache_trace_included",
-                "physical_source_trace_protocol", "pre_trace_control_exclusion",
-                "s2_s3_approval_included",
-            } and
+    base_contract = {
+        "schema", "allowed_action_outcomes",
+        "physical_loader_cache_skip_allowed",
+        "logical_source_closure_policy", "logical_source_closure_order",
+        "selected_loadt_ledger_delta_included",
+        "physical_loader_cache_trace_included",
+        "physical_source_trace_protocol", "pre_trace_control_exclusion",
+        "s2_s3_approval_included",
+    }
+    v5_contract = {
+        "dependency_history_protocol", "dependency_history_policy",
+        "semantic_coverage_policy", "dependency_history_is_kernel_trace",
+        "semantic_approval_included", "pft_used",
+    }
+    require(isinstance(contract, dict) and
+            set(contract) == base_contract | (
+                v5_contract if evidence_schema == 5 else set()
+            ) and
             contract.get("schema") ==
-            "candle-flyspeck-direct-runtime-evidence-v4" and
+            f"candle-flyspeck-direct-runtime-evidence-v{evidence_schema}" and
             contract.get("allowed_action_outcomes") == list(ACTION_OUTCOMES) and
             contract.get("physical_loader_cache_skip_allowed") ==
             "only loader-authenticated needs cache-skip events" and
@@ -2935,8 +3246,19 @@ def validate_direct_evidence_v4_artifact(
             SOURCE_TRACE_PROTOCOL and
             contract.get("pre_trace_control_exclusion") ==
             "control:runtime-config" and
-            contract.get("s2_s3_approval_included") is False,
-            "malformed direct runtime evidence-v4 contract")
+            contract.get("s2_s3_approval_included") is False and
+            (evidence_schema == 4 or (
+                contract.get("dependency_history_protocol") ==
+                DEPENDENCY_HISTORY_PREFIX and
+                contract.get("dependency_history_policy") ==
+                DEPENDENCY_HISTORY_POLICY and
+                contract.get("semantic_coverage_policy") ==
+                SEMANTIC_COVERAGE_POLICY and
+                contract.get("dependency_history_is_kernel_trace") is False and
+                contract.get("semantic_approval_included") is False and
+                contract.get("pft_used") is False
+            )),
+            f"malformed direct runtime evidence-v{evidence_schema} contract")
     action_count = artifact.get("action_count")
     require(type(action_count) is int and action_count >= 0,
             "malformed direct runtime action count")
@@ -3100,6 +3422,17 @@ def validate_direct_evidence_v4_artifact(
             binding["normalization"] == expected_normalization
             for binding in bindings
         ), f"logical and physical source identities differ: {record['key']}")
+    semantic_plan: dict[str, Any] | None = None
+    if evidence_schema == 5:
+        semantic_plan = validate_semantic_evidence_plan(
+            artifact.get("semantic_evidence_plan"), boundary_id, action_count,
+            expected, expected_trace, {
+                "plan_sha256": inputs["plan"]["sha256"],
+                "host_materialization_sha256":
+                    inputs["host_materialization"]["sha256"],
+                "manifest_sha256": inputs["manifest"]["sha256"],
+            },
+        )
     if not receipt:
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
@@ -3114,9 +3447,7 @@ def validate_direct_evidence_v4_artifact(
     executable_mode = Path(runtime_executable_path).stat().st_mode
     require(executable_mode & 0o111 != 0 and executable_mode & 0o222 == 0,
             "direct runtime executable mode is not immutable executable")
-    initial_projection = {
-        field: artifact[field] for field in DIRECT_ATTEMPT_FIELDS
-    }
+    initial_projection = {field: artifact[field] for field in attempt_fields}
     initial_projection["state"] = "running"
     digest_record(artifact["initial_attempt"], "initial attempt", path=True)
     require(exact_json_equal(artifact["initial_attempt"], {
@@ -3299,12 +3630,39 @@ def validate_direct_evidence_v4_artifact(
                         for record in theorems),
                     "malformed post-state fingerprint receipt record")
 
+    exact_dependency_history = evidence_schema == 4
+    exact_semantic_coverage = evidence_schema == 4
+    dependency_history: dict[str, Any] | None = None
+    semantic_coverage: dict[str, Any] | None = None
+    if evidence_schema == 5:
+        dependency_value = artifact.get("dependency_history")
+        exact_dependency_history = dependency_value is not None
+        if dependency_value is not None:
+            dependency_history = validate_dependency_history_observation(
+                dependency_value, dependency_history_requests(boundary_id),
+                boundary_id, artifact["attempt_nonce"],
+            )
+        coverage_value = artifact.get("semantic_coverage")
+        exact_semantic_coverage = coverage_value is not None
+        if coverage_value is not None:
+            require(semantic_plan is not None and
+                    observed is not None and physical_trace is not None and
+                    fingerprints is not None and dependency_history is not None,
+                    "semantic coverage lacks its authenticated observations")
+            semantic_coverage = derive_semantic_coverage(
+                semantic_plan, observed, physical_trace, fingerprints,
+                dependency_history,
+            )
+            require(exact_json_equal(coverage_value, semantic_coverage),
+                    "receipt semantic coverage differs from exact observations")
+
     complete_success = (
         validation_error is None and timed_out is False and
         exit_code == 0 and postflight is True and log_record is not None and
         resources is not None and
         marker_count == action_count and exact_events and
-        exact_closure and exact_physical_trace and exact_fingerprints
+        exact_closure and exact_physical_trace and exact_fingerprints and
+        exact_dependency_history and exact_semantic_coverage
     )
     if artifact["state"] == "completed":
         require(complete_success and log_record["bytes"] > 0,
@@ -3340,6 +3698,8 @@ def validate_direct_evidence_v4_artifact(
     require(exact_json_equal(validate_log(
                 log_text, expected_actions, boundary_id,
                 artifact["attempt_nonce"], fingerprint_requests(boundary_id),
+                (dependency_history_requests(boundary_id)
+                 if evidence_schema == 5 else []),
             ), events),
             "receipt action events differ from bound log")
     require(exact_json_equal(validate_logical_source_closure(
@@ -3372,6 +3732,37 @@ def validate_direct_evidence_v4_artifact(
         )
     require(exact_json_equal(log_fingerprints, fingerprints),
             "receipt fingerprints differ from bound log")
+    if evidence_schema == 5:
+        log_dependency_history = parse_dependency_history_text(
+            log_text, dependency_history_requests(boundary_id), boundary_id,
+            artifact["attempt_nonce"],
+        )
+        require(exact_json_equal(log_dependency_history, dependency_history),
+                "receipt dependency history differs from bound log")
+
+
+def validate_direct_evidence_v4_artifact(
+    artifact: dict[str, Any], *, receipt: bool,
+    log_path: Path | None = None,
+    runtime_executable_path: Path | None = None,
+) -> None:
+    """Validate the permanently nonpromotable direct evidence-v4 schema."""
+    _validate_direct_evidence_artifact(
+        artifact, receipt=receipt, evidence_schema=4, log_path=log_path,
+        runtime_executable_path=runtime_executable_path,
+    )
+
+
+def validate_direct_evidence_v5_artifact(
+    artifact: dict[str, Any], *, receipt: bool,
+    log_path: Path | None = None,
+    runtime_executable_path: Path | None = None,
+) -> None:
+    """Validate direct evidence-v5 observations without granting approval."""
+    _validate_direct_evidence_artifact(
+        artifact, receipt=receipt, evidence_schema=5, log_path=log_path,
+        runtime_executable_path=runtime_executable_path,
+    )
 
 
 def utc_now() -> str:
@@ -4158,16 +4549,26 @@ def _run_attempt_impl(
     program_record = hash_file(program_path)
     runtime_candle_root = runtime_prepared["candle_runtime_root"]
     theorem_names = fingerprint_requests(boundary_id)
+    dependency_theorem_names = dependency_history_requests(boundary_id)
     logical_source_closure = prepared["logical_source_closure"]
     write_postlude(
         postlude_path, runtime_candle_root, boundary_id, theorem_names, nonce,
-        logical_source_closure,
+        logical_source_closure, dependency_theorem_names,
     )
     source_trace_contract = build_source_trace_contract(
         runtime_prepared, logical_source_closure, program_path, postlude_path,
         theorem_names, nonce,
     )
     runtime_prepared["source_trace_contract"] = source_trace_contract
+    semantic_evidence_plan = build_semantic_evidence_plan(
+        boundary_id, len(prepared["actions"]), logical_source_closure,
+        source_trace_contract, runtime_prepared["lp_certificate_runtime"], {
+            "plan_sha256": prepared["plan_record"]["sha256"],
+            "host_materialization_sha256":
+                prepared["materialization_record"]["sha256"],
+            "manifest_sha256": prepared["manifest_record"]["sha256"],
+        },
+    )
     write_config(
         config_path, runtime_candle_root, runtime_prepared,
         program_path, program_record["md5"],
@@ -4203,9 +4604,9 @@ def _run_attempt_impl(
         for index, action in enumerate(prepared["actions"])
     ]
     attempt = {
-        "schema": 4,
+        "schema": 5,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
-        "claim": DIRECT_EVIDENCE_CLAIM,
+        "claim": DIRECT_V5_EVIDENCE_CLAIM,
         "state": "running",
         "started_utc": started,
         "boundary_id": boundary_id,
@@ -4231,7 +4632,7 @@ def _run_attempt_impl(
         ),
         "process_state_checkpoint": None,
         "evidence_contract": {
-            "schema": "candle-flyspeck-direct-runtime-evidence-v4",
+            "schema": "candle-flyspeck-direct-runtime-evidence-v5",
             "allowed_action_outcomes": list(ACTION_OUTCOMES),
             "physical_loader_cache_skip_allowed":
                 "only loader-authenticated needs cache-skip events",
@@ -4242,9 +4643,16 @@ def _run_attempt_impl(
             "physical_source_trace_protocol": SOURCE_TRACE_PROTOCOL,
             "pre_trace_control_exclusion": "control:runtime-config",
             "s2_s3_approval_included": False,
+            "dependency_history_protocol": DEPENDENCY_HISTORY_PREFIX,
+            "dependency_history_policy": DEPENDENCY_HISTORY_POLICY,
+            "semantic_coverage_policy": SEMANTIC_COVERAGE_POLICY,
+            "dependency_history_is_kernel_trace": False,
+            "semantic_approval_included": False,
+            "pft_used": False,
         },
         "expected_logical_source_closure": logical_source_closure,
         "expected_physical_source_trace": source_trace_contract,
+        "semantic_evidence_plan": semantic_evidence_plan,
         "runtime_environment_policy": (
             "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
             "BASH_ENV, and ENV"
@@ -4284,7 +4692,7 @@ def _run_attempt_impl(
             "flyspeck": prepared["plan"]["repositories"]["flyspeck_commit"],
         },
     }
-    validate_direct_evidence_v4_artifact(attempt, receipt=False)
+    validate_direct_evidence_v5_artifact(attempt, receipt=False)
     atomic_write_json(attempt_path, attempt)
     if output_ownership is not None:
         output_ownership["marker_path"].unlink()
@@ -4305,6 +4713,8 @@ def _run_attempt_impl(
     log_record: dict[str, Any] | None = None
     validation_error: str | None = None
     fingerprints: dict[str, Any] | None = None
+    dependency_history: dict[str, Any] | None = None
+    semantic_coverage: dict[str, Any] | None = None
     action_events: list[dict[str, Any]] | None = None
     observed_source_closure: dict[str, Any] | None = None
     physical_source_trace: dict[str, Any] | None = None
@@ -4381,7 +4791,7 @@ def _run_attempt_impl(
         archived_attempt = load_object(attempt_path, "initial attempt record")
         require(archived_attempt == attempt,
                 "initial direct runtime attempt changed after publication")
-        validate_direct_evidence_v4_artifact(archived_attempt, receipt=False)
+        validate_direct_evidence_v5_artifact(archived_attempt, receipt=False)
         validate_runtime_snapshot(snapshot_record, output_root)
         validate_controller_execution(
             controller_execution, candle_root, linked["candle_commit"],
@@ -4409,8 +4819,8 @@ def _run_attempt_impl(
             log_text, source_trace_contract,
         )
         action_events = validate_log(
-            log_text,
-            prepared["actions"], boundary_id, nonce, theorem_names,
+            log_text, prepared["actions"], boundary_id, nonce, theorem_names,
+            dependency_theorem_names,
         )
         observed_source_closure = validate_logical_source_closure(
             log_text, logical_source_closure, boundary_id, nonce,
@@ -4418,6 +4828,13 @@ def _run_attempt_impl(
         fingerprints = parse_fingerprints(
             log_path, theorem_names,
             runtime_candle_root / FINGERPRINT_RELATIVE,
+        )
+        dependency_history = parse_dependency_history(
+            log_path, dependency_theorem_names, boundary_id, nonce,
+        )
+        semantic_coverage = derive_semantic_coverage(
+            semantic_evidence_plan, observed_source_closure,
+            physical_source_trace, fingerprints, dependency_history,
         )
     except Exception as error:
         validation_error = f"{type(error).__name__}: {error}"
@@ -4470,11 +4887,13 @@ def _run_attempt_impl(
             "logical_source_closure": observed_source_closure,
             "physical_source_trace": physical_source_trace,
             "semantic_fingerprints": fingerprints,
+            "dependency_history": dependency_history,
+            "semantic_coverage": semantic_coverage,
             "s2_s3_evidence": False,
             "validation_error": validation_error,
             "postflight_reauthenticated": postflight_reauthenticated,
         }
-        validate_direct_evidence_v4_artifact(
+        validate_direct_evidence_v5_artifact(
             receipt, receipt=True,
             log_path=(log_path if log_record is not None else None),
             runtime_executable_path=runtime_prepared["cake_runtime"],

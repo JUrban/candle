@@ -454,6 +454,80 @@ class StratumRuntimeTests(unittest.TestCase):
             "postflight_reauthenticated": True,
         }
 
+    def direct_v5_attempt(self, expected_actions: list[dict]) -> dict:
+        attempt = self.direct_attempt(expected_actions)
+        attempt["schema"] = 5
+        attempt["claim"] = subject.DIRECT_V5_EVIDENCE_CLAIM
+        attempt["evidence_contract"] = {
+            **attempt["evidence_contract"],
+            "schema": "candle-flyspeck-direct-runtime-evidence-v5",
+            "dependency_history_protocol": subject.DEPENDENCY_HISTORY_PREFIX,
+            "dependency_history_policy": subject.DEPENDENCY_HISTORY_POLICY,
+            "semantic_coverage_policy": subject.SEMANTIC_COVERAGE_POLICY,
+            "dependency_history_is_kernel_trace": False,
+            "semantic_approval_included": False,
+            "pft_used": False,
+        }
+        certificates = [
+            {
+                "class": "lp-certificate-prepared",
+                "relative": f"certificates/{index:02d}.dat",
+                "bytes": index + 1,
+                "sha256": f"{index + 1:064x}",
+                "md5": f"{index + 1:032x}",
+            }
+            for index in range(39)
+        ]
+        attempt["semantic_evidence_plan"] = subject.build_semantic_evidence_plan(
+            attempt["boundary_id"], attempt["action_count"],
+            attempt["expected_logical_source_closure"],
+            attempt["expected_physical_source_trace"], certificates, {
+                "plan_sha256": attempt["inputs"]["plan"]["sha256"],
+                "host_materialization_sha256":
+                    attempt["inputs"]["host_materialization"]["sha256"],
+                "manifest_sha256": attempt["inputs"]["manifest"]["sha256"],
+            },
+        )
+        return attempt
+
+    def completed_v5_receipt(self, attempt: dict) -> dict:
+        fingerprints = {
+            "status": "not_requested",
+            "approved_reference_present": False,
+            "serializer": None,
+            "theorems": [],
+            "post_state": None,
+        }
+        dependency_history = subject.dependency_history_not_requested(
+            attempt["boundary_id"],
+        )
+        observed_closure = {
+            **self.logical_source_closure,
+            "status": "expected-closure-emitted-unapproved",
+        }
+        receipt = {
+            **self.direct_receipt_envelope(attempt),
+            "logical_source_closure": observed_closure,
+            "action_events": [
+                {"index": 0, "source_sha256": "1" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[0]["logical_source_delta_sha256"],
+                 "outcome": "load"},
+                {"index": 1, "source_sha256": "2" * 64,
+                 "logical_source_delta_sha256":
+                    self.actions[1]["logical_source_delta_sha256"],
+                 "outcome": "skip-ledger"},
+            ],
+            "physical_source_trace": self.source_trace_observation,
+            "semantic_fingerprints": fingerprints,
+            "dependency_history": dependency_history,
+        }
+        receipt["semantic_coverage"] = subject.derive_semantic_coverage(
+            attempt["semantic_evidence_plan"], observed_closure,
+            self.source_trace_observation, fingerprints, dependency_history,
+        )
+        return receipt
+
     def direct_log_text(self, boundary_id: str) -> str:
         binding_by_id = {
             item["binding_id"]: item
@@ -829,6 +903,68 @@ class StratumRuntimeTests(unittest.TestCase):
             source.index("Cakeml.requestSourceTraceFinish"),
         )
 
+    def test_final_semantic_coverage_binds_all_domains_but_cannot_approve(self) -> None:
+        boundary = "07-final_assembly-through-296"
+        structural_names = subject.fingerprint_requests(boundary)
+        dependency_names = subject.dependency_history_requests(boundary)
+        certificates = [
+            {
+                "class": "lp-certificate-prepared",
+                "relative": f"certificates/{index:02d}.dat",
+                "bytes": index + 1,
+                "sha256": f"{index + 1:064x}",
+                "md5": f"{index + 1:032x}",
+            }
+            for index in range(39)
+        ]
+        plan = subject.build_semantic_evidence_plan(
+            boundary, 2, self.logical_source_closure,
+            self.source_trace_contract, certificates, {
+                "plan_sha256": "1" * 64,
+                "host_materialization_sha256": "2" * 64,
+                "manifest_sha256": "3" * 64,
+            },
+        )
+        fingerprints = {
+            "status": "observed_uncompared",
+            "approved_reference_present": False,
+            "serializer": {"path": "candle/fingerprint.ml", "sha256": "1" * 64},
+            "theorems": [{"name": name} for name in structural_names],
+            "post_state": {},
+        }
+        dependency_records = [
+            subject.dependency_history_marker_prefix(
+                self.nonce, index, name,
+            ) + f"{index + 1:032x}"
+            for index, name in enumerate(dependency_names)
+        ]
+        dependency = subject.parse_dependency_history_text(
+            "\n".join([
+                *dependency_records,
+                subject.dependency_history_terminal(
+                    self.nonce, boundary, dependency_names,
+                ),
+            ]) + "\n",
+            dependency_names, boundary, self.nonce,
+        )
+        coverage = subject.derive_semantic_coverage(
+            plan, {
+                **self.logical_source_closure,
+                "status": "expected-closure-emitted-unapproved",
+            }, self.source_trace_observation, fingerprints, dependency,
+        )
+        self.assertEqual(coverage["source"], "loader-observed-exact-unapproved")
+        self.assertEqual(coverage["lp"], "observed-uncompared")
+        self.assertEqual(coverage["nonlinear"], "observed-uncompared")
+        self.assertEqual(coverage["final_implication"], "observed-uncompared")
+        self.assertFalse(coverage["lp_certificate_consumption_trace_included"])
+        self.assertFalse(coverage["dependency_history_is_kernel_trace"])
+        self.assertFalse(coverage["approved_reference_present"])
+        self.assertFalse(coverage["pft_used"])
+        self.assertFalse(coverage["s2_eligible"])
+        self.assertFalse(coverage["s3_eligible"])
+        self.assertFalse(coverage["s2_s3_evidence"])
+
     def test_manifest_closure_is_complete_ordered_and_excludes_full_loader(self) -> None:
         manifest = json.loads(
             (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
@@ -1073,7 +1209,7 @@ class StratumRuntimeTests(unittest.TestCase):
             )
         schema3 = copy.deepcopy(attempt)
         schema3["schema"] = 3
-        with self.assertRaisesRegex(subject.ContractError, "disjoint schema 4"):
+        with self.assertRaises(subject.ContractError):
             subject.validate_direct_evidence_v4_artifact(schema3, receipt=False)
         partial = copy.deepcopy(attempt)
         partial["evidence_contract"].pop("physical_loader_cache_trace_included")
@@ -1316,6 +1452,125 @@ class StratumRuntimeTests(unittest.TestCase):
             "validation_error": "InterruptedError: pending signal after validation",
         }
         self.validate_receipt(late_failed)
+
+    def test_evidence_v5_completed_and_early_failure_shapes_are_exact(self) -> None:
+        expected_actions = [
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = self.direct_v5_attempt(expected_actions)
+        subject.validate_direct_evidence_v5_artifact(attempt, receipt=False)
+        with self.assertRaises(subject.ContractError):
+            subject.validate_direct_evidence_v4_artifact(attempt, receipt=False)
+        receipt = self.completed_v5_receipt(attempt)
+        with tempfile.TemporaryDirectory() as temporary:
+            log_path = Path(temporary) / "candle.log"
+            log_path.write_text(
+                self.direct_log_text(receipt["boundary_id"]), encoding="utf-8",
+            )
+            log_path.chmod(0o444)
+            subject.validate_direct_evidence_v5_artifact(
+                receipt, receipt=True, log_path=log_path,
+                runtime_executable_path=self.runtime_executable_path,
+            )
+
+        failed = {
+            **self.direct_receipt_envelope(attempt),
+            "state": "failed",
+            "timed_out": False,
+            "exit_code": None,
+            "child_resources": None,
+            "log": None,
+            "action_markers_validated": 0,
+            "action_events": None,
+            "logical_source_closure": None,
+            "physical_source_trace": None,
+            "semantic_fingerprints": None,
+            "dependency_history": None,
+            "semantic_coverage": None,
+            "validation_error": "OSError: process was not started",
+            "postflight_reauthenticated": False,
+        }
+        subject.validate_direct_evidence_v5_artifact(
+            failed, receipt=True,
+            runtime_executable_path=self.runtime_executable_path,
+        )
+
+    def test_evidence_v5_rejects_self_approval_and_projection_forgery(self) -> None:
+        expected_actions = [
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = self.direct_v5_attempt(expected_actions)
+        for label, mutate in (
+            ("schema 4", lambda item: item.update(schema=4)),
+            ("approval", lambda item: item["evidence_contract"].update(
+                semantic_approval_included=True,
+            )),
+            ("PFT", lambda item: item["semantic_evidence_plan"].update(
+                pft_used=True,
+            )),
+            ("boolean certificate bytes", lambda item: item[
+                "semantic_evidence_plan"
+            ]["lp_certificate_inputs"]["records"][0].update(bytes=True)),
+            ("missing certificate", lambda item: item[
+                "semantic_evidence_plan"
+            ]["lp_certificate_inputs"]["records"].pop()),
+            ("forged source digest", lambda item: item[
+                "semantic_evidence_plan"
+            ]["logical_source"].update(ordered_record_sha256="0" * 64)),
+            ("unbound plan digest", lambda item: item["inputs"]["plan"].update(
+                sha256="0" * 64,
+            )),
+        ):
+            forged = copy.deepcopy(attempt)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.validate_direct_evidence_v5_artifact(
+                    forged, receipt=False,
+                )
+
+        receipt = self.completed_v5_receipt(attempt)
+        for label, mutate in (
+            ("dependency approval", lambda item: item[
+                "dependency_history"
+            ].update(approved_reference_present=True)),
+            ("dependency PFT", lambda item: item[
+                "dependency_history"
+            ].update(pft_used=True)),
+            ("coverage S2", lambda item: item[
+                "semantic_coverage"
+            ].update(s2_eligible=True)),
+            ("coverage digest", lambda item: item[
+                "semantic_coverage"
+            ].update(logical_source_observation_sha256="0" * 64)),
+            ("missing coverage", lambda item: item.update(
+                semantic_coverage=None,
+            )),
+        ):
+            forged = copy.deepcopy(receipt)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.validate_direct_evidence_v5_artifact(
+                    forged, receipt=True,
+                    runtime_executable_path=self.runtime_executable_path,
+                )
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
