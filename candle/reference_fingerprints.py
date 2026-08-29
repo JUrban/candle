@@ -64,8 +64,8 @@ SERIALIZER = ROOT / "candle" / "fingerprint.ml"
 SOURCE_CONTRACT = ROOT / "candle" / "reference_source_contracts.json"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"
-PLAN_SCHEMA = "candle-s1-reference-plan-v7"
-CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v7"
+PLAN_SCHEMA = "candle-s1-reference-plan-v8"
+CANDIDATE_SCHEMA = "candle-s1-reference-candidate-v8"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 EXACT_SOURCE_REFERENCE_COMMIT = "1258c129c3ddf0b239b649ba7024eab677cd953b"
 CONTROLLER_LOCK_FD_ENV = "CANDLE_REFERENCE_CONTROLLER_LOCK_FD"
@@ -76,6 +76,22 @@ RUNTIME_ENVIRONMENT_KEYS = {
     "HOLLIGHT_USE_MODULE", "OCAMLRUNPARAM", "CAML_LD_LIBRARY_PATH",
     "OCAML_TOPLEVEL_PATH", "OCAMLFIND_CONF",
 }
+ELF_EVIDENCE_POLICY = "authenticated_explicit_bash_ldd_closure_v1"
+ELF_OUTPUT_NORMALIZATION_POLICY = \
+    "strict_recognized_lines_replace_only_aslr_addresses_v1"
+ELF_BASH_PATH = Path("/bin/bash")
+ELF_LDD_PATH = Path("/usr/bin/ldd")
+ELF_CACHE_PATH = Path("/etc/ld.so.cache")
+ELF_PRELOAD_PATH = Path("/etc/ld.so.preload")
+ELF_LOADER_PATHS = (
+    Path("/lib/ld-linux.so.2"),
+    Path("/lib64/ld-linux-x86-64.so.2"),
+    Path("/libx32/ld-linux-x32.so.2"),
+)
+ELF_OBSERVER_ENVIRONMENT = {
+    "PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C",
+}
+ELF_VIRTUAL_OBJECTS = ["linux-vdso.so.1"]
 
 
 class CollectionError(Exception):
@@ -227,6 +243,439 @@ def _pin_executable_route(path, label):
     }
 
 
+def _valid_sha256(value):
+    return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
+
+
+def _validate_executable_route(route, label):
+    if not isinstance(route, dict) or set(route) != {
+            "argument_path", "argument_parent", "argument",
+            "resolved_executable"}:
+        raise CollectionError(f"malformed {label} route")
+    if (not isinstance(route["argument_path"], str) or
+            not Path(route["argument_path"]).is_absolute()):
+        raise CollectionError(f"malformed {label} argument")
+    for component_label in ("argument_parent", "argument"):
+        component = route[component_label]
+        kind = component.get("kind") if isinstance(component, dict) else None
+        expected = ({"path", "kind", "mode", "resolved_path", "target"}
+                    if kind == "symlink" else
+                    {"path", "kind", "mode", "resolved_path"})
+        if (kind not in {"symlink", "directory", "file"} or
+                set(component) != expected or
+                not isinstance(component["path"], str) or
+                not Path(component["path"]).is_absolute() or
+                type(component["mode"]) is not int or
+                not isinstance(component["resolved_path"], str) or
+                not Path(component["resolved_path"]).is_absolute() or
+                (kind == "symlink" and
+                 not isinstance(component["target"], str))):
+            raise CollectionError(
+                f"malformed {label} {component_label}")
+    if (route["argument_parent"]["kind"] not in {"directory", "symlink"} or
+            route["argument"]["kind"] not in {"file", "symlink"}):
+        raise CollectionError(f"malformed {label} route component kinds")
+    resolved = route["resolved_executable"]
+    if (not isinstance(resolved, dict) or set(resolved) != {
+            "path", "sha256", "mode"} or
+            not isinstance(resolved["path"], str) or
+            not Path(resolved["path"]).is_absolute() or
+            not _valid_sha256(resolved["sha256"]) or
+            type(resolved["mode"]) is not int or
+            resolved["mode"] & 0o111 == 0):
+        raise CollectionError(f"malformed {label} executable")
+    if (route["argument"]["path"] != route["argument_path"] or
+            route["argument_parent"]["path"] !=
+            str(Path(route["argument_path"]).parent) or
+            route["argument"]["resolved_path"] != resolved["path"] or
+            (route["argument"]["kind"] == "file" and
+             route["argument"]["resolved_path"] != route["argument_path"])):
+        raise CollectionError(f"inconsistent {label} route")
+
+
+def _pin_elf_file(path, label):
+    path = Path(path).resolve(strict=True)
+    if not path.is_file():
+        raise CollectionError(f"not a regular file: {path}")
+    try:
+        source = path.read_bytes()
+    except OSError as error:
+        raise CollectionError(f"could not inspect ELF file: {label}") from error
+    if not source.startswith(b"\x7fELF"):
+        raise CollectionError(f"non-ELF file in runtime closure: {label}")
+    return {
+        "path": str(path), "sha256": hashlib.sha256(source).hexdigest()}
+
+
+def _pin_loader_route(path):
+    path = Path(path)
+    try:
+        path.lstat()
+    except FileNotFoundError:
+        return {"argument_path": str(path), "status": "absent"}
+    except OSError as error:
+        raise CollectionError(f"could not inspect loader route: {path}") from error
+    return {
+        "argument_path": str(path), "status": "present",
+        "route": _pin_executable_route(path, f"ELF loader {path}"),
+    }
+
+
+def _elf_oracle_inputs():
+    """Pin every host input used by the explicit bash/ldd observer."""
+    if os.path.lexists(ELF_PRELOAD_PATH):
+        raise CollectionError("/etc/ld.so.preload must be absent")
+    cache_metadata = ELF_CACHE_PATH.lstat()
+    if (not stat.S_ISREG(cache_metadata.st_mode) or
+            ELF_CACHE_PATH.is_symlink() or
+            ELF_CACHE_PATH.resolve(strict=True) != ELF_CACHE_PATH):
+        raise CollectionError("/etc/ld.so.cache must be a canonical regular file")
+    bash = _pin_executable_route(ELF_BASH_PATH, "ELF observer bash")
+    ldd = _pin_executable_route(ELF_LDD_PATH, "ELF observer ldd")
+    ldd_source = Path(ldd["resolved_executable"]["path"]).read_bytes()
+    if (hashlib.sha256(ldd_source).hexdigest() !=
+            ldd["resolved_executable"]["sha256"]):
+        raise CollectionError("ldd changed while its contract was inspected")
+    loader_matches = re.findall(br'^RTLDLIST="([^"\n]+)"$', ldd_source, re.MULTILINE)
+    expected_loader_bytes = b" ".join(
+        os.fsencode(str(path)) for path in ELF_LOADER_PATHS)
+    if loader_matches != [expected_loader_bytes]:
+        raise CollectionError("ldd hardcoded loader route contract changed")
+    return {
+        "tools": {"bash": bash, "ldd": ldd},
+        "hardcoded_loader_routes": [
+            _pin_loader_route(path) for path in ELF_LOADER_PATHS],
+        "ld_so_cache": _pin_file(ELF_CACHE_PATH),
+        "ld_so_preload": {
+            "path": str(ELF_PRELOAD_PATH), "status": "absent"},
+        "environment": dict(ELF_OBSERVER_ENVIRONMENT),
+    }
+
+
+def _parse_ldd_output(stdout, label):
+    """Parse every ldd line or fail; addresses remain only in retained stdout."""
+    if not isinstance(stdout, str) or not stdout.endswith("\n"):
+        raise CollectionError(f"malformed ldd stdout for {label}")
+    mapped = re.compile(
+        r"(?P<role>[^\s]+)\s+=>\s+(?P<path>/[^\s(]+)\s+"
+        r"\(0x[0-9a-fA-F]+\)")
+    direct = re.compile(r"(?P<path>/[^\s(]+)\s+\(0x[0-9a-fA-F]+\)")
+    virtual = re.compile(
+        r"(?P<role>linux-(?:vdso|gate)\.so\.1)\s+"
+        r"\(0x[0-9a-fA-F]+\)")
+    files = []
+    virtual_objects = []
+    roles = set()
+    for raw_line in stdout.splitlines():
+        line = raw_line.strip()
+        match = mapped.fullmatch(line)
+        if match is not None:
+            role = match.group("role")
+            reported_path = match.group("path")
+            item = {"role": role, "reported_path": reported_path}
+        else:
+            match = direct.fullmatch(line)
+            if match is not None:
+                reported_path = match.group("path")
+                role = Path(reported_path).name
+                item = {"role": role, "reported_path": reported_path}
+            else:
+                match = virtual.fullmatch(line)
+                if match is not None:
+                    role = match.group("role")
+                    if role in roles:
+                        raise CollectionError(
+                            f"duplicate ldd role for {label}: {role}")
+                    roles.add(role)
+                    virtual_objects.append(role)
+                    continue
+                raise CollectionError(
+                    f"unrecognized ldd output for {label}: {line}")
+        if role in roles:
+            raise CollectionError(f"duplicate ldd role for {label}: {role}")
+        roles.add(role)
+        files.append(item)
+    files.sort(key=lambda item: (item["role"], item["reported_path"]))
+    virtual_objects.sort()
+    if not files or virtual_objects != ELF_VIRTUAL_OBJECTS:
+        raise CollectionError(f"incomplete ldd output for {label}")
+    return files, virtual_objects
+
+
+def _normalize_ldd_stdout(stdout, label):
+    """Strip only validated ASLR address tokens from otherwise exact output."""
+    _parse_ldd_output(stdout, label)
+    return re.sub(r"\(0x[0-9a-fA-F]+\)", "(0xADDRESS)", stdout)
+
+
+def _observe_elf_root(root, oracle):
+    root_pin = _pin_elf_file(root, str(root))
+    argv = [str(ELF_BASH_PATH), str(ELF_LDD_PATH), root_pin["path"]]
+    try:
+        completed = subprocess.run(
+            argv, env=dict(ELF_OBSERVER_ENVIRONMENT),
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, encoding="utf-8", errors="strict", timeout=30,
+            check=False)
+    except (OSError, subprocess.SubprocessError, UnicodeError) as error:
+        raise CollectionError(
+            f"could not inspect ELF dependencies: {root_pin['path']}") from error
+    if completed.returncode != 0 or completed.stderr != "":
+        raise CollectionError(f"ldd failed for {root_pin['path']}")
+    parsed, virtual_objects = _parse_ldd_output(
+        completed.stdout, root_pin["path"])
+    resolved_files = []
+    for item in parsed:
+        dependency = _pin_elf_file(
+            Path(item["reported_path"]).resolve(strict=True),
+            item["reported_path"])
+        resolved_files.append({**item, **dependency})
+    resolved_files.sort(
+        key=lambda item: (item["role"], item["reported_path"], item["path"]))
+    present_loaders = {
+        item["argument_path"]
+        for item in oracle["hardcoded_loader_routes"]
+        if item["status"] == "present"
+    }
+    if not any(item["reported_path"] in present_loaders
+               for item in resolved_files):
+        raise CollectionError(f"ldd omitted the selected loader for {root_pin['path']}")
+    return {
+        "root": root_pin,
+        "argv": argv,
+        "environment": dict(ELF_OBSERVER_ENVIRONMENT),
+        "return_code": completed.returncode,
+        "stdout": completed.stdout,
+        "stdout_sha256": hashlib.sha256(completed.stdout.encode()).hexdigest(),
+        "normalized_stdout": _normalize_ldd_stdout(
+            completed.stdout, root_pin["path"]),
+        "normalized_stdout_sha256": hashlib.sha256(
+            _normalize_ldd_stdout(
+                completed.stdout, root_pin["path"]).encode()).hexdigest(),
+        "stderr": completed.stderr,
+        "stderr_sha256": hashlib.sha256(completed.stderr.encode()).hexdigest(),
+        "resolved_files": resolved_files,
+        "virtual_objects": virtual_objects,
+    }
+
+
+def _authenticated_elf_closure(paths):
+    requested_paths = sorted({
+        str(Path(path).resolve(strict=True)) for path in paths})
+    if not requested_paths:
+        raise CollectionError("ELF closure requires at least one root")
+    oracle = _elf_oracle_inputs()
+    requested_roots = [
+        _pin_elf_file(path, f"ELF root {path}") for path in requested_paths]
+    observation_paths = sorted(set(requested_paths) | {
+        oracle["tools"]["bash"]["resolved_executable"]["path"]})
+    observations = [
+        _observe_elf_root(path, oracle) for path in observation_paths]
+    if _elf_oracle_inputs() != oracle:
+        raise CollectionError("ELF observer inputs changed during inspection")
+    closure_by_path = {}
+    for observation in observations:
+        for dependency in observation["resolved_files"]:
+            pin = {key: dependency[key] for key in ("path", "sha256")}
+            previous = closure_by_path.get(pin["path"])
+            if previous is not None and previous != pin:
+                raise CollectionError("conflicting ELF dependency identities")
+            closure_by_path[pin["path"]] = pin
+    closure = [closure_by_path[path] for path in sorted(closure_by_path)]
+    if ([_pin_elf_file(path, f"ELF root {path}")
+         for path in requested_paths] != requested_roots or
+            [_pin_elf_file(pin["path"], f"ELF dependency {pin['path']}")
+             for pin in closure] != closure):
+        raise CollectionError("ELF runtime files changed during inspection")
+    present_loader_pins = [
+        item["route"]["resolved_executable"]
+        for item in oracle["hardcoded_loader_routes"]
+        if item["status"] == "present"]
+    if (not present_loader_pins or
+            any(closure_by_path.get(pin["path"], {}).get("sha256") !=
+                pin["sha256"] for pin in present_loader_pins)):
+        raise CollectionError("ELF closure does not bind every present loader")
+    evidence = {
+        "policy": ELF_EVIDENCE_POLICY,
+        "output_normalization": ELF_OUTPUT_NORMALIZATION_POLICY,
+        **oracle,
+        "requested_roots": requested_roots,
+        "observations": observations,
+        "closure": closure,
+    }
+    validate_elf_closure_evidence(evidence, requested_paths)
+    return evidence
+
+
+def validate_elf_closure_evidence(evidence, expected_roots=None):
+    """Validate retained v8 evidence without consulting live host paths."""
+    if not isinstance(evidence, dict) or set(evidence) != {
+            "policy", "output_normalization", "tools",
+            "hardcoded_loader_routes", "ld_so_cache", "ld_so_preload",
+            "environment", "requested_roots",
+            "observations", "closure"} or evidence["policy"] != \
+            ELF_EVIDENCE_POLICY or evidence["output_normalization"] != \
+            ELF_OUTPUT_NORMALIZATION_POLICY:
+        raise CollectionError("malformed authenticated ELF evidence")
+    tools = evidence["tools"]
+    if not isinstance(tools, dict) or set(tools) != {"bash", "ldd"}:
+        raise CollectionError("malformed ELF observer tools")
+    for name, path in (("bash", ELF_BASH_PATH), ("ldd", ELF_LDD_PATH)):
+        _validate_executable_route(tools[name], f"ELF observer {name}")
+        if tools[name]["argument_path"] != str(path):
+            raise CollectionError(f"unexpected ELF observer {name} path")
+    loader_routes = evidence["hardcoded_loader_routes"]
+    if (not isinstance(loader_routes, list) or len(loader_routes) !=
+            len(ELF_LOADER_PATHS)):
+        raise CollectionError("malformed hardcoded loader routes")
+    present_loaders = {}
+    for expected, value in zip(ELF_LOADER_PATHS, loader_routes):
+        if (not isinstance(value, dict) or
+                value.get("argument_path") != str(expected) or
+                value.get("status") not in {"absent", "present"}):
+            raise CollectionError("malformed hardcoded loader route")
+        if value["status"] == "absent":
+            if set(value) != {"argument_path", "status"}:
+                raise CollectionError("malformed absent loader route")
+        else:
+            if set(value) != {"argument_path", "status", "route"}:
+                raise CollectionError("malformed present loader route")
+            _validate_executable_route(value["route"], "hardcoded ELF loader")
+            if value["route"]["argument_path"] != str(expected):
+                raise CollectionError("inconsistent hardcoded loader route")
+            present_loaders[str(expected)] = \
+                value["route"]["resolved_executable"]
+    if not present_loaders:
+        raise CollectionError("no hardcoded ELF loader is present")
+    cache = evidence["ld_so_cache"]
+    if (not isinstance(cache, dict) or set(cache) != {"path", "sha256"} or
+            cache["path"] != str(ELF_CACHE_PATH) or
+            not _valid_sha256(cache["sha256"])):
+        raise CollectionError("malformed dynamic-loader cache pin")
+    if evidence["ld_so_preload"] != {
+            "path": str(ELF_PRELOAD_PATH), "status": "absent"}:
+        raise CollectionError("malformed dynamic-loader preload contract")
+    if evidence["environment"] != ELF_OBSERVER_ENVIRONMENT:
+        raise CollectionError("ELF observer environment is not exact")
+
+    roots = evidence["requested_roots"]
+    if (not isinstance(roots, list) or not roots or
+            any(not isinstance(pin, dict) or set(pin) != {"path", "sha256"} or
+                not isinstance(pin["path"], str) or
+                not Path(pin["path"]).is_absolute() or
+                not _valid_sha256(pin["sha256"]) for pin in roots) or
+            [pin["path"] for pin in roots] !=
+            sorted({pin["path"] for pin in roots})):
+        raise CollectionError("malformed ELF requested roots")
+    root_paths = [pin["path"] for pin in roots]
+    if expected_roots is not None and root_paths != sorted(set(expected_roots)):
+        raise CollectionError("ELF requested root set mismatch")
+    expected_observation_paths = sorted(set(root_paths) | {
+        tools["bash"]["resolved_executable"]["path"]})
+    root_by_path = {pin["path"]: pin for pin in roots}
+    observations = evidence["observations"]
+    if (not isinstance(observations, list) or
+            [item.get("root", {}).get("path")
+             if isinstance(item, dict) else None for item in observations] !=
+            expected_observation_paths):
+        raise CollectionError("ELF observation root set mismatch")
+    closure_by_path = {}
+    for observation in observations:
+        if not isinstance(observation, dict) or set(observation) != {
+                "root", "argv", "environment", "return_code", "stdout",
+                "stdout_sha256", "normalized_stdout",
+                "normalized_stdout_sha256", "stderr", "stderr_sha256",
+                "resolved_files", "virtual_objects"}:
+            raise CollectionError("malformed ELF observation")
+        root = observation["root"]
+        if (not isinstance(root, dict) or set(root) != {"path", "sha256"} or
+                not _valid_sha256(root.get("sha256"))):
+            raise CollectionError("malformed ELF observation root")
+        if root["path"] in root_by_path and root != root_by_path[root["path"]]:
+            raise CollectionError("ELF observation root identity mismatch")
+        if (observation["argv"] != [
+                str(ELF_BASH_PATH), str(ELF_LDD_PATH), root["path"]] or
+                observation["environment"] != ELF_OBSERVER_ENVIRONMENT or
+                observation["return_code"] != 0 or
+                not isinstance(observation["stdout"], str) or
+                hashlib.sha256(observation["stdout"].encode()).hexdigest() !=
+                observation["stdout_sha256"] or
+                observation["normalized_stdout"] != _normalize_ldd_stdout(
+                    observation["stdout"], root["path"]) or
+                hashlib.sha256(
+                    observation["normalized_stdout"].encode()).hexdigest() !=
+                observation["normalized_stdout_sha256"] or
+                observation["stderr"] != "" or
+                observation["stderr_sha256"] != hashlib.sha256(b"").hexdigest()):
+            raise CollectionError("malformed ELF observation process evidence")
+        parsed, virtual_objects = _parse_ldd_output(
+            observation["stdout"], root["path"])
+        resolved = observation["resolved_files"]
+        if (not isinstance(resolved, list) or not resolved or
+                any(not isinstance(item, dict) or set(item) != {
+                    "role", "reported_path", "path", "sha256"} or
+                    not isinstance(item["path"], str) or
+                    not Path(item["path"]).is_absolute() or
+                    not _valid_sha256(item["sha256"]) for item in resolved) or
+                [{key: item[key] for key in ("role", "reported_path")}
+                 for item in resolved] != parsed or
+                resolved != sorted(resolved, key=lambda item: (
+                    item["role"], item["reported_path"], item["path"])) or
+                observation["virtual_objects"] != virtual_objects):
+            raise CollectionError("ELF observation parse projection mismatch")
+        loader_records = [
+            item for item in resolved if item["reported_path"] in present_loaders]
+        if (not loader_records or any(
+                item["path"] != present_loaders[item["reported_path"]]["path"] or
+                item["sha256"] !=
+                present_loaders[item["reported_path"]]["sha256"]
+                for item in loader_records)):
+            raise CollectionError("ELF observation omitted or changed its loader")
+        for item in resolved:
+            pin = {key: item[key] for key in ("path", "sha256")}
+            previous = closure_by_path.get(pin["path"])
+            if previous is not None and previous != pin:
+                raise CollectionError("conflicting retained ELF identities")
+            closure_by_path[pin["path"]] = pin
+    expected_closure = [
+        closure_by_path[path] for path in sorted(closure_by_path)]
+    if evidence["closure"] != expected_closure:
+        raise CollectionError("ELF closure is not the exact sorted union")
+    if any(closure_by_path.get(pin["path"]) != {
+            "path": pin["path"], "sha256": pin["sha256"]}
+           for pin in present_loaders.values()):
+        raise CollectionError("ELF closure omitted a hardcoded loader")
+    return evidence
+
+
+def elf_oracle_projection(evidence):
+    """Return the plan-independent v8 observer inputs for collection binding."""
+    validate_elf_closure_evidence(evidence)
+    return {
+        key: evidence[key] for key in (
+            "policy", "output_normalization", "tools",
+            "hardcoded_loader_routes", "ld_so_cache", "ld_so_preload",
+            "environment")
+    }
+
+
+def _stable_elf_evidence(evidence):
+    """Discard only ASLR-varying raw output when comparing fresh observations."""
+    stable = json.loads(json.dumps(evidence))
+    for observation in stable["observations"]:
+        observation.pop("stdout")
+        observation.pop("stdout_sha256")
+    return stable
+
+
+def validate_elf_closure_evidence_live(evidence, expected_roots):
+    validate_elf_closure_evidence(evidence, expected_roots)
+    observed = _authenticated_elf_closure(expected_roots)
+    if _stable_elf_evidence(observed) != _stable_elf_evidence(evidence):
+        raise CollectionError("live ELF observer evidence differs from plan")
+    return evidence
+
+
 def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
                           command_shell):
     """Authenticate the exact shell/GP route used by HOL Light's Sys.command."""
@@ -300,7 +749,7 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         raise CollectionError(
             "PARI/GP single-thread shell-route factor probe failed")
     return {
-        "policy": "single_private_path_gp_with_pinned_shell_v1",
+        "policy": "single_private_path_gp_with_pinned_shell_v2",
         "command_shell": shell_route,
         "pari_gp": gp_route,
         "pari_gp_version": {
@@ -311,7 +760,7 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         "package_tree": _pin_tree(gp_root),
         "configuration": gprc_pin,
         "data_tree": data_tree_pin,
-        "dynamic_libraries": _elf_dependencies([
+        "elf_runtime": _authenticated_elf_closure([
             shell_route["resolved_executable"]["path"],
             gp_route["resolved_executable"]["path"],
         ]),
@@ -330,56 +779,17 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
 
 def validate_external_runtime_provenance(external, reference_root,
                                          runtime_environment):
-    """Validate the closed, non-live v7 shell/GP provenance projection."""
+    """Validate the closed, non-live v8 shell/GP provenance projection."""
     if not isinstance(external, dict) or set(external) != {
             "policy", "command_shell", "pari_gp", "pari_gp_version",
             "package_archive", "package_tree", "configuration", "data_tree",
-            "dynamic_libraries", "probe"} or external["policy"] != \
-            "single_private_path_gp_with_pinned_shell_v1":
+            "elf_runtime", "probe"} or external["policy"] != \
+            "single_private_path_gp_with_pinned_shell_v2":
         raise CollectionError("malformed external-runtime provenance")
-
-    def valid_sha(value):
-        return isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value)
 
     for label in ("command_shell", "pari_gp"):
         route = external[label]
-        if not isinstance(route, dict) or set(route) != {
-                "argument_path", "argument_parent", "argument",
-                "resolved_executable"}:
-            raise CollectionError(f"malformed external {label} route")
-        if (not isinstance(route["argument_path"], str) or
-                not Path(route["argument_path"]).is_absolute()):
-            raise CollectionError(f"malformed external {label} argument")
-        for component_label in ("argument_parent", "argument"):
-            component = route[component_label]
-            kind = component.get("kind") if isinstance(component, dict) else None
-            expected = ({"path", "kind", "mode", "resolved_path", "target"}
-                        if kind == "symlink" else
-                        {"path", "kind", "mode", "resolved_path"})
-            if (kind not in {"symlink", "directory", "file"} or
-                    set(component) != expected or
-                    not isinstance(component["path"], str) or
-                    not Path(component["path"]).is_absolute() or
-                    type(component["mode"]) is not int or
-                    not isinstance(component["resolved_path"], str) or
-                    not Path(component["resolved_path"]).is_absolute() or
-                    (kind == "symlink" and
-                     not isinstance(component["target"], str))):
-                raise CollectionError(
-                    f"malformed external {label} {component_label}")
-        resolved = route["resolved_executable"]
-        if (not isinstance(resolved, dict) or set(resolved) != {
-                "path", "sha256", "mode"} or
-                not isinstance(resolved["path"], str) or
-                not Path(resolved["path"]).is_absolute() or
-                not valid_sha(resolved["sha256"]) or
-                type(resolved["mode"]) is not int):
-            raise CollectionError(f"malformed external {label} executable")
-        if (route["argument"]["path"] != route["argument_path"] or
-                route["argument_parent"]["path"] !=
-                str(Path(route["argument_path"]).parent) or
-                route["argument"]["resolved_path"] != resolved["path"]):
-            raise CollectionError(f"inconsistent external {label} route")
+        _validate_executable_route(route, f"external {label}")
 
     version = external["pari_gp_version"]
     if (not isinstance(version, dict) or set(version) != {"stdout", "sha256"} or
@@ -393,7 +803,7 @@ def validate_external_runtime_provenance(external, reference_root,
         if (not isinstance(value, dict) or set(value) != {"path", "sha256"} or
                 not isinstance(value["path"], str) or
                 not Path(value["path"]).is_absolute() or
-                not valid_sha(value["sha256"])):
+                not _valid_sha256(value["sha256"])):
             raise CollectionError(f"malformed external {label}")
     for label in ("package_tree", "data_tree"):
         value = external[label]
@@ -405,7 +815,7 @@ def validate_external_runtime_provenance(external, reference_root,
                 type(value["root_mode"]) is not int or
                 type(value["entry_count"]) is not int or
                 value["entry_count"] < 0 or
-                not valid_sha(value["inventory_sha256"]) or
+                not _valid_sha256(value["inventory_sha256"]) or
                 value["inventory_policy"] !=
                 "relative_path_kind_mode_link_target_and_content_v1"):
             raise CollectionError(f"malformed external {label}")
@@ -420,16 +830,16 @@ def validate_external_runtime_provenance(external, reference_root,
             external["data_tree"]["root_mode"] != 0o555 or
             external["data_tree"]["entry_count"] != 0):
         raise CollectionError("external PARI/GP package path contract mismatch")
-    libraries = external["dynamic_libraries"]
-    if (not isinstance(libraries, list) or not libraries or
-            any(not isinstance(value, dict) or
-                set(value) != {"path", "sha256"} or
-                not isinstance(value["path"], str) or
-                not Path(value["path"]).is_absolute() or
-                not valid_sha(value["sha256"]) for value in libraries) or
-            [value["path"] for value in libraries] !=
-            sorted({value["path"] for value in libraries})):
-        raise CollectionError("malformed external ELF closure")
+    external_elf_roots = sorted(({
+        key: external[label]["resolved_executable"][key]
+        for key in ("path", "sha256")}
+        for label in ("command_shell", "pari_gp")),
+        key=lambda item: item["path"])
+    validate_elf_closure_evidence(
+        external["elf_runtime"],
+        [item["path"] for item in external_elf_roots])
+    if external["elf_runtime"]["requested_roots"] != external_elf_roots:
+        raise CollectionError("external ELF roots differ from executable pins")
     probe = external["probe"]
     expected_environment = {
         "HOME": str(reference_root),
@@ -492,7 +902,7 @@ def validate_reference_runtime_provenance(plan):
     if set(reference) != {
             "root", "git_head", "git_status", "runtime_executable",
             "runtime_interpreter", "runtime_stublib", "runtime_library_tree",
-            "runtime_stub_files", "dynamic_libraries", "ocamlc", "findlib",
+            "runtime_stub_files", "elf_runtime", "ocamlc", "findlib",
             "hol_ml", "generated_boot_files", "ocaml_library_tree",
             "external_runtime"}:
         raise CollectionError("malformed reference runtime fields")
@@ -524,7 +934,7 @@ def validate_reference_runtime_provenance(plan):
         file_pin(reference[key], key.replace("_", " "))
     for key in ("runtime_library_tree", "ocaml_library_tree"):
         tree_pin(reference[key], key.replace("_", " "))
-    for key in ("runtime_stub_files", "dynamic_libraries"):
+    for key in ("runtime_stub_files",):
         values = reference[key]
         if not isinstance(values, list) or not values:
             raise CollectionError(f"empty reference {key.replace('_', ' ')}")
@@ -534,6 +944,14 @@ def validate_reference_runtime_provenance(plan):
         if paths != sorted(set(paths)):
             raise CollectionError(
                 f"reference {key.replace('_', ' ')} is not unique and sorted")
+    reference_elf_roots = sorted((
+        reference["runtime_interpreter"],
+        *reference["runtime_stub_files"]), key=lambda item: item["path"])
+    validate_elf_closure_evidence(
+        reference["elf_runtime"],
+        [item["path"] for item in reference_elf_roots])
+    if reference["elf_runtime"]["requested_roots"] != reference_elf_roots:
+        raise CollectionError("reference ELF roots differ from runtime pins")
     if (reference["runtime_library_tree"]["root"] !=
             str(Path(reference["runtime_stublib"]["path"]).parent) or
             not all(Path(value["path"]).parent ==
@@ -629,39 +1047,6 @@ def _controller_lock_pass_fds():
     if not stat.S_ISREG(metadata.st_mode):
         raise CollectionError("controller lock descriptor is not a regular file")
     return (descriptor,)
-
-
-def _elf_dependencies(paths):
-    """Return the recursively resolved dynamic-library closure of ELF files."""
-    pending = [Path(path).resolve(strict=True) for path in paths]
-    checked = set()
-    dependencies = {}
-    absolute_path = re.compile(r"(?:=>\s+)?(/[^\s(]+)\s+\(")
-    while pending:
-        path = pending.pop()
-        if path in checked:
-            continue
-        checked.add(path)
-        if path.read_bytes()[:4] != b"\x7fELF":
-            continue
-        try:
-            output = subprocess.check_output(
-                ["/usr/bin/ldd", str(path)], text=True,
-                stderr=subprocess.STDOUT, timeout=30,
-                env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"})
-        except (OSError, subprocess.SubprocessError) as error:
-            raise CollectionError(f"could not inspect ELF dependencies: {path}") from error
-        if "not found" in output:
-            raise CollectionError(f"unresolved ELF dependency for {path}")
-        for line in output.splitlines():
-            match = absolute_path.search(line)
-            if not match:
-                continue
-            dependency = Path(match.group(1)).resolve(strict=True)
-            dependencies[str(dependency)] = _pin_file(dependency)
-            if dependency not in checked:
-                pending.append(dependency)
-    return [dependencies[path] for path in sorted(dependencies)]
 
 
 def _runtime_stub_files(*roots):
@@ -856,7 +1241,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
         Path(ocaml_where) / "stublibs",
         *(Path(root["root"]) / "stublibs" for root in findlib_package_roots),
     )
-    dynamic_libraries = _elf_dependencies([
+    elf_runtime = _authenticated_elf_closure([
         runtime_interpreter_pin["path"],
         *(pin["path"] for pin in runtime_stub_files),
     ])
@@ -901,7 +1286,7 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
             "runtime_stublib": runtime_stublib_pin,
             "runtime_library_tree": runtime_library_tree,
             "runtime_stub_files": runtime_stub_files,
-            "dynamic_libraries": dynamic_libraries,
+            "elf_runtime": elf_runtime,
             "ocamlc": {
                 **ocamlc_pin, "version": ocaml_version,
                 "stdlib_directory": ocaml_where,
@@ -948,8 +1333,15 @@ def build_plan(target_name, reference_root, runtime, runtime_stublib, ocamlc,
 
 def _stable_plan_pins(plan):
     """Return only inputs which must be unchanged after the reference run."""
+    reference = dict(plan["reference"])
+    reference["elf_runtime"] = _stable_elf_evidence(
+        reference["elf_runtime"])
+    external = dict(reference["external_runtime"])
+    external["elf_runtime"] = _stable_elf_evidence(
+        external["elf_runtime"])
+    reference["external_runtime"] = external
     return {
-        "reference": plan["reference"],
+        "reference": reference,
         "input": plan["input"],
         "request_sha256": plan["request"]["sha256"],
         "fresh_process_contract": plan["fresh_process_contract"],

@@ -72,8 +72,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ocaml_library.mkdir()
         (ocaml_library / "topfind").write_text("pinned topfind\n")
         (ocaml_library / "stublibs").mkdir()
-        (ocaml_library / "stublibs/dllunix.so").write_text(
-            "pinned system stub\n")
+        (ocaml_library / "stublibs/dllunix.so").write_bytes(
+            Path("/bin/true").read_bytes())
         findlib_config = root / "ocamlfind.conf"
         findlib_config.write_text(f'path="{ocaml_library}"\n')
         ocamlc = root / "ocamlc"
@@ -91,7 +91,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             f"printf '%s\\n' '{record}'\n"
             f"printf '%s\\n' '{self._state_record()}'\n"
             f"printf '%s\\n' '{reference.COMPLETE_MARKER}\t{NONCE}'\n")
-        runtime_stublib.write_text("pinned runtime stub\n")
+        runtime_stublib.write_bytes(Path("/bin/true").read_bytes())
+        runtime_stublib.chmod(0o755)
+        (ocaml_library / "stublibs/dllunix.so").chmod(0o755)
         ocamlc.write_text(
             "#!/bin/sh\n"
             f"if [ \"$1\" = -where ]; then printf '%s\\n' '{ocaml_library}'; "
@@ -108,13 +110,19 @@ class ReferenceFingerprintTest(unittest.TestCase):
         gp_bin = gp_root / "usr/bin"
         gp_bin.mkdir(parents=True)
         gp_executable = gp_bin / "gp-2.15"
-        gp_executable.write_text(
-            "#!/bin/sh\n"
-            "if [ \"$1\" = --version-short ]; then "
-            "printf '2.15.4\\n'; exit 0; fi\n"
-            "while IFS= read -r ignored; do :; done\n"
-            "printf '1\\n[3, 1; 5, 1]\\n'\n")
-        gp_executable.chmod(0o755)
+        subprocess.run(
+            ["/usr/bin/cc", "-x", "c", "-O0", "-o", str(gp_executable), "-"],
+            input=(
+                "#include <stdio.h>\n#include <string.h>\n"
+                "int main(int argc, char **argv) {\n"
+                "  if (argc == 2 && strcmp(argv[1], \"--version-short\") == 0) {\n"
+                "    fputs(\"2.15.4\\n\", stdout); return 0;\n"
+                "  }\n"
+                "  while (getchar() != EOF) {}\n"
+                "  fputs(\"1\\n[3, 1; 5, 1]\\n\", stdout); return 0;\n"
+                "}\n"),
+            text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            check=True)
         (gp_bin / "gp").symlink_to("gp-2.15")
         (gp_root / "candle-gprc").write_text(
             "\\\\ deterministic empty test configuration\n")
@@ -198,7 +206,14 @@ class ReferenceFingerprintTest(unittest.TestCase):
         external = plan["reference"]["external_runtime"]
         self.assertEqual(
             external["policy"],
-            "single_private_path_gp_with_pinned_shell_v1")
+            "single_private_path_gp_with_pinned_shell_v2")
+        self.assertEqual(plan["schema"], "candle-s1-reference-plan-v8")
+        self.assertEqual(
+            external["elf_runtime"]["policy"],
+            reference.ELF_EVIDENCE_POLICY)
+        self.assertEqual(
+            external["elf_runtime"]["tools"]["ldd"]["argument_path"],
+            "/usr/bin/ldd")
         self.assertEqual(external["pari_gp_version"]["stdout"], "2.15.4\n")
         self.assertRegex(external["probe"]["stdout"], r"(?:^|\n)1\n")
         self.assertIn("[3, 1; 5, 1]", external["probe"]["stdout"])
@@ -247,6 +262,93 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     ocamlfind, root.parent / "pari-gp",
                     root.parent / "pari-gp.deb", runtime, NONCE,
                     "manifest-exact")
+
+    def test_authenticated_elf_observer_replays_normalized_evidence(self):
+        evidence = reference._authenticated_elf_closure(["/bin/sh"])
+        reference.validate_elf_closure_evidence_live(
+            evidence,
+            [evidence["requested_roots"][0]["path"]],
+        )
+        self.assertEqual(
+            evidence["tools"]["ldd"]["argument_path"], "/usr/bin/ldd")
+        self.assertEqual(
+            evidence["tools"]["bash"]["argument_path"], "/bin/bash")
+        self.assertEqual(
+            evidence["ld_so_preload"],
+            {"path": "/etc/ld.so.preload", "status": "absent"})
+        for observation in evidence["observations"]:
+            self.assertNotEqual(
+                observation["stdout"], observation["normalized_stdout"])
+            self.assertNotRegex(
+                observation["normalized_stdout"], r"\(0x[0-9a-fA-F]+\)")
+
+    def test_authenticated_elf_observer_rejects_omitted_loader(self):
+        oracle = reference._elf_oracle_inputs()
+        output = (
+            "\tlinux-vdso.so.1 (0x1)\n"
+            "\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x2)\n")
+        completed = subprocess.CompletedProcess(
+            ["/bin/bash", "/usr/bin/ldd", "/bin/sh"], 0,
+            stdout=output, stderr="")
+        with mock.patch.object(reference.subprocess, "run", return_value=completed):
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "omitted the selected loader"):
+                reference._observe_elf_root("/bin/sh", oracle)
+
+    def test_authenticated_elf_observer_rejects_non_elf_dependency(self):
+        oracle = reference._elf_oracle_inputs()
+        with tempfile.TemporaryDirectory() as directory:
+            fake = Path(directory) / "libfake.so"
+            fake.write_text("not an ELF object\n")
+            output = (
+                "\tlinux-vdso.so.1 (0x1)\n"
+                f"\tlibfake.so => {fake} (0x2)\n"
+                "\t/lib64/ld-linux-x86-64.so.2 (0x3)\n")
+            completed = subprocess.CompletedProcess(
+                ["/bin/bash", "/usr/bin/ldd", "/bin/sh"], 0,
+                stdout=output, stderr="")
+            with mock.patch.object(
+                    reference.subprocess, "run", return_value=completed):
+                with self.assertRaisesRegex(
+                        reference.CollectionError, "non-ELF file"):
+                    reference._observe_elf_root("/bin/sh", oracle)
+
+    def test_authenticated_elf_observer_rejects_unrecognized_output(self):
+        oracle = reference._elf_oracle_inputs()
+        output = (
+            "\tlinux-vdso.so.1 (0x1)\n"
+            "\t/lib64/ld-linux-x86-64.so.2 (0x2)\n"
+            "\tunreviewed loader diagnostic\n")
+        completed = subprocess.CompletedProcess(
+            ["/bin/bash", "/usr/bin/ldd", "/bin/sh"], 0,
+            stdout=output, stderr="")
+        with mock.patch.object(reference.subprocess, "run", return_value=completed):
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "unrecognized ldd output"):
+                reference._observe_elf_root("/bin/sh", oracle)
+
+    def test_authenticated_elf_live_replay_rejects_oracle_and_cache_drift(self):
+        evidence = reference._authenticated_elf_closure(["/bin/sh"])
+        expected_roots = [evidence["requested_roots"][0]["path"]]
+        for path in (
+                ("tools", "ldd", "resolved_executable", "sha256"),
+                ("ld_so_cache", "sha256")):
+            changed = copy.deepcopy(evidence)
+            value = changed
+            for component in path[:-1]:
+                value = value[component]
+            value[path[-1]] = "0" * 64
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "live ELF observer evidence"):
+                reference.validate_elf_closure_evidence_live(
+                    changed, expected_roots)
+
+    def test_authenticated_elf_observer_rejects_preload(self):
+        with mock.patch.object(
+                reference.os.path, "lexists", return_value=True):
+            with self.assertRaisesRegex(
+                    reference.CollectionError, "ld.so.preload must be absent"):
+                reference._elf_oracle_inputs()
 
     def test_plan_rejects_source_mismatch_and_manual_mapping(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -416,16 +518,12 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     reference._load_source_contract()
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
-        plan = {
-            "schema": reference.PLAN_SCHEMA,
-            "session_nonce": NONCE,
-            "fresh_process_contract": {"required": True},
-            "reference": {"git_head": "1" * 40},
-            "input": {
-                "target": "100/gcd", "theorem_names": ["EGCD"],
-                "mapping_status": "audited"},
-            "request": {"sha256": "2" * 64},
-        }
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
         fields = [
             regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(),
