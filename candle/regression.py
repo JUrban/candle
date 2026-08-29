@@ -550,6 +550,7 @@ STATE_FINGERPRINT_MARKER = "CANDLE_STATE_FINGERPRINT_V2"
 SUITE_MARKER = "CANDLE_GREAT100_SUITE_V1"
 PROCESS_MARKER = "CANDLE_GREAT100_PROCESS_V1"
 LINKED_RECORD_MARKER = "CANDLE_LINKED_PROVENANCE_V1"
+LINKED_PASS_WITNESS = "linked CakeML provenance PASS"
 FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint.ml"
 OCAML_VALUE_PATH_RE = re.compile(
     r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
@@ -748,6 +749,31 @@ def _read_process_markers(log_path, suite_nonce, process_nonce,
         "complete": (
             f"{PROCESS_MARKER}\t{suite_nonce}\t{process_nonce}\tCOMPLETE"),
     }
+    suite_protocol = [
+        line for line in lines if line.startswith("CANDLE_GREAT100_SUITE_")]
+    process_protocol = [
+        line for line in lines if line.startswith("CANDLE_GREAT100_PROCESS_")]
+    linked_protocol = [
+        line for line in lines if line.startswith("CANDLE_LINKED_PROVENANCE_")]
+    if suite_protocol != [expected["suite"]]:
+        raise LoadFailure("unexpected or conflicting Great 100 suite protocol")
+    if (len(process_protocol) != 2 or
+            process_protocol.count(expected["start"]) != 1 or
+            process_protocol.count(expected["complete"]) != 1):
+        raise LoadFailure("unexpected or conflicting Great 100 process protocol")
+    if linked_protocol != [expected["linked"]]:
+        raise LoadFailure("unexpected or conflicting linked provenance protocol")
+    linked_status = [
+        line for line in lines if line.startswith("linked CakeML provenance ")]
+    if linked_status != [LINKED_PASS_WITNESS]:
+        raise LoadFailure("missing or conflicting linked provenance PASS witness")
+    for line in lines:
+        if (line.startswith("CANDLE_FINGERPRINT_V") and
+                not line.startswith(FINGERPRINT_MARKER + "\t")):
+            raise LoadFailure("unsupported theorem fingerprint protocol version")
+        if (line.startswith("CANDLE_STATE_FINGERPRINT_V") and
+                not line.startswith(STATE_FINGERPRINT_MARKER + "\t")):
+            raise LoadFailure("unsupported state fingerprint protocol version")
     indices = {}
     for name, marker in expected.items():
         matches = [index for index, line in enumerate(lines) if line == marker]
@@ -757,6 +783,9 @@ def _read_process_markers(log_path, suite_nonce, process_nonce,
     if not (indices["suite"] < indices["start"] < indices["linked"] <
             indices["complete"]):
         raise LoadFailure("Great 100 process markers are out of order")
+    pass_index = lines.index(LINKED_PASS_WITNESS)
+    if not indices["start"] < pass_index < indices["linked"]:
+        raise LoadFailure("linked provenance PASS witness is out of order")
     fingerprint_indices = [
         index for index, line in enumerate(lines)
         if line.startswith((FINGERPRINT_MARKER + "\t",

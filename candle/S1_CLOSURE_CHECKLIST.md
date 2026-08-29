@@ -142,6 +142,10 @@ The schema-4 runner also requires nonce-bound ordered suite/start/linked/
 complete markers, an ordinary zero process exit, a persistent report/log
 directory, and a positive total wall deadline. It exits nonzero unless
 `suite_closed` is true.
+Each transcript must contain exactly those suite and process records, exactly
+one expected linked-provenance record and PASS witness, and no conflicting
+protocol-namespace or unsupported theorem/state fingerprint version lines,
+including after the completion marker.
 
 After approval and a schema-6 linked build, a canonical low-parallelism launch
 is:
