@@ -36,7 +36,7 @@ output, harness file, and selected cumulative prefix into a disjoint attempt-
 local snapshot.  It also archives the complete linked-provenance JSON and exact
 relocation-safe bootstrap record/log copies plus the exact loader, libc, and
 libm objects named by its ELF closure.  The same inventory retains the exact
-captured bytes used to compile the three local Python helper modules, the
+captured bytes used to compile the four local Python helper modules, the
 startup-captured top-level runner bytes, the pinned `/proc/self/exe` Python
 image, and its pinned base ELF role/file closure.  The exact fixed `git`,
 `readelf`, `ldd`, and `patch` program files used by the controller are retained
@@ -86,9 +86,12 @@ The LP-support and later boundaries emit the canonical structural identity of
 `Linear_programming_results.linear_programming_results_th`.  At the final
 boundary, the postlude additionally loads the pinned Candle L2 target and emits
 identities for the nonlinear theorem, Flyspeck implication, and final Candle
-implication.  Every observed theorem must have zero hypotheses and the global
-axiom count must be three.  Until independently approved reference identities
-are installed, receipts label these records `observed_uncompared`.
+implication.  The same postlude emits the structural-v2 post-state identity for
+the complete type-constant, term-constant, primitive-definition, and global-
+axiom tables.  Every observed theorem must have zero hypotheses, and theorem
+and post-state evidence must agree on exactly three global axioms.  Until
+independently approved reference identities are installed, receipts label
+these records `observed_uncompared`.
 
 Example (after a linked verified binary exists):
 
@@ -106,12 +109,12 @@ coverage/assumption checks specified by the release contract.
 
 The runner requires exact direct-script `.py` startup under the complete pinned
 default `-I -S` flag set; imported/module/cache startup and optimization flags
-are rejected.  It executes its three local helpers from captured `.py` bytes
+are rejected.  It executes its four local helpers from captured `.py` bytes
 under private module names rather than consulting bytecode caches, and rejects
 a runner or helper outside the authenticated Candle tree.  Git validation uses
 fixed paths, locale/path, disabled system/global configuration, and no
 prompting; it disables replacement objects and index accelerators, rejects
-special index flags on the four controller sources, and compares their captured
+special index flags on the five controller sources, and compares their captured
 bytes with blobs from the exact linked Candle commit.  The broader Python
 standard library/native-extension closure,
 dynamic/interpreter closures of the four retained host tools, the kernel/vDSO,

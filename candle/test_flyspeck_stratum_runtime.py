@@ -222,6 +222,46 @@ class StratumRuntimeTests(unittest.TestCase):
             self.actions, boundary, self.nonce, theorem_names,
         )
 
+    def test_fingerprint_protocol_namespace_and_session_are_closed(self) -> None:
+        boundary = "05-lp_support-through-184"
+        theorem_names = subject.fingerprint_requests(boundary)
+        preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
+        action0 = f"{subject.ACTION_PREFIX} {self.nonce} 000 {'1' * 64}"
+        action1 = f"{subject.ACTION_PREFIX} {self.nonce} 001 {'2' * 64}"
+        success = f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} 2"
+        terminal = (
+            f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} {boundary} 1"
+        )
+        v2_record = f"{subject.FINGERPRINT_MARKER}\t00"
+        valid = [preflight, action0, action1, success, v2_record, terminal]
+        subject.validate_log(
+            "\n".join(valid), self.actions, boundary, self.nonce, theorem_names,
+        )
+        for forged in (
+            ["CANDLE_FINGERPRINT_V1\t00", *valid],
+            [*valid, "CANDLE_STATE_FINGERPRINT_V3\t00"],
+            [v2_record, *valid],
+            [*valid, v2_record],
+            [*valid, f"{subject.FINGERPRINT_SUCCESS_MARKER} {'b' * 32} forged 99"],
+        ):
+            with self.assertRaisesRegex(
+                subject.ContractError,
+                "unsupported or unexpected|outside its boundary session|terminal marker",
+            ):
+                subject.validate_log(
+                    "\n".join(forged), self.actions, boundary, self.nonce,
+                    theorem_names,
+                )
+        with self.assertRaisesRegex(
+            subject.ContractError, "unsupported or unexpected stratum control record",
+        ):
+            subject.validate_log(
+                "\n".join([
+                    preflight, action0, action1, success,
+                    f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} {boundary} 0",
+                ]), self.actions, boundary, self.nonce,
+            )
+
     def test_runtime_config_provides_exact_lp_certificate_list(self) -> None:
         certificates = [
             {"path": f"/inputs/easy_{index}.dat", "md5": f"{index:032x}"}

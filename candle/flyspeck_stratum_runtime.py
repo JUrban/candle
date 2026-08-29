@@ -415,6 +415,7 @@ def collect_controller_execution(candle_root: Path) -> dict[str, Any]:
         "cakeml_artifact_provenance.py",
         "flyspeck_stratum_plan.py",
         "flyspeck_stratum_runtime.py",
+        "reference_protocol.py",
         "runtime_lock.py",
     }, "unexpected local Python controller source set")
     return {
@@ -1055,13 +1056,42 @@ def validate_log(
         marker = f"{ACTION_PREFIX} {nonce} {index:03d} {action['source_sha256']}"
         positions.append(exact_position(marker, f"action {index}"))
     final = f"{SUCCESS_MARKER} {nonce} {boundary_id} {len(actions)}"
-    positions.append(exact_position(final, "boundary success"))
+    boundary_position = exact_position(final, "boundary success")
+    positions.append(boundary_position)
+    fingerprint_position: int | None = None
+    allowed_control_markers = {preflight, final}
+    allowed_control_markers.update(
+        f"{ACTION_PREFIX} {nonce} {index:03d} {action['source_sha256']}"
+        for index, action in enumerate(actions)
+    )
     if theorem_names:
         fingerprint_final = (
             f"{FINGERPRINT_SUCCESS_MARKER} {nonce} {boundary_id} {len(theorem_names)}"
         )
-        positions.append(exact_position(fingerprint_final, "fingerprint success"))
+        allowed_control_markers.add(fingerprint_final)
+        fingerprint_position = exact_position(fingerprint_final, "fingerprint success")
+        positions.append(fingerprint_position)
     require(positions == sorted(positions), "stratum markers are out of order")
+    control_namespaces = (
+        "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_",
+        "CANDLE_FLYSPECK_STRATUM_ACTION_",
+        "CANDLE_FLYSPECK_STRATUM_BOUNDARY_",
+        "CANDLE_FLYSPECK_STRATUM_FINGERPRINTS_",
+    )
+    for line in lines:
+        if line.startswith(control_namespaces):
+            require(line in allowed_control_markers,
+                    "unsupported or unexpected stratum control record")
+    for index, line in enumerate(lines):
+        if not line.startswith(("CANDLE_FINGERPRINT_", "CANDLE_STATE_FINGERPRINT_")):
+            continue
+        require(theorem_names and
+                line.startswith((FINGERPRINT_MARKER + "\t",
+                                 STATE_FINGERPRINT_MARKER + "\t")),
+                "unsupported or unexpected fingerprint protocol record")
+        require(fingerprint_position is not None and
+                boundary_position < index < fingerprint_position,
+                "fingerprint protocol record is outside its boundary session")
     require(not re.search(r"^(?:ERROR|EXCEPTION):|Parsing failed", log, re.MULTILINE),
             "compiled stratum log contains a top-level error")
 
