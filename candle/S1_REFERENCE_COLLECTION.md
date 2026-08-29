@@ -99,10 +99,14 @@ Pass `--source-mode historical-original` only with the reference tree at exact
 upstream commit `3170739521d88d04580f61385c95b497690b7002`.  That mode accepts
 only the historical side of the three recorded deltas; it is not a generic
 source-hash bypass.  The selected sides coexist at exact reference commit
-`6ce6fc15ed6a399902757a294bc59c954ebbbd85`; the Great-100 source diff between
-those commits is exactly the three recorded paths. The default is
-`manifest-exact`. An approval may use only reference runs at that exact-source
-commit and must reproduce the committed source-contract policy field for field.
+`1258c129c3ddf0b239b649ba7024eab677cd953b`. That audit commit has the pinned
+historical upstream commit as its sole parent, and its complete Great-100 diff
+is exactly the three recorded paths. Keeping the reference runtime and all
+transitive sources at the historical upstream tree avoids using Candle's
+deliberately reduced compiled-runtime loader as an OCaml reference loader. The
+default is `manifest-exact`. An approval may use only reference runs at that
+exact-source commit and must reproduce the committed source-contract policy
+field for field.
 
 ## Deliberate promotion barrier
 
