@@ -1,8 +1,9 @@
 # Direct runtime evidence v4
 
-Schema 4 supersedes direct runtime evidence v3 for newly generated cumulative
-Flyspeck attempts. It remains diagnostic and nonpromotable: it does not itself
-grant S2 or S3 approval.
+Schema 4 superseded direct runtime evidence v3 and remains the exact validator
+contract for artifacts produced before semantic evidence v5. New cumulative
+Flyspeck attempts use schema 5. Schema 4 remains diagnostic and nonpromotable:
+it does not itself grant S2 or S3 approval.
 
 The v3 logical closure described selected reachability but could not prove that
 every ordinary nested `needs` or `loads` edge executed. Schema 4 adds one
