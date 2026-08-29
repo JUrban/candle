@@ -16,6 +16,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import re
 import resource
@@ -347,7 +348,8 @@ def exact_absolute_path(value: object) -> bool:
     if not isinstance(value, str) or not value:
         return False
     path = Path(value)
-    return (path.is_absolute() and ".." not in path.parts and
+    return (value.startswith("/") and not value.startswith("//") and
+            path.is_absolute() and ".." not in path.parts and
             str(path) == value)
 
 
@@ -2629,6 +2631,7 @@ def validate_direct_controller_binding(
 def validate_direct_evidence_v4_artifact(
     artifact: dict[str, Any], *, receipt: bool,
     log_path: Path | None = None,
+    runtime_executable_path: Path | None = None,
 ) -> None:
     """Reject legacy or partially upgraded direct-attempt artifacts."""
     expected_fields = (
@@ -2716,7 +2719,8 @@ def validate_direct_evidence_v4_artifact(
     digest_record(inputs["authenticated_prefix"],
                   "authenticated prefix", path=True)
     prefix_path = inputs["authenticated_prefix"]["path"]
-    require(not Path(prefix_path).is_absolute() and
+    require(Path(prefix_path) != Path(".") and
+            not Path(prefix_path).is_absolute() and
             ".." not in Path(prefix_path).parts and
             Path(prefix_path).as_posix() == prefix_path,
             "unsafe direct runtime authenticated prefix path")
@@ -2931,13 +2935,25 @@ def validate_direct_evidence_v4_artifact(
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
         return
+    require(runtime_executable_path is not None and
+            str(Path(runtime_executable_path)) == runtime_executable,
+            "direct runtime receipt validation requires its executable bytes")
+    validate_file(
+        Path(runtime_executable_path), inputs["runtime_executable"],
+        "direct runtime executable",
+    )
+    executable_mode = Path(runtime_executable_path).stat().st_mode
+    require(executable_mode & 0o111 != 0 and executable_mode & 0o222 == 0,
+            "direct runtime executable mode is not immutable executable")
     initial_projection = {
         field: artifact[field] for field in DIRECT_ATTEMPT_FIELDS
     }
     initial_projection["state"] = "running"
-    require(artifact["initial_attempt"] == {
-                "path": "attempt.json", **data_record(json_bytes(initial_projection)),
-            }, "receipt differs from immutable initial attempt")
+    digest_record(artifact["initial_attempt"], "initial attempt", path=True)
+    require(exact_json_equal(artifact["initial_attempt"], {
+                "path": "attempt.json",
+                **data_record(json_bytes(initial_projection)),
+            }), "receipt differs from immutable initial attempt")
     finished_utc = artifact.get("finished_utc")
     require(isinstance(finished_utc, str) and finished_utc.endswith("Z"),
             "malformed direct runtime finish time")
@@ -2965,6 +2981,7 @@ def validate_direct_evidence_v4_artifact(
                 } and
                 all(isinstance(resources[field], (int, float)) and
                     not isinstance(resources[field], bool) and
+                    math.isfinite(resources[field]) and
                     resources[field] >= 0
                     for field in ("user_cpu_seconds", "system_cpu_seconds")) and
                 all(type(resources[field]) is int and resources[field] >= 0
@@ -3014,10 +3031,10 @@ def validate_direct_evidence_v4_artifact(
                 observed.get("records") is not None and
                 observed.get("ordered_record_sha256") ==
                 canonical_sha256(observed["records"]) and
-                observed == {
+                exact_json_equal(observed, {
                     **expected,
                     "status": "expected-closure-emitted-unapproved",
-                },
+                }),
                 "receipt logical source closure differs from authenticated expectation")
 
     physical_trace = artifact.get("physical_source_trace")
@@ -3030,13 +3047,13 @@ def validate_direct_evidence_v4_artifact(
     if fingerprints is not None:
         expected_names = fingerprint_requests(boundary_id)
         if not expected_names:
-            require(fingerprints == {
+            require(exact_json_equal(fingerprints, {
                         "status": "not_requested",
                         "approved_reference_present": False,
                         "serializer": None,
                         "theorems": [],
                         "post_state": None,
-                    }, "unexpected fingerprint state at unrequested boundary")
+                    }), "unexpected fingerprint state at unrequested boundary")
         else:
             require(isinstance(fingerprints, dict) and set(fingerprints) == {
                         "status", "approved_reference_present", "serializer",
@@ -3147,16 +3164,18 @@ def validate_direct_evidence_v4_artifact(
         log_text = bound_log_path.read_text(encoding="utf-8", errors="strict")
     except (OSError, UnicodeError) as error:
         raise ContractError(f"cannot read direct runtime log: {error}") from error
-    require(validate_source_trace(log_text, expected_trace) == physical_trace,
+    require(exact_json_equal(
+                validate_source_trace(log_text, expected_trace), physical_trace,
+            ),
             "receipt physical source trace differs from bound log")
-    require(validate_log(
+    require(exact_json_equal(validate_log(
                 log_text, expected_actions, boundary_id,
                 artifact["attempt_nonce"], fingerprint_requests(boundary_id),
-            ) == events,
+            ), events),
             "receipt action events differ from bound log")
-    require(validate_logical_source_closure(
+    require(exact_json_equal(validate_logical_source_closure(
                 log_text, expected, boundary_id, artifact["attempt_nonce"],
-            ) == observed,
+            ), observed),
             "receipt logical source closure differs from bound log")
     theorem_names = fingerprint_requests(boundary_id)
     if theorem_names:
@@ -3182,7 +3201,7 @@ def validate_direct_evidence_v4_artifact(
         log_fingerprints = parse_fingerprints(
             bound_log_path, [], Path("unused-for-unrequested-boundary"),
         )
-    require(log_fingerprints == fingerprints,
+    require(exact_json_equal(log_fingerprints, fingerprints),
             "receipt fingerprints differ from bound log")
 
 
@@ -4287,6 +4306,7 @@ def _run_attempt_impl(
         validate_direct_evidence_v4_artifact(
             receipt, receipt=True,
             log_path=(log_path if log_record is not None else None),
+            runtime_executable_path=runtime_prepared["cake_runtime"],
         )
         atomic_write_json(receipt_path, receipt)
         receipt_path.chmod(0o444)
