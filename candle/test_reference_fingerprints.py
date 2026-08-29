@@ -201,6 +201,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "single_private_path_gp_with_pinned_shell_v1")
         self.assertEqual(external["pari_gp_version"]["stdout"], "2.15.4\n")
         self.assertIn("[3, 1; 5, 1]", external["probe"]["stdout"])
+        self.assertEqual(external["probe"]["stderr"], "")
+        self.assertEqual(
+            external["probe"]["stderr_sha256"], hashlib.sha256(b"").hexdigest())
         self.assertEqual(
             plan["fresh_process_contract"]["runtime_environment"]["PATH"],
             str(root.parent / "pari-gp/usr/bin"))

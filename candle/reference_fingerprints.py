@@ -280,7 +280,10 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
         env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         text=True, timeout=30, check=False,
     )
-    if (probe.returncode != 0 or probe.stderr != "" or
+    expected_gprc_stderr = (
+        f"Reading GPRC: {gprc_pin['path']}\nGPRC Done.\n\n")
+    if (probe.returncode != 0 or
+            probe.stderr not in {"", expected_gprc_stderr} or
             "[3, 1; 5, 1]" not in probe.stdout):
         raise CollectionError("PARI/GP shell-route factor probe failed")
     return {
@@ -305,6 +308,7 @@ def _pin_external_runtime(reference_root, pari_gp_root, pari_gp_package,
             "return_code": probe.returncode,
             "stdout": probe.stdout,
             "stdout_sha256": hashlib.sha256(probe.stdout.encode()).hexdigest(),
+            "stderr": probe.stderr,
             "stderr_sha256": hashlib.sha256(probe.stderr.encode()).hexdigest(),
         },
     }
