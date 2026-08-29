@@ -1,3 +1,4 @@
+exception Sys_error of string;;
 exception Invalid_argument of string;;
 exception End_of_file;;
 exception Not_found;;
@@ -80,9 +81,56 @@ module Float = struct
   let of_string s = match Cake.Double.fromString s with
     | None -> failwith "Float.of_string"
     | Some x -> x
+
+  (* OCaml [frexp] is exactly a decomposition of the IEEE-754 encoding.  Use
+     CakeML's proved field extractors/reconstructor instead of a host FFI.
+     Normal results have magnitude in [0.5,1); zero retains its sign; and
+     infinities/NaNs are returned unchanged with exponent zero. *)
+  let frexp value =
+    let exponent = Cake.Word64.toInt (Cake.Double.exponent value) in
+    let significand = Cake.Word64.toInt (Cake.Double.significand value) in
+    let sign = Cake.Double.sign value in
+    if exponent = 0 then
+      if significand = 0 then value, 0
+      else
+        let rec highest_bit index bits =
+          if bits < 2 then index else highest_bit (index + 1) (bits / 2) in
+        let rec power_two exponent accumulator =
+          if exponent = 0 then accumulator
+          else power_two (exponent - 1) (2 * accumulator) in
+        let bit = highest_bit 0 significand in
+        let normalized =
+          significand * power_two (52 - bit) 1 - power_two 52 1 in
+        (Cake.Double.construct sign (Cake.Word64.fromInt 1022)
+           (Cake.Word64.fromInt normalized),
+         bit - 1073)
+    else if exponent = 2047 then value, 0
+    else
+      (Cake.Double.construct sign (Cake.Word64.fromInt 1022)
+         (Cake.Double.significand value),
+       exponent - 1022)
 end;;
 
+let frexp = Float.frexp;;
+
 type float = Float.float;;
+
+(* Selected Flyspeck sources qualify the ordinary OCaml I/O and square-root
+   operations through [Stdlib].  Deliberately omit polymorphic [compare]: each
+   selected comparison must be normalized to a type-specific comparator. *)
+module Stdlib = struct
+  let compare left right =
+    if left = right then 0
+    else failwith
+      "Stdlib.compare: polymorphic ordering is unavailable; use an explicit comparator"
+  let open_in = open_in
+  let open_out = open_out
+  let input_line = input_line
+  let close_in = close_in
+  let close_out = close_out
+  let output_string = output_string
+  let sqrt = Float.sqrt
+end;;
 
 module List = struct
   let fold_left f init xs = Cake.List.foldl (fun x y -> f y x) init xs
@@ -168,8 +216,387 @@ module String = struct
     Cake.Word64.toInt (Cake.List.foldl step (Cake.Word64.fromInt 5381) (Cake.String.explode s));;
 end;;
 
+(* OCaml's mutable string buffer is distinct from the token queue named
+   [Buffer] in Candle's REPL boot image.  Flyspeck's strictbuild reader and
+   serializer need only this small, pure source-backed subset. *)
+module Buffer = struct
+  type t = string list ref
+
+  let create capacity =
+    if capacity < 0 then invalid_arg "Buffer.create"
+    else ref ([] : string list)
+
+  let add_string buffer value =
+    buffer := value :: !buffer
+
+  let add_char buffer value =
+    add_string buffer (String.make 1 value)
+
+  let rec add_channel buffer channel count =
+    if count < 0 then invalid_arg "Buffer.add_channel"
+    else if count = 0 then ()
+    else
+      match Text_io.input1 channel with
+      | None -> raise End_of_file
+      | Some value ->
+         add_char buffer value;
+         add_channel buffer channel (count - 1)
+
+  let contents buffer =
+    String.concat "" (List.rev !buffer)
+
+  let reset buffer =
+    buffer := []
+end;;
+
+(* Pure source-level MD5 for the selected OCaml [Digest] surface.  This avoids
+   adding a host hashing FFI.  The implementation uses virtual MD5 padding, so
+   [Digest.string] does not allocate a second padded copy of its input. *)
+module Digest = struct
+  type t = string
+
+  let md5_mask value = value land 0xffffffff
+  let md5_add left right = md5_mask (left + right)
+  let md5_rotate_left value count =
+    md5_mask ((value lsl count) lor (value lsr (32 - count)))
+
+  let md5_shifts = Cake.Array.fromList
+    [7; 12; 17; 22; 7; 12; 17; 22; 7; 12; 17; 22; 7; 12; 17; 22;
+     5; 9; 14; 20; 5; 9; 14; 20; 5; 9; 14; 20; 5; 9; 14; 20;
+     4; 11; 16; 23; 4; 11; 16; 23; 4; 11; 16; 23; 4; 11; 16; 23;
+     6; 10; 15; 21; 6; 10; 15; 21; 6; 10; 15; 21; 6; 10; 15; 21]
+
+  let md5_constants = Cake.Array.fromList
+    [0xd76aa478; 0xe8c7b756; 0x242070db; 0xc1bdceee;
+     0xf57c0faf; 0x4787c62a; 0xa8304613; 0xfd469501;
+     0x698098d8; 0x8b44f7af; 0xffff5bb1; 0x895cd7be;
+     0x6b901122; 0xfd987193; 0xa679438e; 0x49b40821;
+     0xf61e2562; 0xc040b340; 0x265e5a51; 0xe9b6c7aa;
+     0xd62f105d; 0x02441453; 0xd8a1e681; 0xe7d3fbc8;
+     0x21e1cde6; 0xc33707d6; 0xf4d50d87; 0x455a14ed;
+     0xa9e3e905; 0xfcefa3f8; 0x676f02d9; 0x8d2a4c8a;
+     0xfffa3942; 0x8771f681; 0x6d9d6122; 0xfde5380c;
+     0xa4beea44; 0x4bdecfa9; 0xf6bb4b60; 0xbebfbc70;
+     0x289b7ec6; 0xeaa127fa; 0xd4ef3085; 0x04881d05;
+     0xd9d4d039; 0xe6db99e5; 0x1fa27cf8; 0xc4ac5665;
+     0xf4292244; 0x432aff97; 0xab9423a7; 0xfc93a039;
+     0x655b59c3; 0x8f0ccc92; 0xffeff47d; 0x85845dd1;
+     0x6fa87e4f; 0xfe2ce6e0; 0xa3014314; 0x4e0811a1;
+     0xf7537e82; 0xbd3af235; 0x2ad7d2bb; 0xeb86d391]
+
+  let md5_word byte_at block word_index =
+    let offset = block + (4 * word_index) in
+    byte_at offset lor
+    (byte_at (offset + 1) lsl 8) lor
+    (byte_at (offset + 2) lsl 16) lor
+    (byte_at (offset + 3) lsl 24)
+
+  let md5_transform byte_at block (a0, b0, c0, d0) =
+    let rec rounds index a b c d =
+      if index = 64 then
+        (md5_add a0 a, md5_add b0 b, md5_add c0 c, md5_add d0 d)
+      else
+        let (mixed, word_index) =
+          if index < 16 then
+            ((b land c) lor ((lnot b) land d), index)
+          else if index < 32 then
+            ((d land b) lor ((lnot d) land c), (5 * index + 1) mod 16)
+          else if index < 48 then
+            (b lxor c lxor d, (3 * index + 5) mod 16)
+          else
+            (c lxor (b lor (lnot d)), (7 * index) mod 16) in
+        let sum = md5_mask
+          (a + md5_mask mixed + md5_word byte_at block word_index +
+           Cake.Array.sub md5_constants index) in
+        let next_b = md5_add b
+          (md5_rotate_left sum (Cake.Array.sub md5_shifts index)) in
+        rounds (index + 1) d next_b b c in
+    rounds 0 a0 b0 c0 d0
+
+  let md5_raw source =
+    let source_length = String.length source in
+    let total_length = ((source_length + 72) / 64) * 64 in
+    let bit_length = source_length * 8 in
+    let length_offset = total_length - 8 in
+    let byte_at index =
+      if index < source_length then Char.code (String.get source index)
+      else if index = source_length then 128
+      else if index < length_offset then 0
+      else (bit_length lsr (8 * (index - length_offset))) land 255 in
+    let rec blocks offset state =
+      if offset = total_length then state
+      else blocks (offset + 64) (md5_transform byte_at offset state) in
+    let (a, b, c, d) =
+      blocks 0 (0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476) in
+    let pack_word word =
+      String.concat ""
+        [String.make 1 (Char.chr (word land 255));
+         String.make 1 (Char.chr ((word lsr 8) land 255));
+         String.make 1 (Char.chr ((word lsr 16) land 255));
+         String.make 1 (Char.chr ((word lsr 24) land 255))] in
+    String.concat "" [pack_word a; pack_word b; pack_word c; pack_word d]
+
+  let string source = md5_raw source
+
+  let file path =
+    let channel = open_in path in
+    let contents =
+      try Text_io.inputAll channel
+      with error ->
+        close_in channel;
+        raise error in
+    close_in channel;
+    string contents
+
+  let to_hex digest =
+    if String.length digest <> 16 then invalid_arg "Digest.to_hex"
+    else
+      let digits = "0123456789abcdef" in
+      let byte_to_hex value =
+        let byte = Char.code value in
+        String.concat ""
+          [String.make 1 (String.get digits (byte / 16));
+           String.make 1 (String.get digits (byte mod 16))] in
+      let rec encode index result =
+        if index < 0 then String.concat "" result
+        else encode (index - 1) (byte_to_hex (String.get digest index) :: result) in
+      encode 15 []
+
+  let compare left right = String.compare left right
+end;;
+
+(* A source-level compatibility implementation for the exact [Str] surface in
+   the direct Flyspeck full-build graph.  This is deliberately pure: accepting
+   [str.cma] must not turn into a host dynamic-loader or FFI capability.
+
+   The supported regular-expression syntax is the subset exercised by the
+   pinned source: literals, dot, character classes (including negation and
+   ranges), the [*], [+], and [?] quantifiers, and beginning/end anchors.
+   OCaml Str's escaped grouping, alternation, and back-reference syntax fails
+   explicitly instead of being silently misinterpreted. *)
+module Str = struct
+  type atom =
+    | Str_char of char
+    | Str_any
+    | Str_class of bool * char list
+    | Str_start
+    | Str_end
+
+  type quantifier =
+    | Str_once
+    | Str_star
+    | Str_plus
+    | Str_optional
+
+  type regexp = Str_regexp of (atom * quantifier) list
+
+  let invalid_regexp () = invalid_arg "Str.regexp: unsupported or malformed pattern"
+
+  let regexp pattern =
+    let pattern_length = String.length pattern in
+    let rec add_range first last chars =
+      let first_code = Char.code first in
+      let last_code = Char.code last in
+      let rec add code acc =
+        if code > last_code then acc
+        else add (code + 1) (Char.chr code :: acc) in
+      if first_code > last_code then invalid_regexp ()
+      else add first_code chars in
+    let read_class_char index =
+      if index >= pattern_length then invalid_regexp ()
+      else
+        let first = String.get pattern index in
+        if first = '\\' then
+          if index + 1 >= pattern_length then invalid_regexp ()
+          else (String.get pattern (index + 1), index + 2)
+        else (first, index + 1) in
+    let rec parse_class negated chars index =
+      if index >= pattern_length then invalid_regexp ()
+      else if String.get pattern index = ']' then
+        if chars = [] then invalid_regexp ()
+        else (Str_class (negated, List.rev chars), index + 1)
+      else
+        let first, next = read_class_char index in
+        if next + 1 < pattern_length &&
+           String.get pattern next = '-' &&
+           String.get pattern (next + 1) <> ']' then
+          let last, after = read_class_char (next + 1) in
+          parse_class negated (add_range first last chars) after
+        else
+          parse_class negated (first :: chars) next in
+    let quantifier atom index =
+      if index >= pattern_length then (Str_once, index)
+      else
+        let candidate = String.get pattern index in
+        let repeat, next =
+          if candidate = '*' then (Str_star, index + 1)
+          else if candidate = '+' then (Str_plus, index + 1)
+          else if candidate = '?' then (Str_optional, index + 1)
+          else (Str_once, index) in
+        match atom, repeat with
+        | (Str_start, Str_once) -> (repeat, next)
+        | (Str_end, Str_once) -> (repeat, next)
+        | (Str_start, _) -> invalid_regexp ()
+        | (Str_end, _) -> invalid_regexp ()
+        | _ -> (repeat, next) in
+    let rec parse pieces index =
+      if index >= pattern_length then Str_regexp (List.rev pieces)
+      else
+        let current = String.get pattern index in
+        let atom, next =
+          if current = '[' then
+            let class_start = index + 1 in
+            if class_start < pattern_length &&
+               String.get pattern class_start = '^' then
+              parse_class true [] (class_start + 1)
+            else parse_class false [] class_start
+          else if current = '\\' then
+            if index + 1 >= pattern_length then invalid_regexp ()
+            else
+              let escaped = String.get pattern (index + 1) in
+              if List.mem escaped ['('; ')'; '|'; '1'; '2'; '3'; '4';
+                                   '5'; '6'; '7'; '8'; '9'] then
+                invalid_regexp ()
+              else (Str_char escaped, index + 2)
+          else if current = '.' then (Str_any, index + 1)
+          else if current = '^' then (Str_start, index + 1)
+          else if current = '$' then (Str_end, index + 1)
+          else if current = '*' || current = '+' || current = '?' then
+            invalid_regexp ()
+          else (Str_char current, index + 1) in
+        let repeat, after = quantifier atom next in
+        parse ((atom, repeat) :: pieces) after in
+    parse [] 0
+
+  let atom_advance atom text position =
+    let text_length = String.length text in
+    match atom with
+    | Str_start -> if position = 0 then Some position else None
+    | Str_end -> if position = text_length then Some position else None
+    | Str_char expected ->
+       if position < text_length && String.get text position = expected then
+         Some (position + 1)
+       else None
+    | Str_any ->
+       if position < text_length && String.get text position <> '\n' then
+         Some (position + 1)
+       else None
+    | Str_class (negated, chars) ->
+       if position >= text_length then None
+       else
+         let present = List.mem (String.get text position) chars in
+         if present <> negated then Some (position + 1) else None
+
+  let rec match_pieces pieces text position =
+    match pieces with
+    | [] -> Some position
+    | (atom, repeat) :: rest ->
+       let rec try_positions = function
+         | [] -> None
+         | candidate :: candidates ->
+            (match match_pieces rest text candidate with
+             | Some ending -> Some ending
+             | None -> try_positions candidates) in
+       let rec consume candidate positions =
+         match atom_advance atom text candidate with
+         | Some next ->
+            if next > candidate then consume next (next :: positions)
+            else positions
+         | None -> positions in
+       match repeat with
+       | Str_once ->
+          (match atom_advance atom text position with
+           | Some next -> match_pieces rest text next
+           | None -> None)
+       | Str_optional ->
+          (match atom_advance atom text position with
+           | Some next -> try_positions [next; position]
+           | None -> match_pieces rest text position)
+       | Str_star -> try_positions (consume position [position])
+       | Str_plus ->
+          (match atom_advance atom text position with
+           | Some next ->
+              if next > position then try_positions (consume next [next])
+              else None
+           | None -> None)
+
+  let match_at (Str_regexp pieces) text position =
+    match_pieces pieces text position
+
+  let string_match expression text position =
+    if position < 0 || position > String.length text then
+      invalid_arg "Str.string_match"
+    else
+      match match_at expression text position with
+      | Some _ -> true
+      | None -> false
+
+  let search_forward expression text start =
+    let text_length = String.length text in
+    let rec search position =
+      if position > text_length then None
+      else
+        match match_at expression text position with
+        | Some ending -> Some (position, ending)
+        | None -> search (position + 1) in
+    if start < 0 || start > text_length then invalid_arg "Str.search_forward"
+    else search start
+
+  let split expression text =
+    let text_length = String.length text in
+    let rec drop_empty_prefix = function
+      | "" :: fields -> drop_empty_prefix fields
+      | fields -> fields in
+    let trim_empty_edges fields =
+      let without_leading = drop_empty_prefix fields in
+      List.rev (drop_empty_prefix (List.rev without_leading)) in
+    let add_field start ending fields =
+      String.sub text start (ending - start) :: fields in
+    let finish fields = trim_empty_edges (List.rev fields) in
+    let rec fields field_start search_start result =
+      if search_start > text_length then
+        finish (add_field field_start text_length result)
+      else
+        match search_forward expression text search_start with
+        | None -> finish (add_field field_start text_length result)
+        | Some (match_start, match_end) ->
+           let result' = add_field field_start match_start result in
+           if match_end > match_start then
+             fields match_end match_end result'
+           else if match_start < text_length then
+             fields match_start (match_start + 1) result'
+           else finish result' in
+    fields 0 0 []
+
+  let global_replace expression replacement text =
+    let rec literal_replacement index =
+      if index >= String.length replacement then ()
+      else if String.get replacement index = '\\' then
+        invalid_arg "Str.global_replace: replacement back-references unsupported"
+      else literal_replacement (index + 1) in
+    let text_length = String.length text in
+    let rec replace copied search_start result =
+      match search_forward expression text search_start with
+      | None ->
+         String.concat ""
+           (List.rev (String.sub text copied (text_length - copied) :: result))
+      | Some (match_start, match_end) ->
+         if match_end = match_start then
+           invalid_arg "Str.global_replace: empty matches unsupported"
+         else
+           let prefix = String.sub text copied (match_start - copied) in
+           replace match_end match_end (replacement :: prefix :: result) in
+    let _ = literal_replacement 0 in
+    replace 0 0 []
+
+  let first_chars text count = String.sub text 0 count
+end;;
+
 module Array = struct
   let make n x = Cake.Array.array n x
+  let init n f =
+    if n < 0 then invalid_arg "Array.init"
+    else Cake.Array.tabulate n f
   let length a = Cake.Array.length a
   let set a n x = try Cake.Array.update a n x
     with Subscript -> raise (Invalid_argument "Array.set")
@@ -251,18 +678,90 @@ module Random = struct
 end;;
 
 module Hashtbl = struct
-  type ('a, 'b) t = ('a, 'b) Cake.Hashtable.hashtable
-  (* Note that we additionally need to pass in hash and order to create *)
-  let create size hash order =
-    Cake.Hashtable.empty size hash (Candle.int_to_ordering order)
-  let find tbl x =
-    match Cake.Hashtable.lookup tbl x with
-    | None -> raise Not_found
-    | Some y -> y
-  let replace tbl x y = Cake.Hashtable.insert tbl x y
-  let remove tbl x = Cake.Hashtable.delete tbl x
-  let fold f tbl init =
-    Cake.List.foldl (fun (x,y) acc -> f x y acc) init (Cake.Hashtable.toAscList tbl)
+  (* CakeML intentionally has no polymorphic hash or ordering operation.  The
+     unary OCaml constructor therefore uses an equality-backed association
+     list.  Performance-sensitive Candle code can opt into the proved CakeML
+     hashtable with explicit hash/order functions via [create_ordered]. *)
+  type ('a, 'b) t =
+    Linear of (('a * 'b) list ref)
+  | Ordered of (('a, 'b) Cake.Hashtable.hashtable);;
+
+  let create capacity =
+    if capacity < 0 then invalid_arg "Hashtbl.create"
+    else Linear (ref [])
+
+  let create_ordered size hash order =
+    if size < 0 then invalid_arg "Hashtbl.create_ordered"
+    else Ordered
+      (Cake.Hashtable.empty size hash (Candle.int_to_ordering order))
+
+  let hash _ =
+    failwith
+      "Hashtbl.hash: polymorphic hashing is unavailable; use an explicit hash"
+
+  let rec find_linear key entries =
+    match entries with
+      [] -> raise Not_found
+    | (entry_key, value)::rest ->
+        if entry_key = key then value else find_linear key rest
+
+  let find table key =
+    match table with
+      Linear entries -> find_linear key !entries
+    | Ordered ordered ->
+        (match Cake.Hashtable.lookup ordered key with
+           None -> raise Not_found
+         | Some value -> value)
+
+  let mem table key =
+    try let _ = find table key in true with Not_found -> false
+
+  let add table key value =
+    match table with
+      Linear entries -> entries := (key, value) :: !entries
+    | Ordered ordered -> Cake.Hashtable.insert ordered key value
+
+  let rec replace_linear key value entries =
+    match entries with
+      [] -> [key, value]
+    | (entry_key, entry_value)::rest ->
+        if entry_key = key then (key, value)::rest
+        else (entry_key, entry_value)::replace_linear key value rest
+
+  let replace table key value =
+    match table with
+      Linear entries -> entries := replace_linear key value !entries
+    | Ordered ordered -> Cake.Hashtable.insert ordered key value
+
+  let rec remove_linear key entries =
+    match entries with
+      [] -> []
+    | (entry_key, value)::rest ->
+        if entry_key = key then rest
+        else (entry_key, value)::remove_linear key rest
+
+  let remove table key =
+    match table with
+      Linear entries -> entries := remove_linear key !entries
+    | Ordered ordered -> Cake.Hashtable.delete ordered key
+
+  let clear table =
+    match table with
+      Linear entries -> entries := []
+    | Ordered ordered -> Cake.Hashtable.clear ordered
+
+  let length table =
+    match table with
+      Linear entries -> Cake.List.length !entries
+    | Ordered ordered ->
+        Cake.List.length (Cake.Hashtable.toAscList ordered)
+
+  let fold f table init =
+    let entries =
+      match table with
+        Linear linear -> !linear
+      | Ordered ordered -> Cake.Hashtable.toAscList ordered in
+    Cake.List.foldl (fun (key,value) acc -> f key value acc) init entries
 end;;
 
 module Bytes = struct
@@ -283,27 +782,151 @@ module Bytes = struct
 end;;
 
 module Sys = struct
+  (*
+     The release loader supplies these values from its hashed manifest rather
+     than inheriting the host process environment.  Keep the allowlist small:
+     Flyspeck only needs these names during the direct-source build, and an
+     absent serialization entry must retain OCaml's [Not_found] behaviour.
+
+     This is a source-level compatibility slice.  [file_exists] intentionally
+     uses CakeML's verified TextIO-backed file predicate, so it covers ordinary
+     files but not directories.  Directory queries remain a separate, open FFI
+     contract instead of silently widening this predicate with shell access.
+  *)
+  let manifest_environment = ref ([] : (string * string) list)
+  let manifest_cwd = ref (None : string option)
+
+  let configure_manifest_environment cwd flyspeck_dir hollight_dir
+                                         serialization_enabled =
+    if cwd = "" || flyspeck_dir = "" || hollight_dir = "" then
+      invalid_arg "Sys.configure_manifest_environment: empty path"
+    else
+      let bindings =
+        [("FLYSPECK_DIR", flyspeck_dir);
+         ("HOLLIGHT_DIR", hollight_dir)] in
+      let bindings' =
+        if serialization_enabled then
+          ("FLYSPECK_SERIALIZATION", "1") :: bindings
+        else bindings in
+      manifest_cwd := Some cwd;
+      manifest_environment := bindings';;
+
+  let rec getenv_from_manifest name = function
+    | [] -> raise Not_found
+    | (key, value) :: rest ->
+        if key = name then value else getenv_from_manifest name rest
+
+  let getenv name = getenv_from_manifest name !manifest_environment
+
+  let getcwd () =
+    match !manifest_cwd with
+    | None -> raise (Sys_error "Sys.getcwd: manifest environment not configured")
+    | Some cwd -> cwd
+
+  (* The selected proof route only mentions [Sys.chdir] inside the historical
+     GLPK generator chain and the LP archive extractor.  The latter is removed
+     by an authenticated source normalization; the former has no selected
+     external caller.  Retain the name so those deferred function bodies type,
+     but abort if the generator lane is unexpectedly entered. *)
+  let chdir path =
+    failwith ("Sys.chdir: disabled by the Flyspeck S3 runtime policy: " ^ path)
+
+  let file_exists = isFile
+
+  (* The compatibility target is the pinned OCaml differential oracle.  The
+     suffix makes it explicit that this is Candle, while preserving the OCaml
+     version probes used by Flyspeck. *)
+  let ocaml_version = "4.14.1-candle"
+  let word_size = 64
+
   let remove (s: string) = print "TODO Sys.remove (noop)\n"
   let command (s: string) =
-    let slen = String.length s in
-    (* slen + 1: null-terminated string; 2: status bytes *)
-    let blen = Int.max 2 (slen + 1) in
-    let bytes = Bytes.create blen in
-    (* Avoid recomputing length by using blit_string instead of of_string *)
-    let _ = Bytes.blit_string s 0 bytes 0 slen in
-    let _ = Cake.Runtime.customFFI "system" bytes in
-    let ret = Cake.Word8.toInt (Bytes.get bytes 0) in
-    let _ =
-      if 0 < ret
-      then raise (Sys_error "Sys.command: no termination status for child")
-      else () in
-    Cake.Word8.toInt (Bytes.get bytes 1);;
+    failwith ("Sys.command: disabled by the Flyspeck S3 runtime policy: " ^ s);;
   let time () =
     print_endline "TODO Sys.time (always returns 0)";
     Float.zero;;
 end;;
 
+(* The selected [compact] calls are performance hints.  Keep them deterministic
+   and free of a new runtime/host inspection FFI.  The record-valued [Gc.stat]
+   telemetry is removed by an exact, hash-bound selected-source normalization. *)
+module Gc = struct
+  let compact () = ();;
+end;;
+
+(* Direct Flyspeck uses [Unix.open_process_in] during strictbuild startup and
+   reporting to obtain metadata from [date] and [whoami].  The release path
+   substitutes manifest-hashed text files for those nondeterministic shell
+   commands.  No ambient process execution is exposed.
+
+   The four selected [Unix.gettimeofday] calls measure load-time self-tests or
+   LP verification and use their differences only as reported telemetry.  The
+   proof-producing functions and their results do not depend on the clock.
+   Return a deterministic zero timestamp so those computations execute without
+   adding a clock FFI; wall/RSS timing belongs to the authenticated external
+   runner.  This is a selected-route telemetry substitution, not a general
+   implementation of OCaml wall-clock semantics.  Other selected Unix
+   operations stay fail-closed until their sandbox/refinement obligations are
+   implemented. *)
+let candle_unix_manifest_process_inputs =
+  ref (None : (string * string) option);;
+
+let candle_configure_manifest_process_inputs date_file user_file =
+    if date_file = "" || user_file = "" then
+      invalid_arg "candle_configure_manifest_process_inputs: empty path"
+    else if not (Sys.file_exists date_file) || not (Sys.file_exists user_file) then
+      invalid_arg "candle_configure_manifest_process_inputs: missing ordinary file"
+    else candle_unix_manifest_process_inputs := Some (date_file, user_file);;
+
+module Unix = struct
+  let open_process_in command =
+    match !candle_unix_manifest_process_inputs with
+    | None -> failwith "Unix.open_process_in: manifest inputs not configured"
+    | Some (date_file, user_file) ->
+       if command = "date" then open_in date_file
+       else if command = "whoami" then open_in user_file
+       else failwith ("Unix.open_process_in: command not allowlisted: " ^ command)
+
+  let close_process_in channel =
+    close_in channel
+
+  let open_process command =
+    failwith ("Unix.open_process: disabled pending sandbox contract: " ^ command)
+
+  let close_process channels =
+    failwith "Unix.close_process: unavailable without an opened sandboxed process"
+
+  let gettimeofday () =
+    Float.zero
+
+  let mkdir path mode =
+    failwith ("Unix.mkdir: disabled pending filesystem contract: " ^ path)
+end;;
+
+(* Save the boot-library filename operations before the OCaml-compatible
+   [Filename] module below shadows that module name. *)
+let candle_filename_is_relative = Filename.isRelative
+let candle_filename_concat = Filename.concat
+let candle_filename_basename = Filename.basename
+let candle_filename_dirname = Filename.dirname
+
 module Filename = struct
+  (* Preserve the filename operations supplied by Candle's verified boot
+     library.  Defining this OCaml-compatibility module used to shadow those
+     operations and retain only the two temporary-file stubs. *)
+  let current_dir_name = "."
+  let parent_dir_name = ".."
+  let is_relative = candle_filename_is_relative
+  let concat = candle_filename_concat
+  let basename = candle_filename_basename
+  let dirname = candle_filename_dirname
+
+  let check_suffix name suffix =
+    let name_len = String.length name in
+    let suffix_len = String.length suffix in
+    suffix_len <= name_len &&
+    String.sub name (name_len - suffix_len) suffix_len = suffix
+
   let get_temp_dir_name () =
     print_endline "TODO Filename.get_temp_dir_name (always returns /tmp)";
     "/tmp"

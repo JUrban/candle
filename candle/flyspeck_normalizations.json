@@ -1,0 +1,541 @@
+{
+  "schema": 2,
+  "claim": "Exact hash-bound mechanical source normalizations for the pinned direct Flyspeck route",
+  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "entries": [
+    {
+      "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
+      "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+      "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+      "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f",
+      "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
+      "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
+      "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
+      "normalized_bytes": 45259,
+      "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-FIRST-VARIABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 329,
+          "before": "Stdlib.compare var1 var2",
+          "after": "Term.compare var1 var2"
+        },
+        {
+          "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-VARIABLE-TABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 342,
+          "before": "Stdlib.compare tm1 tm2",
+          "after": "Term.compare tm1 tm2"
+        },
+        {
+          "id": "PROJECT-POINTER-S3-IMMEDIATE-001-REPLACE",
+          "kind": "exact_bytes_replace_once",
+          "line": 1050,
+          "before": "    if n == 1 then [] else\n",
+          "after": "    if n = 1 then [] else\n"
+        }
+      ],
+      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison.",
+      "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists; compiled ordering and terminal theorem fingerprints remain required."
+    },
+    {
+      "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
+      "source_key": "flyspeck:text_formalization/general/lib.hl",
+      "path": "text_formalization/general/lib.hl",
+      "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865",
+      "source_md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
+      "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
+      "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
+      "normalized_bytes": 29873,
+      "operations": [
+        {
+          "id": "PROJECT-POINTER-S3-LIB-FILTER-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 209,
+          "before": "let rec filter p l =\n  match l with\n    [] -> l\n  | h::t -> let t' = filter p t in\n            if p(h) then if t'==t then l else h::t'\n            else t';;",
+          "after": "let filter p l =\n  let rec changed l =\n    match l with\n      [] -> None\n    | h::t ->\n        (match changed t with\n           None -> if p(h) then None else Some t\n         | Some t' -> if p(h) then Some(h::t') else Some t') in\n  match changed l with None -> l | Some l' -> l';;"
+        },
+        {
+          "id": "PROJECT-POINTER-S3-LIB-PARTITION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 216,
+          "before": "let rec partition p l =\n  match l with\n    [] -> [],l\n  | h::t -> let yes,no = partition p t in\n            if p(h) then (if yes == t then l,[] else h::yes,no)\n            else (if no == t then [],l else yes,h::no);;",
+          "after": "let partition p l =\n  let rec part l =\n    match l with\n      [] -> [],[],true,true\n    | h::t ->\n        let yes,no,all_yes,all_no = part t in\n        if p(h) then\n          ((if all_yes then l else h::yes),no,all_yes,false)\n        else\n          (yes,(if all_no then l else h::no),false,all_no) in\n  let yes,no,_,_ = part l in yes,no;;"
+        },
+        {
+          "id": "PROJECT-POINTER-S3-LIB-UNIQ-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 345,
+          "before": "let rec uniq l =\n  match l with\n    x::(y::_ as t) -> let t' = uniq t in\n                      if Stdlib.compare x y = 0 then t' else\n                      if t'==t then l else x::t'\n | _ -> l;;",
+          "after": "let uniq l =\n  let rec changed l =\n    match l with\n      x::(y::_ as t) ->\n        (match changed t with\n           None ->\n             if Stdlib.compare x y = 0 then Some t else None\n         | Some t' ->\n             if Stdlib.compare x y = 0 then Some t' else Some(x::t'))\n    | _ -> None in\n  match changed l with None -> l | Some l' -> l';;"
+        },
+        {
+          "id": "PROJECT-POINTER-S3-LIB-QMAP-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 474,
+          "before": "let rec qmap f l =\n  match l with\n    h::t -> let h' = f h and t' = qmap f t in\n            if h' == h && t' == t then l else h'::t'\n  | _ -> l;;",
+          "after": "let qmap _ _ =\n  failwith \"Candle Flyspeck: qmap requires physical sharing observation\";;"
+        },
+        {
+          "id": "PROJECT-POINTER-S3-LIB-UNDEFINE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 622,
+          "before": "let undefine =\n  let rec undefine_list x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then t\n          else if c < 0 then l else\n          let t' = undefine_list x t in\n          if t' == t then l else ab::t'\n    | [] -> [] in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und t =\n      match t with\n        Leaf(h,l) when h = k ->\n          let l' = undefine_list x l in\n          if l' == l then t\n          else if l' = [] then Empty\n          else Leaf(h,l')\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            let l' = und l in\n            if l' == l then t\n            else (match l' with Empty -> r | _ -> Branch(p,b,l',r))\n          else\n            let r' = und r in\n            if r' == r then t\n            else (match r' with Empty -> l | _ -> Branch(p,b,l,r'))\n      | _ -> t in\n    und;;",
+          "after": "let undefine =\n  let rec undefine_list_changed x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then Some t\n          else if c < 0 then None else\n          (match undefine_list_changed x t with\n             None -> None\n           | Some t' -> Some(ab::t'))\n    | [] -> None in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und_changed t =\n      match t with\n        Leaf(h,l) when h = k ->\n          (match undefine_list_changed x l with\n             None -> None\n           | Some l' ->\n               Some(if l' = [] then Empty else Leaf(h,l')))\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            (match und_changed l with\n               None -> None\n             | Some l' ->\n                 Some(match l' with Empty -> r\n                                    | _ -> Branch(p,b,l',r)))\n          else\n            (match und_changed r with\n               None -> None\n             | Some r' ->\n                 Some(match r' with Empty -> l\n                                    | _ -> Branch(p,b,l,r')))\n      | _ -> None in\n    fun t -> match und_changed t with None -> t | Some t' -> t';;"
+        }
+      ],
+      "semantic_rule": "The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
+      "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
+    },
+    {
+      "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+      "source_key": "flyspeck:text_formalization/general/print_types.hl",
+      "path": "text_formalization/general/print_types.hl",
+      "source_sha256": "193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6",
+      "source_md5": "d004cc811172daa7461e746516a215e6",
+      "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
+      "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
+      "normalized_bytes": 3140,
+      "operations": [
+        {
+          "id": "PROJECT-POINTER-S3-UNSUPPRESS-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 34,
+          "before": "  let unsuppress s = suppressed := List.filter ((!=) s) (!suppressed)",
+          "after": "  let unsuppress _ = failwith \"Candle Flyspeck: unsuppress requires physical string identity\""
+        }
+      ],
+      "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation.",
+      "scope_limit": "This is a selected-graph non-use refinement, not general compatibility for Print_types.unsuppress; source/hash drift or any observed call keeps the release gate open."
+    },
+    {
+      "id": "PROJECT-POINTER-S3-RELABEL-001",
+      "source_key": "flyspeck:text_formalization/jordan/tactics_jordan.hl",
+      "path": "text_formalization/jordan/tactics_jordan.hl",
+      "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe",
+      "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
+      "normalized_sha256": "6d28b0d1ba6300a9dca6705530e15a555567ca31bd1661a21a23703bf913df8d",
+      "normalized_md5": "750508a2cadac11cd053fec89cb2a5fb",
+      "normalized_bytes": 54870,
+      "operations": [
+        {
+          "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 256,
+          "before": "        let avoids = filter ((!=) x) (vars_and_constants tm []) in",
+          "after": "        let avoids = filter (fun y -> not (y = x)) (vars_and_constants tm []) in"
+        },
+        {
+          "id": "PROJECT-HASH-S3-JORDAN-TERM-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 529,
+          "before": "num (Hashtbl.hash tm)",
+          "after": "num (Hash_term.hash_of_term tm)"
+        }
+      ],
+      "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
+      "scope_limit": "The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; it does not implement polymorphic hashing. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
+    },
+    {
+      "id": "PROJECT-MODULE-S3-SET-MAKE-001",
+      "source_key": "flyspeck:text_formalization/general/serialization.hl",
+      "path": "text_formalization/general/serialization.hl",
+      "source_sha256": "fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed",
+      "source_md5": "9228eaf6a96159d9f59fea40fcc2a12f",
+      "normalized_sha256": "93343a90863d775f0a09257859553aacb7ad5b885ed95f21517ba0402ce253a3",
+      "normalized_md5": "c109c6567cd777812a1479cb54eea6e9",
+      "normalized_bytes": 26464,
+      "operations": [
+        {
+          "id": "PROJECT-MODULE-S3-SET-MAKE-001-EXPLICIT-STRING-SET",
+          "kind": "exact_bytes_replace_once",
+          "line": 34,
+          "before": "module  String_compare : Set.OrderedType with type t = string = struct\n  type t = string;;\n  let  compare (t1:string) (t2:string) = Stdlib.compare (t1) (t2);;\nend;;\n\nmodule St = Set.Make(String_compare);;",
+          "after": "module St = struct\n  type elt = string;;\n  type t = string list;;\n  let empty = [];;\n  let rec mem value values =\n    match values with\n      [] -> false\n    | head::tail -> value = head || mem value tail;;\n  let add value values =\n    if mem value values then values else value::values;;\nend;;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-STATIC-LOAD",
+          "kind": "exact_bytes_replace_once",
+          "line": 20,
+          "before": "let _ = if Str.string_match (Str.regexp \"Ocaml 4.\") (ocaml_version()) 0 then \n  needs \"general/update_database_400.ml\"\nelse\n  needs \"general/update_database_310.ml\";;",
+          "after": "#flyspeck_loadt \"general/update_database_400.ml\";;"
+        }
+      ],
+      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted.",
+      "scope_limit": "This is not general functor, Set.Make, or conditional dynamic-loading support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, and the pinned 4.14.1 update-database branch. Any new St operation, representation observation, source/version drift, or branch change reopens the compatibility gate."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",
+      "source_key": "flyspeck:text_formalization/general/update_database_400.ml",
+      "path": "text_formalization/general/update_database_400.ml",
+      "source_sha256": "f1d0a45a0ce2ec54a57bf017989d6960124fd9bbfeb0a8a3ad24a3ffac268467",
+      "source_md5": "4e923bcd7bc9f75b38329fdf2e380406",
+      "normalized_sha256": "3fe52ade9303ab0ae0839cadac09995254d5dce553fe949bb5cda558ed8aefbe",
+      "normalized_md5": "85ffaa8772cbaf66897720a5bf6215bd",
+      "normalized_bytes": 5871,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-ELIDE-INITIAL-DEAD-EFFECT",
+          "kind": "exact_bytes_replace_once",
+          "line": 338,
+          "before": "update_database ();;",
+          "after": "let candle_flyspeck_update_database_effect_elided = true;;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-REMOVE-COMPILER-INTERNALS",
+          "kind": "exact_span_replace_once",
+          "line": 27,
+          "end_line": 234,
+          "start": "let exec = ignore o Toploop.execute_phrase false Format.std_formatter\r\n  o !Toploop.parse_toplevel_phrase o Lexing.from_string;;\r\n",
+          "end": "\"   lastStamp := !currentStamp;\r\n    theorems := Hashtbl.fold (fun s t l -> (s,t)::l) thms [];;\r\n\");;\r\n",
+          "span_sha256": "321ace78ddb20b521a213df73bf2d3b8ac73774293b6266e8aeb7d789c6e5a2d",
+          "after": "let update_database () =\r\n  failwith \"Candle Flyspeck: dynamic theorem-search database update is disabled by the static proof route\";;\r\n"
+        }
+      ],
+      "semantic_rule": "The only selected active update_database call is the initial load-time replacement of the interactive theorem-search cache. Exact comment/string/quotation-aware inventory finds no selected accepted-run consumer of that cache or of search/search_thml; later update_database and !theorems sites are in deferred serialization helper bodies. The static proof route therefore removes the unobserved initial cache mutation, retains pure search-pattern constructors, and makes every future dynamic update/search attempt fail closed instead of supplying Toploop, Lexing, Obj.magic, or compiler-layout guesses.",
+      "scope_limit": "This is selected-route dead-effect elimination, not a successful no-op implementation of Toploop or theorem search. The complete run, exact final theorem/assumption fingerprints, and mutation tests must confirm non-observation. Any selected search call, theorem-cache read, reflection, source drift, or fingerprint difference invalidates the normalization and requires a typed registry or verified dynamic-evaluation design."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001",
+      "source_key": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl",
+      "path": "text_formalization/general/flyspeck_eval_4.14.hl",
+      "source_sha256": "602d1d0e3e224d742fb412e0fb7bd88b4c176a1aa713bb4f6dc7d6ff350eae15",
+      "source_md5": "0f625ae4acb1fa69d4add5957e0ff308",
+      "normalized_sha256": "5a4175e6542ccee003418bfe6528b3d54d481970c3cff9b564ebda6c7301c117",
+      "normalized_md5": "3ba61c19dc69f135bf014dff38fc2ead",
+      "normalized_bytes": 456,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001-FAIL-CLOSED",
+          "kind": "exact_span_replace_once",
+          "line": 13,
+          "end_line": 28,
+          "start": "let eval_command ?(silent=false) command =\n",
+          "end": "     (false,  Buffer.contents buffer);;\n",
+          "span_sha256": "0ebce65eb0ebabca9f8924fd3fdb8648b18b7bfb6427957b554f3b31bf8c2169",
+          "after": "let eval_command ?(silent=false) (command:string) : bool * string =\n  failwith (\"Candle Flyspeck: dynamic eval_command is disabled by the static manifest: \"^command);;\n"
+        }
+      ],
+      "semantic_rule": "The exact selected graph contains only the eval_command definition; its sole external caller is in the unselected archive-generation helper. Replacing the body by an explicit failure preserves every selected accepted run and prevents latent dynamic source evaluation from being mistaken for a checked result.",
+      "scope_limit": "This is a lexical selected-graph non-use refinement, not eval_command compatibility. A complete compiled run and final fingerprints remain required; any call, reflection, external input, or source drift blocks promotion."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
+      "source_key": "flyspeck:jHOLLight/caml/ssreflect.hl",
+      "path": "jHOLLight/caml/ssreflect.hl",
+      "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9",
+      "source_md5": "6f69a400e5f3922f4d572840748b35c7",
+      "normalized_sha256": "43e8a264534ce3974bf73e1d376f1e98eb32518205fe0fbee5319a37cdfb414e",
+      "normalized_md5": "2d0f8e0f45731595440fb400ac6956e6",
+      "normalized_bytes": 33197,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001-FAIL-CLOSED",
+          "kind": "exact_span_replace_once",
+          "line": 721,
+          "end_line": 753,
+          "start": "let test_id_thm id =\n",
+          "end": "\t  Arg_theorem !use_arg_then_result in\n    arg_tac arg g;;\n",
+          "span_sha256": "bfad00902444f02b10e2ce81ad0ae03865ee8a1effed82d033ce99c8838f61fc",
+          "after": "let test_id_thm (id:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic test_id_thm is disabled by typed theorem arguments: \"^id);;\n\n\n(* The selected compiled route uses use_arg_then2 with an explicit theorem. *)\nlet use_arg_then (id:string) (arg_tac:arg_type->tactic) (g:goal) =\n  failwith (\"Candle Flyspeck: dynamic use_arg_then is disabled by typed theorem arguments: \"^id);;\n"
+        }
+      ],
+      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged.",
+      "scope_limit": "This is not general ssreflect string lookup or Toploop compatibility. Lexical non-use cannot exclude reflection or external callers; the complete run and final fingerprints remain mandatory, and any call or change in the exact 22-file typed-use inventory reopens the gate."
+    },
+    {
+      "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
+      "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
+      "path": "text_formalization/build/strictbuild.hl",
+      "source_sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a",
+      "source_md5": "7d1e3729a05042883713cda2c9fad1f1",
+      "normalized_sha256": "e8678c01ebb0ddcd647b0155f05caee931be482161f1d34319c1c6cb3fdf74c3",
+      "normalized_md5": "35aa60993c762f45e08e7145e9da2bad",
+      "normalized_bytes": 9134,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 86,
+          "before": "let use_file_b s =\n  if not(Sys.file_exists s) \n  then (report (\"File not found \"^s); false)\n  else \n    (Toploop.use_file Format.std_formatter s) || \n      (Format.print_string(\"Error in included file \"^s);\n       Format.print_newline(); false);;",
+          "after": "let use_file_b (s:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic use_file_b is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-DEBUG-LOADT-ACTIONS",
+          "kind": "exact_bytes_replace_once",
+          "line": 103,
+          "before": "loadt (flyspeckpath \"general/parser_verbose.hl\");;\nloadt (flyspeckpath \"general/debug.hl\");;",
+          "after": "#flyspeck_loadt \"general/parser_verbose.hl\";;\n#flyspeck_loadt \"general/debug.hl\";;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-NEEDS-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 133,
+          "before": "let needs s =\n  let s' = file_on_path (!load_path) s in\n  let fileid = (Filename.basename s',Digest.file s') in\n  if List.mem fileid (!loaded_files)\n  then Format.print_string(\"File \\\"\"^s^\"\\\" already loaded\\n\") \n  else \n    let _ = loadt s in\n    let _ = Format.print_string(\"File \\\"\"^s'^\"\\\" -successfully loaded\\n\") in\n      ();;",
+          "after": "let needs (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild needs is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-STATE-MANAGER-LOADT-ACTION",
+          "kind": "exact_bytes_replace_once",
+          "line": 167,
+          "before": "loadt (flyspeckpath \"general/state_manager.hl\");;",
+          "after": "#flyspeck_loadt \"general/state_manager.hl\";;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-RENEEDS-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 168,
+          "before": "let reneeds s = loadt (flyspeckpath s);;",
+          "after": "let reneeds (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild reneeds is disabled by the static manifest: \"^s);;"
+        }
+      ],
+      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, or reneeds chains; their normalized bindings fail explicitly if that assumption is wrong. No Toploop shim or successful no-op is installed.",
+      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file or dynamic loadt compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+    },
+    {
+      "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",
+      "source_key": "flyspeck:text_formalization/general/parser_verbose.hl",
+      "path": "text_formalization/general/parser_verbose.hl",
+      "source_sha256": "c999e6428ff402a781db826ca3b4c3e4b7ad400c9f549b6e964b4798e4981ba5",
+      "source_md5": "7ebe35d505dd4c5a4793bd55c49a5bce",
+      "normalized_sha256": "1af4e5bc6e7fc7a95c3ae9d12a6a721e17575451573d595f015c1c6a2ef461d1",
+      "normalized_md5": "ca206581943b009ea815225c0ff9ad95",
+      "normalized_bytes": 13239,
+      "operations": [
+        {
+          "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-STRING-FORMAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 36,
+          "before": "        failwith (sprintf \"parse_pretype_verbose: mk_prefinty, n = %s\" (string_of_num n))",
+          "after": "        failwith (\"parse_pretype_verbose: mk_prefinty, n = \" ^ string_of_num n)"
+        },
+        {
+          "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-LIFT-INNER-MATCH",
+          "kind": "exact_bytes_replace_once",
+          "line": 86,
+          "before": "  let pdest_eq (Combp(Combp(Varp((\"=\"|\"<=>\"),_),l),r)) = l,r in",
+          "after": "  let pdest_eq (Combp(Combp(Varp(opname,_),l),r)) =\n    match opname with \"=\" | \"<=>\" -> l,r in"
+        }
+      ],
+      "semantic_rule": "The constructor spine and returned subterms are unchanged. The two constant alternatives are moved from the function argument into an ordinary match, which CakeML already distributes into equivalent clauses. Both accepted operators return the identical l and r values; every other operator or constructor shape still aborts with Match_failure. The file's sole sprintf call has one %s conversion and is replaced by prefix concatenation, yielding the same bytes for every string_of_num result.",
+      "scope_limit": "The pinned selected graph contains one let-binding or-pattern, in parser_verbose.hl; the duplicate under azure/hol-light-nat is outside the selected graph. This exact rewrite does not claim general let-binding or-pattern or formatted-printing support. Source drift, a new selected occurrence, changed accepted results, changed failure text, or changed rejection class blocks release."
+    },
+    {
+      "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001",
+      "source_key": "flyspeck:text_formalization/general/debug.hl",
+      "path": "text_formalization/general/debug.hl",
+      "source_sha256": "b19e1e179b0863e551671688d76c24b13498965b460c0f514b9065a1bb8a8483",
+      "source_md5": "e34834e6b77b9f01836c28eca156119b",
+      "normalized_sha256": "a456dba39b239cfbe135ec10c9acfebcade7857fbfc36e1d52487f7856cfa187",
+      "normalized_md5": "9180a21c2ba1ae40ae032387d0418255",
+      "normalized_bytes": 6122,
+      "operations": [
+        {
+          "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001-REMOVE",
+          "kind": "exact_bytes_replace_once",
+          "line": 22,
+          "before": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\";);;",
+          "after": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\");;"
+        }
+      ],
+      "semantic_rule": "OCaml 4.14.1 accepts a trailing sequence separator immediately before the closing parenthesis and evaluates it as the same unit-valued sequence. Removing that one exact separator preserves evaluation order, effects, exceptions, and result.",
+      "scope_limit": "This one-token correction is confined to Debug.print_m at pinned source line 22 and does not claim general parser support for trailing sequence separators. Any source drift or newly selected occurrence requires a separate inventory and remedy."
+    },
+    {
+      "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
+      "source_key": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
+      "path": "formal_lp/hypermap/main/lp_certificate.hl",
+      "source_sha256": "256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709",
+      "source_md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
+      "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
+      "normalized_md5": "639783011d135bd2aa117330b257174d",
+      "normalized_bytes": 3300,
+      "operations": [
+        {
+          "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-REMOVE-RUNTIME-EXTRACTION",
+          "kind": "exact_bytes_replace_once",
+          "line": 88,
+          "before": "let run_command dir com =\n  let cur_dir = Sys.getcwd() in\n  let _ = Sys.chdir dir in\n  let result = Sys.command com in\n  let _ = Sys.chdir cur_dir in\n    result;;\n\nlet create_tmp_dir base_dir = \n  let tmp_dir = Filename.concat base_dir \"tmp\" in\n    if Sys.file_exists tmp_dir then\n      if Sys.is_directory tmp_dir then\n\tif Array.length (Sys.readdir tmp_dir) > 0 then\n\t  failwith (\"create_tmp_dir: the directory is not empty: \" ^\n\t\t      tmp_dir)\n\telse\n\t  tmp_dir\n      else\n\tfailwith (\"create_tmp_dir: cannot create the directory \" ^\n\t\t    tmp_dir)\n    else\n      let _ = Unix.mkdir tmp_dir 0o777 in\n\ttmp_dir;;\n",
+          "after": "(* Candle S3 reads only manifest-authenticated, host-prepared certificate files. *)\n"
+        },
+        {
+          "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-FAIL-CLOSED-GZIP",
+          "kind": "exact_bytes_replace_once",
+          "line": 124,
+          "before": "let read_compressed_lp_certificates fname =\n  let base_dir = Filename.dirname fname in\n  let tmp_dir = create_tmp_dir base_dir in\n  let cmd = Format.sprintf \"tar -xvzf \\\"%s\\\"\" fname in\n  let _ = run_command tmp_dir cmd in\n  let files = Sys.readdir tmp_dir in\n  let certs =\n    Array.fold_left \n      (fun all file ->\n\t let fname = Filename.concat tmp_dir file in\n\t let cs = read_raw_lp_certificates fname in\n\t   cs @ all) [] files in\n  let _ = run_command base_dir (Format.sprintf \"rm -rf \\\"%s\\\"\" tmp_dir) in\n    certs;;\n\nlet read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    read_compressed_lp_certificates fname\n  else\n    read_raw_lp_certificates fname;;\n",
+          "after": "let read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    failwith \"compressed LP certificate reached the shell-free Candle S3 runtime\"\n  else\n    read_raw_lp_certificates fname;;\n"
+        }
+      ],
+      "semantic_rule": "The release input preparer authenticates the sole selected tar.gz archive, requires exactly one ordinary hard_7.dat member, and atomically emits bytes with a pinned digest into a separate generated-input tree. The compiled source therefore reads raw certificate bytes only; those bytes remain untrusted evidence checked by the existing HOL Light LP verifier.",
+      "scope_limit": "This exact selected-route rewrite requires the 39-entry authenticated certificate table and the prepared hard_7.dat receipt. It does not claim general Sys.command, tar, temporary-directory, directory-enumeration, or compressed-input compatibility. Any .gz path reaching the compiled reader fails closed."
+    },
+    {
+      "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
+      "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
+      "path": "formal_lp/hypermap/verify_all.hl",
+      "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95",
+      "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
+      "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
+      "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
+      "normalized_bytes": 3630,
+      "operations": [
+        {
+          "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
+          "kind": "exact_bytes_replace_once",
+          "line": 10,
+          "before": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_files_with_prefix dir prefix =\n  let files = Array.to_list (Sys.readdir dir) in\n  let n = String.length prefix in\n  let files1 = filter (fun f -> String.length f >= n) files in\n  let files2 = filter (fun f -> String.sub f 0 n = prefix) files1 in\n    map (fun f -> sprintf \"%s/%s\" dir f) files2;;\n\nlet get_certificate_files_with_prefix dir prefix =\n  let alt_dir = dir ^ \"/lp_certificates\" in\n  let files1 = get_files_with_prefix dir prefix in\n  let files2 =\n    if Sys.file_exists alt_dir then\n      get_files_with_prefix alt_dir prefix\n    else\n      [] in\n    files1 @ files2;;\n\n",
+          "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n"
+        },
+        {
+          "id": "PROJECT-TELEMETRY-S3-GC-STAT-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 29,
+          "before": "let mem_stat () =\n  let stat = Gc.stat() in\n  let word = float_of_int (Sys.word_size / 8) in\n  let free = float_of_int stat.Gc.free_words *. word /. 1024.0 in\n  let total = float_of_int stat.Gc.heap_words *. word /. 1024.0 in\n  let allocated = total -. free in\n  let str = sprintf \"allocated = %f (free = %f; total_size = %f; %f)\\n\" \n    allocated free total (free /. total) in\n    print_string str;;\n",
+          "after": "let mem_stat () =\n  print_string \"Candle S3: GC memory telemetry is reported by the outer runner\\n\";;\n"
+        }
+      ],
+      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
+      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims."
+    },
+    {
+      "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
+      "source_key": "flyspeck:text_formalization/tame/linear_programming_results.hl",
+      "path": "text_formalization/tame/linear_programming_results.hl",
+      "source_sha256": "0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4",
+      "source_md5": "75fb7f0449759cd3592569426d4e66b4",
+      "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
+      "normalized_md5": "873d319b17157a5f244f40d18450eacd",
+      "normalized_bytes": 3544,
+      "operations": [
+        {
+          "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 46,
+          "before": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let result_table = Hashtbl.create (length ths) in\n  let _ = map (fun (id, th) -> Hashtbl.add result_table id th) ths in\n",
+          "after": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let expected_table = Hashtbl.create (length archive_const_ids) in\n  let add_expected id =\n    if Hashtbl.mem expected_table id then\n      failwith (\"duplicate Flyspeck archive id: \"^id)\n    else Hashtbl.add expected_table id () in\n  let _ = map add_expected archive_const_ids in\n  let result_table = Hashtbl.create (length ths) in\n  let add_result (id, th) =\n    if not (Hashtbl.mem expected_table id) then\n      failwith (\"unexpected LP result id: \"^id)\n    else if Hashtbl.mem result_table id then\n      failwith (\"duplicate LP result id: \"^id)\n    else Hashtbl.add result_table id th in\n  let _ = map add_result ths in\n  let _ =\n    if length ths <> length archive_const_ids then\n      failwith \"LP result/archive id count mismatch\"\n    else () in\n"
+        }
+      ],
+      "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification.",
+      "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
+    },
+    {
+      "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
+      "path": "text_formalization/nonlinear/break_case_exec.hl",
+      "source_sha256": "e20b303d586f51f771afa3ad48f7c40fa275b6e88888554ed10b52794abfbced",
+      "source_md5": "736fb16a1dab5f13102fdb185a0a1c08",
+      "normalized_sha256": "79346ceabbfcd0bf1f166579a1eeae3b62e03a03baa2b0f460efb4dc311efe63",
+      "normalized_md5": "877814cc08f081a8a25d6dfbc64aba1e",
+      "normalized_bytes": 62100,
+      "operations": [
+        {
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-PARAMETER-COUNT",
+          "kind": "exact_bytes_replace_once",
+          "line": 1649,
+          "before": "List.length all_parameters = 23242;;",
+          "after": "List.length all_parameters = 23242 ||\n  failwith \"nonlinear all_parameters count mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-LEAF-COUNTER",
+          "kind": "exact_bytes_replace_once",
+          "line": 1693,
+          "before": "let rec prove_iargs tm = \n  let (_,[x;d;f]) = strip_comb tm in\n",
+          "after": "let candle_nonlinear_iarg_leaf_visits = ref 0;;\n\nlet rec prove_iargs tm = \n  let (_,[x;d;f]) = strip_comb tm in\n"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-LEAF-VISIT",
+          "kind": "exact_bytes_replace_once",
+          "line": 1702,
+          "before": "      | Iarg_leaf _ -> ASSUME tm\n",
+          "after": "      | Iarg_leaf _ ->\n          let _ = incr candle_nonlinear_iarg_leaf_visits in\n            ASSUME tm\n"
+        }
+      ],
+      "semantic_rule": "The existing 23,242 comparison still evaluates once and now fails closed. The recursive proof-tree reconstruction also increments one private counter at every Iarg_leaf branch, immediately before the unchanged ASSUME operation. The final assembly normalization requires exactly the 7,479 leaf constructors authenticated by break_case_log.hl to have been visited.",
+      "scope_limit": "The 23,242 pre-setify diagnostic list remains only a partition-shape guard. The 7,479 visit gate establishes complete traversal of the pinned serialized Iarg leaf corpus only when combined with the fatal caught-failure gates, the authenticated case-log hash, final theorem fingerprints, and clean compiled execution; it does not independently bind proof history or exclude a count-preserving source mutation."
+    },
+    {
+      "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
+      "path": "text_formalization/nonlinear/mk_all_ineq.hl",
+      "source_sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11",
+      "source_md5": "d80256e5d423dadbde8f58f6ff5cbc81",
+      "normalized_sha256": "404aa6a9252dcf790703b0cb8d1a1b6f61af623276d2a794ba02bfa26a4d5a1c",
+      "normalized_md5": "44f7f8842ee7bf2d2aeca90d5a1d2d94",
+      "normalized_bytes": 14841,
+      "operations": [
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-SURFACE-DIGEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 49,
+          "before": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\";;",
+          "after": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\" ||\n  failwith \"the_nonlinear_inequalities surface digest mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-IMPLICATION-TRUTH",
+          "kind": "exact_bytes_replace_once",
+          "line": 335,
+          "before": "let exec_results = exec();;",
+          "after": "let exec_results = exec();;\n\nlet _ =\n  filter (fun (_,t) -> t = TRUTH) exec_results = [] ||\n  failwith \"failed nonlinear implication reconstruction\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-PREP-AND-LEAVES",
+          "kind": "exact_bytes_replace_once",
+          "line": 364,
+          "before": "let _ = \n  filter  (fun (_,t) -> t = TRUTH) prep_nonlinear_thml = [] ||\n   failwith \"failed prep cases\";;",
+          "after": "let _ = \n  filter  (fun (_,t) -> t = TRUTH) prep_nonlinear_thml = [] ||\n   failwith \"failed prep cases\";;\n\nlet _ =\n  !Break_case_exec.candle_nonlinear_iarg_leaf_visits = 7479 ||\n  failwith \"nonlinear serialized leaf coverage mismatch\";;"
+        },
+        {
+          "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-THEOREM-DIGEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 412,
+          "before": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\";;",
+          "after": "let check_the_nonlinear_inequalities_md5 = \n  Serialization.simple_digest_thm \n    (Serialization.canonize_thm the_nonlinear_inequalities) = \n  \"e607b9e5e7f4c495236c6546d6889963\" ||\n  failwith \"the_nonlinear_inequalities theorem digest mismatch\";;"
+        }
+      ],
+      "semantic_rule": "Both existing digest comparisons remain fatal. In addition, every caught Failure in the nonlinear implication reconstruction and the serialized prep reconstruction must leave no TRUTH sentinel, and the complete prep traversal must visit exactly 7,479 authenticated Iarg leaves before final theorem construction can continue.",
+      "scope_limit": "The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required."
+    },
+    {
+      "id": "PROJECT-COMPARE-S3-SECTION-NAME-001",
+      "source_key": "flyspeck:jHOLLight/caml/sections.hl",
+      "path": "jHOLLight/caml/sections.hl",
+      "source_sha256": "05e435d55cada51b56fee84696fffe30b7e11b0010fb8a56061c2e9b2c815b51",
+      "source_md5": "4b207a2e7a8b7ab7f86f9cb9ffd80d88",
+      "normalized_sha256": "2bb6554caf5cdfdb5f4f9abc9a5721f609c3979d9012e4aed8de44f0590acb7b",
+      "normalized_md5": "f7f829fcc3465c1336bdd80f74ab148c",
+      "normalized_bytes": 10672,
+      "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-SECTION-NAME-001-STRING",
+          "kind": "exact_bytes_replace_once",
+          "line": 47,
+          "before": "Stdlib.compare last_name name",
+          "after": "String.compare last_name name"
+        }
+      ],
+      "semantic_rule": "Both operands are section-name strings. String.compare has the same zero/nonzero equality result used by this branch without requiring a polymorphic ordering primitive.",
+      "scope_limit": "This rewrite establishes only the typed section-name comparison. It does not implement polymorphic comparison; compiled section-stack behavior remains a gate."
+    },
+    {
+      "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
+      "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
+      "path": "formal_lp/glpk/lpproc.ml",
+      "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8",
+      "source_md5": "8e2eea27fffde333d431fc757fbe918e",
+      "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
+      "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
+      "normalized_bytes": 16194,
+      "operations": [
+        {
+          "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001-INT",
+          "kind": "exact_bytes_replace_once",
+          "line": 95,
+          "before": "Stdlib.compare (mc b) (mc a)",
+          "after": "Int.compare (mc b) (mc a)"
+        }
+      ],
+      "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison.",
+      "scope_limit": "This rewrite is confined to the typed LP preprocessing count comparator. It does not implement polymorphic comparison; compiled list ordering and final theorem fingerprints remain gates."
+    }
+  ]
+}

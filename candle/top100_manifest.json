@@ -1,0 +1,3526 @@
+{
+  "schema_version": 1,
+  "suite": "HOL Light Great 100",
+  "suite_semantics": "The historical Great 100 suite has 65 clean-process execution targets over 66 source files; the name does not imply 100 runner entries.",
+  "audited_tree_base": "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d",
+  "inventory_source": {
+    "path": "holtest.mk",
+    "variable": "GREAT_100_THEOREMS"
+  },
+  "dependency_scan": "direct literal needs \"path\";; calls in load_files",
+  "inventory_contract": {
+    "schema": "candle-great100-inventory-contract-v1",
+    "sha256": "3021163dbf52b66cb8e8f733b5eb7c409ccd9f21b94e20d55cb3569388fb8d99",
+    "target_count": 65,
+    "covered_source_count": 66,
+    "theorem_request_count": 97
+  },
+  "identity_approval": {
+    "path": "candle/top100_identity_approval.json",
+    "sha256": "b1d3a5d183cb1427903de79482543743da7993ac24f020808c67515c75d57625",
+    "schema": "candle-s1-identity-approval-v1",
+    "approval_status": "unapproved",
+    "promotion_allowed": false
+  },
+  "execution_contract": {
+    "baseline": "hol.ml",
+    "isolation": "fresh Candle process per target",
+    "cache_policy": "no theorem-state reuse between targets",
+    "recorded_live_baseline_timeout_policy": {
+      "boot_inactivity_timeout_seconds": 30,
+      "load_inactivity_timeout_seconds": 1800,
+      "inactivity_resets_on": "each recognized Loading, val, or Finished progress event",
+      "total_wall_timeout_seconds": null,
+      "wall_policy": "unbounded",
+      "note": "The live runner left boot at pexpect's 30-second default. Its --timeout 1800 applied to every subsequent expect wait, so progress reset the load inactivity clock and no total per-target deadline applied."
+    }
+  },
+  "target_count": 65,
+  "covered_source_count": 66,
+  "targets": [
+    {
+      "name": "100/arithmetic_geometric_mean",
+      "load_files": [
+        "100/arithmetic_geometric_mean.ml"
+      ],
+      "load_file_sha256": {
+        "100/arithmetic_geometric_mean.ml": "a2fef405f98eb99716481821afcf38cae0cd1e5a77ba66f5c5ad262bb0f5adca"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "AGM",
+            "resolved_declaration": {
+              "path": "100/arithmetic_geometric_mean.ml",
+              "line": 62
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "AGM_ROOT",
+            "resolved_declaration": {
+              "path": "100/arithmetic_geometric_mean.ml",
+              "line": 83
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/arithmetic",
+      "load_files": [
+        "100/arithmetic.ml"
+      ],
+      "load_file_sha256": {
+        "100/arithmetic.ml": "abeead425d77af901c251289083e8d297198abb120850d48dfe9d3d588a490ce"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "ARITHMETIC_PROGRESSION",
+            "resolved_declaration": {
+              "path": "100/arithmetic.ml",
+              "line": 9
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ballot",
+      "load_files": [
+        "100/ballot.ml"
+      ],
+      "load_file_sha256": {
+        "100/ballot.ml": "45c4ffb05bce4a252ab85d001a8f16234d01690c618afc2aed42d464995b8147"
+      },
+      "direct_needs": [
+        "Library/binomial.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "BALLOT",
+            "resolved_declaration": {
+              "path": "100/ballot.ml",
+              "line": 331
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/bernoulli",
+      "load_files": [
+        "100/bernoulli.ml"
+      ],
+      "load_file_sha256": {
+        "100/bernoulli.ml": "2cb8aa227e736429229c405230fa98c4f93aebc10894935163a9853f14a2da3d"
+      },
+      "direct_needs": [
+        "Library/binomial.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "SUM_OF_POWERS",
+            "resolved_declaration": {
+              "path": "100/bernoulli.ml",
+              "line": 135
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/bertrand-primerecip",
+      "load_files": [
+        "100/bertrand.ml",
+        "100/primerecip.ml"
+      ],
+      "load_file_sha256": {
+        "100/bertrand.ml": "05ab9af1a8ab4419d80548ef12488321823fb063e140633d7f45c2a681a894f0",
+        "100/primerecip.ml": "40c7c276c62778932109e1040b4bfe700ff8adc8b94968419f13e99160e56a21"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/calc_real.ml",
+        "Library/floor.ml",
+        "100/bertrand.ml",
+        "100/divharmonic.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "BERTRAND",
+            "resolved_declaration": {
+              "path": "100/bertrand.ml",
+              "line": 2528
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "PRIMERECIP_DIVERGES",
+            "resolved_declaration": {
+              "path": "100/primerecip.ml",
+              "line": 182
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml float-literal syntax",
+        "ledger_id": "CANDLE-OCAML-FLOAT-LITERAL-001",
+        "diagnostic": "Expected to be at EOF; Parsing failed at let num_of_float",
+        "first_source_location": "100/bertrand.ml:18",
+        "wall_seconds": 212.6,
+        "peak_rss_kib": null,
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "compatibility_paths_match_audited_base": true
+        }
+      }
+    },
+    {
+      "name": "100/birthday",
+      "load_files": [
+        "100/birthday.ml"
+      ],
+      "load_file_sha256": {
+        "100/birthday.ml": "f2298f7d1b411d0b6341eedc6bcff6348e2537cec39bb00b7c61414c0602c591"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "BIRTHDAY_THM",
+            "resolved_declaration": {
+              "path": "100/birthday.ml",
+              "line": 181
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "BIRTHDAY_THM_EXPLICIT",
+            "resolved_declaration": {
+              "path": "100/birthday.ml",
+              "line": 218
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/buffon",
+      "load_files": [
+        "100/buffon.ml"
+      ],
+      "load_file_sha256": {
+        "100/buffon.ml": "90759e5aedb978ffc352be1733320799c99da9c4043947a9e295ef8da555267b"
+      },
+      "direct_needs": [
+        "Probability/measure.ml",
+        "Probability/random_variables.ml",
+        "Probability/independence.ml",
+        "Probability/expectation.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "BUFFON_GENERAL",
+            "resolved_declaration": {
+              "path": "100/buffon.ml",
+              "line": 1497
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "BUFFON_SHORT",
+            "resolved_declaration": {
+              "path": "100/buffon.ml",
+              "line": 1553
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "BUFFON_LONG",
+            "resolved_declaration": {
+              "path": "100/buffon.ml",
+              "line": 1839
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cantor",
+      "load_files": [
+        "100/cantor.ml"
+      ],
+      "load_file_sha256": {
+        "100/cantor.ml": "279ceb1194e4c8ef39257ce325e914cad60a526ac463a014445b70243b3a2309"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "the acceptance boundary is the pinned post-load environment, so the final visible CANTOR binding at line 62 controls; the shadowed line-25 cardinality formulation remains recorded but is not addressable after the ordered source load",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "CANTOR",
+            "resolved_declaration": {
+              "path": "100/cantor.ml",
+              "line": 62
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/cantor.ml",
+                "line": 25
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cayley_hamilton",
+      "load_files": [
+        "100/cayley_hamilton.ml"
+      ],
+      "load_file_sha256": {
+        "100/cayley_hamilton.ml": "16157ee2af134d5fee286cb33e97f7a7af4673d80d9ca4d02cf5f0e9c5e9860a"
+      },
+      "direct_needs": [
+        "Multivariate/complexes.ml",
+        "Multivariate/msum.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "CAYLEY_HAMILTON",
+            "resolved_declaration": {
+              "path": "100/cayley_hamilton.ml",
+              "line": 310
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ceva",
+      "load_files": [
+        "100/ceva.ml"
+      ],
+      "load_file_sha256": {
+        "100/ceva.ml": "64f1e753aa7481cad8fa3962b41df69331ba415bb8ee97bd53b0e8eb693601a0"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml",
+        "Examples/sos.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "CEVA",
+            "resolved_declaration": {
+              "path": "100/ceva.ml",
+              "line": 95
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "dependency_load",
+        "compatibility_category": "missing numeric helper",
+        "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
+        "diagnostic": "undefined value round_num while loading Examples/sos.ml",
+        "first_source_location": "Examples/sos.ml",
+        "wall_seconds": 1428.4,
+        "peak_rss_kib": null,
+        "anchor_candidate": "218c7c9",
+        "isolated_numeric_validation": {
+          "status": "pass",
+          "selected_case_count": 15,
+          "oracle": "candle/compatibility/test_num_rationals.py",
+          "source_commit": "870c408a7fe6fe78bbb57962690b3f52d8fb78cd",
+          "target_status": "pending_remaining_sos_compatibility"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/circle",
+      "load_files": [
+        "100/circle.ml"
+      ],
+      "load_file_sha256": {
+        "100/circle.ml": "050c2b27046bfd98a5cea5b5b27f201323617fe4c872dbeac78b02613a54309a"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml",
+        "Multivariate/realanalysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "AREA_CBALL",
+            "resolved_declaration": {
+              "path": "100/circle.ml",
+              "line": 64
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "AREA_BALL",
+            "resolved_declaration": {
+              "path": "100/circle.ml",
+              "line": 93
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/chords",
+      "load_files": [
+        "100/chords.ml"
+      ],
+      "load_file_sha256": {
+        "100/chords.ml": "31ee5d270c5d451707f3561134e9370188464ad86c7ddb5175c4415671e783d9"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "SEGMENT_CHORDS",
+            "resolved_declaration": {
+              "path": "100/chords.ml",
+              "line": 46
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/combinations",
+      "load_files": [
+        "100/combinations.ml"
+      ],
+      "load_file_sha256": {
+        "100/combinations.ml": "90735a26385b05d09e7614bad37ae7f51c9ff18cd9fb291d0efc308dc83c6614"
+      },
+      "direct_needs": [
+        "Library/binomial.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "NUMBER_OF_COMBINATIONS",
+            "resolved_declaration": {
+              "path": "100/combinations.ml",
+              "line": 11
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "NUMBER_OF_COMBINATIONS_EXPLICIT",
+            "resolved_declaration": {
+              "path": "100/combinations.ml",
+              "line": 17
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/constructible",
+      "load_files": [
+        "100/constructible.ml"
+      ],
+      "load_file_sha256": {
+        "100/constructible.ml": "d7c8ff66ee27851e516b56afc267b65489333c366f8996bfb75cb8487d910c8c"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/floor.ml",
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "DOUBLE_THE_CUBE",
+            "resolved_declaration": {
+              "path": "100/constructible.ml",
+              "line": 842
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TRISECT_60_DEGREES",
+            "resolved_declaration": {
+              "path": "100/constructible.ml",
+              "line": 889
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "OCaml multiline string literal",
+        "diagnostic": "LEXER ERROR; Parsing failed inside the multiline define_type string",
+        "first_source_location": "100/constructible.ml:115",
+        "log_active_seconds_approx": 3730.4,
+        "peak_rss_kib": null,
+        "upstream_remedy": {
+          "repository": "CakeML/cakeml",
+          "commit": "c26aa71d2b1007d43cecd1ef7f843530b32ad4fc",
+          "status": "present_in_audited_source_base; compiled Candle rebuild required"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/cosine",
+      "load_files": [
+        "100/cosine.ml"
+      ],
+      "load_file_sha256": {
+        "100/cosine.ml": "bbab37692d124960942d62ce080584b6dfc0ec5e54e6e83cf1f7349c514bb972"
+      },
+      "direct_needs": [
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "LAW_OF_COSINES",
+            "resolved_declaration": {
+              "path": "100/cosine.ml",
+              "line": 121
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/cubedissection",
+      "load_files": [
+        "100/cubedissection.ml"
+      ],
+      "load_file_sha256": {
+        "100/cubedissection.ml": "c04a0ce85556b71fe81f8efc836546dcc7120436edc6106f941f94dcec07d662"
+      },
+      "direct_needs": [
+        "Multivariate/integration.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "ONLY_TRIVIAL_CUBE_DISSECTION",
+            "resolved_declaration": {
+              "path": "100/cubedissection.ml",
+              "line": 1606
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3794.6,
+        "observed_process_rss_kib": 6413644,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/cubic",
+      "load_files": [
+        "100/cubic.ml"
+      ],
+      "load_file_sha256": {
+        "100/cubic.ml": "a0962ca95490da722f125490b511a69b7276aaf9dcc9c41d1f7375a06d0f29d1"
+      },
+      "direct_needs": [
+        "Complex/complex_transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "CUBIC",
+            "resolved_declaration": {
+              "path": "100/cubic.ml",
+              "line": 61
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "dependency_elaboration",
+        "compatibility_category": "polymorphic comparison",
+        "ledger_id": "CANDLE-OCAML-POLYMORPHIC-COMPARISON-001",
+        "diagnostic": "SEMIRING_NORMALIZERS_CONV comparator inferred as term -> term -> bool where int -> int -> bool was expected",
+        "first_source_location": "Complex/complexnumbers.ml:720",
+        "log_active_seconds_approx": 192.0,
+        "peak_rss_kib": null,
+        "anchor_candidate": "5c44565",
+        "isolated_source_validation": {
+          "source_normalization_commit": "75d4062",
+          "status": "pass",
+          "fingerprint_status": "observed_uncompared",
+          "artifact": "candle/compatibility/cubic_target_observation.json"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/derangements",
+      "load_files": [
+        "100/derangements.ml"
+      ],
+      "load_file_sha256": {
+        "100/derangements.ml": "37c460acbc2863cdcd154bc3d4620080b3da23116c353d4bb77d89d99534a322"
+      },
+      "direct_needs": [
+        "Library/transc.ml",
+        "Library/calc_real.ml",
+        "Library/floor.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "THE_DERANGEMENTS_FORMULA",
+            "resolved_declaration": {
+              "path": "100/derangements.ml",
+              "line": 590
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/desargues",
+      "load_files": [
+        "100/desargues.ml"
+      ],
+      "load_file_sha256": {
+        "100/desargues.ml": "4a2e50e603ff2fe94cf622c36c652fbbb0e05be9084c0bd406edd49d9458330a"
+      },
+      "direct_needs": [
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "DESARGUES_DIRECT",
+            "resolved_declaration": {
+              "path": "100/desargues.ml",
+              "line": 324
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 1379.9,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/descartes",
+      "load_files": [
+        "100/descartes.ml"
+      ],
+      "load_file_sha256": {
+        "100/descartes.ml": "880cdfb592db39eecdd150aa1cb4544c3e122556ff8dbe2b4fe95c5e43128d72"
+      },
+      "direct_needs": [
+        "Multivariate/realanalysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "DESCARTES_RULE_OF_SIGNS",
+            "resolved_declaration": {
+              "path": "100/descartes.ml",
+              "line": 746
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 4108.9,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/dirichlet",
+      "load_files": [
+        "100/dirichlet.ml"
+      ],
+      "load_file_sha256": {
+        "100/dirichlet.ml": "ac8724d0febaba90d728d05d3b1c22beb9af32abe365248f68e0a1abadd6d742"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/agm.ml",
+        "Multivariate/transcendentals.ml",
+        "Library/pocklington.ml",
+        "Library/multiplicative.ml",
+        "Examples/mangoldt.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "DIRICHLET",
+            "resolved_declaration": {
+              "path": "100/dirichlet.ml",
+              "line": 2053
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3759.4,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/div3",
+      "load_files": [
+        "100/div3.ml"
+      ],
+      "load_file_sha256": {
+        "100/div3.ml": "38c51884b1abbded986d323259493f6eda7881336171d8875a4aa169bcedbfb9"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "DIVISIBILITY_BY_3",
+            "resolved_declaration": {
+              "path": "100/div3.ml",
+              "line": 24
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 169.0,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/divharmonic",
+      "load_files": [
+        "100/divharmonic.ml"
+      ],
+      "load_file_sha256": {
+        "100/divharmonic.ml": "632930f1d4cf4f0a51d37af811ff334e535e93c315dbe161b7eab894a9d0c0d6"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "HARMONIC_DIVERGES",
+            "resolved_declaration": {
+              "path": "100/divharmonic.ml",
+              "line": 7
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 193.8,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/e_is_transcendental",
+      "load_files": [
+        "100/e_is_transcendental.ml"
+      ],
+      "load_file_sha256": {
+        "100/e_is_transcendental.ml": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0"
+      },
+      "direct_needs": [
+        "Library/binomial.ml",
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/prime.ml",
+        "Library/iter.ml",
+        "Library/integer.ml",
+        "Library/floor.ml",
+        "100/liouville.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "Finale.TRANSCENDENTAL_E",
+            "resolved_declaration": {
+              "path": "100/e_is_transcendental.ml",
+              "line": 2903
+            },
+            "shadowed_declarations": [],
+            "qualified_references": [
+              {
+                "path": "100/e_is_transcendental.ml",
+                "line": 2910
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "not_reached",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "fail",
+        "phase": "parse",
+        "compatibility_category": "trailing semicolon in argument expression",
+        "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+        "diagnostic": "Expected to be at EOF; parsing rejects the enclosing Pm_eqn4_rhs module phrase",
+        "diagnostic_pointer": "100/e_is_transcendental.ml:921",
+        "first_incompatible_source_location": "100/e_is_transcendental.ml:995",
+        "log_active_seconds_approx": 246.7,
+        "peak_rss_kib": null,
+        "anchor_candidate": "badbd63",
+        "isolated_source_validation": {
+          "source_normalization_commit": "6ce6fc1",
+          "status": "pass",
+          "fingerprint_status": "observed_uncompared",
+          "fingerprint_value_path": "Finale.TRANSCENDENTAL_E",
+          "artifact": "candle/compatibility/e_is_transcendental_target_observation.json"
+        },
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/euler",
+      "load_files": [
+        "100/euler.ml"
+      ],
+      "load_file_sha256": {
+        "100/euler.ml": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88"
+      },
+      "direct_needs": [
+        "Library/binary.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "EULER_PARTITION_THEOREM",
+            "resolved_declaration": {
+              "path": "100/euler.ml",
+              "line": 375
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 153.5,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/feuerbach",
+      "load_files": [
+        "100/feuerbach.ml"
+      ],
+      "load_file_sha256": {
+        "100/feuerbach.ml": "d1391bded699f87ed03ac6cc4d86e4cd39b121d98e669839bcc3b328a2bfb18a"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "FEUERBACH",
+            "resolved_declaration": {
+              "path": "100/feuerbach.ml",
+              "line": 111
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 1560.6,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/fourier",
+      "load_files": [
+        "100/fourier.ml"
+      ],
+      "load_file_sha256": {
+        "100/fourier.ml": "3034cc1f10555786b1f07760ece7f990ea7d0eda85ebe7a90ba2a1b3fad63d93"
+      },
+      "direct_needs": [
+        "Multivariate/lpspaces.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "the broad source has no singular result alias, so acceptance conservatively requires all four independently headlined culmination results: L2 convergence, Dini, Jordan bounded variation, and Fejer Cesaro summability",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "FOURIER_SERIES_L2",
+            "resolved_declaration": {
+              "path": "100/fourier.ml",
+              "line": 1424
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "FOURIER_DINI_TEST",
+            "resolved_declaration": {
+              "path": "100/fourier.ml",
+              "line": 3368
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "FOURIER_JORDAN_BOUNDED_VARIATION",
+            "resolved_declaration": {
+              "path": "100/fourier.ml",
+              "line": 3740
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE",
+            "resolved_declaration": {
+              "path": "100/fourier.ml",
+              "line": 4644
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 3977.2,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/four_squares",
+      "load_files": [
+        "100/four_squares.ml"
+      ],
+      "load_file_sha256": {
+        "100/four_squares.ml": "db543a45a9432f562ee582169e9b8a3f808fdd4182ed5bc1154d2a053fa5a232"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "SUM_OF_TWO_SQUARES",
+            "resolved_declaration": {
+              "path": "100/four_squares.ml",
+              "line": 187
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "LAGRANGE_NUM",
+            "resolved_declaration": {
+              "path": "100/four_squares.ml",
+              "line": 889
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 182.1,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/friendship",
+      "load_files": [
+        "100/friendship.ml"
+      ],
+      "load_file_sha256": {
+        "100/friendship.ml": "7abe66cd207eb724097253f8065f138e32a59545b6933cb040238a1bbe840e98"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "FRIENDSHIP",
+            "resolved_declaration": {
+              "path": "100/friendship.ml",
+              "line": 539
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 182.0,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/fta",
+      "load_files": [
+        "100/fta.ml"
+      ],
+      "load_file_sha256": {
+        "100/fta.ml": "053b543777c79114c606bb952c4f8fd4afb6a9adc8b7a7dbd4308bcb35d5d292"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "FTA",
+            "resolved_declaration": {
+              "path": "100/fta.ml",
+              "line": 92
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 158.3,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/gcd",
+      "load_files": [
+        "100/gcd.ml"
+      ],
+      "load_file_sha256": {
+        "100/gcd.ml": "238ce0ed5a718bb916fc49e01fdf5887c0a8ea0556203d9fb89cdc884b970930"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "EGCD",
+            "resolved_declaration": {
+              "path": "100/gcd.ml",
+              "line": 38
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 162.2,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/green",
+      "load_files": [
+        "100/green.ml"
+      ],
+      "load_file_sha256": {
+        "100/green.ml": "21defc70d80876d52ba62a6685343851a4281e4be504c3b71f98aac1635a6eeb"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/lpspaces.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "GREEN_THEOREM_CURL",
+            "resolved_declaration": {
+              "path": "100/green.ml",
+              "line": 4754
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": {
+        "status": "pass",
+        "evidence_scope": "load_only; theorem and assumption fingerprints remain missing",
+        "log_active_seconds_approx": 4437.4,
+        "peak_rss_kib": null,
+        "timeout_policy": "1800-second inactivity deadline; no total wall deadline",
+        "evidence": {
+          "runner_git_head": "110a18d485557ae877d0cb47bb9172e6558ddf61",
+          "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+          "resource_sampling": "incomplete_after_procfs_sampler_race"
+        }
+      }
+    },
+    {
+      "name": "100/heron",
+      "load_files": [
+        "100/heron.ml"
+      ],
+      "load_file_sha256": {
+        "100/heron.ml": "de7cd4bd92e9d6fa19076ae2195d58fe6c68901307a15da05c366bc0b2b40763"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "HERON",
+            "resolved_declaration": {
+              "path": "100/heron.ml",
+              "line": 26
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/isoperimetric",
+      "load_files": [
+        "100/isoperimetric.ml"
+      ],
+      "load_file_sha256": {
+        "100/isoperimetric.ml": "ac4823128eb53db23d90e624ba27630b587247b01322ef74d87bbb5e820bb246"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/lpspaces.ml",
+        "100/green.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "ISOPERIMETRIC_THEOREM",
+            "resolved_declaration": {
+              "path": "100/isoperimetric.ml",
+              "line": 3139
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/inclusion_exclusion",
+      "load_files": [
+        "100/inclusion_exclusion.ml"
+      ],
+      "load_file_sha256": {
+        "100/inclusion_exclusion.ml": "a45a01760713421a522b913af462bb2ec061279aeff054178b06c61331964441"
+      },
+      "direct_needs": [
+        "Library/products.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "INCLUSION_EXCLUSION_USUAL",
+            "resolved_declaration": {
+              "path": "100/inclusion_exclusion.ml",
+              "line": 201
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "INCLUSION_EXCLUSION_MOBIUS",
+            "resolved_declaration": {
+              "path": "100/inclusion_exclusion.ml",
+              "line": 355
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/independence",
+      "load_files": [
+        "100/independence.ml"
+      ],
+      "load_file_sha256": {
+        "100/independence.ml": "83ce6195031b469bea18714841659b67a43a87942d8c7aec1997b58369bb3dc0"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Multivariate/tarski.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "TARSKI_AXIOM_1_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 531
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_2_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 539
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_3_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 549
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_4_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 557
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_5_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 589
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_6_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 637
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_7_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 646
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_8_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 657
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_9_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 673
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "NOT_TARSKI_AXIOM_10_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 716
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TARSKI_AXIOM_11_NONEUCLIDEAN",
+            "resolved_declaration": {
+              "path": "100/independence.ml",
+              "line": 774
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/isosceles",
+      "load_files": [
+        "100/isosceles.ml"
+      ],
+      "load_file_sha256": {
+        "100/isosceles.ml": "d5ba9d75047e112113396e22534e24a7ba94b406591cdfa08b714931da0a4d84"
+      },
+      "direct_needs": [
+        "Multivariate/geom.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "ISOSCELES_TRIANGLE_THEOREM",
+            "resolved_declaration": {
+              "path": "100/isosceles.ml",
+              "line": 11
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "ISOSCELES_TRIANGLE_CONVERSE",
+            "resolved_declaration": {
+              "path": "100/isosceles.ml",
+              "line": 20
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/konigsberg",
+      "load_files": [
+        "100/konigsberg.ml"
+      ],
+      "load_file_sha256": {
+        "100/konigsberg.ml": "8c49c5b56bc64d601fa81fe7a065d4df77fe125d85e70638c4e950aab4a08711"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "KOENIGSBERG",
+            "resolved_declaration": {
+              "path": "100/konigsberg.ml",
+              "line": 187
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/lagrange",
+      "load_files": [
+        "100/lagrange.ml"
+      ],
+      "load_file_sha256": {
+        "100/lagrange.ml": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "GROUP_LAGRANGE",
+            "resolved_declaration": {
+              "path": "100/lagrange.ml",
+              "line": 250
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/leibniz",
+      "load_files": [
+        "100/leibniz.ml"
+      ],
+      "load_file_sha256": {
+        "100/leibniz.ml": "1c14786c8ea185e5cce7342895d7d3461b99d88e2d907baf808c8d0621b7ab84"
+      },
+      "direct_needs": [
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "LEIBNIZ_PI",
+            "resolved_declaration": {
+              "path": "100/leibniz.ml",
+              "line": 203
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/lhopital",
+      "load_files": [
+        "100/lhopital.ml"
+      ],
+      "load_file_sha256": {
+        "100/lhopital.ml": "6f2d47c4128df441b9bb757500a431462e52582929c826a336518ba5c85cc815"
+      },
+      "direct_needs": [
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "LHOPITAL",
+            "resolved_declaration": {
+              "path": "100/lhopital.ml",
+              "line": 176
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/liouville",
+      "load_files": [
+        "100/liouville.ml"
+      ],
+      "load_file_sha256": {
+        "100/liouville.ml": "582da88b937a8bc3b6d0aff01eb415d58d7e85941a33a69feeb535303fa14389"
+      },
+      "direct_needs": [
+        "Library/floor.ml",
+        "Library/poly.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "TRANSCENDENTAL_LIOUVILLE",
+            "resolved_declaration": {
+              "path": "100/liouville.ml",
+              "line": 351
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/minkowski",
+      "load_files": [
+        "100/minkowski.ml"
+      ],
+      "load_file_sha256": {
+        "100/minkowski.ml": "ca52385f73231c2f5f09070e9408924fec25b3bd2ea42d5b075e17aea5d3900d"
+      },
+      "direct_needs": [
+        "Multivariate/measure.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "MINKOWSKI",
+            "resolved_declaration": {
+              "path": "100/minkowski.ml",
+              "line": 184
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/morley",
+      "load_files": [
+        "100/morley.ml"
+      ],
+      "load_file_sha256": {
+        "100/morley.ml": "9c49e7db8b439cd004e8604f978638dceba835e50eccbfc7c3219e17204356e6"
+      },
+      "direct_needs": [
+        "Library/iter.ml",
+        "Multivariate/geom.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "MORLEY",
+            "resolved_declaration": {
+              "path": "100/morley.ml",
+              "line": 301
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pascal",
+      "load_files": [
+        "100/pascal.ml"
+      ],
+      "load_file_sha256": {
+        "100/pascal.ml": "516aca235c3ff1f51fa9c5d86d3b2e4fbd62c6763a584fc2cf1fd95ba16c4786"
+      },
+      "direct_needs": [
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PASCAL",
+            "resolved_declaration": {
+              "path": "100/pascal.ml",
+              "line": 423
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/perfect",
+      "load_files": [
+        "100/perfect.ml"
+      ],
+      "load_file_sha256": {
+        "100/perfect.ml": "47ab55705e340ca93367db4cf7b81b50e6f0fd9b0ec358d86dd4c91c4b71536c"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PERFECT_EUCLID",
+            "resolved_declaration": {
+              "path": "100/perfect.ml",
+              "line": 220
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "PERFECT_EULER",
+            "resolved_declaration": {
+              "path": "100/perfect.ml",
+              "line": 235
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pick",
+      "load_files": [
+        "100/pick.ml"
+      ],
+      "load_file_sha256": {
+        "100/pick.ml": "2b9d45cc0ad88eb7d09c5b70cab39b559089f25d412f4c7bd3d23874cecd6c72"
+      },
+      "direct_needs": [
+        "Multivariate/polytope.ml",
+        "Multivariate/measure.ml",
+        "Multivariate/moretop.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PICK",
+            "resolved_declaration": {
+              "path": "100/pick.ml",
+              "line": 3079
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/piseries",
+      "load_files": [
+        "100/piseries.ml"
+      ],
+      "load_file_sha256": {
+        "100/piseries.ml": "0518534342e1d53501ad9a7f21ad8dfc8d64e369b90e5c593750bb0a78d5c4a7"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml",
+        "Library/floor.ml",
+        "Library/poly.ml",
+        "Examples/machin.ml",
+        "Library/iter.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "the source section 'Isolate the most famous special case' immediately binds EULER_HARMONIC_SUM, uniquely identifying the intended named result",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "EULER_HARMONIC_SUM",
+            "resolved_declaration": {
+              "path": "100/piseries.ml",
+              "line": 2699
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/platonic",
+      "load_files": [
+        "100/platonic.ml"
+      ],
+      "load_file_sha256": {
+        "100/platonic.ml": "ec208c94ef8069c4085479ce575f4954bede5a00de9e75febae14e6e89c41c36"
+      },
+      "direct_needs": [
+        "100/polyhedron.ml",
+        "Multivariate/cross.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PLATONIC_SOLIDS",
+            "resolved_declaration": {
+              "path": "100/platonic.ml",
+              "line": 1829
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pnt",
+      "load_files": [
+        "100/pnt.ml"
+      ],
+      "load_file_sha256": {
+        "100/pnt.ml": "6b39b727fd266b764f655e69e57765457b91a14068bf19b33a57ae2155a9bdc7"
+      },
+      "direct_needs": [
+        "Multivariate/cauchy.ml",
+        "Library/pocklington.ml",
+        "Examples/mangoldt.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PNT",
+            "resolved_declaration": {
+              "path": "100/pnt.ml",
+              "line": 3932
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/polyhedron",
+      "load_files": [
+        "100/polyhedron.ml"
+      ],
+      "load_file_sha256": {
+        "100/polyhedron.ml": "266cd95c83c1620d4a358416e6db887a929a1da8c829357250aaa6cd82f9fb69"
+      },
+      "direct_needs": [
+        "Multivariate/polytope.ml",
+        "Library/binomial.ml",
+        "100/inclusion_exclusion.ml",
+        "100/combinations.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "EULER_RELATION",
+            "resolved_declaration": {
+              "path": "100/polyhedron.ml",
+              "line": 2178
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ptolemy",
+      "load_files": [
+        "100/ptolemy.ml"
+      ],
+      "load_file_sha256": {
+        "100/ptolemy.ml": "a60b58fb71379c8dc7d8d07683b1d376704c41453880da7183d871be69c18da7"
+      },
+      "direct_needs": [
+        "Multivariate/transcendentals.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PTOLEMY",
+            "resolved_declaration": {
+              "path": "100/ptolemy.ml",
+              "line": 45
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/pythagoras",
+      "load_files": [
+        "100/pythagoras.ml"
+      ],
+      "load_file_sha256": {
+        "100/pythagoras.ml": "50d03afe5b299a4d9cb7b4dab119db5ce69982fa6ce14fd2a1ad4b8733da6157"
+      },
+      "direct_needs": [
+        "Multivariate/misc.ml",
+        "Multivariate/vectors.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "PYTHAGORAS",
+            "resolved_declaration": {
+              "path": "100/pythagoras.ml",
+              "line": 24
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/pythagoras.ml",
+                "line": 13
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/quartic",
+      "load_files": [
+        "100/quartic.ml"
+      ],
+      "load_file_sha256": {
+        "100/quartic.ml": "f0ce259b828a32e23867425c5aab40958650945254ca6f4faf319eef0095afcf"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "the final visible QUARTIC_CASES is labeled 'the automatic proof' and has exactly the same theorem statement as the preceding iff-form QUARTIC_CASES; the last rebinding changes only the proof",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "QUARTIC_CASES",
+            "resolved_declaration": {
+              "path": "100/quartic.ml",
+              "line": 186
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/quartic.ml",
+                "line": 140
+              },
+              {
+                "path": "100/quartic.ml",
+                "line": 163
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ramsey",
+      "load_files": [
+        "100/ramsey.ml"
+      ],
+      "load_file_sha256": {
+        "100/ramsey.ml": "c27a2197fd0faa1a8197523ec8b7e8182a122959c3ce3b76f0f0f70326ced94f"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "RAMSEY",
+            "resolved_declaration": {
+              "path": "100/ramsey.ml",
+              "line": 1266
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/ratcountable",
+      "load_files": [
+        "100/ratcountable.ml"
+      ],
+      "load_file_sha256": {
+        "100/ratcountable.ml": "b57e7a4b2835c23cf9a077447b4f5452f07ee341cbeb18d2842ec33aa9dc6fbb"
+      },
+      "direct_needs": [
+        "Library/card.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "COUNTABLE_RATIONALS",
+            "resolved_declaration": {
+              "path": "100/ratcountable.ml",
+              "line": 23
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "DENUMERABLE_RATIONALS",
+            "resolved_declaration": {
+              "path": "100/ratcountable.ml",
+              "line": 49
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/realsuncountable",
+      "load_files": [
+        "100/realsuncountable.ml"
+      ],
+      "load_file_sha256": {
+        "100/realsuncountable.ml": "32f5c7c4e1afd4cba3d4def39e23c847cf58f6a3bd84bd47441875fd6c6b06fa"
+      },
+      "direct_needs": [
+        "Library/card.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "UNCOUNTABLE_REALS",
+            "resolved_declaration": {
+              "path": "100/realsuncountable.ml",
+              "line": 237
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/reciprocity",
+      "load_files": [
+        "100/reciprocity.ml"
+      ],
+      "load_file_sha256": {
+        "100/reciprocity.ml": "ea90380fb59218c02f5360e14bffbe496e19b12c1e12a93d82d62022fe57b838"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml",
+        "Library/products.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "RECIPROCITY_LEGENDRE",
+            "resolved_declaration": {
+              "path": "100/reciprocity.ml",
+              "line": 706
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/stirling",
+      "load_files": [
+        "100/stirling.ml"
+      ],
+      "load_file_sha256": {
+        "100/stirling.ml": "ca6c9f8c142344cff11216808716b2d80817a49809e5dbd69560f5e7fc0735a0"
+      },
+      "direct_needs": [
+        "Library/analysis.ml",
+        "Library/transc.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "STIRLING",
+            "resolved_declaration": {
+              "path": "100/stirling.ml",
+              "line": 527
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/subsequence",
+      "load_files": [
+        "100/subsequence.ml"
+      ],
+      "load_file_sha256": {
+        "100/subsequence.ml": "5dea02aff5cc6e1e7326b1e979255be049930b7b28d403132701b83120a6325c"
+      },
+      "direct_needs": [],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "ERDOS_SZEKERES",
+            "resolved_declaration": {
+              "path": "100/subsequence.ml",
+              "line": 56
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/thales",
+      "load_files": [
+        "100/thales.ml"
+      ],
+      "load_file_sha256": {
+        "100/thales.ml": "a33f3ee54c333ffc5eb5add50d8bf5da680aaf51501c8c3f5a617f4bdf4856a4"
+      },
+      "direct_needs": [
+        "Multivariate/convex.ml",
+        "Examples/sos.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "THALES",
+            "resolved_declaration": {
+              "path": "100/thales.ml",
+              "line": 71
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/thales.ml",
+                "line": 32
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/transcendence",
+      "load_files": [
+        "100/transcendence.ml"
+      ],
+      "load_file_sha256": {
+        "100/transcendence.ml": "648c150ca6cf173f194cfc0fb9a7c5bc5ed11c6e0a7f0a16a504b09d4b568b6b"
+      },
+      "direct_needs": [
+        "Library/products.ml",
+        "Library/ringtheory.ml",
+        "Multivariate/cauchy.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "e_is_irrational",
+            "resolved_declaration": {
+              "path": "100/transcendence.ml",
+              "line": 24872
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/transcendence.ml",
+                "line": 18348
+              }
+            ]
+          },
+          {
+            "name": "e_is_transcendental",
+            "resolved_declaration": {
+              "path": "100/transcendence.ml",
+              "line": 24873
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/transcendence.ml",
+                "line": 18411
+              }
+            ]
+          },
+          {
+            "name": "pi_is_transcendental",
+            "resolved_declaration": {
+              "path": "100/transcendence.ml",
+              "line": 24874
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/transcendence.ml",
+                "line": 19092
+              }
+            ]
+          },
+          {
+            "name": "transcendental_if_exp_nonzero_algebraic",
+            "resolved_declaration": {
+              "path": "100/transcendence.ml",
+              "line": 24875
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/transcendence.ml",
+                "line": 24120
+              }
+            ]
+          },
+          {
+            "name": "zero_sum_algebraic_exp_algebraic",
+            "resolved_declaration": {
+              "path": "100/transcendence.ml",
+              "line": 24876
+            },
+            "shadowed_declarations": [
+              {
+                "path": "100/transcendence.ml",
+                "line": 24821
+              }
+            ]
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/triangular",
+      "load_files": [
+        "100/triangular.ml"
+      ],
+      "load_file_sha256": {
+        "100/triangular.ml": "e6c8e7ac48ce73657dda0ced5e59521d84220c3e0d8689348275148200806c0d"
+      },
+      "direct_needs": [
+        "Multivariate/misc.ml",
+        "Library/analysis.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "TRIANGLE_FINITE_SUM",
+            "resolved_declaration": {
+              "path": "100/triangular.ml",
+              "line": 33
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "TRIANGLE_CONVERGES'",
+            "resolved_declaration": {
+              "path": "100/triangular.ml",
+              "line": 68
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/two_squares",
+      "load_files": [
+        "100/two_squares.ml"
+      ],
+      "load_file_sha256": {
+        "100/two_squares.ml": "6a9c45206dd94797a701d828e12687616760480aeb813d07c5d45f33929af7ca"
+      },
+      "direct_needs": [
+        "Library/prime.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "SUM_OF_TWO_SQUARES",
+            "resolved_declaration": {
+              "path": "100/two_squares.ml",
+              "line": 186
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    },
+    {
+      "name": "100/wilson",
+      "load_files": [
+        "100/wilson.ml"
+      ],
+      "load_file_sha256": {
+        "100/wilson.ml": "d741275568246c1e0a8e7a5181c5463f8dd5b0f7f207812f790357665034a079"
+      },
+      "direct_needs": [
+        "Library/prime.ml",
+        "Library/pocklington.ml"
+      ],
+      "expected_status": "pass",
+      "skip": null,
+      "fingerprint_request": {
+        "mapping_status": "audited",
+        "mapping_basis": "named result declarations in ordered load files",
+        "review_note": null,
+        "theorems": [
+          {
+            "name": "WILSON",
+            "resolved_declaration": {
+              "path": "100/wilson.ml",
+              "line": 90
+            },
+            "shadowed_declarations": []
+          },
+          {
+            "name": "WILSON_EQ",
+            "resolved_declaration": {
+              "path": "100/wilson.ml",
+              "line": 165
+            },
+            "shadowed_declarations": []
+          }
+        ],
+        "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
+          "theorem": "canonical structural theorem serialization",
+          "hypotheses": "canonical sorted structural term serializations",
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
+        },
+        "expected_identities": null
+      },
+      "fingerprints": {
+        "status": "missing",
+        "theorems": null,
+        "assumptions": null,
+        "post_state": null
+      },
+      "baseline_observation": null
+    }
+  ],
+  "excluded_100_sources": [
+    {
+      "path": "100/sqrt.ml",
+      "reason": "absent_from_upstream_GREAT_100_THEOREMS",
+      "approval_status": "unreviewed",
+      "flyspeck_dependency_impact": "unassessed"
+    }
+  ]
+}

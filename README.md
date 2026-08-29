@@ -24,32 +24,89 @@ candle_ in their filenames). The patches are stored under
   [candle_compute.ml](candle_compute.ml) and
   [compute_examples.ml](compute_examples.ml) for examples.
 
-# Requirements and Installation
+# Requirements and Authenticated Installation
 
-Candle requires the CakeML compiler. The latest release of the compiler can be
-found [here](https://github.com/CakeML/cakeml/releases).
+Candle requires an x86_64 Linux machine, a C compiler, make, and the exact
+CakeML and HOL4 revisions pinned by `candle/flyspeck_manifest.json`.  A usable
+authenticated launcher also requires a successful pinned CakeML `cake.S`
+bootstrap record.  The complete commands and fail-closed acceptance conditions
+are documented in
+[candle/compatibility/dopen_direct_acceptance.md](candle/compatibility/dopen_direct_acceptance.md).
+In outline, run the canonical sanitized bootstrap controller and then link its
+non-overwritable final record locally:
 
-The CakeML compiler requires a x86_64 Linux machine with a C compiler and make.
-The CakeML compiler assembly stubs need to be modified to work with Candle.
-Please see [build-instructions.sh](build-instructions.sh) for instructions on
-how to do this. You can also run
+    $ /usr/bin/env -i PATH=/usr/bin:/bin LC_ALL=C /absolute/path/build-local-cakeml-bootstrap.sh CAKEML_ROOT HOL4_ROOT BOOTSTRAP_LOG BOOTSTRAP_PREFLIGHT BOOTSTRAP_RECORD
+    $ ./build-local-cakeml.sh CAKEML_ROOT BOOTSTRAP_RECORD.json
+    $ ./candle.sh
 
-    $ ./build-instructions.sh
-
-from the shell, which will download the CakeML compiler using curl, and patch
-it. After this, you can run Candle by writing either:
-
-    $ ./cake --candle
-
-or:
-
-    $ ./candle
-
-from the shell. Then, load the HOL Light sources by writing:
+`candle.sh` authenticates the clean Candle revision, manifest pins, linked
+compiler, runtime inputs, root aliases, bootstrap record, and exact host ELF
+closure before every session. Then load the HOL Light sources by writing:
 
     #use "hol.ml";;
 
 into the REPL.
+
+The bootstrap script immediately `exec`s one `/usr/bin/python3 -I -S` process.
+That process writes an immutable preflight before mutation, holds an exclusive
+lock on the exact CakeML checkout inode through atomic final publication,
+archives and removes the exact generated `cake.S`, `config_enc_str.txt`,
+18-target theory-output inventory, their exact make-dependency files, and any
+retry-only `*Script.ui`/`*Script.uo` transients. It also archives and removes
+both relevant `lastmaker` files before launch and requires their fresh
+postimages to contain exactly the pinned `HOL_ROOT/bin/Holmake` path. It runs
+exactly
+`/usr/bin/time -v HOL_ROOT/bin/Holmake -j1 cake.S`
+in the pinned x64/64 directory under an exact three-variable build environment.
+It preserves and authenticates the tracked `candle_boot.ml`, `basis_ffi.c`, and
+`Makefile` symlinks and their in-repository ordinary targets. On failure it
+does not restore or delete anything: the preimage archive, transcript, and any
+partial outputs remain for inspection, and a retry uses fresh receipt paths.
+All other pre-existing CakeML `.hol/objs` files are fully inventoried and
+content-bound before and after the run. They are explicitly recorded as
+authenticated inputs whose derivation was not independently replayed, rather
+than being implied by the Git revision.
+The same pre/post inventory conservatively binds every ordinary file under the
+pinned HOL4 tree's `.hol/objs` directories, all direct `sigobj` entries (exact
+symlink text and resolved in-tree payload included), and the exact generated
+HOL sources used outside those sets. These HOL proof artifacts are retained as
+content-bound inputs; the controller does not claim to rederive them from
+source.
+All ordinary `.hol/make-deps` files in HOL4 and all non-transitioned ancestor
+`.hol/make-deps` files in CakeML are likewise content-bound before and after.
+Every retained `lastmaker` must contain exactly the pinned absolute Holmake
+path, preventing dependency traversal from selecting another executable.
+The `cv_translator/cake_compile_heap` selected by the pinned final x64Bootstrap
+Holmakefile is also hashed before and after as a non-rederived input; the
+Holmakefile's committed bytes are bound alongside it.
+
+The bootstrap record includes ordinary-file identities for `bin/Holmake`,
+`bin/hol`, `bin/hol.state`, and `.kernelidstr`, the two launchers' exact ELF
+closures, and the requested `/bin/sh` link, resolved bytes, and ELF closure used
+by Holmake builders, plus one
+complete trailing GNU `time -v` receipt for the pinned command.  Local linking
+uses a fixed single-job make/CC command.  Before accepting the linked record,
+the provenance checker relinks exact authenticated copies of `cake.S`,
+`basis_ffi.c`, and `Makefile` in a fresh directory, records the exact compiler,
+assembler, and linker command plan and tool identities, and requires the fresh
+ELF to be byte-for-byte equal to the installed ELF.
+
+This is an authenticated-build boundary, not a proof of the host toolchain.
+The exact make, compiler, assembler, linker, shell, compiler-internal binaries,
+flags, GCC specifications, selected runtime ELF objects, and output bytes are
+bound. Kernel/process/filesystem behavior, host-tool dynamic libraries, system
+C headers, GCC internal data, linker scripts, startup objects and archives, and
+the semantics of those exact host inputs remain an explicit trusted boundary.
+The linked JSON record carries the same machine-checkable boundary declaration.
+The controller must be launched through the documented outer `/usr/bin/env -i`.
+Its in-script checks cannot retrospectively authenticate the environment or
+dynamic loader that started that first `env`/Bash process; this pre-controller
+loader interval and hostile same-UID mutation remain explicit trusted limits.
+
+The historical [build-instructions.sh](build-instructions.sh) download flow is
+retained only as an upstream development reference.  It does not create the
+bootstrap and linked-provenance records required by `candle.sh`, and therefore
+must not be used to produce a promotable Flyspeck-checking artifact.
 
 # Compatibility and Porting
 
@@ -74,4 +131,3 @@ things that Candle does differently, notably:
   evaluates to false.
 - Expression-level modules and functors are not supported, nor is the 'open'
   declaration.
-

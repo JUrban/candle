@@ -66,8 +66,8 @@ let (|-->) x y a = if y =/ num 0 then a else (x |-> y) a;;
 
 let element (d,v) i = tryapplyd v i (num 0);;
 
-let mapa f (d,v) =
-  d,foldl (fun a i c -> (i |--> f(c)) a) undefined v;;
+let mapa cmp f (d,v) =
+  d,foldl (fun a i c -> (i |--> f(c)) a) (undefined cmp) v;;
 
 let is_zero (d,v) = is_undefined v;;
 
@@ -75,13 +75,15 @@ let is_zero (d,v) = is_undefined v;;
 (* Vectors. Conventionally indexed 1..n.                                     *)
 (* ------------------------------------------------------------------------- *)
 
-let vec_0 n = (n,undefined:vector);;
+let _inundefined : (int,num) func = undefined Int.compare;;
+
+let vec_0 n = (n,_inundefined:vector);;
 
 let vec_dim (v:vector) = fst v;;
 
 let vec_const c n =
   if c =/ num 0 then vec_0 n
-  else (n,itlist (fun k -> k |-> c) (1--n) undefined :vector);;
+  else (n,itlist (fun k -> k |-> c) (1--n) _inundefined :vector);;
 
 let vec_1 = vec_const (num 1);;
 
@@ -107,20 +109,23 @@ let vec_dot (v1:vector) (v2:vector) =
 
 let vec_of_list l =
   let n = length l in
-  (n,itlist2 (|->) (1--n) l undefined :vector);;
+  (n,itlist2 (|->) (1--n) l _inundefined :vector);;
 
 (* ------------------------------------------------------------------------- *)
 (* Matrices; again rows and columns indexed from 1.                          *)
 (* ------------------------------------------------------------------------- *)
 
-let matrix_0 (m,n) = ((m,n),undefined:matrix);;
+let _iinundefined : (int*int,num) func =
+  undefined (Pair.compare Int.compare Int.compare);;
+
+let matrix_0 (m,n) = ((m,n),_iinundefined:matrix);;
 
 let dimensions (m:matrix) = fst m;;
 
 let matrix_const c (m,n as mn) =
   if m <> n then failwith "matrix_const: needs to be square"
   else if c =/ num 0 then matrix_0 mn
-  else (mn,itlist (fun k -> (k,k) |-> c) (1--n) undefined :matrix);;
+  else (mn,itlist (fun k -> (k,k) |-> c) (1--n) _iinundefined :matrix);;
 
 let matrix_1 = matrix_const (num 1);;
 
@@ -141,40 +146,42 @@ let matrix_sub m1 m2 = matrix_add m1 (matrix_neg m2);;
 let row k (m:matrix) =
   let i,j = dimensions m in
   (j,
-   foldl (fun a (i,j) c -> if i = k then (j |-> c) a else a) undefined (snd m)
+   foldl (fun a (i,j) c -> if i = k then (j |-> c) a else a) _inundefined (snd m)
    : vector);;
 
 let column k (m:matrix) =
   let i,j = dimensions m in
   (i,
-   foldl (fun a (i,j) c -> if j = k then (i |-> c) a else a) undefined (snd m)
+   foldl (fun a (i,j) c -> if j = k then (i |-> c) a else a) _inundefined (snd m)
    : vector);;
 
 let transp (m:matrix) =
   let i,j = dimensions m in
-  ((j,i),foldl (fun a (i,j) c -> ((j,i) |-> c) a) undefined (snd m) :matrix);;
+  ((j,i),foldl (fun a (i,j) c -> ((j,i) |-> c) a) _iinundefined (snd m) :matrix);;
 
 let diagonal (v:vector) =
   let n = vec_dim v in
-  ((n,n),foldl (fun a i c -> ((i,i) |-> c) a) undefined (snd v) : matrix);;
+  ((n,n),foldl (fun a i c -> ((i,i) |-> c) a) _iinundefined (snd v) : matrix);;
 
 let matrix_of_list l =
   let m = length l in
   if m = 0 then matrix_0 (0,0) else
   let n = length (hd l) in
-  (m,n),itern 1 l (fun v i -> itern 1 v (fun c j -> (i,j) |-> c)) undefined;;
+  (m,n),itern 1 l (fun v i -> itern 1 v (fun c j -> (i,j) |-> c)) _iinundefined;;
 
 (* ------------------------------------------------------------------------- *)
 (* Monomials.                                                                *)
 (* ------------------------------------------------------------------------- *)
 
+let _tiundefined : (term,int) func = undefined Term.compare;;
+
 let monomial_eval assig (m:monomial) =
   foldl (fun a x k -> a */ power_num (apply assig x) (num k))
         (num 1) m;;
 
-let monomial_1 = (undefined:monomial);;
+let monomial_1 = (_tiundefined:monomial);;
 
-let monomial_var x = (x |=> 1 :monomial);;
+let monomial_var x :monomial = (x |=> 1) Term.compare;;
 
 let (monomial_mul:monomial->monomial->monomial) =
   combine (+) (fun x -> false);;
@@ -195,7 +202,7 @@ let monomial_degree x (m:monomial) = tryapplyd m x 0;;
 
 let monomial_lcm (m1:monomial) (m2:monomial) =
   (itlist (fun x -> x |-> max (monomial_degree x m1) (monomial_degree x m2))
-          (union (dom m1) (dom m2)) undefined :monomial);;
+          (union (dom m1) (dom m2)) _tiundefined :monomial);;
 
 let monomial_multidegree (m:monomial) = foldl (fun a x k -> k + a) 0 m;;
 
@@ -208,14 +215,19 @@ let monomial_variables m = dom m;;
 let eval assig (p:poly) =
   foldl (fun a m c -> a +/ c */ monomial_eval assig m) (num 0) p;;
 
-let poly_0 = (undefined:poly);;
+let _monomial_compare m1 m2 =
+  _func_compare (Pair.compare Term.compare Int.compare) m1 m2;;
+
+let _mnundefined : (monomial,num) func = undefined _monomial_compare;;
+
+let poly_0 = (_mnundefined:poly);;
 
 let poly_isconst (p:poly) = foldl (fun a m c -> m = monomial_1 && a) true p;;
 
-let poly_var x = ((monomial_var x) |=> num 1 :poly);;
+let poly_var x :poly = ((monomial_var x) |=> num 1) _monomial_compare;;
 
 let poly_const c =
-  if c =/ num 0 then poly_0 else (monomial_1 |=> c);;
+  if c =/ num 0 then poly_0 else (monomial_1 |=> c) _monomial_compare;;
 
 let poly_cmul c (p:poly) =
   if c =/ num 0 then poly_0
@@ -238,7 +250,7 @@ let poly_mul (p1:poly) (p2:poly) =
 
 let poly_div (p1:poly) (p2:poly) =
   if not(poly_isconst p2) then failwith "poly_div: non-constant" else
-  let c = eval undefined p2 in
+  let c = eval (undefined Term.compare) p2 in
   if c =/ num 0 then failwith "poly_div: division by zero"
   else poly_cmul (num 1 // c) p1;;
 
@@ -252,7 +264,7 @@ let rec poly_pow p k =
 
 let poly_exp p1 p2 =
   if not(poly_isconst p2) then failwith "poly_exp: not a constant" else
-  poly_pow p1 (Num.int_of_num (eval undefined p2));;
+  poly_pow p1 (Num.int_of_num (eval (undefined Term.compare) p2));;
 
 let degree x (p:poly) = foldl (fun a m c -> max (monomial_degree x m) a) 0 p;;
 
@@ -266,7 +278,7 @@ let poly_variables (p:poly) =
 (* Order monomials for human presentation.                                   *)
 (* ------------------------------------------------------------------------- *)
 
-let humanorder_varpow (x1,k1) (x2,k2) = x1 < x2 || x1 = x2 && k1 > k2;;
+let humanorder_varpow (x1,k1) (x2,k2) = Term.(<) x1 x2 || x1 = x2 && k1 > k2;;
 
 let humanorder_monomial =
   let rec ord l1 l2 = match (l1,l2) with
@@ -274,8 +286,8 @@ let humanorder_monomial =
   | [],_ -> false
   | h1::t1,h2::t2 -> humanorder_varpow h1 h2 || h1 = h2 && ord t1 t2 in
   fun m1 m2 -> m1 = m2 ||
-               ord (sort humanorder_varpow (graph m1))
-                   (sort humanorder_varpow (graph m2));;
+               ord (sort humanorder_varpow (graph m1 Int.compare))
+                   (sort humanorder_varpow (graph m2 Int.compare));;
 
 (* ------------------------------------------------------------------------- *)
 (* Conversions to strings.                                                   *)
@@ -315,7 +327,7 @@ let string_of_varpow x k =
 let string_of_monomial m =
   if m = monomial_1 then "1" else
   let vps = List.fold_right (fun (x,k) a -> string_of_varpow x k :: a)
-                            (sort humanorder_varpow (graph m)) [] in
+                            (sort humanorder_varpow (graph m Int.compare)) [] in
   end_itlist (fun s t -> s^"*"^t) vps;;
 
 let string_of_cmonomial (c,m) =
@@ -325,7 +337,8 @@ let string_of_cmonomial (c,m) =
 
 let string_of_poly (p:poly) =
   if p = poly_0 then "<<0>>" else
-  let cms = sort (fun (m1,_) (m2,_) -> humanorder_monomial m1 m2) (graph p) in
+  let cms = sort (fun (m1,_) (m2,_) -> humanorder_monomial m1 m2)
+                 (graph p Num.compare) in
   let s =
     List.fold_left (fun a (m,c) ->
              if c </ num 0 then a ^ " - " ^ string_of_cmonomial(minus_num c,m)
@@ -347,10 +360,24 @@ let print_monomial m = Format.print_string(string_of_monomial m);;
 
 let print_poly m = Format.print_string(string_of_poly m);;
 
+(* Candle does not execute OCaml toplevel printer directives.
 #install_printer print_vector;;
 #install_printer print_matrix;;
 #install_printer print_monomial;;
 #install_printer print_poly;;
+*)
+
+(* Candle's REPL discovers pretty-valued pp_* bindings instead of executing
+   OCaml toplevel directives.  Keep the original unit-returning print_*
+   functions above intact for source calls, and expose equivalent display-only
+   adapters under distinct names. *)
+let pp_vector v = Pretty_printer.token (string_of_vector 0 20 v);;
+
+let pp_matrix m = Pretty_printer.token (string_of_matrix 20 m);;
+
+let pp_monomial m = Pretty_printer.token (string_of_monomial m);;
+
+let pp_poly p = Pretty_printer.token (string_of_poly p);;
 
 (* ------------------------------------------------------------------------- *)
 (* Conversion from HOL term.                                                 *)
@@ -374,7 +401,7 @@ let poly_of_term =
     if lop = neg_tm then poly_neg(poly_of_term r)
     else if lop = inv_tm then
       let p = poly_of_term r in
-      if poly_isconst p then poly_const(num 1 // eval undefined p)
+      if poly_isconst p then poly_const(num 1 // eval (undefined Term.compare) p)
       else failwith "poly_of_term: inverse of non-constant polyomial"
     else if not(is_comb lop) then poly_var tm else
     let op,l = dest_comb lop in
@@ -385,7 +412,8 @@ let poly_of_term =
     else if op = mul_tm then poly_mul (poly_of_term l) (poly_of_term r)
     else if op = div_tm then
       let p = poly_of_term l and q = poly_of_term r in
-      if poly_isconst q then poly_cmul (num 1 // eval undefined q) p
+      if poly_isconst q then
+        poly_cmul (num 1 // eval (undefined Term.compare) q) p
       else failwith "poly_of_term: division by non-constant polynomial"
     else poly_var tm in
   fun tm -> if type_of tm = real_ty then poly_of_term tm
@@ -404,11 +432,17 @@ let sdpa_of_vector (v:vector) =
 (* String for block diagonal matrix numbered k.                              *)
 (* ------------------------------------------------------------------------- *)
 
+let _int_triple_cmp (a,b,c) (x,y,z) =
+  let first = Int.compare a x in
+  if first <> 0 then first else
+  let second = Int.compare b y in
+  if second <> 0 then second else Int.compare c z;;
+
 let sdpa_of_blockdiagonal k m =
   let pfx = string_of_int k ^" " in
   let ents =
     foldl (fun a (b,i,j) c -> if i > j then a else ((b,i,j),c)::a) [] m in
-  let entss = sort (increasing fst) ents in
+  let entss = sort (increasing_by _int_triple_cmp fst) ents in
   itlist (fun ((b,i,j),c) a ->
      pfx ^ string_of_int b ^ " " ^ string_of_int i ^ " " ^ string_of_int j ^
      " " ^ decimalize 20 c ^ "\n" ^ a) entss "";;
@@ -421,7 +455,8 @@ let sdpa_of_matrix k (m:matrix) =
   let pfx = string_of_int k ^ " 1 " in
   let ms = foldr (fun (i,j) c a -> if i > j then a else ((i,j),c)::a)
                  (snd m) [] in
-  let mss = sort (increasing fst) ms in
+  let mss = sort
+    (increasing_by (Pair.compare Int.compare Int.compare) fst) ms in
   itlist (fun ((i,j),c) a ->
      pfx ^ string_of_int i ^ " " ^ string_of_int j ^
      " " ^ decimalize 20 c ^ "\n" ^ a) mss "";;

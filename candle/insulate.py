@@ -4,7 +4,8 @@ Generate OCaml bindings for CakeML API insulation.
 
 This script reads a types.txt file from CakeML and generates OCaml code that:
 1. Creates a Cake module with all CakeML functions properly namespaced
-2. Binds original module names to empty modules to force usage through Cake
+2. Binds original module names to restricted modules to force ordinary usage
+   through Cake
 """
 
 import sys
@@ -41,6 +42,16 @@ MODULE_TYPES = {
     'Rat': [([], 'rat')],
     'Double': [([], 'double')],
     'Hashtable': [(['a', 'b'], 'hashtable')]
+}
+
+# The OCaml parser lowers every decimal float literal to
+# Option.valOf (Double.fromString ...).  These names are therefore compiler
+# runtime dependencies, not optional source-level CakeML API usage.  Keep only
+# those two functions available after insulation; all other functions remain
+# accessible solely through Cake.
+PARSER_RUNTIME_BINDINGS = {
+    'Double': (('fromString', 1),),
+    'Option': (('valOf', 1),),
 }
 
 
@@ -141,8 +152,43 @@ def parse_types_file(content):
     return bindings
 
 
+def emit_function_binding(lines, indent, target_module, binding_info):
+    """Append one eta-expanded binding through target_module."""
+    func_name = binding_info['func_name']
+    param_count = binding_info['param_count']
+    if param_count == 0:
+        lines.append(f"{indent}let {func_name} = {target_module}.{func_name}")
+    else:
+        params = ' '.join(f'x{i}' for i in range(param_count))
+        lines.append(
+            f"{indent}let {func_name} {params} = "
+            f"{target_module}.{func_name} {params}")
+
+
+def parser_runtime_binding(bindings, module_name, function_name,
+                           expected_parameters):
+    """Return one exact compiler-runtime binding or fail closed."""
+    if module_name not in bindings:
+        raise ValueError(
+            f"missing {module_name} module required by parser runtime")
+    matches = [
+        binding_info
+        for binding_info in bindings[module_name]
+        if binding_info['func_name'] == function_name
+    ]
+    if len(matches) != 1:
+        raise ValueError(
+            f"expected one {module_name}.{function_name} binding for parser "
+            "runtime")
+    if matches[0]['param_count'] != expected_parameters:
+        raise ValueError(
+            f"unexpected arity for parser runtime binding "
+            f"{module_name}.{function_name}")
+    return matches[0]
+
+
 def generate_ocaml_bindings(bindings):
-    """Generate OCaml code for the Cake module and empty module stubs."""
+    """Generate OCaml code for the Cake module and restricted module stubs."""
     lines = []
 
     # Generate the Cake module
@@ -167,15 +213,8 @@ def generate_ocaml_bindings(bindings):
 
         # Add all functions for this module with eta expansion and symbol escaping
         for binding_info in sorted(bindings[module_name], key=lambda x: x['func_name']):
-            func_name = binding_info['func_name']
-            param_count = binding_info['param_count']
-
             # Try to do as much eta-expansion as possible for performance reasons (2026-02-06)
-            if param_count == 0:
-                lines.append(f"    let {func_name} = {module_name}.{func_name}")
-            else:
-                params = ' '.join(f'x{i}' for i in range(param_count))
-                lines.append(f"    let {func_name} {params} = {module_name}.{func_name} {params}")
+            emit_function_binding(lines, "    ", module_name, binding_info)
 
         lines.append("  end;;")
         lines.append("")
@@ -183,21 +222,36 @@ def generate_ocaml_bindings(bindings):
     lines.append("end;;")
     lines.append("")
 
-    # Generate module stubs that re-export pretty printers
+    # Generate module stubs that re-export pretty printers and the two names
+    # used implicitly by the decimal-float parser lowering.
     lines.append("(* Module stubs to prevent direct CakeML API usage *)")
     lines.append("(* Users must access these through the Cake module *)")
-    lines.append("(* Types are re-exported so that pretty printers still work *)")
+    lines.append("(* Types support pretty printers; selected functions support parser lowering *)")
     lines.append("")
 
     for ocaml_module_name in module_names:
-        if ocaml_module_name in MODULE_TYPES:
+        parser_bindings = PARSER_RUNTIME_BINDINGS.get(ocaml_module_name, ())
+        if ocaml_module_name in MODULE_TYPES or parser_bindings:
             lines.append(f"module {ocaml_module_name} = struct")
-            for entry in MODULE_TYPES[ocaml_module_name]:
+            for entry in MODULE_TYPES.get(ocaml_module_name, ()):
                 params_str, type_name = format_type_entry(entry)
                 lines.append(f"  type {params_str}{type_name} = {params_str}Cake.{ocaml_module_name}.{type_name}")
+            for parser_name, expected_parameters in parser_bindings:
+                binding_info = parser_runtime_binding(
+                    bindings, ocaml_module_name, parser_name,
+                    expected_parameters)
+                emit_function_binding(
+                    lines, "  ", f"Cake.{ocaml_module_name}", binding_info)
             lines.append("end;;")
         else:
             lines.append(f"module {ocaml_module_name} = struct end;;")
+
+    # Required modules absent from types.txt do not appear in module_names, so
+    # validate the complete closed allowlist separately as well.
+    for module_name, parser_bindings in PARSER_RUNTIME_BINDINGS.items():
+        for parser_name, expected_parameters in parser_bindings:
+            parser_runtime_binding(
+                bindings, module_name, parser_name, expected_parameters)
 
     lines.append("")
     lines.append("(* End of generated section *)")

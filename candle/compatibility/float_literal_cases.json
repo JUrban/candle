@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-FLOAT-LITERAL-001",
+  "reference": {
+    "implementation": "OCaml",
+    "version": "4.14.1",
+    "bit_observation": "Int64.bits_of_float printed as an unsigned 64-bit integer"
+  },
+  "supported_subset": "the ten exact positive_cases spellings below, covering decimal points, exponents, separator underscores, zero, and a small normal value; broader non-ERANGE decimal support remains implementation intent pending corpus execution evidence",
+  "out_of_scope": [
+    {
+      "syntax": "hexadecimal floating-point literals such as 0x1.0p0",
+      "reason": "the retained CakeML decimal scanner does not recognize them and no such literal occurs in the audited Great 100 source slice"
+    }
+  ],
+  "candle_excluded_cases": [
+    {
+      "id": "hexadecimal_float",
+      "literal": "0x1.0p0"
+    }
+  ],
+  "runtime_divergence_cases": [
+    {
+      "id": "overflow_to_infinity",
+      "literal": "1e309",
+      "ocaml_expected_word64_decimal": "9218868437227405312",
+      "candle_expected": "Option.valOf raises because Double.fromString maps ERANGE to None"
+    },
+    {
+      "id": "underflow_to_zero",
+      "literal": "1e-4000",
+      "ocaml_expected_word64_decimal": "0",
+      "candle_expected": "Option.valOf raises because Double.fromString maps ERANGE to None"
+    }
+  ],
+  "positive_cases": [
+    {
+      "id": "zero",
+      "literal": "0.0",
+      "normalized_literal": "0.0",
+      "expected_word64_decimal": "0"
+    },
+    {
+      "id": "two",
+      "literal": "2.0",
+      "normalized_literal": "2.0",
+      "expected_word64_decimal": "4611686018427387904"
+    },
+    {
+      "id": "trailing_point",
+      "literal": "2.",
+      "normalized_literal": "2.",
+      "expected_word64_decimal": "4611686018427387904"
+    },
+    {
+      "id": "twenty_two",
+      "literal": "22.0",
+      "normalized_literal": "22.0",
+      "expected_word64_decimal": "4626885667169763328"
+    },
+    {
+      "id": "fraction_rounding",
+      "literal": "0.1",
+      "normalized_literal": "0.1",
+      "expected_word64_decimal": "4591870180066957722"
+    },
+    {
+      "id": "exponent",
+      "literal": "2e3",
+      "normalized_literal": "2e3",
+      "expected_word64_decimal": "4656510908468559872"
+    },
+    {
+      "id": "thousand_twenty_four",
+      "literal": "1024.0",
+      "normalized_literal": "1024.0",
+      "expected_word64_decimal": "4652218415073722368"
+    },
+    {
+      "id": "separator_underscores",
+      "literal": "3_000e+37",
+      "normalized_literal": "3000e+37",
+      "expected_word64_decimal": "5212365023834441084"
+    },
+    {
+      "id": "small_exponent",
+      "literal": "1E-77",
+      "normalized_literal": "1E-77",
+      "expected_word64_decimal": "3454972126665216220"
+    },
+    {
+      "id": "exponent_separators",
+      "literal": "3.14151E+0_0__0",
+      "normalized_literal": "3.14151E+000",
+      "expected_word64_decimal": "4614256470432707751"
+    }
+  ],
+  "negative_cases": [
+    {
+      "id": "missing_exponent_digits",
+      "literal": "1e"
+    },
+    {
+      "id": "missing_signed_exponent_digits",
+      "literal": "1e+"
+    },
+    {
+      "id": "adjacent_identifier",
+      "literal": "2.0foo"
+    },
+    {
+      "id": "leading_point",
+      "literal": ".5"
+    },
+    {
+      "id": "two_decimal_points",
+      "literal": "1.0.0"
+    },
+    {
+      "id": "two_exponent_signs",
+      "literal": "1e--2"
+    }
+  ]
+}

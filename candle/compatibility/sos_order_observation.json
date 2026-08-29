@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-SOS-EXPLICIT-ORDER-001",
+  "source": "Examples/sos.ml",
+  "pre_patch": {
+    "status": "undefined_binding",
+    "last_value": "pp_poly",
+    "frontier": "increasing fst in sdpa_of_blockdiagonal",
+    "log": "/project/flyspeck-candle-runs/v13-sos-printer-load.log",
+    "log_sha256": "de6ebde0775972999e472462c7d792401d700b1646f8e64b190157cfab2e23b0"
+  },
+  "selected_remedy": {
+    "branch": "codex/flyspeck-v13-sos-order",
+    "commit": "d32505a",
+    "description": "add a separately named increasing_by helper and supply explicit lexicographic integer comparators at the two reached SDPA sort sites",
+    "global_increasing_arity_changed": false,
+    "general_polymorphic_compare_added": false
+  },
+  "post_patch": {
+    "status": "advanced_to_next_compatibility_frontier",
+    "observed_bindings": {
+      "_int_triple_cmp": "int * int * int -> int * int * int -> int",
+      "sdpa_of_blockdiagonal": "int -> (int * int * int,num) func -> string",
+      "sdpa_of_matrix": "int -> (int * int) * (int * int,num) func -> string",
+      "sdpa_of_problem": "string -> int * (int,num) func -> ((int * int) * (int * int,num) func) list -> string"
+    },
+    "next_frontier": "undefined Num.num_of_string in the decimal parser",
+    "total_elapsed_seconds": 129.78,
+    "maximum_resident_set_kib": 1233792,
+    "log": "/project/flyspeck-candle-runs/v13-sos-order-narrow-prefix-load.log",
+    "log_sha256": "d0b3ae0feb11ca045b7cc2ece1e215e354387a9248c3f6ffc145ad709379fe90"
+  },
+  "claim_boundary": "This proves that the narrowed explicit-order adaptation elaborates through the reached SDPA prefix. It is not a complete SOS or target load."
+}

@@ -1,0 +1,441 @@
+#!/usr/bin/env python3
+"""Prepare the authenticated direct-source prefix through general/debug.hl.
+
+This is a bounded acceptance workload, not a replacement Flyspeck loader.  It
+validates the production manifest roots and extracts the exact normalized
+strictbuild prefix ending at the second manifest-selected #flyspeck_loadt
+action.  The compiled-Candle gate then executes those real actions.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import stat
+import subprocess
+from pathlib import Path
+from typing import Any
+
+
+MANIFEST = "flyspeck_manifest.json"
+NORMALIZATION_CONTRACT = "flyspeck_normalizations.json"
+NORMALIZATION_RECEIPT = "flyspeck_normalization_receipt.json"
+GENERATED_CONTRACT = "flyspeck_lp_archive_contract.json"
+GENERATED_RECEIPT = "flyspeck_lp_archive_receipt.json"
+NORMALIZATION_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555", "directories": "0555",
+        "normalized_files": "0444", "receipt": "0444",
+    },
+}
+GENERATED_PUBLICATION = {
+    "policy": "fresh-root-renameat2-noreplace",
+    "failed_staging": "retained",
+    "concurrent_same_uid_mutation": "trusted",
+    "modes": {
+        "root": "0555", "directories": "0555",
+        "prepared_files": "0644", "receipt": "0444",
+    },
+}
+STRICTBUILD_KEY = "flyspeck:text_formalization/build/strictbuild.hl"
+PARSER_KEY = "flyspeck:text_formalization/general/parser_verbose.hl"
+DEBUG_KEY = "flyspeck:text_formalization/general/debug.hl"
+STRICTBUILD_PATH = "text_formalization/build/strictbuild.hl"
+PARSER_PATH = "text_formalization/general/parser_verbose.hl"
+DEBUG_PATH = "text_formalization/general/debug.hl"
+PARSER_ACTION = b'#flyspeck_loadt "general/parser_verbose.hl";;'
+DEBUG_ACTION = b'#flyspeck_loadt "general/debug.hl";;'
+GENERATED_PATH = "formal_lp/glpk/binary/hard_7.dat"
+CHUNK_BYTES = 1024 * 1024
+
+
+class ContractError(ValueError):
+    pass
+
+
+def require(condition: bool, message: str) -> None:
+    if not condition:
+        raise ContractError(message)
+
+
+def hash_file(path: Path) -> tuple[int, str, str]:
+    sha256 = hashlib.sha256()
+    md5 = hashlib.md5(usedforsecurity=False)
+    size = 0
+    with path.open("rb") as source:
+        while block := source.read(CHUNK_BYTES):
+            size += len(block)
+            sha256.update(block)
+            md5.update(block)
+    return size, sha256.hexdigest(), md5.hexdigest()
+
+
+def sha256_file(path: Path) -> str:
+    return hash_file(path)[1]
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    require(isinstance(value, dict), f"expected JSON object: {path}")
+    return value
+
+
+def git_output(root: Path, *arguments: str) -> str:
+    return subprocess.run(
+        ["git", "-C", str(root), *arguments], check=True,
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+    ).stdout.strip()
+
+
+def validate_clean_git_root(root: Path, expected_head: str, label: str) -> None:
+    observed_head = git_output(root, "rev-parse", "HEAD")
+    require(
+        observed_head == expected_head,
+        f"{label} revision mismatch: expected {expected_head}, got {observed_head}",
+    )
+    status = git_output(root, "status", "--porcelain", "--untracked-files=all")
+    require(not status, f"{label} source root is not clean")
+
+
+def validate_clean_git_worktree(root: Path, label: str) -> None:
+    status = git_output(root, "status", "--porcelain", "--untracked-files=all")
+    require(not status, f"{label} worktree is not clean")
+
+
+def validate_record(path: Path, record: dict[str, Any], label: str) -> str:
+    require(path.is_file() and not path.is_symlink(), f"missing ordinary {label}: {path}")
+    size, sha256, md5 = hash_file(path)
+    require(size == record["bytes"], f"{label} byte-count mismatch: {path}")
+    require(sha256 == record["sha256"], f"{label} SHA-256 mismatch: {path}")
+    if "md5" in record:
+        require(md5 == record["md5"], f"{label} MD5 mismatch: {path}")
+    if "normalized_md5" in record:
+        require(md5 == record["normalized_md5"], f"{label} MD5 mismatch: {path}")
+    return md5
+
+
+def validate_materialized_tree(
+    root: Path, expected_files: dict[str, int], label: str,
+) -> None:
+    require(root.is_dir() and not root.is_symlink(),
+            f"missing ordinary {label} root: {root}")
+    expected_paths = {Path(relative) for relative in expected_files}
+    expected_directories = {Path(".")}
+    for relative in expected_paths:
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    observed_files: set[Path] = set()
+    observed_directories: set[Path] = {Path(".")}
+    root_status = os.stat(root, follow_symlinks=False)
+    require(stat.S_ISDIR(root_status.st_mode), f"non-directory {label} root")
+    require(stat.S_IMODE(root_status.st_mode) == 0o555,
+            f"{label} root mode mismatch")
+    for current, directory_names, file_names in os.walk(
+        root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISDIR(observed.st_mode),
+                    f"non-directory or symlink in {label}: {path}")
+            require(stat.S_IMODE(observed.st_mode) == 0o555,
+                    f"{label} directory mode mismatch: {path}")
+            observed_directories.add(path.relative_to(root))
+        for name in file_names:
+            path = current_path / name
+            observed = os.stat(path, follow_symlinks=False)
+            require(stat.S_ISREG(observed.st_mode),
+                    f"non-regular or symlink in {label}: {path}")
+            relative = path.relative_to(root)
+            observed_files.add(relative)
+            require(relative in expected_paths,
+                    f"unexpected file in {label}: {relative}")
+            require(
+                stat.S_IMODE(observed.st_mode) == expected_files[str(relative)],
+                f"{label} file mode mismatch: {relative}",
+            )
+    require(observed_directories == expected_directories,
+            f"{label} directory set mismatch")
+    require(observed_files == expected_paths, f"{label} file set mismatch")
+
+
+def extract_strictbuild_prefix(source: bytes) -> bytes:
+    require(source.count(PARSER_ACTION) == 1, "strictbuild parser action drift")
+    require(source.count(DEBUG_ACTION) == 1, "strictbuild debug action drift")
+    parser_at = source.index(PARSER_ACTION)
+    debug_at = source.index(DEBUG_ACTION)
+    require(parser_at < debug_at, "strictbuild Dopen action order drift")
+    end = debug_at + len(DEBUG_ACTION)
+    prefix = source[:end] + b"\n"
+    require(b"#flyspeck_needs" not in prefix, "prefix reaches the 297-entry driver")
+    require(prefix.rstrip().endswith(DEBUG_ACTION), "prefix does not stop after debug")
+    return prefix
+
+
+def ocaml_string(value: str) -> str:
+    require(all(32 <= ord(char) < 127 for char in value), "unsafe non-ASCII path")
+    return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def write_config(
+    path: Path,
+    candle_root: Path,
+    flyspeck_root: Path,
+    overlay_root: Path,
+    generated_root: Path,
+    prefix_path: Path,
+    prefix_md5: str,
+    originals: list[tuple[Path, str]],
+    normalized: list[tuple[Path, Path, str]],
+    action_identities: list[tuple[Path, str, str]],
+    process_inputs: list[tuple[Path, str]],
+) -> None:
+    def ml(value: Path | str) -> str:
+        return ocaml_string(str(value))
+
+    lines = [
+        "(* Generated by flyspeck_dopen_prefix.py; do not edit. *)",
+        f"let candle_hollight_root = {ml(candle_root)};;",
+        f"let candle_flyspeck_root = {ml(flyspeck_root)};;",
+        f"let candle_flyspeck_overlay_root = {ml(overlay_root)};;",
+        f"let candle_flyspeck_generated_root = {ml(generated_root)};;",
+        'let candle_flyspeck_build_mode = "dopen-prefix";;',
+        f"let candle_flyspeck_dopen_prefix = {ml(prefix_path)};;",
+        f"let candle_flyspeck_dopen_prefix_md5 = {ml(prefix_md5)};;",
+        "let candle_flyspeck_dopen_original_sources = [",
+    ]
+    for index, (source, md5) in enumerate(originals):
+        suffix = ";" if index + 1 < len(originals) else ""
+        lines.append(f"  ({ml(source)},{ml(md5)}){suffix}")
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_dopen_normalized_sources = [",
+    ])
+    for index, (original, output, md5) in enumerate(normalized):
+        suffix = ";" if index + 1 < len(normalized) else ""
+        lines.append(f"  ({ml(original)},{ml(output)},{ml(md5)}){suffix}")
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_dopen_action_identities = [",
+    ])
+    for index, (original, basename, md5) in enumerate(action_identities):
+        suffix = ";" if index + 1 < len(action_identities) else ""
+        lines.append(f"  ({ml(original)},({ml(basename)},{ml(md5)})){suffix}")
+    lines.extend([
+        "];;",
+        "let candle_flyspeck_dopen_process_inputs = [",
+    ])
+    for index, (source, md5) in enumerate(process_inputs):
+        suffix = ";" if index + 1 < len(process_inputs) else ""
+        lines.append(f"  ({ml(source)},{ml(md5)}){suffix}")
+    lines.extend([
+        "];;",
+        "",
+    ])
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def prepare(
+    candle_root: Path,
+    flyspeck_root: Path,
+    overlay_root: Path,
+    generated_root: Path,
+    output_root: Path,
+) -> dict[str, Any]:
+    require(not overlay_root.is_symlink(),
+            "normalization overlay root is a symlink")
+    require(not generated_root.is_symlink(),
+            "generated-input root is a symlink")
+    candle_root = candle_root.resolve()
+    flyspeck_root = flyspeck_root.resolve()
+    overlay_root = overlay_root.resolve()
+    generated_root = generated_root.resolve()
+    output_root = output_root.resolve()
+    candle_dir = candle_root / "candle"
+    manifest_path = candle_dir / MANIFEST
+    manifest = load_json(manifest_path)
+    require(manifest.get("schema") == 1, "unsupported Flyspeck manifest schema")
+    validate_clean_git_worktree(candle_root, "Candle harness")
+
+    flyspeck_commit = manifest["repositories"]["flyspeck"]["commit"]
+    validate_clean_git_root(flyspeck_root, flyspeck_commit, "Flyspeck")
+
+    normalization = manifest["source_normalization_contract"]
+    contract_path = candle_dir / NORMALIZATION_CONTRACT
+    require(
+        sha256_file(contract_path) == normalization["contract_sha256"],
+        "normalization contract digest mismatch",
+    )
+    normalization_files = {
+        entry["path"]: 0o444 for entry in normalization["entries"]
+    }
+    normalization_files[NORMALIZATION_RECEIPT] = 0o444
+    validate_materialized_tree(
+        overlay_root, normalization_files, "normalization overlay",
+    )
+    receipt = load_json(overlay_root / NORMALIZATION_RECEIPT)
+    require(receipt.get("schema") == 3, "unsupported normalization receipt schema")
+    require(receipt.get("publication") == NORMALIZATION_PUBLICATION,
+            "normalization publication contract mismatch")
+    require(receipt.get("flyspeck_commit") == flyspeck_commit, "overlay Flyspeck pin mismatch")
+    require(
+        receipt.get("contract_sha256") == normalization["contract_sha256"],
+        "overlay normalization contract mismatch",
+    )
+    contract_entries = {entry["path"]: entry for entry in normalization["entries"]}
+    receipt_entries = {entry["path"]: entry for entry in receipt["entries"]}
+    require(receipt_entries.keys() == contract_entries.keys(), "overlay entry-set mismatch")
+    for relative, record in contract_entries.items():
+        observed = receipt_entries[relative]
+        for field in ("id", "normalized_bytes", "normalized_md5", "normalized_sha256"):
+            require(observed.get(field) == record[field], f"overlay receipt {field} mismatch: {relative}")
+        validate_record(
+            overlay_root / relative,
+            {
+                "bytes": record["normalized_bytes"],
+                "sha256": record["normalized_sha256"],
+                "normalized_md5": record["normalized_md5"],
+            },
+            "normalized source",
+        )
+
+    nodes = manifest["source_nodes"]
+    source_specs = [
+        (STRICTBUILD_KEY, STRICTBUILD_PATH),
+        (PARSER_KEY, PARSER_PATH),
+        (DEBUG_KEY, DEBUG_PATH),
+    ]
+    originals: list[tuple[Path, str]] = []
+    for key, relative in source_specs:
+        record = nodes[key]
+        require(record["repository"] == "flyspeck", f"unexpected source repository: {key}")
+        source = flyspeck_root / relative
+        md5 = validate_record(source, record, "original source")
+        originals.append((source, md5))
+
+    normalized: list[tuple[Path, Path, str]] = []
+    for _, relative in source_specs:
+        record = contract_entries[relative]
+        normalized.append((
+            flyspeck_root / relative,
+            overlay_root / relative,
+            record["normalized_md5"],
+        ))
+
+    generated_contract_path = candle_dir / GENERATED_CONTRACT
+    generated_contract_sha = sha256_file(generated_contract_path)
+    validate_materialized_tree(
+        generated_root,
+        {GENERATED_PATH: 0o644, GENERATED_RECEIPT: 0o444},
+        "generated-input",
+    )
+    generated_receipt = load_json(generated_root / GENERATED_RECEIPT)
+    require(generated_receipt.get("schema") == 2, "unsupported generated-input receipt schema")
+    require(generated_receipt.get("publication") == GENERATED_PUBLICATION,
+            "generated-input publication contract mismatch")
+    require(generated_receipt.get("flyspeck_commit") == flyspeck_commit, "generated-input Flyspeck pin mismatch")
+    require(
+        generated_receipt.get("contract_sha256") == generated_contract_sha,
+        "generated-input contract mismatch",
+    )
+    outputs = generated_receipt.get("outputs")
+    require(isinstance(outputs, list) and len(outputs) == 1, "generated-input output-set mismatch")
+    generated_record = outputs[0]
+    require(generated_record.get("path") == GENERATED_PATH, "generated-input path mismatch")
+    manifest_generated = [
+        entry for entry in manifest["generated_inputs"]
+        if entry.get("path") == GENERATED_PATH and entry.get("class") == "lp-certificate-prepared"
+    ]
+    require(len(manifest_generated) == 1, "manifest prepared-input record mismatch")
+    for field in ("bytes", "sha256"):
+        require(
+            generated_record.get(field) == manifest_generated[0][field],
+            f"generated-input receipt {field} mismatch",
+        )
+    validate_record(
+        generated_root / GENERATED_PATH, generated_record, "generated input",
+    )
+
+    strictbuild_output = overlay_root / STRICTBUILD_PATH
+    prefix = extract_strictbuild_prefix(strictbuild_output.read_bytes())
+    output_root.mkdir(parents=True, exist_ok=False)
+    prefix_path = output_root / "strictbuild-dopen-prefix.hl"
+    config_path = output_root / "dopen-prefix-config.ml"
+    evidence_path = output_root / "dopen-prefix-receipt.json"
+    prefix_path.write_bytes(prefix)
+    prefix_md5 = hashlib.md5(prefix, usedforsecurity=False).hexdigest()
+    action_identities = [
+        (originals[1][0], "parser_verbose.hl", originals[1][1]),
+        (originals[2][0], "debug.hl", originals[2][1]),
+    ]
+    process_records = manifest["static_library_contract"]["binding_evidence"][
+        "unix.cma"
+    ]["deterministic_process_inputs"]
+    require(
+        [record["command"] for record in process_records] == ["date", "whoami"],
+        "strictbuild process-input order drift",
+    )
+    process_inputs: list[tuple[Path, str]] = []
+    for record in process_records:
+        source_key = record["source"]
+        require(source_key.startswith("candle:"), "unexpected process-input repository")
+        source = candle_root / source_key.removeprefix("candle:")
+        md5 = validate_record(source, record, "process input")
+        process_inputs.append((source, md5))
+    write_config(
+        config_path, candle_root, flyspeck_root, overlay_root, generated_root,
+        prefix_path, prefix_md5, originals, normalized, action_identities,
+        process_inputs,
+    )
+    evidence = {
+        "schema": 1,
+        "claim": "host-side preparation only; not G2 acceptance",
+        "candle_head": git_output(candle_root, "rev-parse", "HEAD"),
+        "flyspeck_commit": flyspeck_commit,
+        "manifest_sha256": sha256_file(manifest_path),
+        "verified_cakeml_integration": manifest["dopen_corpus_contract"]["verified_cakeml_integration"],
+        "normalization_contract_sha256": normalization["contract_sha256"],
+        "normalization_receipt_sha256": sha256_file(overlay_root / NORMALIZATION_RECEIPT),
+        "generated_contract_sha256": generated_contract_sha,
+        "generated_receipt_sha256": sha256_file(generated_root / GENERATED_RECEIPT),
+        "prefix_bytes": len(prefix),
+        "prefix_md5": prefix_md5,
+        "actions": [
+            "general/parser_verbose.hl",
+            "general/debug.hl",
+        ],
+        "terminates_before_full_build": True,
+    }
+    evidence_path.write_text(
+        json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    )
+    return evidence
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--candle-root", type=Path, required=True)
+    parser.add_argument("--flyspeck-root", type=Path, required=True)
+    parser.add_argument("--overlay-root", type=Path, required=True)
+    parser.add_argument("--generated-root", type=Path, required=True)
+    parser.add_argument("--write", type=Path, required=True, metavar="OUTPUT_ROOT")
+    arguments = parser.parse_args()
+    evidence = prepare(
+        arguments.candle_root, arguments.flyspeck_root, arguments.overlay_root,
+        arguments.generated_root, arguments.write,
+    )
+    print(
+        "Dopen prefix prepared: "
+        f"{evidence['prefix_bytes']} bytes, {evidence['prefix_md5']}"
+    )
+
+
+if __name__ == "__main__":
+    main()

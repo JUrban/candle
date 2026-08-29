@@ -90,6 +90,11 @@ end
 
 module Option = struct
 
+(* Decimal float literals are lowered by the compiled parser through
+   Option.valOf.  Preserve that compiler-runtime binding when Metis adds its
+   source-level Option helpers after the CakeML insulation layer. *)
+let valOf opt = Option.valOf opt;;
+
 let is_some = function
     Some _ -> true
   | None -> false;;

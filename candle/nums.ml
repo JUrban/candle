@@ -6,14 +6,18 @@
 module type NUM = sig
 
   val num_of_int : int -> num
+  val num_of_string : string -> num
   val int_of_num : num -> int
   val string_of_num : num -> string
+  val float_of_num : num -> double
 
   val denominator : num -> num
   val numerator : num -> num
 
   val abs_num : num -> num
   val floor_num : num -> num
+  val round_num : num -> num
+  val ceiling_num : num -> num
 
   val ( +/ ) : num -> num -> num
   val ( -/ ) : num -> num -> num
@@ -114,6 +118,17 @@ let norm n = num_fix n
 let num_of_int i = Int i
 ;;
 
+(* The Num compatibility operation accepts integer strings.  CakeML integers
+   are unbounded, so the existing parser preserves the selected decimal SOS
+   behavior without an FFI conversion. *)
+let num_of_string s =
+  if s = "" then Int 0 else
+  if Cake.String.sub s 0 = '~' then failwith "num_of_string" else
+    match Cake.Int.fromString s with
+    | None -> failwith "num_of_string"
+    | Some i -> Int i
+;;
+
 let int_of_num n =
   match n with
   | Int i -> i
@@ -127,6 +142,15 @@ let string_of_num n =
       let n = Cake.Rat.numerator r in
       let d = Cake.Rat.denominator r in
       string_of_int n ^ "/" ^ string_of_int d
+;;
+
+let float_of_num n =
+  match n with
+  | Int i -> Cake.Double.fromInt i
+  | Rat r ->
+      Cake.Double.(/)
+        (Cake.Double.fromInt (Cake.Rat.numerator r))
+        (Cake.Double.fromInt (Cake.Rat.denominator r))
 ;;
 
 let minus_num n =
@@ -208,7 +232,9 @@ let power_num b e =
     else if e mod 2 <> 0 then b */ pow b (e - 1)
     else let p = pow b (e / 2) in
            p */ p in
-  pow b (int_of_num e)
+  let exponent = int_of_num e in
+  if exponent >= 0 then pow b exponent
+  else (Int 1) // pow b (~-exponent)
 ;;
 
 let ( **/) = power_num;;
@@ -216,7 +242,29 @@ let ( **/) = power_num;;
 let floor_num n =
   match n with
   | Int i -> n
-  | Rat r -> Int (Cake.Rat.numerator r / Cake.Rat.denominator r)
+  | Rat r -> Int (Cake.Rat.floor r)
+;;
+
+(* Num.round_num rounds a half away from zero.  Expressing the rule through
+   the verified Rat floor/ceiling operations also handles negative rationals
+   without relying on the host language's integer-division convention. *)
+let round_num =
+  let zero = Cake.Rat.fromInt 0 in
+  let half = Cake.Rat.(/) (Cake.Rat.fromInt 1) (Cake.Rat.fromInt 2) in
+  fun n ->
+    match n with
+    | Int _ -> n
+    | Rat r ->
+        if Cake.Rat.(>=) r zero then
+          Int (Cake.Rat.floor (Cake.Rat.(+) r half))
+        else
+          Int (Cake.Rat.ceiling (Cake.Rat.(-) r half))
+;;
+
+let ceiling_num n =
+  match n with
+  | Int _ -> n
+  | Rat r -> Int (Cake.Rat.ceiling r)
 ;;
 
 let compare x y =
@@ -258,11 +306,14 @@ end;; (* struct *)
 let num_of_int = Num.num_of_int;;
 let int_of_num = Num.int_of_num;;
 let string_of_num = Num.string_of_num;;
+let float_of_num = Num.float_of_num;;
 let denominator = Num.denominator;;
 let numerator = Num.numerator;;
 let minus_num = Num.minus_num;;
 let abs_num = Num.abs_num;;
 let floor_num = Num.floor_num;;
+let round_num = Num.round_num;;
+let ceiling_num = Num.ceiling_num;;
 
 let ( +/ ) = Num.( +/);;
 let ( -/ ) = Num.( -/);;

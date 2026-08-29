@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-TRAILING-SEMICOLON-001",
+  "generated_utc": "2026-08-27T15:40:09.275790+00:00",
+  "source_branch": "codex/flyspeck-v13-source-baseline",
+  "source_head": "988875ae3f31d1a7204eb732c42dbb7f5d9a5a94",
+  "source_normalization_commit": "6ce6fc1",
+  "qualified_fingerprint_request_commit": "988875a",
+  "worktree_status": [],
+  "candle_executable_sha256": "d361be3839f31811328d5a0da1ecea15a8a73f369c77e34a288355f16bb930d3",
+  "command": "CML_HEAP_SIZE=6000 python3 candle/regression.py --test 100/e_is_transcendental -j 1 --inactivity-timeout 180 --wall-timeout 600 --json-report /tmp/candle-e-is-transcendental-v13-qualified-report.json",
+  "result": {
+    "status": "PASS",
+    "timeout_kind": null,
+    "boot_elapsed_seconds": 2.2361662588082254,
+    "hol_elapsed_seconds": 139.17689330130816,
+    "test_elapsed_seconds": 114.79738178569824,
+    "fingerprint_elapsed_seconds": 0.297061359975487,
+    "total_elapsed_seconds": 256.5075027057901,
+    "peak_process_rss_kib": 6338520,
+    "peak_tree_rss_kib": 6342072
+  },
+  "fingerprints": {
+    "status": "observed_uncompared",
+    "mapping_status": "audited",
+    "expected_identities_present": false,
+    "serializer_sha256": "f5c9563154606fb2dbcdebf8fef26c802a9d22210253a51d7dcb2e2db76a2fdd",
+    "theorems": [
+      {
+        "name": "Finale.TRANSCENDENTAL_E",
+        "theorem_sha256": "718627e8786cf9fc0541232dcc6f01b8de4046a2521e1bd544e4822e0a28df4b",
+        "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+        "conclusion_sha256": "fe9faffacc8ac7d80854789d90a682296f0ba65899f9b73bf0d05f888811cd18",
+        "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+        "hypothesis_count": 0,
+        "global_axiom_count": 3
+      }
+    ]
+  },
+  "acceptance": "load passed; fingerprint is evidence only until compared with an approved reference identity"
+}

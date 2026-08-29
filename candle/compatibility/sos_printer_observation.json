@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-SOS-INSTALL-PRINTER-001",
+  "source": "Examples/sos.ml",
+  "pre_patch": {
+    "status": "parse_failure",
+    "last_value": "print_poly",
+    "frontier": "#install_printer print_vector",
+    "log": "/project/flyspeck-candle-runs/v13-sos-func-prefix-load.log",
+    "log_sha256": "b49311769b23031d9967864cad300580fa5d97261a58ba31cccda554a261e37d"
+  },
+  "selected_remedy": {
+    "branch": "codex/flyspeck-v13-sos-printer",
+    "commit": "03c888d8a453856693ac7b8b7d7572b0570597e7",
+    "description": "retain print_vector, print_matrix, print_monomial, and print_poly; disable only the unsupported toplevel directives; add distinct pretty-valued pp_vector, pp_matrix, pp_monomial, and pp_poly adapters",
+    "upstream_print_poly_shadowing_imported": false
+  },
+  "post_patch": {
+    "status": "advanced_to_next_compatibility_frontier",
+    "observed_bindings": {
+      "print_vector": "vector -> unit",
+      "print_matrix": "matrix -> unit",
+      "print_monomial": "monomial -> unit",
+      "print_poly": "poly -> unit",
+      "pp_vector": "vector -> pp_data",
+      "pp_matrix": "matrix -> pp_data",
+      "pp_monomial": "monomial -> pp_data",
+      "pp_poly": "poly -> pp_data"
+    },
+    "next_frontier": "undefined explicit-comparator increasing helper in sdpa_of_blockdiagonal",
+    "total_elapsed_seconds": 130.35,
+    "maximum_resident_set_kib": 1232896,
+    "log": "/project/flyspeck-candle-runs/v13-sos-printer-load.log",
+    "log_sha256": "de6ebde0775972999e472462c7d792401d700b1646f8e64b190157cfab2e23b0"
+  },
+  "claim_boundary": "This preserves the ordinary printer functions and advances the isolated source prefix. It is not a complete SOS or target load and does not affect theorem semantics."
+}

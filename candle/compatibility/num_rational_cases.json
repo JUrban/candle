@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "ledger_id": "CANDLE-OCAML-NUM-ROUNDING-001",
+  "reference": {
+    "implementation": "HOL Light bignum_zarith Num compatibility layer",
+    "ocaml_version": "4.14.1",
+    "source": "bignum_zarith.ml"
+  },
+  "cases": [
+    {"id": "floor_positive_half", "expression": "floor_num (num 3 // num 2)", "expected": "1"},
+    {"id": "floor_negative_half", "expression": "floor_num (num (-3) // num 2)", "expected": "-2"},
+    {"id": "floor_negative_small", "expression": "floor_num (num (-1) // num 2)", "expected": "-1"},
+    {"id": "ceiling_positive_half", "expression": "ceiling_num (num 3 // num 2)", "expected": "2"},
+    {"id": "ceiling_negative_half", "expression": "ceiling_num (num (-3) // num 2)", "expected": "-1"},
+    {"id": "ceiling_negative_small", "expression": "ceiling_num (num (-1) // num 2)", "expected": "0"},
+    {"id": "round_positive_half", "expression": "round_num (num 1 // num 2)", "expected": "1"},
+    {"id": "round_negative_half", "expression": "round_num (num (-1) // num 2)", "expected": "-1"},
+    {"id": "round_positive_below_half", "expression": "round_num (num 1 // num 3)", "expected": "0"},
+    {"id": "round_negative_below_half", "expression": "round_num (num (-1) // num 3)", "expected": "0"},
+    {"id": "round_positive_three_halves", "expression": "round_num (num 3 // num 2)", "expected": "2"},
+    {"id": "round_negative_three_halves", "expression": "round_num (num (-3) // num 2)", "expected": "-2"},
+    {"id": "power_negative_integer", "expression": "power_num (num 2) (num (-4))", "expected": "1/16"},
+    {"id": "power_negative_rational", "expression": "power_num (num 1 // num 2) (num (-3))", "expected": "8"},
+    {"id": "power_negative_odd_sign", "expression": "power_num (num (-2)) (num (-3))", "expected": "-1/8"},
+    {"id": "string_zero", "expression": "Num.num_of_string \"0\"", "expected": "0"},
+    {"id": "string_positive", "expression": "Num.num_of_string \"123456\"", "expected": "123456"},
+    {"id": "string_positive_sign", "expression": "Num.num_of_string \"+42\"", "expected": "42"},
+    {"id": "string_negative", "expression": "Num.num_of_string \"-42\"", "expected": "-42"},
+    {"id": "string_leading_zero", "expression": "Num.num_of_string \"000123\"", "expected": "123"},
+    {"id": "string_unbounded", "expression": "Num.num_of_string \"1234567890123456789012345678901234567890\"", "expected": "1234567890123456789012345678901234567890"},
+    {"id": "string_empty", "expression": "Num.num_of_string \"\"", "expected": "0"}
+  ],
+  "exception_cases": [
+    {"id": "string_rational", "expression": "Num.num_of_string \"1/2\"", "exception": "Failure"},
+    {"id": "string_sml_negative", "expression": "Num.num_of_string \"~42\"", "exception": "Failure"},
+    {"id": "string_trailing_junk", "expression": "Num.num_of_string \"12x\"", "exception": "Failure"}
+  ],
+  "excluded_cases": [
+    {
+      "id": "zero_negative_power",
+      "expression": "power_num (num 0) (num (-1))",
+      "reference_result": "1/0",
+      "reason": "the HOL Light Zarith wrapper admits an infinite rational, while Candle deliberately rejects denominator zero; the selected Great 100 and Flyspeck source closure has no such call"
+    }
+  ]
+}

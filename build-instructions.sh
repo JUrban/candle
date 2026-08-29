@@ -16,9 +16,6 @@ tar xvzf cake-x64-64.tar.gz --strip-components=1
 # files in HOL Light, such as make_complex.ml).
 patch cake.S ../cake.S.patch
 
-# Patching in useful FFI calls
-patch basis_ffi.c ../basis_ffi.c.patch
-
 # Build the compiler binary
 make
 
@@ -28,15 +25,11 @@ make
 # Generate candle_insulate.ml
 python3 ../insulate.py types.txt insulate.ml
 
-#  The working directory of the binary will be CANDLE_ROOT/candle/build,
-#  so it needs to change directory to CANDLE_ROOT after booting..
-#
-#  Q: Why do we not start the cake binary from CANDLE_ROOT?
-#  A: The cake binary looks for config_enc_str.txt and candle_boot.ml relative
-#     to the current working directoy. I find it neater if these files are not
-#     copied to CANDLE_ROOT, but stay tucked away in the build folder.
-#
-cat ../chdir_to_root.ml >> candle_boot.ml
+# The CakeML bootstrap reads these two files from its current directory.  Use
+# relative links so candle.sh can launch from CANDLE_ROOT without a custom
+# chdir FFI, and so moving the complete checkout preserves the links.
+ln -sfn candle/build/config_enc_str.txt ../../config_enc_str.txt
+ln -sfn candle/build/candle_boot.ml ../../candle_boot.ml
 
 # You can now run Candle by writing:
 #   $ ./candle.sh
