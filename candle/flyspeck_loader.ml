@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "2b99c8e3c32b8fc7a76d99b042ce2712" then
+     "6e7e5f9291886516c4daf79605620176" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "5a75485f5e5b8d9f94fbf91feb84521f" then
+     "2a7f7810a90f5cfae6b2a329194044b9" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -189,7 +189,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "general/serialization.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/serialization.hl",
-    "c109c6567cd777812a1479cb54eea6e9");
+    "1d7f8887a5f880ffebd96526d23e7a36");
    (Filename.concat candle_flyspeck_text_root
       "general/update_database_400.ml",
     Filename.concat candle_flyspeck_overlay_root

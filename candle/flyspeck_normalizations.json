@@ -142,9 +142,9 @@
       "path": "text_formalization/general/serialization.hl",
       "source_sha256": "fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed",
       "source_md5": "9228eaf6a96159d9f59fea40fcc2a12f",
-      "normalized_sha256": "93343a90863d775f0a09257859553aacb7ad5b885ed95f21517ba0402ce253a3",
-      "normalized_md5": "c109c6567cd777812a1479cb54eea6e9",
-      "normalized_bytes": 26464,
+      "normalized_sha256": "144319f2c4501d6aa73006bedb5a9df29877e6f61aa2a8a458fde3b6dd9c04df",
+      "normalized_md5": "1d7f8887a5f880ffebd96526d23e7a36",
+      "normalized_bytes": 26382,
       "operations": [
         {
           "id": "PROJECT-MODULE-S3-SET-MAKE-001-EXPLICIT-STRING-SET",
@@ -159,10 +159,20 @@
           "line": 20,
           "before": "let _ = if Str.string_match (Str.regexp \"Ocaml 4.\") (ocaml_version()) 0 then \n  needs \"general/update_database_400.ml\"\nelse\n  needs \"general/update_database_310.ml\";;",
           "after": "#flyspeck_loadt \"general/update_database_400.ml\";;"
+        },
+        {
+          "id": "PROJECT-GENERATED-RUNTIME-S3-THEOREM-DIGEST-OUTPUT-001-DISABLE",
+          "kind": "exact_span_replace_once",
+          "line": 490,
+          "end_line": 499,
+          "start": "let digest_file = Filename.temp_file \"digest\" \".hl\";; \n",
+          "end": "  needs digest_file;;",
+          "span_sha256": "9799aeb7cf4ad579becbf9c9ba99316faa3c0c5344f49ad2cb46f33b2bbe626b",
+          "after": "let digest_file =\n  \"CANDLE_FLYSPECK_DISABLED_THEOREM_DIGEST_OUTPUT\";;\n\nlet save_all _ =\n  failwith \"Candle Flyspeck theorem-digest output is disabled\";;\n\nlet load_digest_file () =\n  failwith \"Candle Flyspeck theorem-digest reload is disabled\";;"
         }
       ],
-      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted.",
-      "scope_limit": "This is not general functor, Set.Make, or conditional dynamic-loading support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, and the pinned 4.14.1 update-database branch. Any new St operation, representation observation, source/version drift, or branch change reopens the compatibility gate."
+      "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted. The selected proof run does not invoke save_all_theorems, save_all, or load_digest_file: removing the load-time Filename.temp_file allocation is therefore unobservable, while both deferred theorem-digest output and reload now fail closed if selected.",
+      "scope_limit": "This is not general functor, Set.Make, conditional dynamic-loading, or generated-output support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, the pinned 4.14.1 update-database branch, and selected-run non-use of theorem-digest file output. Any new St operation, representation observation, source/version drift, branch change, or theorem-digest output/reload consumer reopens the compatibility gate and requires a separately versioned attempt-local atomic generated-output lifecycle."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",

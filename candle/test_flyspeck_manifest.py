@@ -542,6 +542,28 @@ class GeneratedManifestTests(unittest.TestCase):
                 "flyspeck:text_formalization/general/serialization.hl",
             },
         )
+        serialization_runtime = next(
+            contract for contract in contracts
+            if contract["source"] ==
+            "flyspeck:text_formalization/general/serialization.hl"
+        )
+        self.assertEqual(serialization_runtime["status"], "generated-runtime")
+        normalization = self.payload["source_nodes"][
+            "flyspeck:text_formalization/general/serialization.hl"
+        ]["execution_normalization"]
+        self.assertEqual(normalization["operation_count"], 3)
+        detailed = next(
+            entry for entry in
+            self.payload["source_normalization_contract"]["entries"]
+            if entry["source_key"] ==
+            "flyspeck:text_formalization/general/serialization.hl"
+        )
+        self.assertEqual(
+            detailed["operations"][-1]["id"],
+            "PROJECT-GENERATED-RUNTIME-S3-THEOREM-DIGEST-OUTPUT-001-DISABLE",
+        )
+        self.assertNotIn("Filename.temp_file",
+                         detailed["operations"][-1]["after"])
         self.assertNotIn("candle:candle/build/insulate.ml", self.payload["source_nodes"])
 
     def test_final_target_is_direct_source_only(self):

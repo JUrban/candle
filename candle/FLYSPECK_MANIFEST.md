@@ -274,14 +274,18 @@ part of the source tree or build recipe.  Relocation of the complete checkout
 therefore preserves startup without granting an ambient process capability.
 
 This artifact is deliberately not loader-execution evidence.  In particular,
-two generated-runtime contracts remain visible:
+the original-source generated dependencies remain visible:
 
 - `candle/build/insulate.ml` must be generated from the pinned compiler's
   `types.txt` by the pinned `insulate.py` recipe.  It remains a generated
   contract even when an ignored local build happens to contain the file, so
   the source manifest is independent of worktree build state; and
-- Flyspeck serialization writes and reloads a temporary theorem-digest module,
-  which needs a versioned, atomic generated-input/checkpoint lifecycle.
+- upstream Flyspeck serialization writes and reloads a temporary theorem-digest
+  module.  The exact selected normalization now removes the load-time
+  `Filename.temp_file` allocation and makes both deferred output and reload
+  fail closed.  Thus the selected direct run creates no such generated runtime;
+  re-enabling theorem-digest output would require a separately versioned,
+  attempt-local atomic lifecycle.
 
 The next G6 slices must turn this inventory into the loader's enforced input
 contract, reject manifest/source reorder and corruption, add relocation and

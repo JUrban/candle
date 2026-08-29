@@ -141,8 +141,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
         self.assertNotIn("Set.Make", set_make["operations"][0]["after"])
         self.assertIn("only through empty, add, and mem", set_make["semantic_rule"])
-        self.assertEqual(len(set_make["operations"]), 2)
+        self.assertEqual(len(set_make["operations"]), 3)
         self.assertIn("#flyspeck_loadt", set_make["operations"][1]["after"])
+        digest_output = set_make["operations"][2]
+        self.assertEqual(digest_output["kind"], "exact_span_replace_once")
+        self.assertEqual((digest_output["line"], digest_output["end_line"]),
+                         (490, 499))
+        self.assertIn("Filename.temp_file", digest_output["start"])
+        self.assertNotIn("Filename.temp_file", digest_output["after"])
+        self.assertEqual(digest_output["after"].count("failwith"), 2)
+        self.assertIn("attempt-local atomic", set_make["scope_limit"])
         update_database = entries["PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001"]
         self.assertEqual(
             [operation["kind"] for operation in update_database["operations"]],
@@ -255,7 +263,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 39)
+        self.assertEqual(len(operation_ids), 40)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
