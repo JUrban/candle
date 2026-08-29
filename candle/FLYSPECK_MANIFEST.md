@@ -312,6 +312,24 @@ the source bindings while sharing one canonical logical identity: action 126's
 `Filename.concat` spelling includes the repeated separator before `..`, and
 action 145 begins `../formal_lp/...`.
 
+New direct attempts use disjoint evidence schema 5. At the exact final
+boundary, after selected `serialization.hl` is available, the postlude observes
+`Serialization.full_digest_thm` for the LP result, nonlinear inventory,
+Flyspeck implication, and Candle L2 implication in fixed order. These are
+nonce-bound sorted dependency-history MD5 values, not retained kernel traces or
+approved identities. The immutable attempt also binds an exact semantic
+coverage plan: source closure/physical-trace identities, the plan/manifest/
+materialization hashes, ordered fingerprint requests, and all 39 authenticated
+LP-certificate inputs. The receipt coverage is deterministically rederived
+from the bound observations and keeps source, LP, nonlinear, and final-
+implication status separate. Certificate inputs are authenticated but their
+individual reads are not traced.
+
+Schema 5 contains no semantic approval or finalizer. It requires PFT use,
+approval presence, S2 eligibility, S3 eligibility, and S2/S3 evidence all to be
+false. Schema 4 remains valid only under its own permanently nonpromotable
+validator; partial schema upgrades fail closed.
+
 Promotion still requires the proof-built and exactly linked CakeML binary,
 clean and repeated direct strata, approved semantic fingerprints, and the
 remaining release gates.  Until those gates pass, the manifest does not

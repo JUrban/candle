@@ -1572,6 +1572,75 @@ class StratumRuntimeTests(unittest.TestCase):
                     runtime_executable_path=self.runtime_executable_path,
                 )
 
+    def test_evidence_v5_final_attempt_requires_exact_semantic_requests(self) -> None:
+        expected_actions = [
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = self.direct_v5_attempt(expected_actions)
+        boundary = "07-final_assembly-through-296"
+        attempt["boundary_id"] = boundary
+        attempt["expected_logical_source_closure"]["final_target_selected"] = True
+        trace = attempt["expected_physical_source_trace"]
+        path = "/trace/99-fingerprint.ml"
+        payload = {
+            "resolved": path,
+            "canonical": path,
+            "key": "control:fingerprint-serializer",
+            "basename": Path(path).name,
+            "source_md5": "e" * 32,
+            "source_sha256": "f" * 64,
+            "selected": path,
+            "selected_sha256": "f" * 64,
+            "normalization": "-",
+        }
+        trace["bindings"].append({
+            "binding_id": subject.canonical_sha256(payload), **payload,
+        })
+        trace["binding_count"] = len(trace["bindings"])
+        trace["ordered_binding_sha256"] = subject.canonical_sha256(
+            trace["bindings"],
+        )
+        trace["required_keys"] = sorted([
+            *trace["required_keys"], "control:fingerprint-serializer",
+        ])
+        trace["required_key_count"] = len(trace["required_keys"])
+        trace["ordered_required_key_sha256"] = subject.canonical_sha256(
+            trace["required_keys"],
+        )
+        certificates = [
+            {
+                "class": record["class"],
+                "relative": record["relative"],
+                "bytes": record["bytes"],
+                "sha256": record["sha256"],
+                "md5": record["md5"],
+            }
+            for record in attempt["semantic_evidence_plan"][
+                "lp_certificate_inputs"
+            ]["records"]
+        ]
+        attempt["semantic_evidence_plan"] = subject.build_semantic_evidence_plan(
+            boundary, attempt["action_count"],
+            attempt["expected_logical_source_closure"], trace, certificates,
+            attempt["semantic_evidence_plan"]["authenticated_inputs"],
+        )
+        subject.validate_direct_evidence_v5_artifact(attempt, receipt=False)
+        self.assertEqual(
+            attempt["semantic_evidence_plan"]["dependency_history_requests"],
+            subject.fingerprint_requests(boundary),
+        )
+        forged = copy.deepcopy(attempt)
+        forged["semantic_evidence_plan"]["dependency_history_requests"].pop()
+        with self.assertRaises(subject.ContractError):
+            subject.validate_direct_evidence_v5_artifact(forged, receipt=False)
+
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
         axioms = b"axioms"
