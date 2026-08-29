@@ -254,8 +254,8 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(
             contract["verified_cakeml_integration"],
             {
-                "branch": "codex/flyspeck-v13-integration",
-                "commit": "36e2245f42d4759063615c97fec51865798ca894",
+                "branch": "codex/flyspeck-direct-nested-identities-v13",
+                "commit": "0e97a1ab86924e905e1d1c893191651197b82f6e",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
