@@ -32,12 +32,12 @@ the authenticated manifest.  It contains:
 5. at the final boundary, the direct L2 target loaded by the postlude.
 
 The executing `flyspeck_loader.ml` is excluded because the stratum runner uses
-`flyspeck_stratum_setup.ml`, not that full-loader entry point.  Records retain
-manifest order and bind the source key, original SHA-256/MD5, and optional
-normalization id and output SHA-256/MD5.  The compiled process emits every
-record in order followed by a nonce- and boundary-bound terminal marker.  The
-host reparses the exact records and independently recomputes their canonical
-SHA-256.
+`flyspeck_stratum_setup.ml`, not that full-loader entry point.  Records use the
+declared `canonical-source-key-lexicographic-v1` order and bind the source key,
+original SHA-256/MD5, and optional normalization id and output SHA-256/MD5. The
+compiled process emits every record in that order followed by a nonce- and
+boundary-bound terminal marker.  The host reparses the exact records and
+independently recomputes their canonical SHA-256.
 
 This is a **manifest-derived logical reachability closure**, justified by the
 authenticated source graph and successful outer-action ledger.  It is not a

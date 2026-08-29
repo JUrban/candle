@@ -93,6 +93,7 @@ ACTION_OUTCOMES = ("load", "skip-ledger")
 SOURCE_CLOSURE_PREFIX = "CANDLE_FLYSPECK_LOGICAL_SOURCE_V3"
 SOURCE_CLOSURE_SUCCESS_MARKER = "CANDLE_FLYSPECK_LOGICAL_SOURCE_CLOSURE_V3_OK"
 SOURCE_CLOSURE_POLICY = "manifest-selected-nested-logical-reachability-v1"
+SOURCE_CLOSURE_ORDER = "canonical-source-key-lexicographic-v1"
 SOURCE_CLOSURE_HARNESS_KEYS = (
     "candle:candle/flyspeck_source_integrity.ml",
     "candle:candle/flyspeck_full_build.ml",
@@ -1006,6 +1007,7 @@ def derive_logical_source_closure(
         "schema": 3,
         "kind": "candle-flyspeck-selected-nested-logical-source-closure",
         "policy": SOURCE_CLOSURE_POLICY,
+        "order": SOURCE_CLOSURE_ORDER,
         "completed_action_count": completed_action_count,
         "final_target_selected": final_boundary,
         "record_count": len(records),
@@ -1290,6 +1292,7 @@ def validate_logical_source_closure(
             expected.get("kind") ==
             "candle-flyspeck-selected-nested-logical-source-closure" and
             expected.get("policy") == SOURCE_CLOSURE_POLICY and
+            expected.get("order") == SOURCE_CLOSURE_ORDER and
             expected.get("physical_loader_cache_trace") is False and
             expected.get("execution_observation") ==
             "manifest-derived-expected-only" and
@@ -1357,6 +1360,8 @@ def validate_direct_evidence_v3_artifact(
             contract.get("physical_loader_cache_skip_allowed") is False and
             contract.get("logical_source_closure_policy") ==
             SOURCE_CLOSURE_POLICY and
+            contract.get("logical_source_closure_order") ==
+            SOURCE_CLOSURE_ORDER and
             contract.get("physical_loader_cache_trace_included") is False and
             contract.get("s2_s3_approval_included") is False,
             "malformed direct runtime evidence-v3 contract")
@@ -1365,6 +1370,7 @@ def validate_direct_evidence_v3_artifact(
             expected.get("kind") ==
             "candle-flyspeck-selected-nested-logical-source-closure" and
             expected.get("policy") == SOURCE_CLOSURE_POLICY and
+            expected.get("order") == SOURCE_CLOSURE_ORDER and
             expected.get("physical_loader_cache_trace") is False and
             expected.get("execution_observation") ==
             "manifest-derived-expected-only" and
@@ -2217,6 +2223,7 @@ def _run_attempt_impl(
             "allowed_action_outcomes": list(ACTION_OUTCOMES),
             "physical_loader_cache_skip_allowed": False,
             "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
+            "logical_source_closure_order": SOURCE_CLOSURE_ORDER,
             "physical_loader_cache_trace_included": False,
             "s2_s3_approval_included": False,
         },
@@ -2224,6 +2231,7 @@ def _run_attempt_impl(
             field: logical_source_closure[field]
             for field in (
                 "schema", "kind", "policy", "completed_action_count",
+                "order",
                 "final_target_selected", "record_count",
                 "ordered_record_sha256", "physical_loader_cache_trace",
                 "execution_observation", "self_certifies_nested_execution",

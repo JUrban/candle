@@ -68,6 +68,7 @@ class StratumRuntimeTests(unittest.TestCase):
             "schema": 3,
             "kind": "candle-flyspeck-selected-nested-logical-source-closure",
             "policy": subject.SOURCE_CLOSURE_POLICY,
+            "order": subject.SOURCE_CLOSURE_ORDER,
             "completed_action_count": 2,
             "final_target_selected": False,
             "record_count": len(closure_records),
@@ -204,6 +205,7 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertEqual(closure["record_count"], 399)
         keys = [record["key"] for record in closure["records"]]
         self.assertEqual(keys, sorted(keys))
+        self.assertEqual(closure["order"], subject.SOURCE_CLOSURE_ORDER)
         self.assertNotIn(subject.SOURCE_CLOSURE_EXCLUDED_LOADER, keys)
         self.assertIn(subject.SOURCE_CLOSURE_FINAL_KEY, keys)
         self.assertEqual(
@@ -265,7 +267,7 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_evidence_v3_artifact_validator_rejects_schema2_and_partial_upgrade(self) -> None:
         summary_fields = (
-            "schema", "kind", "policy", "completed_action_count",
+            "schema", "kind", "policy", "order", "completed_action_count",
             "final_target_selected", "record_count", "ordered_record_sha256",
             "physical_loader_cache_trace", "execution_observation",
             "self_certifies_nested_execution", "s2_s3_evidence",
@@ -280,6 +282,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
                 "physical_loader_cache_skip_allowed": False,
                 "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
+                "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
                 "physical_loader_cache_trace_included": False,
                 "s2_s3_approval_included": False,
             },
