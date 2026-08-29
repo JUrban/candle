@@ -9,6 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 import top100_manifest
+import reference_fingerprints as reference
 
 
 class Top100ManifestTest(unittest.TestCase):
@@ -228,6 +229,8 @@ class Top100ManifestTest(unittest.TestCase):
             serializer.write_bytes(top100_manifest.ROOT.joinpath(
                 "candle/fingerprint.ml").read_bytes())
             serializer_sha256 = top100_manifest._sha256(serializer)
+            collector = root / "candle/reference_fingerprints.py"
+            collector.write_bytes(Path(reference.__file__).read_bytes())
             source_contract_payload = json.loads(
                 top100_manifest.REFERENCE_SOURCE_CONTRACT.read_text(
                     encoding="utf-8"))
@@ -251,39 +254,175 @@ class Top100ManifestTest(unittest.TestCase):
 
             approved_targets = []
             for target_index, target in enumerate(targets):
-                axioms_sha256 = "a" * 64
+                axioms = f"axioms:{target_index}".encode()
+                theorem_serializations = {
+                    theorem["name"]: {
+                        "theorem": f"theorem:{target_index}:{theorem['name']}".encode(),
+                        "hypotheses": f"hypotheses:{target_index}".encode(),
+                        "conclusion":
+                            f"conclusion:{target_index}:{theorem['name']}".encode(),
+                    }
+                    for theorem in target["fingerprint_request"]["theorems"]
+                }
+                state_serializations = {
+                    "kernel": f"state:{target_index}".encode(),
+                    "types": f"types:{target_index}".encode(),
+                    "constants": f"constants:{target_index}".encode(),
+                    "definitions": f"definitions:{target_index}".encode(),
+                }
                 expected = {
                     "serializer_sha256": serializer_sha256,
                     "theorems": [{
                         "name": theorem["name"],
-                        "theorem_sha256": "1" * 64,
-                        "hypotheses_sha256": "2" * 64,
-                        "conclusion_sha256": "3" * 64,
-                        "global_axioms_sha256": axioms_sha256,
+                        "theorem_sha256": top100_manifest.hashlib.sha256(
+                            theorem_serializations[theorem["name"]][
+                                "theorem"]).hexdigest(),
+                        "hypotheses_sha256": top100_manifest.hashlib.sha256(
+                            theorem_serializations[theorem["name"]][
+                                "hypotheses"]).hexdigest(),
+                        "conclusion_sha256": top100_manifest.hashlib.sha256(
+                            theorem_serializations[theorem["name"]][
+                                "conclusion"]).hexdigest(),
+                        "global_axioms_sha256":
+                            top100_manifest.hashlib.sha256(axioms).hexdigest(),
                         "hypothesis_count": 0,
                         "global_axiom_count": 3,
                     } for theorem in target["fingerprint_request"]["theorems"]],
                     "post_state": {
-                        "kernel_state_sha256": "4" * 64,
-                        "type_constants_sha256": "5" * 64,
+                        "kernel_state_sha256": top100_manifest.hashlib.sha256(
+                            state_serializations["kernel"]).hexdigest(),
+                        "type_constants_sha256": top100_manifest.hashlib.sha256(
+                            state_serializations["types"]).hexdigest(),
                         "type_constant_count": 10,
-                        "term_constants_sha256": "6" * 64,
+                        "term_constants_sha256": top100_manifest.hashlib.sha256(
+                            state_serializations["constants"]).hexdigest(),
                         "term_constant_count": 20,
-                        "definitions_sha256": "7" * 64,
+                        "definitions_sha256": top100_manifest.hashlib.sha256(
+                            state_serializations["definitions"]).hexdigest(),
                         "definition_count": 30,
-                        "global_axioms_sha256": axioms_sha256,
+                        "global_axioms_sha256":
+                            top100_manifest.hashlib.sha256(axioms).hexdigest(),
                         "global_axiom_count": 3,
                     },
                 }
                 identity_sha256 = top100_manifest._canonical_sha256(expected)
                 runs = []
                 for run_index in range(2):
+                    nonce = ("9" if run_index == 0 else "b") * 64
                     prefix = f"candle/evidence/t{target_index}-r{run_index}"
+                    request_source = reference._request_source(
+                        target, serializer, nonce)
+                    plan = {
+                        "schema": reference.PLAN_SCHEMA,
+                        "status": "planned_not_executed",
+                        "session_nonce": nonce,
+                        "fresh_process_contract": {
+                            "required": True,
+                            "preloaded_checkpoint_allowed": False,
+                            "working_directory": "/reference",
+                            "environment_policy":
+                                "sanitized_allowlist_no_inherited_overrides",
+                            "runtime_argv": ["/reference/ocaml"],
+                            "runtime_environment": {"LC_ALL": "C"},
+                        },
+                        "reference": {
+                            "root": "/reference",
+                            "git_head": source_contract_payload[
+                                "exact_source_reference_commit"],
+                            "git_status": [],
+                            "runtime_executable": {},
+                            "runtime_interpreter": {},
+                            "runtime_stublib": {},
+                            "runtime_library_tree": {},
+                            "runtime_stub_files": [],
+                            "dynamic_libraries": [],
+                            "ocamlc": {},
+                            "findlib": {},
+                            "hol_ml": {},
+                            "generated_boot_files": [],
+                            "ocaml_library_tree": {},
+                        },
+                        "input": {
+                            "collector": {
+                                "path": str(collector.resolve()),
+                                "sha256": top100_manifest._sha256(collector),
+                            },
+                            "collector_repository": {
+                                "git_status": [],
+                                "collector_matches_head": True,
+                            },
+                            "manifest": {"path": "/manifest", "sha256": "0" * 64},
+                            "manifest_schema_version": 1,
+                            "target": target["name"],
+                            "load_files": [{
+                                "relative_path": relative,
+                                "path": f"/reference/{relative}",
+                                "sha256": target["load_file_sha256"][relative],
+                                "source_role": "selected-manifest-source",
+                            } for relative in target["load_files"]],
+                            "theorem_names": [
+                                theorem["name"] for theorem in
+                                target["fingerprint_request"]["theorems"]],
+                            "mapping_status": "audited",
+                            "serializer": {
+                                "path": str(serializer.resolve()),
+                                "sha256": serializer_sha256,
+                            },
+                            "source_mode": "manifest-exact",
+                            "source_contract": {
+                                "path": str(source_contract.resolve()),
+                                "sha256": top100_manifest._sha256(source_contract),
+                                **{
+                                    key: source_contract_payload[key] for key in (
+                                        "historical_upstream_commit",
+                                        "exact_source_reference_commit",
+                                        "compatibility_deltas")
+                                },
+                            },
+                        },
+                        "request": {
+                            "source": request_source,
+                            "sha256": top100_manifest.hashlib.sha256(
+                                request_source.encode()).hexdigest(),
+                        },
+                    }
+                    wire_records = []
+                    for theorem in target["fingerprint_request"]["theorems"]:
+                        serialized = theorem_serializations[theorem["name"]]
+                        wire_records.append("\t".join([
+                            reference.regression.FINGERPRINT_MARKER,
+                            theorem["name"].encode("ascii").hex(),
+                            serialized["theorem"].hex(),
+                            serialized["hypotheses"].hex(),
+                            serialized["conclusion"].hex(), axioms.hex(),
+                            "0", "3",
+                        ]))
+                    wire_records.append("\t".join([
+                        reference.regression.STATE_FINGERPRINT_MARKER,
+                        state_serializations["kernel"].hex(),
+                        state_serializations["types"].hex(),
+                        state_serializations["constants"].hex(),
+                        state_serializations["definitions"].hex(), axioms.hex(),
+                        "10", "20", "30", "3",
+                    ]))
+                    transcript = "\n".join([
+                        f"{reference.SESSION_MARKER}\t{nonce}",
+                        *wire_records,
+                        f"{reference.COMPLETE_MARKER}\t{nonce}", "",
+                    ])
+                    candidate = reference.candidate_from_transcript(
+                        plan, transcript)
+                    candidate_source = (
+                        json.dumps(candidate, indent=2) + "\n").encode()
+                    plan_source = (json.dumps(plan, indent=2) + "\n").encode()
                     artifacts = {
-                        name: record(
-                            f"{prefix}-{name}",
-                            f"{target_index}:{run_index}:{name}\n".encode())
-                        for name in ("candidate", "plan", "request", "transcript")
+                        "candidate": record(
+                            f"{prefix}-candidate.json", candidate_source),
+                        "plan": record(f"{prefix}-plan.json", plan_source),
+                        "request": record(
+                            f"{prefix}-request.ml", request_source.encode()),
+                        "transcript": record(
+                            f"{prefix}-transcript.log", transcript.encode()),
                     }
                     artifacts["source_contract"] = {
                         "path": "candle/evidence/source-contract.json",
@@ -294,7 +433,7 @@ class Top100ManifestTest(unittest.TestCase):
                         "artifacts": artifacts,
                         "reference_git_head":
                             source_contract_payload["exact_source_reference_commit"],
-                        "session_nonce": ("9" if run_index == 0 else "b") * 64,
+                        "session_nonce": nonce,
                         "identity_sha256": identity_sha256,
                     })
                 approved_targets.append({
@@ -340,6 +479,78 @@ class Top100ManifestTest(unittest.TestCase):
                 self.assertEqual(
                     expected[targets[0]["name"]]["approval_sha256"],
                     artifact_sha256)
+                first_artifacts = approved_targets[0]["reference_runs"][0][
+                    "artifacts"]
+                for artifact_name, replacement in (
+                        ("candidate", b"arbitrary candidate text\n"),
+                        ("plan", b"arbitrary plan text\n"),
+                        ("request", b"arbitrary request text\n"),
+                        ("transcript", b"arbitrary transcript text\n")):
+                    record_value = first_artifacts[artifact_name]
+                    artifact_path = root / record_value["path"]
+                    original_source = artifact_path.read_bytes()
+                    artifact_path.write_bytes(replacement)
+                    record_value["bytes"] = len(replacement)
+                    record_value["sha256"] = top100_manifest.hashlib.sha256(
+                        replacement).hexdigest()
+                    approval_path.write_text(
+                        json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                    with self.assertRaisesRegex(
+                            ValueError, "replay|malformed"):
+                        top100_manifest._load_identity_approval(targets)
+                    artifact_path.write_bytes(original_source)
+                    record_value["bytes"] = len(original_source)
+                    record_value["sha256"] = top100_manifest.hashlib.sha256(
+                        original_source).hexdigest()
+                    approval_path.write_text(
+                        json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                plan_record = first_artifacts["plan"]
+                plan_path = root / plan_record["path"]
+                original_plan_source = plan_path.read_bytes()
+                original_plan = json.loads(original_plan_source)
+                plan_mutations = []
+                changed_target = json.loads(json.dumps(original_plan))
+                changed_target["input"]["target"] = "100/wrong-target"
+                plan_mutations.append((changed_target, "target contract"))
+                changed_head = json.loads(json.dumps(original_plan))
+                changed_head["reference"]["git_head"] = "1" * 40
+                plan_mutations.append((changed_head, "reference head"))
+                changed_nonce = json.loads(json.dumps(original_plan))
+                changed_nonce["session_nonce"] = "2" * 64
+                plan_mutations.append((changed_nonce, "plan session"))
+                changed_contract = json.loads(json.dumps(original_plan))
+                changed_contract["input"]["source_contract"][
+                    "compatibility_deltas"][0]["reason"] = "unreviewed rewrite"
+                plan_mutations.append((changed_contract, "source contract"))
+                for changed_plan, diagnostic in plan_mutations:
+                    changed_source = (
+                        json.dumps(changed_plan, indent=2) + "\n").encode()
+                    plan_path.write_bytes(changed_source)
+                    plan_record["bytes"] = len(changed_source)
+                    plan_record["sha256"] = top100_manifest.hashlib.sha256(
+                        changed_source).hexdigest()
+                    approval_path.write_text(
+                        json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, diagnostic):
+                        top100_manifest._load_identity_approval(targets)
+                plan_path.write_bytes(original_plan_source)
+                plan_record["bytes"] = len(original_plan_source)
+                plan_record["sha256"] = top100_manifest.hashlib.sha256(
+                    original_plan_source).hexdigest()
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                theorem_identity = approved_targets[0]["expected_identity"][
+                    "theorems"][0]
+                original_theorem_sha256 = theorem_identity["theorem_sha256"]
+                theorem_identity["theorem_sha256"] = "f" * 64
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                with self.assertRaisesRegex(
+                        ValueError, "replay identity projection"):
+                    top100_manifest._load_identity_approval(targets)
+                theorem_identity["theorem_sha256"] = original_theorem_sha256
+                approval_path.write_text(
+                    json.dumps(approval, indent=2) + "\n", encoding="utf-8")
                 changed = root / approved_targets[0]["reference_runs"][0][
                     "artifacts"]["transcript"]["path"]
                 alias = changed.with_name(changed.name + "-hardlink")

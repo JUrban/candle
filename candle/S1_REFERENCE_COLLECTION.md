@@ -128,8 +128,15 @@ independent reviewer must establish reference suitability, inspect the exact
 three source deltas, and create `top100_identity_approval.json`. An approved
 artifact must retain ordinary-file path/byte/SHA records for both candidates,
 plans, requests, transcripts, and source contracts; manifest regeneration
-rehashes every attachment. The unapproved committed template contains no
-identity data and keeps the 65-target runtime gate disabled.
+rehashes every attachment. It also parses every exact schema-v6 plan and
+candidate, mechanically calls `validate_candidate` with the retained request
+and transcript bytes, regenerates the nonce-bound request, and requires the
+replayed identity projection to equal the independently approved theorem and
+post-state identity. Target, selected-source list, reference HEAD, session
+nonce, serializer, collector, and exact source-contract policy are
+cross-bound. Arbitrary hash-consistent attachment text therefore cannot become
+an approval. The unapproved committed template contains no identity data and
+keeps the 65-target runtime gate disabled.
 
 ## Current limitations
 

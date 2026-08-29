@@ -263,6 +263,153 @@ def _canonical_sha256(value):
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _decode_replay_json(source, label):
+    try:
+        value = json.loads(
+            source.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError(f"malformed {label} JSON artifact") from error
+    if not isinstance(value, dict):
+        raise ValueError(f"malformed {label} JSON artifact")
+    return value
+
+
+def _replay_reference_run(target, run, artifact_sources, expected_identity,
+                          policy):
+    """Mechanically replay one exact v6 candidate and bind its semantics."""
+    # Imported only on the approved path.  reference_fingerprints imports the
+    # committed regression manifest, not this generator module, so this does
+    # not create an import cycle during ordinary unapproved regeneration.
+    import reference_fingerprints as reference  # pylint: disable=import-outside-toplevel
+
+    candidate = _decode_replay_json(
+        artifact_sources["candidate"], f"{target['name']} candidate")
+    plan = _decode_replay_json(
+        artifact_sources["plan"], f"{target['name']} plan")
+    try:
+        request = artifact_sources["request"].decode("utf-8")
+        transcript = artifact_sources["transcript"].decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError(
+            f"{target['name']}: non-UTF-8 reference request/transcript") from error
+    source_contract = _decode_replay_json(
+        artifact_sources["source_contract"],
+        f"{target['name']} source contract")
+    expected_source_contract = {
+        "schema": "candle-s1-reference-source-contract-v1", **policy}
+    if source_contract != expected_source_contract:
+        raise ValueError(f"{target['name']}: replay source contract mismatch")
+
+    if set(plan) != {
+            "schema", "status", "session_nonce", "fresh_process_contract",
+            "reference", "input", "request"}:
+        raise ValueError(f"{target['name']}: malformed replay plan fields")
+    if (plan["schema"] != reference.PLAN_SCHEMA or
+            plan["status"] != "planned_not_executed" or
+            plan["session_nonce"] != run["session_nonce"]):
+        raise ValueError(f"{target['name']}: replay plan session mismatch")
+    plan_reference = plan["reference"]
+    if (not isinstance(plan_reference, dict) or set(plan_reference) != {
+            "root", "git_head", "git_status", "runtime_executable",
+            "runtime_interpreter", "runtime_stublib", "runtime_library_tree",
+            "runtime_stub_files", "dynamic_libraries", "ocamlc", "findlib",
+            "hol_ml", "generated_boot_files", "ocaml_library_tree"} or
+            not isinstance(plan_reference.get("root"), str) or
+            not Path(plan_reference["root"]).is_absolute() or
+            plan_reference.get("git_head") != run["reference_git_head"] or
+            plan_reference.get("git_status") != []):
+        raise ValueError(f"{target['name']}: replay reference head mismatch")
+    fresh = plan["fresh_process_contract"]
+    if (not isinstance(fresh, dict) or set(fresh) != {
+            "required", "preloaded_checkpoint_allowed", "working_directory",
+            "environment_policy", "runtime_argv", "runtime_environment"} or
+            fresh["required"] is not True or
+            fresh["preloaded_checkpoint_allowed"] is not False or
+            fresh["working_directory"] != plan_reference["root"]):
+        raise ValueError(f"{target['name']}: replay process contract mismatch")
+    plan_input = plan["input"]
+    theorem_names = [
+        theorem["name"] for theorem in target["fingerprint_request"]["theorems"]]
+    if (not isinstance(plan_input, dict) or set(plan_input) != {
+            "collector", "collector_repository", "manifest",
+            "manifest_schema_version", "target", "load_files",
+            "theorem_names", "mapping_status", "serializer", "source_mode",
+            "source_contract"} or
+            plan_input.get("target") != target["name"] or
+            plan_input.get("theorem_names") != theorem_names or
+            plan_input.get("mapping_status") != "audited" or
+            plan_input.get("source_mode") != "manifest-exact"):
+        raise ValueError(f"{target['name']}: replay target contract mismatch")
+    collector = plan_input["collector"]
+    collector_repository = plan_input["collector_repository"]
+    if (not isinstance(collector, dict) or
+            collector.get("sha256") !=
+            _sha256(ROOT / "candle/reference_fingerprints.py") or
+            not isinstance(collector.get("path"), str) or
+            not isinstance(collector_repository, dict) or
+            collector_repository.get("git_status") != [] or
+            collector_repository.get("collector_matches_head") is not True):
+        raise ValueError(f"{target['name']}: replay collector mismatch")
+    serializer = plan_input.get("serializer")
+    if (not isinstance(serializer, dict) or
+            serializer.get("sha256") != expected_identity["serializer_sha256"] or
+            not isinstance(serializer.get("path"), str)):
+        raise ValueError(f"{target['name']}: replay serializer mismatch")
+    plan_sources = plan_input.get("load_files")
+    if not isinstance(plan_sources, list) or len(plan_sources) != len(
+            target["load_files"]):
+        raise ValueError(f"{target['name']}: replay source list mismatch")
+    for relative, source_record in zip(target["load_files"], plan_sources):
+        if (not isinstance(source_record, dict) or
+                source_record.get("relative_path") != relative or
+                source_record.get("path") != str(
+                    Path(plan_reference["root"]) / relative) or
+                source_record.get("sha256") !=
+                target["load_file_sha256"][relative] or
+                source_record.get("source_role") != "selected-manifest-source"):
+            raise ValueError(f"{target['name']}: replay source identity mismatch")
+    plan_contract = plan_input.get("source_contract")
+    if (not isinstance(plan_contract, dict) or
+            plan_contract.get("sha256") !=
+            hashlib.sha256(artifact_sources["source_contract"]).hexdigest() or
+            {key: plan_contract.get(key) for key in policy} != policy):
+        raise ValueError(f"{target['name']}: replay plan source contract mismatch")
+    expected_request = reference._request_source(
+        target, serializer["path"], run["session_nonce"])
+    if (request != expected_request or not isinstance(plan["request"], dict) or
+            set(plan["request"]) != {"source", "sha256"} or
+            plan["request"].get("source") != request or
+            plan["request"].get("sha256") !=
+            hashlib.sha256(request.encode("utf-8")).hexdigest()):
+        raise ValueError(f"{target['name']}: replay request mismatch")
+    try:
+        reference.validate_candidate(candidate, plan, request, transcript)
+    except reference.CollectionError as error:
+        raise ValueError(
+            f"{target['name']}: reference candidate replay failed: {error}") from error
+    if (candidate.get("session_nonce") != run["session_nonce"] or
+            candidate.get("plan_pins", {}).get("reference", {}).get(
+                "git_head") != run["reference_git_head"]):
+        raise ValueError(f"{target['name']}: replay candidate provenance mismatch")
+    observed = candidate.get("candidate_identities")
+    if (not isinstance(observed, dict) or set(observed) != {
+            "status", "mapping_status", "expected_identities_present",
+            "serializer", "theorems", "post_state", "approval_sha256"} or
+            observed["status"] != "observed_uncompared" or
+            observed["mapping_status"] != "audited" or
+            observed["expected_identities_present"] is not False or
+            observed["approval_sha256"] is not None):
+        raise ValueError(f"{target['name']}: malformed replay identity result")
+    projection = {
+        "serializer_sha256": observed.get("serializer", {}).get("sha256"),
+        "theorems": observed["theorems"],
+        "post_state": observed["post_state"],
+    }
+    if projection != expected_identity or _canonical_sha256(projection) != \
+            run["identity_sha256"]:
+        raise ValueError(f"{target['name']}: replay identity projection mismatch")
+
+
 def _inventory_contract(targets):
     projection = {
         "schema": "candle-great100-inventory-contract-v1",
@@ -399,6 +546,15 @@ def _load_identity_approval(targets):
             raise ValueError("malformed approved target identity")
         if approved["name"] != target["name"]:
             raise ValueError("approved target order mismatch")
+        approved_identity = approved["expected_identity"]
+        identity_with_approval = (
+            dict(approved_identity) if isinstance(approved_identity, dict) else {})
+        identity_with_approval["approval_sha256"] = approval_sha256
+        _validate_expected_identity_object(
+            target["name"],
+            [item["name"] for item in
+             target["fingerprint_request"]["theorems"]],
+            identity_with_approval, approval_sha256)
         runs = approved["reference_runs"]
         if not isinstance(runs, list) or len(runs) != 2:
             raise ValueError(f"{target['name']}: two reference runs required")
@@ -422,6 +578,7 @@ def _load_identity_approval(targets):
             if not isinstance(artifacts, dict) or set(artifacts) != \
                     REFERENCE_ARTIFACT_NAMES:
                 raise ValueError(f"{target['name']}: malformed reference artifacts")
+            artifact_sources = {}
             for artifact_name, record in artifacts.items():
                 if not isinstance(record, dict) or set(record) != {
                         "path", "bytes", "sha256"}:
@@ -445,6 +602,7 @@ def _load_identity_approval(targets):
                     raise ValueError(
                         f"{target['name']}: missing ordinary {artifact_name} artifact")
                 source = artifact_path.read_bytes()
+                artifact_sources[artifact_name] = source
                 if (isinstance(record["bytes"], bool) or
                         record["bytes"] != len(source) or
                         not _is_sha256(record["sha256"]) or
@@ -462,6 +620,8 @@ def _load_identity_approval(targets):
                         f"{target['name']}: reused {artifact_name} artifact path")
                 artifact_owners[record["path"]] = (
                     artifact_name, record["sha256"])
+            _replay_reference_run(
+                target, run, artifact_sources, approved_identity, policy)
             nonces.add(run["session_nonce"])
             identities.add(run["identity_sha256"])
         if len(nonces) != 2 or len(identities) != 1:
@@ -469,13 +629,8 @@ def _load_identity_approval(targets):
         if any(len(records) != 2 for records in independent_artifacts.values()):
             raise ValueError(
                 f"{target['name']}: reference run artifacts are not independent")
-        identity = dict(approved["expected_identity"])
-        identity["approval_sha256"] = approval_sha256
-        _validate_expected_identity_object(
-            target["name"],
-            [item["name"] for item in target["fingerprint_request"]["theorems"]],
-            identity, approval_sha256)
-        if _canonical_sha256(approved["expected_identity"]) != next(iter(identities)):
+        identity = identity_with_approval
+        if _canonical_sha256(approved_identity) != next(iter(identities)):
             raise ValueError(f"{target['name']}: approved identity evidence mismatch")
         expected[target["name"]] = identity
     return approval, approval_sha256, expected, inventory_sha256
