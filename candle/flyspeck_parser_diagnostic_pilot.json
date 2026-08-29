@@ -6,7 +6,7 @@
       "path": "candle/flyspeck_full_build.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "1a86ee399ae3f2a19387aad5a058a8f51de1ebf85baea6b6045e4897a6077b32",
+      "sha256": "712f569228009af1067231f77548d2cafb216051cc26f2abd2b24b4440445932",
       "source_key": "candle:candle/flyspeck_full_build.ml"
     },
     {
@@ -22,7 +22,7 @@
       "path": "candle/flyspeck_loader.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "f1f17f83b71c89aa56f1ba3128456a5c83b5175bb763d62875a30a2c67cff951",
+      "sha256": "0362e3ffade00adeaa998524cd2982879dc6fda66299e938c69b05bde7e38e66",
       "source_key": "candle:candle/flyspeck_loader.ml"
     },
     {
@@ -35,7 +35,14 @@
     },
     {
       "incoming_nontraversed_actions": [
-        {"dependency_index": 3, "kind": "loadt", "line": 104, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+        {
+          "dependency_index": 3,
+          "kind": "loadt",
+          "line": 104,
+          "parent_source": "flyspeck:text_formalization/build/strictbuild.hl",
+          "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase"
+        }
       ],
       "path": "text_formalization/general/debug.hl",
       "reason": "referenced only through non-resolved dynamic/generated actions",
@@ -45,7 +52,14 @@
     },
     {
       "incoming_nontraversed_actions": [
-        {"dependency_index": 0, "kind": "needs", "line": 15, "parent_source": "flyspeck:text_formalization/general/flyspeck_lib.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+        {
+          "dependency_index": 0,
+          "kind": "needs",
+          "line": 15,
+          "parent_source": "flyspeck:text_formalization/general/flyspeck_lib.hl",
+          "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase"
+        }
       ],
       "path": "text_formalization/general/flyspeck_eval_4.14.hl",
       "reason": "referenced only through non-resolved dynamic/generated actions",
@@ -55,7 +69,14 @@
     },
     {
       "incoming_nontraversed_actions": [
-        {"dependency_index": 2, "kind": "loadt", "line": 103, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+        {
+          "dependency_index": 2,
+          "kind": "loadt",
+          "line": 103,
+          "parent_source": "flyspeck:text_formalization/build/strictbuild.hl",
+          "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase"
+        }
       ],
       "path": "text_formalization/general/parser_verbose.hl",
       "reason": "referenced only through non-resolved dynamic/generated actions",
@@ -65,7 +86,14 @@
     },
     {
       "incoming_nontraversed_actions": [
-        {"dependency_index": 14, "kind": "loadt", "line": 167, "parent_source": "flyspeck:text_formalization/build/strictbuild.hl", "status": "resolved-dynamic", "syntax_position": "standalone-phrase"}
+        {
+          "dependency_index": 14,
+          "kind": "loadt",
+          "line": 167,
+          "parent_source": "flyspeck:text_formalization/build/strictbuild.hl",
+          "status": "resolved-dynamic",
+          "syntax_position": "standalone-phrase"
+        }
       ],
       "path": "text_formalization/general/state_manager.hl",
       "reason": "referenced only through non-resolved dynamic/generated actions",
@@ -77,7 +105,10 @@
   "inputs": [
     {
       "bytes": 3177,
-      "discovery": {"kind": "bootstrap-root", "root_index": 0},
+      "discovery": {
+        "kind": "bootstrap-root",
+        "root_index": 0
+      },
       "index": 0,
       "md5": "c1e00e30f8dbeecf20bc0e28d91305df",
       "path": "hol.ml",
@@ -87,7 +118,13 @@
     },
     {
       "bytes": 2209,
-      "discovery": {"action_kind": "loads", "dependency_index": 0, "kind": "resolved-source-action", "line": 26, "parent_source": "candle:hol.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 0,
+        "kind": "resolved-source-action",
+        "line": 26,
+        "parent_source": "candle:hol.ml"
+      },
       "index": 1,
       "md5": "3610346100253eb5e354eb0963fe3b79",
       "path": "hol_loader.ml",
@@ -97,7 +134,13 @@
     },
     {
       "bytes": 8325,
-      "discovery": {"action_kind": "loads", "dependency_index": 1, "kind": "resolved-source-action", "line": 39, "parent_source": "candle:hol.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 1,
+        "kind": "resolved-source-action",
+        "line": 39,
+        "parent_source": "candle:hol.ml"
+      },
       "index": 2,
       "md5": "d0d3b0c04ca0729c4b3b64fa00e9fab9",
       "path": "hol_lib.ml",
@@ -107,7 +150,13 @@
     },
     {
       "bytes": 8683,
-      "discovery": {"action_kind": "loads", "dependency_index": 1, "kind": "resolved-source-action", "line": 24, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 1,
+        "kind": "resolved-source-action",
+        "line": 24,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 3,
       "md5": "c6467fb5d11c943a2f5d8b8a7c8fd647",
       "path": "candle/nums.ml",
@@ -117,7 +166,13 @@
     },
     {
       "bytes": 8217,
-      "discovery": {"action_kind": "loads", "dependency_index": 2, "kind": "resolved-source-action", "line": 25, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 2,
+        "kind": "resolved-source-action",
+        "line": 25,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 4,
       "md5": "08098e03af2e6ef0df226482d168288c",
       "path": "candle/pretty.ml",
@@ -127,7 +182,13 @@
     },
     {
       "bytes": 35441,
-      "discovery": {"action_kind": "loads", "dependency_index": 3, "kind": "resolved-source-action", "line": 26, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 3,
+        "kind": "resolved-source-action",
+        "line": 26,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 5,
       "md5": "44e8c70e392c766f2784de66aa6ddaba",
       "path": "candle/ocaml.ml",
@@ -137,7 +198,13 @@
     },
     {
       "bytes": 1170,
-      "discovery": {"action_kind": "loads", "dependency_index": 4, "kind": "resolved-source-action", "line": 44, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 4,
+        "kind": "resolved-source-action",
+        "line": 44,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 6,
       "md5": "9dcebec9bb12fe294d1609d20166de49",
       "path": "system.ml",
@@ -147,7 +214,13 @@
     },
     {
       "bytes": 702,
-      "discovery": {"action_kind": "loads", "dependency_index": 5, "kind": "resolved-source-action", "line": 45, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 5,
+        "kind": "resolved-source-action",
+        "line": 45,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 7,
       "md5": "6a657b9dc7cd7d1b6926e060c7cacad9",
       "path": "bignum_num.ml",
@@ -157,7 +230,13 @@
     },
     {
       "bytes": 33100,
-      "discovery": {"action_kind": "loads", "dependency_index": 6, "kind": "resolved-source-action", "line": 46, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 6,
+        "kind": "resolved-source-action",
+        "line": 46,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 8,
       "md5": "c69216874dd036245265a89594624b15",
       "path": "lib.ml",
@@ -167,7 +246,13 @@
     },
     {
       "bytes": 6365,
-      "discovery": {"action_kind": "loads", "dependency_index": 7, "kind": "resolved-source-action", "line": 52, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 7,
+        "kind": "resolved-source-action",
+        "line": 52,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 9,
       "md5": "8cd7a521de3f82bc4670854e58b3eae1",
       "path": "candle/kernel.ml",
@@ -177,7 +262,13 @@
     },
     {
       "bytes": 18049,
-      "discovery": {"action_kind": "loads", "dependency_index": 8, "kind": "resolved-source-action", "line": 58, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 8,
+        "kind": "resolved-source-action",
+        "line": 58,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 10,
       "md5": "f2b4786e415473d998c852897ee119e2",
       "path": "basics.ml",
@@ -187,7 +278,13 @@
     },
     {
       "bytes": 4726,
-      "discovery": {"action_kind": "loads", "dependency_index": 9, "kind": "resolved-source-action", "line": 59, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 9,
+        "kind": "resolved-source-action",
+        "line": 59,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 11,
       "md5": "c973fe7157a4efe10d4b487790abcf49",
       "path": "nets.ml",
@@ -197,7 +294,13 @@
     },
     {
       "bytes": 33465,
-      "discovery": {"action_kind": "loads", "dependency_index": 10, "kind": "resolved-source-action", "line": 65, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 10,
+        "kind": "resolved-source-action",
+        "line": 65,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 12,
       "md5": "d05608a7e018b24e509b59e18f60b5cf",
       "path": "printer.ml",
@@ -207,7 +310,13 @@
     },
     {
       "bytes": 20555,
-      "discovery": {"action_kind": "loads", "dependency_index": 11, "kind": "resolved-source-action", "line": 66, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 11,
+        "kind": "resolved-source-action",
+        "line": 66,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 13,
       "md5": "78719ecaedb7b06b9797d12c4c9fb390",
       "path": "preterm.ml",
@@ -217,7 +326,13 @@
     },
     {
       "bytes": 24094,
-      "discovery": {"action_kind": "loads", "dependency_index": 12, "kind": "resolved-source-action", "line": 67, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 12,
+        "kind": "resolved-source-action",
+        "line": 67,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 14,
       "md5": "1e2bf0b5e7505d9eb606eca211596259",
       "path": "parser.ml",
@@ -227,7 +342,13 @@
     },
     {
       "bytes": 12858,
-      "discovery": {"action_kind": "loads", "dependency_index": 13, "kind": "resolved-source-action", "line": 73, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 13,
+        "kind": "resolved-source-action",
+        "line": 73,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 15,
       "md5": "bce510f0eb09730b69d83700739b5620",
       "path": "equal.ml",
@@ -237,7 +358,13 @@
     },
     {
       "bytes": 18639,
-      "discovery": {"action_kind": "loads", "dependency_index": 14, "kind": "resolved-source-action", "line": 74, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 14,
+        "kind": "resolved-source-action",
+        "line": 74,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 16,
       "md5": "fedf8ecec80404f61bb9468219baa702",
       "path": "bool.ml",
@@ -247,7 +374,13 @@
     },
     {
       "bytes": 24235,
-      "discovery": {"action_kind": "loads", "dependency_index": 15, "kind": "resolved-source-action", "line": 75, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 15,
+        "kind": "resolved-source-action",
+        "line": 75,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 17,
       "md5": "e6bceb5c8500232234dad331be7663e6",
       "path": "drule.ml",
@@ -257,7 +390,13 @@
     },
     {
       "bytes": 40154,
-      "discovery": {"action_kind": "loads", "dependency_index": 16, "kind": "resolved-source-action", "line": 76, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 16,
+        "kind": "resolved-source-action",
+        "line": 76,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 18,
       "md5": "901a3ac9742edc434a25bbe19efa7c15",
       "path": "tactics.ml",
@@ -267,7 +406,13 @@
     },
     {
       "bytes": 5268,
-      "discovery": {"action_kind": "loads", "dependency_index": 17, "kind": "resolved-source-action", "line": 77, "parent_source": "candle:hol_lib.ml"},
+      "discovery": {
+        "action_kind": "loads",
+        "dependency_index": 17,
+        "kind": "resolved-source-action",
+        "line": 77,
+        "parent_source": "candle:hol_lib.ml"
+      },
       "index": 19,
       "md5": "a21722c7ab2fa8f33857f3b3ae218ce2",
       "path": "itab.ml",
@@ -278,9 +423,9 @@
   ],
   "kind": "candle-flyspeck-parser-diagnostic-pilot",
   "manifest": {
-    "bytes": 763922,
+    "bytes": 820417,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "c371624382e3fcef684f119924d977c5283dd174ad74c70d6b7e3552e89a2d43"
+    "sha256": "9b76075fbb5d9692ab13e3f05ceb379e0a889ca1bd8f3cab012be0e4c23409b0"
   },
   "schema": 1,
   "selection": {
