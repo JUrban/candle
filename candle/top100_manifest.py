@@ -19,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = Path(__file__).with_suffix(".json")
 IDENTITY_APPROVAL = ROOT / "candle/top100_identity_approval.json"
+REFERENCE_SOURCE_CONTRACT = ROOT / "candle/reference_source_contracts.json"
 AUDITED_BASE_COMMIT = "5b1888b9a0c1da7ca0ef2e80526b726f2e27df9d"
 HISTORICAL_REFERENCE_COMMIT = "3170739521d88d04580f61385c95b497690b7002"
 NEEDS_RE = re.compile(r'^\s*needs\s*"([^"]+)"\s*;;', re.MULTILINE)
@@ -340,6 +341,18 @@ def _load_identity_approval(targets):
             not isinstance(policy["exact_source_reference_commit"], str) or
             COMMIT_RE.fullmatch(policy["exact_source_reference_commit"]) is None):
         raise ValueError("identity reference commits are not pinned")
+    source_contract = json.loads(
+        REFERENCE_SOURCE_CONTRACT.read_text(encoding="utf-8"),
+        object_pairs_hook=_reject_duplicate_keys)
+    if (not isinstance(source_contract, dict) or set(source_contract) != {
+            "schema", "historical_upstream_commit",
+            "exact_source_reference_commit", "compatibility_deltas"} or
+            source_contract["schema"] !=
+            "candle-s1-reference-source-contract-v1" or
+            policy != {key: source_contract[key] for key in (
+                "historical_upstream_commit", "exact_source_reference_commit",
+                "compatibility_deltas")}):
+        raise ValueError("identity approval differs from source contract")
     deltas = policy["compatibility_deltas"]
     if not isinstance(deltas, list) or len(deltas) != 3:
         raise ValueError("identity reference policy must review three source deltas")
@@ -379,6 +392,7 @@ def _load_identity_approval(targets):
     if not isinstance(approved_targets, list) or len(approved_targets) != 65:
         raise ValueError("identity approval does not cover 65 targets")
     expected = {}
+    artifact_owners = {}
     for target, approved in zip(targets, approved_targets):
         if not isinstance(approved, dict) or set(approved) != {
                 "name", "reference_runs", "expected_identity"}:
@@ -397,7 +411,9 @@ def _load_identity_approval(targets):
             if not isinstance(run, dict) or set(run) != REFERENCE_RUN_FIELDS:
                 raise ValueError(f"{target['name']}: malformed reference run")
             if (not isinstance(run["reference_git_head"], str) or
-                    COMMIT_RE.fullmatch(run["reference_git_head"]) is None):
+                    COMMIT_RE.fullmatch(run["reference_git_head"]) is None or
+                    run["reference_git_head"] !=
+                    policy["exact_source_reference_commit"]):
                 raise ValueError(f"{target['name']}: malformed reference head")
             for field in ("session_nonce", "identity_sha256"):
                 if not _is_sha256(run[field]):
@@ -420,6 +436,9 @@ def _load_identity_approval(targets):
                     raise ValueError(
                         f"{target['name']}: unsafe {artifact_name} artifact path")
                 artifact_path = ROOT / relative
+                if artifact_path.resolve() == IDENTITY_APPROVAL.resolve():
+                    raise ValueError(
+                        f"{target['name']}: approval reused as {artifact_name}")
                 metadata = artifact_path.lstat()
                 if (artifact_path.is_symlink() or not artifact_path.is_file() or
                         metadata.st_nlink != 1):
@@ -435,6 +454,14 @@ def _load_identity_approval(targets):
                 if artifact_name in independent_artifacts:
                     independent_artifacts[artifact_name].add(
                         (record["path"], record["sha256"]))
+                previous = artifact_owners.get(record["path"])
+                if previous is not None and (
+                        artifact_name != "source_contract" or
+                        previous != (artifact_name, record["sha256"])):
+                    raise ValueError(
+                        f"{target['name']}: reused {artifact_name} artifact path")
+                artifact_owners[record["path"]] = (
+                    artifact_name, record["sha256"])
             nonces.add(run["session_nonce"])
             identities.add(run["identity_sha256"])
         if len(nonces) != 2 or len(identities) != 1:

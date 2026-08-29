@@ -228,8 +228,16 @@ class Top100ManifestTest(unittest.TestCase):
             serializer.write_bytes(top100_manifest.ROOT.joinpath(
                 "candle/fingerprint.ml").read_bytes())
             serializer_sha256 = top100_manifest._sha256(serializer)
+            source_contract_payload = json.loads(
+                top100_manifest.REFERENCE_SOURCE_CONTRACT.read_text(
+                    encoding="utf-8"))
+            reference_source_contract = \
+                root / "candle/reference_source_contracts.json"
+            reference_source_contract.write_text(
+                json.dumps(source_contract_payload, indent=2) + "\n",
+                encoding="utf-8")
             source_contract = root / "candle/evidence/source-contract.json"
-            source_contract.write_text("{}\n", encoding="utf-8")
+            source_contract.write_bytes(reference_source_contract.read_bytes())
 
             def record(relative, content):
                 path = root / relative
@@ -284,7 +292,8 @@ class Top100ManifestTest(unittest.TestCase):
                     }
                     runs.append({
                         "artifacts": artifacts,
-                        "reference_git_head": "8" * 40,
+                        "reference_git_head":
+                            source_contract_payload["exact_source_reference_commit"],
                         "session_nonce": ("9" if run_index == 0 else "b") * 64,
                         "identity_sha256": identity_sha256,
                     })
@@ -301,15 +310,10 @@ class Top100ManifestTest(unittest.TestCase):
                 "inventory_contract_sha256": inventory_sha256,
                 "serializer_sha256": serializer_sha256,
                 "reference_policy": {
-                    "historical_upstream_commit":
-                        top100_manifest.HISTORICAL_REFERENCE_COMMIT,
-                    "exact_source_reference_commit": "c" * 40,
-                    "compatibility_deltas": [{
-                        "path": path, "historical_sha256": "d" * 64,
-                        "selected_sha256": "e" * 64, "reason": "reviewed"
-                    } for path in (
-                        "100/e_is_transcendental.ml", "100/euler.ml",
-                        "100/lagrange.ml")],
+                    key: source_contract_payload[key] for key in (
+                        "historical_upstream_commit",
+                        "exact_source_reference_commit",
+                        "compatibility_deltas")
                 },
                 "review": {
                     "reviewer": "independent-reviewer",
@@ -325,7 +329,10 @@ class Top100ManifestTest(unittest.TestCase):
                 json.dumps(approval, indent=2) + "\n", encoding="utf-8")
             with (mock.patch.object(top100_manifest, "ROOT", root),
                   mock.patch.object(
-                      top100_manifest, "IDENTITY_APPROVAL", approval_path)):
+                      top100_manifest, "IDENTITY_APPROVAL", approval_path),
+                  mock.patch.object(top100_manifest,
+                                    "REFERENCE_SOURCE_CONTRACT",
+                                    reference_source_contract)):
                 loaded, artifact_sha256, expected, _ = \
                     top100_manifest._load_identity_approval(targets)
                 self.assertTrue(loaded["promotion_allowed"])

@@ -203,6 +203,19 @@ class ReferenceFingerprintTest(unittest.TestCase):
             self.assertEqual(
                 reference._sha256(reference.ROOT / delta["path"]),
                 delta["selected_sha256"])
+            selected = subprocess.check_output([
+                "/usr/bin/git", "-C", str(reference.ROOT), "show",
+                f"{contract['exact_source_reference_commit']}:{delta['path']}",
+            ])
+            self.assertEqual(
+                hashlib.sha256(selected).hexdigest(), delta["selected_sha256"])
+        changed = subprocess.check_output([
+            "/usr/bin/git", "-C", str(reference.ROOT), "diff", "--name-only",
+            contract["historical_upstream_commit"],
+            contract["exact_source_reference_commit"], "--", "100/*.ml",
+        ], text=True).splitlines()
+        self.assertEqual(set(changed), {
+            delta["path"] for delta in contract["compatibility_deltas"]})
 
     def test_transcript_produces_only_an_unapproved_candidate(self):
         plan = {
