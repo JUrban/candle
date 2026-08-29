@@ -240,6 +240,47 @@ class ReferenceFingerprintTest(unittest.TestCase):
                     reference.CollectionError, "malformed inherited"):
                 reference._controller_lock_pass_fds()
 
+    def test_collector_starts_with_isolated_stdlib_only_python(self):
+        completed = subprocess.run(
+            ["/usr/bin/python3", "-I", "-S", str(Path(reference.__file__)),
+             "--help"],
+            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"},
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            check=False)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("{plan,collect,validate}", completed.stdout)
+
+    def test_isolated_protocol_loader_rejects_changed_sibling(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            collector = root / "reference_fingerprints.py"
+            protocol = root / "reference_protocol.py"
+            collector.write_bytes(Path(reference.__file__).read_bytes())
+            protocol.write_bytes(
+                Path(reference.regression.__file__).read_bytes() + b"\n# changed\n")
+            completed = subprocess.run(
+                ["/usr/bin/python3", "-I", "-S", str(collector), "--help"],
+                env={"PATH": "/usr/bin:/bin", "LC_ALL": "C", "LANG": "C"},
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                check=False)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn("differs from collector pin", completed.stderr)
+
+    def test_runner_and_reference_protocol_share_wire_behavior(self):
+        theorem_names = ["EGCD", "Module.RESULT"]
+        self.assertEqual(
+            regression._fingerprint_request_source(theorem_names),
+            reference.regression._fingerprint_request_source(theorem_names))
+        self.assertEqual(
+            regression.FINGERPRINT_MARKER,
+            reference.regression.FINGERPRINT_MARKER)
+        self.assertEqual(
+            regression.STATE_FINGERPRINT_MARKER,
+            reference.regression.STATE_FINGERPRINT_MARKER)
+        self.assertEqual(
+            regression.EMPTY_HYPOTHESES_WIRE,
+            reference.regression.EMPTY_HYPOTHESES_WIRE)
+
     def test_exact_three_delta_contract_matches_both_git_sides(self):
         contract = reference._load_source_contract()
         self.assertEqual(

@@ -16,8 +16,46 @@ import stat
 import subprocess
 import sys
 import tempfile
+import types
 
-import regression
+
+REFERENCE_PROTOCOL_RELATIVE = "candle/reference_protocol.py"
+REFERENCE_PROTOCOL_SHA256 = \
+    "e44ed73330e65058f759e30e90ede0bca0bfdedc7920534d632ecb6806299f68"
+
+
+def _load_reference_protocol():
+    """Load only the exact stdlib-only sibling bound by this collector."""
+    path = Path(__file__).resolve().with_name("reference_protocol.py")
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        before = os.fstat(descriptor)
+        chunks = []
+        while True:
+            block = os.read(descriptor, 1024 * 1024)
+            if not block:
+                break
+            chunks.append(block)
+        after = os.fstat(descriptor)
+        named = path.stat(follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    source = b"".join(chunks)
+    if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or
+            (before.st_dev, before.st_ino, before.st_size,
+             before.st_mtime_ns, before.st_ctime_ns) !=
+            (after.st_dev, after.st_ino, after.st_size,
+             after.st_mtime_ns, after.st_ctime_ns) or
+            (named.st_dev, named.st_ino) != (after.st_dev, after.st_ino) or
+            hashlib.sha256(source).hexdigest() != REFERENCE_PROTOCOL_SHA256):
+        raise RuntimeError("reference protocol module differs from collector pin")
+    module = types.ModuleType("candle_reference_protocol")
+    module.__file__ = str(path)
+    exec(compile(source, str(path), "exec"), module.__dict__)
+    return module
+
+
+regression = _load_reference_protocol()
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -214,12 +252,23 @@ def _collector_repository_pin():
         ["git", "-C", str(ROOT), "show", f"{head}:{relative}"])
     committed_sha256 = hashlib.sha256(committed).hexdigest()
     working_sha256 = _sha256(Path(__file__))
+    support_path = ROOT / REFERENCE_PROTOCOL_RELATIVE
+    support_committed = subprocess.check_output([
+        "git", "-C", str(ROOT), "show",
+        f"{head}:{REFERENCE_PROTOCOL_RELATIVE}"])
+    support_committed_sha256 = hashlib.sha256(support_committed).hexdigest()
+    support_working_sha256 = _sha256(support_path)
     return {
         "root": str(ROOT), "git_head": head,
         "git_status": status.splitlines() if status else [],
         "collector_relative_path": relative,
         "collector_at_head_sha256": committed_sha256,
         "collector_matches_head": committed_sha256 == working_sha256,
+        "support_relative_path": REFERENCE_PROTOCOL_RELATIVE,
+        "support_at_head_sha256": support_committed_sha256,
+        "support_matches_head": (
+            support_committed_sha256 == support_working_sha256 ==
+            REFERENCE_PROTOCOL_SHA256),
     }
 
 

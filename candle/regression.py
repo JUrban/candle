@@ -735,6 +735,22 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
     }
 
 
+# Keep the ordinary runner and the isolated reference collector on one exact,
+# stdlib-only wire/request/parser implementation.  The definitions immediately
+# above remain readable history for this compatibility branch; these bindings
+# are the active contract used below and by tests.
+from reference_protocol import (  # noqa: E402
+    EMPTY_HYPOTHESES_WIRE,
+    FINGERPRINT_MARKER,
+    LoadFailure,
+    PROCESS_MARKER,
+    STATE_FINGERPRINT_MARKER,
+    _fingerprint_request_source,
+    _match_expected_identities,
+    _read_fingerprint_records,
+)
+
+
 def _read_process_markers(log_path, suite_nonce, process_nonce,
                           linked_record_sha256):
     data = Path(log_path).read_bytes()
