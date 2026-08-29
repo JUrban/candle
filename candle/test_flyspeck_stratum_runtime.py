@@ -106,6 +106,117 @@ class StratumRuntimeTests(unittest.TestCase):
                 "md5": "6e7e5f9291886516c4daf79605620176",
             },
         }
+        trace_bindings = []
+        for index, key in enumerate(subject.SOURCE_TRACE_TOP_LEVEL_CONTROLS):
+            path = f"/trace/{index:02d}.ml"
+            payload = {
+                "resolved": path,
+                "canonical": path,
+                "key": key,
+                "basename": Path(path).name,
+                "source_md5": f"{index + 1:032x}",
+                "source_sha256": f"{index + 1:064x}",
+                "selected": path,
+                "selected_sha256": f"{index + 1:064x}",
+                "normalization": "-",
+            }
+            trace_bindings.append({
+                "binding_id": subject.canonical_sha256(payload), **payload,
+            })
+        for index, record in enumerate(closure_records, start=4):
+            path = f"/trace/{index:02d}.ml"
+            normalization = record["execution_normalization"]
+            payload = {
+                "resolved": path,
+                "canonical": path,
+                "key": record["key"],
+                "basename": Path(path).name,
+                "source_md5": record["source_md5"],
+                "source_sha256": record["source_sha256"],
+                "selected": path,
+                "selected_sha256": (
+                    record["source_sha256"] if normalization is None else
+                    normalization["normalized_sha256"]
+                ),
+                "normalization": (
+                    "-" if normalization is None else normalization["id"]
+                ),
+            }
+            trace_bindings.append({
+                "binding_id": subject.canonical_sha256(payload), **payload,
+            })
+        trace_binding_by_key = {item["key"]: item for item in trace_bindings}
+        trace_events = []
+        request_specs = (
+            ("control:runtime-setup", None),
+            (closure_records[0]["key"], 0),
+            ("control:instrumented-prefix", None),
+            (closure_records[1]["key"], 2),
+            ("control:stratum-check", None),
+            ("control:postlude", None),
+        )
+        for request_id, (key, parent) in enumerate(request_specs):
+            binding = trace_binding_by_key[key]
+            trace_events.append({
+                "event": "request",
+                "id": request_id,
+                "parent": parent,
+                "kind": "#use" if parent is None else "needs",
+                "binding_id": binding["binding_id"],
+                "key": binding["key"],
+                "cache_before": "fresh-cache",
+            })
+            if parent is not None:
+                trace_events.append({
+                    "event": "outcome", "id": request_id,
+                    "outcome": "evaluated",
+                })
+                trace_events.append({
+                    "event": "outcome", "id": parent,
+                    "outcome": "evaluated",
+                })
+            elif key in ("control:stratum-check", "control:postlude"):
+                trace_events.append({
+                    "event": "outcome", "id": request_id,
+                    "outcome": "evaluated",
+                })
+        trace_events.append({
+            "event": "terminal", "request_count": len(request_specs),
+        })
+        required_keys = sorted({
+            *subject.SOURCE_TRACE_TOP_LEVEL_CONTROLS,
+            *(record["key"] for record in closure_records),
+        })
+        self.source_trace_contract = {
+            "schema": 1,
+            "protocol": subject.SOURCE_TRACE_PROTOCOL,
+            "nonce": self.nonce,
+            "activation": subject.SOURCE_TRACE_ACTIVATION,
+            "binding_count": len(trace_bindings),
+            "ordered_binding_sha256": subject.canonical_sha256(trace_bindings),
+            "bindings": trace_bindings,
+            "required_key_count": len(required_keys),
+            "ordered_required_key_sha256":
+                subject.canonical_sha256(required_keys),
+            "required_keys": required_keys,
+            "top_level_control_keys":
+                list(subject.SOURCE_TRACE_TOP_LEVEL_CONTROLS),
+        }
+        self.source_trace_observation = {
+            "schema": 1,
+            "protocol": subject.SOURCE_TRACE_PROTOCOL,
+            "nonce": self.nonce,
+            "event_count": len(trace_events),
+            "ordered_event_sha256": subject.canonical_sha256(trace_events),
+            "events": trace_events,
+            "request_count": len(request_specs),
+            "cache_skip_count": 0,
+            "observed_key_count": len(required_keys),
+            "ordered_observed_key_sha256":
+                subject.canonical_sha256(required_keys),
+            "observed_keys": required_keys,
+            "status": "closed-loader-owned-session",
+        }
 
     def action_marker(self, index: int, outcome: str) -> str:
         action = self.actions[index]
@@ -504,7 +615,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 self.logical_source_closure, boundary, self.nonce,
             )
 
-    def test_evidence_v3_artifact_validator_rejects_schema2_and_partial_upgrade(self) -> None:
+    def test_evidence_v4_artifact_validator_rejects_legacy_and_partial_upgrade(self) -> None:
         expected_actions = [
             {
                 "index": index,
@@ -516,7 +627,7 @@ class StratumRuntimeTests(unittest.TestCase):
             for index, action in enumerate(self.actions)
         ]
         attempt = {
-            "schema": 3,
+            "schema": 4,
             "kind": "candle-flyspeck-compiled-stratum-attempt",
             "state": "running",
             "boundary_id": "00-test-through-001",
@@ -525,30 +636,56 @@ class StratumRuntimeTests(unittest.TestCase):
                 subject.canonical_sha256(expected_actions),
             "expected_action_events": expected_actions,
             "evidence_contract": {
-                "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+                "schema": "candle-flyspeck-direct-runtime-evidence-v4",
                 "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
-                "physical_loader_cache_skip_allowed": False,
+                "physical_loader_cache_skip_allowed":
+                    "only loader-authenticated needs cache-skip events",
                 "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
                 "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
                 "selected_loadt_ledger_delta_included": True,
-                "physical_loader_cache_trace_included": False,
+                "physical_loader_cache_trace_included": True,
+                "physical_source_trace_protocol": subject.SOURCE_TRACE_PROTOCOL,
+                "pre_trace_control_exclusion": "control:runtime-config",
                 "s2_s3_approval_included": False,
             },
             "expected_logical_source_closure": self.logical_source_closure,
+            "expected_physical_source_trace": self.source_trace_contract,
+            "attempt_nonce": self.nonce,
             "inputs": {"fingerprint_serializer": {
                 "path": subject.FINGERPRINT_RELATIVE.as_posix(),
                 "sha256": "a" * 64,
             }},
         }
-        subject.validate_direct_evidence_v3_artifact(attempt, receipt=False)
-        schema2 = copy.deepcopy(attempt)
-        schema2["schema"] = 2
-        with self.assertRaisesRegex(subject.ContractError, "disjoint schema 3"):
-            subject.validate_direct_evidence_v3_artifact(schema2, receipt=False)
+        subject.validate_direct_evidence_v4_artifact(attempt, receipt=False)
+        schema3 = copy.deepcopy(attempt)
+        schema3["schema"] = 3
+        with self.assertRaisesRegex(subject.ContractError, "disjoint schema 4"):
+            subject.validate_direct_evidence_v4_artifact(schema3, receipt=False)
         partial = copy.deepcopy(attempt)
         partial["evidence_contract"].pop("physical_loader_cache_trace_included")
-        with self.assertRaisesRegex(subject.ContractError, "evidence-v3 contract"):
-            subject.validate_direct_evidence_v3_artifact(partial, receipt=False)
+        with self.assertRaisesRegex(subject.ContractError, "evidence-v4 contract"):
+            subject.validate_direct_evidence_v4_artifact(partial, receipt=False)
+        omitted_sources = copy.deepcopy(attempt)
+        trace = omitted_sources["expected_physical_source_trace"]
+        trace["bindings"] = [
+            binding for binding in trace["bindings"]
+            if binding["key"] in subject.SOURCE_TRACE_TOP_LEVEL_CONTROLS
+        ]
+        trace["binding_count"] = len(trace["bindings"])
+        trace["ordered_binding_sha256"] = subject.canonical_sha256(
+            trace["bindings"]
+        )
+        trace["required_keys"] = sorted(subject.SOURCE_TRACE_TOP_LEVEL_CONTROLS)
+        trace["required_key_count"] = len(trace["required_keys"])
+        trace["ordered_required_key_sha256"] = subject.canonical_sha256(
+            trace["required_keys"]
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "differs from logical source closure",
+        ):
+            subject.validate_direct_evidence_v4_artifact(
+                omitted_sources, receipt=False,
+            )
 
         receipt = {
             **attempt,
@@ -573,6 +710,7 @@ class StratumRuntimeTests(unittest.TestCase):
                     self.actions[1]["logical_source_delta_sha256"],
                  "outcome": "skip-ledger"},
             ],
+            "physical_source_trace": self.source_trace_observation,
             "semantic_fingerprints": {
                 "status": "not_requested",
                 "approved_reference_present": False,
@@ -581,12 +719,12 @@ class StratumRuntimeTests(unittest.TestCase):
                 "post_state": None,
             },
         }
-        subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
+        subject.validate_direct_evidence_v4_artifact(receipt, receipt=True)
         receipt["logical_source_closure"]["self_certifies_nested_execution"] = True
         with self.assertRaisesRegex(subject.ContractError, "differs"):
-            subject.validate_direct_evidence_v3_artifact(receipt, receipt=True)
+            subject.validate_direct_evidence_v4_artifact(receipt, receipt=True)
 
-    def test_evidence_v3_completed_receipt_rejects_forged_state_flips(self) -> None:
+    def test_evidence_v4_completed_receipt_rejects_forged_state_flips(self) -> None:
         expected_actions = [
             {
                 "index": index,
@@ -598,7 +736,7 @@ class StratumRuntimeTests(unittest.TestCase):
             for index, action in enumerate(self.actions)
         ]
         attempt = {
-            "schema": 3,
+            "schema": 4,
             "kind": "candle-flyspeck-compiled-stratum-attempt",
             "state": "running",
             "boundary_id": "00-test-through-001",
@@ -607,16 +745,21 @@ class StratumRuntimeTests(unittest.TestCase):
                 subject.canonical_sha256(expected_actions),
             "expected_action_events": expected_actions,
             "evidence_contract": {
-                "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+                "schema": "candle-flyspeck-direct-runtime-evidence-v4",
                 "allowed_action_outcomes": list(subject.ACTION_OUTCOMES),
-                "physical_loader_cache_skip_allowed": False,
+                "physical_loader_cache_skip_allowed":
+                    "only loader-authenticated needs cache-skip events",
                 "logical_source_closure_policy": subject.SOURCE_CLOSURE_POLICY,
                 "logical_source_closure_order": subject.SOURCE_CLOSURE_ORDER,
                 "selected_loadt_ledger_delta_included": True,
-                "physical_loader_cache_trace_included": False,
+                "physical_loader_cache_trace_included": True,
+                "physical_source_trace_protocol": subject.SOURCE_TRACE_PROTOCOL,
+                "pre_trace_control_exclusion": "control:runtime-config",
                 "s2_s3_approval_included": False,
             },
             "expected_logical_source_closure": self.logical_source_closure,
+            "expected_physical_source_trace": self.source_trace_contract,
+            "attempt_nonce": self.nonce,
             "inputs": {"fingerprint_serializer": {
                 "path": subject.FINGERPRINT_RELATIVE.as_posix(),
                 "sha256": "a" * 64,
@@ -645,6 +788,7 @@ class StratumRuntimeTests(unittest.TestCase):
                     self.actions[1]["logical_source_delta_sha256"],
                  "outcome": "skip-ledger"},
             ],
+            "physical_source_trace": self.source_trace_observation,
             "semantic_fingerprints": {
                 "status": "not_requested",
                 "approved_reference_present": False,
@@ -653,7 +797,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 "post_state": None,
             },
         }
-        subject.validate_direct_evidence_v3_artifact(valid, receipt=True)
+        subject.validate_direct_evidence_v4_artifact(valid, receipt=True)
         for label, mutate in (
             ("exit 137", lambda item: item.update(exit_code=137)),
             ("timeout", lambda item: item.update(timed_out=True)),
@@ -675,7 +819,21 @@ class StratumRuntimeTests(unittest.TestCase):
             forged = copy.deepcopy(valid)
             mutate(forged)
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
-                subject.validate_direct_evidence_v3_artifact(
+                subject.validate_direct_evidence_v4_artifact(
+                    forged, receipt=True,
+                )
+
+        for label, mutate in (
+            ("missing physical trace", lambda item: item.update(
+                physical_source_trace=None)),
+            ("forged physical trace event", lambda item: item[
+                "physical_source_trace"
+            ]["events"][0].update(cache_before="prior-cache")),
+        ):
+            forged = copy.deepcopy(valid)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(subject.ContractError):
+                subject.validate_direct_evidence_v4_artifact(
                     forged, receipt=True,
                 )
 
@@ -690,16 +848,17 @@ class StratumRuntimeTests(unittest.TestCase):
             "validation_error": "ContractError: timed out",
             "logical_source_closure": None,
             "action_events": None,
+            "physical_source_trace": None,
             "semantic_fingerprints": None,
         }
-        subject.validate_direct_evidence_v3_artifact(failed, receipt=True)
+        subject.validate_direct_evidence_v4_artifact(failed, receipt=True)
         late_failed = {
             **copy.deepcopy(valid),
             "state": "failed",
             "action_markers_validated": 0,
             "validation_error": "InterruptedError: pending signal after validation",
         }
-        subject.validate_direct_evidence_v3_artifact(late_failed, receipt=True)
+        subject.validate_direct_evidence_v4_artifact(late_failed, receipt=True)
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
@@ -850,6 +1009,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 },
             ],
             "attempt_nonce": self.nonce,
+            "source_trace_contract": self.source_trace_contract,
             "source_alias_runtime": [{
                 "alias": "/flyspeck/text/../canonical/a.hl",
                 "canonical": "/flyspeck/canonical/a.hl",

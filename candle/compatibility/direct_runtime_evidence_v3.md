@@ -1,5 +1,9 @@
 # Direct runtime evidence v3
 
+This is the historical schema-3 contract. Newly generated attempts use
+[direct runtime evidence v4](direct_runtime_evidence_v4.md), which adds the
+loader-owned physical source trace needed to close the nested-execution gap.
+
 This contract strengthens the compiled cumulative Flyspeck runner without
 promoting an attempt to S2 or S3.  Schema-2 attempt and receipt artifacts remain
 permanently non-promotable; the changed action and source-closure protocols are

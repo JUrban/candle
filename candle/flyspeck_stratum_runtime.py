@@ -97,6 +97,23 @@ SOURCE_CLOSURE_ORDER = "canonical-source-key-lexicographic-v1"
 SOURCE_CLOSURE_OBSERVATION = (
     "outer-and-selected-loadt-ledger-observed-other-nested-expected"
 )
+SOURCE_TRACE_PREFIX = "CANDLE_FLYSPECK_SOURCE_TRACE_V1"
+SOURCE_TRACE_PROTOCOL = "candle-loader-owned-source-trace-v1"
+SOURCE_TRACE_ACTIVATION = (
+    "runtime-config-is-authenticated-pre-trace-enabler; every later source "
+    "directive is required in one closed loader-owned session"
+)
+SOURCE_TRACE_KINDS = (
+    "#flyspeck_needs", "#flyspeck_loadt", "#use", "needs", "loads",
+)
+SOURCE_TRACE_NEED_KINDS = ("#flyspeck_needs", "needs")
+SOURCE_TRACE_LOAD_KINDS = ("#flyspeck_loadt", "loads")
+SOURCE_TRACE_TOP_LEVEL_CONTROLS = (
+    "control:runtime-setup",
+    "control:instrumented-prefix",
+    "control:stratum-check",
+    "control:postlude",
+)
 SOURCE_CLOSURE_CLASSIFICATIONS = (
     "observed-outer-source",
     "observed-nested-source",
@@ -775,6 +792,7 @@ def validate_source_alias_contract(
                 alias_path.resolve(strict=True) == canonical_path.resolve(strict=True),
                 f"source alias no longer selects canonical source: {alias_value}")
         source_alias_runtime.append({
+            "source_key": selected,
             "alias_repository": alias_repository,
             "alias_relative": alias_value,
             "canonical_repository": canonical_repository,
@@ -997,6 +1015,8 @@ def validate_plan(
             "md5": binding["normalized_md5"],
         }, f"normalized source {binding['path']}")
         normalized_runtime.append({
+            "source_key": source_key,
+            "normalization_id": binding["id"],
             "relative": binding["path"],
             "original_relative": source_by_key[source_key]["path"],
             "original": str(source), "output": str(output),
@@ -1577,7 +1597,158 @@ def write_postlude(
             f"{len(theorem_names)}"
         )
         lines.append(f"print_endline {ocaml_string(marker)};;")
+    lines.append(f"Cakeml.requestSourceTraceFinish {ocaml_string(nonce)};;")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def build_source_trace_contract(
+    prepared: dict[str, Any],
+    logical_source_closure: dict[str, Any],
+    program_path: Path,
+    postlude_path: Path,
+    theorem_names: list[str],
+    nonce: str,
+) -> dict[str, Any]:
+    """Bind every allowed post-config loader path to exact selected bytes."""
+    require(re.fullmatch(r"[0-9a-f]{32}", nonce) is not None,
+            "source trace nonce must be 128-bit lowercase hex")
+    required_source_keys = {
+        record["key"] for record in logical_source_closure["records"]
+        if record["classification"] != "derivation-only-input"
+    }
+    source_by_key = {
+        item["key"]: item for item in prepared["source_runtime"]
+    }
+    require(len(source_by_key) == len(prepared["source_runtime"]),
+            "duplicate runtime source key while building trace")
+    normalization_by_original = {
+        item["original"]: item for item in prepared["normalized_runtime"]
+    }
+    require(len(normalization_by_original) == len(prepared["normalized_runtime"]),
+            "duplicate runtime normalization while building trace")
+    bindings_by_resolved: dict[str, dict[str, Any]] = {}
+
+    def add_binding(
+        resolved: Path | str,
+        canonical: Path | str,
+        key: str,
+        source_record: dict[str, Any],
+        selected: Path | str | None = None,
+        selected_sha256: str | None = None,
+        normalization: str = "-",
+    ) -> str:
+        resolved_path = Path(resolved)
+        canonical_path = Path(canonical)
+        selected_path = Path(selected) if selected is not None else canonical_path
+        require(all(path.is_absolute() and path.is_file() and not path.is_symlink()
+                    for path in (resolved_path, canonical_path, selected_path)),
+                f"source trace binding is not an ordinary absolute file: {key}")
+        record = {
+            "resolved": str(resolved_path),
+            "canonical": str(canonical_path),
+            "key": key,
+            "basename": canonical_path.name,
+            "source_md5": source_record["md5"],
+            "source_sha256": source_record["sha256"],
+            "selected": str(selected_path),
+            "selected_sha256": (
+                selected_sha256 if selected_sha256 is not None
+                else source_record["sha256"]
+            ),
+            "normalization": normalization,
+        }
+        require(re.fullmatch(r"[0-9a-f]{32}", str(record["source_md5"]))
+                is not None and
+                re.fullmatch(r"[0-9a-f]{64}", str(record["source_sha256"]))
+                is not None and
+                re.fullmatch(r"[0-9a-f]{64}", str(record["selected_sha256"]))
+                is not None and isinstance(key, str) and key and
+                isinstance(normalization, str) and normalization,
+                f"malformed source trace digest binding: {key}")
+        binding = {"binding_id": canonical_sha256(record), **record}
+        prior = bindings_by_resolved.get(record["resolved"])
+        if prior is None:
+            bindings_by_resolved[record["resolved"]] = binding
+        else:
+            require(prior == binding,
+                    f"conflicting source trace resolved path: {record['resolved']}")
+        return key
+
+    for key in sorted(required_source_keys & set(source_by_key)):
+        source = source_by_key[key]
+        canonical = source["absolute"]
+        normalization = normalization_by_original.get(canonical)
+        add_binding(
+            canonical, canonical, key, source,
+            selected=(normalization["output"] if normalization else canonical),
+            selected_sha256=(normalization["sha256"] if normalization else None),
+            normalization=(normalization["normalization_id"]
+                           if normalization else "-"),
+        )
+    for item in sorted(
+        prepared["source_alias_runtime"], key=lambda value: value["alias"],
+    ):
+        if item["source_key"] not in required_source_keys:
+            continue
+        source = source_by_key[item["source_key"]]
+        normalization = normalization_by_original.get(item["canonical"])
+        add_binding(
+            item["alias"], item["canonical"], item["source_key"], source,
+            selected=(normalization["output"]
+                      if normalization else item["canonical"]),
+            selected_sha256=(normalization["sha256"] if normalization else None),
+            normalization=(normalization["normalization_id"]
+                           if normalization else "-"),
+        )
+
+    candle_root = Path(prepared["candle_runtime_root"])
+    control_specs = (
+        ("control:runtime-setup", candle_root / SETUP_RELATIVE),
+        ("candle:candle/flyspeck_source_digests.ml",
+         candle_root / SOURCE_DIGEST_RELATIVE),
+        ("candle:candle/build/insulate.ml",
+         candle_root / "candle/build/insulate.ml"),
+        ("control:instrumented-prefix", program_path),
+        ("control:stratum-check", candle_root / CHECK_RELATIVE),
+        ("control:postlude", postlude_path),
+    )
+    for key, path in control_specs:
+        record = hash_file(path)
+        add_binding(path, path, key, record)
+        required_source_keys.add(key)
+    if theorem_names:
+        key = "control:fingerprint-serializer"
+        path = candle_root / FINGERPRINT_RELATIVE
+        add_binding(path, path, key, hash_file(path))
+        required_source_keys.add(key)
+
+    missing = sorted(
+        key for key in required_source_keys
+        if not any(binding["key"] == key
+                   for binding in bindings_by_resolved.values())
+    )
+    require(not missing, f"source trace required keys are unbound: {missing}")
+    bindings = sorted(
+        bindings_by_resolved.values(), key=lambda value: value["resolved"],
+    )
+    binding_ids = [binding["binding_id"] for binding in bindings]
+    require(len(binding_ids) == len(set(binding_ids)),
+            "duplicate source trace binding identity")
+    required_keys = sorted(required_source_keys)
+    contract = {
+        "schema": 1,
+        "protocol": SOURCE_TRACE_PROTOCOL,
+        "nonce": nonce,
+        "activation": SOURCE_TRACE_ACTIVATION,
+        "binding_count": len(bindings),
+        "ordered_binding_sha256": canonical_sha256(bindings),
+        "bindings": bindings,
+        "required_key_count": len(required_keys),
+        "ordered_required_key_sha256": canonical_sha256(required_keys),
+        "required_keys": required_keys,
+        "top_level_control_keys": list(SOURCE_TRACE_TOP_LEVEL_CONTROLS),
+    }
+    return validate_source_trace_contract(contract)
 
 
 def write_config(
@@ -1590,6 +1761,11 @@ def write_config(
     def string(value: Path | str) -> str:
         return ocaml_string(str(value))
 
+    source_trace_contract = validate_source_trace_contract(
+        prepared["source_trace_contract"]
+    )
+    require(source_trace_contract["nonce"] == prepared["attempt_nonce"],
+            "source trace nonce differs from runtime attempt")
     lines = [
         "(* Generated by flyspeck_stratum_runtime.py; do not edit. *)",
         f"let candle_hollight_root = {string(candle_root)};;",
@@ -1610,8 +1786,34 @@ def write_config(
         f"let candle_flyspeck_stratum_attempt_nonce = {string(prepared['attempt_nonce'])};;",
         f"let candle_flyspeck_stratum_program = {string(execution_program)};;",
         f"let candle_flyspeck_stratum_program_md5 = {string(execution_md5)};;",
-        "let candle_flyspeck_stratum_source_aliases = [",
+        (
+            "let candle_flyspeck_stratum_source_trace_nonce = "
+            f"{string(source_trace_contract['nonce'])};;"
+        ),
+        "let candle_flyspeck_stratum_source_trace_bindings = [",
     ]
+    for item in source_trace_contract["bindings"]:
+        lines.append(
+            "  (" + ",".join(string(item[field]) for field in (
+                "binding_id", "resolved", "canonical", "key", "basename",
+                "source_md5", "source_sha256", "selected",
+                "selected_sha256", "normalization",
+            )) + ");"
+        )
+    lines.extend([
+        "];;",
+        (
+            "if List.length candle_flyspeck_stratum_source_trace_bindings <> "
+            f"{source_trace_contract['binding_count']} then "
+            "failwith \"incomplete Flyspeck source trace table\";;"
+        ),
+        (
+            "Cakeml.configureSourceTrace "
+            "candle_flyspeck_stratum_source_trace_nonce "
+            "candle_flyspeck_stratum_source_trace_bindings;;"
+        ),
+        "let candle_flyspeck_stratum_source_aliases = [",
+    ])
     for item in prepared["source_alias_runtime"]:
         lines.append(
             f"  ({string(item['alias'])},{string(item['canonical'])});"
@@ -1857,28 +2059,340 @@ def validate_logical_source_closure(
     }
 
 
-def validate_direct_evidence_v3_artifact(
+def validate_source_trace_contract(contract: object) -> dict[str, Any]:
+    require(isinstance(contract, dict) and set(contract) == {
+        "schema", "protocol", "nonce", "activation", "binding_count",
+        "ordered_binding_sha256", "bindings", "required_key_count",
+        "ordered_required_key_sha256", "required_keys",
+        "top_level_control_keys",
+    }, "malformed physical source trace contract")
+    require(contract["schema"] == 1 and not isinstance(contract["schema"], bool)
+            and contract["protocol"] == SOURCE_TRACE_PROTOCOL and
+            contract["activation"] == SOURCE_TRACE_ACTIVATION and
+            re.fullmatch(r"[0-9a-f]{32}", str(contract["nonce"])) is not None,
+            "physical source trace contract identity mismatch")
+    bindings = contract["bindings"]
+    require(isinstance(bindings, list) and
+            contract["binding_count"] == len(bindings) and
+            not isinstance(contract["binding_count"], bool) and
+            contract["ordered_binding_sha256"] == canonical_sha256(bindings),
+            "physical source trace binding closure mismatch")
+    previous_resolved: str | None = None
+    resolved_paths: set[str] = set()
+    binding_ids: set[str] = set()
+    bound_keys: set[str] = set()
+    identity_by_key: dict[str, tuple[str, ...]] = {}
+    binding_fields = {
+        "binding_id", "resolved", "canonical", "key", "basename",
+        "source_md5", "source_sha256", "selected", "selected_sha256",
+        "normalization",
+    }
+    for index, binding in enumerate(bindings):
+        require(isinstance(binding, dict) and set(binding) == binding_fields,
+                f"malformed physical source trace binding: {index}")
+        binding_payload = {
+            field: binding[field] for field in binding
+            if field != "binding_id"
+        }
+        resolved = binding["resolved"]
+        require(isinstance(resolved, str) and Path(resolved).is_absolute() and
+                resolved not in resolved_paths and
+                (previous_resolved is None or previous_resolved < resolved) and
+                isinstance(binding["canonical"], str) and
+                Path(binding["canonical"]).is_absolute() and
+                isinstance(binding["selected"], str) and
+                Path(binding["selected"]).is_absolute() and
+                isinstance(binding["key"], str) and binding["key"] and
+                not any(character in binding["key"] for character in "\t\n\r") and
+                isinstance(binding["basename"], str) and binding["basename"] and
+                not any(character in binding["basename"]
+                        for character in "\t\n\r") and
+                binding["basename"] == Path(binding["canonical"]).name and
+                re.fullmatch(r"[0-9a-f]{32}", str(binding["source_md5"]))
+                is not None and
+                re.fullmatch(r"[0-9a-f]{64}", str(binding["source_sha256"]))
+                is not None and
+                re.fullmatch(r"[0-9a-f]{64}", str(binding["selected_sha256"]))
+                is not None and
+                isinstance(binding["normalization"], str) and
+                binding["normalization"] and
+                not any(character in binding["normalization"]
+                        for character in "\t\n\r") and
+                re.fullmatch(r"[0-9a-f]{64}", str(binding["binding_id"]))
+                is not None and
+                binding["binding_id"] == canonical_sha256(binding_payload) and
+                binding["binding_id"] not in binding_ids,
+                f"invalid physical source trace binding: {index}")
+        previous_resolved = resolved
+        resolved_paths.add(resolved)
+        binding_ids.add(binding["binding_id"])
+        bound_keys.add(binding["key"])
+        identity = tuple(binding[field] for field in (
+            "canonical", "basename", "source_md5", "source_sha256",
+            "selected", "selected_sha256", "normalization",
+        ))
+        prior_identity = identity_by_key.setdefault(binding["key"], identity)
+        require(prior_identity == identity,
+                f"inconsistent physical source trace key: {binding['key']}")
+    required_keys = contract["required_keys"]
+    require(isinstance(required_keys, list) and required_keys ==
+            sorted(set(required_keys)) and
+            all(isinstance(key, str) and key for key in required_keys) and
+            contract["required_key_count"] == len(required_keys) and
+            not isinstance(contract["required_key_count"], bool) and
+            contract["ordered_required_key_sha256"] ==
+            canonical_sha256(required_keys) and
+            set(required_keys) == bound_keys,
+            "physical source trace required-key closure mismatch")
+    require(contract["top_level_control_keys"] ==
+            list(SOURCE_TRACE_TOP_LEVEL_CONTROLS) and
+            set(SOURCE_TRACE_TOP_LEVEL_CONTROLS) <= set(required_keys),
+            "physical source trace top-level control mismatch")
+    return contract
+
+
+def validate_source_trace_observation(
+    contract: dict[str, Any], observation: object,
+) -> dict[str, Any]:
+    contract = validate_source_trace_contract(contract)
+    require(isinstance(observation, dict) and set(observation) == {
+        "schema", "protocol", "nonce", "event_count", "ordered_event_sha256",
+        "events", "request_count", "cache_skip_count", "observed_key_count",
+        "ordered_observed_key_sha256", "observed_keys", "status",
+    }, "malformed physical source trace observation")
+    require(observation["schema"] == 1 and
+            not isinstance(observation["schema"], bool) and
+            observation["protocol"] == SOURCE_TRACE_PROTOCOL and
+            observation["nonce"] == contract["nonce"] and
+            observation["status"] == "closed-loader-owned-session",
+            "physical source trace observation identity mismatch")
+    events = observation["events"]
+    require(isinstance(events, list) and
+            observation["event_count"] == len(events) and
+            not isinstance(observation["event_count"], bool) and
+            observation["ordered_event_sha256"] == canonical_sha256(events),
+            "physical source trace event closure mismatch")
+    binding_by_id = {
+        binding["binding_id"]: binding for binding in contract["bindings"]
+    }
+    active: list[tuple[int, str]] = []
+    cache: set[str] = set()
+    observed_keys: set[str] = set()
+    top_level_keys: list[str] = []
+    request_count = 0
+    cache_skip_count = 0
+    terminal_seen = False
+    for event_index, event in enumerate(events):
+        require(isinstance(event, dict) and not terminal_seen,
+                f"malformed physical source trace event: {event_index}")
+        event_type = event.get("event")
+        if event_type == "request":
+            require(set(event) == {
+                "event", "id", "parent", "kind", "binding_id", "key",
+                "cache_before",
+            } and event["id"] == request_count and
+                    not isinstance(event["id"], bool) and
+                    (event["parent"] is None or
+                     (isinstance(event["parent"], int) and
+                      not isinstance(event["parent"], bool) and
+                      event["parent"] >= 0)) and
+                    isinstance(event["binding_id"], str) and
+                    isinstance(event["key"], str) and
+                    event["kind"] in SOURCE_TRACE_KINDS and
+                    event["cache_before"] in {"fresh-cache", "prior-cache"},
+                    f"malformed physical source trace request: {event_index}")
+            parent = active[-1][0] if active else None
+            require(event["parent"] == parent,
+                    f"physical source trace parent mismatch: {event['id']}")
+            binding = binding_by_id.get(event["binding_id"])
+            require(isinstance(binding, dict) and
+                    event["key"] == binding["key"] and
+                    event["key"] in contract["required_keys"],
+                    f"physical source trace request is unbound: {event['id']}")
+            prior = binding["canonical"] in cache
+            require(event["cache_before"] ==
+                    ("prior-cache" if prior else "fresh-cache"),
+                    f"physical source trace cache-before mismatch: {event['id']}")
+            expected_outcome = (
+                "cache-skip"
+                if event["kind"] in SOURCE_TRACE_NEED_KINDS and prior
+                else "evaluated"
+            )
+            if (event["kind"] in
+                    SOURCE_TRACE_NEED_KINDS + SOURCE_TRACE_LOAD_KINDS and
+                    not prior):
+                cache.add(binding["canonical"])
+            if parent is None:
+                top_level_keys.append(event["key"])
+            observed_keys.add(event["key"])
+            active.append((event["id"], expected_outcome))
+            request_count += 1
+        elif event_type == "outcome":
+            require(set(event) == {"event", "id", "outcome"} and active and
+                    event["id"] == active[-1][0] and
+                    not isinstance(event["id"], bool) and
+                    event["outcome"] == active[-1][1],
+                    f"physical source trace outcome mismatch: {event_index}")
+            if event["outcome"] == "cache-skip":
+                cache_skip_count += 1
+            active.pop()
+        elif event_type == "terminal":
+            require(set(event) == {"event", "request_count"} and
+                    event_index == len(events) - 1 and not active and
+                    event["request_count"] == request_count and
+                    not isinstance(event["request_count"], bool),
+                    "physical source trace terminal mismatch")
+            terminal_seen = True
+        else:
+            raise ContractError(
+                f"unknown physical source trace event: {event_index}"
+            )
+    require(terminal_seen and top_level_keys ==
+            contract["top_level_control_keys"],
+            "physical source trace did not close exact top-level controls")
+    ordered_keys = sorted(observed_keys)
+    require(ordered_keys == contract["required_keys"] and
+            observation["observed_keys"] == ordered_keys and
+            observation["observed_key_count"] == len(ordered_keys) and
+            not isinstance(observation["observed_key_count"], bool) and
+            observation["ordered_observed_key_sha256"] ==
+            canonical_sha256(ordered_keys) and
+            observation["request_count"] == request_count and
+            not isinstance(observation["request_count"], bool) and
+            observation["cache_skip_count"] == cache_skip_count and
+            not isinstance(observation["cache_skip_count"], bool),
+            "physical source trace observed closure mismatch")
+    return observation
+
+
+def validate_source_trace(
+    log_text: str, contract: dict[str, Any],
+) -> dict[str, Any]:
+    contract = validate_source_trace_contract(contract)
+    records: list[list[str]] = []
+    for line in log_text.splitlines():
+        if line.startswith(SOURCE_TRACE_PREFIX):
+            require(line.startswith(SOURCE_TRACE_PREFIX + "\t"),
+                    "malformed physical source trace namespace")
+            records.append(line.split("\t"))
+    require(records, "missing physical source trace session")
+    events: list[dict[str, Any]] = []
+    binding_by_id = {
+        binding["binding_id"]: binding for binding in contract["bindings"]
+    }
+    for fields in records:
+        require(len(fields) >= 3 and fields[0] == SOURCE_TRACE_PREFIX and
+                fields[1] == contract["nonce"],
+                "physical source trace nonce or prefix mismatch")
+        record_type = fields[2]
+        if record_type == "REQUEST":
+            require(len(fields) == 14,
+                    "malformed physical source trace REQUEST")
+            try:
+                request_id = int(fields[3])
+                parent = None if fields[4] == "-" else int(fields[4])
+            except ValueError as error:
+                raise ContractError(
+                    "non-integer physical source trace request identity"
+                ) from error
+            require(fields[3] == str(request_id) and request_id >= 0 and
+                    (parent is None or
+                     (fields[4] == str(parent) and parent >= 0)),
+                    "non-canonical physical source trace request identity")
+            binding = binding_by_id.get(fields[6])
+            require(isinstance(binding, dict) and fields[5] in SOURCE_TRACE_KINDS and
+                    fields[7:13] == [
+                        binding["key"], binding["basename"],
+                        binding["source_md5"], binding["source_sha256"],
+                        binding["selected_sha256"], binding["normalization"],
+                    ] and fields[13] in {"fresh-cache", "prior-cache"},
+                    "physical source trace REQUEST differs from binding")
+            events.append({
+                "event": "request", "id": request_id, "parent": parent,
+                "kind": fields[5], "binding_id": fields[6], "key": fields[7],
+                "cache_before": fields[13],
+            })
+        elif record_type == "OUTCOME":
+            require(len(fields) == 5 and fields[4] in {"evaluated", "cache-skip"},
+                    "malformed physical source trace OUTCOME")
+            try:
+                request_id = int(fields[3])
+            except ValueError as error:
+                raise ContractError(
+                    "non-integer physical source trace outcome identity"
+                ) from error
+            require(fields[3] == str(request_id) and request_id >= 0,
+                    "non-canonical physical source trace outcome identity")
+            events.append({
+                "event": "outcome", "id": request_id, "outcome": fields[4],
+            })
+        elif record_type == "TERMINAL":
+            require(len(fields) == 4,
+                    "malformed physical source trace TERMINAL")
+            try:
+                request_count = int(fields[3])
+            except ValueError as error:
+                raise ContractError(
+                    "non-integer physical source trace terminal count"
+                ) from error
+            require(fields[3] == str(request_count) and request_count >= 0,
+                    "non-canonical physical source trace terminal count")
+            events.append({"event": "terminal", "request_count": request_count})
+        elif record_type == "FAILURE":
+            require(len(fields) == 4 and fields[3],
+                    "malformed physical source trace FAILURE")
+            raise ContractError(f"physical source trace failed: {fields[3]}")
+        else:
+            raise ContractError(f"unknown physical source trace record: {record_type}")
+    request_events = [event for event in events if event["event"] == "request"]
+    observed_keys = sorted({event["key"] for event in request_events})
+    observation = {
+        "schema": 1,
+        "protocol": SOURCE_TRACE_PROTOCOL,
+        "nonce": contract["nonce"],
+        "event_count": len(events),
+        "ordered_event_sha256": canonical_sha256(events),
+        "events": events,
+        "request_count": len(request_events),
+        "cache_skip_count": sum(
+            event.get("outcome") == "cache-skip" for event in events
+        ),
+        "observed_key_count": len(observed_keys),
+        "ordered_observed_key_sha256": canonical_sha256(observed_keys),
+        "observed_keys": observed_keys,
+        "status": "closed-loader-owned-session",
+    }
+    return validate_source_trace_observation(contract, observation)
+
+
+def validate_direct_evidence_v4_artifact(
     artifact: dict[str, Any], *, receipt: bool,
 ) -> None:
-    """Reject schema-2 or partially upgraded direct-attempt artifacts."""
-    require(artifact.get("schema") == 3,
-            "direct runtime evidence requires disjoint schema 3")
+    """Reject legacy or partially upgraded direct-attempt artifacts."""
+    require(artifact.get("schema") == 4 and
+            not isinstance(artifact.get("schema"), bool),
+            "direct runtime evidence requires disjoint schema 4")
     require(artifact.get("kind") == "candle-flyspeck-compiled-stratum-attempt",
             "wrong direct runtime evidence kind")
     contract = artifact.get("evidence_contract")
     require(isinstance(contract, dict) and
             contract.get("schema") ==
-            "candle-flyspeck-direct-runtime-evidence-v3" and
+            "candle-flyspeck-direct-runtime-evidence-v4" and
             contract.get("allowed_action_outcomes") == list(ACTION_OUTCOMES) and
-            contract.get("physical_loader_cache_skip_allowed") is False and
+            contract.get("physical_loader_cache_skip_allowed") ==
+            "only loader-authenticated needs cache-skip events" and
             contract.get("logical_source_closure_policy") ==
             SOURCE_CLOSURE_POLICY and
             contract.get("logical_source_closure_order") ==
             SOURCE_CLOSURE_ORDER and
             contract.get("selected_loadt_ledger_delta_included") is True and
-            contract.get("physical_loader_cache_trace_included") is False and
+            contract.get("physical_loader_cache_trace_included") is True and
+            contract.get("physical_source_trace_protocol") ==
+            SOURCE_TRACE_PROTOCOL and
+            contract.get("pre_trace_control_exclusion") ==
+            "control:runtime-config" and
             contract.get("s2_s3_approval_included") is False,
-            "malformed direct runtime evidence-v3 contract")
+            "malformed direct runtime evidence-v4 contract")
     action_count = artifact.get("action_count")
     require(isinstance(action_count, int) and not isinstance(action_count, bool)
             and action_count >= 0,
@@ -1992,6 +2506,44 @@ def validate_direct_evidence_v3_artifact(
                     closure_record["source_md5"] ==
                     delta_record["identity_md5"],
                     "action logical-source delta differs from expected closure")
+    expected_trace = validate_source_trace_contract(
+        artifact.get("expected_physical_source_trace")
+    )
+    require(expected_trace["nonce"] == artifact.get("attempt_nonce"),
+            "physical source trace nonce differs from attempt")
+    trace_required_keys = {
+        record["key"] for record in expected_records
+        if record["classification"] != "derivation-only-input"
+    }
+    trace_required_keys.update(SOURCE_TRACE_TOP_LEVEL_CONTROLS)
+    if fingerprint_requests(boundary_id):
+        trace_required_keys.add("control:fingerprint-serializer")
+    require(expected_trace["required_keys"] == sorted(trace_required_keys),
+            "physical source trace differs from logical source closure")
+    trace_bindings_by_key: dict[str, list[dict[str, Any]]] = {}
+    for binding in expected_trace["bindings"]:
+        trace_bindings_by_key.setdefault(binding["key"], []).append(binding)
+    for record in expected_records:
+        if record["classification"] == "derivation-only-input":
+            continue
+        bindings = trace_bindings_by_key.get(record["key"])
+        require(isinstance(bindings, list) and bindings,
+                f"logical source lacks physical trace binding: {record['key']}")
+        normalization = record["execution_normalization"]
+        expected_selected_sha256 = (
+            record["source_sha256"] if normalization is None else
+            normalization["normalized_sha256"]
+        )
+        expected_normalization = (
+            "-" if normalization is None else normalization["id"]
+        )
+        require(all(
+            binding["source_md5"] == record["source_md5"] and
+            binding["source_sha256"] == record["source_sha256"] and
+            binding["selected_sha256"] == expected_selected_sha256 and
+            binding["normalization"] == expected_normalization
+            for binding in bindings
+        ), f"logical and physical source identities differ: {record['key']}")
     if not receipt:
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
@@ -2046,6 +2598,11 @@ def validate_direct_evidence_v3_artifact(
                     "status": "expected-closure-emitted-unapproved",
                 },
                 "receipt logical source closure differs from authenticated expectation")
+
+    physical_trace = artifact.get("physical_source_trace")
+    exact_physical_trace = physical_trace is not None
+    if physical_trace is not None:
+        validate_source_trace_observation(expected_trace, physical_trace)
 
     fingerprints = artifact.get("semantic_fingerprints")
     exact_fingerprints = fingerprints is not None
@@ -2133,7 +2690,7 @@ def validate_direct_evidence_v3_artifact(
         validation_error is None and timed_out is False and
         exit_code == 0 and postflight is True and
         marker_count == action_count and exact_events and
-        exact_closure and exact_fingerprints
+        exact_closure and exact_physical_trace and exact_fingerprints
     )
     if artifact["state"] == "completed":
         require(complete_success,
@@ -2246,12 +2803,17 @@ def create_runtime_snapshot(
             if classification not in previous["classes"]:
                 previous["classes"].append(classification)
 
+    source_runtime = []
     for binding in prepared["source_runtime"]:
         destination_root = candle_snapshot if binding["repository"] == "candle" else flyspeck_snapshot
         record = snapshot_copy(
             Path(binding["absolute"]), destination_root, binding["path"], binding,
         )
         add_record(binding["repository"], f"source:{binding['repository']}", record)
+        source_runtime.append({
+            **binding,
+            "absolute": str(destination_root / binding["path"]),
+        })
 
     source_alias_runtime = []
     for item in prepared["source_alias_runtime"]:
@@ -2496,6 +3058,7 @@ def create_runtime_snapshot(
         "flyspeck_root": flyspeck_snapshot,
         "overlay_root": overlay_snapshot,
         "generated_root": generated_snapshot,
+        "source_runtime": source_runtime,
         "source_alias_runtime": source_alias_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
@@ -2921,15 +3484,20 @@ def _run_attempt_impl(
     program_path.write_bytes(program)
     program_record = hash_file(program_path)
     runtime_candle_root = runtime_prepared["candle_runtime_root"]
-    write_config(
-        config_path, runtime_candle_root, runtime_prepared,
-        program_path, program_record["md5"],
-    )
     theorem_names = fingerprint_requests(boundary_id)
     logical_source_closure = prepared["logical_source_closure"]
     write_postlude(
         postlude_path, runtime_candle_root, boundary_id, theorem_names, nonce,
         logical_source_closure,
+    )
+    source_trace_contract = build_source_trace_contract(
+        runtime_prepared, logical_source_closure, program_path, postlude_path,
+        theorem_names, nonce,
+    )
+    runtime_prepared["source_trace_contract"] = source_trace_contract
+    write_config(
+        config_path, runtime_candle_root, runtime_prepared,
+        program_path, program_record["md5"],
     )
     stdin_path.write_text(
         f"#use {ocaml_string(str(config_path))};;\n"
@@ -2962,7 +3530,7 @@ def _run_attempt_impl(
         for index, action in enumerate(prepared["actions"])
     ]
     attempt = {
-        "schema": 3,
+        "schema": 4,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
         "claim": "compiled cumulative source-action attempt; not S2/S3 without semantic fingerprints",
         "state": "running",
@@ -2990,16 +3558,20 @@ def _run_attempt_impl(
         ),
         "process_state_checkpoint": None,
         "evidence_contract": {
-            "schema": "candle-flyspeck-direct-runtime-evidence-v3",
+            "schema": "candle-flyspeck-direct-runtime-evidence-v4",
             "allowed_action_outcomes": list(ACTION_OUTCOMES),
-            "physical_loader_cache_skip_allowed": False,
+            "physical_loader_cache_skip_allowed":
+                "only loader-authenticated needs cache-skip events",
             "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
             "logical_source_closure_order": SOURCE_CLOSURE_ORDER,
             "selected_loadt_ledger_delta_included": True,
-            "physical_loader_cache_trace_included": False,
+            "physical_loader_cache_trace_included": True,
+            "physical_source_trace_protocol": SOURCE_TRACE_PROTOCOL,
+            "pre_trace_control_exclusion": "control:runtime-config",
             "s2_s3_approval_included": False,
         },
         "expected_logical_source_closure": logical_source_closure,
+        "expected_physical_source_trace": source_trace_contract,
         "runtime_environment_policy": (
             "minimal PATH/LC_ALL=C/CML sizes; reject LD_*, GLIBC_TUNABLES, "
             "BASH_ENV, and ENV"
@@ -3035,7 +3607,7 @@ def _run_attempt_impl(
             "flyspeck": prepared["plan"]["repositories"]["flyspeck_commit"],
         },
     }
-    validate_direct_evidence_v3_artifact(attempt, receipt=False)
+    validate_direct_evidence_v4_artifact(attempt, receipt=False)
     atomic_write_json(attempt_path, attempt)
     if output_ownership is not None:
         output_ownership["marker_path"].unlink()
@@ -3058,6 +3630,7 @@ def _run_attempt_impl(
     fingerprints: dict[str, Any] | None = None
     action_events: list[dict[str, Any]] | None = None
     observed_source_closure: dict[str, Any] | None = None
+    physical_source_trace: dict[str, Any] | None = None
     postflight_reauthenticated = False
     handled_signals = {signal.SIGTERM, signal.SIGINT}
     previous_mask: set[signal.Signals] | None = None
@@ -3130,7 +3703,7 @@ def _run_attempt_impl(
         archived_attempt = load_object(attempt_path, "initial attempt record")
         require(archived_attempt == attempt,
                 "initial direct runtime attempt changed after publication")
-        validate_direct_evidence_v3_artifact(archived_attempt, receipt=False)
+        validate_direct_evidence_v4_artifact(archived_attempt, receipt=False)
         validate_runtime_snapshot(snapshot_record, output_root)
         validate_controller_execution(
             controller_execution, candle_root, linked["candle_commit"],
@@ -3154,6 +3727,9 @@ def _run_attempt_impl(
             validate_file(path, control_records[label], f"attempt control {label}")
         postflight_reauthenticated = True
         log_text = log_path.read_text(encoding="utf-8", errors="replace")
+        physical_source_trace = validate_source_trace(
+            log_text, source_trace_contract,
+        )
         action_events = validate_log(
             log_text,
             prepared["actions"], boundary_id, nonce, theorem_names,
@@ -3211,12 +3787,13 @@ def _run_attempt_impl(
             ),
             "action_events": action_events,
             "logical_source_closure": observed_source_closure,
+            "physical_source_trace": physical_source_trace,
             "semantic_fingerprints": fingerprints,
             "s2_s3_evidence": False,
             "validation_error": validation_error,
             "postflight_reauthenticated": postflight_reauthenticated,
         }
-        validate_direct_evidence_v3_artifact(receipt, receipt=True)
+        validate_direct_evidence_v4_artifact(receipt, receipt=True)
         atomic_write_json(receipt_path, receipt)
     finally:
         signal.signal(signal.SIGTERM, previous_sigterm)
