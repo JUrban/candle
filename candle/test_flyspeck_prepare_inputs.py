@@ -124,18 +124,33 @@ class FlyspeckPreparedInputTests(unittest.TestCase):
                     contract_path, source, source / "generated",
                 )
 
-    def test_parent_symlink_fails_closed(self):
+    def test_output_symlink_fails_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, contract_path, _, _ = self.fixture(root)
+            output = root / "output"
+            output.symlink_to(source, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "output symlink"):
+                self.run_with_head(
+                    flyspeck_prepare_inputs.materialize,
+                    contract_path, source, output,
+                )
+
+    def test_existing_output_root_fails_closed(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source, contract_path, _, _ = self.fixture(root)
             output = root / "output"
             output.mkdir()
-            (output / "formal_lp").symlink_to(source, target_is_directory=True)
-            with self.assertRaisesRegex(ValueError, "parent symlink"):
+            (output / "unexpected").write_text("must not survive")
+            with self.assertRaisesRegex(ValueError, "already exists"):
                 self.run_with_head(
                     flyspeck_prepare_inputs.materialize,
                     contract_path, source, output,
                 )
+            self.assertEqual(
+                (output / "unexpected").read_text(), "must not survive"
+            )
 
 
 if __name__ == "__main__":

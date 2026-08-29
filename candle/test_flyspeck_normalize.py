@@ -264,7 +264,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source_root = root / "source"
-            output_root = root / "output"
+            first_output = root / "output-first"
+            second_output = root / "output-second"
             source_path = source_root / entry["path"]
             source_path.parent.mkdir(parents=True)
             source_path.write_bytes(source)
@@ -276,19 +277,52 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             flyspeck_normalize._git_head = lambda _: "a" * 40
             try:
                 first = flyspeck_normalize.materialize(
-                    contract_path, source_root, output_root,
+                    contract_path, source_root, first_output,
                 )
                 second = flyspeck_normalize.materialize(
-                    contract_path, source_root, output_root,
+                    contract_path, source_root, second_output,
                 )
             finally:
                 flyspeck_normalize._git_head = original_git_head
             self.assertEqual(first, second)
-            self.assertEqual((output_root / entry["path"]).read_bytes(), normalized)
+            self.assertEqual(
+                (first_output / entry["path"]).read_bytes(), normalized
+            )
             receipt = json.loads(
-                (output_root / flyspeck_normalize.RECEIPT_NAME).read_text()
+                (
+                    first_output / flyspeck_normalize.RECEIPT_NAME
+                ).read_text()
             )
             self.assertEqual(receipt, first)
+
+    def test_materialization_refuses_existing_output_root(self):
+        entry, source, _ = self.fixture_entry()
+        contract = copy.deepcopy(self.contract)
+        contract["flyspeck_commit"] = "a" * 40
+        contract["entries"] = [entry]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            source_path = source_root / entry["path"]
+            source_path.parent.mkdir(parents=True)
+            source_path.write_bytes(source)
+            output_root = root / "output"
+            output_root.mkdir()
+            (output_root / "unexpected").write_text("must not survive")
+            contract_path = root / "contract.json"
+            contract_path.write_text(json.dumps(contract), encoding="utf-8")
+            original_git_head = flyspeck_normalize._git_head
+            flyspeck_normalize._git_head = lambda _: "a" * 40
+            try:
+                with self.assertRaisesRegex(ValueError, "already exists"):
+                    flyspeck_normalize.materialize(
+                        contract_path, source_root, output_root,
+                    )
+            finally:
+                flyspeck_normalize._git_head = original_git_head
+            self.assertEqual(
+                (output_root / "unexpected").read_text(), "must not survive"
+            )
 
     def test_materialization_cannot_overwrite_pinned_source(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -298,7 +332,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                     self.contract_path, root, root,
                 )
 
-    def test_materialization_refuses_parent_symlink(self):
+    def test_materialization_refuses_output_symlink(self):
         entry, source, _ = self.fixture_entry()
         contract = copy.deepcopy(self.contract)
         contract["flyspeck_commit"] = "a" * 40
@@ -310,11 +344,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             source_path = source_root / entry["path"]
             source_path.parent.mkdir(parents=True)
             source_path.write_bytes(source)
-            output_root.mkdir()
-            first_component = Path(entry["path"]).parts[0]
-            (output_root / first_component).symlink_to(
-                source_root / first_component, target_is_directory=True,
-            )
+            output_root.symlink_to(source_root, target_is_directory=True)
             contract_path = root / "contract.json"
             contract_path.write_text(
                 json.dumps(contract, indent=2) + "\n", encoding="utf-8",

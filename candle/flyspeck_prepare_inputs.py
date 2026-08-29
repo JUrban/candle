@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import tarfile
 from pathlib import Path
@@ -181,6 +182,8 @@ def materialize(
     contract_path: Path, source_root: Path, output_root: Path,
 ) -> dict[str, Any]:
     source_root = source_root.resolve()
+    if output_root.is_symlink():
+        raise ValueError(f"refusing generated output symlink: {output_root}")
     output_root = output_root.resolve()
     if (
         source_root == output_root
@@ -191,48 +194,70 @@ def materialize(
     contract = load_contract(contract_path)
     archive_path = _validate_source(contract, source_root)
     expected = contract["members"][0]
-    output_root.mkdir(parents=True, exist_ok=True)
-    destination = _prepare_destination(
-        output_root, _safe_relative(expected["output_path"], "generated output path")
+    if output_root.exists():
+        raise ValueError(f"generated output root already exists: {output_root}")
+    if not output_root.parent.is_dir():
+        raise ValueError(
+            f"generated output parent does not exist: {output_root.parent}"
+        )
+    temporary_root = output_root.with_name(
+        f"{output_root.name}.tmp.{os.getpid()}"
     )
-    temporary = destination.with_name(destination.name + f".tmp.{os.getpid()}")
-    if temporary.exists() or temporary.is_symlink():
-        raise ValueError(f"refusing existing temporary output: {temporary}")
-    archive, _, source = _validated_member(contract, archive_path)
+    if temporary_root.exists() or temporary_root.is_symlink():
+        raise ValueError(
+            f"generated temporary output already exists: {temporary_root}"
+        )
+    temporary_root.mkdir()
     try:
-        with temporary.open("xb") as output:
-            size, digest = _copy_and_hash(source, output)
-            output.flush()
-            os.fsync(output.fileno())
-        if size != expected["bytes"] or digest != expected["sha256"]:
-            raise ValueError("LP certificate digest or byte count mismatch")
-        os.chmod(temporary, expected["mode"])
-        os.replace(temporary, destination)
-    except Exception:
-        if temporary.exists() and not temporary.is_symlink():
-            temporary.unlink()
+        destination = _prepare_destination(
+            temporary_root,
+            _safe_relative(expected["output_path"], "generated output path"),
+        )
+        temporary = destination.with_name(
+            destination.name + f".tmp.{os.getpid()}"
+        )
+        if temporary.exists() or temporary.is_symlink():
+            raise ValueError(f"refusing existing temporary output: {temporary}")
+        archive, _, source = _validated_member(contract, archive_path)
+        try:
+            with temporary.open("xb") as output:
+                size, digest = _copy_and_hash(source, output)
+                output.flush()
+                os.fsync(output.fileno())
+            if size != expected["bytes"] or digest != expected["sha256"]:
+                raise ValueError("LP certificate digest or byte count mismatch")
+            os.chmod(temporary, expected["mode"])
+            os.replace(temporary, destination)
+        finally:
+            source.close()
+            archive.close()
+        receipt = {
+            "schema": 1,
+            "contract_sha256": hashlib.sha256(
+                contract_path.read_bytes()
+            ).hexdigest(),
+            "flyspeck_commit": contract["flyspeck_commit"],
+            "archive_sha256": contract["archive"]["sha256"],
+            "outputs": [{
+                "path": expected["output_path"],
+                "bytes": size,
+                "sha256": digest,
+                "mode": expected["mode"],
+            }],
+        }
+        receipt_path = temporary_root / RECEIPT_NAME
+        receipt_temp = receipt_path.with_name(
+            receipt_path.name + f".tmp.{os.getpid()}"
+        )
+        receipt_temp.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(receipt_temp, receipt_path)
+        os.rename(temporary_root, output_root)
+    except BaseException:
+        shutil.rmtree(temporary_root)
         raise
-    finally:
-        source.close()
-        archive.close()
-    receipt = {
-        "schema": 1,
-        "contract_sha256": hashlib.sha256(contract_path.read_bytes()).hexdigest(),
-        "flyspeck_commit": contract["flyspeck_commit"],
-        "archive_sha256": contract["archive"]["sha256"],
-        "outputs": [{
-            "path": expected["output_path"],
-            "bytes": size,
-            "sha256": digest,
-            "mode": expected["mode"],
-        }],
-    }
-    receipt_path = output_root / RECEIPT_NAME
-    receipt_temp = receipt_path.with_name(receipt_path.name + f".tmp.{os.getpid()}")
-    receipt_temp.write_text(
-        json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8",
-    )
-    os.replace(receipt_temp, receipt_path)
     return receipt
 
 

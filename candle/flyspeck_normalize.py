@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -231,6 +232,8 @@ def materialize(
     contract_path: Path, source_root: Path, output_root: Path,
 ) -> dict[str, Any]:
     source_root = source_root.resolve()
+    if output_root.is_symlink():
+        raise ValueError(f"refusing normalization output symlink: {output_root}")
     output_root = output_root.resolve()
     if (
         source_root == output_root
@@ -242,37 +245,60 @@ def materialize(
             "the pinned source root"
         )
     contract, outputs = evaluate_contract(contract_path, source_root)
-    output_root.mkdir(parents=True, exist_ok=True)
-    rendered_entries: list[dict[str, Any]] = []
-    for entry, normalized in outputs:
-        destination = _prepare_destination(output_root, Path(entry["path"]))
-        temporary = destination.with_name(destination.name + ".tmp")
-        if destination.is_symlink() or temporary.is_symlink():
-            raise ValueError(f"refusing normalization output symlink: {destination}")
-        temporary.write_bytes(normalized)
-        os.replace(temporary, destination)
-        rendered_entries.append({
-            "id": entry["id"],
-            "path": entry["path"],
-            "operation_ids": [
-                operation["id"] for operation in entry["operations"]
-            ],
-            "normalized_bytes": len(normalized),
-            "normalized_sha256": _sha256(normalized),
-            "normalized_md5": _md5(normalized),
-        })
-    receipt = {
-        "schema": 2,
-        "contract_sha256": contract_sha256(contract_path),
-        "flyspeck_commit": contract["flyspeck_commit"],
-        "entries": rendered_entries,
-    }
-    receipt_path = output_root / RECEIPT_NAME
-    temporary_receipt = receipt_path.with_name(receipt_path.name + ".tmp")
-    temporary_receipt.write_text(
-        json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8",
+    if output_root.exists():
+        raise ValueError(f"normalization output root already exists: {output_root}")
+    if not output_root.parent.is_dir():
+        raise ValueError(
+            f"normalization output parent does not exist: {output_root.parent}"
+        )
+    temporary_root = output_root.with_name(
+        f"{output_root.name}.tmp.{os.getpid()}"
     )
-    os.replace(temporary_receipt, receipt_path)
+    if temporary_root.exists() or temporary_root.is_symlink():
+        raise ValueError(
+            f"normalization temporary output already exists: {temporary_root}"
+        )
+    temporary_root.mkdir()
+    rendered_entries: list[dict[str, Any]] = []
+    try:
+        for entry, normalized in outputs:
+            destination = _prepare_destination(
+                temporary_root, Path(entry["path"])
+            )
+            temporary = destination.with_name(destination.name + ".tmp")
+            if destination.is_symlink() or temporary.is_symlink():
+                raise ValueError(
+                    f"refusing normalization output symlink: {destination}"
+                )
+            temporary.write_bytes(normalized)
+            os.replace(temporary, destination)
+            rendered_entries.append({
+                "id": entry["id"],
+                "path": entry["path"],
+                "operation_ids": [
+                    operation["id"] for operation in entry["operations"]
+                ],
+                "normalized_bytes": len(normalized),
+                "normalized_sha256": _sha256(normalized),
+                "normalized_md5": _md5(normalized),
+            })
+        receipt = {
+            "schema": 2,
+            "contract_sha256": contract_sha256(contract_path),
+            "flyspeck_commit": contract["flyspeck_commit"],
+            "entries": rendered_entries,
+        }
+        receipt_path = temporary_root / RECEIPT_NAME
+        temporary_receipt = receipt_path.with_name(receipt_path.name + ".tmp")
+        temporary_receipt.write_text(
+            json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary_receipt, receipt_path)
+        os.rename(temporary_root, output_root)
+    except BaseException:
+        shutil.rmtree(temporary_root)
+        raise
     return receipt
 
 
