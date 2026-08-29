@@ -143,27 +143,65 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_candidate_fingerprint_parser_is_fail_closed(self) -> None:
         name = "Linear_programming_results.linear_programming_results_th"
+        axioms = b"axioms"
         fields = [
             subject.FINGERPRINT_MARKER,
             name.encode().hex(),
-            b"theorem".hex(), b"hypotheses".hex(), b"conclusion".hex(),
-            b"axioms".hex(), "0", "3",
+            b"theorem".hex(), subject.reference_protocol.EMPTY_HYPOTHESES_WIRE.hex(),
+            b"conclusion".hex(), axioms.hex(), "0", "3",
         ]
-        report = subject.parse_fingerprints(
-            "\t".join(fields), [name], Path(subject.__file__).resolve(),
-        )
-        self.assertEqual(report["status"], "observed_uncompared")
-        self.assertFalse(report["approved_reference_present"])
-        self.assertEqual(
-            report["theorems"][0]["theorem_sha256"],
-            hashlib.sha256(b"theorem").hexdigest(),
-        )
-        bad = fields.copy()
-        bad[-1] = "4"
-        with self.assertRaisesRegex(subject.ContractError, "global axiom count"):
-            subject.parse_fingerprints(
-                "\t".join(bad), [name], Path(subject.__file__).resolve(),
+        state = [
+            subject.STATE_FINGERPRINT_MARKER,
+            b"state".hex(), b"types".hex(), b"terms".hex(),
+            b"definitions".hex(), axioms.hex(), "1", "2", "3", "3",
+        ]
+        serializer = subject.reference_protocol.FINGERPRINT_HELPER
+        with tempfile.TemporaryDirectory() as temporary:
+            log = Path(temporary) / "fingerprints.log"
+            log.write_text(
+                "\t".join(fields) + "\n" + "\t".join(state) + "\n",
+                encoding="utf-8",
             )
+            report = subject.parse_fingerprints(log, [name], serializer)
+            self.assertEqual(report["status"], "observed_uncompared")
+            self.assertFalse(report["approved_reference_present"])
+            self.assertEqual(
+                report["theorems"][0]["theorem_sha256"],
+                hashlib.sha256(b"theorem").hexdigest(),
+            )
+            self.assertEqual(
+                report["post_state"]["definitions_sha256"],
+                hashlib.sha256(b"definitions").hexdigest(),
+            )
+            bad = fields.copy()
+            bad[-1] = "4"
+            log.write_text(
+                "\t".join(bad) + "\n" + "\t".join(state) + "\n",
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(subject.ContractError, "three axioms"):
+                subject.parse_fingerprints(log, [name], serializer)
+
+    def test_postlude_uses_actual_v2_theorem_and_state_serializer(self) -> None:
+        serializer_source = subject.reference_protocol.FINGERPRINT_HELPER.read_text(
+            encoding="utf-8",
+        )
+        self.assertIn(f'"{subject.FINGERPRINT_MARKER}\\t"', serializer_source)
+        self.assertIn(f'"{subject.STATE_FINGERPRINT_MARKER}\\t"', serializer_source)
+        with tempfile.TemporaryDirectory() as temporary:
+            postlude = Path(temporary) / "postlude.ml"
+            subject.write_postlude(
+                postlude, Path(temporary), "05-lp_support-through-184",
+                ["Linear_programming_results.linear_programming_results_th"],
+                self.nonce,
+            )
+            source = postlude.read_text(encoding="utf-8")
+        self.assertIn("candle_s1_emit_fingerprint", source)
+        self.assertEqual(source.count("candle_s1_emit_state_fingerprint ();;"), 1)
+        self.assertLess(
+            source.index("candle_s1_emit_fingerprint"),
+            source.index("candle_s1_emit_state_fingerprint"),
+        )
 
     def test_fingerprint_boundary_requires_terminal_marker(self) -> None:
         boundary = "05-lp_support-through-184"

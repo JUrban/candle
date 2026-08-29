@@ -72,6 +72,9 @@ flyspeck_stratum_plan = _load_local_source(
 runtime_lock = _load_local_source(
     "_candle_stratum_runtime_lock", HERE / "runtime_lock.py",
 )
+reference_protocol = _load_local_source(
+    "_candle_stratum_reference_protocol", HERE / "reference_protocol.py",
+)
 
 
 MANIFEST_RELATIVE = Path("candle/flyspeck_manifest.json")
@@ -88,7 +91,8 @@ GIB = 1024 * 1024 * 1024
 ACTION_PREFIX = "CANDLE_FLYSPECK_STRATUM_ACTION_OK"
 PREFLIGHT_MARKER = "CANDLE_FLYSPECK_STRATUM_PREFLIGHT_OK"
 SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_BOUNDARY_OK"
-FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V1"
+FINGERPRINT_MARKER = reference_protocol.FINGERPRINT_MARKER
+STATE_FINGERPRINT_MARKER = reference_protocol.STATE_FINGERPRINT_MARKER
 FINGERPRINT_SUCCESS_MARKER = "CANDLE_FLYSPECK_STRATUM_FINGERPRINTS_OK"
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 EXPECTED_PYTHON_RUNTIME = {
@@ -257,6 +261,7 @@ def local_python_modules() -> tuple[types.ModuleType, ...]:
     return (
         cakeml_artifact_provenance,
         flyspeck_stratum_plan,
+        reference_protocol,
         runtime_lock,
     )
 
@@ -913,6 +918,7 @@ def write_postlude(
             require(SAFE_VALUE_PATH.fullmatch(name) is not None,
                     f"unsafe theorem value path: {name}")
             lines.append(f"candle_s1_emit_fingerprint {ocaml_string(name)} {name};;")
+        lines.append("candle_s1_emit_state_fingerprint ();;")
         marker = (
             f"{FINGERPRINT_SUCCESS_MARKER} {nonce} {boundary_id} "
             f"{len(theorem_names)}"
@@ -986,68 +992,45 @@ def write_config(
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def parse_fingerprints(log: str, theorem_names: list[str], serializer: Path) -> dict[str, Any]:
-    records: dict[str, dict[str, Any]] = {}
-    for line in log.splitlines():
-        if not line.startswith(FINGERPRINT_MARKER + "\t"):
-            continue
-        fields = line.split("\t")
-        require(len(fields) == 8, f"malformed {FINGERPRINT_MARKER} record")
-        (_, name_hex, theorem_hex, hypotheses_hex, conclusion_hex,
-         axioms_hex, hypothesis_count, axiom_count) = fields
-
-        def decode(field: str, label: str) -> bytes:
-            require(re.fullmatch(r"(?:[0-9a-f]{2})*", field) is not None,
-                    f"malformed fingerprint hex: {label}")
-            return bytes.fromhex(field)
-
-        try:
-            name = decode(name_hex, "name").decode("ascii")
-        except UnicodeDecodeError as error:
-            raise ContractError("non-ASCII theorem fingerprint name") from error
-        require(name not in records, f"duplicate theorem fingerprint: {name}")
-        try:
-            parsed_hypotheses = int(hypothesis_count)
-            parsed_axioms = int(axiom_count)
-        except ValueError as error:
-            raise ContractError(f"non-numeric fingerprint count: {name}") from error
-        record = {
-            "name": name,
-            "theorem_sha256": hashlib.sha256(decode(theorem_hex, "theorem")).hexdigest(),
-            "hypotheses_sha256": hashlib.sha256(
-                decode(hypotheses_hex, "hypotheses")
-            ).hexdigest(),
-            "conclusion_sha256": hashlib.sha256(
-                decode(conclusion_hex, "conclusion")
-            ).hexdigest(),
-            "global_axioms_sha256": hashlib.sha256(
-                decode(axioms_hex, "global axioms")
-            ).hexdigest(),
-            "hypothesis_count": parsed_hypotheses,
-            "global_axiom_count": parsed_axioms,
+def parse_fingerprints(
+    log_path: Path, theorem_names: list[str], serializer: Path,
+) -> dict[str, Any]:
+    """Parse direct evidence through the exact shared structural-v2 protocol."""
+    if not theorem_names:
+        log = log_path.read_text(encoding="utf-8", errors="strict")
+        require(not any(line.startswith((
+            FINGERPRINT_MARKER + "\t", STATE_FINGERPRINT_MARKER + "\t",
+        )) for line in log.splitlines()),
+                "unexpected fingerprint record at an unrequested boundary")
+        return {
+            "status": "not_requested",
+            "approved_reference_present": False,
+            "serializer": None,
+            "theorems": [],
+            "post_state": None,
         }
-        records[name] = record
-
-    require(list(records) == theorem_names,
-            f"fingerprint request mismatch: expected {theorem_names}, got {list(records)}")
-    axiom_identities = {
-        (record["global_axioms_sha256"], record["global_axiom_count"])
-        for record in records.values()
+    try:
+        parsed = reference_protocol._read_fingerprint_records(
+            log_path, tuple(theorem_names), "audited",
+        )
+    except (OSError, UnicodeError, reference_protocol.LoadFailure) as error:
+        raise ContractError(str(error)) from error
+    serializer_record = {
+        "path": FINGERPRINT_RELATIVE.as_posix(),
+        "sha256": hash_file(serializer)["sha256"],
     }
-    require(len(axiom_identities) <= 1, "global axiom identity changed between fingerprints")
-    for record in records.values():
-        require(record["hypothesis_count"] == 0,
-                f"unexpected theorem hypotheses: {record['name']}")
-        require(record["global_axiom_count"] == 3,
-                f"unexpected global axiom count: {record['name']}")
+    require(parsed["status"] == "observed_uncompared" and
+            parsed["expected_identities_present"] is False and
+            parsed["approval_sha256"] is None and
+            parsed["mapping_status"] == "audited" and
+            parsed["serializer"] == serializer_record,
+            "shared fingerprint protocol returned an unexpected evidence state")
     return {
-        "status": "observed_uncompared" if theorem_names else "not_requested",
+        "status": parsed["status"],
         "approved_reference_present": False,
-        "serializer": {
-            "path": FINGERPRINT_RELATIVE.as_posix(),
-            "sha256": hash_file(serializer)["sha256"],
-        } if theorem_names else None,
-        "theorems": [records[name] for name in theorem_names],
+        "serializer": parsed["serializer"],
+        "theorems": parsed["theorems"],
+        "post_state": parsed["post_state"],
     }
 
 
@@ -1541,16 +1524,18 @@ def validate_runtime_snapshot(snapshot: dict[str, Any], output_root: Path) -> No
         "argv0": str(direct_source),
         "source_path": str(direct_source),
     }, "controller direct-script startup binding mismatch")
-    require(isinstance(sources, list) and len(sources) == 4,
-            "malformed controller local-source closure")
     expected_bindings = {
         "cakeml_artifact_provenance.py":
             "compiled-from-captured-source-bytes",
         "flyspeck_stratum_plan.py": "compiled-from-captured-source-bytes",
         "flyspeck_stratum_runtime.py":
             "startup-captured-after-initial-compilation",
+        "reference_protocol.py": "compiled-from-captured-source-bytes",
         "runtime_lock.py": "compiled-from-captured-source-bytes",
     }
+    require(isinstance(sources, list) and
+            len(sources) == len(expected_bindings),
+            "malformed controller local-source closure")
     require({item.get("label") for item in sources} == set(expected_bindings),
             "unexpected retained controller source set")
     commit_binding = controller["commit_binding"]
@@ -2037,8 +2022,8 @@ def _run_attempt_impl(
             prepared["actions"], boundary_id, nonce, theorem_names,
         )
         fingerprints = parse_fingerprints(
-            log_path.read_text(encoding="utf-8", errors="replace"),
-            theorem_names, runtime_candle_root / FINGERPRINT_RELATIVE,
+            log_path, theorem_names,
+            runtime_candle_root / FINGERPRINT_RELATIVE,
         )
     except Exception as error:
         validation_error = f"{type(error).__name__}: {error}"
