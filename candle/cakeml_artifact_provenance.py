@@ -3430,6 +3430,14 @@ def run_bootstrap(
         require(received_signal is None,
                 "bootstrap signal arrived during preflight")
         log_path = Path(preflight["launch"]["log_path"])
+        # The transition validator requires every externally visible output
+        # receipt, including the log, to remain absent until it has rechecked
+        # the published preflight against the still-live inputs and preimages.
+        prepare_bootstrap_output(
+            candle_root, cakeml_root, hol_root, preflight,
+        )
+        require(received_signal is None,
+                "bootstrap signal arrived during output preparation")
         try:
             log_descriptor = os.open(
                 log_path,
@@ -3448,11 +3456,6 @@ def run_bootstrap(
                 "bootstrap log path changed during creation")
         _write_all(log_descriptor, bootstrap_log_preamble(preflight).encode())
         os.fsync(log_descriptor)
-        prepare_bootstrap_output(
-            candle_root, cakeml_root, hol_root, preflight,
-        )
-        require(received_signal is None,
-                "bootstrap signal arrived during output preparation")
         child = subprocess.Popen(
             preflight["launch"]["time_argv"],
             cwd=preflight["launch"]["cwd"],

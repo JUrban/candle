@@ -823,13 +823,17 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
                     "log_path": str(log),
                 },
             }
+            def prepare_before_log(*_arguments):
+                self.assertFalse(log.exists())
+
             with mock.patch.object(
                 subject, "bootstrap_controller_environment",
                 return_value={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
             ), mock.patch.object(
                 subject, "record_bootstrap_preflight", return_value=fake,
             ), mock.patch.object(
-                subject, "prepare_bootstrap_output", return_value=None,
+                subject, "prepare_bootstrap_output",
+                side_effect=prepare_before_log,
             ), mock.patch.object(subject, "record_bootstrap") as final_recorder:
                 with self.assertRaisesRegex(
                     subject.ProvenanceError, "exited with status 1",
