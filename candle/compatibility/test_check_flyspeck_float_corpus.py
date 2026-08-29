@@ -136,6 +136,7 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         })
         self.assertEqual(set(observed), {
             "cakeml_artifact_provenance.py",
+            "cakeml_bootstrap_transition.py",
             "check_flyspeck_float_completeness.py",
             "check_flyspeck_float_corpus.py",
             "flyspeck_float_corpus.py",
@@ -143,6 +144,7 @@ class CompiledFlyspeckFloatCorpusTests(unittest.TestCase):
         })
         for module in (
             checker.cakeml_artifact_provenance,
+            checker.cakeml_bootstrap_transition,
             checker.check_flyspeck_float_completeness,
             checker.flyspeck_float_corpus,
             checker.runtime_lock,

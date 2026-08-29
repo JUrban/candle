@@ -59,6 +59,9 @@ flyspeck_float_corpus = _load_local_source(
 cakeml_artifact_provenance = _load_local_source(
     "cakeml_artifact_provenance", HERE.parent / "cakeml_artifact_provenance.py"
 )
+cakeml_bootstrap_transition = _load_local_source(
+    "cakeml_bootstrap_transition", HERE.parent / "cakeml_bootstrap_transition.py"
+)
 runtime_lock = _load_local_source(
     "runtime_lock", HERE.parent / "runtime_lock.py"
 )
@@ -346,6 +349,7 @@ def local_python_source_records(
     flyspeck_float_corpus.require(
         set(records) == {
             "cakeml_artifact_provenance.py",
+            "cakeml_bootstrap_transition.py",
             "check_flyspeck_float_completeness.py",
             "check_flyspeck_float_corpus.py",
             "flyspeck_float_corpus.py",
@@ -359,6 +363,7 @@ def local_python_source_records(
 def local_python_modules() -> tuple[types.ModuleType, ...]:
     return (
         cakeml_artifact_provenance,
+        cakeml_bootstrap_transition,
         check_flyspeck_float_completeness,
         flyspeck_float_corpus,
         runtime_lock,
@@ -590,7 +595,7 @@ def check_candle(
         launcher.is_file() and not launcher.is_symlink(),
         f"missing ordinary Candle launcher: {launcher}",
     )
-    linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+    linked = cakeml_bootstrap_transition.validate_linked_record(candle_root)
     runtime_env = cakeml_artifact_provenance.runtime_environment()
     source_text = candle_source(payload)
     validate_generated_source(payload, source_text)
@@ -949,7 +954,7 @@ def check_candle(
     transcript_path.chmod(0o444)
 
     try:
-        post_linked = cakeml_artifact_provenance.validate_linked_record(candle_root)
+        post_linked = cakeml_bootstrap_transition.validate_linked_record(candle_root)
         flyspeck_float_corpus.require(
             post_linked == linked, "linked provenance changed during corpus gate",
         )
