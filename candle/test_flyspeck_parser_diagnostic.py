@@ -4,8 +4,11 @@ import copy
 import importlib.util
 import json
 import os
+import resource
+import stat
 import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -269,15 +272,95 @@ class ParserDiagnosticTests(unittest.TestCase):
     def test_capability_mismatch_stops_at_empty_handshake(self) -> None:
         response = subprocess.CompletedProcess([], 0, b"generic compiler\n", b"")
         sentinel = object()
-        with mock.patch.object(subject.subprocess, "run", return_value=response) as invoked:
-            with self.assertRaisesRegex(subject.ContractError, "capability mismatch"):
-                subject.capability_handshake(
-                    Path("/fake/cake"), 1, subject.EXECUTION_ENVIRONMENT, sentinel,
-                )
+        with tempfile.TemporaryDirectory() as directory:
+            io_root = Path(directory)
+            io_root.chmod(subject.PRIVATE_IO_MODE)
+            with mock.patch.object(
+                subject, "run_child_capped", return_value=response,
+            ) as invoked:
+                with self.assertRaisesRegex(subject.ContractError, "capability mismatch"):
+                    subject.capability_handshake(
+                        Path("/fake/cake"), 1, subject.EXECUTION_ENVIRONMENT,
+                        sentinel, io_root, 1024,
+                    )
         self.assertEqual(invoked.call_count, 1)
-        self.assertEqual(invoked.call_args.kwargs["input"], b"")
-        self.assertIs(invoked.call_args.kwargs["preexec_fn"], sentinel)
         self.assertEqual(invoked.call_args.args[0][-1], subject.CAPABILITY_ARGUMENT)
+        self.assertEqual(invoked.call_args.args[1], b"")
+        self.assertIs(invoked.call_args.args[5], sentinel)
+
+    def test_real_over_cap_subprocess_is_file_bounded_and_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            io_root = root / "io"
+            io_root.mkdir(mode=subject.PRIVATE_IO_MODE)
+            emitter = root / "emitter.py"
+            emitter.write_text(
+                "#!/usr/bin/python3\n"
+                "import os\n"
+                "while True:\n"
+                "    os.write(1, b'x' * 4096)\n",
+                encoding="utf-8",
+            )
+            emitter.chmod(0o755)
+
+            def limit_output() -> None:
+                resource.setrlimit(resource.RLIMIT_FSIZE, (1024, 1024))
+                resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+
+            with self.assertRaisesRegex(
+                subject.ContractError, "capability command failed",
+            ):
+                subject.capability_handshake(
+                    emitter, 5, subject.EXECUTION_ENVIRONMENT,
+                    limit_output, io_root, 1024,
+                )
+            self.assertEqual((io_root / "capability.stdout").stat().st_size, 1024)
+            self.assertLessEqual(
+                (io_root / "capability.stderr").stat().st_size, 1024,
+            )
+            self.assertEqual(
+                stat.S_IMODE((io_root / "capability.stdout").stat().st_mode),
+                subject.PRIVATE_IO_FILE_MODE,
+            )
+
+    def test_timeout_kills_spawned_process_group_descendant(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            io_root = root / "io"
+            io_root.mkdir(mode=subject.PRIVATE_IO_MODE)
+            child_pid_path = root / "child.pid"
+            marker = root / "escaped.marker"
+            program = root / "process-tree.py"
+            program.write_text(
+                "#!/usr/bin/python3\n"
+                "import os, signal, sys, time\n"
+                "child = os.fork()\n"
+                "if child == 0:\n"
+                "    signal.signal(signal.SIGTERM, signal.SIG_IGN)\n"
+                "    time.sleep(10)\n"
+                "    open(sys.argv[2], 'wb').write(b'escaped')\n"
+                "    os._exit(0)\n"
+                "open(sys.argv[1], 'w').write(str(child))\n"
+                "signal.signal(signal.SIGTERM, signal.SIG_IGN)\n"
+                "time.sleep(10)\n",
+                encoding="utf-8",
+            )
+            program.chmod(0o755)
+            with self.assertRaises(subprocess.TimeoutExpired):
+                subject.run_child_capped(
+                    [str(program), str(child_pid_path), str(marker)], b"",
+                    root, 1, subject.EXECUTION_ENVIRONMENT, None,
+                    io_root, "timeout-tree", 1024,
+                )
+            child_pid = int(child_pid_path.read_text())
+            for _attempt in range(20):
+                status = Path(f"/proc/{child_pid}/stat")
+                if not status.exists() or status.read_text().split()[2] == "Z":
+                    break
+                time.sleep(0.05)
+            else:
+                self.fail("timed-out parser descendant remained runnable")
+            self.assertFalse(marker.exists())
 
     def test_unsupported_plan_launches_no_process(self) -> None:
         plan = {"unsupported_count": 1}
@@ -285,7 +368,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(subject.ContractError, "unsupported actions"):
                 subject.run_runtime(
                     Path("/fake/cake"), Path("/fake/plan"), plan, 1,
-                    subject.EXECUTION_ENVIRONMENT, None,
+                    subject.EXECUTION_ENVIRONMENT, None, Path("/fake/io"), 1024,
                 )
         handshake.assert_not_called()
 
@@ -463,6 +546,55 @@ class ParserDiagnosticTests(unittest.TestCase):
                     subject._load_exact_source_module(module_name, second, source)
             finally:
                 subject.sys.modules.pop(module_name, None)
+
+    def test_durable_snapshot_closed_inventory_rejects_omission_and_tamper(self) -> None:
+        files = {
+            "snapshot/plan/plan.json": b"plan\n",
+            "snapshot/linked/outputs/cake": b"runtime\n",
+        }
+        inventory = subject.snapshot_inventory(files)
+        for mutation in ("omission", "tamper"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / "result"
+                root.mkdir()
+                subject._write_tree(
+                    root, files, subject.RESULT_ROOT_MODE, subject.RESULT_FILE_MODE,
+                )
+                subject.validate_snapshot_tree(root, inventory)
+                target = root / "snapshot/linked/outputs/cake"
+                if mutation == "omission":
+                    target.parent.chmod(0o755)
+                    target.unlink()
+                    target.parent.chmod(subject.RESULT_ROOT_MODE)
+                    expected = "inventory is incomplete"
+                else:
+                    target.chmod(0o644)
+                    target.write_bytes(b"tampered\n")
+                    target.chmod(subject.RESULT_FILE_MODE)
+                    expected = "mismatch"
+                try:
+                    with self.assertRaisesRegex(subject.ContractError, expected):
+                        subject.validate_snapshot_tree(root, inventory)
+                finally:
+                    self.make_tree_removable(root)
+
+    def test_streamed_snapshot_copy_is_not_a_hardlink(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            source.write_bytes(b"large-output-placeholder\n")
+            staging = root / "staging"
+            staging.mkdir()
+            expected = subject.bytes_record(source.read_bytes())
+            record = subject.copy_snapshot_file(
+                source, staging, "snapshot/linked/outputs/cake",
+                expected, "test linked runtime",
+            )
+            destination = staging / record["path"]
+            self.assertNotEqual(source.stat().st_ino, destination.stat().st_ino)
+            self.assertEqual(record, subject.bytes_record(
+                source.read_bytes(), "snapshot/linked/outputs/cake",
+            ))
 
     def test_executing_controller_bytes_must_match_authenticated_blob(self) -> None:
         candle_head = subprocess.run(

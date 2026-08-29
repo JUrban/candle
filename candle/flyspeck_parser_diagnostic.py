@@ -61,6 +61,9 @@ import hashlib
 import json
 import os
 import re
+import select
+import shutil
+import signal
 import stat
 import subprocess
 import tempfile
@@ -98,6 +101,8 @@ PLAN_ROOT_MODE = 0o555
 PLAN_FILE_MODE = 0o444
 RESULT_ROOT_MODE = 0o555
 RESULT_FILE_MODE = 0o444
+PRIVATE_IO_MODE = 0o700
+PRIVATE_IO_FILE_MODE = 0o600
 AT_FDCWD = -100
 RENAME_NOREPLACE = 1
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
@@ -221,6 +226,31 @@ def validate_file(path: Path, expected: dict[str, Any], label: str) -> bytes:
             f"{label} MD5 mismatch",
         )
     return data
+
+
+def validate_file_record(
+    path: Path, expected: dict[str, Any], label: str,
+    relative: str | None = None,
+) -> dict[str, Any]:
+    """Validate an ordinary file without materializing its bytes in memory."""
+    try:
+        observed_status = path.lstat()
+    except OSError as error:
+        raise ContractError(f"missing {label}: {path}: {error}") from error
+    require(stat.S_ISREG(observed_status.st_mode),
+            f"{label} is not an ordinary file: {path}")
+    observed = file_record(path, relative)
+    for field in ("bytes", "sha256", "md5"):
+        if field in expected:
+            if field == "md5" and field not in observed:
+                digest = hashlib.md5(usedforsecurity=False)
+                with path.open("rb") as source:
+                    while block := source.read(CHUNK_BYTES):
+                        digest.update(block)
+                observed[field] = digest.hexdigest()
+            require(observed.get(field) == expected[field],
+                    f"{label} {field} mismatch")
+    return observed
 
 
 def resolve_without_symlinks(path: Path, label: str) -> Path:
@@ -659,7 +689,11 @@ def build_plan(
         "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
         "pilot": {
             "path": PILOT_RELATIVE.as_posix(),
-            "sha256": canonical_sha256(pilot),
+            "canonical_sha256": canonical_sha256(pilot),
+            "file": bytes_record(
+                (candle_root / PILOT_RELATIVE).read_bytes(),
+                PILOT_RELATIVE.as_posix(),
+            ),
             "selection": pilot["selection"],
         },
         "parser_runtime_protocol": {
@@ -1133,27 +1167,143 @@ def validate_linked_runtime(
     return linked, runtime
 
 
+def _wait_capped_process_group(
+    process: subprocess.Popen[bytes], timeout_seconds: int,
+) -> int:
+    """Wait without reaping the session leader, then kill any descendants."""
+    try:
+        pidfd = os.pidfd_open(process.pid, 0)
+    except (AttributeError, OSError) as error:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+        raise ContractError("pidfd supervision is required for parser children") from error
+    try:
+        poller = select.poll()
+        poller.register(pidfd, select.POLLIN)
+        completed = bool(poller.poll(timeout_seconds * 1000))
+        if not completed:
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            poller.poll(1000)
+        # The leader has not been reaped, so its PID cannot be reused here.
+        # SIGKILL therefore reaches every remaining member of its fresh session
+        # without risking an unrelated process group.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        return_code = process.wait()
+        if not completed:
+            raise subprocess.TimeoutExpired(process.args, timeout_seconds)
+        return return_code
+    finally:
+        os.close(pidfd)
+
+
+def _fresh_private_file(path: Path, data: bytes | None = None) -> int:
+    flags = (
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW |
+        getattr(os, "O_CLOEXEC", 0)
+    )
+    descriptor = os.open(path, flags, PRIVATE_IO_FILE_MODE)
+    os.fchmod(descriptor, PRIVATE_IO_FILE_MODE)
+    if data is None:
+        return descriptor
+    try:
+        offset = 0
+        while offset < len(data):
+            offset += os.write(descriptor, data[offset:])
+    finally:
+        os.close(descriptor)
+    return -1
+
+
+def run_child_capped(
+    command: list[str], input_bytes: bytes, cwd: Path, timeout_seconds: int,
+    environment: dict[str, str], preexec_fn: Any, io_root: Path, stem: str,
+    max_output_bytes: int,
+) -> subprocess.CompletedProcess[bytes]:
+    """Run one fresh session with RLIMIT_FSIZE-backed ordinary-file capture."""
+    require(re.fullmatch(r"[a-z0-9-]+", stem) is not None,
+            "unsafe private parser I/O stem")
+    observed_root = io_root.lstat()
+    require(stat.S_ISDIR(observed_root.st_mode) and
+            stat.S_IMODE(observed_root.st_mode) == PRIVATE_IO_MODE,
+            "parser private I/O root is not an exact mode-0700 directory")
+    require(max_output_bytes > 0, "parser output cap must be positive")
+    stdin_path = io_root / f"{stem}.stdin"
+    stdout_path = io_root / f"{stem}.stdout"
+    stderr_path = io_root / f"{stem}.stderr"
+    _fresh_private_file(stdin_path, input_bytes)
+    stdin_fd = os.open(
+        stdin_path,
+        os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0),
+    )
+    stdout_fd = _fresh_private_file(stdout_path)
+    stderr_fd = _fresh_private_file(stderr_path)
+    process = None
+    try:
+        process = subprocess.Popen(
+            command, stdin=stdin_fd, stdout=stdout_fd, stderr=stderr_fd,
+            env=environment, cwd=cwd, preexec_fn=preexec_fn,
+            start_new_session=True,
+        )
+    finally:
+        os.close(stdin_fd)
+        os.close(stdout_fd)
+        os.close(stderr_fd)
+    require(process is not None, "parser child did not start")
+    try:
+        return_code = _wait_capped_process_group(process, timeout_seconds)
+    except BaseException:
+        if process.poll() is None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.wait()
+        raise
+    stdout_size = stdout_path.lstat().st_size
+    stderr_size = stderr_path.lstat().st_size
+    require(stdout_size <= max_output_bytes and stderr_size <= max_output_bytes,
+            "parser child output exceeded its effective file cap")
+    stdout = _read_stable_source(stdout_path)
+    stderr = _read_stable_source(stderr_path)
+    require(len(stdout) == stdout_size and len(stderr) == stderr_size,
+            "parser child output size changed during capped capture")
+    return subprocess.CompletedProcess(command, return_code, stdout, stderr)
+
+
 def capability_handshake(
     runtime: Path, timeout_seconds: int, environment: dict[str, str],
-    preexec_fn: Any,
-) -> dict[str, Any]:
-    result = subprocess.run(
-        [str(runtime), CAPABILITY_ARGUMENT], input=b"",
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        env=environment, cwd=runtime.parent.parent.parent,
-        timeout=timeout_seconds, preexec_fn=preexec_fn,
+    preexec_fn: Any, io_root: Path, max_output_bytes: int,
+) -> tuple[dict[str, Any], dict[str, bytes]]:
+    result = run_child_capped(
+        [str(runtime), CAPABILITY_ARGUMENT], b"",
+        runtime.parent.parent.parent, timeout_seconds, environment,
+        preexec_fn, io_root, "capability", max_output_bytes,
     )
+    stdout_name = "capability.stdout"
+    stderr_name = "capability.stderr"
     record = {
         "command": [RUNTIME_RELATIVE.as_posix(), CAPABILITY_ARGUMENT],
         "exit_code": result.returncode,
         "stdin": bytes_record(b""),
-        "stdout": bytes_record(result.stdout),
-        "stderr": bytes_record(result.stderr),
+        "stdout": bytes_record(result.stdout, stdout_name),
+        "stderr": bytes_record(result.stderr, stderr_name),
     }
     require(result.returncode == 0, "parser runtime capability command failed")
     require(result.stdout == CAPABILITY_LINE, "parser runtime capability mismatch")
     require(result.stderr == b"", "parser runtime capability wrote stderr")
-    return record
+    return record, {
+        stdout_name: result.stdout,
+        stderr_name: result.stderr,
+    }
 
 
 def parse_protocol_result(nonce: str, result: subprocess.CompletedProcess[bytes]) -> str:
@@ -1182,15 +1332,16 @@ def parse_protocol_result(nonce: str, result: subprocess.CompletedProcess[bytes]
 
 def run_runtime(
     runtime: Path, plan_root: Path, plan: dict[str, Any], timeout_seconds: int,
-    environment: dict[str, str], preexec_fn: Any,
+    environment: dict[str, str], preexec_fn: Any, io_root: Path,
+    max_output_bytes: int,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(plan.get("unsupported_count") == 0,
             "plan contains unsupported actions; no parser process launched")
-    capability = capability_handshake(
+    capability, files = capability_handshake(
         runtime, timeout_seconds, environment, preexec_fn,
+        io_root, max_output_bytes,
     )
     attempts = []
-    files: dict[str, bytes] = {}
     for entry in plan["inputs"]:
         nonce = os.urandom(32).hex()
         prepared = entry["prepared_input"]
@@ -1198,11 +1349,11 @@ def run_runtime(
             plan_root / prepared["path"], prepared,
             f"prepared parser input {entry['index']}",
         )
-        result = subprocess.run(
-            [str(runtime), RUN_ARGUMENT, nonce], input=source,
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            env=environment, cwd=runtime.parent.parent.parent,
-            timeout=timeout_seconds, preexec_fn=preexec_fn,
+        result = run_child_capped(
+            [str(runtime), RUN_ARGUMENT, nonce], source,
+            runtime.parent.parent.parent, timeout_seconds, environment,
+            preexec_fn, io_root, f"attempt-{entry['index']:03d}",
+            max_output_bytes,
         )
         status = parse_protocol_result(nonce, result)
         stdout_name = f"attempts/{entry['index']:03d}.stdout"
@@ -1227,13 +1378,110 @@ def run_runtime(
     }, files
 
 
-def snapshot_inventory(files: dict[str, bytes]) -> dict[str, Any]:
+def snapshot_inventory(
+    files: dict[str, bytes], copied_records: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     records = [bytes_record(data, relative) for relative, data in sorted(files.items())]
+    records.extend(copied_records or [])
+    records.sort(key=lambda record: record["path"])
+    paths = [record["path"] for record in records]
+    require(len(paths) == len(set(paths)), "duplicate durable snapshot path")
     return {
+        "schema": 1,
+        "kind": "candle-parser-diagnostic-durable-snapshot",
         "file_count": len(records),
         "ordered_file_sha256": canonical_sha256(records),
+        "closed_file_inventory": True,
         "files": records,
     }
+
+
+def copy_snapshot_file(
+    source: Path, staging_root: Path, relative_value: str,
+    expected: dict[str, Any], label: str,
+) -> dict[str, Any]:
+    """Stream-copy one exact ordinary file; mutable hardlinks are forbidden."""
+    relative = safe_relative_path(relative_value, "durable snapshot")
+    destination = staging_root / relative
+    require(not os.path.lexists(destination),
+            f"durable snapshot destination collision: {relative}")
+    validate_file_record(source, expected, label)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(source, destination, follow_symlinks=False)
+    destination.chmod(RESULT_FILE_MODE)
+    observed = validate_file_record(
+        destination, expected, f"copied {label}", relative.as_posix(),
+    )
+    validate_file_record(source, expected, f"post-copy {label}")
+    return observed
+
+
+def validate_snapshot_tree(
+    result_root: Path, inventory: dict[str, Any],
+) -> None:
+    """Rehash a closed, ordinary-file-only durable snapshot inventory."""
+    require(set(inventory) == {
+        "schema", "kind", "file_count", "ordered_file_sha256",
+        "closed_file_inventory", "files",
+    } and inventory.get("schema") == 1 and
+            inventory.get("kind") ==
+            "candle-parser-diagnostic-durable-snapshot" and
+            inventory.get("closed_file_inventory") is True,
+            "snapshot inventory is not closed")
+    records = inventory.get("files")
+    require(isinstance(records, list) and
+            inventory.get("file_count") == len(records) and
+            inventory.get("ordered_file_sha256") == canonical_sha256(records),
+            "malformed durable snapshot inventory")
+    expected: dict[str, dict[str, Any]] = {}
+    expected_directories = {Path("snapshot")}
+    for record in records:
+        require(isinstance(record, dict) and set(record) == {
+            "path", "bytes", "sha256",
+        }, "malformed durable snapshot file record")
+        relative = safe_relative_path(record["path"], "snapshot inventory")
+        require(relative.parts and relative.parts[0] == "snapshot",
+                "snapshot inventory path is outside snapshot tree")
+        require(relative.as_posix() not in expected,
+                "duplicate snapshot inventory record")
+        expected[relative.as_posix()] = record
+        expected_directories.update(
+            parent for parent in relative.parents if parent != Path(".")
+        )
+    snapshot_root = result_root / "snapshot"
+    snapshot_status = snapshot_root.lstat()
+    require(stat.S_ISDIR(snapshot_status.st_mode) and
+            stat.S_IMODE(snapshot_status.st_mode) == RESULT_ROOT_MODE,
+            "durable snapshot root is not an exact read-only directory")
+    observed_paths = set()
+    observed_directories = {Path("snapshot")}
+    for current, directory_names, file_names in os.walk(
+        snapshot_root, topdown=True, followlinks=False,
+    ):
+        current_path = Path(current)
+        for name in directory_names:
+            path = current_path / name
+            status = path.lstat()
+            require(stat.S_ISDIR(status.st_mode),
+                    f"non-directory in durable snapshot: {path}")
+            require(stat.S_IMODE(status.st_mode) == RESULT_ROOT_MODE,
+                    f"writable durable snapshot directory: {path}")
+            observed_directories.add(path.relative_to(result_root))
+        for name in file_names:
+            path = current_path / name
+            relative = path.relative_to(result_root).as_posix()
+            require(relative in expected,
+                    f"unrecorded durable snapshot file: {relative}")
+            require(stat.S_IMODE(path.lstat().st_mode) == RESULT_FILE_MODE,
+                    f"writable durable snapshot file: {relative}")
+            validate_file_record(
+                path, expected[relative], f"durable snapshot {relative}",
+            )
+            observed_paths.add(relative)
+    require(observed_paths == set(expected),
+            "durable snapshot file inventory is incomplete")
+    require(observed_directories == expected_directories,
+            "durable snapshot directory inventory is not closed")
 
 
 def capture_authority_snapshot(
@@ -1259,6 +1507,136 @@ def capture_authority_snapshot(
     return captured
 
 
+def parser_process_preexec(
+    policy: Any, cpu_seconds: int, address_space_bytes: int,
+    output_file_bytes: int,
+) -> Any:
+    """Extend the authenticated direct-runner limits with a no-fork policy."""
+    inherited = policy.process_limit_preexec(
+        cpu_seconds, address_space_bytes, output_file_bytes,
+    )
+
+    def install() -> None:
+        inherited()
+        policy.resource.setrlimit(policy.resource.RLIMIT_NPROC, (0, 0))
+        policy.resource.setrlimit(policy.resource.RLIMIT_CORE, (0, 0))
+
+    return install
+
+
+def durable_snapshot_sources(
+    candle_root: Path, plan: dict[str, Any], linked: dict[str, Any],
+    controller_execution: dict[str, Any], policy: Any,
+) -> tuple[dict[str, bytes], list[tuple[Path, str, dict[str, Any], str]], str | None]:
+    """Close the durable evidence set over source, link, and ELF authorities."""
+    byte_files: dict[str, bytes] = {}
+    manifest_data = _read_stable_source(candle_root / MANIFEST_RELATIVE)
+    require(bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()) ==
+            plan["manifest"], "manifest changed before durable snapshot")
+    pilot_data = _read_stable_source(candle_root / PILOT_RELATIVE)
+    require(bytes_record(pilot_data, PILOT_RELATIVE.as_posix()) ==
+            plan["pilot"]["file"], "pilot changed before durable snapshot")
+    byte_files["snapshot/authority/candle/flyspeck_manifest.json"] = manifest_data
+    byte_files["snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"] = pilot_data
+
+    copies: list[tuple[Path, str, dict[str, Any], str]] = []
+    outputs = linked.get("outputs")
+    require(isinstance(outputs, dict), "linked record lacks output closure")
+    expected_outputs = set(policy.cakeml_artifact_provenance.LINKED_OUTPUTS)
+    transition_relative = None
+    if linked.get("schema") == policy.cakeml_bootstrap_transition.TRANSITION_LINKED_SCHEMA:
+        expected_outputs.add(
+            policy.cakeml_bootstrap_transition.LINKED_TRANSITION_RECORD,
+        )
+        transition_relative = (
+            "snapshot/linked/outputs/" +
+            policy.cakeml_bootstrap_transition.LINKED_TRANSITION_RECORD
+        )
+    require(set(outputs) == expected_outputs,
+            "linked output closure differs from authenticated schema")
+    build_dir = candle_root / "candle/build"
+    for name, expected in sorted(outputs.items()):
+        require(Path(name).name == name and name not in {"", ".", ".."},
+                f"unsafe linked output name: {name}")
+        copies.append((
+            build_dir / name, f"snapshot/linked/outputs/{name}", expected,
+            f"linked output {name}",
+        ))
+
+    patch = linked.get("cake_patch")
+    patch_derivation = linked.get("cake_patch_derivation")
+    native_derivation = linked.get("native_link_derivation")
+    require(isinstance(patch, dict) and isinstance(patch_derivation, dict) and
+            patch_derivation.get("patch") == patch and
+            patch_derivation.get("preimage") == outputs.get("cake.S.bootstrap") and
+            patch_derivation.get("postimage") == outputs.get("cake.S"),
+            "Cake patch derivation does not bind archived inputs")
+    require(isinstance(native_derivation, dict) and
+            native_derivation.get("inputs") == {
+                name: outputs[name]
+                for name in policy.cakeml_artifact_provenance.NATIVE_LINK_INPUTS
+            } and
+            native_derivation.get("installed_elf") == outputs.get("cake") and
+            native_derivation.get("candidate_elf") == outputs.get("cake"),
+            "native-link derivation does not bind archived inputs")
+    copies.append((
+        candle_root / "candle/cake.S.patch",
+        "snapshot/linked/derivation/cake.S.patch", patch,
+        "CakeML assembly patch",
+    ))
+
+    runtime_closure = linked.get("runtime_elf_closure")
+    closure_files = runtime_closure.get("files") if isinstance(runtime_closure, dict) else None
+    require(isinstance(closure_files, dict) and closure_files,
+            "linked runtime ELF closure has no files")
+    for index, (path_string, expected) in enumerate(sorted(closure_files.items())):
+        source = Path(path_string)
+        require(source.is_absolute(), "runtime ELF closure path is not absolute")
+        copies.append((
+            source,
+            f"snapshot/linked/runtime-elf/{index:03d}-{expected['sha256']}-{source.name}",
+            expected, f"runtime ELF object {path_string}",
+        ))
+
+    python_runtime = controller_execution["python_runtime"]
+    python_executable = python_runtime["executable"]
+    copies.append((
+        Path(python_executable["path"]),
+        f"snapshot/controller/python/{python_executable['sha256']}-{Path(python_executable['path']).name}",
+        python_executable, "controller Python executable",
+    ))
+    for index, (path_string, expected) in enumerate(sorted(
+        python_runtime["elf_closure"]["files"].items(),
+    )):
+        source = Path(path_string)
+        copies.append((
+            source,
+            f"snapshot/controller/python-elf/{index:03d}-{expected['sha256']}-{source.name}",
+            expected, f"controller Python ELF object {path_string}",
+        ))
+    for label, tool in sorted(controller_execution["host_tools"].items()):
+        source = Path(tool["resolved_path"])
+        copies.append((
+            source,
+            f"snapshot/controller/host-tools/{label}-{tool['sha256']}-{source.name}",
+            tool, f"controller host tool {label}",
+        ))
+
+    toolchain = native_derivation.get("toolchain", {}).get("tools", {})
+    require(isinstance(toolchain, dict) and toolchain,
+            "native-link toolchain closure is missing")
+    for label, tool in sorted(toolchain.items()):
+        require(isinstance(tool, dict) and isinstance(tool.get("file"), dict),
+                f"malformed native-link tool identity: {label}")
+        source = Path(tool["resolved_path"])
+        copies.append((
+            source,
+            f"snapshot/linked/native-tools/{label}-{tool['file']['sha256']}-{source.name}",
+            tool["file"], f"native-link tool {label}",
+        ))
+    return byte_files, copies, transition_relative
+
+
 def run(
     plan_root: Path,
     candle_root: Path,
@@ -1269,7 +1647,7 @@ def run(
     timeout_seconds: int,
     max_cpu_seconds: int,
     max_address_space_gib: int,
-    max_output_file_gib: int,
+    max_output_mib: int,
 ) -> dict[str, Any]:
     plan_root = resolve_without_symlinks(plan_root, "plan root")
     candle_root = resolve_without_symlinks(candle_root, "Candle root")
@@ -1287,8 +1665,8 @@ def run(
             "CPU-time limit must be between 1 and 172800 seconds")
     require(0 < max_address_space_gib <= 120,
             "address-space limit must be between 1 and 120 GiB")
-    require(0 < max_output_file_gib <= 16,
-            "output-file limit must be between 1 and 16 GiB")
+    require(0 < max_output_mib <= 16,
+            "per-stream output limit must be between 1 and 16 MiB")
 
     expected_plan, expected_inputs, expected_host, expected_plan_data = (
         reconstruct_plan_authority(
@@ -1305,10 +1683,12 @@ def run(
     require(controller_execution == expected_host["controller_execution"],
             "controller execution changed after plan reconstruction")
     environment = policy.cakeml_artifact_provenance.runtime_environment()
-    preexec_fn = policy.process_limit_preexec(
+    max_output_bytes = max_output_mib * 1024 * 1024
+    preexec_fn = parser_process_preexec(
+        policy,
         max_cpu_seconds,
         max_address_space_gib * 1024 * 1024 * 1024,
-        max_output_file_gib * 1024 * 1024 * 1024,
+        max_output_bytes,
     )
 
     runtime_lock_handle = policy.runtime_lock.acquire_build_lock(candle_root)
@@ -1319,9 +1699,15 @@ def run(
         require(decode_object(linked_bytes, "captured linked provenance") == linked,
                 "linked provenance bytes differ from validated object")
         runtime_before = file_record(runtime, RUNTIME_RELATIVE.as_posix())
-        runtime_result, files = run_runtime(
-            runtime, plan_root, plan, timeout_seconds, environment, preexec_fn,
-        )
+        with tempfile.TemporaryDirectory(
+            prefix=f".{output_root.name}.parser-io-", dir=output_root.parent,
+        ) as private_io_string:
+            private_io_root = Path(private_io_string)
+            private_io_root.chmod(PRIVATE_IO_MODE)
+            runtime_result, files = run_runtime(
+                runtime, plan_root, plan, timeout_seconds, environment,
+                preexec_fn, private_io_root, max_output_bytes,
+            )
 
         authority_snapshot = capture_authority_snapshot(candle_root, plan)
         snapshot_files = {
@@ -1337,20 +1723,14 @@ def run(
                 for relative, data in authority_snapshot.items()
             },
         }
-        transition_snapshot = None
-        if linked.get("schema") == policy.cakeml_bootstrap_transition.TRANSITION_LINKED_SCHEMA:
-            transition_path = candle_root / "candle/build/bootstrap-transition.json"
-            transition_bytes = _read_stable_source(transition_path)
-            transition_expected = linked.get("transition_record")
-            require(isinstance(transition_expected, dict),
-                    "schema-7 linked record lacks transition identity")
-            require(bytes_record(transition_bytes) == transition_expected,
-                    "schema-7 bootstrap transition evidence changed")
-            transition_relative = "snapshot/linked/bootstrap-transition.json"
-            snapshot_files[transition_relative] = transition_bytes
-            transition_snapshot = bytes_record(
-                transition_bytes, transition_relative,
+        durable_bytes, snapshot_sources, transition_relative = (
+            durable_snapshot_sources(
+                candle_root, plan, linked, controller_execution, policy,
             )
+        )
+        require(not set(snapshot_files).intersection(durable_bytes),
+                "durable snapshot byte-path collision")
+        snapshot_files.update(durable_bytes)
 
         linked_post, runtime_post = validate_linked_runtime(
             candle_root, plan, policy,
@@ -1365,9 +1745,27 @@ def run(
         require(collect_controller_execution(candle_root, policy) == controller_execution,
                 "controller execution changed during parser diagnostic")
 
-        inventory = snapshot_inventory(snapshot_files)
+        staging = Path(tempfile.mkdtemp(
+            prefix=f".{output_root.name}.pending-", dir=output_root.parent,
+        ))
+        copied_records = [
+            copy_snapshot_file(source, staging, relative, expected, label)
+            for source, relative, expected, label in snapshot_sources
+        ]
+        inventory = snapshot_inventory(snapshot_files, copied_records)
+        transition_snapshot = (
+            next(
+                record for record in inventory["files"]
+                if record["path"] == transition_relative
+            )
+            if transition_relative is not None else None
+        )
+        runtime_snapshot = next(
+            record for record in inventory["files"]
+            if record["path"] == "snapshot/linked/outputs/cake"
+        )
         receipt = {
-            "schema": 2,
+            "schema": 3,
             "kind": "candle-flyspeck-caml-parser-diagnostic-receipt",
             "claim": "parser-only diagnostic; categorically non-promotable",
             "promotion": plan["promotion"],
@@ -1385,24 +1783,26 @@ def run(
                 "timeout_seconds": timeout_seconds,
                 "cpu_seconds": max_cpu_seconds,
                 "address_space_bytes": max_address_space_gib * 1024 * 1024 * 1024,
-                "output_file_bytes": max_output_file_gib * 1024 * 1024 * 1024,
+                "effective_stdout_file_bytes": max_output_bytes,
+                "effective_stderr_file_bytes": max_output_bytes,
+                "capture": "fresh-private-ordinary-files-rlimit-fsize",
+                "child_process_creation_rlimit_nproc": 0,
+                "core_file_bytes": 0,
             },
             "linked_provenance": bytes_record(
                 linked_bytes, "snapshot/linked/cakeml-build-provenance.json",
             ),
             "linked_provenance_schema": linked.get("schema"),
             "bootstrap_transition": transition_snapshot,
-            "runtime": runtime_before,
+            "runtime": runtime_snapshot,
             "snapshot": inventory,
             **runtime_result,
             "limitations": plan["limitations"],
         }
         files.update(snapshot_files)
         files[RESULT_NAME] = json_bytes(receipt)
-        staging = Path(tempfile.mkdtemp(
-            prefix=f".{output_root.name}.pending-", dir=output_root.parent,
-        ))
         _write_tree(staging, files, RESULT_ROOT_MODE, RESULT_FILE_MODE)
+        validate_snapshot_tree(staging, inventory)
         # One final in-lock validation precedes publication of the captured receipt.
         linked_final, runtime_final = validate_linked_runtime(
             candle_root, plan, policy,
@@ -1410,8 +1810,15 @@ def run(
         require(linked_final == linked and runtime_final == runtime and
                 _read_stable_source(linked_path) == linked_bytes and
                 file_record(runtime_final, RUNTIME_RELATIVE.as_posix()) == runtime_before and
-                capture_authority_snapshot(candle_root, plan) == authority_snapshot,
+                capture_authority_snapshot(candle_root, plan) == authority_snapshot and
+                _read_stable_source(candle_root / MANIFEST_RELATIVE) ==
+                durable_bytes["snapshot/authority/candle/flyspeck_manifest.json"] and
+                _read_stable_source(candle_root / PILOT_RELATIVE) ==
+                durable_bytes[
+                    "snapshot/authority/candle/flyspeck_parser_diagnostic_pilot.json"
+                ],
                 "linked authority changed before receipt publication")
+        validate_snapshot_tree(staging, inventory)
         _rename_noreplace(staging, output_root)
         return receipt
     finally:
@@ -1439,7 +1846,7 @@ def main() -> None:
     runner.add_argument("--timeout-seconds", type=int, default=600)
     runner.add_argument("--max-cpu-seconds", type=int, default=600)
     runner.add_argument("--max-address-space-gib", type=int, default=16)
-    runner.add_argument("--max-output-file-gib", type=int, default=1)
+    runner.add_argument("--max-output-mib", type=int, default=1)
     arguments = parser.parse_args()
     require(dict(os.environ) == EXECUTION_ENVIRONMENT,
             "controller requires exact PATH=/usr/bin:/bin and LC_ALL=C environment")
@@ -1469,7 +1876,7 @@ def main() -> None:
         arguments.flyspeck_root, arguments.flyspeck_head,
         arguments.output_root, arguments.timeout_seconds,
         arguments.max_cpu_seconds, arguments.max_address_space_gib,
-        arguments.max_output_file_gib,
+        arguments.max_output_mib,
     )
     print(f"parser diagnostic {receipt['outcome']}: {receipt['attempt_count']} inputs")
 

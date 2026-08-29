@@ -88,7 +88,14 @@ or encoding is rejected.
 A generic compiler, old compiler, REPL, or protocol variation is rejected
 during the empty handshake before any corpus bytes are sent. Both the
 capability process and every parser process run with fixed environment and
-CPU, address-space, and output-file resource limits.
+CPU, address-space, process-count, core-file, and output-file resource limits.
+Stdout and stderr are never connected to unbounded controller pipes. Each goes
+to a fresh ordinary file below a private mode-0700 staging directory, with
+`RLIMIT_FSIZE` set to the recorded effective per-stream cap (1 MiB by default,
+configurable only from 1 through 16 MiB). Every child starts a fresh session;
+Linux pidfd supervision keeps the leader unreaped while the controller kills
+the entire process group on normal exit or timeout. The no-fork child limit is
+an additional defense against escaped descendants.
 
 The CakeML integration commit currently pinned by the manifest does **not**
 implement these two options. Therefore the exact blocking condition is:
@@ -201,7 +208,13 @@ from captured source bytes without import or bytecode lookup. It holds a shared
 lock on the authenticated `candle/build` inode across linked-provenance
 validation, the empty capability handshake, all parser attempts, postflight
 runtime validation, evidence capture, and result publication. A result embeds
-read-only snapshots of the exact plan and inputs, host receipt, linked
-provenance, controller/policy sources, and schema-7 transition record when
-applicable, plus their inventory hashes. None of these measures changes the
+read-only snapshots of the exact plan and inputs, manifest, pilot, host
+receipt, linked provenance, controller/policy sources, every `linked.outputs`
+member, the patch plus patch/native-link inputs, the CakeML runtime ELF
+closure, the controller Python executable/ELF closure and host tools, and the
+schema-7 transition record when applicable. Large linked objects are streamed
+into independent ordinary copies—never mutable hardlinks. A closed inventory
+is rehashed before publication, so an omitted, extra, symlinked, writable, or
+tampered snapshot member rejects the result. This can intentionally cost
+multiple GiB once a linked compiler exists. None of these measures changes the
 categorically non-promotable claim boundary.
