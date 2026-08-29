@@ -121,6 +121,11 @@ class Great100Schema4Test(unittest.TestCase):
             link.symlink_to(target)
             with self.assertRaisesRegex(ValueError, "ordinary file"):
                 regression._ordinary_file_record(link)
+            hardlink = root / "hardlink"
+            hardlink.hardlink_to(target)
+            with self.assertRaisesRegex(ValueError, "ordinary file"):
+                regression._ordinary_file_record(target)
+            hardlink.unlink()
             record = regression._ordinary_file_record(target)
             self.assertEqual(record["bytes"], 8)
             self.assertEqual(record["sha256"], hashlib.sha256(b"evidence").hexdigest())
@@ -203,6 +208,33 @@ class Great100Schema4Test(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "reused process nonce"):
                     regression._validate_top100_results(
                         results, tests, suite_nonce, contract)
+
+    def test_promotable_output_paths_are_new_canonical_and_unaliased(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            report = root / "run.json"
+            logs = root / "logs"
+            self.assertEqual(
+                regression._prepare_top100_evidence_paths(report, logs),
+                (report, logs))
+            self.assertTrue(logs.is_dir())
+            report.write_text("existing\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must not already exist"):
+                regression._prepare_top100_evidence_paths(report, logs)
+            report.unlink()
+            (logs / "old.log").write_text("old\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must be empty"):
+                regression._prepare_top100_evidence_paths(report, logs)
+            (logs / "old.log").unlink()
+            logs.rmdir()
+            alias = root / "alias"
+            alias.symlink_to(root, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "ordinary directory"):
+                regression._prepare_top100_evidence_paths(
+                    report, alias / "logs")
+            with self.assertRaisesRegex(ValueError, "must be absolute"):
+                regression._prepare_top100_evidence_paths(
+                    Path("relative.json"), Path("relative-logs"))
 
 
 if __name__ == "__main__":

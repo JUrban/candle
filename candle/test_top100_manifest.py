@@ -335,6 +335,11 @@ class Top100ManifestTest(unittest.TestCase):
                     artifact_sha256)
                 changed = root / approved_targets[0]["reference_runs"][0][
                     "artifacts"]["transcript"]["path"]
+                alias = changed.with_name(changed.name + "-hardlink")
+                alias.hardlink_to(changed)
+                with self.assertRaisesRegex(ValueError, "ordinary transcript"):
+                    top100_manifest._load_identity_approval(targets)
+                alias.unlink()
                 changed.write_bytes(changed.read_bytes() + b"mutation")
                 with self.assertRaisesRegex(ValueError, "changed transcript"):
                     top100_manifest._load_identity_approval(targets)

@@ -153,8 +153,11 @@ python3 -I candle/regression.py --top100 -j 1 \
   --log-dir /absolute/new/great100-run-logs
 ```
 
-The report path must not exist. The committed approval template is currently
-unapproved, so this command intentionally fails before starting Candle today.
+The absolute report path must not exist, and the absolute log directory must
+be new or empty, canonical, and outside the Candle tree. Retained inputs and
+transcripts must be ordinary single-link files; symlinks and hard-link aliases
+fail closed. The committed approval template is currently unapproved, so this
+command intentionally fails before starting Candle today.
 
 The controller rehashes the clean source/runtime contract before and after
 every process and rehashes each retained transcript again while writing the
