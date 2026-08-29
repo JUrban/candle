@@ -8,6 +8,20 @@
     "variable": "GREAT_100_THEOREMS"
   },
   "dependency_scan": "direct literal needs \"path\";; calls in load_files",
+  "inventory_contract": {
+    "schema": "candle-great100-inventory-contract-v1",
+    "sha256": "3021163dbf52b66cb8e8f733b5eb7c409ccd9f21b94e20d55cb3569388fb8d99",
+    "target_count": 65,
+    "covered_source_count": 66,
+    "theorem_request_count": 97
+  },
+  "identity_approval": {
+    "path": "candle/top100_identity_approval.json",
+    "sha256": "b1d3a5d183cb1427903de79482543743da7993ac24f020808c67515c75d57625",
+    "schema": "candle-s1-identity-approval-v1",
+    "approval_status": "unapproved",
+    "promotion_allowed": false
+  },
   "execution_contract": {
     "baseline": "hol.ml",
     "isolation": "fresh Candle process per target",
@@ -61,16 +75,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -100,16 +117,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -141,16 +161,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -184,16 +207,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -242,16 +268,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "not_reached",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "fail",
@@ -303,16 +332,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -363,16 +395,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -407,16 +442,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -449,16 +487,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -491,16 +532,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "not_reached",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "fail",
@@ -563,16 +607,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -604,16 +651,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -653,16 +703,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -704,16 +757,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "not_reached",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "fail",
@@ -763,16 +819,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -804,16 +863,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -856,16 +918,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "not_reached",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "fail",
@@ -920,16 +985,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -961,16 +1029,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1013,16 +1084,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1070,16 +1144,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1123,16 +1200,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1176,16 +1256,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1241,16 +1324,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "not_reached",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "fail",
@@ -1305,16 +1391,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1357,16 +1446,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1433,16 +1525,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1494,16 +1589,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1547,16 +1645,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1599,16 +1700,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1651,16 +1755,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1704,16 +1811,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": {
         "status": "pass",
@@ -1756,16 +1866,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -1799,16 +1912,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -1848,16 +1964,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -1970,16 +2089,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2019,16 +2141,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2058,16 +2183,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2099,16 +2227,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2140,16 +2271,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2181,16 +2315,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2223,16 +2360,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2264,16 +2404,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2306,16 +2449,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2347,16 +2493,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2396,16 +2545,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2439,16 +2591,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2485,16 +2640,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2527,16 +2685,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2570,16 +2731,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2614,16 +2778,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2655,16 +2822,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2702,16 +2872,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2750,16 +2923,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2789,16 +2965,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2838,16 +3017,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2880,16 +3062,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2923,16 +3108,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -2965,16 +3153,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3004,16 +3195,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3051,16 +3245,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3151,16 +3348,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3201,16 +3401,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3242,16 +3445,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     },
@@ -3292,16 +3498,19 @@
           }
         ],
         "identity_contract": {
+          "serializer_wire": "candle structural fingerprint v2",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
-          "assumptions": "canonical sorted global HOL axiom serializations"
+          "assumptions": "canonical sorted global HOL axiom serializations",
+          "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": null
       },
       "fingerprints": {
         "status": "missing",
         "theorems": null,
-        "assumptions": null
+        "assumptions": null,
+        "post_state": null
       },
       "baseline_observation": null
     }

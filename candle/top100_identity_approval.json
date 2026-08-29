@@ -1,0 +1,11 @@
+{
+  "schema": "candle-s1-identity-approval-v1",
+  "artifact_kind": "independently-reviewed-ocaml-reference-identities",
+  "approval_status": "unapproved",
+  "promotion_allowed": false,
+  "inventory_contract_sha256": null,
+  "serializer_sha256": null,
+  "reference_policy": null,
+  "review": null,
+  "targets": []
+}

@@ -3,7 +3,10 @@
 
 import json
 import re
+import tempfile
 import unittest
+from pathlib import Path
+from unittest import mock
 
 import top100_manifest
 
@@ -21,6 +24,8 @@ class Top100ManifestTest(unittest.TestCase):
     def test_actual_suite_shape_is_explicit(self):
         self.assertEqual(self.manifest["target_count"], 65)
         self.assertEqual(self.manifest["covered_source_count"], 66)
+        self.assertEqual(
+            self.manifest["inventory_contract"]["theorem_request_count"], 97)
         self.assertEqual(
             self.manifest["excluded_100_sources"],
             [{
@@ -46,6 +51,10 @@ class Top100ManifestTest(unittest.TestCase):
                           {"missing", "not_reached"})
             self.assertIsNone(target["fingerprints"]["theorems"])
             self.assertIsNone(target["fingerprints"]["assumptions"])
+            self.assertIsNone(target["fingerprints"]["post_state"])
+        approval = self.manifest["identity_approval"]
+        self.assertEqual(approval["approval_status"], "unapproved")
+        self.assertFalse(approval["promotion_allowed"])
 
     def test_all_named_results_resolve_and_manual_review_is_explicit(self):
         manual = {}
@@ -161,6 +170,7 @@ class Top100ManifestTest(unittest.TestCase):
                 "100/gcd", ["EGCD"], candidate)
 
         approved_shape = {
+            "approval_sha256": "5" * 64,
             "serializer_sha256": "0" * 64,
             "theorems": [{
                 "name": "EGCD",
@@ -171,11 +181,43 @@ class Top100ManifestTest(unittest.TestCase):
                 "hypothesis_count": 0,
                 "global_axiom_count": 3,
             }],
+            "post_state": {
+                "kernel_state_sha256": "6" * 64,
+                "type_constants_sha256": "7" * 64,
+                "type_constant_count": 1,
+                "term_constants_sha256": "8" * 64,
+                "term_constant_count": 2,
+                "definitions_sha256": "9" * 64,
+                "definition_count": 3,
+                "global_axioms_sha256": "4" * 64,
+                "global_axiom_count": 3,
+            },
         }
         self.assertIs(
             top100_manifest._validate_expected_identity_object(
                 "100/gcd", ["EGCD"], approved_shape),
             approved_shape)
+
+    def test_unapproved_artifact_is_exact_and_cannot_carry_identities(self):
+        targets = top100_manifest.build_manifest()["targets"]
+        original = json.loads(
+            top100_manifest.IDENTITY_APPROVAL.read_text(encoding="utf-8"))
+        original["targets"] = [{"self_approved": True}]
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "approval.json"
+            path.write_text(json.dumps(original), encoding="utf-8")
+            with mock.patch.object(top100_manifest, "IDENTITY_APPROVAL", path):
+                with self.assertRaisesRegex(ValueError, "promotable data"):
+                    top100_manifest._load_identity_approval(targets)
+
+    def test_duplicate_approval_json_key_fails_closed(self):
+        targets = top100_manifest.build_manifest()["targets"]
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "approval.json"
+            path.write_text('{"schema":"a","schema":"b"}', encoding="utf-8")
+            with mock.patch.object(top100_manifest, "IDENTITY_APPROVAL", path):
+                with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
+                    top100_manifest._load_identity_approval(targets)
 
 
 if __name__ == "__main__":

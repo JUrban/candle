@@ -54,7 +54,19 @@ let ABS = Kernel.ABS;;
 let BETA = Kernel.BETA;;
 let DEDUCT_ANTISYM_RULE = Kernel.DEDUCT_ANTISYM_RULE;;
 let new_specification = Kernel.new_specification;;
-let new_basic_definition = Kernel.new_basic_definition;;
+(* HOL Light exposes the primitive definition history through [definitions()].
+   Candle's verified kernel represents definition introduction through the
+   verified new_basic_definition operation but does not otherwise retain that
+   observational list.  Keep the same newest-first audit view in this source
+   wrapper; theorem construction remains exclusively in Kernel. *)
+let candle_basic_definitions = ref [];;
+
+let new_basic_definition tm =
+  let theorem = Kernel.new_basic_definition tm in
+  candle_basic_definitions := theorem::(!candle_basic_definitions);
+  theorem;;
+
+let definitions () = !candle_basic_definitions;;
 let INST_TYPE = Kernel.INST_TYPE;;
 let INST = Kernel.INST;;
 

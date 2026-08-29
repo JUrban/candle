@@ -1,5 +1,7 @@
-(* Structural S1 theorem identities. This deliberately does not use the HOL
-   pretty-printer: notation, margins and interface priorities are mutable. *)
+(* Structural S1 theorem and kernel-state identities. This deliberately does
+   not use the HOL pretty-printer: notation, margins and interface priorities
+   are mutable.  The full post-load state record covers the primitive type and
+   term-constant tables, primitive definitions and global axioms. *)
 
 let candle_s1_field s = string_of_int (String.length s) ^ ":" ^ s;;
 
@@ -74,15 +76,60 @@ let candle_s1_global_axioms () =
       (axioms()) in
   candle_s1_list (List.sort String.compare serialized);;
 
+let candle_s1_type_constants () =
+  let serialized =
+    List.map (fun (name,arity) ->
+      candle_s1_node "type-constant-declaration"
+        [name; string_of_int arity]) (types()) in
+  candle_s1_list (List.sort String.compare serialized);;
+
+let candle_s1_term_constants () =
+  let serialized =
+    List.map (fun (name,ty) ->
+      candle_s1_node "term-constant-declaration"
+        [name; candle_s1_type ty]) (constants()) in
+  candle_s1_list (List.sort String.compare serialized);;
+
+let candle_s1_definitions () =
+  let serialized =
+    List.map (fun theorem ->
+      let identity,_,_ = candle_s1_theorem_parts theorem in identity)
+      (definitions()) in
+  candle_s1_list (List.sort String.compare serialized);;
+
+let candle_s1_kernel_state_parts () =
+  let type_constants = candle_s1_type_constants ()
+  and term_constants = candle_s1_term_constants ()
+  and primitive_definitions = candle_s1_definitions ()
+  and global_axioms = candle_s1_global_axioms () in
+  let state = candle_s1_node "kernel-state"
+    [type_constants; term_constants; primitive_definitions; global_axioms] in
+  state,type_constants,term_constants,primitive_definitions,global_axioms;;
+
 let candle_s1_emit_fingerprint name theorem =
   let theorem_identity,hypothesis_identity,conclusion_identity =
     candle_s1_theorem_parts theorem in
   let axiom_identity = candle_s1_global_axioms () in
   print_endline
-    ("CANDLE_FINGERPRINT_V1\t" ^ candle_s1_hex name ^ "\t" ^
+    ("CANDLE_FINGERPRINT_V2\t" ^ candle_s1_hex name ^ "\t" ^
      candle_s1_hex theorem_identity ^ "\t" ^
      candle_s1_hex hypothesis_identity ^ "\t" ^
      candle_s1_hex conclusion_identity ^ "\t" ^
      candle_s1_hex axiom_identity ^ "\t" ^
      string_of_int (List.length (hyp theorem)) ^ "\t" ^
+     string_of_int (List.length (axioms())));;
+
+let candle_s1_emit_state_fingerprint () =
+  let state,type_constants,term_constants,primitive_definitions,global_axioms =
+    candle_s1_kernel_state_parts () in
+  print_endline
+    ("CANDLE_STATE_FINGERPRINT_V2\t" ^
+     candle_s1_hex state ^ "\t" ^
+     candle_s1_hex type_constants ^ "\t" ^
+     candle_s1_hex term_constants ^ "\t" ^
+     candle_s1_hex primitive_definitions ^ "\t" ^
+     candle_s1_hex global_axioms ^ "\t" ^
+     string_of_int (List.length (types())) ^ "\t" ^
+     string_of_int (List.length (constants())) ^ "\t" ^
+     string_of_int (List.length (definitions())) ^ "\t" ^
      string_of_int (List.length (axioms())));;
