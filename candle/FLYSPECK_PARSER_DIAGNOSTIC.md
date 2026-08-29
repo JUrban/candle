@@ -112,12 +112,11 @@ Linux pidfd supervision keeps the leader unreaped while the controller kills
 the entire process group on normal exit or timeout. The no-fork child limit is
 an additional defense against escaped descendants.
 
-The older CakeML integration commit currently pinned by the manifest does
-**not** implement these two options. Development commit
-`964406486a52e1a53a94eade4cf86a666dc8055a` implements the dedicated protocol
-and its proof obligations, but its clean x64 proof replay and canonical
-bootstrap/link qualification are still in progress. Therefore the exact
-blocking condition is:
+The manifest pins CakeML integration commit
+`964406486a52e1a53a94eade4cf86a666dc8055a`, which implements the dedicated
+protocol and its proof obligations. Its clean x64 proof replay and canonical
+bootstrap/link qualification are still in progress, so the pin alone does not
+qualify a runtime. Therefore the exact blocking condition is:
 
 > No pilot or all-inventory process may be launched until the protocol commit's
 > proof replay succeeds, that commit is pinned by the Candle manifest, and the

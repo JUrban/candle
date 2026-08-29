@@ -2402,13 +2402,25 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "verified-source-stack-integration-pending-compiler-rebuild-and-corpus-run"
             ),
             "verified_cakeml_integration": {
-                "branch": "codex/flyspeck-direct-nested-identities-v13",
-                "commit": "0e97a1ab86924e905e1d1c893191651197b82f6e",
+                "branch": "codex/flyspeck-v13-runtime-stack",
+                "commit": "964406486a52e1a53a94eade4cf86a666dc8055a",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
                 "ocaml_parser_translation_target": (
                     "compiler/bootstrap/translation/caml_parserProgTheory.uo"
+                ),
+                "parser_diagnostic_protocol_schema": 2,
+                "parser_diagnostic_translation_target": (
+                    "compiler/bootstrap/translation/compiler64ProgTheory.uo"
+                ),
+                "parser_diagnostic_x64_target": (
+                    "compiler/bootstrap/compilation/x64/64/"
+                    "x64BootstrapTheory.uo"
+                ),
+                "parser_diagnostic_x64_proof_target": (
+                    "compiler/bootstrap/compilation/x64/64/proofs/"
+                    "x64BootstrapProofTheory.uo"
                 ),
                 "qualified_value_path_regressions": 3,
                 "proof_hol4_commit": "a390cbabd3a4521bab4ee20281e3e42933a8a3ae",
