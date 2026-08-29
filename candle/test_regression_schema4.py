@@ -16,7 +16,8 @@ class Great100Schema4Test(unittest.TestCase):
     def _transcript(self, suite, process, linked, fingerprint_inside=True):
         fingerprint = "\t".join([
             regression.FINGERPRINT_MARKER, b"T".hex(), b"t".hex(),
-            b"h".hex(), b"c".hex(), b"a".hex(), "0", "3"])
+            regression.EMPTY_HYPOTHESES_WIRE.hex(), b"c".hex(), b"a".hex(),
+            "0", "3"])
         state = "\t".join([
             regression.STATE_FINGERPRINT_MARKER, b"s".hex(), b"y".hex(),
             b"c".hex(), b"d".hex(), b"a".hex(), "1", "2", "3", "3"])
@@ -146,10 +147,32 @@ class Great100Schema4Test(unittest.TestCase):
             "execution_contract_sha256": "f" * 64,
             "source_closure_sha256": "0" * 64,
         }
+        theorem = {
+            "name": "T",
+            "theorem_sha256": hashlib.sha256(b"t").hexdigest(),
+            "hypotheses_sha256": hashlib.sha256(
+                regression.EMPTY_HYPOTHESES_WIRE).hexdigest(),
+            "conclusion_sha256": hashlib.sha256(b"c").hexdigest(),
+            "global_axioms_sha256": hashlib.sha256(b"a").hexdigest(),
+            "hypothesis_count": 0,
+            "global_axiom_count": 3,
+        }
+        post_state = {
+            "kernel_state_sha256": hashlib.sha256(b"s").hexdigest(),
+            "type_constants_sha256": hashlib.sha256(b"y").hexdigest(),
+            "type_constant_count": 1,
+            "term_constants_sha256": hashlib.sha256(b"c").hexdigest(),
+            "term_constant_count": 2,
+            "definitions_sha256": hashlib.sha256(b"d").hexdigest(),
+            "definition_count": 3,
+            "global_axioms_sha256": hashlib.sha256(b"a").hexdigest(),
+            "global_axiom_count": 3,
+        }
         expected = {
             "approval_sha256": approval_sha256,
-            "serializer_sha256": "1" * 64,
-            "theorems": [], "post_state": {},
+            "serializer_sha256": hashlib.sha256(
+                regression.FINGERPRINT_HELPER.read_bytes()).hexdigest(),
+            "theorems": [theorem], "post_state": post_state,
         }
         tests = []
         results = []
@@ -157,9 +180,19 @@ class Great100Schema4Test(unittest.TestCase):
             for index in range(65):
                 name = f"100/t{index:02d}"
                 log_path = Path(temporary) / f"{index}.log"
-                log_path.write_text(f"transcript {index}\n", encoding="utf-8")
-                transcript = regression._ordinary_file_record(log_path)
                 process_nonce = f"{index + 1:064x}"
+                log_path.write_text(
+                    self._transcript(
+                        suite_nonce, process_nonce, linked_sha256),
+                    encoding="utf-8",
+                )
+                transcript = regression._ordinary_file_record(log_path)
+                markers = regression._read_process_markers(
+                    log_path, suite_nonce, process_nonce, linked_sha256,
+                )
+                fingerprints = regression._read_fingerprint_records(
+                    log_path, ("T",), "audited", expected,
+                )
                 evidence = {
                     "suite_nonce": suite_nonce,
                     "process_nonce": process_nonce,
@@ -167,8 +200,7 @@ class Great100Schema4Test(unittest.TestCase):
                     "started_utc": datetime.now(timezone.utc).isoformat(),
                     "completed_utc": datetime.now(timezone.utc).isoformat(),
                     "exit_code": 0,
-                    "markers": {"suite_line": 0, "start_line": 1,
-                                "linked_line": 2, "complete_line": 5},
+                    "markers": markers,
                     "linked_record_sha256": linked_sha256,
                     "transcript": transcript,
                     "pre_runtime_state": runtime,
@@ -181,17 +213,10 @@ class Great100Schema4Test(unittest.TestCase):
                     },
                 }
                 tests.append(regression.Test(
-                    name, (), (), "audited", expected))
+                    name, (), ("T",), "audited", expected))
                 results.append(regression.TestResult(
                     name, regression.TestStatus.PASS, log_path=str(log_path),
-                    fingerprints={
-                        "status": "matched", "mapping_status": "audited",
-                        "expected_identities_present": True,
-                        "serializer": {"path": "candle/fingerprint.ml",
-                                       "sha256": "1" * 64},
-                        "theorems": [], "post_state": {},
-                        "approval_sha256": approval_sha256,
-                    }, process_evidence=evidence))
+                    fingerprints=fingerprints, process_evidence=evidence))
             with mock.patch.object(
                     regression, "_runtime_state", return_value=runtime):
                 regression._validate_top100_results(
@@ -201,8 +226,31 @@ class Great100Schema4Test(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "transcript changed"):
                     regression._validate_top100_results(
                         results, tests, suite_nonce, contract)
+                original = self._transcript(
+                    suite_nonce,
+                    results[0].process_evidence["process_nonce"],
+                    linked_sha256,
+                )
                 Path(results[0].log_path).write_text(
-                    "transcript 0\n", encoding="utf-8")
+                    original, encoding="utf-8")
+                results[0].process_evidence["transcript"] = \
+                    regression._ordinary_file_record(results[0].log_path)
+                with Path(results[0].log_path).open("a", encoding="utf-8") as log:
+                    log.write("\t".join([
+                        regression.FINGERPRINT_MARKER, b"T".hex(), b"t".hex(),
+                        regression.EMPTY_HYPOTHESES_WIRE.hex(), b"c".hex(),
+                        b"a".hex(), "0", "3",
+                    ]) + "\n")
+                results[0].process_evidence["transcript"] = \
+                    regression._ordinary_file_record(results[0].log_path)
+                with self.assertRaisesRegex(ValueError,
+                                            "final transcript replay failed"):
+                    regression._validate_top100_results(
+                        results, tests, suite_nonce, contract)
+                Path(results[0].log_path).write_text(
+                    original, encoding="utf-8")
+                results[0].process_evidence["transcript"] = \
+                    regression._ordinary_file_record(results[0].log_path)
                 results[1].process_evidence["process_nonce"] = \
                     results[0].process_evidence["process_nonce"]
                 with self.assertRaisesRegex(ValueError, "reused process nonce"):

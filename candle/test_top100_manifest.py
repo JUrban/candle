@@ -175,7 +175,8 @@ class Top100ManifestTest(unittest.TestCase):
             "theorems": [{
                 "name": "EGCD",
                 "theorem_sha256": "1" * 64,
-                "hypotheses_sha256": "2" * 64,
+                "hypotheses_sha256":
+                    top100_manifest.EMPTY_HYPOTHESES_SHA256,
                 "conclusion_sha256": "3" * 64,
                 "global_axioms_sha256": "4" * 64,
                 "hypothesis_count": 0,
@@ -197,6 +198,11 @@ class Top100ManifestTest(unittest.TestCase):
             top100_manifest._validate_expected_identity_object(
                 "100/gcd", ["EGCD"], approved_shape),
             approved_shape)
+        nonclosed = json.loads(json.dumps(approved_shape))
+        nonclosed["theorems"][0]["hypothesis_count"] = 1
+        with self.assertRaisesRegex(ValueError, "theorem is not closed"):
+            top100_manifest._validate_expected_identity_object(
+                "100/gcd", ["EGCD"], nonclosed)
 
     def test_unapproved_artifact_is_exact_and_cannot_carry_identities(self):
         targets = top100_manifest.build_manifest()["targets"]
@@ -257,7 +263,8 @@ class Top100ManifestTest(unittest.TestCase):
                     "theorems": [{
                         "name": theorem["name"],
                         "theorem_sha256": "1" * 64,
-                        "hypotheses_sha256": "2" * 64,
+                        "hypotheses_sha256":
+                            top100_manifest.EMPTY_HYPOTHESES_SHA256,
                         "conclusion_sha256": "3" * 64,
                         "global_axioms_sha256": axioms_sha256,
                         "hypothesis_count": 0,

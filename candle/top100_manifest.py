@@ -182,6 +182,7 @@ REFERENCE_ARTIFACT_NAMES = {
     "candidate", "plan", "request", "transcript", "source_contract"}
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
+EMPTY_HYPOTHESES_SHA256 = hashlib.sha256(b"4:list1:0").hexdigest()
 
 
 def _is_sha256(value):
@@ -235,6 +236,11 @@ def _validate_expected_identity_object(target, theorem_names, expected,
             value = record[field]
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 raise ValueError(f"{target}: malformed expected count: {field}")
+        if (record["hypothesis_count"] != 0 or
+                record["hypotheses_sha256"] != EMPTY_HYPOTHESES_SHA256):
+            raise ValueError(f"{target}: expected theorem is not closed")
+        if record["global_axiom_count"] != 3:
+            raise ValueError(f"{target}: expected theorem must use three axioms")
     _validate_post_state(target, expected["post_state"])
     axiom_identities = {
         (record["global_axioms_sha256"], record["global_axiom_count"])

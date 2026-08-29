@@ -583,6 +583,9 @@ def _identity_sha256(serialized):
     return hashlib.sha256(serialized).hexdigest()
 
 
+EMPTY_HYPOTHESES_WIRE = b"4:list1:0"
+
+
 def _match_expected_identities(records, post_state, expected_identities,
                                serializer_sha256, mapping_status):
     """Fail closed unless every approved structural identity matches exactly."""
@@ -638,6 +641,12 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
         except ValueError as error:
             raise LoadFailure(
                 f"non-numeric fingerprint count for {name}") from error
+        if (parsed_hypothesis_count != 0 or
+                hypotheses != EMPTY_HYPOTHESES_WIRE):
+            raise LoadFailure(f"Great 100 theorem is not closed: {name}")
+        if parsed_assumption_count != 3:
+            raise LoadFailure(
+                f"Great 100 theorem does not use exactly three axioms: {name}")
         records[name] = {
             "name": name,
             "theorem_sha256": _identity_sha256(theorem),
@@ -1033,6 +1042,22 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
                     "peak_process_rss_kib": 0,
                     "peak_tree_rss_kib": 0,
                 }
+                if result.status is TestStatus.PASS:
+                    final_fingerprints = _read_fingerprint_records(
+                        log_path, test.fingerprint_theorems,
+                        test.fingerprint_mapping_status,
+                        test.fingerprint_expected_identities,
+                    )
+                    final_markers = _read_process_markers(
+                        log_path, suite_nonce, process_nonce,
+                        suite_contract["linked_record"]["sha256"],
+                    )
+                    if (final_fingerprints != result.fingerprints or
+                            final_markers != markers):
+                        raise LoadFailure(
+                            "final Great 100 transcript differs from prefix parse")
+                    result.fingerprints = final_fingerprints
+                    markers = final_markers
                 if result.status is TestStatus.PASS and (
                         exit_code != 0 or markers is None or
                         pre_runtime_state != post_runtime_state or
@@ -1311,6 +1336,24 @@ def _validate_top100_results(results, tests, suite_nonce, suite_contract):
         if (evidence["transcript"] != transcript or
                 transcript["path"] != str(Path(result.log_path).resolve())):
             raise ValueError(f"{result.name}: transcript changed after validation")
+        try:
+            final_markers = _read_process_markers(
+                result.log_path, suite_nonce, evidence["process_nonce"],
+                suite_contract["linked_record"]["sha256"],
+            )
+            final_fingerprints = _read_fingerprint_records(
+                result.log_path, test.fingerprint_theorems,
+                test.fingerprint_mapping_status,
+                test.fingerprint_expected_identities,
+            )
+        except LoadFailure as error:
+            raise ValueError(
+                f"{result.name}: final transcript replay failed: {error}"
+            ) from error
+        if (final_markers != markers or
+                final_fingerprints != result.fingerprints):
+            raise ValueError(
+                f"{result.name}: cached evidence differs from final transcript")
         if (evidence["linked_record_sha256"] !=
                 suite_contract["linked_record"]["sha256"] or
                 evidence["pre_runtime_state"] != expected_runtime or

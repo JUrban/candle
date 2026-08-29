@@ -35,10 +35,10 @@ class FingerprintPlumbingTest(unittest.TestCase):
             regression.FINGERPRINT_MARKER,
             b"THM".hex(),
             b"theorem-serialization".hex(),
-            b"hypothesis-serialization".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion-serialization".hex(),
             b"axiom-serialization".hex(),
-            "2",
+            "0",
             "3",
         ]
         with tempfile.NamedTemporaryFile(
@@ -56,7 +56,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         self.assertEqual(report["status"], "observed_uncompared")
         self.assertFalse(report["expected_identities_present"])
         record = report["theorems"][0]
-        self.assertEqual(record["hypothesis_count"], 2)
+        self.assertEqual(record["hypothesis_count"], 0)
         self.assertEqual(record["global_axiom_count"], 3)
         self.assertEqual(
             record["theorem_sha256"],
@@ -66,7 +66,8 @@ class FingerprintPlumbingTest(unittest.TestCase):
     def test_exact_approved_identity_becomes_a_match(self):
         fields = [
             regression.FINGERPRINT_MARKER,
-            b"THM".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"THM".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ]
         with tempfile.NamedTemporaryFile(
@@ -79,7 +80,8 @@ class FingerprintPlumbingTest(unittest.TestCase):
         record = {
             "name": "THM",
             "theorem_sha256": hashlib.sha256(b"theorem").hexdigest(),
-            "hypotheses_sha256": hashlib.sha256(b"hypotheses").hexdigest(),
+            "hypotheses_sha256": hashlib.sha256(
+                regression.EMPTY_HYPOTHESES_WIRE).hexdigest(),
             "conclusion_sha256": hashlib.sha256(b"conclusion").hexdigest(),
             "global_axioms_sha256": hashlib.sha256(b"axioms").hexdigest(),
             "hypothesis_count": 0,
@@ -112,7 +114,8 @@ class FingerprintPlumbingTest(unittest.TestCase):
     def test_expected_identity_mismatch_fails_closed(self):
         fields = [
             regression.FINGERPRINT_MARKER,
-            b"THM".hex(), b"observed".hex(), b"hypotheses".hex(),
+            b"THM".hex(), b"observed".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ]
         with tempfile.NamedTemporaryFile(
@@ -200,6 +203,29 @@ class FingerprintPlumbingTest(unittest.TestCase):
                     path, ("THM",), "audited")
         finally:
             path.unlink()
+
+    def test_positive_or_inconsistent_hypotheses_fail_closed(self):
+        for hypotheses, count in (
+                (b"nonempty", "1"),
+                (regression.EMPTY_HYPOTHESES_WIRE, "1"),
+                (b"nonempty", "0")):
+            fields = [
+                regression.FINGERPRINT_MARKER, b"EGCD".hex(),
+                b"theorem".hex(), hypotheses.hex(), b"conclusion".hex(),
+                b"axioms".hex(), count, "3",
+            ]
+            with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", delete=False) as logfile:
+                logfile.write("\t".join(fields) + "\n")
+                logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
+                path = Path(logfile.name)
+            try:
+                with self.assertRaisesRegex(
+                        regression.LoadFailure, "theorem is not closed"):
+                    regression._read_fingerprint_records(
+                        path, ("EGCD",), "audited")
+            finally:
+                path.unlink()
 
     def test_missing_record_is_not_a_load_success_fingerprint(self):
         with tempfile.NamedTemporaryFile(

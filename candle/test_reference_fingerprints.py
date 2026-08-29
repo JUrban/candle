@@ -68,7 +68,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ocamlfind = root / "ocamlfind"
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
-            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"EGCD".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
         runtime.write_text(
@@ -230,7 +231,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
         }
         fields = [
             regression.FINGERPRINT_MARKER,
-            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"EGCD".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ]
         transcript = "\n".join([
@@ -316,7 +318,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
         }
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
-            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"EGCD".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
         transcript = "\n".join([
@@ -354,7 +357,8 @@ class ReferenceFingerprintTest(unittest.TestCase):
             plan["request"]["source"].encode()).hexdigest()
         record = "\t".join([
             regression.FINGERPRINT_MARKER,
-            b"EGCD".hex(), b"theorem".hex(), b"hypotheses".hex(),
+            b"EGCD".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
         transcript = "\n".join([
