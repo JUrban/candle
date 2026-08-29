@@ -24,6 +24,7 @@ class Great100Schema4Test(unittest.TestCase):
         lines = [
             f"{regression.SUITE_MARKER}\t{suite}",
             f"{regression.PROCESS_MARKER}\t{suite}\t{process}\tSTART",
+            regression.LINKED_PASS_WITNESS,
             f"{regression.LINKED_RECORD_MARKER}\t{linked}",
         ]
         if fingerprint_inside:
@@ -43,9 +44,10 @@ class Great100Schema4Test(unittest.TestCase):
         try:
             self.assertEqual(
                 regression._read_process_markers(path, suite, process, linked),
-                {"suite_line": 0, "start_line": 1, "linked_line": 2,
-                 "complete_line": 5})
-            with self.assertRaisesRegex(regression.LoadFailure, "linked marker"):
+                {"suite_line": 0, "start_line": 1, "linked_line": 3,
+                 "complete_line": 6})
+            with self.assertRaisesRegex(
+                    regression.LoadFailure, "linked.*protocol"):
                 regression._read_process_markers(
                     path, suite, process, "4" * 64)
         finally:
@@ -63,6 +65,57 @@ class Great100Schema4Test(unittest.TestCase):
                 regression._read_process_markers(path, suite, process, linked)
         finally:
             path.unlink()
+
+    def test_protocol_namespaces_reject_conflicting_or_unsupported_lines(self):
+        suite, process, linked = "1" * 64, "2" * 64, "3" * 64
+        variants = {
+            "post-complete alternate linked":
+                f"{regression.LINKED_RECORD_MARKER}\t{'4' * 64}",
+            "same-nonce fail":
+                f"{regression.PROCESS_MARKER}\t{suite}\t{process}\tFAIL",
+            "alternate suite": f"CANDLE_GREAT100_SUITE_V2\t{suite}",
+            "alternate process":
+                f"CANDLE_GREAT100_PROCESS_V2\t{suite}\t{process}\tSTART",
+            "alternate linked":
+                f"CANDLE_LINKED_PROVENANCE_V2\t{linked}",
+            "conflicting linked status": "linked CakeML provenance FAIL",
+            "unsupported theorem wire": "CANDLE_FINGERPRINT_V1\t00",
+            "unsupported state wire": "CANDLE_STATE_FINGERPRINT_V3\t00",
+        }
+        for label, extra_line in variants.items():
+            with self.subTest(label=label), tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", delete=False) as stream:
+                stream.write(self._transcript(suite, process, linked))
+                stream.write(extra_line + "\n")
+                path = Path(stream.name)
+            try:
+                with self.assertRaisesRegex(
+                        regression.LoadFailure,
+                        "protocol|witness|unsupported"):
+                    regression._read_process_markers(
+                        path, suite, process, linked)
+            finally:
+                path.unlink()
+
+    def test_linked_pass_witness_is_exactly_once(self):
+        suite, process, linked = "1" * 64, "2" * 64, "3" * 64
+        transcript = self._transcript(suite, process, linked)
+        variants = (
+            transcript.replace(regression.LINKED_PASS_WITNESS + "\n", ""),
+            transcript + regression.LINKED_PASS_WITNESS + "\n",
+        )
+        for transcript_value in variants:
+            with tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", delete=False) as stream:
+                stream.write(transcript_value)
+                path = Path(stream.name)
+            try:
+                with self.assertRaisesRegex(
+                        regression.LoadFailure, "PASS witness"):
+                    regression._read_process_markers(
+                        path, suite, process, linked)
+            finally:
+                path.unlink()
 
     def test_completion_marker_is_nonce_bound(self):
         suite, process = "a" * 64, "b" * 64
