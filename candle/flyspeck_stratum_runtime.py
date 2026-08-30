@@ -4977,6 +4977,7 @@ def _run_attempt_impl(
     max_cpu_seconds: int,
     max_address_space_gib: int,
     max_output_file_gib: int,
+    evidence_schema: int,
     output_ownership: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     require(not Path(output_root).is_symlink(),
@@ -5000,6 +5001,11 @@ def _run_attempt_impl(
         controller_execution, candle_root, linked["candle_commit"],
     )
     prepared = validate_plan(candle_root, linked, plan_root, boundary_id)
+    require(evidence_schema in (5, 6),
+            "runtime execution supports direct evidence schemas 5 and 6")
+    require(evidence_schema == 5 or
+            boundary_id.split("-", 1)[0] in {"05", "06", "07"},
+            "LP consumption evidence requires an LP-complete boundary")
 
     require(timeout_seconds > 0, "timeout must be positive")
     require(0 < max_cpu_seconds <= 172800,
@@ -5064,6 +5070,12 @@ def _run_attempt_impl(
 
     nonce = secrets.token_hex(16)
     runtime_prepared["attempt_nonce"] = nonce
+    lp_consumption_contract: dict[str, Any] | None = None
+    if evidence_schema == 6:
+        lp_consumption_contract = build_lp_consumption_contract(
+            nonce, runtime_prepared["lp_certificate_runtime"],
+        )
+        runtime_prepared["lp_consumption_contract"] = lp_consumption_contract
     program = instrument_prefix(
         runtime_prepared["prefix_path"].read_bytes(), prepared["actions"], nonce,
     )
@@ -5076,6 +5088,7 @@ def _run_attempt_impl(
     write_postlude(
         postlude_path, runtime_candle_root, boundary_id, theorem_names, nonce,
         logical_source_closure, dependency_theorem_names,
+        lp_consumption_enabled=evidence_schema == 6,
     )
     source_trace_contract = build_source_trace_contract(
         runtime_prepared, logical_source_closure, program_path, postlude_path,
@@ -5125,10 +5138,42 @@ def _run_attempt_impl(
         }
         for index, action in enumerate(prepared["actions"])
     ]
+    evidence_contract = {
+        "schema": f"candle-flyspeck-direct-runtime-evidence-v{evidence_schema}",
+        "allowed_action_outcomes": list(ACTION_OUTCOMES),
+        "physical_loader_cache_skip_allowed":
+            "only loader-authenticated needs cache-skip events",
+        "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
+        "logical_source_closure_order": SOURCE_CLOSURE_ORDER,
+        "selected_loadt_ledger_delta_included": True,
+        "physical_loader_cache_trace_included": True,
+        "physical_source_trace_protocol": SOURCE_TRACE_PROTOCOL,
+        "pre_trace_control_exclusion": "control:runtime-config",
+        "s2_s3_approval_included": False,
+        "dependency_history_protocol": DEPENDENCY_HISTORY_PREFIX,
+        "dependency_history_policy": DEPENDENCY_HISTORY_POLICY,
+        "semantic_coverage_policy": (
+            SEMANTIC_COVERAGE_V6_POLICY if evidence_schema == 6 else
+            SEMANTIC_COVERAGE_POLICY
+        ),
+        "dependency_history_is_kernel_trace": False,
+        "semantic_approval_included": False,
+        "pft_used": False,
+    }
+    if evidence_schema == 6:
+        evidence_contract.update({
+            "lp_certificate_consumption_protocol": LP_CONSUMPTION_PROTOCOL,
+            "lp_certificate_consumption_policy": LP_CONSUMPTION_POLICY,
+            "lp_certificate_consumption_order": LP_CONSUMPTION_ORDER,
+            "lp_certificate_consumption_exactly_once": True,
+        })
     attempt = {
-        "schema": 5,
+        "schema": evidence_schema,
         "kind": "candle-flyspeck-compiled-stratum-attempt",
-        "claim": DIRECT_V5_EVIDENCE_CLAIM,
+        "claim": (
+            DIRECT_V6_EVIDENCE_CLAIM if evidence_schema == 6 else
+            DIRECT_V5_EVIDENCE_CLAIM
+        ),
         "state": "running",
         "started_utc": started,
         "boundary_id": boundary_id,
@@ -5153,25 +5198,7 @@ def _run_attempt_impl(
             "path mutation is outside this evidence model"
         ),
         "process_state_checkpoint": None,
-        "evidence_contract": {
-            "schema": "candle-flyspeck-direct-runtime-evidence-v5",
-            "allowed_action_outcomes": list(ACTION_OUTCOMES),
-            "physical_loader_cache_skip_allowed":
-                "only loader-authenticated needs cache-skip events",
-            "logical_source_closure_policy": SOURCE_CLOSURE_POLICY,
-            "logical_source_closure_order": SOURCE_CLOSURE_ORDER,
-            "selected_loadt_ledger_delta_included": True,
-            "physical_loader_cache_trace_included": True,
-            "physical_source_trace_protocol": SOURCE_TRACE_PROTOCOL,
-            "pre_trace_control_exclusion": "control:runtime-config",
-            "s2_s3_approval_included": False,
-            "dependency_history_protocol": DEPENDENCY_HISTORY_PREFIX,
-            "dependency_history_policy": DEPENDENCY_HISTORY_POLICY,
-            "semantic_coverage_policy": SEMANTIC_COVERAGE_POLICY,
-            "dependency_history_is_kernel_trace": False,
-            "semantic_approval_included": False,
-            "pft_used": False,
-        },
+        "evidence_contract": evidence_contract,
         "expected_logical_source_closure": logical_source_closure,
         "expected_physical_source_trace": source_trace_contract,
         "semantic_evidence_plan": semantic_evidence_plan,
@@ -5214,7 +5241,13 @@ def _run_attempt_impl(
             "flyspeck": prepared["plan"]["repositories"]["flyspeck_commit"],
         },
     }
-    validate_direct_evidence_v5_artifact(attempt, receipt=False)
+    if lp_consumption_contract is not None:
+        attempt["lp_consumption_contract"] = lp_consumption_contract
+    validate_direct_evidence = (
+        validate_direct_evidence_v6_artifact if evidence_schema == 6 else
+        validate_direct_evidence_v5_artifact
+    )
+    validate_direct_evidence(attempt, receipt=False)
     atomic_write_json(attempt_path, attempt)
     if output_ownership is not None:
         output_ownership["marker_path"].unlink()
@@ -5237,6 +5270,7 @@ def _run_attempt_impl(
     fingerprints: dict[str, Any] | None = None
     dependency_history: dict[str, Any] | None = None
     semantic_coverage: dict[str, Any] | None = None
+    lp_consumption: dict[str, Any] | None = None
     action_events: list[dict[str, Any]] | None = None
     observed_source_closure: dict[str, Any] | None = None
     physical_source_trace: dict[str, Any] | None = None
@@ -5313,7 +5347,7 @@ def _run_attempt_impl(
         archived_attempt = load_object(attempt_path, "initial attempt record")
         require(archived_attempt == attempt,
                 "initial direct runtime attempt changed after publication")
-        validate_direct_evidence_v5_artifact(archived_attempt, receipt=False)
+        validate_direct_evidence(archived_attempt, receipt=False)
         validate_runtime_snapshot(snapshot_record, output_root)
         validate_controller_execution(
             controller_execution, candle_root, linked["candle_commit"],
@@ -5354,10 +5388,22 @@ def _run_attempt_impl(
         dependency_history = parse_dependency_history(
             log_path, dependency_theorem_names, boundary_id, nonce,
         )
-        semantic_coverage = derive_semantic_coverage(
-            semantic_evidence_plan, observed_source_closure,
-            physical_source_trace, fingerprints, dependency_history,
-        )
+        if evidence_schema == 6:
+            require(lp_consumption_contract is not None,
+                    "LP consumption evidence lacks its runtime contract")
+            lp_consumption = validate_lp_consumption_log(
+                log_text, lp_consumption_contract,
+            )
+            semantic_coverage = derive_semantic_coverage_v6(
+                semantic_evidence_plan, observed_source_closure,
+                physical_source_trace, fingerprints, dependency_history,
+                lp_consumption_contract, lp_consumption,
+            )
+        else:
+            semantic_coverage = derive_semantic_coverage(
+                semantic_evidence_plan, observed_source_closure,
+                physical_source_trace, fingerprints, dependency_history,
+            )
     except Exception as error:
         validation_error = f"{type(error).__name__}: {error}"
 
@@ -5415,7 +5461,9 @@ def _run_attempt_impl(
             "validation_error": validation_error,
             "postflight_reauthenticated": postflight_reauthenticated,
         }
-        validate_direct_evidence_v5_artifact(
+        if evidence_schema == 6:
+            receipt["lp_certificate_consumption"] = lp_consumption
+        validate_direct_evidence(
             receipt, receipt=True,
             log_path=(log_path if log_record is not None else None),
             runtime_executable_path=runtime_prepared["cake_runtime"],
@@ -5450,6 +5498,7 @@ def run_attempt(
     max_cpu_seconds: int,
     max_address_space_gib: int,
     max_output_file_gib: int,
+    evidence_schema: int = 5,
 ) -> dict[str, Any]:
     """Run an attempt, cleaning only an unpublished pre-attempt failure."""
     unresolved_output = Path(output_root)
@@ -5468,7 +5517,7 @@ def run_attempt(
         return _run_attempt_impl(
             candle_script, plan_root, boundary_id, output_root,
             timeout_seconds, max_cpu_seconds, max_address_space_gib,
-            max_output_file_gib, ownership,
+            max_output_file_gib, evidence_schema, ownership,
         )
     except BaseException:
         if ownership["created"] and not ownership["committed"]:
@@ -5518,16 +5567,22 @@ def main() -> None:
     parser.add_argument(
         "--max-output-file-gib", type=int, default=8, metavar="GIB",
     )
+    parser.add_argument(
+        "--evidence-schema", type=int, choices=(5, 6), default=5,
+        metavar="VERSION",
+    )
     arguments = parser.parse_args()
     receipt = run_attempt(
         arguments.candle_script, arguments.plan_root, arguments.boundary,
         arguments.write, arguments.timeout, arguments.max_cpu_seconds,
         arguments.max_address_space_gib, arguments.max_output_file_gib,
+        arguments.evidence_schema,
     )
     print(
         f"compiled {'diagnostic prefix' if receipt['diagnostic_only'] else 'stratum'} PASS: "
         f"{receipt['boundary_id']} "
-        f"({receipt['action_count']} actions); not S2/S3 without semantic fingerprints"
+        f"({receipt['action_count']} actions; evidence v{receipt['schema']}); "
+        "not S2/S3 without independent approval"
     )
 
 

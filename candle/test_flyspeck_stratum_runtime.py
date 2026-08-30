@@ -2652,6 +2652,29 @@ class StratumRuntimeTests(unittest.TestCase):
                     )
             self.assertFalse(output.exists())
 
+    def test_run_attempt_forwards_explicit_and_default_evidence_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for expected_schema, explicit in ((5, False), (6, True)):
+                output = root / f"attempt-v{expected_schema}"
+                sentinel = {"schema": expected_schema}
+                with mock.patch.object(
+                    subject, "_run_attempt_impl", return_value=sentinel,
+                ) as internal:
+                    arguments = (
+                        Path("candle.sh"), Path("plan"), "05-lp", output,
+                        1, 1, 1, 1,
+                    )
+                    observed = (
+                        subject.run_attempt(*arguments, evidence_schema=6)
+                        if explicit else subject.run_attempt(*arguments)
+                    )
+                self.assertIs(observed, sentinel)
+                positional = internal.call_args.args
+                self.assertEqual(positional[-2], expected_schema)
+                self.assertIsInstance(positional[-1], dict)
+                self.assertFalse(positional[-1]["created"])
+
     def test_lost_output_race_never_deletes_competing_tree(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "competing-attempt"
@@ -2744,7 +2767,7 @@ class StratumRuntimeTests(unittest.TestCase):
             ):
                 subject._run_attempt_impl(
                     root / "missing-candle.sh", plan_link, "boundary",
-                    root / "attempt", 1, 1, 1, 1,
+                    root / "attempt", 1, 1, 1, 1, 5,
                 )
 
     def test_lp_certificate_runtime_uses_contract_order_not_source_order(self) -> None:
