@@ -14,6 +14,8 @@ import flyspeck_stratum_runtime as subject
 
 class LpConsumptionTests(unittest.TestCase):
     nonce = "a" * 32
+    boundary = "05-lp_support-through-184"
+    action_count = 185
 
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
@@ -56,10 +58,29 @@ class LpConsumptionTests(unittest.TestCase):
         )))
         return lines
 
-    def test_contract_and_reverse_runtime_events_close_exactly(self) -> None:
-        observation = subject.validate_lp_consumption_log(
-            "\n".join(self.valid_lines()) + "\n", self.contract,
+    def log_text(self, records: list[str]) -> str:
+        split = next((
+            index for index, line in enumerate(records)
+            if "\tCONSUMED\t" not in line
+        ), len(records))
+        return "\n".join([
+            f"{subject.PREFLIGHT_MARKER} {self.nonce}",
+            *records[:split],
+            (f"{subject.SUCCESS_MARKER} {self.nonce} {self.boundary} "
+             f"{self.action_count}"),
+            *records[split:],
+            (f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\t"
+             "TERMINAL\t0"),
+        ]) + "\n"
+
+    def validate_lines(self, records: list[str]) -> dict:
+        return subject.validate_lp_consumption_log(
+            self.log_text(records), self.contract, self.boundary,
+            self.action_count,
         )
+
+    def test_contract_and_reverse_runtime_events_close_exactly(self) -> None:
+        observation = self.validate_lines(self.valid_lines())
         self.assertEqual(observation["event_count"], 39)
         self.assertEqual(observation["record_count"], 39)
         self.assertTrue(all(
@@ -98,7 +119,7 @@ class LpConsumptionTests(unittest.TestCase):
         cases.append(("post-terminal", post_terminal))
         for label, lines in cases:
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
-                subject.validate_lp_consumption_log("\n".join(lines), self.contract)
+                self.validate_lines(lines)
 
     def test_terminal_nonce_failure_and_namespace_mutations_reject(self) -> None:
         cases = []
@@ -119,7 +140,32 @@ class LpConsumptionTests(unittest.TestCase):
         cases.append(("namespace", malformed_namespace))
         for label, lines in cases:
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
-                subject.validate_lp_consumption_log("\n".join(lines), self.contract)
+                self.validate_lines(lines)
+
+    def test_consumption_records_are_bound_to_exact_runtime_interval(self) -> None:
+        records = self.valid_lines()
+        preflight = f"{subject.PREFLIGHT_MARKER} {self.nonce}"
+        boundary = (
+            f"{subject.SUCCESS_MARKER} {self.nonce} {self.boundary} "
+            f"{self.action_count}"
+        )
+        source_terminal = (
+            f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\tTERMINAL\t0"
+        )
+        relocated = (
+            [*records[:-1], preflight, boundary, records[-1], source_terminal],
+            [preflight, boundary, *records, source_terminal],
+            [preflight, *records, boundary, source_terminal],
+            [preflight, *records[:-1], boundary, source_terminal, records[-1]],
+        )
+        for index, lines in enumerate(relocated):
+            with self.subTest(index=index), self.assertRaisesRegex(
+                subject.ContractError, "exact runtime interval",
+            ):
+                subject.validate_lp_consumption_log(
+                    "\n".join(lines), self.contract, self.boundary,
+                    self.action_count,
+                )
 
     def test_contract_rejects_order_class_path_digest_and_types(self) -> None:
         cases = []
@@ -178,9 +224,7 @@ class LpConsumptionTests(unittest.TestCase):
                 subject.validate_lp_consumption_contract(contract)
 
     def test_observation_is_exact_unapproved_and_cannot_be_relabelled(self) -> None:
-        observation = subject.validate_lp_consumption_log(
-            "\n".join(self.valid_lines()), self.contract,
-        )
+        observation = self.validate_lines(self.valid_lines())
         subject.validate_lp_consumption_observation(self.contract, observation)
         for field, value in (
             ("approved_reference_present", True),

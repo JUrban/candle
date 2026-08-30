@@ -1009,8 +1009,18 @@ class StratumRuntimeTests(unittest.TestCase):
         consumption_lines.append("\t".join((
             subject.LP_CONSUMPTION_PREFIX, self.nonce, "TERMINAL", "39", "39",
         )))
+        consumption_log = "\n".join([
+            f"{subject.PREFLIGHT_MARKER} {self.nonce}",
+            *consumption_lines[:-1],
+            (f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} "
+             f"{plan['completed_action_count']}"),
+            consumption_lines[-1],
+            (f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\t"
+             "TERMINAL\t0"),
+        ])
         consumption = subject.validate_lp_consumption_log(
-            "\n".join(consumption_lines), consumption_contract,
+            consumption_log, consumption_contract, boundary,
+            plan["completed_action_count"],
         )
         coverage_v6 = subject.derive_semantic_coverage_v6(
             plan, {
@@ -1647,6 +1657,22 @@ class StratumRuntimeTests(unittest.TestCase):
         attempt = self.direct_v5_attempt(expected_actions)
         boundary = "05-lp_support-through-184"
         attempt["boundary_id"] = boundary
+        for index in range(len(expected_actions), 185):
+            delta = copy.deepcopy(self.actions[0]["logical_source_delta"])
+            expected_actions.append({
+                "index": index,
+                "source_sha256": self.actions[0]["source_sha256"],
+                "logical_source_delta": delta,
+                "logical_source_delta_sha256": subject.canonical_sha256(delta),
+            })
+        attempt["action_count"] = len(expected_actions)
+        attempt["expected_action_events"] = expected_actions
+        attempt["ordered_expected_action_sha256"] = subject.canonical_sha256(
+            expected_actions,
+        )
+        attempt["expected_logical_source_closure"][
+            "completed_action_count"
+        ] = len(expected_actions)
         trace = attempt["expected_physical_source_trace"]
         path = "/trace/99-fingerprint.ml"
         payload = {
@@ -1743,6 +1769,41 @@ class StratumRuntimeTests(unittest.TestCase):
                 subject.validate_direct_evidence_v6_artifact(
                     forged, receipt=False,
                 )
+        wrong_action_count = copy.deepcopy(attempt)
+        wrong_action_count["action_count"] -= 1
+        wrong_action_count["expected_action_events"].pop()
+        wrong_action_count["ordered_expected_action_sha256"] = (
+            subject.canonical_sha256(
+                wrong_action_count["expected_action_events"],
+            )
+        )
+        wrong_action_count["expected_logical_source_closure"][
+            "completed_action_count"
+        ] -= 1
+        wrong_action_count["semantic_evidence_plan"] = (
+            subject.build_semantic_evidence_plan(
+                boundary, wrong_action_count["action_count"],
+                wrong_action_count["expected_logical_source_closure"], trace,
+                certificates,
+                wrong_action_count["semantic_evidence_plan"][
+                    "authenticated_inputs"
+                ],
+            )
+        )
+        with self.assertRaisesRegex(
+            subject.ContractError, "exact LP-complete non-diagnostic boundary",
+        ):
+            subject.validate_direct_evidence_v6_artifact(
+                wrong_action_count, receipt=False,
+            )
+        diagnostic = copy.deepcopy(attempt)
+        diagnostic["diagnostic_only"] = True
+        with self.assertRaisesRegex(
+            subject.ContractError, "exact LP-complete non-diagnostic boundary",
+        ):
+            subject.validate_direct_evidence_v6_artifact(
+                diagnostic, receipt=False,
+            )
 
         failed = {
             **self.direct_receipt_envelope(attempt),

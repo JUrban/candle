@@ -136,6 +136,11 @@ LP_CONSUMPTION_CLASS_COUNTS = {
     "lp-certificate": 38,
     "lp-certificate-prepared": 1,
 }
+LP_COMPLETE_BOUNDARY_ACTION_COUNTS = {
+    "05-lp_support-through-184": 185,
+    "06-text_formalization-through-290": 291,
+    "07-final_assembly-through-296": 297,
+}
 DIRECT_EVIDENCE_CLAIM = (
     "compiled cumulative source-action attempt; not S2/S3 without semantic "
     "fingerprints"
@@ -3248,22 +3253,52 @@ def validate_lp_consumption_observation(
 
 
 def validate_lp_consumption_log(
-    log_text: str, contract: dict[str, Any],
+    log_text: str,
+    contract: dict[str, Any],
+    boundary_id: str,
+    action_count: int,
 ) -> dict[str, Any]:
     contract = validate_lp_consumption_contract(contract)
+    require(isinstance(boundary_id, str) and boundary_id and
+            type(action_count) is int and action_count > 0,
+            "malformed LP-certificate consumption execution interval")
+    lines = log_text.splitlines()
     records = []
-    for line in log_text.splitlines():
+    record_positions = []
+    for position, line in enumerate(lines):
         if line.startswith(LP_CONSUMPTION_PREFIX):
             require(line.startswith(LP_CONSUMPTION_PREFIX + "\t"),
                     "malformed LP-certificate consumption namespace")
             records.append(line.split("\t"))
+            record_positions.append(position)
     require(records, "missing LP-certificate consumption session")
+    preflight = f"{PREFLIGHT_MARKER} {contract['nonce']}"
+    boundary = (
+        f"{SUCCESS_MARKER} {contract['nonce']} {boundary_id} {action_count}"
+    )
+    preflight_positions = [
+        index for index, line in enumerate(lines) if line == preflight
+    ]
+    boundary_positions = [
+        index for index, line in enumerate(lines) if line == boundary
+    ]
+    source_terminal_positions = [
+        index for index, line in enumerate(lines)
+        if line.startswith(
+            f"{SOURCE_TRACE_PREFIX}\t{contract['nonce']}\tTERMINAL\t"
+        )
+    ]
+    require(len(preflight_positions) == len(boundary_positions) ==
+            len(source_terminal_positions) == 1,
+            "LP-certificate consumption lacks its exact runtime interval")
     binding_by_id = {
         binding["binding_id"]: binding for binding in contract["bindings"]
     }
     events = []
     terminal_seen = False
-    for fields in records:
+    terminal_position: int | None = None
+    event_positions = []
+    for position, fields in zip(record_positions, records, strict=True):
         require(not terminal_seen and len(fields) >= 3 and
                 fields[0] == LP_CONSUMPTION_PREFIX and
                 fields[1] == contract["nonce"],
@@ -3288,6 +3323,7 @@ def validate_lp_consumption_log(
                 "binding_id": fields[4],
                 "index": binding["index"],
             })
+            event_positions.append(position)
         elif record_type == "TERMINAL":
             require(len(fields) == 5,
                     "malformed LP-certificate consumption terminal")
@@ -3303,6 +3339,7 @@ def validate_lp_consumption_log(
                     event_count == len(events) and record_count == 39,
                     "LP-certificate consumption terminal count mismatch")
             terminal_seen = True
+            terminal_position = position
         elif record_type == "FAILURE":
             require(len(fields) == 4 and fields[3],
                     "malformed LP-certificate consumption failure")
@@ -3314,6 +3351,11 @@ def validate_lp_consumption_log(
                 f"unknown LP-certificate consumption record: {record_type}"
             )
     require(terminal_seen, "missing LP-certificate consumption terminal")
+    require(terminal_position is not None and event_positions and
+            preflight_positions[0] < min(event_positions) and
+            max(event_positions) < boundary_positions[0] < terminal_position <
+            source_terminal_positions[0],
+            "LP-certificate consumption is outside its exact runtime interval")
     events_by_binding = {binding_id: [] for binding_id in binding_by_id}
     for event in events:
         events_by_binding[event["binding_id"]].append(event)
@@ -3893,8 +3935,11 @@ def _validate_direct_evidence_artifact(
         )
     lp_consumption_contract: dict[str, Any] | None = None
     if evidence_schema == 6:
-        require(boundary_id.split("-", 1)[0] in {"05", "06", "07"},
-                "LP consumption evidence requires an LP-complete boundary")
+        require(artifact.get("diagnostic_only") is False and
+                LP_COMPLETE_BOUNDARY_ACTION_COUNTS.get(boundary_id) ==
+                action_count,
+                "LP consumption evidence requires an exact LP-complete "
+                "non-diagnostic boundary/action count")
         lp_consumption_contract = validate_lp_consumption_contract(
             artifact.get("lp_consumption_contract")
         )
@@ -4255,7 +4300,7 @@ def _validate_direct_evidence_artifact(
         require(lp_consumption_contract is not None,
                 "LP consumption receipt lacks its contract")
         log_lp_consumption = validate_lp_consumption_log(
-            log_text, lp_consumption_contract,
+            log_text, lp_consumption_contract, boundary_id, action_count,
         )
         require(exact_json_equal(log_lp_consumption, lp_consumption),
                 "receipt LP consumption differs from bound log")
@@ -5004,8 +5049,10 @@ def _run_attempt_impl(
     require(evidence_schema in (5, 6),
             "runtime execution supports direct evidence schemas 5 and 6")
     require(evidence_schema == 5 or
-            boundary_id.split("-", 1)[0] in {"05", "06", "07"},
-            "LP consumption evidence requires an LP-complete boundary")
+            LP_COMPLETE_BOUNDARY_ACTION_COUNTS.get(boundary_id) ==
+            len(prepared["actions"]),
+            "LP consumption evidence requires an exact LP-complete "
+            "boundary/action count")
 
     require(timeout_seconds > 0, "timeout must be positive")
     require(0 < max_cpu_seconds <= 172800,
@@ -5392,7 +5439,8 @@ def _run_attempt_impl(
             require(lp_consumption_contract is not None,
                     "LP consumption evidence lacks its runtime contract")
             lp_consumption = validate_lp_consumption_log(
-                log_text, lp_consumption_contract,
+                log_text, lp_consumption_contract, boundary_id,
+                len(prepared["actions"]),
             )
             semantic_coverage = derive_semantic_coverage_v6(
                 semantic_evidence_plan, observed_source_closure,
