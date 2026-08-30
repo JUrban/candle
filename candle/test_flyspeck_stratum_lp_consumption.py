@@ -82,6 +82,11 @@ class LpConsumptionTests(unittest.TestCase):
         fields[3] = "0"
         duplicate_id[1] = "\t".join(fields)
         cases.append(("duplicate", duplicate_id))
+        duplicate_binding = self.valid_lines()
+        fields = duplicate_binding[1].split("\t")
+        fields[4] = duplicate_binding[0].split("\t")[4]
+        duplicate_binding[1] = "\t".join(fields)
+        cases.append(("duplicate binding", duplicate_binding))
         unknown = self.valid_lines()
         fields = unknown[0].split("\t")
         fields[4] = "f" * 64

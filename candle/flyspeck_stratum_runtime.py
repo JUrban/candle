@@ -3100,7 +3100,7 @@ def validate_lp_consumption_observation(
     events = value.get("events")
     require(isinstance(events, list) and
             type(value.get("event_count")) is int and
-            value["event_count"] == len(events) and len(events) >= 39 and
+            value["event_count"] == len(events) == 39 and
             value.get("ordered_event_sha256") == canonical_sha256(events),
             "LP-certificate consumption event closure mismatch")
     binding_by_id = {
@@ -3129,8 +3129,9 @@ def validate_lp_consumption_observation(
             )
         }
         binding_events = events_by_binding[binding["binding_id"]]
-        require(binding_events,
-                f"LP certificate was not consumed: {binding['relative']}")
+        require(len(binding_events) == 1,
+                "LP certificate consumption is not exactly once: " +
+                binding["relative"])
         expected_records.append({
             **identity,
             "event_count": len(binding_events),
