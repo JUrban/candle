@@ -144,6 +144,10 @@ DIRECT_V5_EVIDENCE_CLAIM = (
     "compiled cumulative source-action and semantic observation attempt; "
     "not S2/S3 without independent approval"
 )
+DIRECT_V6_EVIDENCE_CLAIM = (
+    "compiled cumulative source-action, semantic, and exact LP-certificate "
+    "consumption observation attempt; not S2/S3 without independent approval"
+)
 DIRECT_ATTEMPT_FIELDS = frozenset({
     "schema", "kind", "claim", "state", "started_utc", "boundary_id",
     "diagnostic_only", "attempt_nonce", "action_count",
@@ -165,6 +169,12 @@ DIRECT_V5_ATTEMPT_FIELDS = DIRECT_ATTEMPT_FIELDS | frozenset({
 })
 DIRECT_V5_RECEIPT_ONLY_FIELDS = DIRECT_RECEIPT_ONLY_FIELDS | frozenset({
     "dependency_history", "semantic_coverage",
+})
+DIRECT_V6_ATTEMPT_FIELDS = DIRECT_V5_ATTEMPT_FIELDS | frozenset({
+    "lp_consumption_contract",
+})
+DIRECT_V6_RECEIPT_ONLY_FIELDS = DIRECT_V5_RECEIPT_ONLY_FIELDS | frozenset({
+    "lp_certificate_consumption",
 })
 DIRECT_INPUT_FIELDS = frozenset({
     "plan", "host_materialization", "manifest", "linked_provenance",
@@ -246,6 +256,9 @@ DEPENDENCY_HISTORY_POLICY = (
 )
 SEMANTIC_COVERAGE_POLICY = (
     "authenticated-direct-source-lp-nonlinear-observation-v1"
+)
+SEMANTIC_COVERAGE_V6_POLICY = (
+    "authenticated-direct-source-lp-consumption-nonlinear-observation-v2"
 )
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 EXPECTED_PYTHON_RUNTIME = {
@@ -2076,6 +2089,56 @@ def derive_semantic_coverage(
     }
 
 
+def derive_semantic_coverage_v6(
+    plan: dict[str, Any],
+    logical_source_observation: dict[str, Any],
+    physical_source_observation: dict[str, Any],
+    structural_fingerprints: dict[str, Any],
+    dependency_history: dict[str, Any],
+    lp_consumption_contract: dict[str, Any],
+    lp_consumption_observation: dict[str, Any],
+) -> dict[str, Any]:
+    """Add exact, nonce-free LP input consumption to unapproved coverage."""
+    base = derive_semantic_coverage(
+        plan, logical_source_observation, physical_source_observation,
+        structural_fingerprints, dependency_history,
+    )
+    contract = validate_lp_consumption_contract(lp_consumption_contract)
+    observation = validate_lp_consumption_observation(
+        contract, lp_consumption_observation,
+    )
+    contract_records = [
+        {
+            field: binding[field] for field in (
+                "index", "class", "relative", "bytes", "sha256", "md5",
+            )
+        }
+        for binding in contract["bindings"]
+    ]
+    require(exact_json_equal(
+                contract_records, plan["lp_certificate_inputs"]["records"],
+            ) and
+            plan["lp_certificate_inputs"]["ordered_record_sha256"] ==
+            canonical_sha256(contract_records) and
+            base["lp"] == "observed-uncompared" and
+            observation["event_count"] == 39 and
+            all(record["event_count"] == 1
+                for record in observation["records"]),
+            "semantic coverage lacks exact LP-certificate consumption")
+    return {
+        **base,
+        "schema": 2,
+        "kind": "candle-flyspeck-direct-semantic-coverage-observation-v2",
+        "policy": SEMANTIC_COVERAGE_V6_POLICY,
+        "lp": "consumption-observed-uncompared",
+        "lp_certificate_consumption_contract_sha256":
+            canonical_sha256(contract),
+        "lp_certificate_consumption_observation_sha256":
+            canonical_sha256(observation),
+        "lp_certificate_consumption_trace_included": True,
+    }
+
+
 def write_postlude(
     path: Path,
     candle_root: Path,
@@ -3464,14 +3527,17 @@ def _validate_direct_evidence_artifact(
     runtime_executable_path: Path | None = None,
 ) -> None:
     """Validate one exact, disjoint direct-attempt evidence schema."""
-    require(evidence_schema in (4, 5), "unsupported direct evidence schema")
+    require(evidence_schema in (4, 5, 6),
+            "unsupported direct evidence schema")
     attempt_fields = (
-        DIRECT_V5_ATTEMPT_FIELDS
-        if evidence_schema == 5 else DIRECT_ATTEMPT_FIELDS
+        DIRECT_V6_ATTEMPT_FIELDS if evidence_schema == 6 else
+        DIRECT_V5_ATTEMPT_FIELDS if evidence_schema == 5 else
+        DIRECT_ATTEMPT_FIELDS
     )
     receipt_only_fields = (
-        DIRECT_V5_RECEIPT_ONLY_FIELDS
-        if evidence_schema == 5 else DIRECT_RECEIPT_ONLY_FIELDS
+        DIRECT_V6_RECEIPT_ONLY_FIELDS if evidence_schema == 6 else
+        DIRECT_V5_RECEIPT_ONLY_FIELDS if evidence_schema == 5 else
+        DIRECT_RECEIPT_ONLY_FIELDS
     )
     expected_fields = (
         attempt_fields | receipt_only_fields if receipt else attempt_fields
@@ -3484,8 +3550,9 @@ def _validate_direct_evidence_artifact(
     require(artifact.get("kind") == "candle-flyspeck-compiled-stratum-attempt",
             "wrong direct runtime evidence kind")
     expected_claim = (
-        DIRECT_V5_EVIDENCE_CLAIM
-        if evidence_schema == 5 else DIRECT_EVIDENCE_CLAIM
+        DIRECT_V6_EVIDENCE_CLAIM if evidence_schema == 6 else
+        DIRECT_V5_EVIDENCE_CLAIM if evidence_schema == 5 else
+        DIRECT_EVIDENCE_CLAIM
     )
     require(artifact.get("claim") == expected_claim and
             isinstance(artifact.get("diagnostic_only"), bool) and
@@ -3599,9 +3666,17 @@ def _validate_direct_evidence_artifact(
         "semantic_coverage_policy", "dependency_history_is_kernel_trace",
         "semantic_approval_included", "pft_used",
     }
+    v6_contract = {
+        "lp_certificate_consumption_protocol",
+        "lp_certificate_consumption_policy",
+        "lp_certificate_consumption_order",
+        "lp_certificate_consumption_exactly_once",
+    }
     require(isinstance(contract, dict) and
             set(contract) == base_contract | (
-                v5_contract if evidence_schema == 5 else set()
+                v5_contract if evidence_schema >= 5 else set()
+            ) | (
+                v6_contract if evidence_schema == 6 else set()
             ) and
             contract.get("schema") ==
             f"candle-flyspeck-direct-runtime-evidence-v{evidence_schema}" and
@@ -3625,10 +3700,21 @@ def _validate_direct_evidence_artifact(
                 contract.get("dependency_history_policy") ==
                 DEPENDENCY_HISTORY_POLICY and
                 contract.get("semantic_coverage_policy") ==
-                SEMANTIC_COVERAGE_POLICY and
+                (SEMANTIC_COVERAGE_V6_POLICY if evidence_schema == 6 else
+                 SEMANTIC_COVERAGE_POLICY) and
                 contract.get("dependency_history_is_kernel_trace") is False and
                 contract.get("semantic_approval_included") is False and
-                contract.get("pft_used") is False
+                contract.get("pft_used") is False and
+                (evidence_schema == 5 or (
+                    contract.get("lp_certificate_consumption_protocol") ==
+                    LP_CONSUMPTION_PROTOCOL and
+                    contract.get("lp_certificate_consumption_policy") ==
+                    LP_CONSUMPTION_POLICY and
+                    contract.get("lp_certificate_consumption_order") ==
+                    LP_CONSUMPTION_ORDER and
+                    contract.get("lp_certificate_consumption_exactly_once")
+                    is True
+                ))
             )),
             f"malformed direct runtime evidence-v{evidence_schema} contract")
     action_count = artifact.get("action_count")
@@ -3795,7 +3881,7 @@ def _validate_direct_evidence_artifact(
             for binding in bindings
         ), f"logical and physical source identities differ: {record['key']}")
     semantic_plan: dict[str, Any] | None = None
-    if evidence_schema == 5:
+    if evidence_schema >= 5:
         semantic_plan = validate_semantic_evidence_plan(
             artifact.get("semantic_evidence_plan"), boundary_id, action_count,
             expected, expected_trace, {
@@ -3805,6 +3891,28 @@ def _validate_direct_evidence_artifact(
                 "manifest_sha256": inputs["manifest"]["sha256"],
             },
         )
+    lp_consumption_contract: dict[str, Any] | None = None
+    if evidence_schema == 6:
+        require(boundary_id.split("-", 1)[0] in {"05", "06", "07"},
+                "LP consumption evidence requires an LP-complete boundary")
+        lp_consumption_contract = validate_lp_consumption_contract(
+            artifact.get("lp_consumption_contract")
+        )
+        require(lp_consumption_contract["nonce"] ==
+                artifact.get("attempt_nonce") and semantic_plan is not None,
+                "LP consumption contract differs from direct attempt")
+        contract_records = [
+            {
+                field: binding[field] for field in (
+                    "index", "class", "relative", "bytes", "sha256", "md5",
+                )
+            }
+            for binding in lp_consumption_contract["bindings"]
+        ]
+        require(exact_json_equal(
+                    contract_records,
+                    semantic_plan["lp_certificate_inputs"]["records"],
+                ), "LP consumption contract differs from semantic inputs")
     if not receipt:
         require(artifact.get("state") == "running",
                 "initial direct runtime artifact is not running")
@@ -4004,9 +4112,11 @@ def _validate_direct_evidence_artifact(
 
     exact_dependency_history = evidence_schema == 4
     exact_semantic_coverage = evidence_schema == 4
+    exact_lp_consumption = evidence_schema < 6
     dependency_history: dict[str, Any] | None = None
     semantic_coverage: dict[str, Any] | None = None
-    if evidence_schema == 5:
+    lp_consumption: dict[str, Any] | None = None
+    if evidence_schema >= 5:
         dependency_value = artifact.get("dependency_history")
         exact_dependency_history = dependency_value is not None
         if dependency_value is not None:
@@ -4021,12 +4131,41 @@ def _validate_direct_evidence_artifact(
                     observed is not None and physical_trace is not None and
                     fingerprints is not None and dependency_history is not None,
                     "semantic coverage lacks its authenticated observations")
-            semantic_coverage = derive_semantic_coverage(
-                semantic_plan, observed, physical_trace, fingerprints,
-                dependency_history,
-            )
+            if evidence_schema == 6:
+                lp_value = artifact.get("lp_certificate_consumption")
+                exact_lp_consumption = lp_value is not None
+                if lp_value is not None:
+                    require(lp_consumption_contract is not None,
+                            "LP consumption observation lacks its contract")
+                    lp_consumption = validate_lp_consumption_observation(
+                        lp_consumption_contract, lp_value,
+                    )
+                require(lp_consumption is not None and
+                        lp_consumption_contract is not None,
+                        "semantic coverage lacks LP consumption observation")
+                semantic_coverage = derive_semantic_coverage_v6(
+                    semantic_plan, observed, physical_trace, fingerprints,
+                    dependency_history, lp_consumption_contract,
+                    lp_consumption,
+                )
+            else:
+                semantic_coverage = derive_semantic_coverage(
+                    semantic_plan, observed, physical_trace, fingerprints,
+                    dependency_history,
+                )
             require(exact_json_equal(coverage_value, semantic_coverage),
                     "receipt semantic coverage differs from exact observations")
+        elif evidence_schema == 6:
+            exact_lp_consumption = (
+                artifact.get("lp_certificate_consumption") is not None
+            )
+            if exact_lp_consumption:
+                require(lp_consumption_contract is not None,
+                        "LP consumption observation lacks its contract")
+                lp_consumption = validate_lp_consumption_observation(
+                    lp_consumption_contract,
+                    artifact["lp_certificate_consumption"],
+                )
 
     complete_success = (
         validation_error is None and timed_out is False and
@@ -4034,7 +4173,8 @@ def _validate_direct_evidence_artifact(
         resources is not None and
         marker_count == action_count and exact_events and
         exact_closure and exact_physical_trace and exact_fingerprints and
-        exact_dependency_history and exact_semantic_coverage
+        exact_dependency_history and exact_semantic_coverage and
+        exact_lp_consumption
     )
     if artifact["state"] == "completed":
         require(complete_success and log_record["bytes"] > 0,
@@ -4071,7 +4211,7 @@ def _validate_direct_evidence_artifact(
                 log_text, expected_actions, boundary_id,
                 artifact["attempt_nonce"], fingerprint_requests(boundary_id),
                 (dependency_history_requests(boundary_id)
-                 if evidence_schema == 5 else []),
+                 if evidence_schema >= 5 else []),
             ), events),
             "receipt action events differ from bound log")
     require(exact_json_equal(validate_logical_source_closure(
@@ -4104,13 +4244,21 @@ def _validate_direct_evidence_artifact(
         )
     require(exact_json_equal(log_fingerprints, fingerprints),
             "receipt fingerprints differ from bound log")
-    if evidence_schema == 5:
+    if evidence_schema >= 5:
         log_dependency_history = parse_dependency_history_text(
             log_text, dependency_history_requests(boundary_id), boundary_id,
             artifact["attempt_nonce"],
         )
         require(exact_json_equal(log_dependency_history, dependency_history),
                 "receipt dependency history differs from bound log")
+    if evidence_schema == 6:
+        require(lp_consumption_contract is not None,
+                "LP consumption receipt lacks its contract")
+        log_lp_consumption = validate_lp_consumption_log(
+            log_text, lp_consumption_contract,
+        )
+        require(exact_json_equal(log_lp_consumption, lp_consumption),
+                "receipt LP consumption differs from bound log")
 
 
 def validate_direct_evidence_v4_artifact(
@@ -4133,6 +4281,18 @@ def validate_direct_evidence_v5_artifact(
     """Validate direct evidence-v5 observations without granting approval."""
     _validate_direct_evidence_artifact(
         artifact, receipt=receipt, evidence_schema=5, log_path=log_path,
+        runtime_executable_path=runtime_executable_path,
+    )
+
+
+def validate_direct_evidence_v6_artifact(
+    artifact: dict[str, Any], *, receipt: bool,
+    log_path: Path | None = None,
+    runtime_executable_path: Path | None = None,
+) -> None:
+    """Validate exact LP-consumption observations without granting approval."""
+    _validate_direct_evidence_artifact(
+        artifact, receipt=receipt, evidence_schema=6, log_path=log_path,
         runtime_executable_path=runtime_executable_path,
     )
 

@@ -979,6 +979,53 @@ class StratumRuntimeTests(unittest.TestCase):
         self.assertFalse(coverage["s3_eligible"])
         self.assertFalse(coverage["s2_s3_evidence"])
 
+        bindings = []
+        for record in plan["lp_certificate_inputs"]["records"]:
+            identity = dict(record)
+            bindings.append({
+                "binding_id": subject.canonical_sha256(identity),
+                **identity,
+                "path": "/runtime/certificates/" +
+                        Path(record["relative"]).name,
+            })
+        consumption_contract = subject.validate_lp_consumption_contract({
+            "schema": 1,
+            "protocol": subject.LP_CONSUMPTION_PROTOCOL,
+            "policy": subject.LP_CONSUMPTION_POLICY,
+            "order": subject.LP_CONSUMPTION_ORDER,
+            "nonce": self.nonce,
+            "record_count": 39,
+            "ordered_binding_sha256": subject.canonical_sha256(bindings),
+            "bindings": bindings,
+            "pft_used": False,
+        })
+        consumption_lines = [
+            "\t".join((
+                subject.LP_CONSUMPTION_PREFIX, self.nonce, "CONSUMED",
+                str(index), binding["binding_id"],
+            ))
+            for index, binding in enumerate(reversed(bindings))
+        ]
+        consumption_lines.append("\t".join((
+            subject.LP_CONSUMPTION_PREFIX, self.nonce, "TERMINAL", "39", "39",
+        )))
+        consumption = subject.validate_lp_consumption_log(
+            "\n".join(consumption_lines), consumption_contract,
+        )
+        coverage_v6 = subject.derive_semantic_coverage_v6(
+            plan, {
+                **self.logical_source_closure,
+                "status": "expected-closure-emitted-unapproved",
+            }, self.source_trace_observation, fingerprints, dependency,
+            consumption_contract, consumption,
+        )
+        self.assertEqual(coverage_v6["schema"], 2)
+        self.assertEqual(coverage_v6["lp"], "consumption-observed-uncompared")
+        self.assertTrue(
+            coverage_v6["lp_certificate_consumption_trace_included"]
+        )
+        self.assertFalse(coverage_v6["s2_s3_evidence"])
+
     def test_manifest_closure_is_complete_ordered_and_excludes_full_loader(self) -> None:
         manifest = json.loads(
             (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
@@ -1585,6 +1632,140 @@ class StratumRuntimeTests(unittest.TestCase):
                     forged, receipt=True,
                     runtime_executable_path=self.runtime_executable_path,
                 )
+
+    def test_evidence_v6_attempt_is_disjoint_and_binds_lp_contract(self) -> None:
+        expected_actions = [
+            {
+                "index": index,
+                "source_sha256": action["source_sha256"],
+                "logical_source_delta": action["logical_source_delta"],
+                "logical_source_delta_sha256":
+                    action["logical_source_delta_sha256"],
+            }
+            for index, action in enumerate(self.actions)
+        ]
+        attempt = self.direct_v5_attempt(expected_actions)
+        boundary = "05-lp_support-through-184"
+        attempt["boundary_id"] = boundary
+        trace = attempt["expected_physical_source_trace"]
+        path = "/trace/99-fingerprint.ml"
+        payload = {
+            "resolved": path,
+            "canonical": path,
+            "key": "control:fingerprint-serializer",
+            "basename": Path(path).name,
+            "source_md5": "e" * 32,
+            "source_sha256": "f" * 64,
+            "selected": path,
+            "selected_sha256": "f" * 64,
+            "normalization": "-",
+        }
+        trace["bindings"].append({
+            "binding_id": subject.canonical_sha256(payload), **payload,
+        })
+        trace["binding_count"] = len(trace["bindings"])
+        trace["ordered_binding_sha256"] = subject.canonical_sha256(
+            trace["bindings"],
+        )
+        trace["required_keys"] = sorted([
+            *trace["required_keys"], "control:fingerprint-serializer",
+        ])
+        trace["required_key_count"] = len(trace["required_keys"])
+        trace["ordered_required_key_sha256"] = subject.canonical_sha256(
+            trace["required_keys"],
+        )
+        certificate_records = attempt["semantic_evidence_plan"][
+            "lp_certificate_inputs"
+        ]["records"]
+        certificates = [
+            {field: record[field] for field in (
+                "class", "relative", "bytes", "sha256", "md5",
+            )}
+            for record in certificate_records
+        ]
+        attempt["semantic_evidence_plan"] = subject.build_semantic_evidence_plan(
+            boundary, attempt["action_count"],
+            attempt["expected_logical_source_closure"], trace, certificates,
+            attempt["semantic_evidence_plan"]["authenticated_inputs"],
+        )
+        bindings = []
+        for record in certificate_records:
+            identity = dict(record)
+            bindings.append({
+                "binding_id": subject.canonical_sha256(identity),
+                **identity,
+                "path": "/runtime/certificates/" +
+                        Path(record["relative"]).name,
+            })
+        attempt.update({
+            "schema": 6,
+            "claim": subject.DIRECT_V6_EVIDENCE_CLAIM,
+            "lp_consumption_contract": {
+                "schema": 1,
+                "protocol": subject.LP_CONSUMPTION_PROTOCOL,
+                "policy": subject.LP_CONSUMPTION_POLICY,
+                "order": subject.LP_CONSUMPTION_ORDER,
+                "nonce": self.nonce,
+                "record_count": 39,
+                "ordered_binding_sha256": subject.canonical_sha256(bindings),
+                "bindings": bindings,
+                "pft_used": False,
+            },
+        })
+        attempt["evidence_contract"].update({
+            "schema": "candle-flyspeck-direct-runtime-evidence-v6",
+            "semantic_coverage_policy": subject.SEMANTIC_COVERAGE_V6_POLICY,
+            "lp_certificate_consumption_protocol":
+                subject.LP_CONSUMPTION_PROTOCOL,
+            "lp_certificate_consumption_policy": subject.LP_CONSUMPTION_POLICY,
+            "lp_certificate_consumption_order": subject.LP_CONSUMPTION_ORDER,
+            "lp_certificate_consumption_exactly_once": True,
+        })
+        subject.validate_direct_evidence_v6_artifact(attempt, receipt=False)
+        with self.assertRaises(subject.ContractError):
+            subject.validate_direct_evidence_v5_artifact(attempt, receipt=False)
+        for label, mutate in (
+            ("binding identity", lambda item: item["lp_consumption_contract"][
+                "bindings"
+            ][0].update(binding_id="0" * 64)),
+            ("PFT", lambda item: item["lp_consumption_contract"]["bindings"][
+                0
+            ].update(relative="pft/certificates/00.dat")),
+            ("self approval", lambda item: item["evidence_contract"].update(
+                semantic_approval_included=True,
+            )),
+        ):
+            forged = copy.deepcopy(attempt)
+            mutate(forged)
+            with self.subTest(label=label), self.assertRaises(
+                subject.ContractError,
+            ):
+                subject.validate_direct_evidence_v6_artifact(
+                    forged, receipt=False,
+                )
+
+        failed = {
+            **self.direct_receipt_envelope(attempt),
+            "state": "failed",
+            "timed_out": False,
+            "exit_code": None,
+            "child_resources": None,
+            "log": None,
+            "action_markers_validated": 0,
+            "action_events": None,
+            "logical_source_closure": None,
+            "physical_source_trace": None,
+            "semantic_fingerprints": None,
+            "dependency_history": None,
+            "semantic_coverage": None,
+            "lp_certificate_consumption": None,
+            "validation_error": "OSError: process was not started",
+            "postflight_reauthenticated": False,
+        }
+        subject.validate_direct_evidence_v6_artifact(
+            failed, receipt=True,
+            runtime_executable_path=self.runtime_executable_path,
+        )
 
     def test_evidence_v5_final_attempt_requires_exact_semantic_requests(self) -> None:
         expected_actions = [
