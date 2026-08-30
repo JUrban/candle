@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import flyspeck_stratum_runtime as subject
@@ -194,6 +195,62 @@ class LpConsumptionTests(unittest.TestCase):
                 subject.validate_lp_consumption_observation(
                     self.contract, forged,
                 )
+
+    def test_runtime_config_and_postlude_enable_only_explicit_contract(self) -> None:
+        prepared = {
+            "source_trace_contract": {
+                "nonce": self.nonce, "bindings": [], "binding_count": 0,
+            },
+            "attempt_nonce": self.nonce,
+            "flyspeck_root": "/snapshot/flyspeck",
+            "overlay_root": "/snapshot/overlay",
+            "generated_root": "/snapshot/generated",
+            "boundary": {"boundary_id": "05-lp"},
+            "actions": [],
+            "normalized_runtime": [],
+            "source_alias_runtime": [],
+            "generated_runtime": [],
+            "lp_certificate_runtime": self.runtime,
+            "process_runtime": [],
+        }
+        config = Path(self.temporary.name) / "config.ml"
+        with mock.patch.object(
+            subject, "validate_source_trace_contract", side_effect=lambda value: value,
+        ):
+            subject.write_config(
+                config, Path("/snapshot/candle"), prepared,
+                Path("/snapshot/program.ml"), "0" * 32,
+            )
+            disabled = config.read_text(encoding="utf-8")
+            self.assertIn("candle_flyspeck_lp_consumption_enabled = false", disabled)
+            self.assertNotIn(self.contract["bindings"][0]["binding_id"], disabled)
+            prepared["lp_consumption_contract"] = self.contract
+            subject.write_config(
+                config, Path("/snapshot/candle"), prepared,
+                Path("/snapshot/program.ml"), "0" * 32,
+            )
+        enabled = config.read_text(encoding="utf-8")
+        self.assertIn("candle_flyspeck_lp_consumption_enabled = true", enabled)
+        for binding in self.contract["bindings"]:
+            self.assertIn(binding["binding_id"], enabled)
+            self.assertIn(binding["path"], enabled)
+
+        postlude = Path(self.temporary.name) / "postlude.ml"
+        arguments = (
+            postlude, Path("/snapshot/candle"), "05-lp", [], self.nonce,
+            {"records": [], "record_count": 0, "ordered_record_sha256": "0" * 64},
+        )
+        subject.write_postlude(*arguments)
+        self.assertNotIn(
+            "finish_lp_certificate_consumption",
+            postlude.read_text(encoding="utf-8"),
+        )
+        subject.write_postlude(*arguments, lp_consumption_enabled=True)
+        rendered = postlude.read_text(encoding="utf-8")
+        self.assertLess(
+            rendered.index("finish_lp_certificate_consumption"),
+            rendered.index("requestSourceTraceFinish"),
+        )
 
 
 if __name__ == "__main__":

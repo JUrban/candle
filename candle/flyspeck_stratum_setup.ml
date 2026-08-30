@@ -76,6 +76,47 @@ List.iter
 if List.length candle_flyspeck_lp_certificate_files <> 39 then
   failwith "incomplete Flyspeck LP certificate runtime list";;
 
+if candle_flyspeck_lp_consumption_enabled &&
+   (String.length candle_flyspeck_lp_consumption_nonce <> 32 ||
+    List.length candle_flyspeck_lp_consumption_bindings <> 39 ||
+    map fst candle_flyspeck_lp_consumption_bindings <>
+      candle_flyspeck_lp_certificate_files) then
+  failwith "incomplete Flyspeck LP certificate consumption contract";;
+
+let candle_flyspeck_lp_consumption_events = ref ([]:(string * string) list);;
+
+let candle_flyspeck_record_lp_certificate_consumption path =
+  if not candle_flyspeck_lp_consumption_enabled then ()
+  else
+    let binding_id =
+      try List.assoc path candle_flyspeck_lp_consumption_bindings
+      with Not_found ->
+        failwith ("unbound Flyspeck LP certificate consumption: " ^ path) in
+    if List.mem_assoc path !candle_flyspeck_lp_consumption_events then
+      failwith ("duplicate Flyspeck LP certificate consumption: " ^ path)
+    else
+      let event_id = List.length !candle_flyspeck_lp_consumption_events in
+      candle_flyspeck_lp_consumption_events :=
+        (path,binding_id) :: !candle_flyspeck_lp_consumption_events;
+      print_endline
+        ("CANDLE_FLYSPECK_LP_CONSUMPTION_V1\t" ^
+         candle_flyspeck_lp_consumption_nonce ^ "\tCONSUMED\t" ^
+         string_of_int event_id ^ "\t" ^ binding_id);;
+
+let candle_flyspeck_finish_lp_certificate_consumption () =
+  if not candle_flyspeck_lp_consumption_enabled then ()
+  else if List.length !candle_flyspeck_lp_consumption_events <> 39 ||
+          not (List.for_all
+                 (fun (path,_) ->
+                    List.mem_assoc path
+                      !candle_flyspeck_lp_consumption_events)
+                 candle_flyspeck_lp_consumption_bindings) then
+    failwith "incomplete Flyspeck LP certificate consumption closure"
+  else
+    print_endline
+      ("CANDLE_FLYSPECK_LP_CONSUMPTION_V1\t" ^
+       candle_flyspeck_lp_consumption_nonce ^ "\tTERMINAL\t39\t39");;
+
 let candle_flyspeck_stratum_date_input,
     candle_flyspeck_stratum_user_input =
   match candle_flyspeck_stratum_process_inputs with

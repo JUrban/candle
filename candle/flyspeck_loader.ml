@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "6e7e5f9291886516c4daf79605620176" then
+     "2c0bad4a06bb2c8bd7b90895d3035092" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "2a7f7810a90f5cfae6b2a329194044b9" then
+     "17a371e4209f427d189043004c9e4561" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -208,7 +208,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/hypermap/verify_all.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/verify_all.hl",
-    "a8b628727f948c59ead7b6f3fbb4b55e");
+    "c1282e344707f2a8af85c258b9cf0e22");
    (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/tactics_jordan.hl",

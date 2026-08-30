@@ -214,6 +214,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ))
         self.assertNotIn("Gc.stat", static_inventory["operations"][1]["after"])
         self.assertIn("outer runner", static_inventory["operations"][1]["after"])
+        self.assertEqual(static_inventory["operations"][2]["line"], 57)
+        self.assertIn(
+            "candle_flyspeck_record_lp_certificate_consumption file",
+            static_inventory["operations"][2]["after"],
+        )
+        self.assertIn("successful return", static_inventory["scope_limit"])
         section_compare = entries["PROJECT-COMPARE-S3-SECTION-NAME-001"]
         self.assertIn("String.compare", section_compare["operations"][0]["after"])
         lp_compare = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
@@ -263,7 +269,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 40)
+        self.assertEqual(len(operation_ids), 41)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

@@ -4270,7 +4270,7 @@
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
-        "line": 57,
+        "line": 58,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
@@ -6225,7 +6225,7 @@
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
-        "line": 57,
+        "line": 58,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
@@ -8523,8 +8523,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "6e7e5f9291886516c4daf79605620176",
-    "generated_source_sha256": "343ac5686f3163eb4fe6512bdbfe316999aba500d60d40cca4209d7d4263e562",
+    "generated_source_md5": "2c0bad4a06bb2c8bd7b90895d3035092",
+    "generated_source_sha256": "ccd3784a1d6a9c8ca29aac1e881fca6d97ac68d593a34a64901da74ad776ae02",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14558,10 +14558,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "2a7f7810a90f5cfae6b2a329194044b9",
+      "md5": "17a371e4209f427d189043004c9e4561",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "712f569228009af1067231f77548d2cafb216051cc26f2abd2b24b4440445932"
+      "sha256": "62f3400d87d28f1e0cdd7f02dd6b0b7adedb7cfede7a0bac6f511298e5b1dacf"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14642,10 +14642,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f844d089b74d55b7335e2e38c1c6fc0e",
+      "md5": "a83a3d5ac0bb223adad94fbd3a53945d",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0362e3ffade00adeaa998524cd2982879dc6fda66299e938c69b05bde7e38e66"
+      "sha256": "aed8de68e67c4de9cd89c2cb142eb991faf67e90ec2b80c82431fd23adc02b28"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17088,10 +17088,10 @@
       "execution_normalization": {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3630,
-        "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
-        "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
-        "operation_count": 2
+        "normalized_bytes": 3700,
+        "normalized_md5": "c1282e344707f2a8af85c258b9cf0e22",
+        "normalized_sha256": "823a006b10cc9fcd507570e1b68f5c315a9b6147d228fca2843d3c13c8dde73e",
+        "operation_count": 3
       },
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
       "path": "formal_lp/hypermap/verify_all.hl",
@@ -21795,7 +21795,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "491ca5a204e15fde5454faf63a42343f5cf4a281e03b8b212c937013b992de7e",
+    "contract_sha256": "ab74fcee275124ae04b0aef2622f3e1dc22c2d262fa9ca9fe178f94b6fcb0728",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22201,10 +22201,10 @@
       {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3630,
-        "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
-        "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
-        "operation_count": 2,
+        "normalized_bytes": 3700,
+        "normalized_md5": "c1282e344707f2a8af85c258b9cf0e22",
+        "normalized_sha256": "823a006b10cc9fcd507570e1b68f5c315a9b6147d228fca2843d3c13c8dde73e",
+        "operation_count": 3,
         "operations": [
           {
             "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n",
@@ -22219,11 +22219,18 @@
             "id": "PROJECT-TELEMETRY-S3-GC-STAT-001",
             "kind": "exact_bytes_replace_once",
             "line": 29
+          },
+          {
+            "after": "    let certificates0 = read_lp_certificates file in\n    let _ = candle_flyspeck_record_lp_certificate_consumption file in\n    let certificates =",
+            "before": "    let certificates0 = read_lp_certificates file in\n    let certificates =",
+            "id": "PROJECT-DIRECT-S3-LP-CONSUMPTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 57
           }
         ],
         "path": "formal_lp/hypermap/verify_all.hl",
-        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims.",
-        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
+        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims.",
+        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
         "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
         "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
         "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
@@ -22464,8 +22471,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "2a7f7810a90f5cfae6b2a329194044b9",
-    "generated_source_sha256": "712f569228009af1067231f77548d2cafb216051cc26f2abd2b24b4440445932",
+    "generated_source_md5": "17a371e4209f427d189043004c9e4561",
+    "generated_source_sha256": "62f3400d87d28f1e0cdd7f02dd6b0b7adedb7cfede7a0bac6f511298e5b1dacf",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

@@ -109,10 +109,10 @@ class StratumRuntimeTests(unittest.TestCase):
                 "md5": "d" * 32,
             },
             "candle:candle/flyspeck_source_digests.ml": {
-                "bytes": 1,
+                "bytes": 34704,
                 "sha256":
-                    "343ac5686f3163eb4fe6512bdbfe316999aba500d60d40cca4209d7d4263e562",
-                "md5": "6e7e5f9291886516c4daf79605620176",
+                    "ccd3784a1d6a9c8ca29aac1e881fca6d97ac68d593a34a64901da74ad776ae02",
+                "md5": "2c0bad4a06bb2c8bd7b90895d3035092",
             },
         }
         trace_bindings = []

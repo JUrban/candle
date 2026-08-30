@@ -385,9 +385,9 @@
       "path": "formal_lp/hypermap/verify_all.hl",
       "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95",
       "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
-      "normalized_sha256": "b01a48485f4be279620eba325cd9ad2119cfbf90695428490b0e0a4838004aca",
-      "normalized_md5": "a8b628727f948c59ead7b6f3fbb4b55e",
-      "normalized_bytes": 3630,
+      "normalized_sha256": "823a006b10cc9fcd507570e1b68f5c315a9b6147d228fca2843d3c13c8dde73e",
+      "normalized_md5": "c1282e344707f2a8af85c258b9cf0e22",
+      "normalized_bytes": 3700,
       "operations": [
         {
           "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001-REPLACE-DIRECTORY-SCAN",
@@ -402,10 +402,17 @@
           "line": 29,
           "before": "let mem_stat () =\n  let stat = Gc.stat() in\n  let word = float_of_int (Sys.word_size / 8) in\n  let free = float_of_int stat.Gc.free_words *. word /. 1024.0 in\n  let total = float_of_int stat.Gc.heap_words *. word /. 1024.0 in\n  let allocated = total -. free in\n  let str = sprintf \"allocated = %f (free = %f; total_size = %f; %f)\\n\" \n    allocated free total (free /. total) in\n    print_string str;;\n",
           "after": "let mem_stat () =\n  print_string \"Candle S3: GC memory telemetry is reported by the outer runner\\n\";;\n"
+        },
+        {
+          "id": "PROJECT-DIRECT-S3-LP-CONSUMPTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 57,
+          "before": "    let certificates0 = read_lp_certificates file in\n    let certificates =",
+          "after": "    let certificates0 = read_lp_certificates file in\n    let _ = candle_flyspeck_record_lp_certificate_consumption file in\n    let certificates ="
         }
       ],
-      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
-      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims."
+      "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
+      "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims."
     },
     {
       "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
