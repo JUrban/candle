@@ -119,6 +119,23 @@ SOURCE_TRACE_TOP_LEVEL_CONTROLS = (
     "control:stratum-check",
     "control:postlude",
 )
+LP_CONSUMPTION_PREFIX = "CANDLE_FLYSPECK_LP_CONSUMPTION_V1"
+LP_CONSUMPTION_PROTOCOL = (
+    "candle-flyspeck-lp-certificate-consumption-v1"
+)
+LP_CONSUMPTION_KIND = (
+    "candle-flyspeck-lp-certificate-consumption-observation-v1"
+)
+LP_CONSUMPTION_POLICY = (
+    "successful-deserialization-authenticated-runtime-table-v1"
+)
+LP_CONSUMPTION_ORDER = (
+    "manifest-runtime-certificate-basename-lexicographic-v1"
+)
+LP_CONSUMPTION_CLASS_COUNTS = {
+    "lp-certificate": 38,
+    "lp-certificate-prepared": 1,
+}
 DIRECT_EVIDENCE_CLAIM = (
     "compiled cumulative source-action attempt; not S2/S3 without semantic "
     "fingerprints"
@@ -2913,6 +2930,326 @@ def validate_source_trace(
         "status": "closed-loader-owned-session",
     }
     return validate_source_trace_observation(contract, observation)
+
+
+def _lp_safe_relative(value: object, label: str) -> str:
+    require(isinstance(value, str) and value and "\\" not in value and
+            all(ord(character) >= 32 and character != "\x7f"
+                for character in value),
+            f"malformed {label}")
+    relative = Path(value)
+    require(not relative.is_absolute() and relative.as_posix() == value and
+            all(part not in {"", ".", ".."} for part in relative.parts),
+            f"unsafe {label}")
+    require(not any(part.lower() == "pft" for part in relative.parts),
+            f"PFT namespace is forbidden in {label}")
+    return value
+
+
+def _lp_hex(value: object, size: int, label: str) -> str:
+    require(isinstance(value, str) and
+            re.fullmatch(rf"[0-9a-f]{{{size}}}", value) is not None,
+            f"malformed {label}")
+    return value
+
+
+def validate_lp_consumption_contract(value: object) -> dict[str, Any]:
+    fields = {
+        "schema", "protocol", "policy", "order", "nonce", "record_count",
+        "ordered_binding_sha256", "bindings", "pft_used",
+    }
+    require(isinstance(value, dict) and set(value) == fields and
+            type(value.get("schema")) is int and value["schema"] == 1 and
+            value.get("protocol") == LP_CONSUMPTION_PROTOCOL and
+            value.get("policy") == LP_CONSUMPTION_POLICY and
+            value.get("order") == LP_CONSUMPTION_ORDER and
+            value.get("pft_used") is False,
+            "malformed LP-certificate consumption contract")
+    nonce = _lp_hex(value.get("nonce"), 32, "LP consumption nonce")
+    bindings = value.get("bindings")
+    require(isinstance(bindings, list) and len(bindings) == 39 and
+            type(value.get("record_count")) is int and
+            value["record_count"] == 39,
+            "LP-certificate consumption contract is not exactly 39 records")
+    paths: set[str] = set()
+    relatives: set[str] = set()
+    basenames: list[str] = []
+    binding_ids: set[str] = set()
+    class_counts = {name: 0 for name in LP_CONSUMPTION_CLASS_COUNTS}
+    for index, binding in enumerate(bindings):
+        binding_fields = {
+            "binding_id", "index", "class", "relative", "path", "bytes",
+            "sha256", "md5",
+        }
+        require(isinstance(binding, dict) and set(binding) == binding_fields and
+                type(binding.get("index")) is int and
+                binding["index"] == index and
+                binding.get("class") in LP_CONSUMPTION_CLASS_COUNTS and
+                type(binding.get("bytes")) is int and binding["bytes"] > 0,
+                f"malformed LP-certificate consumption binding: {index}")
+        relative = _lp_safe_relative(
+            binding.get("relative"),
+            f"LP-certificate consumption relative path: {index}",
+        )
+        path = binding.get("path")
+        require(exact_absolute_path(path) and
+                all(ord(character) >= 32 and character != "\x7f"
+                    for character in path) and
+                not any(part.lower() == "pft" for part in Path(path).parts) and
+                Path(path).name == Path(relative).name and
+                path not in paths and relative not in relatives,
+                f"unsafe or duplicate LP-certificate runtime path: {index}")
+        sha256 = _lp_hex(
+            binding.get("sha256"), 64,
+            f"LP-certificate consumption SHA-256: {index}",
+        )
+        md5 = _lp_hex(
+            binding.get("md5"), 32,
+            f"LP-certificate consumption MD5: {index}",
+        )
+        identity = {
+            "index": index,
+            "class": binding["class"],
+            "relative": relative,
+            "bytes": binding["bytes"],
+            "sha256": sha256,
+            "md5": md5,
+        }
+        binding_id = _lp_hex(
+            binding.get("binding_id"), 64,
+            f"LP-certificate consumption binding identity: {index}",
+        )
+        require(binding_id == canonical_sha256(identity) and
+                binding_id not in binding_ids,
+                f"LP-certificate consumption binding digest mismatch: {index}")
+        paths.add(path)
+        relatives.add(relative)
+        basenames.append(Path(relative).name)
+        binding_ids.add(binding_id)
+        class_counts[binding["class"]] += 1
+    require(class_counts == LP_CONSUMPTION_CLASS_COUNTS and
+            len(set(basenames)) == len(basenames) and
+            basenames == sorted(basenames) and
+            value.get("ordered_binding_sha256") == canonical_sha256(bindings),
+            "LP-certificate consumption class/order closure mismatch")
+    require(nonce == value["nonce"], "LP consumption nonce changed")
+    return value
+
+
+def build_lp_consumption_contract(
+    nonce: str, runtime_certificates: list[dict[str, Any]],
+) -> dict[str, Any]:
+    bindings = []
+    for index, certificate in enumerate(runtime_certificates):
+        identity = {
+            "index": index,
+            "class": certificate.get("class"),
+            "relative": certificate.get("relative"),
+            "bytes": certificate.get("bytes"),
+            "sha256": certificate.get("sha256"),
+            "md5": certificate.get("md5"),
+        }
+        path = certificate.get("path")
+        require(isinstance(path, str),
+                f"missing LP-certificate runtime path: {index}")
+        validate_file(Path(path), identity,
+                      f"LP-certificate consumption input: {index}")
+        bindings.append({
+            "binding_id": canonical_sha256(identity),
+            **identity,
+            "path": path,
+        })
+    contract = {
+        "schema": 1,
+        "protocol": LP_CONSUMPTION_PROTOCOL,
+        "policy": LP_CONSUMPTION_POLICY,
+        "order": LP_CONSUMPTION_ORDER,
+        "nonce": nonce,
+        "record_count": len(bindings),
+        "ordered_binding_sha256": canonical_sha256(bindings),
+        "bindings": bindings,
+        "pft_used": False,
+    }
+    return validate_lp_consumption_contract(contract)
+
+
+def validate_lp_consumption_observation(
+    contract: dict[str, Any], value: object,
+) -> dict[str, Any]:
+    contract = validate_lp_consumption_contract(contract)
+    fields = {
+        "schema", "kind", "protocol", "policy", "order", "nonce", "status",
+        "event_count", "ordered_event_sha256", "events", "record_count",
+        "ordered_record_sha256", "records", "unmatched_event_count",
+        "approved_reference_present", "pft_used", "s2_s3_evidence",
+    }
+    require(isinstance(value, dict) and set(value) == fields and
+            type(value.get("schema")) is int and value["schema"] == 1 and
+            value.get("kind") == LP_CONSUMPTION_KIND and
+            value.get("protocol") == LP_CONSUMPTION_PROTOCOL and
+            value.get("policy") == LP_CONSUMPTION_POLICY and
+            value.get("order") == LP_CONSUMPTION_ORDER and
+            value.get("nonce") == contract["nonce"] and
+            value.get("status") == "consumption-observed-unapproved" and
+            type(value.get("unmatched_event_count")) is int and
+            value["unmatched_event_count"] == 0 and
+            value.get("approved_reference_present") is False and
+            value.get("pft_used") is False and
+            value.get("s2_s3_evidence") is False,
+            "malformed LP-certificate consumption observation")
+    events = value.get("events")
+    require(isinstance(events, list) and
+            type(value.get("event_count")) is int and
+            value["event_count"] == len(events) and len(events) >= 39 and
+            value.get("ordered_event_sha256") == canonical_sha256(events),
+            "LP-certificate consumption event closure mismatch")
+    binding_by_id = {
+        binding["binding_id"]: binding for binding in contract["bindings"]
+    }
+    events_by_binding: dict[str, list[dict[str, Any]]] = {
+        binding_id: [] for binding_id in binding_by_id
+    }
+    for event_id, event in enumerate(events):
+        require(isinstance(event, dict) and set(event) == {
+                    "event", "id", "binding_id", "index",
+                } and event.get("event") == "consumed" and
+                type(event.get("id")) is int and event["id"] == event_id and
+                type(event.get("index")) is int,
+                f"malformed LP-certificate consumption event: {event_id}")
+        binding = binding_by_id.get(event.get("binding_id"))
+        require(isinstance(binding, dict) and
+                event["index"] == binding["index"],
+                f"unbound LP-certificate consumption event: {event_id}")
+        events_by_binding[event["binding_id"]].append(event)
+    expected_records = []
+    for binding in contract["bindings"]:
+        identity = {
+            field: binding[field] for field in (
+                "index", "class", "relative", "bytes", "sha256", "md5",
+            )
+        }
+        binding_events = events_by_binding[binding["binding_id"]]
+        require(binding_events,
+                f"LP certificate was not consumed: {binding['relative']}")
+        expected_records.append({
+            **identity,
+            "event_count": len(binding_events),
+            "ordered_nonce_free_event_sha256":
+                canonical_sha256(binding_events),
+        })
+    require(type(value.get("record_count")) is int and
+            value["record_count"] == 39 and
+            exact_json_equal(value.get("records"), expected_records) and
+            value.get("ordered_record_sha256") ==
+            canonical_sha256(expected_records),
+            "LP-certificate consumption record closure mismatch")
+    return value
+
+
+def validate_lp_consumption_log(
+    log_text: str, contract: dict[str, Any],
+) -> dict[str, Any]:
+    contract = validate_lp_consumption_contract(contract)
+    records = []
+    for line in log_text.splitlines():
+        if line.startswith(LP_CONSUMPTION_PREFIX):
+            require(line.startswith(LP_CONSUMPTION_PREFIX + "\t"),
+                    "malformed LP-certificate consumption namespace")
+            records.append(line.split("\t"))
+    require(records, "missing LP-certificate consumption session")
+    binding_by_id = {
+        binding["binding_id"]: binding for binding in contract["bindings"]
+    }
+    events = []
+    terminal_seen = False
+    for fields in records:
+        require(not terminal_seen and len(fields) >= 3 and
+                fields[0] == LP_CONSUMPTION_PREFIX and
+                fields[1] == contract["nonce"],
+                "LP-certificate consumption nonce/prefix/order mismatch")
+        record_type = fields[2]
+        if record_type == "CONSUMED":
+            require(len(fields) == 5,
+                    "malformed LP-certificate consumption event")
+            try:
+                event_id = int(fields[3])
+            except ValueError as error:
+                raise ContractError(
+                    "non-integer LP-certificate consumption event"
+                ) from error
+            binding = binding_by_id.get(fields[4])
+            require(fields[3] == str(event_id) and event_id == len(events) and
+                    isinstance(binding, dict),
+                    "noncanonical or unbound LP-certificate consumption event")
+            events.append({
+                "event": "consumed",
+                "id": event_id,
+                "binding_id": fields[4],
+                "index": binding["index"],
+            })
+        elif record_type == "TERMINAL":
+            require(len(fields) == 5,
+                    "malformed LP-certificate consumption terminal")
+            try:
+                event_count = int(fields[3])
+                record_count = int(fields[4])
+            except ValueError as error:
+                raise ContractError(
+                    "non-integer LP-certificate consumption terminal"
+                ) from error
+            require(fields[3] == str(event_count) and
+                    fields[4] == str(record_count) and
+                    event_count == len(events) and record_count == 39,
+                    "LP-certificate consumption terminal count mismatch")
+            terminal_seen = True
+        elif record_type == "FAILURE":
+            require(len(fields) == 4 and fields[3],
+                    "malformed LP-certificate consumption failure")
+            raise ContractError(
+                f"LP-certificate consumption failed: {fields[3]}"
+            )
+        else:
+            raise ContractError(
+                f"unknown LP-certificate consumption record: {record_type}"
+            )
+    require(terminal_seen, "missing LP-certificate consumption terminal")
+    events_by_binding = {binding_id: [] for binding_id in binding_by_id}
+    for event in events:
+        events_by_binding[event["binding_id"]].append(event)
+    consumption_records = []
+    for binding in contract["bindings"]:
+        identity = {
+            field: binding[field] for field in (
+                "index", "class", "relative", "bytes", "sha256", "md5",
+            )
+        }
+        binding_events = events_by_binding[binding["binding_id"]]
+        consumption_records.append({
+            **identity,
+            "event_count": len(binding_events),
+            "ordered_nonce_free_event_sha256":
+                canonical_sha256(binding_events),
+        })
+    observation = {
+        "schema": 1,
+        "kind": LP_CONSUMPTION_KIND,
+        "protocol": LP_CONSUMPTION_PROTOCOL,
+        "policy": LP_CONSUMPTION_POLICY,
+        "order": LP_CONSUMPTION_ORDER,
+        "nonce": contract["nonce"],
+        "status": "consumption-observed-unapproved",
+        "event_count": len(events),
+        "ordered_event_sha256": canonical_sha256(events),
+        "events": events,
+        "record_count": len(consumption_records),
+        "ordered_record_sha256": canonical_sha256(consumption_records),
+        "records": consumption_records,
+        "unmatched_event_count": 0,
+        "approved_reference_present": False,
+        "pft_used": False,
+        "s2_s3_evidence": False,
+    }
+    return validate_lp_consumption_observation(contract, observation)
 
 
 def validate_direct_controller_binding(
