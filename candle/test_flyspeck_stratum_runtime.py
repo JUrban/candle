@@ -1014,6 +1014,10 @@ class StratumRuntimeTests(unittest.TestCase):
             *consumption_lines[:-1],
             (f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} "
              f"{plan['completed_action_count']}"),
+            subject.dependency_history_terminal(
+                self.nonce, boundary,
+                subject.dependency_history_requests(boundary),
+            ),
             consumption_lines[-1],
             (f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\t"
              "TERMINAL\t0"),

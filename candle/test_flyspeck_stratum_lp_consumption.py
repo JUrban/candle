@@ -63,11 +63,16 @@ class LpConsumptionTests(unittest.TestCase):
             index for index, line in enumerate(records)
             if "\tCONSUMED\t" not in line
         ), len(records))
+        predecessor = (
+            f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} "
+            f"{self.boundary} 1"
+        )
         return "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
             *records[:split],
             (f"{subject.SUCCESS_MARKER} {self.nonce} {self.boundary} "
              f"{self.action_count}"),
+            predecessor,
             *records[split:],
             (f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\t"
              "TERMINAL\t0"),
@@ -152,11 +157,19 @@ class LpConsumptionTests(unittest.TestCase):
         source_terminal = (
             f"{subject.SOURCE_TRACE_PREFIX}\t{self.nonce}\tTERMINAL\t0"
         )
+        predecessor = (
+            f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} "
+            f"{self.boundary} 1"
+        )
         relocated = (
-            [*records[:-1], preflight, boundary, records[-1], source_terminal],
-            [preflight, boundary, *records, source_terminal],
-            [preflight, *records, boundary, source_terminal],
-            [preflight, *records[:-1], boundary, source_terminal, records[-1]],
+            [*records[:-1], preflight, boundary, predecessor,
+             records[-1], source_terminal],
+            [preflight, boundary, predecessor, *records, source_terminal],
+            [preflight, *records, boundary, predecessor, source_terminal],
+            [preflight, *records[:-1], boundary, predecessor, source_terminal,
+             records[-1]],
+            [preflight, *records[:-1], boundary, records[-1], predecessor,
+             source_terminal],
         )
         for index, lines in enumerate(relocated):
             with self.subTest(index=index), self.assertRaisesRegex(

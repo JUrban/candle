@@ -3294,6 +3294,24 @@ def validate_lp_consumption_log(
     require(len(preflight_positions) == len(boundary_positions) ==
             len(source_terminal_positions) == 1,
             "LP-certificate consumption lacks its exact runtime interval")
+    dependency_names = dependency_history_requests(boundary_id)
+    if dependency_names:
+        predecessor = dependency_history_terminal(
+            contract["nonce"], boundary_id, dependency_names,
+        )
+    else:
+        theorem_names = fingerprint_requests(boundary_id)
+        require(theorem_names,
+                "LP consumption boundary lacks structural fingerprints")
+        predecessor = (
+            f"{FINGERPRINT_SUCCESS_MARKER} {contract['nonce']} {boundary_id} "
+            f"{len(theorem_names)}"
+        )
+    predecessor_positions = [
+        index for index, line in enumerate(lines) if line == predecessor
+    ]
+    require(len(predecessor_positions) == 1,
+            "LP-certificate consumption lacks its exact postlude predecessor")
     binding_by_id = {
         binding["binding_id"]: binding for binding in contract["bindings"]
     }
@@ -3356,7 +3374,8 @@ def validate_lp_consumption_log(
     require(terminal_seen, "missing LP-certificate consumption terminal")
     require(terminal_position is not None and event_positions and
             preflight_positions[0] < min(event_positions) and
-            max(event_positions) < boundary_positions[0] < terminal_position <
+            max(event_positions) < boundary_positions[0] <
+            predecessor_positions[0] < terminal_position <
             source_terminal_positions[0],
             "LP-certificate consumption is outside its exact runtime interval")
     events_by_binding = {binding_id: [] for binding_id in binding_by_id}
