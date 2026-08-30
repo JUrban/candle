@@ -460,7 +460,10 @@ class StratumRuntimeTests(unittest.TestCase):
         }
         certificates = [
             {
-                "class": "lp-certificate-prepared",
+                "class": (
+                    "lp-certificate-prepared" if index == 20 else
+                    "lp-certificate"
+                ),
                 "relative": f"certificates/{index:02d}.dat",
                 "bytes": index + 1,
                 "sha256": f"{index + 1:064x}",
@@ -917,7 +920,10 @@ class StratumRuntimeTests(unittest.TestCase):
         dependency_names = subject.dependency_history_requests(boundary)
         certificates = [
             {
-                "class": "lp-certificate-prepared",
+                "class": (
+                    "lp-certificate-prepared" if index == 20 else
+                    "lp-certificate"
+                ),
                 "relative": f"certificates/{index:02d}.dat",
                 "bytes": index + 1,
                 "sha256": f"{index + 1:064x}",

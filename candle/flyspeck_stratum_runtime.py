@@ -1961,26 +1961,32 @@ def validate_semantic_evidence_plan(
             canonical_sha256(certificates["records"]),
             "malformed semantic-evidence LP-certificate input projection")
     relatives = []
+    basenames = []
+    class_counts = {name: 0 for name in LP_CONSUMPTION_CLASS_COUNTS}
     for index, record in enumerate(certificates["records"]):
         require(isinstance(record, dict) and set(record) == {
                     "index", "class", "relative", "bytes", "sha256", "md5",
                 } and type(record.get("index")) is int and
                 record["index"] == index and
-                record.get("class") == "lp-certificate-prepared" and
-                isinstance(record.get("relative"), str) and
-                bool(record["relative"]) and
-                not Path(record["relative"]).is_absolute() and
-                ".." not in Path(record["relative"]).parts and
-                Path(record["relative"]).as_posix() == record["relative"] and
+                record.get("class") in LP_CONSUMPTION_CLASS_COUNTS and
                 type(record.get("bytes")) is int and record["bytes"] > 0 and
                 isinstance(record.get("sha256"), str) and
                 re.fullmatch(r"[0-9a-f]{64}", record["sha256"]) is not None and
                 isinstance(record.get("md5"), str) and
                 re.fullmatch(r"[0-9a-f]{32}", record["md5"]) is not None,
                 f"malformed semantic-evidence LP-certificate record: {index}")
-        relatives.append(record["relative"])
-    require(len(relatives) == len(set(relatives)),
-            "duplicate semantic-evidence LP-certificate path")
+        relative = _lp_safe_relative(
+            record.get("relative"),
+            f"semantic-evidence LP-certificate path: {index}",
+        )
+        relatives.append(relative)
+        basenames.append(Path(relative).name)
+        class_counts[record["class"]] += 1
+    require(len(relatives) == len(set(relatives)) and
+            len(basenames) == len(set(basenames)) and
+            basenames == sorted(basenames) and
+            class_counts == LP_CONSUMPTION_CLASS_COUNTS,
+            "semantic-evidence LP-certificate inventory closure mismatch")
     return plan
 
 
