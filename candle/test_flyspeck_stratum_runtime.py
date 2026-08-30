@@ -1009,11 +1009,32 @@ class StratumRuntimeTests(unittest.TestCase):
         consumption_lines.append("\t".join((
             subject.LP_CONSUMPTION_PREFIX, self.nonce, "TERMINAL", "39", "39",
         )))
+        consumption_action_count = subject.LP_COMPLETE_BOUNDARY_ACTION_COUNTS[
+            boundary
+        ]
+        consumption_actions = [
+            {
+                "source_sha256": f"{index + 1:064x}",
+                "logical_source_delta_sha256": f"{index + 2:064x}",
+            }
+            for index in range(consumption_action_count)
+        ]
+
+        def consumption_action_marker(index: int) -> str:
+            action = consumption_actions[index]
+            return (
+                f"{subject.ACTION_PREFIX} {self.nonce} {index:03d} "
+                f"{action['source_sha256']} "
+                f"{action['logical_source_delta_sha256']} load"
+            )
+
         consumption_log = "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
+            consumption_action_marker(183),
             *consumption_lines[:-1],
+            consumption_action_marker(184),
             (f"{subject.SUCCESS_MARKER} {self.nonce} {boundary} "
-             f"{plan['completed_action_count']}"),
+             f"{consumption_action_count}"),
             subject.dependency_history_terminal(
                 self.nonce, boundary,
                 subject.dependency_history_requests(boundary),
@@ -1024,7 +1045,7 @@ class StratumRuntimeTests(unittest.TestCase):
         ])
         consumption = subject.validate_lp_consumption_log(
             consumption_log, consumption_contract, boundary,
-            plan["completed_action_count"],
+            consumption_actions,
         )
         coverage_v6 = subject.derive_semantic_coverage_v6(
             plan, {

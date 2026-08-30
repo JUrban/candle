@@ -43,6 +43,21 @@ class LpConsumptionTests(unittest.TestCase):
         self.contract = subject.build_lp_consumption_contract(
             self.nonce, self.runtime,
         )
+        self.expected_actions = [
+            {
+                "source_sha256": f"{index + 1:064x}",
+                "logical_source_delta_sha256": f"{index + 2:064x}",
+            }
+            for index in range(self.action_count)
+        ]
+
+    def action_marker(self, index: int) -> str:
+        action = self.expected_actions[index]
+        return (
+            f"{subject.ACTION_PREFIX} {self.nonce} {index:03d} "
+            f"{action['source_sha256']} "
+            f"{action['logical_source_delta_sha256']} load"
+        )
 
     def valid_lines(self) -> list[str]:
         bindings = list(reversed(self.contract["bindings"]))
@@ -69,7 +84,9 @@ class LpConsumptionTests(unittest.TestCase):
         )
         return "\n".join([
             f"{subject.PREFLIGHT_MARKER} {self.nonce}",
+            self.action_marker(183),
             *records[:split],
+            self.action_marker(184),
             (f"{subject.SUCCESS_MARKER} {self.nonce} {self.boundary} "
              f"{self.action_count}"),
             predecessor,
@@ -81,7 +98,7 @@ class LpConsumptionTests(unittest.TestCase):
     def validate_lines(self, records: list[str]) -> dict:
         return subject.validate_lp_consumption_log(
             self.log_text(records), self.contract, self.boundary,
-            self.action_count,
+            self.expected_actions,
         )
 
     def test_contract_and_reverse_runtime_events_close_exactly(self) -> None:
@@ -161,15 +178,25 @@ class LpConsumptionTests(unittest.TestCase):
             f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} "
             f"{self.boundary} 1"
         )
+        prior_action = self.action_marker(183)
+        lp_action = self.action_marker(184)
+        consumed = records[:-1]
+        terminal = records[-1]
         relocated = (
-            [*records[:-1], preflight, boundary, predecessor,
-             records[-1], source_terminal],
-            [preflight, boundary, predecessor, *records, source_terminal],
-            [preflight, *records, boundary, predecessor, source_terminal],
-            [preflight, *records[:-1], boundary, predecessor, source_terminal,
-             records[-1]],
-            [preflight, *records[:-1], boundary, records[-1], predecessor,
+            [*consumed, preflight, prior_action, lp_action, boundary, predecessor,
+             terminal, source_terminal],
+            [preflight, prior_action, lp_action, boundary, predecessor,
+             *records, source_terminal],
+            [preflight, prior_action, *records, lp_action, boundary, predecessor,
              source_terminal],
+            [preflight, prior_action, *consumed, lp_action, boundary, predecessor,
+             source_terminal, terminal],
+            [preflight, prior_action, *consumed, lp_action, boundary, terminal,
+             predecessor, source_terminal],
+            [preflight, *consumed, prior_action, lp_action, boundary, predecessor,
+             terminal, source_terminal],
+            [preflight, prior_action, lp_action, *consumed, boundary, predecessor,
+             terminal, source_terminal],
         )
         for index, lines in enumerate(relocated):
             with self.subTest(index=index), self.assertRaisesRegex(
@@ -177,7 +204,7 @@ class LpConsumptionTests(unittest.TestCase):
             ):
                 subject.validate_lp_consumption_log(
                     "\n".join(lines), self.contract, self.boundary,
-                    self.action_count,
+                    self.expected_actions,
                 )
 
     def test_contract_rejects_order_class_path_digest_and_types(self) -> None:

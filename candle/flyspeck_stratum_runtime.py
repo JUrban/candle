@@ -3259,11 +3259,13 @@ def validate_lp_consumption_log(
     log_text: str,
     contract: dict[str, Any],
     boundary_id: str,
-    action_count: int,
+    expected_actions: list[dict[str, Any]],
 ) -> dict[str, Any]:
     contract = validate_lp_consumption_contract(contract)
-    require(isinstance(boundary_id, str) and boundary_id and
-            type(action_count) is int and action_count > 0,
+    action_count = LP_COMPLETE_BOUNDARY_ACTION_COUNTS.get(boundary_id)
+    require(type(action_count) is int and
+            isinstance(expected_actions, list) and
+            len(expected_actions) == action_count,
             "malformed LP-certificate consumption execution interval")
     lines = log_text.splitlines()
     records = []
@@ -3312,6 +3314,33 @@ def validate_lp_consumption_log(
     ]
     require(len(predecessor_positions) == 1,
             "LP-certificate consumption lacks its exact postlude predecessor")
+
+    def action_position(index: int) -> int:
+        action = expected_actions[index]
+        require(isinstance(action, dict),
+                f"malformed LP interval action: {index}")
+        source_sha256 = _lp_hex(
+            action.get("source_sha256"), 64,
+            f"LP interval action source SHA-256: {index}",
+        )
+        delta_sha256 = _lp_hex(
+            action.get("logical_source_delta_sha256"), 64,
+            f"LP interval action logical-source SHA-256: {index}",
+        )
+        prefix = (
+            f"{ACTION_PREFIX} {contract['nonce']} {index:03d} "
+            f"{source_sha256} {delta_sha256} "
+        )
+        positions = [
+            position for position, line in enumerate(lines)
+            if line.startswith(prefix) and line[len(prefix):] in ACTION_OUTCOMES
+        ]
+        require(len(positions) == 1,
+                f"LP consumption lacks authenticated action {index} marker")
+        return positions[0]
+
+    prior_action_position = action_position(183)
+    lp_action_position = action_position(184)
     binding_by_id = {
         binding["binding_id"]: binding for binding in contract["bindings"]
     }
@@ -3374,7 +3403,9 @@ def validate_lp_consumption_log(
     require(terminal_seen, "missing LP-certificate consumption terminal")
     require(terminal_position is not None and event_positions and
             preflight_positions[0] < min(event_positions) and
-            max(event_positions) < boundary_positions[0] <
+            preflight_positions[0] < prior_action_position <
+            min(event_positions) <= max(event_positions) < lp_action_position <
+            boundary_positions[0] <
             predecessor_positions[0] < terminal_position <
             source_terminal_positions[0],
             "LP-certificate consumption is outside its exact runtime interval")
@@ -4322,7 +4353,7 @@ def _validate_direct_evidence_artifact(
         require(lp_consumption_contract is not None,
                 "LP consumption receipt lacks its contract")
         log_lp_consumption = validate_lp_consumption_log(
-            log_text, lp_consumption_contract, boundary_id, action_count,
+            log_text, lp_consumption_contract, boundary_id, expected_actions,
         )
         require(exact_json_equal(log_lp_consumption, lp_consumption),
                 "receipt LP consumption differs from bound log")
@@ -5462,7 +5493,7 @@ def _run_attempt_impl(
                     "LP consumption evidence lacks its runtime contract")
             lp_consumption = validate_lp_consumption_log(
                 log_text, lp_consumption_contract, boundary_id,
-                len(prepared["actions"]),
+                expected_action_events,
             )
             semantic_coverage = derive_semantic_coverage_v6(
                 semantic_evidence_plan, observed_source_closure,
