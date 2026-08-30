@@ -180,17 +180,20 @@ class LpConsumptionTests(unittest.TestCase):
         wrong_class = copy.deepcopy(self.contract)
         wrong_class["bindings"][0]["class"] = "lp-certificate-prepared"
         cases.append(("class", wrong_class))
-        pft = copy.deepcopy(self.contract)
-        pft["bindings"][0]["relative"] = "pft/cert-00.dat"
-        cases.append(("PFT", pft))
-        absolute_pft = copy.deepcopy(self.contract)
-        absolute_pft["bindings"][0]["path"] = (
-            "/authenticated/pft/cert-00.dat"
-        )
-        absolute_pft["ordered_binding_sha256"] = subject.canonical_sha256(
-            absolute_pft["bindings"]
-        )
-        cases.append(("absolute PFT", absolute_pft))
+        for namespace in ("pft", "pft-results", "pft_trace"):
+            pft = copy.deepcopy(self.contract)
+            pft["bindings"][0]["relative"] = (
+                f"formal_lp/{namespace}/cert-00.dat"
+            )
+            cases.append((f"relative {namespace}", pft))
+            absolute_pft = copy.deepcopy(self.contract)
+            absolute_pft["bindings"][0]["path"] = (
+                f"/authenticated/{namespace}/cert-00.dat"
+            )
+            absolute_pft["ordered_binding_sha256"] = subject.canonical_sha256(
+                absolute_pft["bindings"]
+            )
+            cases.append((f"absolute {namespace}", absolute_pft))
         duplicate_basename = copy.deepcopy(self.contract)
         duplicate_basename["bindings"][1]["relative"] = (
             "another/cert-00.dat"
@@ -222,6 +225,16 @@ class LpConsumptionTests(unittest.TestCase):
         for label, contract in cases:
             with self.subTest(label=label), self.assertRaises(subject.ContractError):
                 subject.validate_lp_consumption_contract(contract)
+
+        for namespace in ("pft-results", "pft_trace"):
+            runtime = copy.deepcopy(self.runtime)
+            runtime[0]["relative"] = (
+                f"formal_lp/{namespace}/cert-00.dat"
+            )
+            with self.subTest(builder=namespace), self.assertRaisesRegex(
+                subject.ContractError, "PFT namespace",
+            ):
+                subject.build_lp_consumption_contract(self.nonce, runtime)
 
     def test_observation_is_exact_unapproved_and_cannot_be_relabelled(self) -> None:
         observation = self.validate_lines(self.valid_lines())

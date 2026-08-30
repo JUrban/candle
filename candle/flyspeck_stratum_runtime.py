@@ -266,6 +266,9 @@ SEMANTIC_COVERAGE_V6_POLICY = (
     "authenticated-direct-source-lp-consumption-nonlinear-observation-v2"
 )
 SAFE_VALUE_PATH = re.compile(r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
+PFT_NAMESPACE = re.compile(
+    r"(?:^|[/:._-])pft(?:$|[/:._-])", re.IGNORECASE,
+)
 EXPECTED_PYTHON_RUNTIME = {
     "execution_binding": "/proc/self/exe",
     "version": "3.12.3 (main, Jun 19 2026, 12:46:00) [GCC 13.3.0]",
@@ -2103,7 +2106,7 @@ def derive_semantic_coverage_v6(
     lp_consumption_contract: dict[str, Any],
     lp_consumption_observation: dict[str, Any],
 ) -> dict[str, Any]:
-    """Add exact, nonce-free LP input consumption to unapproved coverage."""
+    """Bind exact nonce-bearing LP consumption to raw unapproved coverage."""
     base = derive_semantic_coverage(
         plan, logical_source_observation, physical_source_observation,
         structural_fingerprints, dependency_history,
@@ -3046,7 +3049,7 @@ def _lp_safe_relative(value: object, label: str) -> str:
     require(not relative.is_absolute() and relative.as_posix() == value and
             all(part not in {"", ".", ".."} for part in relative.parts),
             f"unsafe {label}")
-    require(not any(part.lower() == "pft" for part in relative.parts),
+    require(PFT_NAMESPACE.search(value) is None,
             f"PFT namespace is forbidden in {label}")
     return value
 
@@ -3100,7 +3103,7 @@ def validate_lp_consumption_contract(value: object) -> dict[str, Any]:
         require(exact_absolute_path(path) and
                 all(ord(character) >= 32 and character != "\x7f"
                     for character in path) and
-                not any(part.lower() == "pft" for part in Path(path).parts) and
+                PFT_NAMESPACE.search(path) is None and
                 Path(path).name == Path(relative).name and
                 path not in paths and relative not in relatives,
                 f"unsafe or duplicate LP-certificate runtime path: {index}")
