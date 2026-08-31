@@ -2403,7 +2403,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ),
             "verified_cakeml_integration": {
                 "branch": "codex/flyspeck-v13-runtime-stack",
-                "commit": "964406486a52e1a53a94eade4cf86a666dc8055a",
+                "commit": "480a9f4fcdeaea0d50ed2b6e1fc7998371610ded",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
