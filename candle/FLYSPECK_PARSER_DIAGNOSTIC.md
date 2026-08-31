@@ -113,11 +113,12 @@ the entire process group on normal exit or timeout. The no-fork child limit is
 an additional defense against escaped descendants.
 
 This prepared manifest pins CakeML integration commit
-`480a9f4fcdeaea0d50ed2b6e1fc7998371610ded`, which implements the dedicated
-protocol and its proof obligations. Its pristine-cold x64 proof replay and
-canonical bootstrap/link qualification are still required, so this prepared
-pin alone does not qualify a runtime or authorize either parser profile.
-Therefore the exact blocking condition is:
+`32580b0b76434f69ab545232b25a4b892173f1ae`, which implements the dedicated
+protocol and its proof obligations. Its exact-head warm reverse-dependency
+replay, pristine-cold x64 proof replay, and canonical bootstrap/link
+qualification are still required, so this prepared pin alone does not qualify
+a runtime or authorize either parser profile. Therefore the exact blocking
+condition is:
 
 > No pilot or all-inventory process may be launched until the protocol commit's
 > proof replay succeeds, that commit is pinned by the Candle manifest, and the

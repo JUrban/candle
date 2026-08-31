@@ -6002,7 +6002,7 @@
   "manifest": {
     "bytes": 820818,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "ba2342e4a515c926f408527bfed38e0b8b06d40a5b3187a879395e241905cb15"
+    "sha256": "6aae8e36e8ab7ac7ad5d6326d15065b14ff7c9feffe8541a23a92d6568701e5c"
   },
   "schema": 1,
   "selection": {

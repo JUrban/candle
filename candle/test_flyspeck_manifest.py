@@ -384,7 +384,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["verified_cakeml_integration"],
             {
                 "branch": "codex/flyspeck-v13-runtime-stack",
-                "commit": "480a9f4fcdeaea0d50ed2b6e1fc7998371610ded",
+                "commit": "32580b0b76434f69ab545232b25a4b892173f1ae",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
