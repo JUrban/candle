@@ -150,7 +150,7 @@ EXPECTED_PYTHON_RUNTIME = {
             "/lib/x86_64-linux-gnu/libz.so.1.3": {
                 "bytes": 113000,
                 "sha256":
-                    "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286",
+                    "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
             },
         },
         "roles": {
@@ -241,7 +241,7 @@ EXPECTED_PYTHON_STARTUP_FLAGS = {
     "hash_randomization": 1,
     "isolated": 1,
     "dev_mode": False,
-    "utf8_mode": 0,
+    "utf8_mode": 1,
     "warn_default_encoding": 0,
     "safe_path": True,
     "int_max_str_digits": 4300,

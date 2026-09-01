@@ -191,7 +191,7 @@ EXPECTED_TOOLCHAIN = {
         "path": "/etc/ld.so.cache",
         "bytes": 50011,
         "sha256":
-            "0971c6dfbc46998c25774d855b34d8494d78988f90221eb5fe5aa8816203fca1",
+            "98c3f425eeb652c8811ea28a97f89cc0bbf47a9a9b058e161045c7336635d788",
     },
     "libm.so.6": {
         "path": "/lib/x86_64-linux-gnu/libm.so.6",
