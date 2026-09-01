@@ -2312,9 +2312,11 @@ class StratumRuntimeTests(unittest.TestCase):
 
     def test_runner_cli_requires_isolated_python(self) -> None:
         runner = Path(subject.__file__).resolve()
+        environment = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
         ordinary = subprocess.run(
             ["/usr/bin/python3", str(runner), "--help"],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            env=environment,
         )
         self.assertNotEqual(ordinary.returncode, 0)
         self.assertIn("Python startup flags mismatch", ordinary.stdout)
@@ -2329,6 +2331,7 @@ class StratumRuntimeTests(unittest.TestCase):
             rejected = subprocess.run(
                 ["/usr/bin/python3", *flags, str(runner), "--help"],
                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                env=environment,
             )
             self.assertNotEqual(rejected.returncode, 0)
             self.assertRegex(
@@ -2337,6 +2340,7 @@ class StratumRuntimeTests(unittest.TestCase):
         isolated = subprocess.run(
             ["/usr/bin/python3", "-I", "-S", str(runner), "--help"],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            env=environment,
         )
         self.assertEqual(isolated.returncode, 0, isolated.stdout)
 
@@ -2352,6 +2356,7 @@ class StratumRuntimeTests(unittest.TestCase):
                 ),
             ],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            env=environment,
         )
         self.assertNotEqual(imported.returncode, 0)
         self.assertIn("execute directly from its .py source", imported.stdout)
