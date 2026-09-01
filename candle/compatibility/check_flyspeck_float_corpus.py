@@ -111,7 +111,7 @@ EXPECTED_PYTHON_RUNTIME = {
             "/lib/x86_64-linux-gnu/libz.so.1.3": {
                 "bytes": 113000,
                 "sha256":
-                    "9b64150b28505a33d6bc3ecf709c279f6de97a1c184dbda65d06ee4537f6d286",
+                    "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
             },
         },
         "roles": {
