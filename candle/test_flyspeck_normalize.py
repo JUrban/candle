@@ -160,6 +160,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("dead-effect elimination", update_database["scope_limit"])
         eval_command = entries["PROJECT-TOPLOOP-S3-EVAL-COMMAND-001"]
         self.assertIn("failwith", eval_command["operations"][0]["after"])
+        self.assertNotIn("?(silent", eval_command["operations"][0]["after"])
+        self.assertIn("no active ~silent label", eval_command["scope_limit"])
         ssreflect = entries["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"]
         self.assertIn("use_arg_then2", ssreflect["semantic_rule"])
         self.assertNotIn("Toploop", ssreflect["operations"][0]["after"])

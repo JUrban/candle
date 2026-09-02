@@ -80,8 +80,11 @@ def main() -> None:
             raise SystemExit(f"update_database disposition drift: {required!r}")
 
     eval_source = by_id["PROJECT-TOPLOOP-S3-EVAL-COMMAND-001"][1]
-    if eval_source.count(b"dynamic eval_command is disabled") != 1:
-        raise SystemExit("eval_command is not fail closed")
+    if (
+        eval_source.count(b"dynamic eval_command is disabled") != 1
+        or b"?(silent" in eval_source
+    ):
+        raise SystemExit("eval_command is not fail closed and positional-only")
 
     ssreflect = by_id["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"][1]
     if (

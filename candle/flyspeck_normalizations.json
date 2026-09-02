@@ -211,9 +211,9 @@
       "path": "text_formalization/general/flyspeck_eval_4.14.hl",
       "source_sha256": "602d1d0e3e224d742fb412e0fb7bd88b4c176a1aa713bb4f6dc7d6ff350eae15",
       "source_md5": "0f625ae4acb1fa69d4add5957e0ff308",
-      "normalized_sha256": "5a4175e6542ccee003418bfe6528b3d54d481970c3cff9b564ebda6c7301c117",
-      "normalized_md5": "3ba61c19dc69f135bf014dff38fc2ead",
-      "normalized_bytes": 456,
+      "normalized_sha256": "8a8f8d8aa038db6e75a821d71d98dbb56b34c2c6346c7dfc15da848a66533efd",
+      "normalized_md5": "7ca870cd84b14e56da55eefa51a3828e",
+      "normalized_bytes": 440,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001-FAIL-CLOSED",
@@ -223,11 +223,11 @@
           "start": "let eval_command ?(silent=false) command =\n",
           "end": "     (false,  Buffer.contents buffer);;\n",
           "span_sha256": "0ebce65eb0ebabca9f8924fd3fdb8648b18b7bfb6427957b554f3b31bf8c2169",
-          "after": "let eval_command ?(silent=false) (command:string) : bool * string =\n  failwith (\"Candle Flyspeck: dynamic eval_command is disabled by the static manifest: \"^command);;\n"
+          "after": "let eval_command (command:string) : bool * string =\n  failwith (\"Candle Flyspeck: dynamic eval_command is disabled by the static manifest: \"^command);;\n"
         }
       ],
-      "semantic_rule": "The exact selected graph contains only the eval_command definition; its sole external caller is in the unselected archive-generation helper. Replacing the body by an explicit failure preserves every selected accepted run and prevents latent dynamic source evaluation from being mistaken for a checked result.",
-      "scope_limit": "This is a lexical selected-graph non-use refinement, not eval_command compatibility. A complete compiled run and final fingerprints remain required; any call, reflection, external input, or source drift blocks promotion."
+      "semantic_rule": "The exact selected graph contains only the eval_command definition; its sole external caller is in the unselected archive-generation helper. Replacing the body by an explicit failure and erasing the unobserved optional silent parameter preserves every selected accepted run, avoids requiring unsupported general OCaml optional-argument semantics, and prevents latent dynamic source evaluation from being mistaken for a checked result.",
+      "scope_limit": "This is a lexical selected-graph non-use refinement, not eval_command or optional-argument compatibility. Exact quotation-aware inventory contains no active eval_command call and no active ~silent label. A complete compiled run and final fingerprints remain required; any call, labelled argument, reflection, external input, or source drift blocks promotion."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
