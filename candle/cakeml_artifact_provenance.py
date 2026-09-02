@@ -58,12 +58,15 @@ HOL_SIGOBJ_CONTRACTS_SHA256 = (
     "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
 )
 HOL_MAKE_DEPENDENCY_COUNT = 2309
-CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 1785
+# Exact non-transitioned path set produced by the authenticated pristine-cold
+# x64 bootstrap-proof closure at the manifest's CakeML pin.  Developer-only
+# dopen/caml test and pathToMods probe products are deliberately not ancestors.
+CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 1777
 HOL_MAKE_DEPENDENCY_PATHS_SHA256 = (
     "dc3e187784b21ab208d02c5ee17675337938f401e2aca10e03cf211e360c9dac"
 )
 CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256 = (
-    "25a8b77fbffd65a688322b1b864015a4fb5e8345c59a1ff4d2c7b27ddf46a0ea"
+    "c2c81322b7213b90f8301aa389caca64792d25591118f2b256a17f74c2add626"
 )
 HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
     "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
