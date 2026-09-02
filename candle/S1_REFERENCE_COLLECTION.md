@@ -184,6 +184,13 @@ reordered, overwritten, or unledgered attempts fail closed.  Successful and
 interrupted artifact paths are canonical, and the exact collector/validator
 output names the selected candidate in the common collection root.
 
+The retained plan binds the producer collector at its collection commit; it is
+not required to be byte-identical to the later approval consumer.  The
+collection contract reauthenticates that producer snapshot, while the current
+descendant consumer independently replays the retained plan, request,
+transcript, and candidate under its committed validator.  Requiring the two
+validator files to be identical would defeat that independent-review boundary.
+
 ## Current limitations
 
 - Fresh-process isolation is enforced by spawning the pinned runtime directly,

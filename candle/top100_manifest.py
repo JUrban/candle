@@ -361,13 +361,35 @@ def _replay_reference_run(target, run, artifact_sources, expected_identity,
         raise ValueError(f"{target['name']}: replay target contract mismatch")
     collector = plan_input["collector"]
     collector_repository = plan_input["collector_repository"]
-    if (not isinstance(collector, dict) or
-            collector.get("sha256") !=
-            _sha256(ROOT / "candle/reference_fingerprints.py") or
+    if (not isinstance(collector, dict) or set(collector) != {
+            "path", "sha256"} or
             not isinstance(collector.get("path"), str) or
+            not Path(collector["path"]).is_absolute() or
+            not _is_sha256(collector.get("sha256")) or
             not isinstance(collector_repository, dict) or
+            set(collector_repository) != {
+                "root", "git_head", "git_status", "collector_relative_path",
+                "collector_at_head_sha256", "collector_matches_head",
+                "support_relative_path", "support_at_head_sha256",
+                "support_matches_head"} or
+            not isinstance(collector_repository.get("root"), str) or
+            not Path(collector_repository["root"]).is_absolute() or
+            COMMIT_RE.fullmatch(
+                str(collector_repository.get("git_head"))) is None or
             collector_repository.get("git_status") != [] or
-            collector_repository.get("collector_matches_head") is not True):
+            collector_repository.get("collector_relative_path") !=
+            "candle/reference_fingerprints.py" or
+            collector["path"] != str(
+                Path(collector_repository["root"]) /
+                collector_repository["collector_relative_path"]) or
+            collector_repository.get("collector_at_head_sha256") !=
+            collector["sha256"] or
+            collector_repository.get("collector_matches_head") is not True or
+            collector_repository.get("support_relative_path") !=
+            "candle/reference_protocol.py" or
+            not _is_sha256(
+                collector_repository.get("support_at_head_sha256")) or
+            collector_repository.get("support_matches_head") is not True):
         raise ValueError(f"{target['name']}: replay collector mismatch")
     serializer = plan_input.get("serializer")
     if (not isinstance(serializer, dict) or

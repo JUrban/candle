@@ -236,7 +236,13 @@ class Top100ManifestTest(unittest.TestCase):
                 "candle/fingerprint.ml").read_bytes())
             serializer_sha256 = top100_manifest._sha256(serializer)
             collector = root / "candle/reference_fingerprints.py"
-            collector.write_bytes(Path(reference.__file__).read_bytes())
+            collector.write_bytes(
+                Path(reference.__file__).read_bytes() +
+                b"\n# retained producer snapshot\n")
+            self.assertNotEqual(
+                top100_manifest._sha256(collector),
+                top100_manifest._sha256(
+                    top100_manifest.ROOT / "candle/reference_fingerprints.py"))
             source_contract_payload = json.loads(
                 top100_manifest.REFERENCE_SOURCE_CONTRACT.read_text(
                     encoding="utf-8"))
