@@ -38,12 +38,18 @@ class ParserDiagnosticTests(unittest.TestCase):
             ROOT / subject.ALL_INVENTORY_RELATIVE,
             "test all-inventory selection",
         )
+        cls.quotation_preparation = subject._load_exact_source_module(
+            "_candle_parser_test_loader_quotation",
+            ROOT / subject.LOADER_QUOTATION_RELATIVE,
+            (ROOT / subject.LOADER_QUOTATION_RELATIVE).read_bytes(),
+        )
 
     def build_real_plan(self):
         return subject.build_plan(
             ROOT, Path("/unused-flyspeck-root"), "1" * 40,
             self.manifest, self.manifest_data, self.pilot,
             (ROOT / subject.PILOT_RELATIVE).read_bytes(),
+            self.quotation_preparation,
         )
 
     @classmethod
@@ -71,6 +77,7 @@ class ParserDiagnosticTests(unittest.TestCase):
                 normalization_data,
                 (ROOT / subject.NORMALIZATION_CONTROLLER_RELATIVE).read_bytes(),
                 (ROOT / subject.ALL_INVENTORY_SOURCES_RELATIVE).read_bytes(),
+                cls.quotation_preparation,
             )
             cls._all_inventory_plan_cache = cached
         return cached
@@ -238,8 +245,8 @@ class ParserDiagnosticTests(unittest.TestCase):
             "kind": "loads", "line": 2, "literal": "dep.ml",
             "status": "resolved", "syntax_position": "standalone-phrase",
         }
-        prepared, actions, unsupported = subject.prepare_source(
-            "candle:test.ml", source, [dependency],
+        prepared, actions, unsupported, quotation = subject.prepare_source(
+            "candle:test.ml", source, [dependency], self.quotation_preparation,
         )
         self.assertEqual(unsupported, [])
         self.assertIsNotNone(prepared)
@@ -248,6 +255,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         self.assertNotIn(b"loads", prepared)
         self.assertEqual(prepared.count(b"\n"), source.count(b"\n"))
         self.assertEqual(actions[0]["action_semantics_executed"], False)
+        self.assertEqual(quotation["quotation_count"], 0)
 
     def test_embedded_action_is_retained_but_never_executed(self) -> None:
         source = b"let f s = needs s;;\n"
@@ -255,8 +263,8 @@ class ParserDiagnosticTests(unittest.TestCase):
             "kind": "needs", "line": 1, "expression": "needs s",
             "status": "generated-runtime", "syntax_position": "embedded-expression",
         }
-        prepared, actions, unsupported = subject.prepare_source(
-            "candle:test.ml", source, [dependency],
+        prepared, actions, unsupported, quotation = subject.prepare_source(
+            "candle:test.ml", source, [dependency], self.quotation_preparation,
         )
         self.assertEqual(prepared, source)
         self.assertEqual(unsupported, [])
@@ -265,17 +273,20 @@ class ParserDiagnosticTests(unittest.TestCase):
             "retained-as-parser-input-but-never-executed-by-gate",
         )
         self.assertFalse(actions[0]["action_semantics_executed"])
+        self.assertEqual(quotation["quotation_count"], 0)
 
     def test_unknown_action_is_explicitly_unsupported(self) -> None:
         dependency = {
             "kind": "loadt", "line": 1,
             "status": "resolved-dynamic", "syntax_position": "standalone-phrase",
         }
-        prepared, actions, unsupported = subject.prepare_source(
+        prepared, actions, unsupported, quotation = subject.prepare_source(
             "candle:test.ml", b"loadt (select ());;\n", [dependency],
+            self.quotation_preparation,
         )
         self.assertIsNone(prepared)
         self.assertTrue(unsupported)
+        self.assertIsNone(quotation)
         self.assertEqual(actions[0]["handling"], "unsupported-no-parser-launch-for-source")
 
     def test_masking_rejects_manifest_literal_rebinding(self) -> None:
@@ -286,6 +297,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         with self.assertRaisesRegex(subject.ContractError, "literal mismatch"):
             subject.prepare_source(
                 "candle:test.ml", b"needs \"other.ml\";;\n", [dependency],
+                self.quotation_preparation,
             )
 
     def test_real_plan_is_ready_and_preserves_kernel_trigger(self) -> None:
@@ -304,7 +316,7 @@ class ParserDiagnosticTests(unittest.TestCase):
 
     def test_all_inventory_profile_is_exactly_400_ready_prepared_inputs(self) -> None:
         plan, files = self.build_real_all_inventory_plan()
-        self.assertEqual(plan["schema"], 2)
+        self.assertEqual(plan["schema"], subject.ALL_INVENTORY_PLAN_SCHEMA)
         self.assertEqual(
             plan["kind"],
             "candle-flyspeck-caml-parser-all-inventory-diagnostic-plan",
@@ -413,7 +425,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             ):
                 subject.plan_profile(malformed)
 
-    def test_schema_two_subset_cannot_be_relabeled_as_pilot(self) -> None:
+    def test_schema_three_subset_cannot_be_relabeled_as_pilot(self) -> None:
         all_plan, _files = self.build_real_all_inventory_plan()
         pilot_plan, _pilot_files = self.build_real_plan()
         relabeled = copy.deepcopy(all_plan)
@@ -475,7 +487,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         with self.assertRaisesRegex(subject.ContractError, "exactly one attempt"):
             subject.validate_runtime_result(plan, omitted, transcripts)
 
-    def test_all_inventory_receipt_schema_five_binds_profile_and_durable_authority(self) -> None:
+    def test_all_inventory_receipt_schema_seven_binds_profile_and_durable_authority(self) -> None:
         plan, _files = self.build_real_all_inventory_plan()
         plan_data = subject.json_bytes(plan)
         host = {"fixture": "all-inventory-host"}
@@ -579,7 +591,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             )
 
         receipt = build()
-        self.assertEqual(receipt["schema"], 5)
+        self.assertEqual(receipt["schema"], subject.ALL_INVENTORY_RECEIPT_SCHEMA)
         self.assertEqual(
             receipt["kind"],
             "candle-flyspeck-caml-parser-all-inventory-diagnostic-receipt",
@@ -676,7 +688,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         )
         self.assertEqual(kernel[2], plan["inputs"][9]["source"])
 
-    def test_receipt_schema_four_closes_runtime_and_original_source_shape(self) -> None:
+    def test_receipt_schema_six_closes_runtime_and_original_source_shape(self) -> None:
         plan, _files = self.build_real_plan()
         plan_data = subject.json_bytes(plan)
         host = {"fixture": "host"}
@@ -804,7 +816,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             )
 
         receipt = build()
-        self.assertEqual(receipt["schema"], 4)
+        self.assertEqual(receipt["schema"], subject.DIAGNOSTIC_RECEIPT_SCHEMA)
         self.assertEqual(set(receipt), subject.DIAGNOSTIC_RECEIPT_FIELDS)
         self.assertEqual(receipt["runtime_execution"]["sha256"],
                          receipt["runtime"]["sha256"])
@@ -996,6 +1008,7 @@ class ParserDiagnosticTests(unittest.TestCase):
             ROOT, Path("/unused-flyspeck-root"), "1" * 40,
             altered, self.manifest_data, self.pilot,
             (ROOT / subject.PILOT_RELATIVE).read_bytes(),
+            self.quotation_preparation,
         )
         self.assertEqual(plan["unsupported_count"], 1)
         self.assertEqual(plan["inputs"][9]["status"], "unsupported-no-launch")

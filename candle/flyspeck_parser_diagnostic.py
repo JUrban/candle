@@ -84,7 +84,9 @@ NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
 ALL_INVENTORY_SOURCES_RELATIVE = Path(
     "candle/flyspeck_all_inventory_sources.py"
 )
+LOADER_QUOTATION_RELATIVE = Path("candle/flyspeck_loader_quotation.py")
 NORMALIZATION_CONTROLLER_RELATIVE = Path("candle/flyspeck_normalize.py")
+SYSTEM_RELATIVE = Path("system.ml")
 LINKED_RECORD_RELATIVE = Path("candle/build/cakeml-build-provenance.json")
 RUNTIME_RELATIVE = Path("candle/build/cake")
 CONTROLLER_RELATIVE = Path("candle/flyspeck_parser_diagnostic.py")
@@ -99,6 +101,8 @@ AUTHORITY_SOURCE_RELATIVES = (
     Path("candle/reference_protocol.py"),
     RUNTIME_LOCK_RELATIVE,
     DIRECT_POLICY_RELATIVE,
+    LOADER_QUOTATION_RELATIVE,
+    SYSTEM_RELATIVE,
 )
 ALL_INVENTORY_AUTHORITY_SOURCE_RELATIVES = (
     *AUTHORITY_SOURCE_RELATIVES,
@@ -135,14 +139,16 @@ RESULT_PREFIX = b"CANDLE_CAMLPARSER_DIAGNOSTIC_V1\t"
 ERROR_DIGEST_DOMAIN = b"CANDLE_CAMLPARSER_ERROR_V1\0"
 PARSER_ERROR_EXIT = 65
 PARSER_RUNTIME_PROTOCOL_SCHEMA = 2
-DIAGNOSTIC_RECEIPT_SCHEMA = 4
-ALL_INVENTORY_PLAN_SCHEMA = 2
-ALL_INVENTORY_RECEIPT_SCHEMA = 5
+PILOT_PLAN_SCHEMA = 2
+DIAGNOSTIC_RECEIPT_SCHEMA = 6
+ALL_INVENTORY_PLAN_SCHEMA = 3
+ALL_INVENTORY_RECEIPT_SCHEMA = 7
 PILOT_PLAN_FIELDS = frozenset({
     "schema", "kind", "claim", "promotion", "repositories", "controller",
     "authority_sources", "manifest", "pilot", "parser_runtime_protocol",
     "manifest_action_order", "generated_inputs", "input_count", "ready_count",
     "unsupported_count", "ordered_input_sha256", "inputs", "limitations",
+    "quotation_preparation",
 })
 ALL_INVENTORY_PLAN_FIELDS = frozenset({
     *(PILOT_PLAN_FIELDS - {"pilot"}), "profile", "source_preparation",
@@ -151,13 +157,14 @@ PILOT_INPUT_FIELDS = frozenset({
     "index", "source_key", "repository", "source", "discovery",
     "manifest_actions", "manifest_action_semantics", "generated_inputs_consumed",
     "normalization", "unsupported_reasons", "status", "prepared_input",
+    "quotation_expansion",
 })
 ALL_INVENTORY_INPUT_FIELDS = frozenset({
     "index", "source_key", "repository", "source", "effective_kind",
     "normalization", "effective_input", "lexical_scan_encoding",
     "utf8_decodable", "recognized_loader_actions",
     "recognized_loader_action_count", "prepared_input",
-    "parser_or_runtime_invoked", "status",
+    "parser_or_runtime_invoked", "status", "quotation_expansion",
 })
 EXECUTION_ENVIRONMENT = {"PATH": "/usr/bin:/bin", "LC_ALL": "C"}
 GIT_ENVIRONMENT = {
@@ -679,11 +686,101 @@ def profile_authority_source_relatives(profile: str) -> tuple[Path, ...]:
     )
 
 
+def _quotation_record_shape(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and set(value) == {
+            "transformation", "input_bytes", "input_sha256", "output_bytes",
+            "output_sha256", "quotation_count", "kind_counts",
+        }
+        and value.get("transformation")
+        == "candle-loader-hol-quotation-expansion-v1"
+        and type(value.get("input_bytes")) is int
+        and value["input_bytes"] >= 0
+        and isinstance(value.get("input_sha256"), str)
+        and HEX64.fullmatch(value["input_sha256"]) is not None
+        and type(value.get("output_bytes")) is int
+        and value["output_bytes"] >= 0
+        and isinstance(value.get("output_sha256"), str)
+        and HEX64.fullmatch(value["output_sha256"]) is not None
+        and type(value.get("quotation_count")) is int
+        and value["quotation_count"] >= 0
+        and isinstance(value.get("kind_counts"), dict)
+        and set(value["kind_counts"]) == {"term", "type", "qproof", "string"}
+        and all(type(count) is int and count >= 0
+                for count in value["kind_counts"].values())
+        and value["quotation_count"] == sum(value["kind_counts"].values())
+    )
+
+
+def _validate_quotation_summary(
+    summary: Any,
+    repositories: dict[str, Any],
+    authority_sources: dict[str, Any],
+    inputs: list[dict[str, Any]],
+    input_stage: str,
+) -> None:
+    require(
+        isinstance(summary, dict)
+        and set(summary) == {
+            "contract", "input_stage", "quotation_count",
+            "source_with_quotation_count", "kind_counts",
+            "parser_or_runtime_invoked",
+        }
+        and summary.get("input_stage") == input_stage
+        and summary.get("parser_or_runtime_invoked") is False
+        and type(summary.get("quotation_count")) is int
+        and summary["quotation_count"] >= 0
+        and type(summary.get("source_with_quotation_count")) is int
+        and summary["source_with_quotation_count"] >= 0
+        and isinstance(summary.get("kind_counts"), dict)
+        and set(summary["kind_counts"]) == {"term", "type", "qproof", "string"}
+        and all(type(count) is int and count >= 0
+                for count in summary["kind_counts"].values()),
+        "parser quotation-preparation summary shape is not exact",
+    )
+    contract = summary["contract"]
+    require(
+        isinstance(contract, dict)
+        and exact_int(contract.get("schema"), 1)
+        and contract.get("kind")
+        == "candle-loader-hol-quotation-preparation-contract"
+        and contract.get("transformation")
+        == "candle-loader-hol-quotation-expansion-v1"
+        and contract.get("cakeml_loader", {}).get("commit")
+        == repositories.get("cakeml_commit")
+        and contract.get("candle_quotexpander", {}).get("path")
+        == SYSTEM_RELATIVE.as_posix()
+        and contract["candle_quotexpander"].get("sha256")
+        == authority_sources.get(SYSTEM_RELATIVE.as_posix(), {}).get("sha256"),
+        "parser quotation-preparation source anchors are not exact",
+    )
+    records = [entry.get("quotation_expansion") for entry in inputs]
+    require(
+        all(_quotation_record_shape(record) for record in records)
+        and all(
+            record["output_bytes"] == (entry.get("prepared_input") or {}).get("bytes")
+            and record["output_sha256"]
+            == (entry.get("prepared_input") or {}).get("sha256")
+            for entry, record in zip(inputs, records, strict=True)
+        )
+        and summary["quotation_count"]
+        == sum(record["quotation_count"] for record in records)
+        and summary["source_with_quotation_count"]
+        == sum(record["quotation_count"] > 0 for record in records)
+        and summary["kind_counts"] == {
+            kind: sum(record["kind_counts"][kind] for record in records)
+            for kind in ("term", "type", "qproof", "string")
+        },
+        "parser quotation-preparation input closure mismatch",
+    )
+
+
 def plan_profile(plan: dict[str, Any]) -> str:
     """Recognize only the two closed, non-relabelable runtime plan shapes."""
     require(isinstance(plan, dict), "parser plan is not an object")
     is_pilot = (
-        exact_int(plan.get("schema"), 1) and
+        exact_int(plan.get("schema"), PILOT_PLAN_SCHEMA) and
         plan.get("kind") == "candle-flyspeck-caml-parser-diagnostic-plan"
     )
     require(
@@ -745,6 +842,31 @@ def plan_profile(plan: dict[str, Any]) -> str:
         HEX64.fullmatch(plan["ordered_input_sha256"]) is not None and
         plan["ordered_input_sha256"] == canonical_sha256(inputs),
         "parser plan ordered input binding is malformed",
+    )
+    _validate_quotation_summary(
+        plan.get("quotation_preparation"), repositories, authority_sources,
+        inputs,
+        (
+            "after-standalone-manifest-loader-line-masking"
+            if is_pilot
+            else "after-normalization-and-standalone-loader-masking"
+        ),
+    )
+    expected_quotation_inventory = (
+        (104, 3, {"term": 104, "type": 0, "qproof": 0, "string": 0})
+        if is_pilot else
+        (318855, 344, {
+            "term": 318180, "type": 675, "qproof": 0, "string": 0,
+        })
+    )
+    quotation_summary = plan["quotation_preparation"]
+    require(
+        (
+            quotation_summary["quotation_count"],
+            quotation_summary["source_with_quotation_count"],
+            quotation_summary["kind_counts"],
+        ) == expected_quotation_inventory,
+        "parser quotation-preparation corpus inventory drift",
     )
     if is_pilot:
         pilot = plan.get("pilot")
@@ -847,9 +969,9 @@ def plan_profile(plan: dict[str, Any]) -> str:
             "schema", "kind", "claim", "promotion_allowed", "parser_run",
             "runtime_execution", "canonical_sha256", "authorities",
             "input_count", "effective_kind_counts", "non_utf8_source_keys",
-            "loader_actions", "prepared_inputs",
+            "loader_actions", "quotation_expansion", "prepared_inputs",
         }
-        and exact_int(source_preparation.get("schema"), 1)
+        and exact_int(source_preparation.get("schema"), 2)
         and source_preparation.get("kind")
         == "candle-flyspeck-all-inventory-source-preparation"
         and source_preparation.get("promotion_allowed") is False
@@ -858,7 +980,9 @@ def plan_profile(plan: dict[str, Any]) -> str:
         and source_preparation.get("input_count") == ALL_INVENTORY_COUNT
         and type(source_preparation.get("input_count")) is int
         and isinstance(source_preparation.get("canonical_sha256"), str)
-        and HEX64.fullmatch(source_preparation["canonical_sha256"]) is not None,
+        and HEX64.fullmatch(source_preparation["canonical_sha256"]) is not None
+        and source_preparation.get("quotation_expansion")
+        == plan.get("quotation_preparation"),
         "parser plan has an unknown or relabeled profile",
     )
     prepared_summary = source_preparation.get("prepared_inputs")
@@ -978,7 +1102,8 @@ def _mask_line(line: bytes, dependency: dict[str, Any], source_key: str) -> byte
 
 def prepare_source(
     source_key: str, source_data: bytes, dependencies: list[dict[str, Any]],
-) -> tuple[bytes | None, list[dict[str, Any]], list[str]]:
+    quotation_preparation: types.ModuleType,
+) -> tuple[bytes | None, list[dict[str, Any]], list[str], dict[str, Any] | None]:
     lines = source_data.splitlines(keepends=True)
     actions: list[dict[str, Any]] = []
     unsupported: list[str] = []
@@ -1009,10 +1134,16 @@ def prepare_source(
             record["masked_line"] = bytes_record(lines[line_number - 1])
             masked_lines.add(line_number)
     if unsupported:
-        return None, actions, unsupported
-    prepared = b"".join(lines)
-    require(len(prepared) == len(source_data), f"prepared size drift: {source_key}")
-    return prepared, actions, unsupported
+        return None, actions, unsupported, None
+    masked = b"".join(lines)
+    require(len(masked) == len(source_data), f"masked size drift: {source_key}")
+    try:
+        prepared, quotation_expansion = quotation_preparation.expand_source(masked)
+    except quotation_preparation.QuotationError as error:
+        raise ContractError(
+            f"loader quotation expansion failed for {source_key}: {error}"
+        ) from error
+    return prepared, actions, unsupported, quotation_expansion
 
 
 def _source_path(candle_root: Path, flyspeck_root: Path, node: dict[str, Any]) -> Path:
@@ -1032,6 +1163,7 @@ def build_plan(
     manifest_data: bytes,
     pilot: dict[str, Any],
     pilot_data: bytes,
+    quotation_preparation: types.ModuleType,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     require(HEX40.fullmatch(candle_head) is not None, "invalid Candle head")
     nodes = manifest["source_nodes"]
@@ -1047,8 +1179,8 @@ def build_plan(
                     f"pilot source identity drift: {source_key}:{field}")
         source_path = _source_path(candle_root, flyspeck_root, node)
         source_data = validate_file(source_path, node, f"pilot source {source_key}")
-        prepared, actions, unsupported = prepare_source(
-            source_key, source_data, node["dependencies"],
+        prepared, actions, unsupported, quotation_expansion = prepare_source(
+            source_key, source_data, node["dependencies"], quotation_preparation,
         )
         relative = f"inputs/{index:03d}.ml"
         record: dict[str, Any] = {
@@ -1067,6 +1199,7 @@ def build_plan(
             "generated_inputs_consumed": False,
             "normalization": "unsupported-in-pilot" if "execution_normalization" in node else "none",
             "unsupported_reasons": unsupported,
+            "quotation_expansion": quotation_expansion,
         }
         if "execution_normalization" in node:
             record["unsupported_reasons"].append(
@@ -1081,6 +1214,26 @@ def build_plan(
             record["status"] = "ready"
             record["prepared_input"] = bytes_record(prepared, relative)
         inputs.append(record)
+
+    quotation_counts = {
+        kind: sum(
+            entry["quotation_expansion"]["kind_counts"][kind]
+            for entry in inputs if entry["quotation_expansion"] is not None
+        )
+        for kind in ("term", "type", "qproof", "string")
+    }
+    quotation_summary = {
+        "contract": quotation_preparation.contract(),
+        "input_stage": "after-standalone-manifest-loader-line-masking",
+        "quotation_count": sum(quotation_counts.values()),
+        "source_with_quotation_count": sum(
+            entry["quotation_expansion"] is not None
+            and entry["quotation_expansion"]["quotation_count"] > 0
+            for entry in inputs
+        ),
+        "kind_counts": quotation_counts,
+        "parser_or_runtime_invoked": False,
+    }
 
     generated = []
     for entry in manifest.get("generated_inputs", []):
@@ -1104,7 +1257,7 @@ def build_plan(
         for relative in AUTHORITY_SOURCE_RELATIVES
     }
     plan = {
-        "schema": 1,
+        "schema": PILOT_PLAN_SCHEMA,
         "kind": "candle-flyspeck-caml-parser-diagnostic-plan",
         "claim": (
             "diagnostic parser acceptance only; never inference, execution, theorem, "
@@ -1128,6 +1281,7 @@ def build_plan(
         ),
         "authority_sources": authority_sources,
         "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
+        "quotation_preparation": quotation_summary,
         "pilot": {
             "path": PILOT_RELATIVE.as_posix(),
             "canonical_sha256": canonical_sha256(pilot),
@@ -1189,6 +1343,7 @@ def build_plan(
             "standalone manifest source actions are masked but never executed",
             "embedded loading expressions are parsed but never evaluated",
             "generated inputs are identity-bound from the manifest but never consumed",
+            "loader quotation expansion is modeled but REPL phrase splitting is not",
             "the pilot does not model an incremental type or value environment",
             "a parser pass cannot establish source execution or theorem equivalence",
         ],
@@ -1204,17 +1359,20 @@ def _prepare_all_inventory_sources(
     descriptor_data: bytes,
     manifest_data: bytes,
     normalization_data: bytes,
+    quotation_preparation: types.ModuleType,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     """Execute the exact authenticated source-only foundation in-process."""
     normalization_path = candle_root / NORMALIZATION_CONTROLLER_RELATIVE
     preparation_path = candle_root / ALL_INVENTORY_SOURCES_RELATIVE
     missing = object()
     previous_normalization = sys.modules.get("flyspeck_normalize", missing)
+    previous_quotation = sys.modules.get("flyspeck_loader_quotation", missing)
     normalization = _load_exact_source_module(
         "_candle_parser_flyspeck_normalize",
         normalization_path, normalization_source,
     )
     sys.modules["flyspeck_normalize"] = normalization
+    sys.modules["flyspeck_loader_quotation"] = quotation_preparation
     try:
         preparation = _load_exact_source_module(
             "_candle_parser_all_inventory_sources",
@@ -1241,6 +1399,10 @@ def _prepare_all_inventory_sources(
             sys.modules.pop("flyspeck_normalize", None)
         else:
             sys.modules["flyspeck_normalize"] = previous_normalization
+        if previous_quotation is missing:
+            sys.modules.pop("flyspeck_loader_quotation", None)
+        else:
+            sys.modules["flyspeck_loader_quotation"] = previous_quotation
 
 
 def build_all_inventory_plan(
@@ -1254,6 +1416,7 @@ def build_all_inventory_plan(
     normalization_data: bytes,
     normalization_source: bytes,
     preparation_source: bytes,
+    quotation_preparation: types.ModuleType,
 ) -> tuple[dict[str, Any], dict[str, bytes]]:
     """Build the distinct schema-2 runtime plan over all 400 ready inputs."""
     require(HEX40.fullmatch(candle_head) is not None, "invalid Candle head")
@@ -1274,10 +1437,11 @@ def build_all_inventory_plan(
     source_plan, files = _prepare_all_inventory_sources(
         candle_root, flyspeck_root, normalization_source, preparation_source,
         descriptor_data, manifest_data, normalization_data,
+        quotation_preparation,
     )
     source_inputs = source_plan.get("inputs")
     require(
-        exact_int(source_plan.get("schema"), 1)
+        exact_int(source_plan.get("schema"), 2)
         and source_plan.get("kind")
         == "candle-flyspeck-all-inventory-source-preparation"
         and source_plan.get("promotion_allowed") is False
@@ -1357,6 +1521,7 @@ def build_all_inventory_plan(
         "effective_kind_counts": source_plan["effective_kind_counts"],
         "non_utf8_source_keys": source_plan["non_utf8_source_keys"],
         "loader_actions": source_plan["loader_actions"],
+        "quotation_expansion": source_plan["quotation_expansion"],
         "prepared_inputs": source_plan["prepared_inputs"],
     }
     profile = {
@@ -1399,6 +1564,7 @@ def build_all_inventory_plan(
         "authority_sources": authority_sources,
         "manifest": bytes_record(manifest_data, MANIFEST_RELATIVE.as_posix()),
         "source_preparation": source_preparation,
+        "quotation_preparation": source_plan["quotation_expansion"],
         "parser_runtime_protocol": {
             "schema": PARSER_RUNTIME_PROTOCOL_SCHEMA,
             "function": "caml_parser$run",
@@ -1455,6 +1621,7 @@ def build_all_inventory_plan(
             "embedded loading expressions are parsed but never evaluated",
             "generated inputs are identity-bound from the manifest but never consumed",
             "normalizations are exact hash-bound lexical repairs, not source semantics",
+            "loader quotation expansion is modeled but REPL phrase splitting is not",
             "the all-inventory profile does not model an incremental type or value environment",
             "a parser pass cannot establish source execution or theorem equivalence",
         ],
@@ -1671,6 +1838,15 @@ def reconstruct_plan_authority(
             "unsupported Flyspeck manifest schema")
     require(manifest["repositories"]["flyspeck"]["commit"] == flyspeck_head,
             "explicit Flyspeck authority differs from manifest pin")
+    quotation_preparation = _load_exact_source_module(
+        "_candle_parser_loader_quotation",
+        candle_root / LOADER_QUOTATION_RELATIVE,
+        authority_source_data[LOADER_QUOTATION_RELATIVE.as_posix()],
+    )
+    _validate_quotation_preparation(
+        quotation_preparation, manifest,
+        authority_source_data[SYSTEM_RELATIVE.as_posix()],
+    )
 
     if profile == PILOT_PROFILE:
         descriptor_relative = PILOT_RELATIVE
@@ -1698,7 +1874,7 @@ def reconstruct_plan_authority(
     if profile == PILOT_PROFILE:
         plan, input_files = build_plan(
             candle_root, flyspeck_root, candle_head, manifest, manifest_data,
-            descriptor, descriptor_data,
+            descriptor, descriptor_data, quotation_preparation,
         )
     else:
         normalization_data, _normalization = capture_committed_json(
@@ -1710,6 +1886,7 @@ def reconstruct_plan_authority(
             descriptor, descriptor_data, normalization_data,
             authority_source_data[NORMALIZATION_CONTROLLER_RELATIVE.as_posix()],
             authority_source_data[ALL_INVENTORY_SOURCES_RELATIVE.as_posix()],
+            quotation_preparation,
         )
     plan_data = json_bytes(plan)
     policy = _load_direct_runtime_policy(candle_root, candle_head, plan)
@@ -1916,6 +2093,31 @@ def _load_exact_source_module(name: str, path: Path, expected: bytes):
         sys.modules.pop(name, None)
         raise
     return module
+
+
+def _validate_quotation_preparation(
+    module: types.ModuleType,
+    manifest: dict[str, Any],
+    system_source: bytes,
+) -> dict[str, Any]:
+    contract = module.contract()
+    require(
+        isinstance(contract, dict)
+        and exact_int(contract.get("schema"), 1)
+        and contract.get("kind")
+        == "candle-loader-hol-quotation-preparation-contract"
+        and contract.get("transformation")
+        == "candle-loader-hol-quotation-expansion-v1"
+        and contract.get("cakeml_loader", {}).get("commit")
+        == manifest["dopen_corpus_contract"]
+        ["verified_cakeml_integration"]["commit"]
+        and contract.get("candle_quotexpander", {}).get("path")
+        == SYSTEM_RELATIVE.as_posix()
+        and contract["candle_quotexpander"].get("sha256")
+        == hashlib.sha256(system_source).hexdigest(),
+        "loader quotation preparation source contract drift",
+    )
+    return contract
 
 
 def _load_direct_runtime_policy(

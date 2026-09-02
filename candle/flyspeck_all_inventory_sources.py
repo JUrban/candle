@@ -4,8 +4,9 @@
 This module is deliberately source-only.  It authenticates the committed
 all-inventory descriptor, manifest, normalization contract, and source bytes;
 applies only the hash-bound normalizations; independently rediscovers loader
-syntax; and masks complete standalone loader lines.  It does not materialize
-files, invoke a runtime, parse OCaml, or provide promotable evidence.
+syntax; masks complete standalone loader lines; and reproduces the loader's
+HOL-quotation expansion.  It does not materialize files, invoke a runtime,
+parse OCaml, or provide promotable evidence.
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import flyspeck_normalize
+import flyspeck_loader_quotation
 
 
 DESCRIPTOR_RELATIVE = Path("candle/flyspeck_parser_diagnostic_all_inventory.json")
@@ -69,8 +71,16 @@ EXPECTED_ORDERED_EFFECTIVE_SHA256 = (
     "bf3ab07af1af79967af04e4602c4849b3b7205f4ab5331d86bb42b4c3636c4d4"
 )
 EXPECTED_ORDERED_PREPARED_SHA256 = (
-    "665f12e3bbf51f471c02629726e406a564d1c9b88e7e70b7b8c5e7877abb9cc8"
+    "ce6334a4ce762e04cceda8060185c6bd530961e7a1e466552d5315e401314a09"
 )
+EXPECTED_QUOTATION_COUNT = 318855
+EXPECTED_QUOTATION_FILE_COUNT = 344
+EXPECTED_QUOTATION_KIND_COUNTS = {
+    "qproof": 0,
+    "string": 0,
+    "term": 318180,
+    "type": 675,
+}
 CLAIM = (
     "source-only all-400 effective-input preparation; categorically "
     "non-promotable and not a parser run, runtime execution, inference, "
@@ -650,6 +660,9 @@ def prepare_all_sources(
     prepared_hashes: list[str] = []
     prepared_paths: list[str] = []
     kind_counts: Counter[str] = Counter()
+    quotation_kind_counts: Counter[str] = Counter()
+    quotation_count = 0
+    quotation_file_count = 0
     non_utf8_keys: list[str] = []
     for index, selected in enumerate(inputs):
         key = selected["source_key"]
@@ -702,7 +715,15 @@ def prepare_all_sources(
                 "source_md5": normalization["source_md5"],
             }
         calls = scan_load_calls(effective)
-        prepared, actions = _mask_effective_source(key, effective, calls)
+        masked, actions = _mask_effective_source(key, effective, calls)
+        try:
+            prepared, quotation_expansion = (
+                flyspeck_loader_quotation.expand_source(masked)
+            )
+        except flyspeck_loader_quotation.QuotationError as error:
+            raise ContractError(
+                f"loader quotation expansion failed for {key}: {error}"
+            ) from error
         relative = f"inputs/{index:03d}.ml"
         require(relative not in files, f"duplicate prepared path: {relative}")
         files[relative] = prepared
@@ -716,6 +737,10 @@ def prepare_all_sources(
         prepared_hashes.append(prepared_record["sha256"])
         prepared_paths.append(relative)
         kind_counts[effective_kind] += 1
+        source_quotation_count = quotation_expansion["quotation_count"]
+        quotation_count += source_quotation_count
+        quotation_file_count += source_quotation_count > 0
+        quotation_kind_counts.update(quotation_expansion["kind_counts"])
         source_sites = [
             {
                 "input_index": index,
@@ -741,6 +766,7 @@ def prepare_all_sources(
             "utf8_decodable": utf8_decodable,
             "recognized_loader_actions": actions,
             "recognized_loader_action_count": len(actions),
+            "quotation_expansion": quotation_expansion,
             "prepared_input": prepared_record,
             "parser_or_runtime_invoked": False,
         })
@@ -763,10 +789,17 @@ def prepare_all_sources(
             "ordered effective hash drift")
     require(canonical_sha256(prepared_hashes) == EXPECTED_ORDERED_PREPARED_SHA256,
             "ordered prepared hash drift")
+    require(
+        quotation_count == EXPECTED_QUOTATION_COUNT
+        and quotation_file_count == EXPECTED_QUOTATION_FILE_COUNT
+        and dict(sorted(quotation_kind_counts.items()))
+        == EXPECTED_QUOTATION_KIND_COUNTS,
+        "loader quotation inventory drift",
+    )
     _validate_action_inventory(sites)
 
     plan = {
-        "schema": 1,
+        "schema": 2,
         "kind": "candle-flyspeck-all-inventory-source-preparation",
         "claim": CLAIM,
         "promotion_allowed": False,
@@ -784,6 +817,14 @@ def prepare_all_sources(
             "kind_counts": dict(sorted(Counter(site["kind"] for site in sites).items())),
             "ordered_site_sha256": canonical_sha256(sites),
             "semantics_executed": False,
+        },
+        "quotation_expansion": {
+            "contract": flyspeck_loader_quotation.contract(),
+            "input_stage": "after-normalization-and-standalone-loader-masking",
+            "quotation_count": quotation_count,
+            "source_with_quotation_count": quotation_file_count,
+            "kind_counts": dict(sorted(quotation_kind_counts.items())),
+            "parser_or_runtime_invoked": False,
         },
         "prepared_inputs": {
             "count": len(files),

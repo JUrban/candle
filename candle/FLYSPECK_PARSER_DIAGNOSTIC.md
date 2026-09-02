@@ -40,6 +40,23 @@ input; there is no accepted partial profile. Materialization of the committed
 authorities produces 382 byte-identical inputs and 18 normalized inputs. The
 normalization contract accounts for all 727 classified loader sites.
 
+Raw HOL Light source is not the parser input used by Candle.  The loader's
+`Lexer.scan` emits `T_quote` for a backtick body, `Lexer.string_of_token`
+rewrites that token through `Cakeml.unquote`, and `system.ml` installs
+`quotexpander`.  The diagnostic therefore reproduces that exact byte
+transformation after loader-line masking.  The authenticated 400-input corpus
+contains 318,855 loader-visible quotations in 344 sources: 318,180 term
+quotations and 675 type quotations.  The current corpus has no qproof or
+string-quotation case.  The 20-input pilot has 104 term quotations in three
+sources.  Empty or unterminated quotations and lexically unclosed comments,
+strings, or character literals fail closed.
+
+This remains a deliberately coarse whole-source parser diagnostic.  It models
+the quotation bytes required by the parser, but not the REPL's incremental
+phrase splitting or its evolving type/value environment.  A pass is useful
+frontend evidence only; a failure still needs classification against the real
+loader path before it is treated as a grammar defect.
+
 For each selected source, the generator:
 
 - authenticates the exact Git blob and manifest byte/MD5/SHA-256 identity;
@@ -48,6 +65,9 @@ For each selected source, the generator:
   phrases before calling the OCaml parser;
 - retains embedded loading expressions as parser input but records that the
   gate never executes them;
+- expands only loader-visible HOL quotations, preserving backticks in nested
+  comments, strings, and character literals, and binds both the pre-expansion
+  and post-expansion byte identities;
 - refuses to launch a source with an unknown/dynamic standalone action or an
   unmodeled normalization; and
 - binds the complete generated-input inventory while stating that no generated
@@ -112,19 +132,27 @@ Linux pidfd supervision keeps the leader unreaped while the controller kills
 the entire process group on normal exit or timeout. The no-fork child limit is
 an additional defense against escaped descendants.
 
+The quotation model is source-anchored to `candle/prover/candle_boot.ml` at
+the pinned CakeML commit and to the exact committed Candle `system.ml` bytes.
+Both anchors and the preparation implementation are plan authorities.
+
 The manifest pins CakeML integration commit
 `c2e26f43c35080d57fc18aba42d4023590b6daba`, which implements the dedicated
 protocol and its proof obligations. Its authenticated pristine-cold five-stage
-replay has passed; canonical bootstrap/link qualification remains pending, so
-the pin alone does not qualify a runtime. Therefore the exact blocking
-condition is:
+replay has passed.  Canonical bootstrap/link qualification for the corrected
+quotation-aware Candle controller remains pending, so the pin alone does not
+qualify a runtime. Therefore the exact blocking condition is:
 
 > No pilot or all-inventory process may be launched until the protocol commit's
 > proof replay succeeds, that commit is pinned by the Candle manifest, and the
 > resulting compiler is canonically bootstrapped and linked to the exact Candle
 > controller commit under validated provenance.
 
-No parser pilot was launched while implementing this controller.
+An explicitly non-promotable development run fed raw source to the parser and
+reported backticks in `bool.ml`, `drule.ml`, and `tactics.ml` as lexer errors.
+That run demonstrated the preparation defect, not a grammar defect, and is
+superseded by the quotation-aware schemas.  It is not a pilot pass and cannot
+authorize the 400-input run.
 
 ## Smallest CakeML entrypoint change
 
@@ -174,7 +202,7 @@ project's canonical bootstrap controller qualifies `cake.S` by rebuilding its
 exact forced 18-target closure, so release qualification still requires
 another full canonical bootstrap.
 
-This change necessarily creates a new CakeML commit, changes the manifest's
+The runtime protocol change created a new CakeML commit, changed the manifest's
 pinned CakeML identity, changes the Candle manifest/pilot digest, and requires
 a new exact-head linked-provenance record. An old linked compiler cannot
 validate the new parser or satisfy the capability handshake.
@@ -257,7 +285,7 @@ receipt, linked provenance, controller/policy sources, every `linked.outputs`
 member, every selected source's original Git blob alongside its prepared input,
 the patch plus patch/native-link inputs, the CakeML runtime ELF closure, the
 controller Python executable/ELF closure and host tools, and the schema-7
-transition record when applicable. This makes the exact masking transformation
+transition record when applicable. This makes the exact loader preparation
 auditable offline. Large objects are streamed into independent ordinary
 copies—never mutable hardlinks. A closed inventory is rehashed before
 publication, so an omitted, extra, symlinked, writable, or tampered snapshot
@@ -271,8 +299,12 @@ rename before reporting success. Modes 0555/0444 are an audit and accidental-
 mutation barrier, not immutability against another process with the same UID;
 every later consumer must therefore revalidate the closed receipt inventory.
 
-The published pilot receipt is schema 4. The all-inventory receipt is schema 5
-and additionally closes its profile and source-preparation fields, its exact
+The quotation-aware pilot plan is schema 2 and its published receipt is schema
+6.  The quotation-aware all-inventory plan is schema 3 and its published
+receipt is schema 7.  The old raw-source plan schemas 1/2 and receipt schemas
+4/5 are superseded and cannot be relabeled as quotation-aware results.  The
+all-inventory receipt additionally closes its profile and source-preparation
+fields, its exact
 authority directory, and all 400 prepared plan inputs. Both schemas close the
 top-level field set over the sealed `runtime_execution` record, require that
 record's byte count and SHA-256 to equal the archived linked runtime, and

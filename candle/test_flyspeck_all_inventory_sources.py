@@ -41,6 +41,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         return sites
 
     def test_exact_all_400_source_only_contract(self) -> None:
+        self.assertEqual(self.plan["schema"], 2)
         self.assertEqual(self.plan["input_count"], 400)
         self.assertEqual(len(self.plan["inputs"]), 400)
         self.assertEqual(len(self.files), 400)
@@ -54,6 +55,26 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         self.assertIn("source-only", self.plan["claim"])
         self.assertIn("non-promotable", self.plan["claim"])
         self.assertIn("not a parser run", self.plan["claim"])
+
+    def test_loader_quotation_expansion_is_exactly_closed(self) -> None:
+        expansion = self.plan["quotation_expansion"]
+        self.assertEqual(expansion["quotation_count"], 318855)
+        self.assertEqual(expansion["source_with_quotation_count"], 344)
+        self.assertEqual(
+            expansion["kind_counts"],
+            {"qproof": 0, "string": 0, "term": 318180, "type": 675},
+        )
+        self.assertEqual(
+            expansion["contract"]["cakeml_loader"]["commit"],
+            "c2e26f43c35080d57fc18aba42d4023590b6daba",
+        )
+        self.assertFalse(expansion["parser_or_runtime_invoked"])
+        for index in (16, 17, 18):
+            record = self.plan["inputs"][index]
+            prepared = self.files[record["prepared_input"]["path"]]
+            self.assertGreater(record["quotation_expansion"]["quotation_count"], 0)
+            self.assertNotIn(b"`", prepared)
+            self.assertIn(b"parse_term", prepared)
 
     def test_exact_loader_site_and_masking_contract(self) -> None:
         actions = self.plan["loader_actions"]
