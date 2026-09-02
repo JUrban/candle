@@ -423,9 +423,9 @@
   ],
   "kind": "candle-flyspeck-parser-diagnostic-pilot",
   "manifest": {
-    "bytes": 821669,
+    "bytes": 821917,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "ea6d061cdb23327e41e85387eec82ca5a88d51647c985f67f80eabf80fc65740"
+    "sha256": "4baf80219b48f2ca2e46a7279c2815de2c938f1a2e22d4be69d8219100312486"
   },
   "schema": 1,
   "selection": {
