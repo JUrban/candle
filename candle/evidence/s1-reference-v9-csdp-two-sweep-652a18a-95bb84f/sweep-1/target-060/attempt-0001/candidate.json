@@ -1,0 +1,1648 @@
+{
+  "schema": "candle-s1-reference-candidate-v9",
+  "artifact_kind": "reference_identity_candidate",
+  "approval_status": "candidate_unapproved",
+  "promotion_allowed": false,
+  "warning": "Review provenance and identities independently; this artifact is not an EXPECTED_IDENTITIES value and no automatic promotion exists.",
+  "plan_pins": {
+    "reference": {
+      "root": "/project/worktrees/hol-light-s1-exact-reference-v13",
+      "git_head": "1258c129c3ddf0b239b649ba7024eab677cd953b",
+      "git_status": [],
+      "runtime_executable": {
+        "path": "/project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol",
+        "sha256": "f531e272e0c7cfa31886496f672a930fd063ee66367146261c339cc1fc753931"
+      },
+      "runtime_interpreter": {
+        "path": "/usr/bin/ocamlrun",
+        "sha256": "ecb7abaea5550b54d2caddffe3ca4932e1231afe32c3e3c39c75d49a740a6e8e"
+      },
+      "runtime_stublib": {
+        "path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+        "sha256": "dcc2f53493929d85b724998f628a37042facd69cf546f01fb0682a68a8d7ddb5"
+      },
+      "runtime_library_tree": {
+        "root": "/project/repos/hol-light/_opam/lib/stublibs",
+        "root_mode": 493,
+        "entry_count": 2,
+        "inventory_sha256": "8dee7bf4b73f4f89ebe56004959419236d27ec5a0d85e3925fc7bf4a83a61d0d",
+        "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+      },
+      "runtime_stub_files": [
+        {
+          "path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+          "sha256": "dcc2f53493929d85b724998f628a37042facd69cf546f01fb0682a68a8d7ddb5"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllcamlstr.so",
+          "sha256": "f7326c3521611f8034cfc387e05b4e4c2cac97a9586871368e94b008d16b5b5c"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllgraphics_js_stubs.so",
+          "sha256": "39c71dbda93c7e4a059a9737b5aa9980bb99c8b13675604fcbb2e6515bc89739"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllgraphics_stubs.so",
+          "sha256": "9322c83292d28f93f6a12a22bc8b5dfd38377af4ca4aea244eb4462b3e4cbd17"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dlljs_of_ocaml_stubs.so",
+          "sha256": "7f6d08daed5a1e65eae67f9cffeaceeccf32e3c93f36e14143ee210e48ab4d2c"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dlljsoo_runtime_stubs.so",
+          "sha256": "ba15f8f1745d267054ca8c47bee6c890c878df56398918deeb351e3493226b15"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dlllwt_unix_stubs.so",
+          "sha256": "684d2b274b4fd1cc09da68c89cd6ab0a6672ae53c40a28188eabf31b26c1dbe8"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllnums.so",
+          "sha256": "3b25b3f0ba5199c5884cf9e53627a6250bb2f5ffc325b85dc77d83cc3e7ac466"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllthreads.so",
+          "sha256": "a44b02051b3b95b365c725bbc253b744536ac56f18bbe91c7f3519875289a63b"
+        },
+        {
+          "path": "/usr/lib/ocaml/stublibs/dllunix.so",
+          "sha256": "dc6bfe9622a2f58b52d7a956998c1826486a732add3f428516cc80f985ec58f1"
+        }
+      ],
+      "elf_runtime": {
+        "policy": "authenticated_explicit_bash_ldd_closure_v1",
+        "output_normalization": "strict_recognized_lines_replace_only_aslr_addresses_v1",
+        "tools": {
+          "bash": {
+            "argument_path": "/bin/bash",
+            "argument_parent": {
+              "path": "/bin",
+              "kind": "directory",
+              "mode": 493,
+              "resolved_path": "/bin"
+            },
+            "argument": {
+              "path": "/bin/bash",
+              "kind": "file",
+              "mode": 493,
+              "resolved_path": "/bin/bash"
+            },
+            "resolved_executable": {
+              "path": "/bin/bash",
+              "sha256": "bc5945feb8bd26203ebfafea5ce1878bb2e32cb8fb50ab7ae395cfb1e1aaaef1",
+              "mode": 493
+            }
+          },
+          "ldd": {
+            "argument_path": "/usr/bin/ldd",
+            "argument_parent": {
+              "path": "/usr/bin",
+              "kind": "directory",
+              "mode": 493,
+              "resolved_path": "/usr/bin"
+            },
+            "argument": {
+              "path": "/usr/bin/ldd",
+              "kind": "file",
+              "mode": 493,
+              "resolved_path": "/usr/bin/ldd"
+            },
+            "resolved_executable": {
+              "path": "/usr/bin/ldd",
+              "sha256": "4f1d37e25f27535e3f02a5b7da63e1ce18d4982445db2c25fc8f985a3d395cc3",
+              "mode": 493
+            }
+          }
+        },
+        "hardcoded_loader_routes": [
+          {
+            "argument_path": "/lib/ld-linux.so.2",
+            "status": "absent"
+          },
+          {
+            "argument_path": "/lib64/ld-linux-x86-64.so.2",
+            "status": "present",
+            "route": {
+              "argument_path": "/lib64/ld-linux-x86-64.so.2",
+              "argument_parent": {
+                "path": "/lib64",
+                "kind": "directory",
+                "mode": 493,
+                "resolved_path": "/lib64"
+              },
+              "argument": {
+                "path": "/lib64/ld-linux-x86-64.so.2",
+                "kind": "symlink",
+                "mode": 511,
+                "target": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "resolved_path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+              },
+              "resolved_executable": {
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+                "mode": 493
+              }
+            }
+          },
+          {
+            "argument_path": "/libx32/ld-linux-x32.so.2",
+            "status": "absent"
+          }
+        ],
+        "ld_so_cache": {
+          "path": "/etc/ld.so.cache",
+          "sha256": "0971c6dfbc46998c25774d855b34d8494d78988f90221eb5fe5aa8816203fca1"
+        },
+        "ld_so_preload": {
+          "path": "/etc/ld.so.preload",
+          "status": "absent"
+        },
+        "environment": {
+          "PATH": "/usr/bin:/bin",
+          "LC_ALL": "C",
+          "LANG": "C"
+        },
+        "requested_roots": [
+          {
+            "path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+            "sha256": "dcc2f53493929d85b724998f628a37042facd69cf546f01fb0682a68a8d7ddb5"
+          },
+          {
+            "path": "/usr/bin/ocamlrun",
+            "sha256": "ecb7abaea5550b54d2caddffe3ca4932e1231afe32c3e3c39c75d49a740a6e8e"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllcamlstr.so",
+            "sha256": "f7326c3521611f8034cfc387e05b4e4c2cac97a9586871368e94b008d16b5b5c"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllgraphics_js_stubs.so",
+            "sha256": "39c71dbda93c7e4a059a9737b5aa9980bb99c8b13675604fcbb2e6515bc89739"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllgraphics_stubs.so",
+            "sha256": "9322c83292d28f93f6a12a22bc8b5dfd38377af4ca4aea244eb4462b3e4cbd17"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dlljs_of_ocaml_stubs.so",
+            "sha256": "7f6d08daed5a1e65eae67f9cffeaceeccf32e3c93f36e14143ee210e48ab4d2c"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dlljsoo_runtime_stubs.so",
+            "sha256": "ba15f8f1745d267054ca8c47bee6c890c878df56398918deeb351e3493226b15"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dlllwt_unix_stubs.so",
+            "sha256": "684d2b274b4fd1cc09da68c89cd6ab0a6672ae53c40a28188eabf31b26c1dbe8"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllnums.so",
+            "sha256": "3b25b3f0ba5199c5884cf9e53627a6250bb2f5ffc325b85dc77d83cc3e7ac466"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllthreads.so",
+            "sha256": "a44b02051b3b95b365c725bbc253b744536ac56f18bbe91c7f3519875289a63b"
+          },
+          {
+            "path": "/usr/lib/ocaml/stublibs/dllunix.so",
+            "sha256": "dc6bfe9622a2f58b52d7a956998c1826486a732add3f428516cc80f985ec58f1"
+          }
+        ],
+        "observations": [
+          {
+            "root": {
+              "path": "/bin/bash",
+              "sha256": "bc5945feb8bd26203ebfafea5ce1878bb2e32cb8fb50ab7ae395cfb1e1aaaef1"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/bin/bash"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "d68e9045727c1a0df1eeeeb5eac8f875a98d1009cd01c8a41d7ee42f6e3e22be",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libtinfo.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libtinfo.so.6",
+                "path": "/lib/x86_64-linux-gnu/libtinfo.so.6.4",
+                "sha256": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+              "sha256": "dcc2f53493929d85b724998f628a37042facd69cf546f01fb0682a68a8d7ddb5"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibgmp.so.10 => /lib/x86_64-linux-gnu/libgmp.so.10 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "f6b4a76ac0adb840d6df0bbef00eeb9b091e20a2c022bd690c57bbf26a6d1b74",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libgmp.so.10",
+                "reported_path": "/lib/x86_64-linux-gnu/libgmp.so.10",
+                "path": "/lib/x86_64-linux-gnu/libgmp.so.10.5.0",
+                "sha256": "0ccdfb6d6f5c039465f6d002cf7e4c072d48ac6a2cffc8dd6c748dec31592804"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/bin/ocamlrun",
+              "sha256": "ecb7abaea5550b54d2caddffe3ca4932e1231afe32c3e3c39c75d49a740a6e8e"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/bin/ocamlrun"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "9ea102c58aab8bff285182bab0963a8bfa1c826b3a48a72c228c0175888a1742",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libm.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libm.so.6",
+                "path": "/lib/x86_64-linux-gnu/libm.so.6",
+                "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllcamlstr.so",
+              "sha256": "f7326c3521611f8034cfc387e05b4e4c2cac97a9586871368e94b008d16b5b5c"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllcamlstr.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllgraphics_js_stubs.so",
+              "sha256": "39c71dbda93c7e4a059a9737b5aa9980bb99c8b13675604fcbb2e6515bc89739"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllgraphics_js_stubs.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllgraphics_stubs.so",
+              "sha256": "9322c83292d28f93f6a12a22bc8b5dfd38377af4ca4aea244eb4462b3e4cbd17"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllgraphics_stubs.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibX11.so.6 => /lib/x86_64-linux-gnu/libX11.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\tlibxcb.so.1 => /lib/x86_64-linux-gnu/libxcb.so.1 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n\tlibXau.so.6 => /lib/x86_64-linux-gnu/libXau.so.6 (0xADDRESS)\n\tlibXdmcp.so.6 => /lib/x86_64-linux-gnu/libXdmcp.so.6 (0xADDRESS)\n\tlibbsd.so.0 => /lib/x86_64-linux-gnu/libbsd.so.0 (0xADDRESS)\n\tlibmd.so.0 => /lib/x86_64-linux-gnu/libmd.so.0 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "f214c6d619233bef958d454d410c367824a09b3fdde90ed0b35ab6d3f9c917c3",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libX11.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libX11.so.6",
+                "path": "/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+                "sha256": "c5b5d782bd9cab3420a62df88f5c991507edf3331a89f98464ddbc538c37b879"
+              },
+              {
+                "role": "libXau.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libXau.so.6",
+                "path": "/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+                "sha256": "8040da3f8516c1acfe39f04ff022480cdb273705ba5e7a4ca70bbdb1527cd67a"
+              },
+              {
+                "role": "libXdmcp.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libXdmcp.so.6",
+                "path": "/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+                "sha256": "667d97d6da16016400ab10de9f83ef4ab209ceb6adf68ff9650225ec13e723b0"
+              },
+              {
+                "role": "libbsd.so.0",
+                "reported_path": "/lib/x86_64-linux-gnu/libbsd.so.0",
+                "path": "/lib/x86_64-linux-gnu/libbsd.so.0.12.1",
+                "sha256": "e86cd4f0019f42c2ba5e60602e0edc8694d2948377d98c3654d0f6bddb5254bb"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libmd.so.0",
+                "reported_path": "/lib/x86_64-linux-gnu/libmd.so.0",
+                "path": "/lib/x86_64-linux-gnu/libmd.so.0.1.0",
+                "sha256": "423e18586b6ea740f4465afd64f7a9a4cb7264ed979c8e7256f9085af5345fef"
+              },
+              {
+                "role": "libxcb.so.1",
+                "reported_path": "/lib/x86_64-linux-gnu/libxcb.so.1",
+                "path": "/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+                "sha256": "7958a0136b121bdc4c708968569ad152a9ed208ab026e2537b1005dde64ca440"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dlljs_of_ocaml_stubs.so",
+              "sha256": "7f6d08daed5a1e65eae67f9cffeaceeccf32e3c93f36e14143ee210e48ab4d2c"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dlljs_of_ocaml_stubs.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dlljsoo_runtime_stubs.so",
+              "sha256": "ba15f8f1745d267054ca8c47bee6c890c878df56398918deeb351e3493226b15"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dlljsoo_runtime_stubs.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dlllwt_unix_stubs.so",
+              "sha256": "684d2b274b4fd1cc09da68c89cd6ab0a6672ae53c40a28188eabf31b26c1dbe8"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dlllwt_unix_stubs.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibev.so.4 => /lib/x86_64-linux-gnu/libev.so.4 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "768fe576f54a941de13c04ca80589e35cd9b16956db5b19488617c8560127fec",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libev.so.4",
+                "reported_path": "/lib/x86_64-linux-gnu/libev.so.4",
+                "path": "/lib/x86_64-linux-gnu/libev.so.4.0.0",
+                "sha256": "b267e48c7fb097e722f1b704a59389cc5ff9689a08a780a1b8e8b33b7c7e2eec"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllnums.so",
+              "sha256": "3b25b3f0ba5199c5884cf9e53627a6250bb2f5ffc325b85dc77d83cc3e7ac466"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllnums.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllthreads.so",
+              "sha256": "a44b02051b3b95b365c725bbc253b744536ac56f18bbe91c7f3519875289a63b"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllthreads.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          },
+          {
+            "root": {
+              "path": "/usr/lib/ocaml/stublibs/dllunix.so",
+              "sha256": "dc6bfe9622a2f58b52d7a956998c1826486a732add3f428516cc80f985ec58f1"
+            },
+            "argv": [
+              "/bin/bash",
+              "/usr/bin/ldd",
+              "/usr/lib/ocaml/stublibs/dllunix.so"
+            ],
+            "environment": {
+              "PATH": "/usr/bin:/bin",
+              "LC_ALL": "C",
+              "LANG": "C"
+            },
+            "return_code": 0,
+            "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+            "normalized_stdout_sha256": "9ea102c58aab8bff285182bab0963a8bfa1c826b3a48a72c228c0175888a1742",
+            "stderr": "",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "resolved_files": [
+              {
+                "role": "ld-linux-x86-64.so.2",
+                "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+              },
+              {
+                "role": "libc.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+              },
+              {
+                "role": "libm.so.6",
+                "reported_path": "/lib/x86_64-linux-gnu/libm.so.6",
+                "path": "/lib/x86_64-linux-gnu/libm.so.6",
+                "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+              }
+            ],
+            "virtual_objects": [
+              "linux-vdso.so.1"
+            ]
+          }
+        ],
+        "closure": [
+          {
+            "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+            "sha256": "c5b5d782bd9cab3420a62df88f5c991507edf3331a89f98464ddbc538c37b879"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+            "sha256": "8040da3f8516c1acfe39f04ff022480cdb273705ba5e7a4ca70bbdb1527cd67a"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+            "sha256": "667d97d6da16016400ab10de9f83ef4ab209ceb6adf68ff9650225ec13e723b0"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libbsd.so.0.12.1",
+            "sha256": "e86cd4f0019f42c2ba5e60602e0edc8694d2948377d98c3654d0f6bddb5254bb"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libc.so.6",
+            "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libev.so.4.0.0",
+            "sha256": "b267e48c7fb097e722f1b704a59389cc5ff9689a08a780a1b8e8b33b7c7e2eec"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libgmp.so.10.5.0",
+            "sha256": "0ccdfb6d6f5c039465f6d002cf7e4c072d48ac6a2cffc8dd6c748dec31592804"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libm.so.6",
+            "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libmd.so.0.1.0",
+            "sha256": "423e18586b6ea740f4465afd64f7a9a4cb7264ed979c8e7256f9085af5345fef"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libtinfo.so.6.4",
+            "sha256": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+            "sha256": "7958a0136b121bdc4c708968569ad152a9ed208ab026e2537b1005dde64ca440"
+          }
+        ]
+      },
+      "ocamlc": {
+        "path": "/usr/bin/ocamlc.opt",
+        "sha256": "84825ef63ded23b445acd4ef399e1bb0a11081976da4741e1033c8569eaa2bd6",
+        "version": "4.14.1",
+        "stdlib_directory": "/usr/lib/ocaml"
+      },
+      "findlib": {
+        "executable": {
+          "path": "/usr/bin/ocamlfind",
+          "sha256": "c08fd2438693fee0c8544216d11a213c51eff33e2fafc73f80f576430ee52837"
+        },
+        "version": "1.9.6",
+        "configuration": {
+          "path": "/etc/ocamlfind.conf",
+          "sha256": "29d5cfc50cd5888d2f329eacd668a7de6b0f491791a3eb4e2031bb4655a12d52"
+        },
+        "package_roots": [
+          {
+            "root": "/usr/lib/ocaml",
+            "root_mode": 493,
+            "entry_count": 5720,
+            "inventory_sha256": "a941feb2ec3883026ae746883e3ddd8b43255e2a7e9c608c705980a171316206",
+            "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+          },
+          {
+            "root": "/usr/lib/ocaml/METAS",
+            "root_mode": 493,
+            "entry_count": 0,
+            "inventory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+          },
+          {
+            "root": "/usr/local/lib/ocaml/4.14.1",
+            "root_mode": 1533,
+            "entry_count": 1,
+            "inventory_sha256": "e735f0fa247f3a424f5aae46f989579c472eff774dd6ed0ab92c22c5eb9dd4a6",
+            "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+          }
+        ]
+      },
+      "hol_ml": {
+        "path": "/project/worktrees/hol-light-s1-exact-reference-v13/hol.ml",
+        "sha256": "9eabbd17397d942d116f1087e4b11d82746acc19ca77c11fed04046fdbec3e32"
+      },
+      "generated_boot_files": [
+        {
+          "path": "/project/worktrees/hol-light-s1-exact-reference-v13/hol_loader.cmo",
+          "sha256": "5790753c7f1c5a21bd87270f7f7f6cd2bd0100dd35fe29b1370693a60b466308"
+        },
+        {
+          "path": "/project/worktrees/hol-light-s1-exact-reference-v13/pa_j.cmo",
+          "sha256": "3efeb0b8360bd4e151c7da2b723b3a1c0884f91dde5ae9baa0d6b6322fffff39"
+        },
+        {
+          "path": "/project/worktrees/hol-light-s1-exact-reference-v13/load_camlp5_topfind.ml",
+          "sha256": "76a39db5cc2c3da7f05872a1a67a06e2f335752e3c184e2cba41b93219f21243"
+        }
+      ],
+      "ocaml_library_tree": {
+        "root": "/usr/lib/ocaml",
+        "root_mode": 493,
+        "entry_count": 5720,
+        "inventory_sha256": "a941feb2ec3883026ae746883e3ddd8b43255e2a7e9c608c705980a171316206",
+        "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+      },
+      "external_runtime": {
+        "policy": "single_private_path_gp_csdp_with_pinned_shell_v3",
+        "command_shell": {
+          "argument_path": "/bin/sh",
+          "argument_parent": {
+            "path": "/bin",
+            "kind": "directory",
+            "mode": 493,
+            "resolved_path": "/bin"
+          },
+          "argument": {
+            "path": "/bin/sh",
+            "kind": "symlink",
+            "mode": 511,
+            "target": "dash",
+            "resolved_path": "/bin/dash"
+          },
+          "resolved_executable": {
+            "path": "/bin/dash",
+            "sha256": "86d31f6fb799e91fa21bad341484564510ca287703a16e9e46c53338776f4f42",
+            "mode": 493
+          }
+        },
+        "pari_gp": {
+          "argument_path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp",
+          "argument_parent": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin",
+            "kind": "directory",
+            "mode": 493,
+            "resolved_path": "/project/deps/hol-light-external-tools-v9/usr/bin"
+          },
+          "argument": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp",
+            "kind": "symlink",
+            "mode": 511,
+            "target": "gp-2.15",
+            "resolved_path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15"
+          },
+          "resolved_executable": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15",
+            "sha256": "c9673623cad2eaa7cfe402e7b7d833f1f703689a09837026b6386aaafba6deec",
+            "mode": 493
+          }
+        },
+        "pari_gp_version": {
+          "stdout": "2.15.4\n",
+          "sha256": "14878c90d3757b5a83f70a8e976e09edc3fadc0987e6d8be2b5b060d1a5dd2d0"
+        },
+        "package_archive": {
+          "path": "/project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb",
+          "sha256": "55a95d51afe87688fe0fcfe1bca74bf8c5474533e2a42d3af45c87c1ae0d86fa"
+        },
+        "package_tree": {
+          "root": "/project/deps/hol-light-external-tools-v9",
+          "root_mode": 493,
+          "entry_count": 62,
+          "inventory_sha256": "84bd5e8b1a8e1c253cc2c45fd19fafaa22b7f6ea5109a646631b5f2b10bb7732",
+          "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+        },
+        "configuration": {
+          "path": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+          "sha256": "473ec0c27f514013b7a1ae2442fbe8e46046df58e6a0be590ea17a03873fc6b1"
+        },
+        "data_tree": {
+          "root": "/project/deps/hol-light-external-tools-v9/candle-data",
+          "root_mode": 365,
+          "entry_count": 0,
+          "inventory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1"
+        },
+        "csdp": {
+          "argument_path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+          "argument_parent": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin",
+            "kind": "directory",
+            "mode": 493,
+            "resolved_path": "/project/deps/hol-light-external-tools-v9/usr/bin"
+          },
+          "argument": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+            "kind": "file",
+            "mode": 365,
+            "resolved_path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp"
+          },
+          "resolved_executable": {
+            "path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+            "sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d",
+            "mode": 365
+          }
+        },
+        "csdp_bytes": 107384,
+        "csdp_source_archive": {
+          "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-source.tar.gz",
+          "sha256": "7f202a15f33483ee205dcfbd0573fdbd74911604bb739a04f8baa35f8a055c5b",
+          "bytes": 526179
+        },
+        "csdp_build": {
+          "receipt": {
+            "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-build.json",
+            "sha256": "530b7d8c93574e188045277e484cbe2a40c634a3ae0b6cc24240aff2bf726b22"
+          },
+          "statement": {
+            "schema": 1,
+            "kind": "candle-hol-light-csdp-single-thread-build",
+            "source": {
+              "archive": "candle-csdp-source.tar.gz",
+              "bytes": 526179,
+              "sha256": "7f202a15f33483ee205dcfbd0573fdbd74911604bb739a04f8baa35f8a055c5b",
+              "upstream_tree": "Csdp-6.2.0",
+              "ubuntu_source_package": "coinor-csdp 6.2.0-5build1 (Noble)"
+            },
+            "toolchain": {
+              "compiler_argument": "/usr/bin/gcc",
+              "compiler_resolved": "/usr/bin/x86_64-linux-gnu-gcc-13",
+              "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+              "compiler_version_first_line": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+              "archiver_argument": "/usr/bin/ar",
+              "archiver_resolved": "/usr/bin/x86_64-linux-gnu-ar",
+              "archiver_sha256": "534681ac11c18868cfc4fdf98770aa0ba8973eedc90c231e94e6ba96e1a04f27",
+              "binutils_version_first_line": "GNU ld (GNU Binutils for Ubuntu) 2.42"
+            },
+            "recipe": {
+              "cflags": "-m64 -O2 -fno-ident -ansi -Wall -DBIT64 -DUSESIGTERM -DUSEGETTIME -I../include",
+              "library_flags": "-L../lib -Wl,-Bstatic -lsdp -Wl,-Bdynamic -llapack -lblas -lm -lgfortran",
+              "openmp_enabled": false,
+              "native_cpu_flags": false,
+              "commands": [
+                "make -C lib clean libsdp.a CC=/usr/bin/gcc CFLAGS=<cflags>",
+                "make -C solver clean csdp CC=/usr/bin/gcc CFLAGS=<cflags> LIBS=<library_flags>"
+              ]
+            },
+            "outputs": {
+              "static_libsdp_sha256": "ede58dd5bf3620aa08045aa767fd1280fefe1e76d6ece276e8a674d6156bca25",
+              "csdp_path": "usr/bin/csdp",
+              "csdp_bytes": 107384,
+              "csdp_sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d"
+            },
+            "unit_probe": {
+              "input_path": "candle-csdp-theta1.dat-s",
+              "input_bytes": 53609,
+              "input_sha256": "0529ef48291c872fa1edd1e3b6ba4da3364377c613756c496b6fefd2afed2173",
+              "exit_code": 0,
+              "success_line": "Success: SDP solved",
+              "primal_objective": "2.3000000e+01",
+              "dual_objective": "2.3000000e+01",
+              "maximum_allowed_dimacs_error": "1.0e-6"
+            },
+            "runtime_policy": {
+              "single_process_solver": true,
+              "single_thread_build": true,
+              "external_shared_libraries_closed_separately": true
+            }
+          }
+        },
+        "csdp_probe_input": {
+          "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s",
+          "sha256": "0529ef48291c872fa1edd1e3b6ba4da3364377c613756c496b6fefd2afed2173",
+          "bytes": 53609
+        },
+        "thread_policy": {
+          "single_process_solver": true,
+          "single_thread_build": true,
+          "openmp_enabled": false,
+          "native_cpu_flags": false,
+          "environment": {
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "VECLIB_MAXIMUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          },
+          "forbidden_elf_dependency_name_fragments": [
+            "libgomp",
+            "libomp",
+            "libiomp",
+            "libopenblas",
+            "libpthread"
+          ]
+        },
+        "elf_runtime": {
+          "policy": "authenticated_explicit_bash_ldd_closure_v1",
+          "output_normalization": "strict_recognized_lines_replace_only_aslr_addresses_v1",
+          "tools": {
+            "bash": {
+              "argument_path": "/bin/bash",
+              "argument_parent": {
+                "path": "/bin",
+                "kind": "directory",
+                "mode": 493,
+                "resolved_path": "/bin"
+              },
+              "argument": {
+                "path": "/bin/bash",
+                "kind": "file",
+                "mode": 493,
+                "resolved_path": "/bin/bash"
+              },
+              "resolved_executable": {
+                "path": "/bin/bash",
+                "sha256": "bc5945feb8bd26203ebfafea5ce1878bb2e32cb8fb50ab7ae395cfb1e1aaaef1",
+                "mode": 493
+              }
+            },
+            "ldd": {
+              "argument_path": "/usr/bin/ldd",
+              "argument_parent": {
+                "path": "/usr/bin",
+                "kind": "directory",
+                "mode": 493,
+                "resolved_path": "/usr/bin"
+              },
+              "argument": {
+                "path": "/usr/bin/ldd",
+                "kind": "file",
+                "mode": 493,
+                "resolved_path": "/usr/bin/ldd"
+              },
+              "resolved_executable": {
+                "path": "/usr/bin/ldd",
+                "sha256": "4f1d37e25f27535e3f02a5b7da63e1ce18d4982445db2c25fc8f985a3d395cc3",
+                "mode": 493
+              }
+            }
+          },
+          "hardcoded_loader_routes": [
+            {
+              "argument_path": "/lib/ld-linux.so.2",
+              "status": "absent"
+            },
+            {
+              "argument_path": "/lib64/ld-linux-x86-64.so.2",
+              "status": "present",
+              "route": {
+                "argument_path": "/lib64/ld-linux-x86-64.so.2",
+                "argument_parent": {
+                  "path": "/lib64",
+                  "kind": "directory",
+                  "mode": 493,
+                  "resolved_path": "/lib64"
+                },
+                "argument": {
+                  "path": "/lib64/ld-linux-x86-64.so.2",
+                  "kind": "symlink",
+                  "mode": 511,
+                  "target": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "resolved_path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+                },
+                "resolved_executable": {
+                  "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81",
+                  "mode": 493
+                }
+              }
+            },
+            {
+              "argument_path": "/libx32/ld-linux-x32.so.2",
+              "status": "absent"
+            }
+          ],
+          "ld_so_cache": {
+            "path": "/etc/ld.so.cache",
+            "sha256": "0971c6dfbc46998c25774d855b34d8494d78988f90221eb5fe5aa8816203fca1"
+          },
+          "ld_so_preload": {
+            "path": "/etc/ld.so.preload",
+            "status": "absent"
+          },
+          "environment": {
+            "PATH": "/usr/bin:/bin",
+            "LC_ALL": "C",
+            "LANG": "C"
+          },
+          "requested_roots": [
+            {
+              "path": "/bin/dash",
+              "sha256": "86d31f6fb799e91fa21bad341484564510ca287703a16e9e46c53338776f4f42"
+            },
+            {
+              "path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+              "sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d"
+            },
+            {
+              "path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15",
+              "sha256": "c9673623cad2eaa7cfe402e7b7d833f1f703689a09837026b6386aaafba6deec"
+            }
+          ],
+          "observations": [
+            {
+              "root": {
+                "path": "/bin/bash",
+                "sha256": "bc5945feb8bd26203ebfafea5ce1878bb2e32cb8fb50ab7ae395cfb1e1aaaef1"
+              },
+              "argv": [
+                "/bin/bash",
+                "/usr/bin/ldd",
+                "/bin/bash"
+              ],
+              "environment": {
+                "PATH": "/usr/bin:/bin",
+                "LC_ALL": "C",
+                "LANG": "C"
+              },
+              "return_code": 0,
+              "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+              "normalized_stdout_sha256": "d68e9045727c1a0df1eeeeb5eac8f875a98d1009cd01c8a41d7ee42f6e3e22be",
+              "stderr": "",
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "resolved_files": [
+                {
+                  "role": "ld-linux-x86-64.so.2",
+                  "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                  "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+                },
+                {
+                  "role": "libc.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+                },
+                {
+                  "role": "libtinfo.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libtinfo.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libtinfo.so.6.4",
+                  "sha256": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+                }
+              ],
+              "virtual_objects": [
+                "linux-vdso.so.1"
+              ]
+            },
+            {
+              "root": {
+                "path": "/bin/dash",
+                "sha256": "86d31f6fb799e91fa21bad341484564510ca287703a16e9e46c53338776f4f42"
+              },
+              "argv": [
+                "/bin/bash",
+                "/usr/bin/ldd",
+                "/bin/dash"
+              ],
+              "environment": {
+                "PATH": "/usr/bin:/bin",
+                "LC_ALL": "C",
+                "LANG": "C"
+              },
+              "return_code": 0,
+              "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+              "normalized_stdout_sha256": "bd01e50b441c7b5e36ecf6047d17390c5095bcccf287723f26c8afcfcea98dd7",
+              "stderr": "",
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "resolved_files": [
+                {
+                  "role": "ld-linux-x86-64.so.2",
+                  "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                  "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+                },
+                {
+                  "role": "libc.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+                }
+              ],
+              "virtual_objects": [
+                "linux-vdso.so.1"
+              ]
+            },
+            {
+              "root": {
+                "path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+                "sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d"
+              },
+              "argv": [
+                "/bin/bash",
+                "/usr/bin/ldd",
+                "/project/deps/hol-light-external-tools-v9/usr/bin/csdp"
+              ],
+              "environment": {
+                "PATH": "/usr/bin:/bin",
+                "LC_ALL": "C",
+                "LANG": "C"
+              },
+              "return_code": 0,
+              "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tliblapack.so.3 => /lib/x86_64-linux-gnu/liblapack.so.3 (0xADDRESS)\n\tlibblas.so.3 => /lib/x86_64-linux-gnu/libblas.so.3 (0xADDRESS)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\tlibgfortran.so.5 => /lib/x86_64-linux-gnu/libgfortran.so.5 (0xADDRESS)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n",
+              "normalized_stdout_sha256": "16399141216739bac2c5fefc84619643b249ac60c707eb9e29604daed0d9717f",
+              "stderr": "",
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "resolved_files": [
+                {
+                  "role": "ld-linux-x86-64.so.2",
+                  "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                  "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+                },
+                {
+                  "role": "libblas.so.3",
+                  "reported_path": "/lib/x86_64-linux-gnu/libblas.so.3",
+                  "path": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0",
+                  "sha256": "e748efcae5753fe4a652877fccdb5895ac6f7605668a2db878b19c914e78e3a8"
+                },
+                {
+                  "role": "libc.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+                },
+                {
+                  "role": "libgcc_s.so.1",
+                  "reported_path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+                  "path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+                  "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+                },
+                {
+                  "role": "libgfortran.so.5",
+                  "reported_path": "/lib/x86_64-linux-gnu/libgfortran.so.5",
+                  "path": "/lib/x86_64-linux-gnu/libgfortran.so.5.0.0",
+                  "sha256": "342618ccfebe840446e4ef2b7893f4161b2084845e570f42d68a70bfde58a58d"
+                },
+                {
+                  "role": "liblapack.so.3",
+                  "reported_path": "/lib/x86_64-linux-gnu/liblapack.so.3",
+                  "path": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0",
+                  "sha256": "851bb1fc5833ede9ed704b4417a251a899976d5e0915de40452615187a65278f"
+                },
+                {
+                  "role": "libm.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libm.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libm.so.6",
+                  "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+                }
+              ],
+              "virtual_objects": [
+                "linux-vdso.so.1"
+              ]
+            },
+            {
+              "root": {
+                "path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15",
+                "sha256": "c9673623cad2eaa7cfe402e7b7d833f1f703689a09837026b6386aaafba6deec"
+              },
+              "argv": [
+                "/bin/bash",
+                "/usr/bin/ldd",
+                "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15"
+              ],
+              "environment": {
+                "PATH": "/usr/bin:/bin",
+                "LC_ALL": "C",
+                "LANG": "C"
+              },
+              "return_code": 0,
+              "normalized_stdout": "\tlinux-vdso.so.1 (0xADDRESS)\n\tlibreadline.so.8 => /lib/x86_64-linux-gnu/libreadline.so.8 (0xADDRESS)\n\tlibX11.so.6 => /lib/x86_64-linux-gnu/libX11.so.6 (0xADDRESS)\n\tlibgmp.so.10 => /lib/x86_64-linux-gnu/libgmp.so.10 (0xADDRESS)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0xADDRESS)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0xADDRESS)\n\tlibtinfo.so.6 => /lib/x86_64-linux-gnu/libtinfo.so.6 (0xADDRESS)\n\tlibxcb.so.1 => /lib/x86_64-linux-gnu/libxcb.so.1 (0xADDRESS)\n\t/lib64/ld-linux-x86-64.so.2 (0xADDRESS)\n\tlibXau.so.6 => /lib/x86_64-linux-gnu/libXau.so.6 (0xADDRESS)\n\tlibXdmcp.so.6 => /lib/x86_64-linux-gnu/libXdmcp.so.6 (0xADDRESS)\n\tlibbsd.so.0 => /lib/x86_64-linux-gnu/libbsd.so.0 (0xADDRESS)\n\tlibmd.so.0 => /lib/x86_64-linux-gnu/libmd.so.0 (0xADDRESS)\n",
+              "normalized_stdout_sha256": "408b40cd87140e0b28338d29887129fce934d7a319f1a201e2f7cf79b9d9bf2a",
+              "stderr": "",
+              "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "resolved_files": [
+                {
+                  "role": "ld-linux-x86-64.so.2",
+                  "reported_path": "/lib64/ld-linux-x86-64.so.2",
+                  "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+                  "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+                },
+                {
+                  "role": "libX11.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libX11.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+                  "sha256": "c5b5d782bd9cab3420a62df88f5c991507edf3331a89f98464ddbc538c37b879"
+                },
+                {
+                  "role": "libXau.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libXau.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+                  "sha256": "8040da3f8516c1acfe39f04ff022480cdb273705ba5e7a4ca70bbdb1527cd67a"
+                },
+                {
+                  "role": "libXdmcp.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libXdmcp.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+                  "sha256": "667d97d6da16016400ab10de9f83ef4ab209ceb6adf68ff9650225ec13e723b0"
+                },
+                {
+                  "role": "libbsd.so.0",
+                  "reported_path": "/lib/x86_64-linux-gnu/libbsd.so.0",
+                  "path": "/lib/x86_64-linux-gnu/libbsd.so.0.12.1",
+                  "sha256": "e86cd4f0019f42c2ba5e60602e0edc8694d2948377d98c3654d0f6bddb5254bb"
+                },
+                {
+                  "role": "libc.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libc.so.6",
+                  "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+                },
+                {
+                  "role": "libgmp.so.10",
+                  "reported_path": "/lib/x86_64-linux-gnu/libgmp.so.10",
+                  "path": "/lib/x86_64-linux-gnu/libgmp.so.10.5.0",
+                  "sha256": "0ccdfb6d6f5c039465f6d002cf7e4c072d48ac6a2cffc8dd6c748dec31592804"
+                },
+                {
+                  "role": "libm.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libm.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libm.so.6",
+                  "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+                },
+                {
+                  "role": "libmd.so.0",
+                  "reported_path": "/lib/x86_64-linux-gnu/libmd.so.0",
+                  "path": "/lib/x86_64-linux-gnu/libmd.so.0.1.0",
+                  "sha256": "423e18586b6ea740f4465afd64f7a9a4cb7264ed979c8e7256f9085af5345fef"
+                },
+                {
+                  "role": "libreadline.so.8",
+                  "reported_path": "/lib/x86_64-linux-gnu/libreadline.so.8",
+                  "path": "/lib/x86_64-linux-gnu/libreadline.so.8.2",
+                  "sha256": "0a079f958147699f7bb5bf228406a5d878dc2387fe9cdc5cce6f3e35e20380fc"
+                },
+                {
+                  "role": "libtinfo.so.6",
+                  "reported_path": "/lib/x86_64-linux-gnu/libtinfo.so.6",
+                  "path": "/lib/x86_64-linux-gnu/libtinfo.so.6.4",
+                  "sha256": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+                },
+                {
+                  "role": "libxcb.so.1",
+                  "reported_path": "/lib/x86_64-linux-gnu/libxcb.so.1",
+                  "path": "/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+                  "sha256": "7958a0136b121bdc4c708968569ad152a9ed208ab026e2537b1005dde64ca440"
+                }
+              ],
+              "virtual_objects": [
+                "linux-vdso.so.1"
+              ]
+            }
+          ],
+          "closure": [
+            {
+              "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+              "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+              "sha256": "c5b5d782bd9cab3420a62df88f5c991507edf3331a89f98464ddbc538c37b879"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+              "sha256": "8040da3f8516c1acfe39f04ff022480cdb273705ba5e7a4ca70bbdb1527cd67a"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+              "sha256": "667d97d6da16016400ab10de9f83ef4ab209ceb6adf68ff9650225ec13e723b0"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libbsd.so.0.12.1",
+              "sha256": "e86cd4f0019f42c2ba5e60602e0edc8694d2948377d98c3654d0f6bddb5254bb"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libc.so.6",
+              "sha256": "8db37cf3f2169f59a0f07ef1fea308c35656668c64c8ff294e1860f4121eb161"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+              "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libgfortran.so.5.0.0",
+              "sha256": "342618ccfebe840446e4ef2b7893f4161b2084845e570f42d68a70bfde58a58d"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libgmp.so.10.5.0",
+              "sha256": "0ccdfb6d6f5c039465f6d002cf7e4c072d48ac6a2cffc8dd6c748dec31592804"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libm.so.6",
+              "sha256": "e9c4b28d340e415b8137480ec442662f981e1399386c5931dae0e886e3639e91"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libmd.so.0.1.0",
+              "sha256": "423e18586b6ea740f4465afd64f7a9a4cb7264ed979c8e7256f9085af5345fef"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libreadline.so.8.2",
+              "sha256": "0a079f958147699f7bb5bf228406a5d878dc2387fe9cdc5cce6f3e35e20380fc"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libtinfo.so.6.4",
+              "sha256": "28ab8e2e29d46dc8f7222025ca2d61e0b898364c6426cc631bf4ecc7c7f5ac52"
+            },
+            {
+              "path": "/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+              "sha256": "7958a0136b121bdc4c708968569ad152a9ed208ab026e2537b1005dde64ca440"
+            },
+            {
+              "path": "/usr/lib/x86_64-linux-gnu/blas/libblas.so.3.12.0",
+              "sha256": "e748efcae5753fe4a652877fccdb5895ac6f7605668a2db878b19c914e78e3a8"
+            },
+            {
+              "path": "/usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3.12.0",
+              "sha256": "851bb1fc5833ede9ed704b4417a251a899976d5e0915de40452615187a65278f"
+            }
+          ]
+        },
+        "probe": {
+          "shell_argv": [
+            "/bin/sh",
+            "-c",
+            "echo 'print(default(nbthreads)); print(factorint(15))  \n quit' | gp"
+          ],
+          "environment": {
+            "HOME": "/project/worktrees/hol-light-s1-exact-reference-v13",
+            "PATH": "/project/deps/hol-light-external-tools-v9/usr/bin",
+            "LC_ALL": "C",
+            "GPRC": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+            "GP_DATA_DIR": "/project/deps/hol-light-external-tools-v9/candle-data",
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "VECLIB_MAXIMUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          },
+          "return_code": 0,
+          "stdout": "                  GP/PARI CALCULATOR Version 2.15.4 (released)\n          amd64 running linux (x86-64/GMP-6.3.0 kernel) 64-bit version\n      compiled: Apr  1 2024, gcc version 13.2.0 (Ubuntu 13.2.0-23ubuntu3)\n                           threading engine: pthread\n                (readline v8.2 disabled, extended help enabled)\n\n                     Copyright (C) 2000-2022 The PARI Group\n\nPARI/GP is free software, covered by the GNU General Public License, and comes \nWITHOUT ANY WARRANTY WHATSOEVER.\n\nType ? for help, \\q to quit.\nType ?18 for how to get moral (and possibly technical) support.\n\nparisize = 8000000, primelimit = 500000\n1\n[3, 1; 5, 1]\nGoodbye!\n",
+          "stdout_sha256": "0aae823c145b8b7e917765d636d15cd4b9cf37bf88474380a1b153a764a0c29e",
+          "stderr": "Reading GPRC: /project/deps/hol-light-external-tools-v9/candle-gprc\nGPRC Done.\n\n",
+          "stderr_sha256": "b09afaeb3916aab2df3bcf7d8e4a54da767fb49b89cdc02999785e19b2b427da"
+        },
+        "csdp_probe": {
+          "argv_template": [
+            "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+            "/project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s",
+            "<private-temporary-output>"
+          ],
+          "environment": {
+            "HOME": "/project/worktrees/hol-light-s1-exact-reference-v13",
+            "PATH": "/project/deps/hol-light-external-tools-v9/usr/bin",
+            "LC_ALL": "C",
+            "GPRC": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+            "GP_DATA_DIR": "/project/deps/hol-light-external-tools-v9/candle-data",
+            "OMP_NUM_THREADS": "1",
+            "OPENBLAS_NUM_THREADS": "1",
+            "MKL_NUM_THREADS": "1",
+            "VECLIB_MAXIMUM_THREADS": "1",
+            "NUMEXPR_NUM_THREADS": "1"
+          },
+          "return_code": 0,
+          "normalized_stdout": "CSDP 6.2.0\nIter:  0 Ap: 0.00e+00 Pobj:  1.4644661e+04 Ad: 0.00e+00 Dobj:  0.0000000e+00 \nIter:  1 Ap: 9.31e-01 Pobj:  5.7513865e+03 Ad: 1.00e+00 Dobj:  8.0172003e+01 \nIter:  2 Ap: 9.21e-01 Pobj:  2.3227402e+02 Ad: 1.00e+00 Dobj:  8.2749235e+01 \nIter:  3 Ap: 9.30e-01 Pobj:  1.0521019e+01 Ad: 1.00e+00 Dobj:  8.4447722e+01 \nIter:  4 Ap: 1.00e+00 Pobj:  2.5047625e+00 Ad: 1.00e+00 Dobj:  7.2126480e+01 \nIter:  5 Ap: 1.00e+00 Pobj:  7.5846337e+00 Ad: 1.00e+00 Dobj:  4.2853659e+01 \nIter:  6 Ap: 1.00e+00 Pobj:  1.5893126e+01 Ad: 1.00e+00 Dobj:  3.0778169e+01 \nIter:  7 Ap: 1.00e+00 Pobj:  1.9887401e+01 Ad: 1.00e+00 Dobj:  2.4588662e+01 \nIter:  8 Ap: 1.00e+00 Pobj:  2.1623330e+01 Ad: 1.00e+00 Dobj:  2.3465172e+01 \nIter:  9 Ap: 1.00e+00 Pobj:  2.2611983e+01 Ad: 1.00e+00 Dobj:  2.3097049e+01 \nIter: 10 Ap: 1.00e+00 Pobj:  2.2939498e+01 Ad: 1.00e+00 Dobj:  2.3010908e+01 \nIter: 11 Ap: 1.00e+00 Pobj:  2.2996259e+01 Ad: 1.00e+00 Dobj:  2.3000637e+01 \nIter: 12 Ap: 1.00e+00 Pobj:  2.2999835e+01 Ad: 1.00e+00 Dobj:  2.3000020e+01 \nIter: 13 Ap: 1.00e+00 Pobj:  2.2999993e+01 Ad: 1.00e+00 Dobj:  2.2999999e+01 \nIter: 14 Ap: 1.00e+00 Pobj:  2.3000000e+01 Ad: 1.00e+00 Dobj:  2.3000000e+01 \nSuccess: SDP solved\nPrimal objective value: 2.3000000e+01 \nDual objective value: 2.3000000e+01 \nRelative primal infeasibility: 5.55e-17 \nRelative dual infeasibility: 3.93e-09 \nReal Relative Gap: 7.21e-09 \nXZ Relative Gap: 7.82e-09 \nDIMACS error measures: 5.55e-17 0.00e+00 1.00e-07 0.00e+00 7.21e-09 7.82e-09\nElements time: <measured>\nFactor time: <measured>\nOther time: <measured>\nTotal time: <measured>\n",
+          "normalized_stdout_sha256": "ee9dbf1ad2d123c44776963d7b81cb1f246cca042a50c414c3cf80a0dea5ca58",
+          "stderr": "",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "solution": {
+            "bytes": 94827,
+            "sha256": "2f1d7f430b48eddbe1279d955a5f11f2aaa9a9aace90338b846aef742ea4487f"
+          }
+        }
+      }
+    },
+    "input": {
+      "collector": {
+        "path": "/project/worktrees/candle-reference-v9-launch-652a18a/candle/reference_fingerprints.py",
+        "sha256": "f91d1fdb6314938b8b9f88a641364059e4a20812acf805ce87d96ef12468355a"
+      },
+      "collector_repository": {
+        "root": "/project/worktrees/candle-reference-v9-launch-652a18a",
+        "git_head": "652a18a6735be8969462bf25f3233d23b5a4ed6d",
+        "git_status": [],
+        "collector_relative_path": "candle/reference_fingerprints.py",
+        "collector_at_head_sha256": "f91d1fdb6314938b8b9f88a641364059e4a20812acf805ce87d96ef12468355a",
+        "collector_matches_head": true,
+        "support_relative_path": "candle/reference_protocol.py",
+        "support_at_head_sha256": "e44ed73330e65058f759e30e90ede0bca0bfdedc7920534d632ecb6806299f68",
+        "support_matches_head": true
+      },
+      "manifest": {
+        "path": "/project/worktrees/candle-reference-v9-launch-652a18a/candle/top100_manifest.json",
+        "sha256": "e021a1f11d2307ca65c29eb6ab56fc04e5f4be2dbc4f7702f63ad3e1b7bfdae9"
+      },
+      "manifest_schema_version": 1,
+      "target": "100/subsequence",
+      "load_files": [
+        {
+          "relative_path": "100/subsequence.ml",
+          "path": "/project/worktrees/hol-light-s1-exact-reference-v13/100/subsequence.ml",
+          "sha256": "5dea02aff5cc6e1e7326b1e979255be049930b7b28d403132701b83120a6325c",
+          "source_role": "selected-manifest-source"
+        }
+      ],
+      "theorem_names": [
+        "ERDOS_SZEKERES"
+      ],
+      "mapping_status": "audited",
+      "serializer": {
+        "path": "/project/worktrees/candle-reference-v9-launch-652a18a/candle/fingerprint.ml",
+        "sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff"
+      },
+      "source_mode": "manifest-exact",
+      "source_contract": {
+        "path": "/project/worktrees/candle-reference-v9-launch-652a18a/candle/reference_source_contracts.json",
+        "sha256": "955901c29674c9e8f5596bfeb056a0dde2a8a3190d31a3a5e9930a7616778c30",
+        "historical_upstream_commit": "3170739521d88d04580f61385c95b497690b7002",
+        "exact_source_reference_commit": "1258c129c3ddf0b239b649ba7024eab677cd953b",
+        "compatibility_deltas": [
+          {
+            "path": "100/e_is_transcendental.ml",
+            "historical_sha256": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839",
+            "selected_sha256": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0",
+            "reason": "remove one rejected trailing semicolon without changing the surrounding expression"
+          },
+          {
+            "path": "100/euler.ml",
+            "historical_sha256": "8314a6861d34d69aac320b5a0205d0c2bc15f552f25beb7ff031665d10a2e5dc",
+            "selected_sha256": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88",
+            "reason": "replace loadt dependency loading with the idempotent needs contract"
+          },
+          {
+            "path": "100/lagrange.ml",
+            "historical_sha256": "8a9969fa8d185126a3612903a259227130a20d612eb3c5975c1c1350953f7c84",
+            "selected_sha256": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8",
+            "reason": "replace loadt dependency loading with the idempotent needs contract"
+          }
+        ]
+      }
+    },
+    "request_sha256": "5bf6a45841334b89cb7bfe79378e7d067320b1a9fc72668a018b76f42a3ea6d8",
+    "fresh_process_contract": {
+      "required": true,
+      "preloaded_checkpoint_allowed": false,
+      "working_directory": "/project/worktrees/hol-light-s1-exact-reference-v13",
+      "environment_policy": "sanitized_allowlist_no_inherited_overrides",
+      "runtime_argv": [
+        "/project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol",
+        "-init",
+        "/project/worktrees/hol-light-s1-exact-reference-v13/hol.ml",
+        "-I",
+        "/project/worktrees/hol-light-s1-exact-reference-v13",
+        "-noprompt"
+      ],
+      "runtime_environment": {
+        "HOME": "/project/worktrees/hol-light-s1-exact-reference-v13",
+        "PATH": "/project/deps/hol-light-external-tools-v9/usr/bin",
+        "LC_ALL": "C",
+        "GPRC": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+        "GP_DATA_DIR": "/project/deps/hol-light-external-tools-v9/candle-data",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "HOLLIGHT_DIR": "/project/worktrees/hol-light-s1-exact-reference-v13",
+        "HOLLIGHT_USE_MODULE": "0",
+        "OCAMLRUNPARAM": "l=2000000000",
+        "CAML_LD_LIBRARY_PATH": "/project/repos/hol-light/_opam/lib/stublibs",
+        "OCAML_TOPLEVEL_PATH": "/usr/lib/ocaml",
+        "OCAMLFIND_CONF": "/etc/ocamlfind.conf"
+      }
+    }
+  },
+  "session_nonce": "2d13450127bb65151793133d4b69882ca70d08ff54e295c4edcd64a765bd0de7",
+  "process_exit_code": 0,
+  "artifact_hashes": {
+    "plan_sha256": "9fc3b9c189a6fed4e2d5842d5173448fa9f44177fb1b9f404cf94beb822d92e2",
+    "request_sha256": "5bf6a45841334b89cb7bfe79378e7d067320b1a9fc72668a018b76f42a3ea6d8",
+    "transcript_sha256": "34f201bf88191607b824d4fe40141bf82d13681fc122cfe2f7885c0023790442"
+  },
+  "candidate_identities": {
+    "status": "observed_uncompared",
+    "mapping_status": "audited",
+    "expected_identities_present": false,
+    "serializer": {
+      "path": "candle/fingerprint.ml",
+      "sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff"
+    },
+    "theorems": [
+      {
+        "name": "ERDOS_SZEKERES",
+        "theorem_sha256": "e183febd64c511b74e1de1b3cea19071cbddb37d84d4e8ed9c51487aa1eff154",
+        "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+        "conclusion_sha256": "6812ec00d3141e684d595cf85f83599353f18bfb371c8db8795a62062f27a28d",
+        "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+        "hypothesis_count": 0,
+        "global_axiom_count": 3
+      }
+    ],
+    "post_state": {
+      "kernel_state_sha256": "55feff04c063030ab2c80d8351a05eec01538c7978201440effe6600f0a947ea",
+      "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+      "term_constants_sha256": "43e6bb130525a803bf6351be797f1c88bb6382c5442937047046ee9cc41357c3",
+      "definitions_sha256": "a31b7a3f10857aed873e832bb83943dda8abddb12b7f96a9c17f0005ffce1e43",
+      "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+      "type_constant_count": 22,
+      "term_constant_count": 304,
+      "definition_count": 264,
+      "global_axiom_count": 3
+    },
+    "approval_sha256": null
+  }
+}

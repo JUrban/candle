@@ -1,0 +1,1281 @@
+{
+  "approval_status": "candidate_collection_only_unapproved",
+  "candle": {
+    "collector": {
+      "bytes": 100038,
+      "path": "candle/reference_fingerprints.py",
+      "sha256": "f91d1fdb6314938b8b9f88a641364059e4a20812acf805ce87d96ef12468355a"
+    },
+    "git_head": "652a18a6735be8969462bf25f3233d23b5a4ed6d",
+    "manifest": {
+      "bytes": 120887,
+      "path": "candle/top100_manifest.json",
+      "sha256": "e021a1f11d2307ca65c29eb6ab56fc04e5f4be2dbc4f7702f63ad3e1b7bfdae9"
+    },
+    "protocol": {
+      "bytes": 8885,
+      "path": "candle/reference_protocol.py",
+      "sha256": "e44ed73330e65058f759e30e90ede0bca0bfdedc7920534d632ecb6806299f68"
+    },
+    "root": "/project/worktrees/candle-reference-v9-launch-652a18a",
+    "serializer": {
+      "bytes": 5722,
+      "path": "candle/fingerprint.ml",
+      "sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff"
+    },
+    "source_contract": {
+      "bytes": 1227,
+      "path": "candle/reference_source_contracts.json",
+      "sha256": "955901c29674c9e8f5596bfeb056a0dde2a8a3190d31a3a5e9930a7616778c30"
+    }
+  },
+  "controller": {
+    "bytes": 109742,
+    "git": {
+      "bytes": 4066232,
+      "path": "/usr/bin/git",
+      "sha256": "2a8c18fbf43da9f692d75474c72bea9dfd796c260b0f3dfe456376abc3bbd668"
+    },
+    "path": "/project/worktrees/flyspeck-project-reference-v9-launch-95bb84f/scripts/run-top100-reference-sweeps.py",
+    "python": {
+      "argument_path": "/usr/bin/python3",
+      "bytes": 8020928,
+      "path": "/usr/bin/python3.12",
+      "sha256": "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118"
+    },
+    "sha256": "a703c01f1153bd8774f2f1ab4342950469011cbfee6d7f605485cc71d87f6301"
+  },
+  "deadlines": {
+    "collection_wall_seconds": 21600,
+    "target_wall_seconds": 21660,
+    "validation_wall_seconds": 900
+  },
+  "elf_oracle": {
+    "environment": {
+      "LANG": "C",
+      "LC_ALL": "C",
+      "PATH": "/usr/bin:/bin"
+    },
+    "hardcoded_loader_routes": [
+      {
+        "argument_path": "/lib/ld-linux.so.2",
+        "status": "absent"
+      },
+      {
+        "argument_path": "/lib64/ld-linux-x86-64.so.2",
+        "route": {
+          "argument": {
+            "kind": "symlink",
+            "mode": 511,
+            "path": "/lib64/ld-linux-x86-64.so.2",
+            "resolved_path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "target": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+          },
+          "argument_parent": {
+            "kind": "directory",
+            "mode": 493,
+            "path": "/lib64",
+            "resolved_path": "/lib64"
+          },
+          "argument_path": "/lib64/ld-linux-x86-64.so.2",
+          "resolved_executable": {
+            "mode": 493,
+            "path": "/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+            "sha256": "cd4df4f3c7b83673d61189bf2eaebd33ca4f2853ab9772b8a25e025ef99b1e81"
+          }
+        },
+        "status": "present"
+      },
+      {
+        "argument_path": "/libx32/ld-linux-x32.so.2",
+        "status": "absent"
+      }
+    ],
+    "ld_so_cache": {
+      "path": "/etc/ld.so.cache",
+      "sha256": "0971c6dfbc46998c25774d855b34d8494d78988f90221eb5fe5aa8816203fca1"
+    },
+    "ld_so_preload": {
+      "path": "/etc/ld.so.preload",
+      "status": "absent"
+    },
+    "output_normalization": "strict_recognized_lines_replace_only_aslr_addresses_v1",
+    "policy": "authenticated_explicit_bash_ldd_closure_v1",
+    "tools": {
+      "bash": {
+        "argument": {
+          "kind": "file",
+          "mode": 493,
+          "path": "/bin/bash",
+          "resolved_path": "/bin/bash"
+        },
+        "argument_parent": {
+          "kind": "directory",
+          "mode": 493,
+          "path": "/bin",
+          "resolved_path": "/bin"
+        },
+        "argument_path": "/bin/bash",
+        "resolved_executable": {
+          "mode": 493,
+          "path": "/bin/bash",
+          "sha256": "bc5945feb8bd26203ebfafea5ce1878bb2e32cb8fb50ab7ae395cfb1e1aaaef1"
+        }
+      },
+      "ldd": {
+        "argument": {
+          "kind": "file",
+          "mode": 493,
+          "path": "/usr/bin/ldd",
+          "resolved_path": "/usr/bin/ldd"
+        },
+        "argument_parent": {
+          "kind": "directory",
+          "mode": 493,
+          "path": "/usr/bin",
+          "resolved_path": "/usr/bin"
+        },
+        "argument_path": "/usr/bin/ldd",
+        "resolved_executable": {
+          "mode": 493,
+          "path": "/usr/bin/ldd",
+          "sha256": "4f1d37e25f27535e3f02a5b7da63e1ce18d4982445db2c25fc8f985a3d395cc3"
+        }
+      }
+    }
+  },
+  "external_runtime": {
+    "command_shell": {
+      "argument_path": "/bin/sh",
+      "bytes": 129784,
+      "path": "/bin/dash",
+      "sha256": "86d31f6fb799e91fa21bad341484564510ca287703a16e9e46c53338776f4f42"
+    },
+    "configuration": {
+      "argument_path": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+      "bytes": 151,
+      "path": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+      "sha256": "473ec0c27f514013b7a1ae2442fbe8e46046df58e6a0be590ea17a03873fc6b1"
+    },
+    "csdp": {
+      "argument_path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+      "bytes": 107384,
+      "path": "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+      "sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d"
+    },
+    "csdp_build": {
+      "receipt": {
+        "argument_path": "/project/deps/hol-light-external-tools-v9/candle-csdp-build.json",
+        "bytes": 2133,
+        "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-build.json",
+        "sha256": "530b7d8c93574e188045277e484cbe2a40c634a3ae0b6cc24240aff2bf726b22"
+      },
+      "statement": {
+        "kind": "candle-hol-light-csdp-single-thread-build",
+        "outputs": {
+          "csdp_bytes": 107384,
+          "csdp_path": "usr/bin/csdp",
+          "csdp_sha256": "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d",
+          "static_libsdp_sha256": "ede58dd5bf3620aa08045aa767fd1280fefe1e76d6ece276e8a674d6156bca25"
+        },
+        "recipe": {
+          "cflags": "-m64 -O2 -fno-ident -ansi -Wall -DBIT64 -DUSESIGTERM -DUSEGETTIME -I../include",
+          "commands": [
+            "make -C lib clean libsdp.a CC=/usr/bin/gcc CFLAGS=<cflags>",
+            "make -C solver clean csdp CC=/usr/bin/gcc CFLAGS=<cflags> LIBS=<library_flags>"
+          ],
+          "library_flags": "-L../lib -Wl,-Bstatic -lsdp -Wl,-Bdynamic -llapack -lblas -lm -lgfortran",
+          "native_cpu_flags": false,
+          "openmp_enabled": false
+        },
+        "runtime_policy": {
+          "external_shared_libraries_closed_separately": true,
+          "single_process_solver": true,
+          "single_thread_build": true
+        },
+        "schema": 1,
+        "source": {
+          "archive": "candle-csdp-source.tar.gz",
+          "bytes": 526179,
+          "sha256": "7f202a15f33483ee205dcfbd0573fdbd74911604bb739a04f8baa35f8a055c5b",
+          "ubuntu_source_package": "coinor-csdp 6.2.0-5build1 (Noble)",
+          "upstream_tree": "Csdp-6.2.0"
+        },
+        "toolchain": {
+          "archiver_argument": "/usr/bin/ar",
+          "archiver_resolved": "/usr/bin/x86_64-linux-gnu-ar",
+          "archiver_sha256": "534681ac11c18868cfc4fdf98770aa0ba8973eedc90c231e94e6ba96e1a04f27",
+          "binutils_version_first_line": "GNU ld (GNU Binutils for Ubuntu) 2.42",
+          "compiler_argument": "/usr/bin/gcc",
+          "compiler_resolved": "/usr/bin/x86_64-linux-gnu-gcc-13",
+          "compiler_sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+          "compiler_version_first_line": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+        },
+        "unit_probe": {
+          "dual_objective": "2.3000000e+01",
+          "exit_code": 0,
+          "input_bytes": 53609,
+          "input_path": "candle-csdp-theta1.dat-s",
+          "input_sha256": "0529ef48291c872fa1edd1e3b6ba4da3364377c613756c496b6fefd2afed2173",
+          "maximum_allowed_dimacs_error": "1.0e-6",
+          "primal_objective": "2.3000000e+01",
+          "success_line": "Success: SDP solved"
+        }
+      }
+    },
+    "csdp_probe": {
+      "argv_template": [
+        "/project/deps/hol-light-external-tools-v9/usr/bin/csdp",
+        "/project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s",
+        "<private-temporary-output>"
+      ],
+      "environment": {
+        "GPRC": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+        "GP_DATA_DIR": "/project/deps/hol-light-external-tools-v9/candle-data",
+        "HOME": "/project/worktrees/hol-light-s1-exact-reference-v13",
+        "LC_ALL": "C",
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "PATH": "/project/deps/hol-light-external-tools-v9/usr/bin",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      },
+      "normalized_stdout": "CSDP 6.2.0\nIter:  0 Ap: 0.00e+00 Pobj:  1.4644661e+04 Ad: 0.00e+00 Dobj:  0.0000000e+00 \nIter:  1 Ap: 9.31e-01 Pobj:  5.7513865e+03 Ad: 1.00e+00 Dobj:  8.0172003e+01 \nIter:  2 Ap: 9.21e-01 Pobj:  2.3227402e+02 Ad: 1.00e+00 Dobj:  8.2749235e+01 \nIter:  3 Ap: 9.30e-01 Pobj:  1.0521019e+01 Ad: 1.00e+00 Dobj:  8.4447722e+01 \nIter:  4 Ap: 1.00e+00 Pobj:  2.5047625e+00 Ad: 1.00e+00 Dobj:  7.2126480e+01 \nIter:  5 Ap: 1.00e+00 Pobj:  7.5846337e+00 Ad: 1.00e+00 Dobj:  4.2853659e+01 \nIter:  6 Ap: 1.00e+00 Pobj:  1.5893126e+01 Ad: 1.00e+00 Dobj:  3.0778169e+01 \nIter:  7 Ap: 1.00e+00 Pobj:  1.9887401e+01 Ad: 1.00e+00 Dobj:  2.4588662e+01 \nIter:  8 Ap: 1.00e+00 Pobj:  2.1623330e+01 Ad: 1.00e+00 Dobj:  2.3465172e+01 \nIter:  9 Ap: 1.00e+00 Pobj:  2.2611983e+01 Ad: 1.00e+00 Dobj:  2.3097049e+01 \nIter: 10 Ap: 1.00e+00 Pobj:  2.2939498e+01 Ad: 1.00e+00 Dobj:  2.3010908e+01 \nIter: 11 Ap: 1.00e+00 Pobj:  2.2996259e+01 Ad: 1.00e+00 Dobj:  2.3000637e+01 \nIter: 12 Ap: 1.00e+00 Pobj:  2.2999835e+01 Ad: 1.00e+00 Dobj:  2.3000020e+01 \nIter: 13 Ap: 1.00e+00 Pobj:  2.2999993e+01 Ad: 1.00e+00 Dobj:  2.2999999e+01 \nIter: 14 Ap: 1.00e+00 Pobj:  2.3000000e+01 Ad: 1.00e+00 Dobj:  2.3000000e+01 \nSuccess: SDP solved\nPrimal objective value: 2.3000000e+01 \nDual objective value: 2.3000000e+01 \nRelative primal infeasibility: 5.55e-17 \nRelative dual infeasibility: 3.93e-09 \nReal Relative Gap: 7.21e-09 \nXZ Relative Gap: 7.82e-09 \nDIMACS error measures: 5.55e-17 0.00e+00 1.00e-07 0.00e+00 7.21e-09 7.82e-09\nElements time: <measured>\nFactor time: <measured>\nOther time: <measured>\nTotal time: <measured>\n",
+      "normalized_stdout_sha256": "ee9dbf1ad2d123c44776963d7b81cb1f246cca042a50c414c3cf80a0dea5ca58",
+      "return_code": 0,
+      "solution": {
+        "bytes": 94827,
+        "sha256": "2f1d7f430b48eddbe1279d955a5f11f2aaa9a9aace90338b846aef742ea4487f"
+      },
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "csdp_probe_input": {
+      "argument_path": "/project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s",
+      "bytes": 53609,
+      "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s",
+      "sha256": "0529ef48291c872fa1edd1e3b6ba4da3364377c613756c496b6fefd2afed2173"
+    },
+    "csdp_source_archive": {
+      "argument_path": "/project/deps/hol-light-external-tools-v9/candle-csdp-source.tar.gz",
+      "bytes": 526179,
+      "path": "/project/deps/hol-light-external-tools-v9/candle-csdp-source.tar.gz",
+      "sha256": "7f202a15f33483ee205dcfbd0573fdbd74911604bb739a04f8baa35f8a055c5b"
+    },
+    "data_tree": {
+      "entry_count": 0,
+      "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1",
+      "inventory_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "root": "/project/deps/hol-light-external-tools-v9/candle-data",
+      "root_mode": 365
+    },
+    "package_archive": {
+      "argument_path": "/project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb",
+      "bytes": 3989060,
+      "path": "/project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb",
+      "sha256": "55a95d51afe87688fe0fcfe1bca74bf8c5474533e2a42d3af45c87c1ae0d86fa"
+    },
+    "package_tree": {
+      "entry_count": 62,
+      "inventory_policy": "relative_path_kind_mode_link_target_and_content_v1",
+      "inventory_sha256": "84bd5e8b1a8e1c253cc2c45fd19fafaa22b7f6ea5109a646631b5f2b10bb7732",
+      "root": "/project/deps/hol-light-external-tools-v9",
+      "root_mode": 493
+    },
+    "pari_gp": {
+      "argument_path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp",
+      "bytes": 10450544,
+      "path": "/project/deps/hol-light-external-tools-v9/usr/bin/gp-2.15",
+      "sha256": "c9673623cad2eaa7cfe402e7b7d833f1f703689a09837026b6386aaafba6deec"
+    },
+    "policy": "single_private_path_gp_csdp_with_pinned_shell_v3",
+    "runtime_environment": {
+      "GPRC": "/project/deps/hol-light-external-tools-v9/candle-gprc",
+      "GP_DATA_DIR": "/project/deps/hol-light-external-tools-v9/candle-data",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "PATH": "/project/deps/hol-light-external-tools-v9/usr/bin",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    },
+    "thread_policy": {
+      "environment": {
+        "MKL_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      },
+      "forbidden_elf_dependency_name_fragments": [
+        "libgomp",
+        "libomp",
+        "libiomp",
+        "libopenblas",
+        "libpthread"
+      ],
+      "native_cpu_flags": false,
+      "openmp_enabled": false,
+      "single_process_solver": true,
+      "single_thread_build": true
+    }
+  },
+  "inventory": {
+    "request_count": 97,
+    "source_count": 66,
+    "target_count": 65,
+    "targets": [
+      {
+        "index": 1,
+        "load_file_sha256": {
+          "100/arithmetic_geometric_mean.ml": "a2fef405f98eb99716481821afcf38cae0cd1e5a77ba66f5c5ad262bb0f5adca"
+        },
+        "load_files": [
+          "100/arithmetic_geometric_mean.ml"
+        ],
+        "name": "100/arithmetic_geometric_mean",
+        "theorem_names": [
+          "AGM",
+          "AGM_ROOT"
+        ]
+      },
+      {
+        "index": 2,
+        "load_file_sha256": {
+          "100/arithmetic.ml": "abeead425d77af901c251289083e8d297198abb120850d48dfe9d3d588a490ce"
+        },
+        "load_files": [
+          "100/arithmetic.ml"
+        ],
+        "name": "100/arithmetic",
+        "theorem_names": [
+          "ARITHMETIC_PROGRESSION"
+        ]
+      },
+      {
+        "index": 3,
+        "load_file_sha256": {
+          "100/ballot.ml": "45c4ffb05bce4a252ab85d001a8f16234d01690c618afc2aed42d464995b8147"
+        },
+        "load_files": [
+          "100/ballot.ml"
+        ],
+        "name": "100/ballot",
+        "theorem_names": [
+          "BALLOT"
+        ]
+      },
+      {
+        "index": 4,
+        "load_file_sha256": {
+          "100/bernoulli.ml": "2cb8aa227e736429229c405230fa98c4f93aebc10894935163a9853f14a2da3d"
+        },
+        "load_files": [
+          "100/bernoulli.ml"
+        ],
+        "name": "100/bernoulli",
+        "theorem_names": [
+          "SUM_OF_POWERS"
+        ]
+      },
+      {
+        "index": 5,
+        "load_file_sha256": {
+          "100/bertrand.ml": "05ab9af1a8ab4419d80548ef12488321823fb063e140633d7f45c2a681a894f0",
+          "100/primerecip.ml": "40c7c276c62778932109e1040b4bfe700ff8adc8b94968419f13e99160e56a21"
+        },
+        "load_files": [
+          "100/bertrand.ml",
+          "100/primerecip.ml"
+        ],
+        "name": "100/bertrand-primerecip",
+        "theorem_names": [
+          "BERTRAND",
+          "PRIMERECIP_DIVERGES"
+        ]
+      },
+      {
+        "index": 6,
+        "load_file_sha256": {
+          "100/birthday.ml": "f2298f7d1b411d0b6341eedc6bcff6348e2537cec39bb00b7c61414c0602c591"
+        },
+        "load_files": [
+          "100/birthday.ml"
+        ],
+        "name": "100/birthday",
+        "theorem_names": [
+          "BIRTHDAY_THM",
+          "BIRTHDAY_THM_EXPLICIT"
+        ]
+      },
+      {
+        "index": 7,
+        "load_file_sha256": {
+          "100/buffon.ml": "90759e5aedb978ffc352be1733320799c99da9c4043947a9e295ef8da555267b"
+        },
+        "load_files": [
+          "100/buffon.ml"
+        ],
+        "name": "100/buffon",
+        "theorem_names": [
+          "BUFFON_GENERAL",
+          "BUFFON_SHORT",
+          "BUFFON_LONG"
+        ]
+      },
+      {
+        "index": 8,
+        "load_file_sha256": {
+          "100/cantor.ml": "279ceb1194e4c8ef39257ce325e914cad60a526ac463a014445b70243b3a2309"
+        },
+        "load_files": [
+          "100/cantor.ml"
+        ],
+        "name": "100/cantor",
+        "theorem_names": [
+          "CANTOR"
+        ]
+      },
+      {
+        "index": 9,
+        "load_file_sha256": {
+          "100/cayley_hamilton.ml": "16157ee2af134d5fee286cb33e97f7a7af4673d80d9ca4d02cf5f0e9c5e9860a"
+        },
+        "load_files": [
+          "100/cayley_hamilton.ml"
+        ],
+        "name": "100/cayley_hamilton",
+        "theorem_names": [
+          "CAYLEY_HAMILTON"
+        ]
+      },
+      {
+        "index": 10,
+        "load_file_sha256": {
+          "100/ceva.ml": "64f1e753aa7481cad8fa3962b41df69331ba415bb8ee97bd53b0e8eb693601a0"
+        },
+        "load_files": [
+          "100/ceva.ml"
+        ],
+        "name": "100/ceva",
+        "theorem_names": [
+          "CEVA"
+        ]
+      },
+      {
+        "index": 11,
+        "load_file_sha256": {
+          "100/circle.ml": "050c2b27046bfd98a5cea5b5b27f201323617fe4c872dbeac78b02613a54309a"
+        },
+        "load_files": [
+          "100/circle.ml"
+        ],
+        "name": "100/circle",
+        "theorem_names": [
+          "AREA_CBALL",
+          "AREA_BALL"
+        ]
+      },
+      {
+        "index": 12,
+        "load_file_sha256": {
+          "100/chords.ml": "31ee5d270c5d451707f3561134e9370188464ad86c7ddb5175c4415671e783d9"
+        },
+        "load_files": [
+          "100/chords.ml"
+        ],
+        "name": "100/chords",
+        "theorem_names": [
+          "SEGMENT_CHORDS"
+        ]
+      },
+      {
+        "index": 13,
+        "load_file_sha256": {
+          "100/combinations.ml": "90735a26385b05d09e7614bad37ae7f51c9ff18cd9fb291d0efc308dc83c6614"
+        },
+        "load_files": [
+          "100/combinations.ml"
+        ],
+        "name": "100/combinations",
+        "theorem_names": [
+          "NUMBER_OF_COMBINATIONS",
+          "NUMBER_OF_COMBINATIONS_EXPLICIT"
+        ]
+      },
+      {
+        "index": 14,
+        "load_file_sha256": {
+          "100/constructible.ml": "d7c8ff66ee27851e516b56afc267b65489333c366f8996bfb75cb8487d910c8c"
+        },
+        "load_files": [
+          "100/constructible.ml"
+        ],
+        "name": "100/constructible",
+        "theorem_names": [
+          "DOUBLE_THE_CUBE",
+          "TRISECT_60_DEGREES"
+        ]
+      },
+      {
+        "index": 15,
+        "load_file_sha256": {
+          "100/cosine.ml": "bbab37692d124960942d62ce080584b6dfc0ec5e54e6e83cf1f7349c514bb972"
+        },
+        "load_files": [
+          "100/cosine.ml"
+        ],
+        "name": "100/cosine",
+        "theorem_names": [
+          "LAW_OF_COSINES"
+        ]
+      },
+      {
+        "index": 16,
+        "load_file_sha256": {
+          "100/cubedissection.ml": "c04a0ce85556b71fe81f8efc836546dcc7120436edc6106f941f94dcec07d662"
+        },
+        "load_files": [
+          "100/cubedissection.ml"
+        ],
+        "name": "100/cubedissection",
+        "theorem_names": [
+          "ONLY_TRIVIAL_CUBE_DISSECTION"
+        ]
+      },
+      {
+        "index": 17,
+        "load_file_sha256": {
+          "100/cubic.ml": "a0962ca95490da722f125490b511a69b7276aaf9dcc9c41d1f7375a06d0f29d1"
+        },
+        "load_files": [
+          "100/cubic.ml"
+        ],
+        "name": "100/cubic",
+        "theorem_names": [
+          "CUBIC"
+        ]
+      },
+      {
+        "index": 18,
+        "load_file_sha256": {
+          "100/derangements.ml": "37c460acbc2863cdcd154bc3d4620080b3da23116c353d4bb77d89d99534a322"
+        },
+        "load_files": [
+          "100/derangements.ml"
+        ],
+        "name": "100/derangements",
+        "theorem_names": [
+          "THE_DERANGEMENTS_FORMULA"
+        ]
+      },
+      {
+        "index": 19,
+        "load_file_sha256": {
+          "100/desargues.ml": "4a2e50e603ff2fe94cf622c36c652fbbb0e05be9084c0bd406edd49d9458330a"
+        },
+        "load_files": [
+          "100/desargues.ml"
+        ],
+        "name": "100/desargues",
+        "theorem_names": [
+          "DESARGUES_DIRECT"
+        ]
+      },
+      {
+        "index": 20,
+        "load_file_sha256": {
+          "100/descartes.ml": "880cdfb592db39eecdd150aa1cb4544c3e122556ff8dbe2b4fe95c5e43128d72"
+        },
+        "load_files": [
+          "100/descartes.ml"
+        ],
+        "name": "100/descartes",
+        "theorem_names": [
+          "DESCARTES_RULE_OF_SIGNS"
+        ]
+      },
+      {
+        "index": 21,
+        "load_file_sha256": {
+          "100/dirichlet.ml": "ac8724d0febaba90d728d05d3b1c22beb9af32abe365248f68e0a1abadd6d742"
+        },
+        "load_files": [
+          "100/dirichlet.ml"
+        ],
+        "name": "100/dirichlet",
+        "theorem_names": [
+          "DIRICHLET"
+        ]
+      },
+      {
+        "index": 22,
+        "load_file_sha256": {
+          "100/div3.ml": "38c51884b1abbded986d323259493f6eda7881336171d8875a4aa169bcedbfb9"
+        },
+        "load_files": [
+          "100/div3.ml"
+        ],
+        "name": "100/div3",
+        "theorem_names": [
+          "DIVISIBILITY_BY_3"
+        ]
+      },
+      {
+        "index": 23,
+        "load_file_sha256": {
+          "100/divharmonic.ml": "632930f1d4cf4f0a51d37af811ff334e535e93c315dbe161b7eab894a9d0c0d6"
+        },
+        "load_files": [
+          "100/divharmonic.ml"
+        ],
+        "name": "100/divharmonic",
+        "theorem_names": [
+          "HARMONIC_DIVERGES"
+        ]
+      },
+      {
+        "index": 24,
+        "load_file_sha256": {
+          "100/e_is_transcendental.ml": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0"
+        },
+        "load_files": [
+          "100/e_is_transcendental.ml"
+        ],
+        "name": "100/e_is_transcendental",
+        "theorem_names": [
+          "Finale.TRANSCENDENTAL_E"
+        ]
+      },
+      {
+        "index": 25,
+        "load_file_sha256": {
+          "100/euler.ml": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88"
+        },
+        "load_files": [
+          "100/euler.ml"
+        ],
+        "name": "100/euler",
+        "theorem_names": [
+          "EULER_PARTITION_THEOREM"
+        ]
+      },
+      {
+        "index": 26,
+        "load_file_sha256": {
+          "100/feuerbach.ml": "d1391bded699f87ed03ac6cc4d86e4cd39b121d98e669839bcc3b328a2bfb18a"
+        },
+        "load_files": [
+          "100/feuerbach.ml"
+        ],
+        "name": "100/feuerbach",
+        "theorem_names": [
+          "FEUERBACH"
+        ]
+      },
+      {
+        "index": 27,
+        "load_file_sha256": {
+          "100/fourier.ml": "3034cc1f10555786b1f07760ece7f990ea7d0eda85ebe7a90ba2a1b3fad63d93"
+        },
+        "load_files": [
+          "100/fourier.ml"
+        ],
+        "name": "100/fourier",
+        "theorem_names": [
+          "FOURIER_SERIES_L2",
+          "FOURIER_DINI_TEST",
+          "FOURIER_JORDAN_BOUNDED_VARIATION",
+          "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE"
+        ]
+      },
+      {
+        "index": 28,
+        "load_file_sha256": {
+          "100/four_squares.ml": "db543a45a9432f562ee582169e9b8a3f808fdd4182ed5bc1154d2a053fa5a232"
+        },
+        "load_files": [
+          "100/four_squares.ml"
+        ],
+        "name": "100/four_squares",
+        "theorem_names": [
+          "SUM_OF_TWO_SQUARES",
+          "LAGRANGE_NUM"
+        ]
+      },
+      {
+        "index": 29,
+        "load_file_sha256": {
+          "100/friendship.ml": "7abe66cd207eb724097253f8065f138e32a59545b6933cb040238a1bbe840e98"
+        },
+        "load_files": [
+          "100/friendship.ml"
+        ],
+        "name": "100/friendship",
+        "theorem_names": [
+          "FRIENDSHIP"
+        ]
+      },
+      {
+        "index": 30,
+        "load_file_sha256": {
+          "100/fta.ml": "053b543777c79114c606bb952c4f8fd4afb6a9adc8b7a7dbd4308bcb35d5d292"
+        },
+        "load_files": [
+          "100/fta.ml"
+        ],
+        "name": "100/fta",
+        "theorem_names": [
+          "FTA"
+        ]
+      },
+      {
+        "index": 31,
+        "load_file_sha256": {
+          "100/gcd.ml": "238ce0ed5a718bb916fc49e01fdf5887c0a8ea0556203d9fb89cdc884b970930"
+        },
+        "load_files": [
+          "100/gcd.ml"
+        ],
+        "name": "100/gcd",
+        "theorem_names": [
+          "EGCD"
+        ]
+      },
+      {
+        "index": 32,
+        "load_file_sha256": {
+          "100/green.ml": "21defc70d80876d52ba62a6685343851a4281e4be504c3b71f98aac1635a6eeb"
+        },
+        "load_files": [
+          "100/green.ml"
+        ],
+        "name": "100/green",
+        "theorem_names": [
+          "GREEN_THEOREM_CURL"
+        ]
+      },
+      {
+        "index": 33,
+        "load_file_sha256": {
+          "100/heron.ml": "de7cd4bd92e9d6fa19076ae2195d58fe6c68901307a15da05c366bc0b2b40763"
+        },
+        "load_files": [
+          "100/heron.ml"
+        ],
+        "name": "100/heron",
+        "theorem_names": [
+          "HERON"
+        ]
+      },
+      {
+        "index": 34,
+        "load_file_sha256": {
+          "100/isoperimetric.ml": "ac4823128eb53db23d90e624ba27630b587247b01322ef74d87bbb5e820bb246"
+        },
+        "load_files": [
+          "100/isoperimetric.ml"
+        ],
+        "name": "100/isoperimetric",
+        "theorem_names": [
+          "ISOPERIMETRIC_THEOREM"
+        ]
+      },
+      {
+        "index": 35,
+        "load_file_sha256": {
+          "100/inclusion_exclusion.ml": "a45a01760713421a522b913af462bb2ec061279aeff054178b06c61331964441"
+        },
+        "load_files": [
+          "100/inclusion_exclusion.ml"
+        ],
+        "name": "100/inclusion_exclusion",
+        "theorem_names": [
+          "INCLUSION_EXCLUSION_USUAL",
+          "INCLUSION_EXCLUSION_MOBIUS"
+        ]
+      },
+      {
+        "index": 36,
+        "load_file_sha256": {
+          "100/independence.ml": "83ce6195031b469bea18714841659b67a43a87942d8c7aec1997b58369bb3dc0"
+        },
+        "load_files": [
+          "100/independence.ml"
+        ],
+        "name": "100/independence",
+        "theorem_names": [
+          "TARSKI_AXIOM_1_NONEUCLIDEAN",
+          "TARSKI_AXIOM_2_NONEUCLIDEAN",
+          "TARSKI_AXIOM_3_NONEUCLIDEAN",
+          "TARSKI_AXIOM_4_NONEUCLIDEAN",
+          "TARSKI_AXIOM_5_NONEUCLIDEAN",
+          "TARSKI_AXIOM_6_NONEUCLIDEAN",
+          "TARSKI_AXIOM_7_NONEUCLIDEAN",
+          "TARSKI_AXIOM_8_NONEUCLIDEAN",
+          "TARSKI_AXIOM_9_NONEUCLIDEAN",
+          "NOT_TARSKI_AXIOM_10_NONEUCLIDEAN",
+          "TARSKI_AXIOM_11_NONEUCLIDEAN"
+        ]
+      },
+      {
+        "index": 37,
+        "load_file_sha256": {
+          "100/isosceles.ml": "d5ba9d75047e112113396e22534e24a7ba94b406591cdfa08b714931da0a4d84"
+        },
+        "load_files": [
+          "100/isosceles.ml"
+        ],
+        "name": "100/isosceles",
+        "theorem_names": [
+          "ISOSCELES_TRIANGLE_THEOREM",
+          "ISOSCELES_TRIANGLE_CONVERSE"
+        ]
+      },
+      {
+        "index": 38,
+        "load_file_sha256": {
+          "100/konigsberg.ml": "8c49c5b56bc64d601fa81fe7a065d4df77fe125d85e70638c4e950aab4a08711"
+        },
+        "load_files": [
+          "100/konigsberg.ml"
+        ],
+        "name": "100/konigsberg",
+        "theorem_names": [
+          "KOENIGSBERG"
+        ]
+      },
+      {
+        "index": 39,
+        "load_file_sha256": {
+          "100/lagrange.ml": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8"
+        },
+        "load_files": [
+          "100/lagrange.ml"
+        ],
+        "name": "100/lagrange",
+        "theorem_names": [
+          "GROUP_LAGRANGE"
+        ]
+      },
+      {
+        "index": 40,
+        "load_file_sha256": {
+          "100/leibniz.ml": "1c14786c8ea185e5cce7342895d7d3461b99d88e2d907baf808c8d0621b7ab84"
+        },
+        "load_files": [
+          "100/leibniz.ml"
+        ],
+        "name": "100/leibniz",
+        "theorem_names": [
+          "LEIBNIZ_PI"
+        ]
+      },
+      {
+        "index": 41,
+        "load_file_sha256": {
+          "100/lhopital.ml": "6f2d47c4128df441b9bb757500a431462e52582929c826a336518ba5c85cc815"
+        },
+        "load_files": [
+          "100/lhopital.ml"
+        ],
+        "name": "100/lhopital",
+        "theorem_names": [
+          "LHOPITAL"
+        ]
+      },
+      {
+        "index": 42,
+        "load_file_sha256": {
+          "100/liouville.ml": "582da88b937a8bc3b6d0aff01eb415d58d7e85941a33a69feeb535303fa14389"
+        },
+        "load_files": [
+          "100/liouville.ml"
+        ],
+        "name": "100/liouville",
+        "theorem_names": [
+          "TRANSCENDENTAL_LIOUVILLE"
+        ]
+      },
+      {
+        "index": 43,
+        "load_file_sha256": {
+          "100/minkowski.ml": "ca52385f73231c2f5f09070e9408924fec25b3bd2ea42d5b075e17aea5d3900d"
+        },
+        "load_files": [
+          "100/minkowski.ml"
+        ],
+        "name": "100/minkowski",
+        "theorem_names": [
+          "MINKOWSKI"
+        ]
+      },
+      {
+        "index": 44,
+        "load_file_sha256": {
+          "100/morley.ml": "9c49e7db8b439cd004e8604f978638dceba835e50eccbfc7c3219e17204356e6"
+        },
+        "load_files": [
+          "100/morley.ml"
+        ],
+        "name": "100/morley",
+        "theorem_names": [
+          "MORLEY"
+        ]
+      },
+      {
+        "index": 45,
+        "load_file_sha256": {
+          "100/pascal.ml": "516aca235c3ff1f51fa9c5d86d3b2e4fbd62c6763a584fc2cf1fd95ba16c4786"
+        },
+        "load_files": [
+          "100/pascal.ml"
+        ],
+        "name": "100/pascal",
+        "theorem_names": [
+          "PASCAL"
+        ]
+      },
+      {
+        "index": 46,
+        "load_file_sha256": {
+          "100/perfect.ml": "47ab55705e340ca93367db4cf7b81b50e6f0fd9b0ec358d86dd4c91c4b71536c"
+        },
+        "load_files": [
+          "100/perfect.ml"
+        ],
+        "name": "100/perfect",
+        "theorem_names": [
+          "PERFECT_EUCLID",
+          "PERFECT_EULER"
+        ]
+      },
+      {
+        "index": 47,
+        "load_file_sha256": {
+          "100/pick.ml": "2b9d45cc0ad88eb7d09c5b70cab39b559089f25d412f4c7bd3d23874cecd6c72"
+        },
+        "load_files": [
+          "100/pick.ml"
+        ],
+        "name": "100/pick",
+        "theorem_names": [
+          "PICK"
+        ]
+      },
+      {
+        "index": 48,
+        "load_file_sha256": {
+          "100/piseries.ml": "0518534342e1d53501ad9a7f21ad8dfc8d64e369b90e5c593750bb0a78d5c4a7"
+        },
+        "load_files": [
+          "100/piseries.ml"
+        ],
+        "name": "100/piseries",
+        "theorem_names": [
+          "EULER_HARMONIC_SUM"
+        ]
+      },
+      {
+        "index": 49,
+        "load_file_sha256": {
+          "100/platonic.ml": "ec208c94ef8069c4085479ce575f4954bede5a00de9e75febae14e6e89c41c36"
+        },
+        "load_files": [
+          "100/platonic.ml"
+        ],
+        "name": "100/platonic",
+        "theorem_names": [
+          "PLATONIC_SOLIDS"
+        ]
+      },
+      {
+        "index": 50,
+        "load_file_sha256": {
+          "100/pnt.ml": "6b39b727fd266b764f655e69e57765457b91a14068bf19b33a57ae2155a9bdc7"
+        },
+        "load_files": [
+          "100/pnt.ml"
+        ],
+        "name": "100/pnt",
+        "theorem_names": [
+          "PNT"
+        ]
+      },
+      {
+        "index": 51,
+        "load_file_sha256": {
+          "100/polyhedron.ml": "266cd95c83c1620d4a358416e6db887a929a1da8c829357250aaa6cd82f9fb69"
+        },
+        "load_files": [
+          "100/polyhedron.ml"
+        ],
+        "name": "100/polyhedron",
+        "theorem_names": [
+          "EULER_RELATION"
+        ]
+      },
+      {
+        "index": 52,
+        "load_file_sha256": {
+          "100/ptolemy.ml": "a60b58fb71379c8dc7d8d07683b1d376704c41453880da7183d871be69c18da7"
+        },
+        "load_files": [
+          "100/ptolemy.ml"
+        ],
+        "name": "100/ptolemy",
+        "theorem_names": [
+          "PTOLEMY"
+        ]
+      },
+      {
+        "index": 53,
+        "load_file_sha256": {
+          "100/pythagoras.ml": "50d03afe5b299a4d9cb7b4dab119db5ce69982fa6ce14fd2a1ad4b8733da6157"
+        },
+        "load_files": [
+          "100/pythagoras.ml"
+        ],
+        "name": "100/pythagoras",
+        "theorem_names": [
+          "PYTHAGORAS"
+        ]
+      },
+      {
+        "index": 54,
+        "load_file_sha256": {
+          "100/quartic.ml": "f0ce259b828a32e23867425c5aab40958650945254ca6f4faf319eef0095afcf"
+        },
+        "load_files": [
+          "100/quartic.ml"
+        ],
+        "name": "100/quartic",
+        "theorem_names": [
+          "QUARTIC_CASES"
+        ]
+      },
+      {
+        "index": 55,
+        "load_file_sha256": {
+          "100/ramsey.ml": "c27a2197fd0faa1a8197523ec8b7e8182a122959c3ce3b76f0f0f70326ced94f"
+        },
+        "load_files": [
+          "100/ramsey.ml"
+        ],
+        "name": "100/ramsey",
+        "theorem_names": [
+          "RAMSEY"
+        ]
+      },
+      {
+        "index": 56,
+        "load_file_sha256": {
+          "100/ratcountable.ml": "b57e7a4b2835c23cf9a077447b4f5452f07ee341cbeb18d2842ec33aa9dc6fbb"
+        },
+        "load_files": [
+          "100/ratcountable.ml"
+        ],
+        "name": "100/ratcountable",
+        "theorem_names": [
+          "COUNTABLE_RATIONALS",
+          "DENUMERABLE_RATIONALS"
+        ]
+      },
+      {
+        "index": 57,
+        "load_file_sha256": {
+          "100/realsuncountable.ml": "32f5c7c4e1afd4cba3d4def39e23c847cf58f6a3bd84bd47441875fd6c6b06fa"
+        },
+        "load_files": [
+          "100/realsuncountable.ml"
+        ],
+        "name": "100/realsuncountable",
+        "theorem_names": [
+          "UNCOUNTABLE_REALS"
+        ]
+      },
+      {
+        "index": 58,
+        "load_file_sha256": {
+          "100/reciprocity.ml": "ea90380fb59218c02f5360e14bffbe496e19b12c1e12a93d82d62022fe57b838"
+        },
+        "load_files": [
+          "100/reciprocity.ml"
+        ],
+        "name": "100/reciprocity",
+        "theorem_names": [
+          "RECIPROCITY_LEGENDRE"
+        ]
+      },
+      {
+        "index": 59,
+        "load_file_sha256": {
+          "100/stirling.ml": "ca6c9f8c142344cff11216808716b2d80817a49809e5dbd69560f5e7fc0735a0"
+        },
+        "load_files": [
+          "100/stirling.ml"
+        ],
+        "name": "100/stirling",
+        "theorem_names": [
+          "STIRLING"
+        ]
+      },
+      {
+        "index": 60,
+        "load_file_sha256": {
+          "100/subsequence.ml": "5dea02aff5cc6e1e7326b1e979255be049930b7b28d403132701b83120a6325c"
+        },
+        "load_files": [
+          "100/subsequence.ml"
+        ],
+        "name": "100/subsequence",
+        "theorem_names": [
+          "ERDOS_SZEKERES"
+        ]
+      },
+      {
+        "index": 61,
+        "load_file_sha256": {
+          "100/thales.ml": "a33f3ee54c333ffc5eb5add50d8bf5da680aaf51501c8c3f5a617f4bdf4856a4"
+        },
+        "load_files": [
+          "100/thales.ml"
+        ],
+        "name": "100/thales",
+        "theorem_names": [
+          "THALES"
+        ]
+      },
+      {
+        "index": 62,
+        "load_file_sha256": {
+          "100/transcendence.ml": "648c150ca6cf173f194cfc0fb9a7c5bc5ed11c6e0a7f0a16a504b09d4b568b6b"
+        },
+        "load_files": [
+          "100/transcendence.ml"
+        ],
+        "name": "100/transcendence",
+        "theorem_names": [
+          "e_is_irrational",
+          "e_is_transcendental",
+          "pi_is_transcendental",
+          "transcendental_if_exp_nonzero_algebraic",
+          "zero_sum_algebraic_exp_algebraic"
+        ]
+      },
+      {
+        "index": 63,
+        "load_file_sha256": {
+          "100/triangular.ml": "e6c8e7ac48ce73657dda0ced5e59521d84220c3e0d8689348275148200806c0d"
+        },
+        "load_files": [
+          "100/triangular.ml"
+        ],
+        "name": "100/triangular",
+        "theorem_names": [
+          "TRIANGLE_FINITE_SUM",
+          "TRIANGLE_CONVERGES'"
+        ]
+      },
+      {
+        "index": 64,
+        "load_file_sha256": {
+          "100/two_squares.ml": "6a9c45206dd94797a701d828e12687616760480aeb813d07c5d45f33929af7ca"
+        },
+        "load_files": [
+          "100/two_squares.ml"
+        ],
+        "name": "100/two_squares",
+        "theorem_names": [
+          "SUM_OF_TWO_SQUARES"
+        ]
+      },
+      {
+        "index": 65,
+        "load_file_sha256": {
+          "100/wilson.ml": "d741275568246c1e0a8e7a5181c5463f8dd5b0f7f207812f790357665034a079"
+        },
+        "load_files": [
+          "100/wilson.ml"
+        ],
+        "name": "100/wilson",
+        "theorem_names": [
+          "WILSON",
+          "WILSON_EQ"
+        ]
+      }
+    ]
+  },
+  "kind": "candle-great100-two-sweep-reference-collection",
+  "project": {
+    "controller": {
+      "bytes": 109742,
+      "path": "scripts/run-top100-reference-sweeps.py",
+      "sha256": "a703c01f1153bd8774f2f1ab4342950469011cbfee6d7f605485cc71d87f6301"
+    },
+    "git_head": "95bb84fffade845406af92305baea0a9686ef21f",
+    "root": "/project/worktrees/flyspeck-project-reference-v9-launch-95bb84f"
+  },
+  "promotion_allowed": false,
+  "reference": {
+    "git_head": "1258c129c3ddf0b239b649ba7024eab677cd953b",
+    "root": "/project/worktrees/hol-light-s1-exact-reference-v13",
+    "source_policy": {
+      "compatibility_deltas": [
+        {
+          "historical_sha256": "8cfc35b737d6e3af5f4f09936cc8936caaed6405dac54091d8a0085997c40839",
+          "path": "100/e_is_transcendental.ml",
+          "reason": "remove one rejected trailing semicolon without changing the surrounding expression",
+          "selected_sha256": "3c381376f9be3c7d96430d93aabbaf301ae7d1c6dbf84c37e7ed6aac5ebd07d0"
+        },
+        {
+          "historical_sha256": "8314a6861d34d69aac320b5a0205d0c2bc15f552f25beb7ff031665d10a2e5dc",
+          "path": "100/euler.ml",
+          "reason": "replace loadt dependency loading with the idempotent needs contract",
+          "selected_sha256": "b4c1b2070378857c353d0c5aa20568ef9b33850aca7d2c19d09f8540ca914e88"
+        },
+        {
+          "historical_sha256": "8a9969fa8d185126a3612903a259227130a20d612eb3c5975c1c1350953f7c84",
+          "path": "100/lagrange.ml",
+          "reason": "replace loadt dependency loading with the idempotent needs contract",
+          "selected_sha256": "37e24f1ed0fd13972d7fbde1c28eb5bc2c0de8aad47074ceb1e8f1b09d2aeaa8"
+        }
+      ],
+      "exact_source_reference_commit": "1258c129c3ddf0b239b649ba7024eab677cd953b",
+      "historical_upstream_commit": "3170739521d88d04580f61385c95b497690b7002",
+      "schema": "candle-s1-reference-source-contract-v1"
+    }
+  },
+  "runtime": {
+    "ocamlc": {
+      "argument_path": "/usr/bin/ocamlc",
+      "bytes": 9289608,
+      "path": "/usr/bin/ocamlc.opt",
+      "sha256": "84825ef63ded23b445acd4ef399e1bb0a11081976da4741e1033c8569eaa2bd6"
+    },
+    "ocamlfind": {
+      "argument_path": "/usr/bin/ocamlfind",
+      "bytes": 1761392,
+      "path": "/usr/bin/ocamlfind",
+      "sha256": "c08fd2438693fee0c8544216d11a213c51eff33e2fafc73f80f576430ee52837"
+    },
+    "runtime": {
+      "argument_path": "/project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol",
+      "bytes": 3178524,
+      "path": "/project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol",
+      "sha256": "f531e272e0c7cfa31886496f672a930fd063ee66367146261c339cc1fc753931"
+    },
+    "runtime_stublib": {
+      "argument_path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+      "bytes": 261464,
+      "path": "/project/repos/hol-light/_opam/lib/stublibs/dllzarith.so",
+      "sha256": "dcc2f53493929d85b724998f628a37042facd69cf546f01fb0682a68a8d7ddb5"
+    }
+  },
+  "schema": 4,
+  "source_mode": "manifest-exact",
+  "sweep_count": 2,
+  "target_count": 65,
+  "total_target_runs": 130
+}

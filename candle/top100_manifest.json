@@ -17,10 +17,10 @@
   },
   "identity_approval": {
     "path": "candle/top100_identity_approval.json",
-    "sha256": "b1d3a5d183cb1427903de79482543743da7993ac24f020808c67515c75d57625",
-    "schema": "candle-s1-identity-approval-v1",
-    "approval_status": "unapproved",
-    "promotion_allowed": false
+    "sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0",
+    "schema": "candle-s1-identity-approval-v2",
+    "approval_status": "approved",
+    "promotion_allowed": true
   },
   "execution_contract": {
     "baseline": "hol.ml",
@@ -81,7 +81,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "AGM",
+              "theorem_sha256": "bcf09310dd5359d28d9064ea7bbfc7133a0dec8589ebcf80c83a7c37927f2dce",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "9cafa02b24ff6d3175d351cfc7a85ee5a19a255f13d489da42958fdad0bd72a0",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "AGM_ROOT",
+              "theorem_sha256": "5f5ee3812ff01febcf13ae3eae01719a3496d65de08b0c5a641390047af45a37",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "2debc9c14937b676edeb87e0eb41e1c8c2c21d87366ffc71599df83656052e43",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
+            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 360,
+            "definition_count": 316,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -123,7 +157,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "ARITHMETIC_PROGRESSION",
+              "theorem_sha256": "391d0edb215809e23ddee65278685ba07aba82a0940e17c3ead48317219e8030",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "da1355eb6fee1627243b6c720212a4dcb914a75fe61f1fd9135a61e8f02c8aec",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
+            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 303,
+            "definition_count": 263,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -167,7 +226,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "BALLOT",
+              "theorem_sha256": "10ccbbd0cbf3f93a5c1cbc6f0d8acf249848300af53fe2902476afcb60311cb3",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "bbd9bf841cf5a4e4537bf47babab01b5024258db0f5d0b3d7b69121bb807899a",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d730efd1231cb42fb210e221d71180ce84c9df9a84022e316f62995b66bbf628",
+            "type_constants_sha256": "5dc08559d67341f54af2bb47e1418a69a6c198960075e5b622adacd9bfbdbe24",
+            "term_constants_sha256": "29a9eb8dc85c94a53af3310b91b0df3315438d9fcd81c0baf77a11fab99d4aeb",
+            "definitions_sha256": "70c2f63611262c92ec5aba6a125ca2c626e9ff3f93b1c462cbc2a5059d503a28",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 23,
+            "term_constant_count": 313,
+            "definition_count": 271,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -213,7 +297,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "SUM_OF_POWERS",
+              "theorem_sha256": "23464ca314117332dbb2b424245bfc7cb05384202958a9b99fbf9faac0b21c3e",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "1dad5f3cb7a600b588e8c034f076ca6220ceb2aa971460448f01d06c43f1ee6b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "0bd0264b3721417d1b977ca6ee3b98d949eeeb716f29f9412a1e504e64fb53c5",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "c9ddb7616de2bb16cb3730fad64621c09f684823bc7e5149b6215874622e473f",
+            "definitions_sha256": "9d3c94788399d2b5c55ca334d9a2b241f63cff7e50f2b8882c1eb6545820df91",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 363,
+            "definition_count": 319,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -274,7 +383,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "BERTRAND",
+              "theorem_sha256": "4e3f2d8e9a5d4c62bd16e0f89229d401d789987a020b3433c2554830e868955a",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "9d25fe9b2237c8e852e71acaecb99a3fecae0ed1a18915858faa5cc675320ed4",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "PRIMERECIP_DIVERGES",
+              "theorem_sha256": "14448e631dbd7b10d4d369a4a0a2fe62224c3593c02deab4a91a28707bb5836b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "9c67328c33e127f38364e065afe0814989fc51308f68ad1b8d2e125501d737b8",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d2faae88de8dacc5a5ad5011dd874f216d27a45d26d851225ccd6faafd59cc08",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "b38715acd66623b1c88c6aab74981808208bfa15f67195e3b816a695f68723de",
+            "definitions_sha256": "f7b1ea4cdbd8884bd1d854b2e182a2053dd8c04320541df1bdc8d649f5daf9b1",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 377,
+            "definition_count": 333,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "not_reached",
@@ -338,7 +481,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "BIRTHDAY_THM",
+              "theorem_sha256": "a75f952eaec08596ede736ad35ec8c2070cd86874299ffc937f32fd2a4591399",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "772620d6144c56398d41d8caa45b79c3091fd0473a9a03312215c18d448e5aac",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "BIRTHDAY_THM_EXPLICIT",
+              "theorem_sha256": "51b3dcb9ae9996f3cd5167704aaab45a4fe67337e1ebf6b8fe1c837fcd4db07c",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0b6f341ca3864eccf34a371be0287204bed60ba5a29d80e772ddc25f69c976f3",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "8532899187018e31853283d8eb4e94b5bafac843428494a7de3f37a013668ccd",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "d2a10f1f0a8543dc974c24dc0e43cadd15351e4bb600be4548987ad5667f840e",
+            "definitions_sha256": "ba766b97b29188076ce482b4feee41ed858a58c63ef4dda624bd2f8918b23709",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 304,
+            "definition_count": 264,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -401,7 +578,50 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "BUFFON_GENERAL",
+              "theorem_sha256": "20b5f342c95f8dc04c47919fb55771fed6cb7b24ba808690a6ca52e257fa1a8b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6f435cfd172f1f8d9364eac3a6fcb48b200ae51eb3e6d93a10a2c51d76bc6101",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "BUFFON_SHORT",
+              "theorem_sha256": "04d17034b3c1780e95e186a21ec356bdc3d74e6bc7fd688848efe2d1e1901bc1",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "7cc3f8890bd54a328365b8ca47acaff85d99df61ea3954ce265f59fed21cbbc3",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "BUFFON_LONG",
+              "theorem_sha256": "853248da9b2b18ee586cb1195946370b2422f16de846452d401507a69687b3b7",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c2a7cab7a939ec8cf0750ef68812ee071712f1ee59a04bc0cf16655dd8ff47e9",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "84e0865d02425d8dcd32bdc2ef8f1f66cd23a442fd7c848842a9fc76093752ee",
+            "type_constants_sha256": "125e62424f2900d824214b573137789c227b066f36831a175de1ef6eba5b2be7",
+            "term_constants_sha256": "2d157c54f53a03d69a97b82ad4ba58c7ad8c4803c867919a7eeb9ac90ccd1f1c",
+            "definitions_sha256": "66336b8dcb7d2d676ee6e0ffd8f906e74273b9715988de0aab9acb574050ff89",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 925,
+            "definition_count": 871,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -448,7 +668,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "CANTOR",
+              "theorem_sha256": "4fd74be7699a803e7968eca6f5bf99db9fce41af34454df29bb88109506f2dc4",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6f968d5caa910d3df191f848c2b0a7e2c8d9a7bdea0a7a209f6c0e3de42f9144",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
+            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 303,
+            "definition_count": 263,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -493,7 +738,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "CAYLEY_HAMILTON",
+              "theorem_sha256": "3dce66c891398a058a48d712c9f201e27a7ddfa9692843b632a4e9372b79a386",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "712841cc26c3060e5e77c6f32abc9d07a510a304b6aba1921a4b227143053882",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9180aa75a85f2f1485e2c69e6294819d0182e9cf0e93b46787d7735e12a1bd06",
+            "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
+            "term_constants_sha256": "619c934339f4fe707e45c7cb3ab996dfc34e8afbd0f8c477e37c4def0186aa57",
+            "definitions_sha256": "18822f7db38432a26f41ecac20b82130ecde1c497f6e90a120b33ff7733cca10",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 26,
+            "term_constant_count": 635,
+            "definition_count": 587,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -538,7 +808,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "CEVA",
+              "theorem_sha256": "4dfd0a9def53c415d5e3becfd0022fbe712fe615050e0797864d5d1e3c8b524e",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "96f3b529ec46aebd1ba48a9a39d90a68c13e1b0dd62097699d246ae39644d39a",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "fd1060a5fbcd0e9a48cb545d4e6bc69cb0691496252b346bf7e1a8fc313cdc79",
+            "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
+            "term_constants_sha256": "c9aab1e826391f3a1ae3c03ed3dc69fd358848d41944143c594c6ceb4278f186",
+            "definitions_sha256": "97cc1bba717401a771ecee5818fc1c7976aa59036f9b15d52ab1959dd8186f16",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 26,
+            "term_constant_count": 618,
+            "definition_count": 570,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "not_reached",
@@ -613,7 +908,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "AREA_CBALL",
+              "theorem_sha256": "9ac78b11066b47e1fd024096c8a9a2ea904332fe979a6ff5e632e06c7c92087a",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "66248c9c63e9fa2e2fa3e31f561c2a8440c40630859e3bceebf8bdae142d1b4b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "AREA_BALL",
+              "theorem_sha256": "42654b6f06a310c78970734b8670ffa9f9a215d204396fb25bb815096e75b0fa",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "8ebb079c71a7c0176b3118bb65762e69b275abbee7aa7f13b024d9c4432ed651",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d5b08911dd2daeae8971aeffaed9a71e76a64bd72a6551dd5d108ce161fb2991",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "5b1a764b65a452210565a9bacd5cd95b4b465c1032b016692a1b2418872c0c3f",
+            "definitions_sha256": "8fa07a1e4d699dee929e5f6075e2c8a0f4e15f91e7ba3777cdfa2fc4f9ecad83",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 871,
+            "definition_count": 819,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -657,7 +986,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "SEGMENT_CHORDS",
+              "theorem_sha256": "9fa75ca6f02cf04223fc217f94da57976e824dd46957f6b12a7c5434a7f3d422",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b31597d8ff781cfa28b617e657765a8fd4b144c6752a586574de149d9d5498f9",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "6b28600c275afa380064ec8b9503e0c02c0a36541f728133ba645e1c14847c63",
+            "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
+            "term_constants_sha256": "1277c06a055c13e737f1f0e6776f20ccb683c2df20ef7b6083e9839c1bd46a75",
+            "definitions_sha256": "627899614de08ef2498913a30a904820d4d96beb57b2268363a85e7c69f23e9f",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 26,
+            "term_constant_count": 619,
+            "definition_count": 571,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -709,7 +1063,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "NUMBER_OF_COMBINATIONS",
+              "theorem_sha256": "991afcd9e76ecb87b324d82728c296f0b37c3071df4b8fff535f1c90a73dbde5",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "71c4fcb9421ddb6223f5a95b64a3914bdf80bad214cc4b7ae09aeda01ea72b9e",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "NUMBER_OF_COMBINATIONS_EXPLICIT",
+              "theorem_sha256": "8b74abbbb422a6f7310fa980769a77e8f040a470c9d8a3d88cfdc566989c23f8",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "daa3d46c00afb0a59a2e0b23a2a3a8040717c169e4b92682b041227d457cc4cc",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "2e82ee9573e937002210f336c649894b8a4141846e785b2d9d53b2fa97e726b2",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a8cd984d71647da65cde413a6012a642414a46b23913692dc6bb031dd044b157",
+            "definitions_sha256": "1361e324e1293aa140bc795f5354872a0c4f11f91e2dd1320006cc774bc14aaf",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 304,
+            "definition_count": 264,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -763,7 +1151,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "DOUBLE_THE_CUBE",
+              "theorem_sha256": "e05f0d2bb22fc8263f4548a9b733e118cddd685a8738b100240f6dab26cffbc5",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0c5d0ea7bb1722446c97874d8a96ddbe5a0a165b0bfeff34928936d859d5bca3",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TRISECT_60_DEGREES",
+              "theorem_sha256": "73bbfed58a45023912143fc490f8cd7e73631633a66be28b59276419f3b4c911",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "29d3df84ffbc063b9621c8e49695cd3184578401a9e84aad3cb0ebd88a51c3ce",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "f56036fe62d57e8bb8f527b004c9e85aca44305b7c46243336d47f5dd466e3c3",
+            "type_constants_sha256": "5d5f1dfbb2e83e89ee3b777dda4b97bce549053d18a0fe1a51226af79e61d19a",
+            "term_constants_sha256": "30fc43a26b858e217d9fa7ec4dd5044375623e4bfdcf3f3307e073a4065ed1c3",
+            "definitions_sha256": "b0a251503a35c9106b494738227fd81133dd067c4e47bb8e0e4fcf7df33a9d4f",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 862,
+            "definition_count": 808,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "not_reached",
@@ -825,7 +1247,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "LAW_OF_COSINES",
+              "theorem_sha256": "69c4e9532548fb5522e9da65446f8c581d8d5864e88da4a600167926eb21d78f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c4f8067f8dee4fcd914ac9fb22eafa6b2c67596add598be677a0e32500c04ffc",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "078234fc0db6b8a481eb64a2d701093b24e9637c04819750f8991b68ed8c6779",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "839257cea0d302a39eec2d39685e3c3af9c5f6d04f019de2776871dc0749d71a",
+            "definitions_sha256": "194e302bc64e90fda33a213e31b8e14c2e597f7ac59a9ea4c26ce65b983c9915",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 839,
+            "definition_count": 787,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -869,7 +1316,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "ONLY_TRIVIAL_CUBE_DISSECTION",
+              "theorem_sha256": "eef6c128f154c461ac7dc4d0ddaa75a6c75a5c41c1c6b2b08e1d2e4355894601",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "7dce9073504309b49ae8e3c5379e1b2807712636d26859ff181a08f9c65d5915",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "464541ecdd236eb987d754d7f84424d30ab2a9b40f5a69624ce799568ac97ef8",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "519218c465b95a79ba92143b0e96461a938f64b214bce4846e771f21b01f84f8",
+            "definitions_sha256": "91f151ae2958f8f75bcb8d334f732983094dd561dc951fb0f13ceff6dbd9014b",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 794,
+            "definition_count": 742,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -924,7 +1396,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "CUBIC",
+              "theorem_sha256": "83ccb03273c077826597e3e3bd3d8805df0c63f5d3dad359c99ff42d771cd857",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c5ab5ca81db0022e1aa717d4cb23dd6284a406aa8b59c2a816dd437cd48f0cc7",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "ce18f1c4add00c4480776e7e5bd20671262a9aecc00215e515f02f8711d679ed",
+            "type_constants_sha256": "bc66985e35849099d1051a22088a285507dc3e95a4cd13d7c4e936ea0c41ca86",
+            "term_constants_sha256": "ffdbbbc4bbdd06b23393498e67d6127c5c674bb3120e13217a0eab7d43171a2e",
+            "definitions_sha256": "11a956636ac7475a36c306520180e9397fcc93eb9118883ccd1013a4e26abafe",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 25,
+            "term_constant_count": 385,
+            "definition_count": 339,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "not_reached",
@@ -991,7 +1488,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "THE_DERANGEMENTS_FORMULA",
+              "theorem_sha256": "62cfad679a5e596a1112d0c66606f5cac605d4c5e6549de9e84834025dc9ef5b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "945077228bfcf3331fc016bec86c10ad979cd120564be59f4cd4d7f3df0a66c1",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "5978db847751318b9e399456d940da30f6755360386abd787b7bc21e925f9ce3",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "1e5d1751829ee84e189d28e2ff44f82531da118b4620fb0aecda13e1f83ae89f",
+            "definitions_sha256": "ca99ba29b0da0dd32866ac45e7b04e697f6763fac78903fe5dbc90f063f012e8",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 374,
+            "definition_count": 330,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1035,7 +1557,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "DESARGUES_DIRECT",
+              "theorem_sha256": "9453539aaba7b58803bd13ad1fe9c69875aee329e2ad2a700512295eaffa1bf7",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b1b5bfd4fe21ff28046761b8b31fe0b64ee6d991f07a72c86c88a9226e5d2637",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "c5891df7dbf887d1382234159c7de36c7b5e1ab2457fd687497f8e10c01c3658",
+            "type_constants_sha256": "b446dcb79fe8b38c98a7372a11c5c54ea948f4cb37042aa5aec3eaf8901e373c",
+            "term_constants_sha256": "f072edd0de01d31fa2e9678fbe6751669bfdc29c43e28b02df0015930e6212d1",
+            "definitions_sha256": "66b7ad603d5a49a60b7e2a527c7ec646a4dfb133496c5d2fc624bbe8bfda64ba",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 622,
+            "definition_count": 568,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1090,7 +1637,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "DESCARTES_RULE_OF_SIGNS",
+              "theorem_sha256": "37cf76d651a9ad084ac05fbf4971c701c1531a3dd46ae8f2fd8d9c01e0c3616b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "dfce7cb57b11b970f12dba5ea1174aaa524c112e89a26bbea6ce272c9e42f575",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "34e20cfba7d9cce2ddcd6f9d6f5b94f139b5d9fb1811e2489e5367e2b94d6d43",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "b23fb64100b9aa27503adf89c5142ea91ad93365a18d1d8598262f12e67c49a7",
+            "definitions_sha256": "8479a503741214f000718fd5c8c900f1ee9177c63c61a629e16fc695e7c03f2a",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 873,
+            "definition_count": 821,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1150,7 +1722,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "DIRICHLET",
+              "theorem_sha256": "73eb8b83c53a27f8df4e51a9c5f8cbb08e764ebcb9020ad68ea5509c325c7cfd",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "e4ff48d3f041476aadac099985612be14640b9227a0dd75fb7274dcbf7f0080d",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "145bd594df90a8ee128d5de23830d09b36ee9066723a316b0447cec8b59830cd",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "4830b4ffada1f1f62c38c46595b6158a3ae56c8f3b8d41eb56cb4cc7ffd36c04",
+            "definitions_sha256": "d7f69fdd1715ee2c054250187412a32603f42117598ab3e945710857adfe01dc",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 851,
+            "definition_count": 799,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1206,7 +1803,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "DIVISIBILITY_BY_3",
+              "theorem_sha256": "7cd6a892112faddcf8c6f64ce875a7010c825c8171358fe0cbc993e821f0e15b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b3e1544c5f5bdb9f3967dfb873b97e04337befa15ec54e4ccd89b8d22f497cf4",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "a93f9c1f33f46bb6336d08886cd76bd370e0236f01a645c04c3ff9f77adad4be",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "9cc2aae06344cc485f0e513d4e7a9711830351aa222d02a708aa574da3e1aa3c",
+            "definitions_sha256": "57bb513e4cf0cabf34a9a0b040a12a348aff4e759dd2baa35ebe1328a4494756",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 310,
+            "definition_count": 270,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1262,7 +1884,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "HARMONIC_DIVERGES",
+              "theorem_sha256": "3eb7cdd605831331fb5fb31ed059172de90618ec470e05d098745af8cab93b8b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "30af2e57c4221bbd47446a539fe439f2427583dfd366c89a0ddd65238b6ba5d5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
+            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 360,
+            "definition_count": 316,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1330,7 +1977,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "Finale.TRANSCENDENTAL_E",
+              "theorem_sha256": "718627e8786cf9fc0541232dcc6f01b8de4046a2521e1bd544e4822e0a28df4b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "fe9faffacc8ac7d80854789d90a682296f0ba65899f9b73bf0d05f888811cd18",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "01fd6089e7fea7fe2cd1effd24c75d141bf690877ea72cf5fcf757907917f6c3",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "5042bbda9812ad46a00e738e8131f5b3722c8788d422fbb4cbac18ab75f23843",
+            "definitions_sha256": "a01b6241654065f8c97fce503319f4c540441daf35ac65c0acce5a4c3b3e0854",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 396,
+            "definition_count": 352,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "not_reached",
@@ -1397,7 +2069,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "EULER_PARTITION_THEOREM",
+              "theorem_sha256": "2a8775a41ec430d6b70fd5565892bf6be5a04fef440212da6d683d54e1d06b3c",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "aec97ce1a1b0034cdb5f2705795050456a4338eebfbbd4e53852bf990e875a8c",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9d3ba8e372f33b458b5291b2276e78120be56385ad84e85ab88df8f9e311f0c9",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "1f0747465681d80ad7118a2dfc42ba84eeeb8dbcd227d825f49cf4bff8f7f822",
+            "definitions_sha256": "654beb900e1b696f986829383456fe51cddfa5c922c8a1dd5c752b3372bb025e",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 310,
+            "definition_count": 270,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1452,7 +2149,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "FEUERBACH",
+              "theorem_sha256": "a8c2e2b7c4bae12c65080237a4181f074ee97727423b00f05076250161baabba",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "3805e7cb5b0d163fecb1ce541cd3dd3d50001bb9855dc62e7ea2f64755c365d9",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "fd1060a5fbcd0e9a48cb545d4e6bc69cb0691496252b346bf7e1a8fc313cdc79",
+            "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
+            "term_constants_sha256": "c9aab1e826391f3a1ae3c03ed3dc69fd358848d41944143c594c6ceb4278f186",
+            "definitions_sha256": "97cc1bba717401a771ecee5818fc1c7976aa59036f9b15d52ab1959dd8186f16",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 26,
+            "term_constant_count": 618,
+            "definition_count": 570,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1531,7 +2253,59 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "FOURIER_SERIES_L2",
+              "theorem_sha256": "a31d97b607c8c82661fd6620ff8e7c155e67598eba7116e2955fd77058f2c1bd",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "69307ceaae07b682b2b7c4c48e04c999066f5878fcbf4f04c68ceddcce5401f5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "FOURIER_DINI_TEST",
+              "theorem_sha256": "035a94b0d31e2a735506915736c30ccc7c394d3d765a4e2277ed92f9108ceac9",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0fd39d9d6c545c86b5c590263d3d9939e46939b7a871f97f09010eec0b8e1c85",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "FOURIER_JORDAN_BOUNDED_VARIATION",
+              "theorem_sha256": "23f40015a637ad540b42b3ffb07505b2b52ee0048e5b87dd976bd944b44f5ac9",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c4eec6b27c3406b7da73ad801243dfe6e69c55a7a2c6a96830d9606e95eb160d",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE",
+              "theorem_sha256": "f8c8de131fbdebfca29410a9f921f77f41f3b9cd2124e2ac7a0a60bb76cea74b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "f93ab88781eb69ae1a4ddb99afeb8195fca9de344a0977000964afed70dcd047",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "2944f71c1addddac832b0d112e342a6d3c5f2867e2c70aed3438058d174bbade",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "83cd8fba275e1657f7cf080ffa611a5b964a8f6c3023b292132c067f14054eea",
+            "definitions_sha256": "09998508896cfa0b5f0d3e685b569e4772122e1c54aeada666809c2513717b1e",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 882,
+            "definition_count": 830,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1595,7 +2369,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "SUM_OF_TWO_SQUARES",
+              "theorem_sha256": "875f18293e5cc6edb0bfaa7adc1afb6a8818b40ee3119dcbe4754badc5a7f24f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "a09813c3048bb4677f8039b8e1de579a0f4c9b5b83c43dd856b9e0a10c45b5d8",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "LAGRANGE_NUM",
+              "theorem_sha256": "f0a42e56d79af64e2a3e0ab6ccee1e2a07a5f6f57a7e7da34fcc26bfb6ac576f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6fd4d64ad4d1505864f2b70885d05d061dae75ca33c03f159f29d4ac78ec2e6b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "03836899d3eda76f40e95ba67938837ebb8f1bf6e68037c8fb82ba1c492b92a1",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "a1f711d285d49ef55d1161f790808f7b29368601d9b87dbe78d1d2e2f98e25e2",
+            "definitions_sha256": "da546a44add9e8c0f0770f0b676cceefe2d5f8db1754d8b92c577de43dfa7d2e",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 345,
+            "definition_count": 301,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1651,7 +2459,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "FRIENDSHIP",
+              "theorem_sha256": "3fd16a4bcca658b7b74c03fab3ce60dad01355fba63837448e01dbaea52b303b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "27e954050abb965e521385592e1e3412ce4830b8e8718447846d916deedd69b5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "f5d7ebe09aeca5f7fa9b94ffd5dd64b2766631d069b303ebcc02a94cf3c64766",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "00cdf34c0b82f296bc5740a20186d35585538d5a46f37e5e3c25e8edb7e3e9ac",
+            "definitions_sha256": "b8009d7ea3397581e34bbdf4bad81bf0b854a0ac406e712e54b82f1c67dd554f",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 313,
+            "definition_count": 273,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1706,7 +2539,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "FTA",
+              "theorem_sha256": "9e1d08da546237ccd5c80ba1f6765d1f37d9db31f0905d62374e568aa903bc26",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "cbbe4216e157ec204ee179a8f81f9501bec1572b10203c519d21e0fdeca2b3f4",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "312440afc0ecfe29eedf5d43403c5c1b2e99753e5ecb0f93f9c8baeb534641cf",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "b72af4de2ede53153fe41865bc2cf12ae4f24e438b4d22efeab6b804803e0ed9",
+            "definitions_sha256": "82c13e646de921140984c0e9a1a9b9b56be0fb917ba8a6e8ac1b079687afdf01",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 304,
+            "definition_count": 264,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1761,7 +2619,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "EGCD",
+              "theorem_sha256": "f0e56d42ecbf92badbe43534bf981e2b348f6e56a10c1415ee8f4aef45afe8f2",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "7e7d449b5f6747dec871b43ac6fc96dd8a74e90fc153ef651947a3bbb2eeb18d",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "a93f695a2917c4a0b0e7804c7e2890f61c095ce6be5d17f0e010c7a966cc00d5",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "e9964d0fa836b4b07373e1901309f349fadfe5a64bb19df4578b1d412e4e619e",
+            "definitions_sha256": "40425f2afc78b1515aba0451af93fc1d1736d5f03ce84c3bc9151667437c78ec",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 305,
+            "definition_count": 265,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1817,7 +2700,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "GREEN_THEOREM_CURL",
+              "theorem_sha256": "5d75e825e4231369bebe439bdc2c47a2cfbc00ff0be80b7ae694f412bfdb5d5a",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c289a946a46aaac76da0d2468475c8108f82964f80a44a98170e3e25b4966862",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "40702418c2efee1a6f1ae37957a6e20981dfe4eef750cacd15c5eb3b7c91178e",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "426e55b49f45f48e441dfeff4e2811ac1c818cfa9f59ab81bde0bb654313b965",
+            "definitions_sha256": "bf3a51266953cc721dfe74267ce14dd2a9f93869523219b66e0eed9d1e407775",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 890,
+            "definition_count": 838,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1872,7 +2780,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "HERON",
+              "theorem_sha256": "44df75be74f9ac19096bbd3159515f51f23771dd563f3ffe39591deec6728070",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "bd326f85d081f9f456edd61bddd64f1cb5d78843da97f3e07543a1594baf751e",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "fec44e4dd322e96bc98d2a286fabaa965edb72e90f82cb3bc61f146883b40411",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "ee74688b5108f734428fe9bdbed889d23b68573fb89a89e0a4d058e64febca1c",
+            "definitions_sha256": "da4dc13cad6cef485141fc43e5ba0728b06acc8ea1c362f62a8e100c286ea974",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 795,
+            "definition_count": 743,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1918,7 +2851,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "ISOPERIMETRIC_THEOREM",
+              "theorem_sha256": "55bcd4000f0ed2c965b71dca3380e5c72e83ca3e14858e9ab268ec82dbf3fc7f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "f9d437d3747f29d0411f04ba9f1d0c6bad7b3302aa2300d9de956543195213e1",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "40702418c2efee1a6f1ae37957a6e20981dfe4eef750cacd15c5eb3b7c91178e",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "426e55b49f45f48e441dfeff4e2811ac1c818cfa9f59ab81bde0bb654313b965",
+            "definitions_sha256": "bf3a51266953cc721dfe74267ce14dd2a9f93869523219b66e0eed9d1e407775",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 890,
+            "definition_count": 838,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -1970,7 +2928,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "INCLUSION_EXCLUSION_USUAL",
+              "theorem_sha256": "65707bf3e576152ab4bf5d3681a2888ffd08bce8ace3ca9d791435e1042ebd35",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "ada22edb47b8b808994fdb4d84660ea8a8490413a54a592b964f7b3b11d1a4d1",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "INCLUSION_EXCLUSION_MOBIUS",
+              "theorem_sha256": "f268e75a06d6d42d4c54e59a1026531f1297374bbbdc335c7c5bcc091f91490d",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "49a2845867bcba94a1661b9ddb89ad2bc9d8827a88b63879a8bc30b102ddfecf",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
+            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 303,
+            "definition_count": 263,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2095,7 +3087,122 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "TARSKI_AXIOM_1_NONEUCLIDEAN",
+              "theorem_sha256": "dc8191072ac6227bf3be8b03aa7f8de07ffa48f03c8ecb2188b41b416ced3608",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0d11e909e30be8ea85b8f2c5e814274edf4cf1c37ed0b7af4b40c8d56b8d299a",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_2_NONEUCLIDEAN",
+              "theorem_sha256": "aa21f21d4d5652c486faf662a927665c38e8e82319a5685458db0f872d3b187e",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "417792e8936e523f97863d6fa61e00c8e60fa1b3a330cfc7b5e41410c85fc06f",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_3_NONEUCLIDEAN",
+              "theorem_sha256": "a7d9547a093bf5c45b71f358a7e138e9dffe527386b3aba7e7e44499363391e8",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "faefcb79f32c5536d83859559d9a01bbab9c6d3377a9c4e6dd8a8cd682d5ffa5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_4_NONEUCLIDEAN",
+              "theorem_sha256": "88a709419ca9b2aa04c4e289aee0ccdd91548e16f7b3f422fe566d93cb9d350b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "584a8c1f27a42d6f0a7141bfe798d9ed73bee1eb17c204657ed999173f055c8c",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_5_NONEUCLIDEAN",
+              "theorem_sha256": "337b48dac015f6fc17de06aea497472bd649bc54c4818726941a140943cea73a",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "62296d36c731be08ef3b3b31437acba0c132cc2ae0edcb40414d0f09d314bf01",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_6_NONEUCLIDEAN",
+              "theorem_sha256": "d0313bd5576ac5f11da50cf4200215eeee85503f6172cc0cec68d237da4a4bc6",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "e9d7835dbbef9da93c4af3013ed6e3093be2c198cf234207656808e4501d2ce5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_7_NONEUCLIDEAN",
+              "theorem_sha256": "67738445b27b34526c2fa78e615de8ac3f3aee8936e90f2fdecf1a348bc6685f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b8bdd14ae17d742251edabba75b32ce539c9477558c7f8fca5be6fcb2608557b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_8_NONEUCLIDEAN",
+              "theorem_sha256": "c269c2a3be5cac1402bd337962e4f8510873466e7429383f7fc10ba332df1f28",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6d414db5d5f1f42bd68f27eeaad67d977bb87f23b30ec7c014d90bdd5659d053",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_9_NONEUCLIDEAN",
+              "theorem_sha256": "1f2e5ee5aea7d9a1cefabcda3b15177742a3726189990824b838a088dd7cd0bf",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0727c1a9763af3ca2b60558ef07b2d154cfe2e2393711c03081600084e4cc088",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "NOT_TARSKI_AXIOM_10_NONEUCLIDEAN",
+              "theorem_sha256": "4983ac6f4b9427e33736a3e4e12113c3c9b4c2dab5451773e67414249e190f8a",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "55a0998c8fa0a24d88a7d46c2a2a77e684f14e16128e464dd93aa476f1b6b794",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TARSKI_AXIOM_11_NONEUCLIDEAN",
+              "theorem_sha256": "82747cbf776cbae11e41da576ed7370a2bcfcd1752fa6c5bb2d9880b9af4134c",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "305ee073ea89d7ec3788260c2aed19d5c88c002770c56a231264ed7b250932ef",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "ae447289426360119da716823f07ed9344305d4c9470139229968d0ae736e972",
+            "type_constants_sha256": "ef26006c361401986e59c90bf07474574daea9c266410ea5998ccf0b1c2510ad",
+            "term_constants_sha256": "bf64c7a0b97e924e2271b35dd55f650c67624c863ee7659a0f925889e3cdb33c",
+            "definitions_sha256": "4a1f2b33bff3fadac87d8fde2f97ea4cfc24363f6069d8551d9b9ffd74814396",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 892,
+            "definition_count": 838,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2147,7 +3254,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "ISOSCELES_TRIANGLE_THEOREM",
+              "theorem_sha256": "1a5b6ddf88d704a50673a45d081fca42443cb47281ff803391875869fee1533d",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "479d4dd26d924a44de5af194140a239a1a27970c631b09e24798627105b99768",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "ISOSCELES_TRIANGLE_CONVERSE",
+              "theorem_sha256": "45ecafd4763e3b1da496af321064d4d1709dc4f48bae4be81c3777c97f33bce6",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "08d406641c71fa7cffd2176300041e97d3af21b8ad1f89bf2332330368263e3b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "8d0c514f95527a9b46165e1410141d8f083993bb65c3b71cd9717178f7954566",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "4a49e66b1a69311b78fa7a3d76e8580d1bbbed56a790b92bc4851e64146fa007",
+            "definitions_sha256": "6ec2faad8927ff911c168d7eb7c9443602705611134e408ae7c600567859efda",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 873,
+            "definition_count": 821,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2189,7 +3330,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "KOENIGSBERG",
+              "theorem_sha256": "b91950f2cf20f2c9e3d2f8c7ac35be041696cc1f54afde5c071b15a8f5ccc4ef",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b8c6d61ba7758d62ab410183c952fc85b55574c42981c0f3529dc722c53ff1bf",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "74a55c15febd300a923c5d445824d26c3bea38fd645a7436b1a48bb88336acda",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "cdd6e30f1aadf5dbb385646f4bd28a7c91e03b916c3716b87e0effa9448ea9eb",
+            "definitions_sha256": "4dacd0557ff3720af7c70e3a3423754ca40fcedb6d80ca30de1ba0543855a640",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 313,
+            "definition_count": 273,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2233,7 +3399,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "GROUP_LAGRANGE",
+              "theorem_sha256": "54444164f8d066fa2fb4084911c3514b34a3c319070aa5198a07701523b8ca48",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "9fb732786d7445bc5a24071187379c510173f149dc9392a5005c5934474cd8a5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "182618011b332f7829f3f78b1af3039520227c689c130197cca3f9a2afe822c1",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "f0b4d866aaf56a8268b265803d363cec295599f68a1efa05c15e980c7a8fbdcb",
+            "definitions_sha256": "519a9e6a220033decab47257fc33ea7bed6f80dede60393e0756da23dfc787e6",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 306,
+            "definition_count": 266,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2277,7 +3468,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "LEIBNIZ_PI",
+              "theorem_sha256": "3222cf6c8f6da49e9f694c4c555748d4127f7e1efd01d2ab3d5c669eea6f0016",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "8ac1f23db4d10799bd26c5a39fe7e4b02a7a3dd6c1fc9c20c5662b4cec0a9ae2",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
+            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 360,
+            "definition_count": 316,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2321,7 +3537,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "LHOPITAL",
+              "theorem_sha256": "4a6840e106a56a36362898dbe7d47a58be589354d56e7f528330d167c8bb0109",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "062951c567f5ba98c1bd0b6b0200f95cb965badc46f24fee12df8edd0b64aa3a",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d70bc3925427feb02273ec5aa0f94ccbca32391b52a64c89852e7dc42d6beeb2",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "9ecabfc9cae05c841c69c0f84343c72b5d86961ed8cb66fa44813202219a502a",
+            "definitions_sha256": "babc5bcd6666a26482c933d84cb49b60b767dc097576fe05ef8ad041893bfbd0",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 340,
+            "definition_count": 296,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2366,7 +3607,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "TRANSCENDENTAL_LIOUVILLE",
+              "theorem_sha256": "8f29123f207caf5d3a3910130bd38feac72bba6cb26b3a5ea407aacb18c7c9d7",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "c136c8f8221b1db96269c3674a8b55eec614e63146c9ad5f4515298b5fac633b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "f6f2f4dfd53371f823b44905852ad3bb1f1b5fa9503f0121bcace29798abd659",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "5a14b14b7e53e4dbcf430eb94f0e8eef514bd0f3bcc8ab61733265cd0f417a7d",
+            "definitions_sha256": "0b2cfb9fbac800d67fb3a6680eea2241aecb61956cbe19317e3fa0031310e8de",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 359,
+            "definition_count": 315,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2410,7 +3676,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "MINKOWSKI",
+              "theorem_sha256": "0fd1d643907d23da6f44c58bcfcd050e194c566df552e2859bdbc80e038f66db",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "3ec1371559d030b3e5f55b90de22cec0125b0250a7710cde48290e0fadd50d13",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "fec44e4dd322e96bc98d2a286fabaa965edb72e90f82cb3bc61f146883b40411",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "ee74688b5108f734428fe9bdbed889d23b68573fb89a89e0a4d058e64febca1c",
+            "definitions_sha256": "da4dc13cad6cef485141fc43e5ba0728b06acc8ea1c362f62a8e100c286ea974",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 795,
+            "definition_count": 743,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2455,7 +3746,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "MORLEY",
+              "theorem_sha256": "7d6d9c00096f7c7a8c54191d4cea6830cbe6588a633c02a77bbc6befbcf8043b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "9a09fbba02663298478c97a58d7b789b45f55c767a92299db47e5a4d13e46ae5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "5c69315feed58b413d56ef8c40b6bb69d120d1a12bb733fff94b01e4cd01f1a2",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "d734a49657941aa314c9757b7bbfb36c0ed26a134c2a8ab5fe819e4493d6ee5e",
+            "definitions_sha256": "e19e81a4f40890ae7a056143b019f4fdb74bcc8ee8761216b20b29d7f290f350",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 876,
+            "definition_count": 824,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2499,7 +3815,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PASCAL",
+              "theorem_sha256": "ab946c218f8013459d64a7e1c57a8bd2b9d15e67c3a3258f298736839ce1a72d",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "5de5793bf155023dfa680b5622a83fd148817fc965dfd5221f55d72c51d2bd49",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "5bd0b73fabdbd61c0ba915fd12550d8832ab50e72092b0d322dc62b65021791c",
+            "type_constants_sha256": "b446dcb79fe8b38c98a7372a11c5c54ea948f4cb37042aa5aec3eaf8901e373c",
+            "term_constants_sha256": "2cc8b0091b7e056aac7d27dddf47270791028faae3613a2a11981c50c51cec9d",
+            "definitions_sha256": "a6025c1f8f151024b9cd8e9d27c47b0ccc6262633ebcaccaa4661584c53c94b8",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 627,
+            "definition_count": 573,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2551,7 +3892,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PERFECT_EUCLID",
+              "theorem_sha256": "c73f403facc332bf0a009317bbac359dddf4f2b3209d97bcbeee615f05b6920e",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "bc3e30f88e70728f8e322255d40a010231eab9a684f7003bebc770feaefd5e68",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "PERFECT_EULER",
+              "theorem_sha256": "b25849be0eb49a05ce3499c37e3dacc4f1336c80fbf9ca2bf6b726246bc5299f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "7103b8cf372ffcc9f4d1f49f0c44004ac3f7e2a269c17978bf44c062f43bfc8b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "7b06d2f56f64c84dd582e8d8d23df25f2e12e78a2d7030e3e1a158353ba6dfc3",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "2059e01f9a9d7ea714846e451a0e2816d75d7e8a58d38e76a96d5805db715dd7",
+            "definitions_sha256": "238396edf2cda5d0aea2ce7a503ac340ddc3940f17edce65b5dfd6bf309bc2d7",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 306,
+            "definition_count": 266,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2597,7 +3972,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PICK",
+              "theorem_sha256": "8dd489677dfbdd1deef61c5eeb45dbcc5ebc10abd5e4938aac4b282c4a3daacd",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "2c6829bf14fe424645cd9b3cb01968c75a195b994a7046e4369019295a3f7531",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "bd1df6142b1952ab0b11620b32b243314815cb40285eacb5d11423680a5449e1",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "b2a72f9fcd758be68f5b37ba4931c34ae689f3fe4fa1a7a8fbb3156a13297a1a",
+            "definitions_sha256": "c6a7ecf839271865816e447b85031125a9dd024413ae7ccbc695c5015bf69bc2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 875,
+            "definition_count": 823,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2646,7 +4046,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "EULER_HARMONIC_SUM",
+              "theorem_sha256": "47a13a1fd80a0a81b927ddf2618003ac322ac4e7330e02b736d6af0b21678e06",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "8760ba14c52950ab97fb2415ff775d4a5d11a944354a0eaa7c40057a7147da56",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "58d0c408b9a37b160f4da5f5dfe2013f24fd41e4f4f5dbfa8767b8ad1826e176",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "155e5bbc4d9c127e4717a5655698c84904e755c686cf6dc6878cf97730950d08",
+            "definitions_sha256": "f218c3c2ff65f02cffe05fee06f900921340490ad1b7de06b0703c94b07129c7",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 380,
+            "definition_count": 336,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2691,7 +4116,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PLATONIC_SOLIDS",
+              "theorem_sha256": "78e589a28e32a4730468469767e4786c65f1d2cdf39eddaed789b58642f87526",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "1cdeec4ac6d9fe7e873f0adc63cf1e133c2f71abef7da4fbf3b5592f2e788694",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "432a679afc98fcda9bfe5e114454c486de8b471ad728f21433b1edb631d9bd99",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "a5b3e0852172db0740cc119a5fdbc7b4495b4d17904e922bad9a25c2cfc64836",
+            "definitions_sha256": "90edbbf868ca74a6c91e80cff3a38aa0baaff1aeb20ec5f88d8d3844830f4837",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 762,
+            "definition_count": 710,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2737,7 +4187,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PNT",
+              "theorem_sha256": "9f72f7c5fac4fd960b6471bc11f2299b8cda0b432db5e1d9adad576964a0aacf",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "fb58f28adf8c3d90f252899da36ded59c141e7164d86c340719c262eca54a7ee",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "269c0c4206b14c3d360bb31529e8c449808d06e4912df831172ab5169fa1e749",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "c61ed0316470725ba778ae48dd9ba2d1f1a12c4d3625eb453247ad1bca00a920",
+            "definitions_sha256": "b58cdedb1a2b965592d5646a0e6e370d5ea682a3a98766545ea9863a69db24c0",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 897,
+            "definition_count": 845,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2784,7 +4259,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "EULER_RELATION",
+              "theorem_sha256": "ca0e6368fa6c7963af6b7f7e0b6236c69b6b79bef78086eb7e4688207c25cc77",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "78d329a760db4a5ff792288f538fc7a5d3a7e4d6f53a5d7a73b69951ed8557d5",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "6693cb60a1e2811a9a6260af768af4455fcc0876380e0fa87ddae34218417343",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "fad4783427ae7ca9cac8527c4be24052b5cb4e0995151a9fc949a666b8eb13fc",
+            "definitions_sha256": "e401ae947d0926f29cbec4a0b7f64bdb9f56823c3743a291decb1cbaadb8a32e",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 755,
+            "definition_count": 703,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2828,7 +4328,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PTOLEMY",
+              "theorem_sha256": "f0f9d43fa87f564bb0cc53e3dd1e44ce924277b97dc09c5245df38e60146e884",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "3be71b60bcc573855f23dac593c166596a834bed06057905aaf0394429526b71",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "7cdbe82f6984f041cfac381ba11a95d21a0e58485111d1e38fdfa2eeca601767",
+            "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
+            "term_constants_sha256": "163fea33f5c53f2354e1d1d8592a873594b28f5bb26987106c362a2448625a83",
+            "definitions_sha256": "9574cb783f199df3da4ee716c2636a6031c6cd2e731f8c75a57db2bc67299014",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 28,
+            "term_constant_count": 837,
+            "definition_count": 785,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2878,7 +4403,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "PYTHAGORAS",
+              "theorem_sha256": "bc039f65f76614b502168077697810485f09472f4fdf79d942ac3091dffa5d61",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "8cb85010c260e72bffb54a655f3f407848c29e97f4756c71e59f3bbe669e5590",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "22201b6a6ab665dd3edd2c3dc6160a1dd45d7f4eb6e7eeb9259edabd2f26f3a3",
+            "type_constants_sha256": "00e156407675b4535f2fe5699c2da72f56db4cf2227299991fe93731fd5e5256",
+            "term_constants_sha256": "d9d3d0a2d923416758c29db13d4d12a9cc4afd057dcfdf4660d88f9064dfad1d",
+            "definitions_sha256": "d8cc664fa94ab864d4df6884d345da583c6c250610087022d333c76897b26bc2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 23,
+            "term_constant_count": 399,
+            "definition_count": 357,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2929,7 +4479,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "QUARTIC_CASES",
+              "theorem_sha256": "20f9dc4d72b1149fd2df450081c133b5303756cb854ca8fab93adc80c206ad04",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "24c4ffd67bc19ffbaceebbaf2a24a49028780563515ae8bf1590099af114bc91",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
+            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 303,
+            "definition_count": 263,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -2971,7 +4546,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "RAMSEY",
+              "theorem_sha256": "79c71eaf5fa3fc37c6eaf72db39fb20358490252818fbece19c2f38e02cd17c7",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "a0e064ee7d752979ef73872fc066d9ec6c649c9344e771aa9cda7873f710826b",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
+            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 303,
+            "definition_count": 263,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3023,7 +4623,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "COUNTABLE_RATIONALS",
+              "theorem_sha256": "0a0705d24a9d11f8c3aa29c6adf860e49dfebc330c41a17be60bf58c536245e3",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6b924c2d8d4a6214cf8fdd1d4735c34eef995aecf11117b8c9d9ac35df7a8d05",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "DENUMERABLE_RATIONALS",
+              "theorem_sha256": "2a2a5c58ce751fd379a14c4b887c3e86960438a98484c5c3007a2b7b5b58dc16",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "19236bb8862aa8fcd9cddde35961f75df6aefe56d0488decf5fcf8173efb6bbd",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "7d6b17fb41ed34674bcd4b4d457b668e6c5075a23e7fceecfd17543115c30c12",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "2cbb62c5597f6a86c3ac87b45551ec9b5889e2dc20e1ef8adee14021983278cf",
+            "definitions_sha256": "0205cb711604b85d78a1ad5201bf3b7a7bf4cbcb72806f22113c0dc4ae006ee0",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 322,
+            "definition_count": 282,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3068,7 +4702,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "UNCOUNTABLE_REALS",
+              "theorem_sha256": "f0482b48564d0b5ce6ad7f5b9995bbc2fe6780f45c9ec66523f6caf301dc0b1c",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "7df7d8f7a1b9e3dff0d939bfd859a77de66a134a46c8b6291d77d820fa16f2e0",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "5980346e8c1ad9b6b70f9aea50e8d3f208fa2d4e58fb185f4dde25c1362808bd",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "bdf13766c3df36bbc1c7c9600b3efb85bad5388db0156cb24e8c113acca2c00d",
+            "definitions_sha256": "4519f8e1df4fa3037e39482384e56d41f35b65e1b76ad7853a3ff3adb72adc5d",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 359,
+            "definition_count": 315,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3114,7 +4773,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "RECIPROCITY_LEGENDRE",
+              "theorem_sha256": "32e11d0ac2384985783d30ab622d09894fcd6fa221b9780c7438ad985300a3ef",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "995e1bd5ead148da250c9a845f55ec3ca45ef61e99c0b1619ad81c95bcb769a3",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "a39e92984bc3b37783890e6ccff8e8ff6edc13a6749e5656b6753969599e3a8c",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "8a21954914d63f0bd2f5d516e35ce0bc27da4ecdc32ffae6b0ffd5c862aed206",
+            "definitions_sha256": "c8e72aef9a948fc84bb58238ddf17cd7cee12580e054ab945d6666f18adc9a11",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 312,
+            "definition_count": 272,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3159,7 +4843,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "STIRLING",
+              "theorem_sha256": "b42e9f7c9ab6840710d1ae16c1e0540db3cb8ebad56f97e9c87759c0eee08b37",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0be56e7b47eb6d0ea3008708375c6740c6d3c3302373730740da8cc40ffe46e9",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "1dec056150c8f5d24a885f897886b5b1c88df3151938bedd0af03193cf1b5cb4",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "02012860ea45074a640489670c427ea73b145ba9fae5e038cf07fe2ebbfc2baa",
+            "definitions_sha256": "a71164cfd978d7f211e56f018a48bc26a2a583a7ba90be9bb702a60ae4049158",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 361,
+            "definition_count": 317,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3201,7 +4910,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "ERDOS_SZEKERES",
+              "theorem_sha256": "e183febd64c511b74e1de1b3cea19071cbddb37d84d4e8ed9c51487aa1eff154",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "6812ec00d3141e684d595cf85f83599353f18bfb371c8db8795a62062f27a28d",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "55feff04c063030ab2c80d8351a05eec01538c7978201440effe6600f0a947ea",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "43e6bb130525a803bf6351be797f1c88bb6382c5442937047046ee9cc41357c3",
+            "definitions_sha256": "a31b7a3f10857aed873e832bb83943dda8abddb12b7f96a9c17f0005ffce1e43",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 304,
+            "definition_count": 264,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3251,7 +4985,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "THALES",
+              "theorem_sha256": "b185dc5e38c753f9694202e99274aa5062bf9e98dcf85b90ffd5076254c1ade6",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "2428bea577d2f81d13ea072f7e1e0b5ee92e7665457c1ef795a937dd4d23373e",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d1aa0b4cfeb847600f5d7088825ddf402301b70d135fde89385ddd910670f1da",
+            "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
+            "term_constants_sha256": "2b8706a66943fb21210acdd7f698b68d40403683fdeef380af8deb020afd0cfe",
+            "definitions_sha256": "d2ab40c8fd6d01703ae2148f6cc3af391f3e854d66085915035ea4d29b7f5c0f",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 26,
+            "term_constant_count": 620,
+            "definition_count": 572,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3354,7 +5113,68 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "e_is_irrational",
+              "theorem_sha256": "22934c49dab773552ba0b59fc6754fecc26979a87789a11de9ab671956b00400",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "15fb5eea0c9e2ab51e3c4122709443581c9f2619982efd46495c03e287bac5f7",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "e_is_transcendental",
+              "theorem_sha256": "0f2164cf9ae901d83fcc9781d6e106b649805a71369e106ca2f0656e0caab441",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "0f5a8f1ec02736ca9ab376839fc47c87cc5fe9a879d19418a451399ca57d9575",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "pi_is_transcendental",
+              "theorem_sha256": "1f3870450b1b5b1649c94fd67494dd4c4c194c303e8dceb17137965e228f9e96",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "b6e0b28e9d92da58f1347089e130a170467e2ac99d81754b8d51b63a615582f9",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "transcendental_if_exp_nonzero_algebraic",
+              "theorem_sha256": "031c3864efc0a386767d531b5193bf5d2a88bb9a85dcac739fc3960556f889a1",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "908c1d41d4f82b0ed7fcfde39a471b8b8c56e5aa832b11db04657056f3b0307f",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "zero_sum_algebraic_exp_algebraic",
+              "theorem_sha256": "ef187ce33feed60c6fffdd88ef2d402ca6c9f4d2a91cc6673edaa5b1aeaa1ab3",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "053c882941f8ec4166f713da4ed8e28494440008e74557c5b4476ce03be5370c",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "6092158a55644ba56d7b95b96a05bea1f900ed66e8f6d56b258eee3e586c6224",
+            "type_constants_sha256": "895ac9c88e748058ac49ebde6a23aaad26385170c284a99dc66e7efb972f2d2a",
+            "term_constants_sha256": "25d238c2dd73f64543c8a6fb5dfddcf3f7444ab57bfc17bc3da4aa5ddae0214f",
+            "definitions_sha256": "53d247e1f008b371e437c662217318c26b3a70592af05723b6a975eb3512fc23",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 29,
+            "term_constant_count": 1039,
+            "definition_count": 985,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3407,7 +5227,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "TRIANGLE_FINITE_SUM",
+              "theorem_sha256": "a0d642ff281d724f065d528ce9266c9297d6a911d7d4b34bbe3e999eb4e2cbb2",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "a974030798802c21979700599e6174fd333dd8ab1cb5597ba59b68f866db087d",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "TRIANGLE_CONVERGES'",
+              "theorem_sha256": "2cc9d5a67d95155f9e42983ce23bb7b52d46643c5253cc646f431d4766fc6438",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "313a2455730573eaa70162c3274090b5362e35bb2702f4e62e7b73ea544a6f03",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "d7e9fe94a09b9bc25144181d82bec24749dd89e9a1dd0f5c54b3e7c2548cb8c9",
+            "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
+            "term_constants_sha256": "a54742c900b928e3da8228a6b1349ccd06153330fe95bb1c6dcda62b7b6a70b6",
+            "definitions_sha256": "985ad97533c9bba914ae50cbd9469531f5f66ee480870839a24702c4845d3567",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 24,
+            "term_constant_count": 370,
+            "definition_count": 326,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3451,7 +5305,32 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "SUM_OF_TWO_SQUARES",
+              "theorem_sha256": "875f18293e5cc6edb0bfaa7adc1afb6a8818b40ee3119dcbe4754badc5a7f24f",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "a09813c3048bb4677f8039b8e1de579a0f4c9b5b83c43dd856b9e0a10c45b5d8",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "15eb3f53e7b9348d6ed5190f6742b82c74d8f67ba48834c9abdd0103188dd39a",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "12293a05adf3caf1f4b1f964654c570d7f521e013a67a15072aede903086b3aa",
+            "definitions_sha256": "503ff4df3f8ea85f5cd50d256d4e3323f48a94d7dac64586bf193b076311c80f",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 308,
+            "definition_count": 268,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
@@ -3504,7 +5383,41 @@
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
-        "expected_identities": null
+        "expected_identities": {
+          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "theorems": [
+            {
+              "name": "WILSON",
+              "theorem_sha256": "917f7546aa5332387eb6f99ae308d91cbf3bbfd3e6359c62b0b20799d329399b",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "ee4ae1ed3010177e5432532202174f497d75105a04e64d0a903b61177ca14a10",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            },
+            {
+              "name": "WILSON_EQ",
+              "theorem_sha256": "f1aac1780dc3e50d98a2d989099b8b42f7921e8aa653656eefd2d40ee0161bd2",
+              "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
+              "conclusion_sha256": "5deddc5fe377bf57dc26c4ece9e642406f7362509954dfc6fd90dfe183fe4697",
+              "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+              "hypothesis_count": 0,
+              "global_axiom_count": 3
+            }
+          ],
+          "post_state": {
+            "kernel_state_sha256": "a93f9c1f33f46bb6336d08886cd76bd370e0236f01a645c04c3ff9f77adad4be",
+            "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
+            "term_constants_sha256": "9cc2aae06344cc485f0e513d4e7a9711830351aa222d02a708aa574da3e1aa3c",
+            "definitions_sha256": "57bb513e4cf0cabf34a9a0b040a12a348aff4e759dd2baa35ebe1328a4494756",
+            "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
+            "type_constant_count": 22,
+            "term_constant_count": 310,
+            "definition_count": 270,
+            "global_axiom_count": 3
+          },
+          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+        }
       },
       "fingerprints": {
         "status": "missing",
