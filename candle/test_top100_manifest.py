@@ -43,19 +43,26 @@ class Top100ManifestTest(unittest.TestCase):
         self.assertTrue(all(target["expected_status"] == "pass"
                             for target in self.manifest["targets"]))
 
-    def test_missing_s1_evidence_is_not_misreported_as_success(self):
+    def test_approved_reference_is_not_misreported_as_current_success(self):
+        approval = self.manifest["identity_approval"]
+        self.assertEqual(approval["schema"], "candle-s1-identity-approval-v2")
+        self.assertEqual(approval["approval_status"], "approved")
+        self.assertTrue(approval["promotion_allowed"])
         for target in self.manifest["targets"]:
             request = target["fingerprint_request"]
             self.assertTrue(request["theorems"])
-            self.assertIsNone(request["expected_identities"])
+            expected = request["expected_identities"]
+            self.assertIsNotNone(expected)
+            self.assertEqual(expected["approval_sha256"], approval["sha256"])
+            self.assertEqual(
+                [record["name"] for record in expected["theorems"]],
+                [record["name"] for record in request["theorems"]],
+            )
             self.assertIn(target["fingerprints"]["status"],
                           {"missing", "not_reached"})
             self.assertIsNone(target["fingerprints"]["theorems"])
             self.assertIsNone(target["fingerprints"]["assumptions"])
             self.assertIsNone(target["fingerprints"]["post_state"])
-        approval = self.manifest["identity_approval"]
-        self.assertEqual(approval["approval_status"], "unapproved")
-        self.assertFalse(approval["promotion_allowed"])
 
     def test_all_named_results_resolve_and_manual_review_is_explicit(self):
         manual = {}
@@ -206,9 +213,19 @@ class Top100ManifestTest(unittest.TestCase):
                 "100/gcd", ["EGCD"], nonclosed)
 
     def test_unapproved_artifact_is_exact_and_cannot_carry_identities(self):
-        targets = top100_manifest.build_manifest()["targets"]
-        original = json.loads(
-            top100_manifest.IDENTITY_APPROVAL.read_text(encoding="utf-8"))
+        targets = self.manifest["targets"]
+        original = {
+            "schema": "candle-s1-identity-approval-v1",
+            "artifact_kind":
+                "independently-reviewed-ocaml-reference-identities",
+            "approval_status": "unapproved",
+            "promotion_allowed": False,
+            "inventory_contract_sha256": None,
+            "serializer_sha256": None,
+            "reference_policy": None,
+            "review": None,
+            "targets": [],
+        }
         original["targets"] = [{"self_approved": True}]
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "approval.json"
@@ -218,7 +235,7 @@ class Top100ManifestTest(unittest.TestCase):
                     top100_manifest._load_identity_approval(targets)
 
     def test_duplicate_approval_json_key_fails_closed(self):
-        targets = top100_manifest.build_manifest()["targets"]
+        targets = self.manifest["targets"]
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "approval.json"
             path.write_text('{"schema":"a","schema":"b"}', encoding="utf-8")
@@ -227,7 +244,7 @@ class Top100ManifestTest(unittest.TestCase):
                     top100_manifest._load_identity_approval(targets)
 
     def test_approved_artifact_requires_two_retained_independent_runs(self):
-        targets = top100_manifest.build_manifest()["targets"]
+        targets = self.manifest["targets"]
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             (root / "candle/evidence").mkdir(parents=True)

@@ -47,8 +47,21 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "collector_matches_head": True,
             })
         self.collector_patch.start()
+        self.real_target_from_manifest = reference._target_from_manifest
+
+        def unapproved_target_from_manifest(target_name):
+            manifest, target = self.real_target_from_manifest(target_name)
+            target = copy.deepcopy(target)
+            target["fingerprint_request"]["expected_identities"] = None
+            return manifest, target
+
+        self.target_patch = mock.patch.object(
+            reference, "_target_from_manifest",
+            side_effect=unapproved_target_from_manifest)
+        self.target_patch.start()
 
     def tearDown(self):
+        self.target_patch.stop()
         self.collector_patch.stop()
         self.git_patch.stop()
 
@@ -231,6 +244,20 @@ class ReferenceFingerprintTest(unittest.TestCase):
             root.parent / "pari-gp/candle-csdp-build.json",
             root.parent / "pari-gp/candle-csdp-theta1.dat-s",
             nonce, source_mode)
+
+    def test_committed_approved_target_cannot_be_recollected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            with self.assertRaisesRegex(
+                    reference.CollectionError,
+                    "approved expected identities already exist: 100/gcd"):
+                with mock.patch.object(
+                        reference, "_target_from_manifest",
+                        side_effect=self.real_target_from_manifest):
+                    self._build_plan(
+                        "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                        ocamlfind, NONCE)
 
     def test_plan_pins_clean_tree_order_and_exact_request(self):
         with tempfile.TemporaryDirectory() as directory:
