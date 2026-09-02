@@ -48,11 +48,13 @@ HOL_GENERATED_PROOF_INPUTS = (
     "src/thm/Thm-sig.sml",
     "src/thm/Thm.sml",
 )
-HOL_PROOF_OBJECT_COUNT = 2907
+# The pristine-cold x64 proof materializes the x64_stepLib object pair in the
+# pinned HOL4 tree; bind that exact post-replay proof-object closure.
+HOL_PROOF_OBJECT_COUNT = 2909
 HOL_SIGOBJ_ORDINARY_COUNT = 6
 HOL_SIGOBJ_SYMLINK_COUNT = 2401
 HOL_PROOF_OBJECT_PATHS_SHA256 = (
-    "0afa5a9326b4de1fc1c3f97824fb30c26455c5f3f1b20528812792c27bf384ce"
+    "546bb4d3dcf2df6d65db91c8dd0a41de444902b4d48dc60b2b81ff6f51fb00a7"
 )
 HOL_SIGOBJ_CONTRACTS_SHA256 = (
     "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
