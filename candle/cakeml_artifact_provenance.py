@@ -60,15 +60,17 @@ HOL_SIGOBJ_CONTRACTS_SHA256 = (
     "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
 )
 HOL_MAKE_DEPENDENCY_COUNT = 2309
-# Exact non-transitioned path set produced by the authenticated pristine-cold
-# x64 bootstrap-proof closure at the manifest's CakeML pin.  Developer-only
-# dopen/caml test and pathToMods probe products are deliberately not ancestors.
-CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 1777
+# Exact stable, non-transitioned path set produced after the authenticated
+# pristine-cold proof closure has undergone one complete 18-target Holmake
+# dependency scan at the manifest's CakeML pin.  The scan materializes 238
+# previously lazy ancestor depfiles.  Developer-only dopen/caml test and
+# pathToMods probe products are deliberately not ancestors.
+CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 2015
 HOL_MAKE_DEPENDENCY_PATHS_SHA256 = (
     "dc3e187784b21ab208d02c5ee17675337938f401e2aca10e03cf211e360c9dac"
 )
 CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256 = (
-    "c2c81322b7213b90f8301aa389caca64792d25591118f2b256a17f74c2add626"
+    "c7850d20bcb245dfa5568a56a45e902b061c19cf10086264dde1f3ff5666d4d8"
 )
 HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
     "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
@@ -1554,7 +1556,12 @@ def bootstrap_cleanup_output_paths(
         (relative, path, "absent_after_success")
         for relative, path in bootstrap_transient_output_paths(cakeml_root)
     ] + [
-        (relative, path, "ordinary_fresh")
+        # Holmake recreates each target Script dependency record while
+        # planning the build, but generated Theory.sig/Theory.sml sources are
+        # transient inputs and their stale dependency records stay absent.
+        (relative, path,
+         ("ordinary_fresh" if relative.endswith("Script.sml.d")
+          else "absent_after_success"))
         for relative, path in bootstrap_dependency_output_paths(cakeml_root)
     ] + [
         (relative, path, "exact_holmake_lastmaker")
@@ -1958,7 +1965,7 @@ def record_bootstrap_preflight(
         "lock": _directory_identity(cakeml_root),
         "launch": launch,
         "forced_outputs": {
-            "policy": "exact_18_target_outputs_dependencies_transients_lastmaker_v3",
+            "policy": "exact_18_target_outputs_dependencies_transients_lastmaker_v4",
             "preimage_archive_root": str(archive_root),
             "entries": forced_outputs,
         },
@@ -2025,7 +2032,7 @@ def _validate_bootstrap_preflight_structure(
     require(isinstance(outputs, dict) and set(outputs) == {
         "policy", "preimage_archive_root", "entries",
     } and outputs.get("policy") ==
-            "exact_18_target_outputs_dependencies_transients_lastmaker_v3",
+            "exact_18_target_outputs_dependencies_transients_lastmaker_v4",
             "malformed bootstrap forced-output preflight")
     entries = outputs.get("entries")
     require(isinstance(entries, list) and

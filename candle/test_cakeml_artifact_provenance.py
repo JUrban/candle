@@ -305,6 +305,26 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             "compiler/bootstrap/compilation/x64/64/config_enc_str.txt", relatives,
         )
 
+    def test_bootstrap_dependency_postconditions_match_holmake_outputs(
+        self,
+    ) -> None:
+        root = Path("/authenticated/cakeml")
+        cleanup = {
+            relative: postcondition
+            for relative, _, postcondition in
+            subject.bootstrap_cleanup_output_paths(root)
+        }
+        dependency_paths = subject.bootstrap_dependency_output_paths(root)
+        self.assertEqual(len(dependency_paths), 18 * 3)
+        for relative, _ in dependency_paths:
+            expected = (
+                "ordinary_fresh" if relative.endswith("Script.sml.d")
+                else "absent_after_success"
+            )
+            self.assertEqual(cleanup[relative], expected)
+        for relative, _ in subject.bootstrap_lastmaker_output_paths(root):
+            self.assertEqual(cleanup[relative], "exact_holmake_lastmaker")
+
     def test_bootstrap_output_inventory_rejects_path_escape(self) -> None:
         root = Path("/authenticated/cakeml")
         receipt = Path("/evidence/preflight.json")
