@@ -549,14 +549,15 @@ def _load_collection_evidence(approval, targets):
             receipt["approval_status"] != "candidates_unapproved" or
             receipt["promotion_allowed"] is not False or
             type(receipt["failure_attempt_count"]) is not int or
-            receipt["failure_attempt_count"] != 0 or
-            receipt["failures"] != [] or
+            receipt["failure_attempt_count"] < 0 or
+            not isinstance(receipt["failures"], list) or
             receipt["publication_interruptions"] != []):
         raise ValueError("reference collection receipt is not closed and exact")
     sweeps = receipt["sweeps"]
     if not isinstance(sweeps, list) or len(sweeps) != 2:
         raise ValueError("reference collection receipt lacks two sweeps")
     successes = {}
+    interrupted_attempts = []
     for sweep_number, sweep in enumerate(sweeps, 1):
         if (not isinstance(sweep, dict) or set(sweep) != {
                 "sweep", "target_count", "completed_count", "pending_count",
@@ -572,16 +573,57 @@ def _load_collection_evidence(approval, targets):
                     "index", "name", "state", "attempt_count", "success",
                     "attempts"} or row["index"] != target_number or
                     row["name"] != target["name"] or row["state"] != "complete" or
-                    row["attempt_count"] != 1 or
-                    row["attempts"] != [{
-                        "attempt": "attempt-0001", "state": "complete"}] or
+                    type(row["attempt_count"]) is not int or
+                    row["attempt_count"] < 1 or
+                    not isinstance(row["attempts"], list) or
+                    len(row["attempts"]) != row["attempt_count"] or
                     not isinstance(row["success"], dict)):
                 raise ValueError("malformed reference collection target success")
+            for attempt_number, attempt in enumerate(row["attempts"], 1):
+                attempt_name = f"attempt-{attempt_number:04d}"
+                final_attempt = attempt_number == row["attempt_count"]
+                expected_fields = {"attempt", "state"} if final_attempt else {
+                    "attempt", "state", "artifacts"}
+                if (not isinstance(attempt, dict) or
+                        set(attempt) != expected_fields or
+                        attempt.get("attempt") != attempt_name or
+                        attempt.get("state") !=
+                        ("complete" if final_attempt else "interrupted")):
+                    raise ValueError(
+                        "malformed reference collection attempt sequence")
+                if final_attempt:
+                    continue
+                failure_artifacts = attempt["artifacts"]
+                expected_names = {
+                    "candidate.json", "plan.json", "request.ml",
+                    "transcript.log"}
+                if (not isinstance(failure_artifacts, dict) or
+                        set(failure_artifacts) != expected_names):
+                    raise ValueError(
+                        "malformed interrupted reference attempt artifacts")
+                for filename, record in failure_artifacts.items():
+                    expected_path = (
+                        f"sweep-{sweep_number}/target-{target_number:03d}/"
+                        f"{attempt_name}/{filename}")
+                    if (not isinstance(record, dict) or set(record) != {
+                            "path", "bytes", "sha256"} or
+                            record.get("path") != expected_path or
+                            type(record.get("bytes")) is not int or
+                            record["bytes"] < 0 or
+                            not _is_sha256(record.get("sha256"))):
+                        raise ValueError(
+                            "malformed interrupted reference attempt artifact")
+                interrupted_attempts.append({
+                    "sweep": sweep_number,
+                    "target_index": target_number,
+                    "target": target["name"],
+                    **attempt,
+                })
             success = row["success"]
             if (set(success) != {
                     "attempt", "receipt_path", "receipt", "session_nonce",
-                    "artifacts"} or
-                    success["attempt"] != "attempt-0001" or
+                    "artifacts"} or success["attempt"] !=
+                    f"attempt-{row['attempt_count']:04d}" or
                     success["receipt_path"] !=
                     (f"sweep-{sweep_number}/target-{target_number:03d}/"
                      f"{success['attempt']}/success.json") or
@@ -591,6 +633,9 @@ def _load_collection_evidence(approval, targets):
                     not isinstance(success["artifacts"], dict)):
                 raise ValueError("malformed aggregate collection success")
             successes[(sweep_number, target_number)] = success
+    if (receipt["failure_attempt_count"] != len(interrupted_attempts) or
+            receipt["failures"] != interrupted_attempts):
+        raise ValueError("reference collection interruption ledger mismatch")
     return contract, successes
 
 
@@ -847,7 +892,7 @@ def _load_identity_approval(targets):
                         set(receipt_record) != {"path", "bytes", "sha256"} or
                         receipt_record.get("path") !=
                         (f"sweep-{run_index}/target-{target_index:03d}/"
-                         f"attempt-0001/{artifact_filename}") or
+                         f"{aggregate_success['attempt']}/{artifact_filename}") or
                         receipt_record.get("bytes") != approval_record["bytes"] or
                         receipt_record.get("sha256") != approval_record["sha256"] or
                         aggregate_record != receipt_record):
@@ -869,7 +914,7 @@ def _load_identity_approval(targets):
                         set(receipt_record) != {"path", "bytes", "sha256"} or
                         receipt_record.get("path") !=
                         (f"sweep-{run_index}/target-{target_index:03d}/"
-                         f"attempt-0001/{output_name}") or
+                         f"{aggregate_success['attempt']}/{output_name}") or
                         receipt_record.get("bytes") != approval_record["bytes"] or
                         receipt_record.get("sha256") != approval_record["sha256"]):
                     raise ValueError(

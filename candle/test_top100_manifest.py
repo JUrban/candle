@@ -264,6 +264,7 @@ class Top100ManifestTest(unittest.TestCase):
                 "validation_wall_seconds": 900,
             }
             collection_rows = {1: [], 2: []}
+            collection_failures = []
             approved_targets = []
             for target_index, target in enumerate(targets):
                 axioms = f"axioms:{target_index}".encode()
@@ -322,9 +323,11 @@ class Top100ManifestTest(unittest.TestCase):
                 for run_index in range(2):
                     sweep = run_index + 1
                     nonce = ("9" if run_index == 0 else "b") * 64
+                    retry = sweep == 2 and target_index == 35
+                    attempt_name = "attempt-0002" if retry else "attempt-0001"
                     collection_prefix = (
                         f"sweep-{sweep}/target-{target_index + 1:03d}/"
-                        "attempt-0001")
+                        f"{attempt_name}")
                     prefix = f"candle/evidence/collection/{collection_prefix}"
                     request_source = reference._request_source(
                         target, serializer, nonce)
@@ -718,11 +721,40 @@ class Top100ManifestTest(unittest.TestCase):
                         "sweep": sweep,
                     })
                     collection_success_path = f"{collection_prefix}/success.json"
+                    attempts = []
+                    if retry:
+                        interrupted_prefix = (
+                            f"sweep-{sweep}/target-{target_index + 1:03d}/"
+                            "attempt-0001")
+                        interrupted_artifacts = {}
+                        for filename in (
+                                "candidate.json", "plan.json", "request.ml",
+                                "transcript.log"):
+                            interrupted_record = record(
+                                "candle/evidence/collection/" +
+                                f"{interrupted_prefix}/{filename}",
+                                f"interrupted {filename}\n".encode())
+                            interrupted_artifacts[filename] = {
+                                **interrupted_record,
+                                "path": interrupted_record["path"].removeprefix(
+                                    "candle/evidence/collection/"),
+                            }
+                        interrupted = {
+                            "attempt": "attempt-0001", "state": "interrupted",
+                            "artifacts": interrupted_artifacts,
+                        }
+                        attempts.append(interrupted)
+                        collection_failures.append(json.loads(json.dumps({
+                            "sweep": sweep, "target_index": target_index + 1,
+                            "target": target["name"], **interrupted,
+                        })))
+                    attempts.append({
+                        "attempt": attempt_name, "state": "complete"})
                     collection_rows[sweep].append({
                         "index": target_index + 1, "name": target["name"],
-                        "state": "complete", "attempt_count": 1,
+                        "state": "complete", "attempt_count": len(attempts),
                         "success": {
-                            "attempt": "attempt-0001",
+                            "attempt": attempt_name,
                             "receipt_path": collection_success_path,
                             "receipt": {
                                 **success_record,
@@ -731,8 +763,7 @@ class Top100ManifestTest(unittest.TestCase):
                             "session_nonce": nonce,
                             "artifacts": collected_artifacts,
                         },
-                        "attempts": [{"attempt": "attempt-0001",
-                                      "state": "complete"}],
+                        "attempts": attempts,
                     })
                 approved_targets.append({
                     "name": target["name"], "reference_runs": runs,
@@ -825,8 +856,9 @@ class Top100ManifestTest(unittest.TestCase):
                              "path": "collection-contract.json"},
                 "sweep_count": 2, "target_count": 65,
                 "total_target_runs": 130, "completed_target_runs": 130,
-                "pending_target_runs": 0, "failure_attempt_count": 0,
-                "failures": [], "publication_interruptions": [],
+                "pending_target_runs": 0,
+                "failure_attempt_count": len(collection_failures),
+                "failures": collection_failures, "publication_interruptions": [],
                 "outcome": "complete", "closed": True,
                 "approval_status": "candidates_unapproved",
                 "promotion_allowed": False,
@@ -915,6 +947,25 @@ class Top100ManifestTest(unittest.TestCase):
                     })
                     approval_path.write_text(
                         json.dumps(approval, indent=2) + "\n", encoding="utf-8")
+                retry_row = collection_rows[2][35]
+                retry_row["attempts"][0]["attempt"] = "attempt-0002"
+                rewrite_collection_evidence()
+                with self.assertRaisesRegex(
+                        ValueError, "attempt sequence"):
+                    top100_manifest._load_identity_approval(targets)
+                retry_row["attempts"][0]["attempt"] = "attempt-0001"
+                rewrite_collection_evidence()
+                original_failure_hash = collection_failures[0]["artifacts"][
+                    "candidate.json"]["sha256"]
+                collection_failures[0]["artifacts"]["candidate.json"][
+                    "sha256"] = "0" * 64
+                rewrite_collection_evidence()
+                with self.assertRaisesRegex(
+                        ValueError, "interruption ledger mismatch"):
+                    top100_manifest._load_identity_approval(targets)
+                collection_failures[0]["artifacts"]["candidate.json"][
+                    "sha256"] = original_failure_hash
+                rewrite_collection_evidence()
                 original_cache_sha256 = collection_contract["elf_oracle"][
                     "ld_so_cache"]["sha256"]
                 collection_contract["elf_oracle"]["ld_so_cache"][
