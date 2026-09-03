@@ -117,7 +117,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 18)
+        self.assertEqual(len(self.contract["entries"]), 19)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -158,6 +158,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertIn("failwith", update_database["operations"][1]["after"])
         self.assertIn("dead-effect elimination", update_database["scope_limit"])
+        update_database_310 = entries[
+            "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
+        ]
+        self.assertEqual(
+            [operation["kind"] for operation in
+             update_database_310["operations"]],
+            ["exact_span_replace_once", "exact_bytes_replace_once"],
+        )
+        self.assertIn("failwith", update_database_310["operations"][0]["after"])
+        self.assertIn("unselected OCaml-3.10", update_database_310["scope_limit"])
         eval_command = entries["PROJECT-TOPLOOP-S3-EVAL-COMMAND-001"]
         self.assertIn("failwith", eval_command["operations"][0]["after"])
         self.assertNotIn("?(silent", eval_command["operations"][0]["after"])
@@ -271,7 +281,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 41)
+        self.assertEqual(len(operation_ids), 43)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

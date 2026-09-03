@@ -4732,30 +4732,6 @@
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 175,
-        "member": "create",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 191,
-        "member": "replace",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 192,
-        "member": "remove",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 209,
-        "member": "fold",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
         "line": 1823,
         "member": "sqrt",
         "module": "Stdlib",
@@ -6685,30 +6661,6 @@
         "member": "output_string",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 175,
-        "member": "create",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 191,
-        "member": "replace",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 192,
-        "member": "remove",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
-      },
-      {
-        "line": 209,
-        "member": "fold",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/update_database_310.ml"
       },
       {
         "line": 1823,
@@ -18179,6 +18131,14 @@
     "flyspeck:text_formalization/general/update_database_310.ml": {
       "bytes": 10317,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 5496,
+        "normalized_md5": "9cb3ddc52f6395e732a10230371b1b61",
+        "normalized_sha256": "b6a6aa4e334b4e38767227e1aa77e1dc1e646f728b870973dbc31cd7a57fc71b",
+        "operation_count": 2
+      },
       "md5": "13a8924b2227d7d50b0cbf975db593cc",
       "path": "text_formalization/general/update_database_310.ml",
       "repository": "flyspeck",
@@ -21795,7 +21755,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "1f99191ec9bcc486880e932d7ca9f597b71316bde85923730ca530f046bd6581",
+    "contract_sha256": "969dc58a87d64872ddcafaa643cfc7e8022f998968b9b56c22ab5247bb46c838",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22011,6 +21971,39 @@
         "source_key": "flyspeck:text_formalization/general/update_database_400.ml",
         "source_md5": "4e923bcd7bc9f75b38329fdf2e380406",
         "source_sha256": "f1d0a45a0ce2ec54a57bf017989d6960124fd9bbfeb0a8a3ad24a3ffac268467"
+      },
+      {
+        "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 5496,
+        "normalized_md5": "9cb3ddc52f6395e732a10230371b1b61",
+        "normalized_sha256": "b6a6aa4e334b4e38767227e1aa77e1dc1e646f728b870973dbc31cd7a57fc71b",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "let update_database () =\n  failwith \"Candle Flyspeck: OCaml-3.10 dynamic theorem-search database is disabled\";;\n",
+            "end": "    lastStamp := !currentStamp;\n    theorems := Hashtbl.fold (fun s t l -> (s,t)::l) thms [];;\n",
+            "end_line": 209,
+            "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001-REMOVE-COMPILER-INTERNALS",
+            "kind": "exact_span_replace_once",
+            "line": 27,
+            "span_sha256": "8be3c87796bc65f4f291fae13ca48a4e036b2529c8fea1ef0ff49e7d2c2ca4d4",
+            "start": "let exec = ignore o Toploop.execute_phrase false Format.std_formatter\n  o !Toploop.parse_toplevel_phrase o Lexing.from_string;;\n"
+          },
+          {
+            "after": "let candle_flyspeck_update_database_310_unselected = true;;",
+            "before": "update_database ();;",
+            "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001-ELIDE-INITIAL-DEAD-EFFECT",
+            "kind": "exact_bytes_replace_once",
+            "line": 313
+          }
+        ],
+        "path": "text_formalization/general/update_database_310.ml",
+        "scope_limit": "This normalization exists only so the conservative all-source parser inventory can prepare the hash-locked unselected OCaml-3.10 file without claiming a false CakeML representation of mixed recursive type abbreviations and datatypes. It is not OCaml-3.10, Toploop, reflection, or theorem-search support. Any branch-selection change or selected load of this file invalidates the normalization and blocks promotion.",
+        "semantic_rule": "The pinned 4.14.1 branch selection in PROJECT-MODULE-S3-SET-MAKE-001 statically loads update_database_400.ml, so update_database_310.ml is not evaluated in the selected source graph. The inventory-only prepared form removes its version-specific Toploop, Lexing, Obj.magic, and compiler-layout copies, retains the pure search-pattern helpers, and makes every dynamic update attempt fail closed.",
+        "source_key": "flyspeck:text_formalization/general/update_database_310.ml",
+        "source_md5": "13a8924b2227d7d50b0cbf975db593cc",
+        "source_sha256": "11583a4ee50187704c3028855f16d3ea5acd9816ac8c634a0a3abd7ea5f1f1fd"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001",
@@ -22386,7 +22379,7 @@
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
       }
     ],
-    "entry_count": 18,
+    "entry_count": 19,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [

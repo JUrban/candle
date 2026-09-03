@@ -206,6 +206,37 @@
       "scope_limit": "This is selected-route dead-effect elimination, not a successful no-op implementation of Toploop or theorem search. The complete run, exact final theorem/assumption fingerprints, and mutation tests must confirm non-observation. Any selected search call, theorem-cache read, reflection, source drift, or fingerprint difference invalidates the normalization and requires a typed registry or verified dynamic-evaluation design."
     },
     {
+      "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001",
+      "source_key": "flyspeck:text_formalization/general/update_database_310.ml",
+      "path": "text_formalization/general/update_database_310.ml",
+      "source_sha256": "11583a4ee50187704c3028855f16d3ea5acd9816ac8c634a0a3abd7ea5f1f1fd",
+      "source_md5": "13a8924b2227d7d50b0cbf975db593cc",
+      "normalized_sha256": "b6a6aa4e334b4e38767227e1aa77e1dc1e646f728b870973dbc31cd7a57fc71b",
+      "normalized_md5": "9cb3ddc52f6395e732a10230371b1b61",
+      "normalized_bytes": 5496,
+      "operations": [
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001-REMOVE-COMPILER-INTERNALS",
+          "kind": "exact_span_replace_once",
+          "line": 27,
+          "end_line": 209,
+          "start": "let exec = ignore o Toploop.execute_phrase false Format.std_formatter\n  o !Toploop.parse_toplevel_phrase o Lexing.from_string;;\n",
+          "end": "    lastStamp := !currentStamp;\n    theorems := Hashtbl.fold (fun s t l -> (s,t)::l) thms [];;\n",
+          "span_sha256": "8be3c87796bc65f4f291fae13ca48a4e036b2529c8fea1ef0ff49e7d2c2ca4d4",
+          "after": "let update_database () =\n  failwith \"Candle Flyspeck: OCaml-3.10 dynamic theorem-search database is disabled\";;\n"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001-ELIDE-INITIAL-DEAD-EFFECT",
+          "kind": "exact_bytes_replace_once",
+          "line": 313,
+          "before": "update_database ();;",
+          "after": "let candle_flyspeck_update_database_310_unselected = true;;"
+        }
+      ],
+      "semantic_rule": "The pinned 4.14.1 branch selection in PROJECT-MODULE-S3-SET-MAKE-001 statically loads update_database_400.ml, so update_database_310.ml is not evaluated in the selected source graph. The inventory-only prepared form removes its version-specific Toploop, Lexing, Obj.magic, and compiler-layout copies, retains the pure search-pattern helpers, and makes every dynamic update attempt fail closed.",
+      "scope_limit": "This normalization exists only so the conservative all-source parser inventory can prepare the hash-locked unselected OCaml-3.10 file without claiming a false CakeML representation of mixed recursive type abbreviations and datatypes. It is not OCaml-3.10, Toploop, reflection, or theorem-search support. Any branch-selection change or selected load of this file invalidates the normalization and blocks promotion."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-EVAL-COMMAND-001",
       "source_key": "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl",
       "path": "text_formalization/general/flyspeck_eval_4.14.hl",
