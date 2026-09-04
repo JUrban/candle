@@ -232,6 +232,7 @@ From the exact committed Candle checkout, using fresh destination paths:
   --flyspeck-root /absolute/flyspeck \
   --flyspeck-head FLYSPECK_40_HEX_COMMIT \
   --cml-heap-size-mib 4096 \
+  --max-address-space-gib 16 \
   --output-root /fresh/parser-pilot-result
 ```
 
@@ -258,16 +259,25 @@ profile with new destinations:
   --candle-head CANDLE_40_HEX_COMMIT \
   --flyspeck-root /absolute/flyspeck \
   --flyspeck-head FLYSPECK_40_HEX_COMMIT \
-  --cml-heap-size-mib 4096 \
+  --cml-heap-size-mib 16384 \
+  --max-address-space-gib 24 \
   --output-root /fresh/parser-all-inventory-result
 ```
 
 The controller passes the explicit heap size only to the sealed CakeML child
-and records that exact minimal child environment in the receipt.  The default
-is 4096 MiB because the pinned 9.1 MB archive exhausts CakeML's default 1 GiB
-heap during whole-program parser conversion.  The address-space limit must
-leave at least 4 GiB beyond the requested heap for the runtime stack, code,
-and mapped executable.
+and records that exact minimal child environment in the receipt.  The parser
+diagnostic defaults to a 16384 MiB heap and 24 GiB address-space limit because
+its deliberately coarse whole-source conversion retains the pinned 9.1 MB
+archive AST: the exact normalized archive made no progress record before a
+two-hour timeout at 4096 MiB, while the real incremental Candle path succeeds
+at that smaller heap.  The exact normalized diagnostic passed at 16384 MiB in
+1:02:04 with 16,782,080 KiB maximum RSS, exit zero, and empty stderr.  The
+address-space limit must leave at least 4 GiB beyond the requested heap for the
+runtime stack, code, and mapped executable.  Wall and CPU limits default to
+7,200 seconds per input; the large archive is the measured reason for that
+allowance, while every other input still runs in its own fresh bounded process.
+These diagnostic defaults do not alter the direct stratum runner's independent
+4096 MiB heap setting.
 
 The controller rejects any other Python flags or environment, any system-wide
 `/etc/ld.so.preload`, symlinked authority/output path component, or changed
