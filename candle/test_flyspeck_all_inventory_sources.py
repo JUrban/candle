@@ -47,7 +47,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         self.assertEqual(len(self.files), 400)
         self.assertEqual(
             self.plan["effective_kind_counts"],
-            {"exact-normalized": 19, "exact-original": 381},
+            {"exact-normalized": 20, "exact-original": 380},
         )
         self.assertFalse(self.plan["promotion_allowed"])
         self.assertFalse(self.plan["parser_run"])
@@ -146,7 +146,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
             entry for entry in self.plan["inputs"]
             if entry["effective_kind"] == "exact-original"
         ]
-        self.assertEqual((len(original), len(normalized)), (381, 19))
+        self.assertEqual((len(original), len(normalized)), (380, 20))
         self.assertTrue(all(entry["normalization"] is None for entry in original))
         self.assertTrue(all(
             entry["normalization"]["contract_sha256"]

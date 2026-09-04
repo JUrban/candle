@@ -3145,7 +3145,8 @@ def build_diagnostic_receipt(
     plan: dict[str, Any], expected_plan_data: bytes, expected_host: dict[str, Any],
     controller_execution: dict[str, Any], runtime_lock_record: dict[str, Any],
     timeout_seconds: int, max_cpu_seconds: int, max_address_space_gib: int,
-    max_output_bytes: int, linked_bytes: bytes, linked: dict[str, Any],
+    max_output_bytes: int, runtime_environment: dict[str, str],
+    linked_bytes: bytes, linked: dict[str, Any],
     transition_snapshot: dict[str, Any] | None, runtime_snapshot: dict[str, Any],
     runtime_execution: dict[str, Any], inventory: dict[str, Any],
     runtime_result: dict[str, Any], transcript_files: dict[str, bytes],
@@ -3153,6 +3154,17 @@ def build_diagnostic_receipt(
     """Build closed profile-specific parser-only diagnostic evidence."""
     profile_id = plan_profile(plan)
     count = profile_input_count(plan)
+    require(
+        set(runtime_environment) == {
+            "LC_ALL", "PATH", "CML_HEAP_SIZE",
+        }
+        and runtime_environment["LC_ALL"] == "C"
+        and runtime_environment["PATH"] == "/usr/bin:/bin"
+        and re.fullmatch(
+            r"[1-9][0-9]*", runtime_environment["CML_HEAP_SIZE"],
+        ) is not None,
+        "parser runtime environment is not exact",
+    )
     require(
         decode_object(expected_plan_data, "captured receipt plan") == plan,
         "receipt plan bytes differ from selected plan object",
@@ -3331,6 +3343,7 @@ def build_diagnostic_receipt(
             "capture": "fresh-private-ordinary-files-rlimit-fsize",
             "child_process_creation_rlimit_nproc": 0,
             "core_file_bytes": 0,
+            "runtime_environment": runtime_environment,
         },
         "linked_provenance": bytes_record(
             linked_bytes, "snapshot/linked/cakeml-build-provenance.json",
@@ -3364,6 +3377,7 @@ def run(
     max_cpu_seconds: int,
     max_address_space_gib: int,
     max_output_mib: int,
+    cml_heap_size_mib: int,
     profile: str,
 ) -> dict[str, Any]:
     profile_authority_source_relatives(profile)
@@ -3383,6 +3397,10 @@ def run(
             "CPU-time limit must be between 1 and 172800 seconds")
     require(0 < max_address_space_gib <= 120,
             "address-space limit must be between 1 and 120 GiB")
+    require(1024 <= cml_heap_size_mib <= 112 * 1024,
+            "CakeML heap must be between 1024 and 114688 MiB")
+    require(cml_heap_size_mib + 4096 <= max_address_space_gib * 1024,
+            "address-space limit leaves insufficient CakeML runtime headroom")
     require(0 < max_output_mib <= 16,
             "per-stream output limit must be between 1 and 16 MiB")
 
@@ -3400,7 +3418,10 @@ def run(
     controller_execution = collect_controller_execution(candle_root, policy)
     require(controller_execution == expected_host["controller_execution"],
             "controller execution changed after plan reconstruction")
-    environment = policy.cakeml_artifact_provenance.runtime_environment()
+    environment = policy.cakeml_artifact_provenance.runtime_environment({
+        **EXECUTION_ENVIRONMENT,
+        "CML_HEAP_SIZE": str(cml_heap_size_mib),
+    })
     max_output_bytes = max_output_mib * 1024 * 1024
     preexec_fn = parser_process_preexec(
         policy,
@@ -3499,7 +3520,8 @@ def run(
         receipt = build_diagnostic_receipt(
             plan, expected_plan_data, expected_host, controller_execution,
             runtime_lock_handle.record, timeout_seconds, max_cpu_seconds,
-            max_address_space_gib, max_output_bytes, linked_bytes, linked,
+            max_address_space_gib, max_output_bytes, environment,
+            linked_bytes, linked,
             transition_snapshot, runtime_snapshot, runtime_execution, inventory,
             runtime_result, files,
         )
@@ -3595,6 +3617,7 @@ def main() -> None:
     runner.add_argument("--max-cpu-seconds", type=int, default=600)
     runner.add_argument("--max-address-space-gib", type=int, default=16)
     runner.add_argument("--max-output-mib", type=int, default=1)
+    runner.add_argument("--cml-heap-size-mib", type=int, default=4096)
     arguments = parser.parse_args()
     require(dict(os.environ) == EXECUTION_ENVIRONMENT,
             "controller requires exact PATH=/usr/bin:/bin and LC_ALL=C environment")
@@ -3645,7 +3668,8 @@ def main() -> None:
         arguments.flyspeck_root, arguments.flyspeck_head,
         arguments.output_root, arguments.timeout_seconds,
         arguments.max_cpu_seconds, arguments.max_address_space_gib,
-        arguments.max_output_mib, arguments.profile,
+        arguments.max_output_mib, arguments.cml_heap_size_mib,
+        arguments.profile,
     )
     print(f"parser diagnostic {receipt['outcome']}: {receipt['attempt_count']} inputs")
 

@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 19)
+        self.assertEqual(contract["entry_count"], 20)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -745,6 +745,12 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("static full-build program authentication failed", source)
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
+        self.assertIn(
+            "List.length candle_flyspeck_normalized_sources <> 19", source,
+        )
+        self.assertIn("formal_graph/archive/archive_all.ml", source)
+        self.assertIn("787e8244a0350c237a406f7e91fb97b7", source)
+        self.assertNotIn("general/update_database_310.ml", source)
         self.assertIn('needs "candle/flyspeck_l2_target.ml"', source)
         for forbidden in ("PFT", "pft", "new_axiom", "mk_thm"):
             self.assertNotIn(forbidden, source)

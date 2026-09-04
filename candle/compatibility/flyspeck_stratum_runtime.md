@@ -6,7 +6,7 @@ compiled Candle process.  It first validates the linked CakeML provenance.
 It independently reconstructs the plan and every prefix from the pinned
 manifest/full driver rather than trusting plan-supplied self-digests, then
 requires exact equality and rechecks the clean repository revisions, all 400
-source nodes, all 19 normalization outputs, all 43 generated inputs,
+source nodes, all 20 normalization outputs, all 43 generated inputs,
 deterministic `date`/`whoami` inputs, and the selected prefix.  The config also
 provides the exact ordered 39-certificate list required by normalized
 `verify_all.hl`.
@@ -74,9 +74,12 @@ are atomic.  A retry is always a fresh cumulative replay from action zero; no
 process-state checkpoint or suffix-only continuation is claimed.
 
 The default child limits are 24 hours of CPU time, 48 GiB of virtual address
-space, and 8 GiB per output file, in addition to the 24-hour wall timeout.
-They are recorded in the attempt and enforced before the CakeML process is
-executed.  The receipt records child user/system CPU, maximum resident set,
+space, a receipt-bound 4096 MiB CakeML heap, and 8 GiB per output file, in
+addition to the 24-hour wall timeout.
+They are recorded in the attempt (the heap through the exact runtime
+environment) and enforced before the CakeML process is executed.  At least
+4 GiB of address-space headroom beyond the selected heap is mandatory.  The
+receipt records child user/system CPU, maximum resident set,
 and major/minor page faults.  Command-line limits may be lowered; address space
 and output-file limits cannot be raised above 120 GiB and 16 GiB respectively.
 The address-space default remains 48 GiB; the higher ceiling is reserved for
@@ -100,6 +103,7 @@ Example (after a linked verified binary exists):
   --candle-script ./candle.sh \
   --plan-root /project/flyspeck-candle-runs/v13-stratum-plan-$(GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null /usr/bin/git rev-parse --short=7 HEAD) \
   --boundary 00-base-through-029 \
+  --cml-heap-size-mib 4096 \
   --write /project/flyspeck-candle-runs/v13-stratum-base-attempt-001
 ```
 

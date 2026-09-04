@@ -544,6 +544,34 @@
       "scope_limit": "The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required."
     },
     {
+      "id": "PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001",
+      "source_key": "flyspeck:formal_graph/archive/archive_all.ml",
+      "path": "formal_graph/archive/archive_all.ml",
+      "source_sha256": "703ea865a124aa69f0ee12d94df7065bbbf5701a3085776e24632d14493474db",
+      "source_md5": "8f96d6714217d54d95015768b740a5b8",
+      "normalized_sha256": "ad53b6c2617ed3f4209714f4a46ae2e94306a7aab29562bde127cc8d3b64efb2",
+      "normalized_md5": "787e8244a0350c237a406f7e91fb97b7",
+      "normalized_bytes": 9103338,
+      "operations": [
+        {
+          "id": "PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001-SPLIT-500",
+          "kind": "exact_ocaml_global_thunk_list",
+          "line": 1,
+          "module_prefix": "module Archive_all = struct\n\n",
+          "module_suffix": "end;;",
+          "binding_name": "tame_list",
+          "accumulator_name": "candle_flyspeck_archive_tame_thunk",
+          "item_separator": ";\n\n",
+          "item_prefix": "(\"",
+          "entry_count": 19715,
+          "chunk_size": 500,
+          "chunk_count": 40
+        }
+      ],
+      "semantic_rule": "The source is hash-locked to one 19,715-element list. Forty reverse-ordered top-level function bindings use ordinary non-recursive lexical shadowing: the newest thunk prepends its original contiguous chunk to the preceding thunk's list. Forcing the final thunk inside Archive_all therefore produces exactly the original ordered tame_list; every entry occurs once and the module exports the same binding.",
+      "scope_limit": "This exact representation change introduces one uniquely named top-level ML value and relies on OCaml let-shadowing and list append; it adds no HOL definition or axiom. Native evaluation of original and normalized sources agrees on count, serialized length, and serialized MD5, and compiled Candle has evaluated the normalized source successfully. Those development checks are not a semantic proof: exact archive consumption, final kernel-state/theorem fingerprints, independent reference comparison, and clean direct execution remain release gates."
+    },
+    {
       "id": "PROJECT-COMPARE-S3-SECTION-NAME-001",
       "source_key": "flyspeck:jHOLLight/caml/sections.hl",
       "path": "jHOLLight/caml/sections.hl",

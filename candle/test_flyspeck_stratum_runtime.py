@@ -111,8 +111,8 @@ class StratumRuntimeTests(unittest.TestCase):
             "candle:candle/flyspeck_source_digests.ml": {
                 "bytes": 34704,
                 "sha256":
-                    "ccd3784a1d6a9c8ca29aac1e881fca6d97ac68d593a34a64901da74ad776ae02",
-                "md5": "2c0bad4a06bb2c8bd7b90895d3035092",
+                    "051ecc529732284dd782ba5defe8b3ace6810fd6ad2c823ae82a84ab455c0c4d",
+                "md5": "9f81d4fe0a3701394532bab9daac149f",
             },
         }
         trace_bindings = []
@@ -2762,7 +2762,8 @@ class StratumRuntimeTests(unittest.TestCase):
                     )
                 self.assertIs(observed, sentinel)
                 positional = internal.call_args.args
-                self.assertEqual(positional[-2], expected_schema)
+                self.assertEqual(positional[-3], expected_schema)
+                self.assertEqual(positional[-2], 4096)
                 self.assertIsInstance(positional[-1], dict)
                 self.assertFalse(positional[-1]["created"])
 

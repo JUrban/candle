@@ -109,6 +109,51 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "source span digest mismatch"):
             flyspeck_normalize.normalize_bytes(source, entry)
 
+    def test_exact_ocaml_global_thunk_list_preserves_order_and_fails_closed(self):
+        source = (
+            b"module M = struct\n\nlet xs = [\n"
+            b'(\"a\",0);\n\n(\"b\",1);\n\n(\"c\",2)\n];;\n\nend;;'
+        )
+        normalized = (
+            b"let candle_test_chunks () = [\n(\"c\",2)\n];;\n\n"
+            b"let candle_test_chunks () = [\n"
+            b'(\"a\",0);\n\n(\"b\",1)\n] @ candle_test_chunks ();;\n\n'
+            b"module M = struct\n\n"
+            b"let xs = candle_test_chunks ();;\n\nend;;"
+        )
+        entry = copy.deepcopy(self.contract["entries"][0])
+        entry["operations"] = [{
+            "id": "fixture-global-thunk-list",
+            "kind": "exact_ocaml_global_thunk_list",
+            "line": 1,
+            "module_prefix": "module M = struct\n\n",
+            "module_suffix": "end;;",
+            "binding_name": "xs",
+            "accumulator_name": "candle_test_chunks",
+            "item_separator": ";\n\n",
+            "item_prefix": "(\"",
+            "entry_count": 3,
+            "chunk_size": 2,
+            "chunk_count": 2,
+        }]
+        entry["source_sha256"], entry["source_md5"] = digests(source)
+        entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
+        entry["normalized_bytes"] = len(normalized)
+        self.assertEqual(
+            flyspeck_normalize.normalize_bytes(source, entry), normalized,
+        )
+        entry["operations"][0]["entry_count"] = 4
+        entry["operations"][0]["chunk_count"] = 2
+        with self.assertRaisesRegex(ValueError, "exact list entry count mismatch"):
+            flyspeck_normalize.normalize_bytes(source, entry)
+        entry["operations"][0]["accumulator_name"] = "Bad.name"
+        with self.assertRaisesRegex(ValueError, "invalid exact OCaml global thunk"):
+            flyspeck_normalize.load_contract_bytes(json.dumps({
+                "schema": 2,
+                "flyspeck_commit": "a" * 40,
+                "entries": [entry],
+            }).encode())
+
     def test_output_digest_fails_closed(self):
         entry, source, _ = self.fixture_entry()
         entry["normalized_sha256"] = "0" * 64
@@ -117,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 19)
+        self.assertEqual(len(self.contract["entries"]), 20)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -281,7 +326,14 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for entry in entries.values()
             for operation in entry["operations"]
         ]
-        self.assertEqual(len(operation_ids), 43)
+        archive = entries["PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001"]
+        self.assertEqual(
+            archive["operations"][0]["kind"],
+            "exact_ocaml_global_thunk_list",
+        )
+        self.assertEqual(archive["operations"][0]["chunk_count"], 40)
+        self.assertIn("lexical shadowing", archive["semantic_rule"])
+        self.assertEqual(len(operation_ids), 44)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

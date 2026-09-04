@@ -14,6 +14,7 @@ import errno
 import hashlib
 import json
 import os
+import re
 import stat
 import subprocess
 import tempfile
@@ -103,6 +104,45 @@ def load_contract_bytes(contract_bytes: bytes) -> dict[str, Any]:
                     or before == after
                 ):
                     raise ValueError(f"invalid exact replacement for {operation_id}")
+            elif kind == "exact_ocaml_global_thunk_list":
+                module_prefix = operation.get("module_prefix")
+                module_suffix = operation.get("module_suffix")
+                binding_name = operation.get("binding_name")
+                accumulator_name = operation.get("accumulator_name")
+                item_separator = operation.get("item_separator")
+                item_prefix = operation.get("item_prefix")
+                entry_count = operation.get("entry_count")
+                chunk_size = operation.get("chunk_size")
+                chunk_count = operation.get("chunk_count")
+                identifier = r"[a-z_][A-Za-z0-9_']*"
+                if (
+                    len(operations) != 1
+                    or not isinstance(module_prefix, str)
+                    or not module_prefix.endswith("\n\n")
+                    or not isinstance(module_suffix, str)
+                    or not module_suffix
+                    or not isinstance(binding_name, str)
+                    or re.fullmatch(identifier, binding_name) is None
+                    or not isinstance(accumulator_name, str)
+                    or re.fullmatch(identifier, accumulator_name) is None
+                    or accumulator_name == binding_name
+                    or not isinstance(item_separator, str)
+                    or not item_separator
+                    or not isinstance(item_prefix, str)
+                    or not item_prefix
+                    or not isinstance(entry_count, int)
+                    or isinstance(entry_count, bool)
+                    or entry_count < 1
+                    or not isinstance(chunk_size, int)
+                    or isinstance(chunk_size, bool)
+                    or chunk_size < 1
+                    or not isinstance(chunk_count, int)
+                    or isinstance(chunk_count, bool)
+                    or chunk_count != (entry_count + chunk_size - 1) // chunk_size
+                ):
+                    raise ValueError(
+                        f"invalid exact OCaml global thunk list for {operation_id}"
+                    )
             elif kind == "exact_span_replace_once":
                 start = operation.get("start")
                 end = operation.get("end")
@@ -177,6 +217,24 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
 
     for operation in entry["operations"]:
         operation_id = str(operation["id"])
+        if operation["kind"] == "exact_ocaml_global_thunk_list":
+            module_prefix = str(operation["module_prefix"]).encode("utf-8")
+            binding_name = str(operation["binding_name"]).encode("utf-8")
+            source_prefix = module_prefix + b"let " + binding_name + b" = [\n"
+            source_suffix = (
+                b"\n];;\n\n"
+                + str(operation["module_suffix"]).encode("utf-8")
+            )
+            if not source.startswith(source_prefix):
+                raise ValueError(f"original source prefix mismatch for {operation_id}")
+            if not source.endswith(source_suffix):
+                raise ValueError(f"original source suffix mismatch for {operation_id}")
+            if operation["line"] != 1:
+                raise ValueError(
+                    f"source line mismatch for {operation_id}: "
+                    f"expected {operation['line']}, got 1"
+                )
+            continue
         start_offset, end_offset = operation_bounds(source, operation, "original")
         observed_line = source.count(b"\n", 0, start_offset) + 1
         if observed_line != operation["line"]:
@@ -196,6 +254,46 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
     normalized = source
     for operation in entry["operations"]:
         operation_id = str(operation["id"])
+        if operation["kind"] == "exact_ocaml_global_thunk_list":
+            module_prefix = str(operation["module_prefix"]).encode("utf-8")
+            module_suffix = str(operation["module_suffix"]).encode("utf-8")
+            binding_name = str(operation["binding_name"]).encode("utf-8")
+            accumulator = str(operation["accumulator_name"]).encode("utf-8")
+            item_separator = str(operation["item_separator"]).encode("utf-8")
+            item_prefix = str(operation["item_prefix"]).encode("utf-8")
+            source_prefix = module_prefix + b"let " + binding_name + b" = [\n"
+            source_suffix = b"\n];;\n\n" + module_suffix
+            body = normalized[len(source_prefix):-len(source_suffix)]
+            elements = body.split(item_separator)
+            if len(elements) != operation["entry_count"]:
+                raise ValueError(
+                    f"exact list entry count mismatch for {operation_id}: "
+                    f"expected {operation['entry_count']}, got {len(elements)}"
+                )
+            if any(not element.startswith(item_prefix) for element in elements):
+                raise ValueError(f"exact list item prefix mismatch for {operation_id}")
+            if source_prefix + item_separator.join(elements) + source_suffix != normalized:
+                raise ValueError(f"exact list reconstruction mismatch for {operation_id}")
+            chunk_size = operation["chunk_size"]
+            chunks = [
+                elements[start:start + chunk_size]
+                for start in range(0, len(elements), chunk_size)
+            ]
+            if len(chunks) != operation["chunk_count"]:
+                raise ValueError(f"exact list chunk count mismatch for {operation_id}")
+            rendered = bytearray()
+            for reverse_index, chunk in enumerate(reversed(chunks)):
+                rendered.extend(b"let " + accumulator + b" () = [\n")
+                rendered.extend(item_separator.join(chunk))
+                rendered.extend(b"\n]")
+                if reverse_index:
+                    rendered.extend(b" @ " + accumulator + b" ()")
+                rendered.extend(b";;\n\n")
+            rendered.extend(module_prefix)
+            rendered.extend(b"let " + binding_name + b" = " + accumulator)
+            rendered.extend(b" ();;\n\n" + module_suffix)
+            normalized = bytes(rendered)
+            continue
         after = str(operation["after"]).encode("utf-8")
         start_offset, end_offset = operation_bounds(normalized, operation, "exact")
         if operation["kind"] == "exact_span_replace_once" and (

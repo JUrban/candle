@@ -5076,6 +5076,7 @@ def _run_attempt_impl(
     max_address_space_gib: int,
     max_output_file_gib: int,
     evidence_schema: int,
+    cml_heap_size_mib: int = 4096,
     output_ownership: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     require(not Path(output_root).is_symlink(),
@@ -5112,6 +5113,10 @@ def _run_attempt_impl(
             "CPU-time limit must be between 1 and 172800 seconds")
     require(0 < max_address_space_gib <= 120,
             "address-space limit must be between 1 and 120 GiB")
+    require(1024 <= cml_heap_size_mib <= 112 * 1024,
+            "CakeML heap must be between 1024 and 114688 MiB")
+    require(cml_heap_size_mib + 4096 <= max_address_space_gib * 1024,
+            "address-space limit leaves insufficient CakeML runtime headroom")
     require(0 < max_output_file_gib <= 16,
             "output-file limit must be between 1 and 16 GiB")
     require(not output_root.exists(), f"attempt output already exists: {output_root}")
@@ -5226,7 +5231,9 @@ def _run_attempt_impl(
         path.chmod(0o444)
     control_root.chmod(0o555)
 
-    runtime_env = cakeml_artifact_provenance.runtime_environment()
+    runtime_env = cakeml_artifact_provenance.runtime_environment({
+        "CML_HEAP_SIZE": str(cml_heap_size_mib),
+    })
     started = utc_now()
     expected_action_events = [
         {
@@ -5600,6 +5607,7 @@ def run_attempt(
     max_address_space_gib: int,
     max_output_file_gib: int,
     evidence_schema: int = 5,
+    cml_heap_size_mib: int = 4096,
 ) -> dict[str, Any]:
     """Run an attempt, cleaning only an unpublished pre-attempt failure."""
     unresolved_output = Path(output_root)
@@ -5618,7 +5626,7 @@ def run_attempt(
         return _run_attempt_impl(
             candle_script, plan_root, boundary_id, output_root,
             timeout_seconds, max_cpu_seconds, max_address_space_gib,
-            max_output_file_gib, evidence_schema, ownership,
+            max_output_file_gib, evidence_schema, cml_heap_size_mib, ownership,
         )
     except BaseException:
         if ownership["created"] and not ownership["committed"]:
@@ -5669,6 +5677,9 @@ def main() -> None:
         "--max-output-file-gib", type=int, default=8, metavar="GIB",
     )
     parser.add_argument(
+        "--cml-heap-size-mib", type=int, default=4096, metavar="MIB",
+    )
+    parser.add_argument(
         "--evidence-schema", type=int, choices=(5, 6), default=5,
         metavar="VERSION",
     )
@@ -5677,7 +5688,7 @@ def main() -> None:
         arguments.candle_script, arguments.plan_root, arguments.boundary,
         arguments.write, arguments.timeout, arguments.max_cpu_seconds,
         arguments.max_address_space_gib, arguments.max_output_file_gib,
-        arguments.evidence_schema,
+        arguments.evidence_schema, arguments.cml_heap_size_mib,
     )
     print(
         f"compiled {'diagnostic prefix' if receipt['diagnostic_only'] else 'stratum'} PASS: "

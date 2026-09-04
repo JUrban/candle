@@ -33,7 +33,7 @@ claimed to match OCaml's unary table.
 
 The static compatibility manifest evaluates capability uses against the exact
 normalized bytes that will be executed while retaining raw-source dependency
-and non-use checks.  The current manifest binds 18 normalization entries and
+and non-use checks.  The selected graph uses 19 normalization entries and
 reports no unsupported compatibility use.  Its scanner also distinguishes
 public `Array` calls from `Cake.Array` calls.
 

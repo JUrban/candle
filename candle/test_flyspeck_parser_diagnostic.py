@@ -341,7 +341,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         )
         self.assertEqual(
             plan["source_preparation"]["effective_kind_counts"],
-            {"exact-normalized": 19, "exact-original": 381},
+            {"exact-normalized": 20, "exact-original": 380},
         )
         self.assertEqual(
             plan["source_preparation"]["loader_actions"]
@@ -585,7 +585,10 @@ class ParserDiagnosticTests(unittest.TestCase):
             return subject.build_diagnostic_receipt(
                 candidate_plan, subject.json_bytes(candidate_plan), host,
                 {"fixture": "controller"}, {"fixture": "lock"},
-                1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
+                1, 1, 1, 1024,
+                {"LC_ALL": "C", "PATH": "/usr/bin:/bin",
+                 "CML_HEAP_SIZE": "4096"},
+                b"linked\n", {"schema": 7}, None,
                 runtime_snapshot, runtime_execution, snapshot,
                 runtime_result, transcripts,
             )
@@ -811,7 +814,10 @@ class ParserDiagnosticTests(unittest.TestCase):
             return subject.build_diagnostic_receipt(
                 plan, plan_data, host,
                 {"fixture": "controller"}, {"fixture": "lock"},
-                1, 1, 1, 1024, b"linked\n", {"schema": 7}, None,
+                1, 1, 1, 1024,
+                {"LC_ALL": "C", "PATH": "/usr/bin:/bin",
+                 "CML_HEAP_SIZE": "4096"},
+                b"linked\n", {"schema": 7}, None,
                 runtime_snapshot, execution, snapshot, result, transcripts,
             )
 

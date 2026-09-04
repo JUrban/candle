@@ -64,7 +64,7 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement nineteen
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement twenty
 site-specific, hash-bound source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -92,6 +92,16 @@ one `%s`-only `sprintf` call by concatenation with the same rendered number.
 `PROJECT-PARSER-S3-TRAILING-SEMI-001` removes the single trailing sequence
 separator immediately before the closing parenthesis of `Debug.print_m` in
 `general/debug.hl`; expression order, effects, and result are unchanged.  Each
+`PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001` re-expresses the one hash-locked
+19,715-element generated archive as forty top-level thunks of at most 500
+ordered values.  Reverse non-recursive lexical shadowing and list append build
+the original order, and `Archive_all` still exports only `tame_list`; one
+uniquely named ML accumulator remains at top level but adds no HOL definition
+or axiom.  Raw-source parsing passes with larger heaps, while raw compiled
+evaluation exceeded four hours; the exact normalized bytes completed compiled
+Candle evaluation in 28:41.  Native serialization equality supports but does
+not prove the representation argument, so complete archive consumption and
+final semantic fingerprints remain mandatory.  Each
 original file,
 each ordered unique anchor, and each final output size/MD5/SHA-256 is
 authenticated.  Commit, path, input hash, anchor count, order, or output drift
@@ -167,8 +177,9 @@ Candle/HOL source stack itself.  The launcher supplies the Candle and Flyspeck
 roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
-ordinary marker files, installs only the manifest load paths, authenticates and
-registers the nineteen exact normalization outputs, authenticates a host-prepared
+ordinary marker files, installs only the manifest load paths, authenticates all
+twenty exact normalization outputs, registers the nineteen selected by the
+direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
 not yet complete that sequence or implement versioned checkpoints, so it is

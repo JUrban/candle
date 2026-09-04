@@ -322,7 +322,7 @@
 #flyspeck_needs "../formal_lp/hypermap/arith_link.hl";;
 (* 153 selected=flyspeck:formal_lp/glpk/glpk_link.ml sha256=cfef91db36d9c20e070ac467e981cd593c0ef623b68840de3e4f8d21811add66 *)
 #flyspeck_needs "../formal_lp/glpk/glpk_link.ml";;
-(* 154 selected=flyspeck:formal_graph/archive/archive_all.ml sha256=703ea865a124aa69f0ee12d94df7065bbbf5701a3085776e24632d14493474db *)
+(* 154 selected=flyspeck:formal_graph/archive/archive_all.ml sha256=703ea865a124aa69f0ee12d94df7065bbbf5701a3085776e24632d14493474db normalization=PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001 normalized_sha256=ad53b6c2617ed3f4209714f4a46ae2e94306a7aab29562bde127cc8d3b64efb2 *)
 #flyspeck_needs "../formal_graph/archive/archive_all.ml";;
 (* 155 selected=flyspeck:formal_lp/glpk/lpproc.ml sha256=b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8 normalization=PROJECT-COMPARE-S3-LP-COUNT-ORDER-001 normalized_sha256=3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a *)
 #flyspeck_needs "../formal_lp/glpk/lpproc.ml";;

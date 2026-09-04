@@ -33,8 +33,9 @@ loader.  It is not S1/S2/S3 acceptance evidence.
    `file_on_path` names are bound before the rest of HOL loads.  Resolution uses
    only ordinary files below explicit load roots; ambient `.` resolution fails
    closed.
-9. The nineteen authenticated normalization outputs are checked independently by
-   MD5, registered as exact original-to-output mappings, and never added as a
+9. All twenty authenticated normalization outputs are checked independently;
+   the nineteen selected by the direct graph are checked again by MD5,
+   registered as exact original-to-output mappings, and never added as a
    shadowing load root.
 10. The executable starts in the repository root through relative generated
     boot/config links, so no startup `chdir` FFI is compiled into the selected

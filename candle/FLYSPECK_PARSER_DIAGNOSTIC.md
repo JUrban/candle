@@ -37,7 +37,7 @@ its 400 inputs are an exact set-equal partition of the authenticated manifest.
 `materialize --profile all-inventory` and `run --profile all-inventory` require
 all 400 inputs to be ready and launch exactly one fresh parser process per
 input; there is no accepted partial profile. Materialization of the committed
-authorities produces 381 byte-identical inputs and 19 normalized inputs. The
+authorities produces 380 byte-identical inputs and 20 normalized inputs. The
 normalization contract accounts for all 727 classified loader sites.
 
 Raw HOL Light source is not the parser input used by Candle.  The loader's
@@ -231,6 +231,7 @@ From the exact committed Candle checkout, using fresh destination paths:
   --candle-head CANDLE_40_HEX_COMMIT \
   --flyspeck-root /absolute/flyspeck \
   --flyspeck-head FLYSPECK_40_HEX_COMMIT \
+  --cml-heap-size-mib 4096 \
   --output-root /fresh/parser-pilot-result
 ```
 
@@ -257,8 +258,16 @@ profile with new destinations:
   --candle-head CANDLE_40_HEX_COMMIT \
   --flyspeck-root /absolute/flyspeck \
   --flyspeck-head FLYSPECK_40_HEX_COMMIT \
+  --cml-heap-size-mib 4096 \
   --output-root /fresh/parser-all-inventory-result
 ```
+
+The controller passes the explicit heap size only to the sealed CakeML child
+and records that exact minimal child environment in the receipt.  The default
+is 4096 MiB because the pinned 9.1 MB archive exhausts CakeML's default 1 GiB
+heap during whole-program parser conversion.  The address-space limit must
+leave at least 4 GiB beyond the requested heap for the runtime stack, code,
+and mapped executable.
 
 The controller rejects any other Python flags or environment, any system-wide
 `/etc/ld.so.preload`, symlinked authority/output path component, or changed

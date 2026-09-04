@@ -2500,21 +2500,51 @@ def main() -> None:
     manifest_path = candle_root / "candle/flyspeck_manifest.json"
     source_digest_path = candle_root / SOURCE_DIGEST_PROGRAM
     full_build_path = candle_root / FULL_BUILD_PROGRAM
-    payload = build_manifest(candle_root, arguments.flyspeck_root.resolve())
-    rendered = _render(payload)
-    source_digest_rendered = _render_source_digest_program(payload["source_nodes"])
-    full_build_rendered = _render_full_build_program(
-        payload["build_sequence"],
-        payload["build_sequence_roots"],
-        payload["source_nodes"],
-        payload["build_strata"],
-    )
-    source_digest_sha256 = hashlib.sha256(source_digest_rendered.encode()).hexdigest()
-    if source_digest_sha256 != payload["source_digest_contract"]["generated_source_sha256"]:
-        raise SystemExit("internal source digest program hash mismatch")
-    full_build_sha256 = hashlib.sha256(full_build_rendered.encode()).hexdigest()
-    if full_build_sha256 != payload["static_full_build_contract"]["generated_source_sha256"]:
-        raise SystemExit("internal static full-build program hash mismatch")
+
+    def products() -> tuple[dict[str, object], str, str, str]:
+        payload = build_manifest(candle_root, arguments.flyspeck_root.resolve())
+        rendered = _render(payload)
+        source_digest_rendered = _render_source_digest_program(
+            payload["source_nodes"]
+        )
+        full_build_rendered = _render_full_build_program(
+            payload["build_sequence"],
+            payload["build_sequence_roots"],
+            payload["source_nodes"],
+            payload["build_strata"],
+        )
+        source_digest_sha256 = hashlib.sha256(
+            source_digest_rendered.encode()
+        ).hexdigest()
+        if (
+            source_digest_sha256
+            != payload["source_digest_contract"]["generated_source_sha256"]
+        ):
+            raise SystemExit("internal source digest program hash mismatch")
+        full_build_sha256 = hashlib.sha256(
+            full_build_rendered.encode()
+        ).hexdigest()
+        if (
+            full_build_sha256
+            != payload["static_full_build_contract"]["generated_source_sha256"]
+        ):
+            raise SystemExit("internal static full-build program hash mismatch")
+        return payload, rendered, source_digest_rendered, full_build_rendered
+
+    payload, rendered, source_digest_rendered, full_build_rendered = products()
+    if arguments.write and (
+        not full_build_path.is_file()
+        or full_build_path.read_text(encoding="utf-8") != full_build_rendered
+    ):
+        # The generated root driver is itself part of the all-source inventory.
+        # Publish its deterministic candidate, then rebuild the manifest so one
+        # --write invocation records the candidate's current bytes rather than
+        # the previous generation.  The second rendering must be a fixed point.
+        full_build_path.write_text(full_build_rendered, encoding="utf-8")
+        first_full_build_rendered = full_build_rendered
+        payload, rendered, source_digest_rendered, full_build_rendered = products()
+        if full_build_rendered != first_full_build_rendered:
+            raise SystemExit("static full-build program did not reach a fixed point")
     if arguments.write:
         source_digest_path.write_text(source_digest_rendered, encoding="utf-8")
         full_build_path.write_text(full_build_rendered, encoding="utf-8")
