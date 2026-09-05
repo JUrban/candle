@@ -66,7 +66,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         )
         self.assertEqual(
             expansion["contract"]["cakeml_loader"]["commit"],
-            "c2e26f43c35080d57fc18aba42d4023590b6daba",
+            "8a8926906ec97204eeec961496d191103cda3229",
         )
         self.assertFalse(expansion["parser_or_runtime_invoked"])
         for index in (16, 17, 18):

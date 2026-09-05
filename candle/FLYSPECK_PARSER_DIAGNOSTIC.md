@@ -137,11 +137,13 @@ the pinned CakeML commit and to the exact committed Candle `system.ml` bytes.
 Both anchors and the preparation implementation are plan authorities.
 
 The manifest pins CakeML integration commit
-`c2e26f43c35080d57fc18aba42d4023590b6daba`, which implements the dedicated
-protocol and its proof obligations. Its authenticated pristine-cold five-stage
-replay has passed.  Canonical bootstrap/link qualification for the corrected
-quotation-aware Candle controller remains pending, so the pin alone does not
-qualify a runtime. Therefore the exact blocking condition is:
+`8a8926906ec97204eeec961496d191103cda3229` on
+`codex/flyspeck-v13-frontend-batch`. It implements the dedicated protocol,
+its proof obligations, and the corpus-derived frontend repairs. Its
+authenticated pristine-cold five-stage replay has passed. Canonical
+bootstrap/link qualification for the corrected quotation-aware Candle
+controller remains pending, so the pin alone does not qualify a runtime.
+Therefore the exact blocking condition is:
 
 > No pilot or all-inventory process may be launched until the protocol commit's
 > proof replay succeeds, that commit is pinned by the Candle manifest, and the

@@ -30,11 +30,11 @@ NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
 EXPECTED_AUTHORITIES = {
     DESCRIPTOR_RELATIVE.as_posix(): {
         "bytes": 206558,
-        "sha256": "cd3d24755fbfff31a84b2d4dc7108581fd8f3806622c001faeba98471fdae9e4",
+        "sha256": "ff7a8f0856ec929e25c2d47e7309443c8b0c386f48f1d245754d80a1f3784ee3",
     },
     MANIFEST_RELATIVE.as_posix(): {
-        "bytes": 826126,
-        "sha256": "b9d905d9e4e776150c88444c2cef9b54e200a318247c1d119e9c6263d02b9fbf",
+        "bytes": 826127,
+        "sha256": "eaa86cc614fa2a86ba9c9624197252493481b05952a80f7ba6e6f5ba3d628e90",
     },
     NORMALIZATION_RELATIVE.as_posix(): {
         "bytes": 53907,

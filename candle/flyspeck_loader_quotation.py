@@ -17,10 +17,10 @@ from collections import Counter
 from typing import Any
 
 
-PINNED_CAKEML_COMMIT = "c2e26f43c35080d57fc18aba42d4023590b6daba"
+PINNED_CAKEML_COMMIT = "8a8926906ec97204eeec961496d191103cda3229"
 CANDLE_BOOT_RELATIVE = "candle/prover/candle_boot.ml"
 CANDLE_BOOT_SHA256 = (
-    "1fd6978f841b8fbf9c431ae48965800e4480c5897c75ca20f8e9a8e9af77220a"
+    "2ddb376fd956a5eccccf8912ef5d8a452244c1ac69bb0f01718e53497916c763"
 )
 SYSTEM_RELATIVE = "system.ml"
 SYSTEM_SHA256 = (

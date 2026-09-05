@@ -14,7 +14,7 @@ subject = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(subject)
 CAKEML_ROOT = Path(
-    "/project/worktrees/cakeml-flyspeck-runtime-stack-cold-c2e26f43c-v13"
+    "/project/worktrees/cakeml-flyspeck-frontend-cold-8a8926906-v13"
 )
 
 
