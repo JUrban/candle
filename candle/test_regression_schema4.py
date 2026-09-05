@@ -4,6 +4,8 @@
 import hashlib
 import json
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -148,6 +150,7 @@ class Great100Schema4Test(unittest.TestCase):
             "independent_approval": {"sha256": "3" * 64},
             "linked_record": {"sha256": "4" * 64},
             "candle_executable": {"sha256": "5" * 64},
+            "linked_schema": regression.PROMOTABLE_LINKED_SCHEMA,
         }
         changed = json.loads(json.dumps(base))
         changed["execution_contract_sha256"] = "6" * 64
@@ -155,6 +158,56 @@ class Great100Schema4Test(unittest.TestCase):
                 regression, "_capture_suite_contract", return_value=changed):
             with self.assertRaisesRegex(ValueError, "execution_contract"):
                 regression._runtime_state(base)
+
+    def test_promotable_and_transition_link_classes_are_not_interchangeable(self):
+        head = "a" * 40
+        schema6 = {"schema": 6, "candle_commit": head}
+        schema7 = {
+            "schema": 7,
+            "candle_commit": head,
+            "promotion_status":
+                "diagnostic-only-requires-final-head-canonical-bootstrap",
+            "transition_mode":
+                "byte-identical-canonical-bootstrap-rebinding-v1",
+        }
+        regression._validate_linked_suite_record(schema6, head, 6)
+        regression._validate_linked_suite_record(schema7, head, 7)
+        with self.assertRaisesRegex(ValueError, "schema-6"):
+            regression._validate_linked_suite_record(schema7, head, 6)
+        with self.assertRaisesRegex(ValueError, "schema-7"):
+            regression._validate_linked_suite_record(schema6, head, 7)
+        downgraded = dict(schema7, promotion_status="promotable")
+        with self.assertRaisesRegex(ValueError, "schema-7"):
+            regression._validate_linked_suite_record(downgraded, head, 7)
+
+    def test_transition_diagnostic_can_never_close_s1(self):
+        tests = [regression.Test(
+            "matched", (), ("A",), "audited", {"expected": True})]
+        results = [regression.TestResult(
+            "matched", regression.TestStatus.PASS,
+            fingerprints={"status": "matched"},
+            process_evidence={"exit_code": 0})]
+        promotable = regression.Reporter.s1_evidence_summary(
+            results, tests, regression.PROMOTABLE_TOP100_SUITE)
+        diagnostic = regression.Reporter.s1_evidence_summary(
+            results, tests, regression.TRANSITION_DIAGNOSTIC_SUITE)
+        self.assertTrue(promotable["suite_closed"])
+        self.assertFalse(diagnostic["suite_closed"])
+        self.assertEqual(
+            regression._promotion_record(
+                regression.TRANSITION_DIAGNOSTIC_SUITE, 7),
+            {
+                "eligible": False,
+                "s1_evidence": False,
+                "required_linked_schema": 7,
+                "reason": (
+                    "diagnostic-only-schema-7-transition-requires-"
+                    "final-head-canonical-bootstrap"),
+            },
+        )
+        with self.assertRaisesRegex(ValueError, "class mismatch"):
+            regression._promotion_record(
+                regression.TRANSITION_DIAGNOSTIC_SUITE, 6)
 
     def test_shell_emits_all_authenticated_startup_markers(self):
         source = (regression.CANDLE_ROOT / "candle.sh").read_text(encoding="utf-8")
@@ -165,6 +218,57 @@ class Great100Schema4Test(unittest.TestCase):
                         source.index("check-linked"))
         self.assertLess(source.index("check-linked"),
                         source.index("CANDLE_LINKED_PROVENANCE_V1"))
+
+    def test_isolated_cli_and_reference_protocol_execution_closure(self):
+        self.assertIn(
+            "candle/reference_protocol.py",
+            regression.EXECUTION_CONTRACT_PATHS)
+        loaded = sys.modules["_candle_regression_reference_protocol"]
+        protocol_path = (
+            regression.CANDLE_ROOT / "candle/reference_protocol.py").resolve()
+        self.assertEqual(loaded.__candle_source_bytes__, protocol_path.read_bytes())
+        completed = subprocess.run(
+            [sys.executable, "-I", str(Path(regression.__file__).resolve()),
+             "--top100-transition-diagnostic", "--list"],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            cwd="/",
+            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+        )
+        self.assertEqual(completed.returncode, 0, completed.stdout)
+        self.assertIn("65 test(s)", completed.stdout)
+
+    def test_exact_local_loader_rejects_symlink_and_hardlink(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source = root / "protocol.py"
+            source.write_text("VALUE = 1\n", encoding="utf-8")
+            symlink = root / "symlink.py"
+            symlink.symlink_to(source)
+            with self.assertRaisesRegex(RuntimeError, "could not open"):
+                regression._load_exact_local_source(
+                    "_untrusted_symlink_protocol", symlink)
+            hardlink = root / "hardlink.py"
+            hardlink.hardlink_to(source)
+            with self.assertRaisesRegex(RuntimeError, "changed while loading"):
+                regression._load_exact_local_source(
+                    "_untrusted_hardlink_protocol", source)
+
+    def test_full_suite_cli_modes_are_mutually_exclusive(self):
+        completed = subprocess.run(
+            [sys.executable, "-I", str(Path(regression.__file__).resolve()),
+             "--top100", "--top100-transition-diagnostic", "--list"],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            cwd="/",
+            env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+        )
+        self.assertEqual(completed.returncode, 2, completed.stdout)
+        self.assertIn("not allowed with argument", completed.stdout)
 
     def test_ordinary_file_record_rejects_symlink(self):
         with tempfile.TemporaryDirectory() as temporary:

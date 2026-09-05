@@ -12,10 +12,13 @@ The Candle REPL transcript for each test is written to its own log.  Without a
 report or explicit --log-dir this remains a temporary file under /tmp.  A JSON
 report retains logs in a sibling directory by default.
 
-Two suites are available:
+Three suites are available:
   * REGRESSION - a small subset, run by default.
   * TOP100     - the full "Top 100 theorems" set (from holtest.mk's
                  GREAT_100_THEOREMS), run with --top100.
+  * TOP100 transition diagnostic - the same full fingerprint comparison on a
+                 schema-7 transition-linked runtime.  It is diagnostic only
+                 and can never close S1.
 
 Each result includes wall time and sampled peak RSS.  Pass --json-report PATH
 to preserve the complete per-test table, exact source/executable identity, and
@@ -35,9 +38,11 @@ import json
 import re
 import secrets
 import signal
+import stat
 import subprocess
 import tempfile
 import threading
+import types
 import concurrent.futures
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -49,10 +54,68 @@ import pexpect
 # <root>/candle/regression.py
 CANDLE_ROOT = Path(__file__).resolve().parent.parent
 
+
+def _load_exact_local_source(name, path):
+    """Execute one stable ordinary sibling source without import lookup."""
+    path = Path(path)
+    if not path.is_absolute():
+        raise RuntimeError(f"exact local source path is not absolute: {path}")
+    try:
+        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    except OSError as error:
+        raise RuntimeError(f"could not open exact local source: {path}") from error
+    try:
+        before = os.fstat(descriptor)
+        chunks = []
+        while block := os.read(descriptor, 1024 * 1024):
+            chunks.append(block)
+        after = os.fstat(descriptor)
+        named = path.stat(follow_symlinks=False)
+    finally:
+        os.close(descriptor)
+    source = b"".join(chunks)
+    stable = (
+        before.st_dev, before.st_ino, before.st_size,
+        before.st_mtime_ns, before.st_ctime_ns)
+    if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or
+            stable != (
+                after.st_dev, after.st_ino, after.st_size,
+                after.st_mtime_ns, after.st_ctime_ns) or
+            (named.st_dev, named.st_ino) != (after.st_dev, after.st_ino) or
+            len(source) != before.st_size):
+        raise RuntimeError(f"local source changed while loading: {path}")
+    source_sha256 = hashlib.sha256(source).hexdigest()
+    existing = sys.modules.get(name)
+    if existing is not None:
+        if (getattr(existing, "__candle_source_sha256__", None) !=
+                source_sha256 or
+                Path(getattr(existing, "__file__", "")).resolve() != path):
+            raise RuntimeError(f"untrusted preloaded local module: {name}")
+        return existing
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__package__ = ""
+    module.__candle_source_sha256__ = source_sha256
+    module.__candle_source_bytes__ = source
+    sys.modules[name] = module
+    try:
+        exec(
+            compile(source, str(path), "exec", dont_inherit=True),
+            module.__dict__,
+        )
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    return module
+
 # The Top 100 suite needs a larger CakeML heap than the build's default.
 # Set via CML_HEAP_SIZE (MB) per candle process; parallelism is capped so the
 # combined heap reservation stays within available memory.
 TOP100_HEAP_MB = 6000
+PROMOTABLE_TOP100_SUITE = "top100"
+TRANSITION_DIAGNOSTIC_SUITE = "top100-transition-diagnostic"
+PROMOTABLE_LINKED_SCHEMA = 6
+TRANSITION_LINKED_SCHEMA = 7
 
 
 def _reject_duplicate_json_keys(pairs):
@@ -225,6 +288,7 @@ APPROVAL_PATH = CANDLE_ROOT / "candle/top100_identity_approval.json"
 EXECUTION_CONTRACT_PATHS = (
     "candle/cakeml_artifact_provenance.py",
     "candle/regression.py",
+    "candle/reference_protocol.py",
     "candle/top100_manifest.json",
     "candle/fingerprint.ml",
     "candle.sh",
@@ -302,10 +366,34 @@ def _source_closure(manifest):
     return closure
 
 
-def _capture_suite_contract(require_approved=True):
+def _validate_linked_suite_record(linked_payload, head, linked_schema):
+    """Bind a full-suite run to exactly one non-interchangeable link class."""
+    if linked_schema == PROMOTABLE_LINKED_SCHEMA:
+        if (linked_payload.get("schema") != 6 or
+                linked_payload.get("candle_commit") != head):
+            raise ValueError(
+                "linked schema-6 record does not bind clean Candle HEAD")
+        return
+    if linked_schema == TRANSITION_LINKED_SCHEMA:
+        if (linked_payload.get("schema") != 7 or
+                linked_payload.get("candle_commit") != head or
+                linked_payload.get("promotion_status") !=
+                "diagnostic-only-requires-final-head-canonical-bootstrap" or
+                linked_payload.get("transition_mode") !=
+                "byte-identical-canonical-bootstrap-rebinding-v1"):
+            raise ValueError(
+                "linked schema-7 diagnostic record does not bind clean "
+                "Candle HEAD")
+        return
+    raise ValueError("unsupported Great 100 linked provenance schema")
+
+
+def _capture_suite_contract(require_approved=True,
+                            linked_schema=PROMOTABLE_LINKED_SCHEMA):
     head, status = _git_state()
     if status:
-        raise ValueError("promotable Great 100 execution requires a clean Git tree")
+        raise ValueError(
+            "authenticated Great 100 execution requires a clean Git tree")
     manifest_path = CANDLE_ROOT / "candle/top100_manifest.json"
     manifest = json.loads(
         manifest_path.read_text(encoding="utf-8"),
@@ -352,9 +440,7 @@ def _capture_suite_contract(require_approved=True):
     linked_payload = json.loads(
         LINKED_RECORD_PATH.read_text(encoding="utf-8"),
         object_pairs_hook=_reject_duplicate_json_keys)
-    if (linked_payload.get("schema") != 6 or
-            linked_payload.get("candle_commit") != head):
-        raise ValueError("linked schema-6 record does not bind clean Candle HEAD")
+    _validate_linked_suite_record(linked_payload, head, linked_schema)
     executable = _ordinary_file_record(CANDLE_ROOT / "candle/build/cake")
     source_closure = _source_closure(manifest)
     return {
@@ -366,15 +452,18 @@ def _capture_suite_contract(require_approved=True):
         "independent_approval": approval,
         "linked_record": linked,
         "candle_executable": executable,
+        "linked_schema": linked_schema,
     }
 
 
 def _runtime_state(contract):
-    current = _capture_suite_contract(require_approved=True)
+    current = _capture_suite_contract(
+        require_approved=True, linked_schema=contract["linked_schema"])
     for field in (
             "candle_git_head", "candle_git_status", "execution_contract",
             "execution_contract_sha256", "source_closure",
-            "independent_approval", "linked_record", "candle_executable"):
+            "independent_approval", "linked_record", "candle_executable",
+            "linked_schema"):
         if current[field] != contract[field]:
             raise ValueError(f"Great 100 runtime input changed: {field}")
     return {
@@ -384,7 +473,31 @@ def _runtime_state(contract):
         "candle_executable": current["candle_executable"],
         "execution_contract_sha256": current["execution_contract_sha256"],
         "source_closure_sha256": current["source_closure"]["sha256"],
+        "linked_schema": current["linked_schema"],
     }
+
+
+def _promotion_record(suite, linked_schema):
+    """Return the explicit promotion class for a full Great 100 report."""
+    if (suite, linked_schema) == (
+            PROMOTABLE_TOP100_SUITE, PROMOTABLE_LINKED_SCHEMA):
+        return {
+            "eligible": True,
+            "s1_evidence": True,
+            "required_linked_schema": PROMOTABLE_LINKED_SCHEMA,
+            "reason": "promotable-schema-6-full-suite",
+        }
+    if (suite, linked_schema) == (
+            TRANSITION_DIAGNOSTIC_SUITE, TRANSITION_LINKED_SCHEMA):
+        return {
+            "eligible": False,
+            "s1_evidence": False,
+            "required_linked_schema": TRANSITION_LINKED_SCHEMA,
+            "reason": (
+                "diagnostic-only-schema-7-transition-requires-"
+                "final-head-canonical-bootstrap"),
+        }
+    raise ValueError("Great 100 suite/link provenance class mismatch")
 
 
 # ---------------------------------------------------------------------------
@@ -739,16 +852,18 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
 # stdlib-only wire/request/parser implementation.  The definitions immediately
 # above remain readable history for this compatibility branch; these bindings
 # are the active contract used below and by tests.
-from reference_protocol import (  # noqa: E402
-    EMPTY_HYPOTHESES_WIRE,
-    FINGERPRINT_MARKER,
-    LoadFailure,
-    PROCESS_MARKER,
-    STATE_FINGERPRINT_MARKER,
-    _fingerprint_request_source,
-    _match_expected_identities,
-    _read_fingerprint_records,
+_reference_protocol = _load_exact_local_source(
+    "_candle_regression_reference_protocol",
+    CANDLE_ROOT / "candle/reference_protocol.py",
 )
+EMPTY_HYPOTHESES_WIRE = _reference_protocol.EMPTY_HYPOTHESES_WIRE
+FINGERPRINT_MARKER = _reference_protocol.FINGERPRINT_MARKER
+LoadFailure = _reference_protocol.LoadFailure
+PROCESS_MARKER = _reference_protocol.PROCESS_MARKER
+STATE_FINGERPRINT_MARKER = _reference_protocol.STATE_FINGERPRINT_MARKER
+_fingerprint_request_source = _reference_protocol._fingerprint_request_source
+_match_expected_identities = _reference_protocol._match_expected_identities
+_read_fingerprint_records = _reference_protocol._read_fingerprint_records
 
 
 def _read_process_markers(log_path, suite_nonce, process_nonce,
@@ -1195,7 +1310,8 @@ class Reporter:
             "observed_uncompared_target_count": observed_uncompared,
             "missing_or_failed_fingerprint_target_count": missing,
             "suite_closed": (
-                suite == "top100" and len(results) == len(tests)
+                suite == PROMOTABLE_TOP100_SUITE
+                and len(results) == len(tests)
                 and matched == len(tests) and expected_count == len(tests)
                 and manual_review_count == 0
                 and all(result.status is TestStatus.PASS and
@@ -1248,10 +1364,17 @@ class Reporter:
     def write_json(results, wall, path, suite, jobs, inactivity_timeout,
                    wall_timeout, tests, log_dir, suite_nonce=None,
                    suite_contract=None, suite_started_utc=None):
-        if suite == "top100":
+        full_top100 = suite in {
+            PROMOTABLE_TOP100_SUITE, TRANSITION_DIAGNOSTIC_SUITE,
+        }
+        if suite_contract is not None and not full_top100:
+            raise ValueError("suite evidence is only valid for a full Top 100 run")
+        if full_top100:
             if suite_contract is None or not re.fullmatch(
                     r"[0-9a-f]{64}", suite_nonce or ""):
                 raise ValueError("schema-4 Great 100 report lacks suite evidence")
+            promotion = _promotion_record(
+                suite, suite_contract.get("linked_schema"))
             _runtime_state(suite_contract)
             _validate_top100_results(
                 results, tests, suite_nonce, suite_contract)
@@ -1315,6 +1438,7 @@ class Reporter:
                     "independent_approval_sha256":
                         suite_contract["independent_approval"]["sha256"],
                 },
+                "promotion": promotion,
             })
         with path.open("x", encoding="utf-8") as report_file:
             json.dump(payload, report_file, indent=2)
@@ -1544,9 +1668,15 @@ def run_suite(tests, jobs, inactivity_timeout, wall_timeout=None, env=None,
 
 def main():
     parser = argparse.ArgumentParser(description="Candle parallel regression suite")
-    parser.add_argument(
+    suite_group = parser.add_mutually_exclusive_group()
+    suite_group.add_argument(
         "--top100", action="store_true",
         help="Run the full Top 100 theorems suite instead of the regression subset",
+    )
+    suite_group.add_argument(
+        "--top100-transition-diagnostic", action="store_true",
+        help=("Run the full Top 100 fingerprint comparison on an authenticated "
+              "schema-7 transition link; diagnostic only, never S1 evidence"),
     )
     parser.add_argument(
         "--test", nargs="+",
@@ -1593,17 +1723,28 @@ def main():
         parser.error("--wall-timeout must be non-negative")
     wall_timeout = args.wall_timeout or None
 
+    if args.test and (args.top100 or args.top100_transition_diagnostic):
+        parser.error("--test cannot be combined with a full Top 100 suite")
+
     if args.test:
         tests = [BY_NAME.get(name, _t(name)) for name in args.test]
-        running_top100 = False
+        running_full_top100 = False
+        running_promotable_top100 = False
         suite_name = "selected"
     elif args.top100:
         tests = TOP100
-        running_top100 = True
-        suite_name = "top100"
+        running_full_top100 = True
+        running_promotable_top100 = True
+        suite_name = PROMOTABLE_TOP100_SUITE
+    elif args.top100_transition_diagnostic:
+        tests = TOP100
+        running_full_top100 = True
+        running_promotable_top100 = False
+        suite_name = TRANSITION_DIAGNOSTIC_SUITE
     else:
         tests = REGRESSION
-        running_top100 = False
+        running_full_top100 = False
+        running_promotable_top100 = False
         suite_name = "regression"
 
     if args.list:
@@ -1616,21 +1757,25 @@ def main():
     suite_contract = None
     suite_nonce = None
     suite_started_utc = datetime.now(timezone.utc).isoformat()
-    if running_top100:
+    if running_full_top100:
         if args.json_report is None:
-            parser.error("--top100 requires --json-report")
+            parser.error("a full Top 100 suite requires --json-report")
         if wall_timeout is None:
-            parser.error("--top100 requires a positive --wall-timeout")
+            parser.error("a full Top 100 suite requires a positive --wall-timeout")
         if args.json_report.exists():
             parser.error("--json-report must not already exist")
-        suite_contract = _capture_suite_contract(require_approved=True)
+        linked_schema = (
+            PROMOTABLE_LINKED_SCHEMA if running_promotable_top100
+            else TRANSITION_LINKED_SCHEMA)
+        suite_contract = _capture_suite_contract(
+            require_approved=True, linked_schema=linked_schema)
         suite_nonce = secrets.token_hex(32)
 
     # The Top 100 suite gets a larger heap; cap parallelism so the combined
     # per-process heap reservation does not exceed available memory.
     child_env = None
     jobs = args.jobs
-    if running_top100:
+    if running_full_top100:
         child_env = {**os.environ, "CML_HEAP_SIZE": str(TOP100_HEAP_MB)}
         jobs = cap_jobs_for_heap(args.jobs, TOP100_HEAP_MB)
         if jobs < args.jobs:
@@ -1640,7 +1785,7 @@ def main():
     log_dir = args.log_dir
     if log_dir is None and args.json_report is not None:
         log_dir = args.json_report.parent / f"{args.json_report.stem}-logs"
-    if running_top100:
+    if running_full_top100:
         try:
             args.json_report, log_dir = _prepare_top100_evidence_paths(
                 args.json_report, log_dir)
@@ -1661,7 +1806,8 @@ def main():
 
     unexpected = [r for r in results if r.status in (TestStatus.FAIL, TestStatus.TIMEOUT)]
     s1 = Reporter.s1_evidence_summary(results, tests, suite_name)
-    sys.exit(1 if unexpected or (running_top100 and not s1["suite_closed"]) else 0)
+    sys.exit(1 if unexpected or (
+        running_promotable_top100 and not s1["suite_closed"]) else 0)
 
 
 if __name__ == "__main__":
