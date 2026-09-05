@@ -373,6 +373,71 @@ class CakeMLBootstrapTransitionTests(unittest.TestCase):
         ):
             subject.validate_linked_transition_record(fixture.final)
 
+    def test_schema7_linked_record_writer_success_path(self) -> None:
+        fixture = self.make_fixture()
+        build = fixture.final / "candle/build"
+        build.mkdir(parents=True)
+        output = build / subject.provenance.LINKED_RECORD_RELATIVE.name
+        transition = {
+            "final_candle": {"root": str(fixture.final)},
+            "cakeml": {"root": str(fixture.cakeml)},
+        }
+        copied_names = (
+            "config_enc_str.txt", "candle_boot.ml", "basis_ffi.c", "Makefile",
+        )
+        bootstrap = {
+            "inputs": {
+                **{name: {"bytes": 1, "sha256": "1" * 64}
+                   for name in copied_names},
+                "cake.S": {"bytes": 1, "sha256": "2" * 64},
+            },
+            "cakeml_commit": fixture.cakeml_head,
+            "hol4_commit": "a" * 40,
+            "manifest_sha256": "b" * 64,
+        }
+
+        def validate_file(path, record, label):
+            self.assertIn(Path(path).name, copied_names)
+            self.assertEqual(record, bootstrap["inputs"][Path(path).name])
+            self.assertEqual(label, f"copied {Path(path).name}")
+
+        file_identity = {"bytes": 1, "sha256": "c" * 64}
+        with mock.patch.object(
+                subject, "validate_transition_record",
+                return_value=(transition, bootstrap)), mock.patch.object(
+                subject.provenance, "validate_build_directory",
+                return_value=build), mock.patch.object(
+                subject.provenance, "validate_file_record",
+                side_effect=validate_file) as copied, mock.patch.object(
+                subject.provenance, "version_details",
+                return_value=(fixture.cakeml_head, "a" * 40, "version\n")), \
+                mock.patch.object(
+                    subject.provenance, "materialize_linked_bootstrap"), \
+                mock.patch.object(subject, "materialize_transition_record"), \
+                mock.patch.object(
+                    subject.provenance, "cake_patch_derivation",
+                    return_value={"patch": "exact"}), mock.patch.object(
+                    subject.provenance, "native_link_derivation",
+                    return_value={"link": "exact"}), mock.patch.object(
+                    subject, "transition_controller_closure",
+                    return_value={"controller": {}}), mock.patch.object(
+                    subject.provenance, "file_record",
+                    return_value=file_identity), mock.patch.object(
+                    subject.provenance, "elf_dynamic_closure",
+                    return_value={"elf": "exact"}), mock.patch.object(
+                    subject.provenance, "validate_candle_elf_policy"):
+            record = subject.record_linked_transition(
+                *fixture.arguments(), fixture.transition, output,
+            )
+
+        self.assertEqual(copied.call_count, len(copied_names))
+        self.assertEqual(record["schema"], subject.TRANSITION_LINKED_SCHEMA)
+        self.assertEqual(
+            record["promotion_status"],
+            "diagnostic-only-requires-final-head-canonical-bootstrap",
+        )
+        self.assertEqual(json.loads(output.read_text(encoding="utf-8")), record)
+
     def test_schema6_dispatch_rejects_transition_downgrade(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
