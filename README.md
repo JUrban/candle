@@ -56,7 +56,10 @@ retry-only `*Script.ui`/`*Script.uo` transients. It also archives and removes
 both relevant `lastmaker` files before launch and requires their fresh
 postimages to contain exactly the pinned `HOL_ROOT/bin/Holmake` path. The 18
 target `*Script.sml.d` planner records must be freshly recreated; the 36 stale
-generated-`Theory` dependency records must remain absent after success. It runs
+generated-`Theory` dependency records must remain absent after success. The
+238 exact generated-`Theory` dependency records that a pristine-cold closure
+lacks are separately pinned and must be created as fresh outputs, rather than
+being misclassified as ancestor inputs. It runs
 exactly
 `/usr/bin/time -v HOL_ROOT/bin/Holmake -j1 cake.S`
 in the pinned x64/64 directory under an exact three-variable build environment.

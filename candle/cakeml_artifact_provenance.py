@@ -60,17 +60,21 @@ HOL_SIGOBJ_CONTRACTS_SHA256 = (
     "dac2ec14a569c22cac1127e30223e60a4a663b9fa13010fe0c9290e93525e132"
 )
 HOL_MAKE_DEPENDENCY_COUNT = 2309
-# Exact stable, non-transitioned path set produced after the authenticated
-# pristine-cold proof closure has undergone one complete 18-target Holmake
-# dependency scan at the manifest's CakeML pin.  The scan materializes 238
-# previously lazy ancestor depfiles.  Developer-only dopen/caml test and
-# pathToMods probe products are deliberately not ancestors.
-CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 2015
+# Exact non-transitioned path set produced by the authenticated pristine-cold
+# proof closure at the manifest's CakeML pin.  The canonical bootstrap's first
+# dependency scan materializes another exact 238 files; those are fresh outputs,
+# not ancestors.  Developer-only dopen/caml test and pathToMods probe products
+# are deliberately not ancestors.
+CAKEML_MAKE_DEPENDENCY_ANCESTOR_COUNT = 1777
+CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_COUNT = 238
 HOL_MAKE_DEPENDENCY_PATHS_SHA256 = (
     "dc3e187784b21ab208d02c5ee17675337938f401e2aca10e03cf211e360c9dac"
 )
 CAKEML_MAKE_DEPENDENCY_ANCESTOR_PATHS_SHA256 = (
-    "c7850d20bcb245dfa5568a56a45e902b061c19cf10086264dde1f3ff5666d4d8"
+    "c2c81322b7213b90f8301aa389caca64792d25591118f2b256a17f74c2add626"
+)
+CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_PATHS_SHA256 = (
+    "3ced16d63beb49cec7aaf07c73da54720cd5cee783bfb27c20526bf3be77638b"
 )
 HOL_ELF_ALLOWED_DYNAMIC_PATH_TAGS = {
     "RUNPATH": ["/usr/lib/x86_64-linux-gnu"],
@@ -235,6 +239,160 @@ BOOTSTRAP_TARGETS = (
     "compiler64Prog",
     "x64Bootstrap",
 )
+# These generated-Theory dependency records are absent from an authenticated
+# pristine-cold closure.  Holmake creates them while planning the 18-target
+# canonical bootstrap, so they belong to its fresh-output stratum.  Grouping by
+# theory directory keeps the exact pinned path set reviewable without weakening
+# it to a pattern or count-only contract.
+BOOTSTRAP_LAZY_DEPENDENCY_THEORIES = {
+    "candle/prover": (
+        "candle_basis_evaluateTheory",
+        "candle_kernel_funsTheory",
+        "candle_kernel_permsTheory",
+        "candle_prover_evaluateTheory",
+        "candle_prover_semanticsTheory",
+    ),
+    "candle/prover/compute": (
+        "computeProofTheory",
+        "compute_evalProofTheory",
+        "compute_execProofTheory",
+        "compute_syntaxProofTheory",
+    ),
+    "candle/set-theory": (
+        "setModelTheory",
+        "setSpecTheory",
+    ),
+    "candle/standard/semantics": (
+        "holAxiomsTheory",
+        "holBoolTheory",
+        "holConsistencyTheory",
+        "holExtensionTheory",
+        "holLightConsistencyTheory",
+        "holSemanticsExtraTheory",
+        "holSemanticsTheory",
+        "holSoundnessTheory",
+    ),
+    "compiler/backend": (
+        "word_elimTheory",
+    ),
+    "compiler/backend/gc": (
+        "copying_gcTheory",
+        "gc_combinedTheory",
+        "gc_sharedTheory",
+        "gen_gcTheory",
+        "gen_gc_partialTheory",
+    ),
+    "compiler/backend/proofs": (
+        "backendProofTheory",
+        "bvi_inlineProofTheory",
+        "bvi_letProofTheory",
+        "bvi_tailrecProofTheory",
+        "bvi_tmcProofTheory",
+        "bvi_to_dataProofTheory",
+        "bvl_constProofTheory",
+        "bvl_handleProofTheory",
+        "bvl_inlineProofTheory",
+        "bvl_jumpProofTheory",
+        "bvl_to_bviProofTheory",
+        "clos_annotateProofTheory",
+        "clos_callProofTheory",
+        "clos_constantProofTheory",
+        "clos_fvsProofTheory",
+        "clos_interpProofTheory",
+        "clos_knownProofTheory",
+        "clos_knownPropsTheory",
+        "clos_letopProofTheory",
+        "clos_mtiProofTheory",
+        "clos_numberProofTheory",
+        "clos_opProofTheory",
+        "clos_ticksProofTheory",
+        "clos_to_bvlProofTheory",
+        "data_liveProofTheory",
+        "data_simpProofTheory",
+        "data_spaceProofTheory",
+        "data_to_wordProofTheory",
+        "data_to_word_assignProofTheory",
+        "data_to_word_bignumProofTheory",
+        "data_to_word_gcProofTheory",
+        "data_to_word_memoryProofTheory",
+        "flat_elimProofTheory",
+        "flat_patternProofTheory",
+        "flat_to_closProofTheory",
+        "lab_filterProofTheory",
+        "lab_to_targetProofTheory",
+        "source_evalProofTheory",
+        "source_letProofTheory",
+        "source_to_flatProofTheory",
+        "source_to_sourceProofTheory",
+        "stack_allocProofTheory",
+        "stack_namesProofTheory",
+        "stack_rawcallProofTheory",
+        "stack_removeProofTheory",
+        "stack_to_labProofTheory",
+        "wordConvsProofTheory",
+        "word_allocProofTheory",
+        "word_bignumProofTheory",
+        "word_copyProofTheory",
+        "word_cseProofTheory",
+        "word_depthProofTheory",
+        "word_elimProofTheory",
+        "word_gcFunctionsTheory",
+        "word_instProofTheory",
+        "word_removeProofTheory",
+        "word_simpProofTheory",
+        "word_to_stackProofTheory",
+        "word_to_wordProofTheory",
+        "word_unreachProofTheory",
+    ),
+    "compiler/backend/reg_alloc/proofs": (
+        "linear_scanProofTheory",
+    ),
+    "compiler/backend/semantics": (
+        "backendPropsTheory",
+        "bviPropsTheory",
+        "bviSemTheory",
+        "bvlPropsTheory",
+        "bvlSemTheory",
+        "closPropsTheory",
+        "closSemTheory",
+        "dataPropsTheory",
+        "dataSemTheory",
+        "flatPropsTheory",
+        "flatSemTheory",
+        "labPropsTheory",
+        "labSemTheory",
+        "stackPropsTheory",
+        "stackSemTheory",
+        "targetPropsTheory",
+        "targetSemTheory",
+        "wordConvsTheory",
+        "wordPropsTheory",
+        "wordSemTheory",
+    ),
+    "compiler/backend/x64/proofs": (
+        "x64_configProofTheory",
+    ),
+    "compiler/bootstrap/compilation/x64/64/proofs": (
+        "replProofTheory",
+        "x64BootstrapProofTheory",
+    ),
+    "compiler/encoders/x64/proofs": (
+        "x64_targetProofTheory",
+    ),
+    "compiler/inference/proofs": (
+        "envRelTheory",
+        "inferSoundTheory",
+        "infer_eCompleteTheory",
+        "infer_eSoundTheory",
+        "type_eDetermTheory",
+    ),
+    "compiler/repl": (
+        "evaluate_initTheory",
+        "evaluate_skipTheory",
+        "repl_initTheory",
+        "repl_typesTheory",
+    ),
+}
 BOOTSTRAP_TRANSLATION_THEORY_SUFFIXES = (
     "ui", "uo", "dat", "sig", "sml", "cachekey",
 )
@@ -264,7 +422,7 @@ BOOTSTRAP_TRUST_BOUNDARY = {
         ".kernelidstr bytes",
         "the complete HOL4 .hol/objs file set, exact sigobj link contracts "
         "and resolved payloads, and exact generated HOL proof inputs",
-        "all HOL4 and non-target CakeML .hol/make-deps files, with every "
+        "all HOL4 and non-output CakeML .hol/make-deps files, with every "
         "lastmaker pinned to the authenticated HOL4 Holmake",
         "the CakeML cv_translator/cake_compile_heap bytes selected by the "
         "pinned final x64Bootstrap Holmakefile",
@@ -1529,6 +1687,26 @@ def bootstrap_dependency_output_paths(
     return result
 
 
+def bootstrap_lazy_dependency_output_paths(
+    cakeml_root: Path,
+) -> list[tuple[str, Path]]:
+    result = []
+    for directory, theories in BOOTSTRAP_LAZY_DEPENDENCY_THEORIES.items():
+        dependency_directory = Path(directory) / ".hol/make-deps"
+        for theory in theories:
+            for suffix in ("sig.d", "sml.d"):
+                relative = dependency_directory / f"{theory}.{suffix}"
+                result.append((str(relative), cakeml_root / relative))
+    result.sort(key=lambda entry: entry[0])
+    relatives = [relative for relative, _ in result]
+    require(len(result) == CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_COUNT and
+            len(set(relatives)) == len(relatives) and
+            _canonical_json_sha256(relatives) ==
+            CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_PATHS_SHA256,
+            "internal lazy dependency-output inventory mismatch")
+    return result
+
+
 def bootstrap_lastmaker_output_paths(
     cakeml_root: Path,
 ) -> list[tuple[str, Path]]:
@@ -1563,6 +1741,10 @@ def bootstrap_cleanup_output_paths(
          ("ordinary_fresh" if relative.endswith("Script.sml.d")
           else "absent_after_success"))
         for relative, path in bootstrap_dependency_output_paths(cakeml_root)
+    ] + [
+        (relative, path, "ordinary_fresh")
+        for relative, path in
+        bootstrap_lazy_dependency_output_paths(cakeml_root)
     ] + [
         (relative, path, "exact_holmake_lastmaker")
         for relative, path in bootstrap_lastmaker_output_paths(cakeml_root)
@@ -1620,6 +1802,7 @@ def bootstrap_make_dependency_artifact_inventory(
     transitioned = {
         str(path) for _, path in (
             bootstrap_dependency_output_paths(cakeml_root) +
+            bootstrap_lazy_dependency_output_paths(cakeml_root) +
             bootstrap_lastmaker_output_paths(cakeml_root)
         )
     }
@@ -1690,6 +1873,7 @@ def validate_bootstrap_make_dependency_artifact_inventory(
     transitioned = {
         str(path) for _, path in (
             bootstrap_dependency_output_paths(cakeml_root) +
+            bootstrap_lazy_dependency_output_paths(cakeml_root) +
             bootstrap_lastmaker_output_paths(cakeml_root)
         )
     }
@@ -1965,7 +2149,7 @@ def record_bootstrap_preflight(
         "lock": _directory_identity(cakeml_root),
         "launch": launch,
         "forced_outputs": {
-            "policy": "exact_18_target_outputs_dependencies_transients_lastmaker_v4",
+            "policy": "exact_18_target_outputs_dependencies_transients_lastmaker_v5",
             "preimage_archive_root": str(archive_root),
             "entries": forced_outputs,
         },
@@ -2032,11 +2216,12 @@ def _validate_bootstrap_preflight_structure(
     require(isinstance(outputs, dict) and set(outputs) == {
         "policy", "preimage_archive_root", "entries",
     } and outputs.get("policy") ==
-            "exact_18_target_outputs_dependencies_transients_lastmaker_v4",
+            "exact_18_target_outputs_dependencies_transients_lastmaker_v5",
             "malformed bootstrap forced-output preflight")
     entries = outputs.get("entries")
     require(isinstance(entries, list) and
-            len(entries) == 108 + 18 * 2 + 18 * 3 + 2,
+            len(entries) == 108 + 18 * 2 + 18 * 3 +
+            CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_COUNT + 2,
             "bootstrap forced-output inventory size mismatch")
     for output in entries:
         require(isinstance(output, dict) and set(output) == {

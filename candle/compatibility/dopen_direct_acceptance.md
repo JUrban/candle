@@ -85,7 +85,9 @@ archives and removes only `cake.S`, `config_enc_str.txt`, the exact 18-target
 files. The two `lastmaker` postimages must freshly name only the pinned absolute
 `HOL_ROOT/bin/Holmake` path. Holmake must freshly recreate the 18 target
 `*Script.sml.d` files, while the 36 stale generated-`Theory` dependency files
-must remain absent. The tracked `candle_boot.ml`, `basis_ffi.c`,
+must remain absent. The exact 238 generated-`Theory` dependency records absent
+from the pristine-cold closure are pinned separately and must be fresh outputs,
+not pre-existing ancestors. The tracked `candle_boot.ml`, `basis_ffi.c`,
 and `Makefile` links are preserved and bound to their exact commit blobs and
 in-root ordinary targets. Failure retains the archive, log, and partial outputs;
 there is no automatic restore mutation. The schema-5 final bootstrap record

@@ -324,6 +324,19 @@ class CakeMLArtifactProvenanceTests(unittest.TestCase):
             self.assertEqual(cleanup[relative], expected)
         for relative, _ in subject.bootstrap_lastmaker_output_paths(root):
             self.assertEqual(cleanup[relative], "exact_holmake_lastmaker")
+        lazy_paths = subject.bootstrap_lazy_dependency_output_paths(root)
+        self.assertEqual(
+            len(lazy_paths),
+            subject.CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_COUNT,
+        )
+        self.assertEqual(
+            subject._canonical_json_sha256(
+                [relative for relative, _ in lazy_paths],
+            ),
+            subject.CAKEML_LAZY_MAKE_DEPENDENCY_OUTPUT_PATHS_SHA256,
+        )
+        for relative, _ in lazy_paths:
+            self.assertEqual(cleanup[relative], "ordinary_fresh")
 
     def test_bootstrap_output_inventory_rejects_path_escape(self) -> None:
         root = Path("/authenticated/cakeml")
