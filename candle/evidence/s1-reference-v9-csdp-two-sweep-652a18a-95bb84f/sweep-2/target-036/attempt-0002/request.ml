@@ -1,0 +1,17 @@
+print_endline ("CANDLE_REFERENCE_SESSION_V1\t4829c2fe93bd0c2c6e8d6a2e1a4568cf9e15a5d71ed927719a9ef55f818008e3");;
+loadt "/project/worktrees/candle-reference-v9-launch-652a18a/candle/fingerprint.ml";;
+loadt "100/independence.ml";;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_1_NONEUCLIDEAN" TARSKI_AXIOM_1_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_2_NONEUCLIDEAN" TARSKI_AXIOM_2_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_3_NONEUCLIDEAN" TARSKI_AXIOM_3_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_4_NONEUCLIDEAN" TARSKI_AXIOM_4_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_5_NONEUCLIDEAN" TARSKI_AXIOM_5_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_6_NONEUCLIDEAN" TARSKI_AXIOM_6_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_7_NONEUCLIDEAN" TARSKI_AXIOM_7_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_8_NONEUCLIDEAN" TARSKI_AXIOM_8_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_9_NONEUCLIDEAN" TARSKI_AXIOM_9_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "NOT_TARSKI_AXIOM_10_NONEUCLIDEAN" NOT_TARSKI_AXIOM_10_NONEUCLIDEAN;;
+candle_s1_emit_fingerprint "TARSKI_AXIOM_11_NONEUCLIDEAN" TARSKI_AXIOM_11_NONEUCLIDEAN;;
+candle_s1_emit_state_fingerprint ();;
+print_endline ("CANDLE_REFERENCE_COMPLETE_V1\t4829c2fe93bd0c2c6e8d6a2e1a4568cf9e15a5d71ed927719a9ef55f818008e3");;
+exit 0;;

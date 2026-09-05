@@ -176,9 +176,20 @@ keeps the 65-target runtime gate disabled.
 The two-sweep collection contract used by an approval is schema 3. It pins one
 plan-independent `elf_oracle` projection and requires both the core OCaml/HOL
 and external PARI/GP closure in all 130 plans to use that exact projection.
-Approval replay also requires exactly one successful attempt per target,
-canonical artifact paths, and exact collector/validator output naming the
-candidate in the common collection root.
+Approval replay requires exactly one selected successful attempt per target.
+A contiguous earlier prefix may contain only explicitly interrupted attempts;
+each must retain the canonical candidate, plan, request, and transcript records
+and must appear identically in the aggregate failure ledger.  Missing,
+reordered, overwritten, or unledgered attempts fail closed.  Successful and
+interrupted artifact paths are canonical, and the exact collector/validator
+output names the selected candidate in the common collection root.
+
+The retained plan binds the producer collector at its collection commit; it is
+not required to be byte-identical to the later approval consumer.  The
+collection contract reauthenticates that producer snapshot, while the current
+descendant consumer independently replays the retained plan, request,
+transcript, and candidate under its committed validator.  Requiring the two
+validator files to be identical would defeat that independent-review boundary.
 
 ## Current limitations
 
