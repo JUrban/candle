@@ -419,7 +419,8 @@ let rec dest_finty (t: hol_type): num =
 let make_args =
   let rec margs n s avoid tys =
     if tys = [] then [] else
-    let v = variant avoid (mk_var(s^(string_of_int n),hd tys)) in
+    let name = s^(string_of_int n) in
+    let v = variant avoid (mk_var(name,hd tys)) in
     v::(margs (n + 1) s (v::avoid) (tl tys)) in
   fun s avoid tys ->
     if length tys = 1 then
