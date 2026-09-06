@@ -3,6 +3,12 @@ exception Invalid_argument of string;;
 exception End_of_file;;
 exception Not_found;;
 
+(* CakeML integer division rounds down, whereas OCaml integer division
+   truncates toward zero. *)
+let (/) x y =
+  let quotient = div x y in
+  if quotient < 0 && not(x = quotient * y) then quotient + 1 else quotient;;
+
 let pp_exn e =
   match e with
   | Invalid_argument s ->
