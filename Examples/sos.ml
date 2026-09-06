@@ -1100,7 +1100,6 @@ let real_positivnullstellensatz_general linf d eqs leqs pol =
   let eqns = foldl (fun a m e -> e::a) [] bigsum in
   let pvs,assig =
     eliminate_all_equations _int_triple_cmp (0,0,0) eqns in
-  let qvars = (0,0,0)::pvs in
   let allassig =
     itlist
       (fun v -> (v |-> ((v |=> num 1) _int_triple_cmp))) pvs assig in
@@ -1113,11 +1112,23 @@ let real_positivnullstellensatz_general linf d eqs leqs pol =
   let diagents = foldl
     (fun a (b,i,j) e -> if b > 0 && i = j then equation_add e a else a)
     (undefined _int_triple_cmp) allassig in
-  let mats = map mk_matrix qvars
-  and obj = length pvs,
-            itern 1 pvs (fun v i -> (i |--> tryapplyd diagents v (num 0)))
-                        _inundefined in
-  let raw_vec = if pvs = [] then vec_0 0
+  (* A different, but valid, Gaussian free-variable basis can leave a
+     parameter absent from both the objective and every semidefinite matrix.
+     CSDP rejects such an empty constraint.  It is mathematically irrelevant,
+     so omit it from the optimization vector and assign it zero below. *)
+  let pvdata =
+    map (fun v -> v,mk_matrix v,tryapplyd diagents v (num 0)) pvs in
+  let active_pvdata =
+    filter
+      (fun (_,m,c) -> not(is_undefined m) || c <>/ num 0)
+      pvdata in
+  let active_pvs = map (fun (v,_,_) -> v) active_pvdata
+  and active_mats = map (fun (_,m,_) -> m) active_pvdata in
+  let mats = mk_matrix (0,0,0)::active_mats
+  and obj = length active_pvs,
+            itern 1 active_pvdata
+              (fun (_,_,c) i -> (i |--> c)) _inundefined in
+  let raw_vec = if active_pvs = [] then vec_0 0
                 else scale_then (csdp nblocks blocksizes) obj mats in
   let find_rounding d =
    (if !debugging then
@@ -1133,12 +1144,15 @@ let real_positivnullstellensatz_general linf d eqs leqs pol =
     let allmats = blocks blocksizes blockmat in
     vec,map diag allmats in
   let vec,ratdias =
-    if pvs = [] then find_rounding num_1
+    if active_pvs = [] then find_rounding num_1
     else tryfind find_rounding (map num (1--31) @
                                 map pow2 (5--66)) in
+  let zero_assigs =
+    itlist (fun v -> (v |-> num 0)) pvs
+      (((0,0,0) |=> num(-1)) _int_triple_cmp) in
   let newassigs =
-    itlist (fun k -> el (k - 1) pvs |-> element vec k)
-           (1--vec_dim vec) (((0,0,0) |=> num(-1)) _int_triple_cmp) in
+    itlist (fun k -> el (k - 1) active_pvs |-> element vec k)
+           (1--vec_dim vec) zero_assigs in
   let finalassigs =
     foldl (fun a v e -> (v |-> equation_eval newassigs e) a) newassigs
           allassig in
