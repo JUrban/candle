@@ -2307,7 +2307,10 @@ let compare tm1 tm2 =
               if c <> 0 then c
               else
                 let c = Useful.intCompare (List.length a1) (List.length a2) in
-                if c <> 0 then c else cmp (a1 @ tms1, a2 @ tms2))
+                if c <> 0 then c else
+                let pending1 = a1 @ tms1
+                and pending2 = a2 @ tms2 in
+                cmp (pending1,pending2))
     | _ -> raise (Useful.Bug "Term.compare")
   in cmp ([tm1], [tm2]);;
 
@@ -6660,7 +6663,9 @@ let foldEqualTerms pat inc acc =
         | (Fn (f,a) :: pats, Multiple (_,fns)) ->
           (match Name_arity.Map.peek fns f with
              None -> acc
-           | Some net -> fold (a @ pats, net))
+           | Some net ->
+               let pending = a @ pats in
+               fold (pending,net))
         | _ -> raise (Useful.Bug "Term_net.foldEqualTerms.fold")
     in
       fun net -> fold ([pat],net)
@@ -6689,7 +6694,9 @@ let foldEqualTerms pat inc acc =
         in let rest =
             match Name_arity.Map.peek fns f with
               None -> rest
-            | Some net -> (a @ pats, stackAddFn f stack, net) :: rest
+            | Some net ->
+                let pending = a @ pats in
+                (pending,stackAddFn f stack,net) :: rest
       in
         fold inc acc rest
     | _ -> raise (Useful.Bug "Term_net.foldUnifiableTerms.fold");;

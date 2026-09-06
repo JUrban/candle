@@ -335,7 +335,8 @@ let type_of_pretype,term_of_preterm,retypecheck =
         let ty'' = new_type_var() in
         let ty' = Ptycon("fun",[ty'';ty]) in
         let f',venv1,uenv1 = typify ty' (f,venv,uenv) in
-        let x',venv2,uenv2 = typify ty'' (x,venv1@venv,uenv1) in
+        let current_venv = venv1@venv in
+        let x',venv2,uenv2 = typify ty'' (x,current_venv,uenv1) in
         Combp(f',x'),(venv1@venv2),uenv2
     |Typing(tm,pty) -> typify ty (tm,venv,unify (Some tm) uenv ty pty)
     |Absp(v,bod) ->
@@ -353,7 +354,8 @@ let type_of_pretype,term_of_preterm,retypecheck =
               Varp(s,ty'),[s,ty'],uenv0
           |_ -> v',venv1,uenv1
         in
-        let bod',venv2,uenv2 = typify ty'' (bod,venv1@venv,uenv1) in
+        let current_venv = venv1@venv in
+        let bod',venv2,uenv2 = typify ty'' (bod,current_venv,uenv1) in
         Absp(v',bod'),venv2,uenv2
     |_ -> failwith "typify: unexpected constant at this stage"
   in

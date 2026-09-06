@@ -1731,8 +1731,12 @@ let MOD_DOWN_CONV =
 
 let NUM_CANCEL_CONV =
   let rec minter i l1' l2' l1 l2 =
-    if l1 = [] then (i,l1',l2'@l2)
-    else if l2 = [] then (i,l1@l1',l2') else
+    if l1 = [] then
+      let right = l2'@l2 in
+      (i,l1',right)
+    else if l2 = [] then
+      let left = l1@l1' in
+      (i,left,l2') else
     let h1 = hd l1 and h2 = hd l2 in
     if h1 = h2 then minter (h1::i) l1' l2' (tl l1) (tl l2)
     else if Term.(<) h1 h2 then minter i (h1::l1') l2' (tl l1) l2

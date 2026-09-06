@@ -226,8 +226,9 @@ let GEN_BETA_CONV =
     let aargs,zargs = chop_list (length avs) args in
     let gargs = map (genvar o type_of) zargs in
     let gcon = genvar(itlist (mk_fun_ty o type_of) avs (type_of(rand eqn))) in
+    let absargs = aargs @ gargs in
     let bth =
-      INST [list_mk_abs(aargs @ gargs,list_mk_comb(gcon,avs)),con'] sth in
+      INST [list_mk_abs(absargs,list_mk_comb(gcon,avs)),con'] sth in
     let cth = el n (CONJUNCTS(ASSUME(snd(strip_exists(concl bth))))) in
     let dth = CONV_RULE (funpow (length avs) BINDER_CONV
       (RAND_CONV(BETAS_CONV))) cth in

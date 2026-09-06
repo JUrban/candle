@@ -5189,7 +5189,8 @@ let new_inductive_set =
     let rec f (n:int) (tm:term) : hol_type list -> term = function
       | [] -> tm
       | ty::tys ->
-          let v = variant (variables tm) (mk_var("x"^string_of_int n,ty)) in
+          let name = "x"^string_of_int n in
+          let v = variant (variables tm) (mk_var(name,ty)) in
           f (n+1) (mk_comb(tm,v)) tys in
     fun tm -> let tys = fst (splitlist dest_fun_ty (type_of tm)) in
               f 0 tm tys in

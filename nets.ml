@@ -54,7 +54,8 @@ let enter lconsts =
           let child,others =
             try (snd F_F I) (remove (fun (x,y) -> x = label) edges)
             with Failure _ -> (empty_net,edges) in
-          let new_child = net_update lconsts (elem,ntms@rtms,child) in
+          let pending = ntms@rtms in
+          let new_child = net_update lconsts (elem,pending,child) in
           Netnode ((label,new_child)::others,tips) in
   fun (tm,elem) net -> net_update lconsts (elem,[tm],net);;
 
@@ -75,7 +76,8 @@ let lookup tm =
           let label,ntms = label_for_lookup tm in
           let collection =
             try let child = assoc label edges in
-                follow(ntms @ rtms, child)
+                let pending = ntms @ rtms in
+                follow(pending, child)
             with Failure _ -> [] in
           if label = Vnet then collection else
           try collection @ follow(rtms,assoc Vnet edges)

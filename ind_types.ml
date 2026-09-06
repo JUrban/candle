@@ -1295,7 +1295,8 @@ let define_type_raw =
      l,map (modify_item alist) lis in
   let recover_clause id tm =
     let con,args = strip_comb tm in
-    fst(dest_const con)^id,map type_of args in
+    let conname = fst(dest_const con)^id in
+    conname,map type_of args in
   let rec create_auxiliary_clauses nty =
     let id = fst(dest_var(genvar bool_ty)) in
     let tycon,tyargs = dest_type nty in

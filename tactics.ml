@@ -92,7 +92,10 @@ let (compose_insts :instantiation->instantiation->instantiation) =
     and tyin = map (type_subst tyin2 F_F I) tyin1 in
     let tmin' = filter (fun (_,x) -> not (can (rev_assoc x) tmin)) tmin2
     and tyin' = filter (fun (_,a) -> not (can (rev_assoc a) tyin)) tyin2 in
-    pats1@pats2,tmin@tmin',tyin@tyin';;
+    let pats = pats1@pats2
+    and tms = tmin@tmin'
+    and tys = tyin@tyin' in
+    pats,tms,tys;;
 
 (* ------------------------------------------------------------------------- *)
 (* Construct A,_FALSITY_ |- p; contortion so falsity is the last element.    *)
@@ -142,8 +145,9 @@ let (THEN),(THENL),then_,then1_ =
             let ((mvs1,insts1),gls1,just1) = tac goal in
             let goals' = map (inst_goal insts1) goals in
             let ((mvs2,insts2),gls2,just2) = seqapply tacs goals' in
+            let combined_goals = (map (inst_goal insts2) gls1)@gls2 in
             ((union mvs1 mvs2,compose_insts insts1 insts2),
-             (map (inst_goal insts2) gls1)@gls2,compose_justs (length gls1) just1 just2 insts2)
+             combined_goals,compose_justs (length gls1) just1 just2 insts2)
    | _,_ -> failwith "seqapply: Length mismatch" in
   let justsequence just1 just2 insts2 i ths =
     just1 (compose_insts insts2 i) (just2 i ths) in

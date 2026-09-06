@@ -424,7 +424,9 @@ module Meson = struct
                 try expand_goals depth (lgoals,(insts,offset,lsize))
                      (cacheconts(fun (lg',(i,off,n)) ->
                          expand_goals depth (rgoals,(i,off,n + rsize))
-                           (cacheconts(fun (rg',ztup) -> cont (lg'@rg',ztup)))))
+                           (cacheconts(fun (rg',ztup) ->
+                              let goals = lg'@rg' in
+                              cont (goals,ztup)))))
                 with Failure _ ->
                     expand_goals depth (rgoals,(insts,offset,lsize))
                       (cacheconts(fun (rg',(i,off,n)) ->
@@ -432,7 +434,9 @@ module Meson = struct
                            (cacheconts (fun (lg',((_,_,fsize) as ztup)) ->
                               if n + rsize <= lsize + fsize
                               then failwith "repetition of demigoal pair"
-                              else cont (lg'@rg',ztup)))))
+                              else
+                                let goals = lg'@rg' in
+                                cont (goals,ztup)))))
               else
                 let g::gs = gl in
                 expand_goal depth (g,tup)

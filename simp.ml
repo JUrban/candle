@@ -256,7 +256,8 @@ let ss_of_prover newprover (Simpset(net,_,provers,rewmaker)) =
   Simpset(net,newprover,provers,rewmaker);;
 
 let ss_of_provers newprovers (Simpset(net,prover,provers,rewmaker)) =
-  Simpset(net,prover,newprovers@provers,rewmaker);;
+  let combined_provers = newprovers@provers in
+  Simpset(net,prover,combined_provers,rewmaker);;
 
 let ss_of_maker newmaker (Simpset(net,prover,provers,_)) =
   Simpset(net,prover,provers,newmaker);;
