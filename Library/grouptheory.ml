@@ -1000,7 +1000,8 @@ let GROUP_RULE =
     | Comb(Comb(Comb(Const("group_add",_),_),x),y) -> (true,x)::list_of_gtm y
     | _ -> [true,tm] in
   let find_rot l l' =
-    find (fun n -> let l1,l2 = chop_list n l in l2@l1 = l')
+    find (fun n -> let l1,l2 = chop_list n l in
+                   let rotated = l2@l1 in rotated = l')
          (0--(length l - 1)) in
   let rec GROUP_REASSOC_CONV n tm =
     if n = 0 then REFL tm
