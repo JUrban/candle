@@ -1176,7 +1176,7 @@ let rec deepen f n =
 (* ------------------------------------------------------------------------- *)
 
 let dest_monomial mon =
-  sort (increasing Term.compare fst) (graph mon Int.compare);;
+  sort (increasing_by Term.compare fst) (graph mon Int.compare);;
 
 let monomial_order =
   let rec lexorder l1 l2 =
