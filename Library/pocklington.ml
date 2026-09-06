@@ -2340,9 +2340,25 @@ let rec powermod x m n =
 
 (* ------------------------------------------------------------------------- *)
 (* Make a call to PARI/GP to factor a number into (probable) primes.         *)
+(* Fall back to a small, deterministic trial-division implementation when   *)
+(* the runtime does not provide Sys.command.                                 *)
 (* ------------------------------------------------------------------------- *)
 
 let factor =
+  let external_threshold = pow2 25 in
+  let rec findfactor m n =
+    if mod_num n m =/ num_0 then m
+    else if m */ m >/ n then n
+    else findfactor (m +/ num_1) n in
+  let rec multiplicity p n k =
+    if mod_num n p =/ num_0 then
+      multiplicity p (quo_num n p) (k +/ num_1)
+    else k,n in
+  let rec internal_factor n =
+    if n =/ num_1 then [] else
+    let p = findfactor num_2 n in
+    let k,n' = multiplicity p n num_0 in
+    (p,k)::internal_factor n' in
   let suck_file s = let data = string_of_file s in Sys.remove s; data in
   let extract_output s =
     let l0 = explode s in
@@ -2351,8 +2367,7 @@ let factor =
     let l2 = "["::rev(fst(chop_list(index "[" l1) l1)) in
     let tm = parse_term (implode l2) in
     map ((dest_numeral F_F dest_numeral) o dest_pair) (dest_list tm) in
-  fun n ->
-    if n =/ num_1 then [] else
+  let external_factor n =
     let filename = Filename.temp_file "pocklington" ".out" in
     let s = "echo 'print(factorint(" ^
             (string_of_num n) ^
@@ -2361,7 +2376,11 @@ let factor =
       let output = suck_file filename in
       extract_output output
     else
-       failwith "factor: Call to GP/PARI failed";;
+      failwith "factor: Call to GP/PARI failed" in
+  fun n ->
+    if n =/ num_1 then [] else
+    if n </ external_threshold then internal_factor n else
+    try external_factor n with Failure _ -> internal_factor n;;
 
 (* ------------------------------------------------------------------------- *)
 (* Alternative giving multiset instead of set plus indices.                  *)
