@@ -17,8 +17,9 @@ needs "candle/kernel.ml";;
 let genvar =
   let gcounter = ref 0 in
   fun ty -> let count = !gcounter in
+             let name = "_"^(string_of_int count) in
              (gcounter := count + 1;
-              mk_var("_"^(string_of_int count),ty));;
+              mk_var(name,ty));;
 
 (* ------------------------------------------------------------------------- *)
 (* Convenient functions for manipulating types.                              *)
