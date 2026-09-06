@@ -117,12 +117,6 @@ loads "cart.ml";;       (* Finite Cartesian products                         *)
 loads "define.ml";;     (* Support for general recursive definitions         *)
 
 (* ------------------------------------------------------------------------- *)
-(* In-logic computation function.                                            *)
-(* ------------------------------------------------------------------------- *)
-
-loads "candle/compute.ml";; (* Definitions of cval primitives                *)
-
-(* ------------------------------------------------------------------------- *)
 (* Checks that no axiom other than those allowed by core libs are introduced *)
 (* ------------------------------------------------------------------------- *)
 
