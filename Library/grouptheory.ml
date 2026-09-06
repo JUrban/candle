@@ -893,40 +893,40 @@ let GROUP_RULE =
             ==> group_inv G t = group_neg G t' /\
                 group_inv G t IN group_carrier G`,
       SIMP_TAC[IMP_CONJ; group_neg; GROUP_INV])
-    and mfn_neg = (MATCH_MP o prove)
+    in let mfn_neg = (MATCH_MP o prove)
      (`!G t t':A.
             t = t' /\ t IN group_carrier G
             ==> group_neg G t = group_neg G t' /\
                 group_neg G t IN group_carrier G`,
       SIMP_TAC[GROUP_NEG])
-    and mfn_pow = (MATCH_MP o prove)
+    in let mfn_pow = (MATCH_MP o prove)
      (`!G t (t':A) n.
             t = t' /\ t IN group_carrier G
             ==> group_pow G t n = group_nmul G n t' /\
                 group_pow G t n IN group_carrier G`,
       SIMP_TAC[GROUP_NMUL_EQ_POW; IMP_CONJ; GROUP_POW])
-    and mfn_nmul = (MATCH_MP o prove)
+    in let mfn_nmul = (MATCH_MP o prove)
      (`!G t (t':A) n.
             t = t' /\ t IN group_carrier G
             ==> group_nmul G n t = group_nmul G n t' /\
                 group_nmul G n t IN group_carrier G`,
       SIMP_TAC[GROUP_NMUL_EQ_POW; GROUP_POW; IMP_CONJ])
-    and mfn_mul = (MATCH_MP o prove)
+    in let mfn_mul = (MATCH_MP o prove)
      (`!G s t s' t':A.
             (s = s' /\ s IN group_carrier G) /\
             (t = t' /\ t IN group_carrier G)
             ==> group_mul G s t = group_add G s' t' /\
                 group_mul G s t IN group_carrier G`,
       SIMP_TAC[IMP_CONJ; group_add; GROUP_MUL])
-    and mfn_add = (MATCH_MP o prove)
+    in let mfn_add = (MATCH_MP o prove)
      (`!G s t s' t':A.
             (s = s' /\ s IN group_carrier G) /\
             (t = t' /\ t IN group_carrier G)
             ==> group_add G s t = group_add G s' t' /\
                 group_add G s t IN group_carrier G`,
       SIMP_TAC[GROUP_ADD])
-    and in_tm = `(IN):A->(A->bool)->bool`
-    and gc_tm = `group_carrier:(A)group->A->bool` in
+    in let in_tm = `(IN):A->(A->bool)->bool` in
+    let gc_tm = `group_carrier:(A)group->A->bool` in
     let rec GROUP_TOTALIZE g tm =
       match tm with
         Comb(Comb(Comb(Const("group_mul",_),g),s),t) ->
