@@ -666,18 +666,21 @@ let csdp obj mats =
 (* are extreme numbers in the original problem.                              *)
 (* ------------------------------------------------------------------------- *)
 
-let scale_then =
+let scale_then solver obj mats =
   let common_denominator amat acc =
     foldl (fun a m c -> lcm_num (denominator c) a) acc amat
   and maximal_element amat acc =
     foldl (fun maxa m c -> max_num maxa (abs_num c)) acc amat in
-  fun solver obj mats ->
+  let vector_common_denominator amat acc =
+    foldl (fun a m c -> lcm_num (denominator c) a) acc amat
+  and vector_maximal_element amat acc =
+    foldl (fun maxa m c -> max_num maxa (abs_num c)) acc amat in
     let cd1 = itlist common_denominator mats (num 1)
-    and cd2 = common_denominator (snd obj)  (num 1) in
+    and cd2 = vector_common_denominator (snd obj) (num 1) in
     let mats' = map (mapf (fun x -> cd1 */ x)) mats
     and obj' = vec_cmul cd2 obj in
     let max1 = itlist maximal_element mats' (num 0)
-    and max2 = maximal_element (snd obj') (num 0) in
+    and max2 = vector_maximal_element (snd obj') (num 0) in
     let scal1 = pow2 (20-int_of_float(log(float_of_num max1) /. log 2.0))
     and scal2 = pow2 (20-int_of_float(log(float_of_num max2) /. log 2.0)) in
     let mats'' = map (mapf (fun x -> x */ scal1)) mats'
