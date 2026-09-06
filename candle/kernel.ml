@@ -59,7 +59,7 @@ let new_specification = Kernel.new_specification;;
    verified new_basic_definition operation but does not otherwise retain that
    observational list.  Keep the same newest-first audit view in this source
    wrapper; theorem construction remains exclusively in Kernel. *)
-let candle_basic_definitions = ref [];;
+let candle_basic_definitions = ref ([]:thm list);;
 
 let new_basic_definition tm =
   let theorem = Kernel.new_basic_definition tm in
@@ -98,13 +98,19 @@ let mk_eq =
  * Term and type comparison
  * ------------------------------------------------------------------------- *)
 
+let candle_pair_compare cmpa cmpb left right =
+  Pair.compare cmpa cmpb left right;;
+let candle_list_compare cmp left right = List.compare cmp left right;;
+let candle_string_compare left right = String.compare left right;;
+
 module Type = struct
   let rec compare ty1 ty2 =
     match ty1, ty2 with
-    | Tyvar x1, Tyvar x2 -> String.compare x1 x2
+    | Tyvar x1, Tyvar x2 -> candle_string_compare x1 x2
     | Tyvar _, Tyapp _ -> -1
     | Tyapp (x1,a1), Tyapp (x2,a2) ->
-        Pair.compare String.compare (List.compare compare) (x1,a1) (x2,a2)
+        candle_pair_compare candle_string_compare
+          (candle_list_compare compare) (x1,a1) (x2,a2)
     | Tyapp _, Tyvar _ -> 1
   ;;
   let (<) ty1 ty2 = compare ty1 ty2 < 0
@@ -117,19 +123,21 @@ module Term = struct
   let rec compare t1 t2 =
     match t1, t2 with
     | Var (x1,ty1), Var (x2,ty2) ->
-        Pair.compare String.compare Type.compare (x1,ty1) (x2,ty2)
+        candle_pair_compare candle_string_compare Type.compare
+          (x1,ty1) (x2,ty2)
     | Var _, _ -> -1
     | Const (x1,ty1), Const (x2,ty2) ->
-        Pair.compare String.compare Type.compare (x1,ty1) (x2,ty2)
+        candle_pair_compare candle_string_compare Type.compare
+          (x1,ty1) (x2,ty2)
     | Const _, Var _ -> 1
     | Const _, _ -> -1
     | Comb (s1,s2), Comb (t1,t2) ->
-        Pair.compare compare compare (s1,s2) (t1,t2)
+        candle_pair_compare compare compare (s1,s2) (t1,t2)
     | Comb _, Var _ -> 1
     | Comb _, Const _ -> 1
     | Comb _, Abs _ -> -1
     | Abs (s1,s2), Abs (t1,t2) ->
-        Pair.compare compare compare (s1,s2) (t1,t2)
+        candle_pair_compare compare compare (s1,s2) (t1,t2)
     | Abs _, _ -> 1
   ;;
   let (<) t1 t2 = compare t1 t2 < 0
@@ -142,9 +150,8 @@ end;;
 
 module Thm = struct
   let compare th1 th2 =
-    Pair.compare (List.compare Term.compare) Term.compare
-                 (dest_thm th1)
-                 (dest_thm th2)
+    candle_pair_compare (candle_list_compare Term.compare) Term.compare
+      (dest_thm th1) (dest_thm th2)
   ;;
   let (<) th1 th2 = compare th1 th2 < 0
   ;;
