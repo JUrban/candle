@@ -7,6 +7,9 @@
 
 needs "metis.ml";;
 
+let thecops_assert p =
+  if p then () else failwith "thecops assertion failed";;
+
 (* ------------------------------------------------------------------------- *)
 (* hashek.ml                                                                 *)
 (* ------------------------------------------------------------------------- *)
@@ -24,16 +27,16 @@ let MARK_CONCL label =
   USE_THEN label (fun th -> UNDISCH_TAC (concl th)) THEN
 
   (fun g ->
-     assert (is_imp (snd g));
+     thecops_assert (is_imp (snd g));
      (* the first part of the implication *may* be a negation,
         but does not necessarily have to be *)
-     assert (snd (dest_imp (snd g)) = `F`);
+     thecops_assert (snd (dest_imp (snd g)) = `F`);
      ALL_TAC g) THEN
 
   REWRITE_TAC [TAUT `!t. (~t ==> F <=> t)`] THEN
   POP_ASSUM_LIST (fun l -> ASSUME_TAC (if l = [] then TRUTH else end_itlist CONJ l)) THEN
 
-  (fun g -> assert (length (fst g) = 1); ALL_TAC g) THEN
+  (fun g -> thecops_assert (length (fst g) = 1); ALL_TAC g) THEN
 
   W(MAP_EVERY(UNDISCH_TAC o concl o snd) o fst) THEN
   MATCH_MP_TAC hashek_prop THEN
@@ -1133,16 +1136,16 @@ let nth_matrix i = function
 let unique f l = List.length (List.filter_map f l) = 1
 
 let rec prove_ec k sub ((i, v), _, lmext as clext) mi pi =
-  assert (unique (nth_clause i) mi);
-  assert (List.length pi = k);
+  thecops_assert (unique (nth_clause i) mi);
+  thecops_assert (List.length pi = k);
   (*if !copverb then Format.printf "prove_ec: ClaB = %s\n%!" (Ncprint.string_of_matrix (fst (matBC_of_clause_ext clext)));*)
   let ((((i, k1), v1), cla1), miAB) = pick (nth_clause i) mi in
   let alt1 () =
     match lmext with Matext (j, _, clext') when List.mem (j, k1) pi ->
       begin match unify_vars sub v v1 with None -> nil | Some sub2 ->
         let (((j, k1'), mi2), claDE) = pick (nth_matrix j) cla1 in
-        assert (unique (nth_matrix j) cla1);
-        assert (k1 = k1');
+        thecops_assert (unique (nth_matrix j) cla1);
+        thecops_assert (k1 = k1');
         prove_ec k sub2 clext' mi2 pi |> Strom.map
           (fun (sub3, (prefix, postfix), claB1, mi3) ->
             (sub3, (((i, v1), j) :: prefix, postfix), claB1, miAB (((i, k1), v1), claDE (Mat ((j, k1), mi3))))
@@ -1246,10 +1249,10 @@ open Extclause
    `p1 |- c`, ..., `pn |- c`, return `|- c`.
 *)
 let rec DISJ_CASES_LIST th prfs =
-  assert (List.length prfs = List.length (disjuncts (concl th)));
-  assert (List.for_all2 List.mem (disjuncts (concl th)) (List.map hyp prfs));
+  thecops_assert (List.length prfs = List.length (disjuncts (concl th)));
+  thecops_assert (List.for_all2 List.mem (disjuncts (concl th)) (List.map hyp prfs));
   (* the conclusion of all proofs has to be the same *)
-  assert (let c = concl (List.hd prfs) in
+  thecops_assert (let c = concl (List.hd prfs) in
     List.fold_left (fun acc x -> acc && concl x = c) true prfs);
   match prfs with
     [] -> failwith "DISJ_CASES_LIST"
@@ -1257,7 +1260,7 @@ let rec DISJ_CASES_LIST th prfs =
   | [p1; p2] -> DISJ_CASES th p1 p2
   | p :: ps -> DISJ_CASES th p (DISJ_CASES_LIST (ASSUME (snd (dest_disj (concl th)))) ps);;
 
-assert (DISJ_CASES_LIST (ASSUME `a \/ b \/ c`)
+thecops_assert (DISJ_CASES_LIST (ASSUME `a \/ b \/ c`)
   [ TAUT `a ==> c \/ b \/ a` |> UNDISCH
   ; TAUT `b ==> c \/ b \/ a` |> UNDISCH
   ; TAUT `c ==> c \/ b \/ a` |> UNDISCH] |> concl = `c \/ b \/ a`);;
@@ -1270,8 +1273,8 @@ let CONTRADICTION x y =
   else if is_neg yc && not (is_neg xc) then MP (NOT_ELIM y) x
   else failwith "no contradiction found";;
 
-assert (concl (CONTRADICTION (ASSUME `~p`) (ASSUME `p:bool`)) = `F`);;
-assert (concl (CONTRADICTION (ASSUME `p:bool`) (ASSUME `~p`)) = `F`);;
+thecops_assert (concl (CONTRADICTION (ASSUME `~p`) (ASSUME `p:bool`)) = `F`);;
+thecops_assert (concl (CONTRADICTION (ASSUME `p:bool`) (ASSUME `~p`)) = `F`);;
 
 
 let flip_neg tm = if is_neg tm then dest_neg tm else mk_neg tm
@@ -1296,7 +1299,7 @@ let spec_vars sub vs th =
     Format.printf "spec_vars: |vars| = %d, th = %s\n%!"
     (List.length vs) (string_of_term (concl th));
   let tys = concl th |> strip_forall |> fst |> List.map type_of in
-  assert (List.length tys = List.length vs);
+  thecops_assert (List.length tys = List.length vs);
   List.fold_left2 (fun th ty v -> SPEC (inst_var sub ty v) th)
     th tys vs
 
@@ -1340,8 +1343,8 @@ let rec eat_proofs data =
 
 and bot_of_clause_ext data ((i, v), (matL, matR), lmext) acc th =
   let i' = List.assoc i data.mapping in
-  assert (i' = List.length matL);
-  assert (List.length (CONJUNCTS th) = 1 + List.length (matL @ matR));
+  thecops_assert (i' = List.length matL);
+  thecops_assert (List.length (CONJUNCTS th) = 1 + List.length (matL @ matR));
   bot_of_litmat_ext data acc (nth_conj i' th |> spec_vars data.sub v) lmext
 and bot_of_litmat_ext data acc thi = function
     Litext ((claL, claR), claC) ->
@@ -1351,12 +1354,12 @@ and bot_of_litmat_ext data acc thi = function
       let acc2, botsR = eat_proofs data acc1 thR in
       if !copverb then
         Format.printf "bot_of_litmat_ext: thi = %s\n%!" (string_of_thm thi);
-      assert (let tmj = concl thj in not (is_conj tmj || is_disj tmj));
+      thecops_assert (let tmj = concl thj in not (is_conj tmj || is_disj tmj));
       let botj = CONTRADICTION thj (concl thj |> flip_neg |> ASSUME) in
       acc2, DISJ_CASES_LIST thi (botsL @ botj :: botsR)
   | Matext (j, (claL, claR), clext) ->
       let j' = List.assoc j data.mapping in
-      assert (j' = List.length claL);
+      thecops_assert (j' = List.length claL);
       let thj, (thL, thR) = nth_disj j' thi in
       let acc1, botj  = bot_of_clause_ext data clext acc thj in
       let acc2, botsL = eat_proofs data acc1 thL in
@@ -1366,31 +1369,31 @@ and bot_of_litmat_ext data acc thi = function
 and bot_of_proof data lem th = function
     Mat (j, mat), Decomposition (cla, ((i, k), v), prfs) ->
       let i' = List.assoc i data.mapping in
-      assert (i' < List.length mat);
-      assert (snd (List.nth mat i') = cla);
+      thecops_assert (i' < List.length mat);
+      thecops_assert (snd (List.nth mat i') = cla);
       if !copverb then
         Format.printf "Decomposition %d: %s\n%!" i' (string_of_term (concl th));
       let thi = nth_conj i' th |> spec_vars data.sub v in
       let djs = disjuncts (concl thi) in
-      assert (List.length djs = List.length prfs);
+      thecops_assert (List.length djs = List.length prfs);
       List.map ASSUME djs |> eat_proofs data (lem, prfs)
       |> snd |> DISJ_CASES_LIST thi
   | Lit lit, prf ->
       let liti = Mapping.hol_of_literal (Substarray.inst_lit data.sub lit) in
       if !copverb then
         Format.printf "bot_of_proof: lit = %s\n%!" (string_of_term liti);
-      assert (liti = concl th);
+      thecops_assert (liti = concl th);
       begin match prf with
         Reduction -> flip_neg liti |> ASSUME |> CONTRADICTION th
-      | Lemma -> assert (List.mem_assoc liti lem); List.assoc liti lem
+      | Lemma -> thecops_assert (List.mem_assoc liti lem); List.assoc liti lem
       | Extension (_, (prefix, postfix), prfs) ->
           let prefix_th = prefix_problem data prefix in
           if !copverb then
             Format.printf "prefix_th = %s\n%!" (string_of_thm prefix_th);
           let (_, prfs'), bot =
             bot_of_clause_ext data postfix (lem, prfs) prefix_th in
-          assert (prfs' = []);
-          assert (List.mem (concl th) (hyp bot));
+          thecops_assert (prfs' = []);
+          thecops_assert (List.mem (concl th) (hyp bot));
           MP (DISCH (concl th) bot) th
       | _ -> failwith "bot_of_proof: not a well-formed proof"
       end
@@ -1425,7 +1428,7 @@ let start mat opt lim =
 let fol_of_thm th =
   let lconsts = freesl (hyp th) in
   let tm = concl th in
-  assert (List.for_all (fun x -> List.mem x lconsts) (frees tm));
+  thecops_assert (List.for_all (fun x -> List.mem x lconsts) (frees tm));
   Mapping.fol_of_form [] lconsts tm
 
 
@@ -1457,8 +1460,8 @@ let NANOCOP_DEEPEN opt ths =
   let data = Ncrecon.mk_recon_data (th, mat, sub) in
   let bot  = Ncrecon.bot_of_proof data [] th prfs in
   if !copverb then (Format.printf "Reconstruction:\n%!"; print_thm bot);
-  assert (set_eq (hyp bot) (hyp th));
-  assert (concl bot = `F`);
+  thecops_assert (set_eq (hyp bot) (hyp th));
+  thecops_assert (concl bot = `F`);
   bot
 
 
