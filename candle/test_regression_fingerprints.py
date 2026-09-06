@@ -36,8 +36,10 @@ class FingerprintPlumbingTest(unittest.TestCase):
         end = source.index("let candle_s1_node", start)
         implementation = source[start:end]
         self.assertIn("Bytes.create (2 * input_length)", implementation)
-        self.assertIn("for index = 0 to input_length - 1 do", implementation)
+        self.assertIn("let rec encode index =", implementation)
+        self.assertIn("encode (index + 1)", implementation)
         self.assertIn("Bytes.to_string encoded", implementation)
+        self.assertNotIn("for index", implementation)
         self.assertNotIn("List.map", implementation)
         self.assertNotIn("explode", implementation)
 

@@ -5,6 +5,11 @@
 
 let require condition message = if condition then () else failwith message;;
 
+let encoded = Bytes.create 2;;
+Bytes.set encoded 0 'A';;
+Bytes.set encoded 1 'z';;
+require (Bytes.to_string encoded = "Az") "Bytes.set character mismatch";;
+
 let same_float_bits left right =
   Cake.Double.sign left = Cake.Double.sign right &&
   Cake.Double.exponent left = Cake.Double.exponent right &&

@@ -775,7 +775,8 @@ module Bytes = struct
   (* NOTE OCaml can raise Invalid_argument in get, set, blit_string.
        Unsure how the CakeML handle out-of-bounds accesses. *)
   let get s n = Cake.Word8_array.sub s n
-  let set s n c = Cake.Word8_array.update s n c
+  let set s n c =
+    Cake.Word8_array.update s n (Cake.Word8.fromChar c)
   let blit_string src src_pos dst dst_pos len =
     Cake.Word8_array.copyVec src src_pos len dst dst_pos
   let to_string s = Cake.Word8_array.substring s 0 (length s)

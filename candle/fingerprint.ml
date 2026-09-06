@@ -16,13 +16,15 @@ let candle_s1_hex s =
     failwith "candle_s1_hex: input too large"
   else
     let encoded = Bytes.create (2 * input_length) in
-    for index = 0 to input_length - 1 do
+    let rec encode index =
+      if index = input_length then () else
       let byte = Char.code (String.get s index) in
       Bytes.set encoded (2 * index)
         (String.get candle_s1_hex_digits (byte / 16));
       Bytes.set encoded (2 * index + 1)
-        (String.get candle_s1_hex_digits (byte mod 16))
-    done;
+        (String.get candle_s1_hex_digits (byte mod 16));
+      encode (index + 1) in
+    encode 0;
     Bytes.to_string encoded;;
 
 let candle_s1_node tag fields =
