@@ -38,9 +38,25 @@ end
 module List =
 struct
 
-(*
 include List
-*)
+
+let rec fold_left2 f acc xs ys =
+  match xs, ys with
+    [], [] -> acc
+  | x :: xs', y :: ys' -> fold_left2 f (f acc x y) xs' ys'
+  | _ -> invalid_arg "List.fold_left2: lists must have equal length"
+
+let rec for_all2 f xs ys =
+  match xs, ys with
+    [], [] -> true
+  | x :: xs', y :: ys' -> f x y && for_all2 f xs' ys'
+  | _ -> invalid_arg "List.for_all2: lists must have equal length"
+
+let mapi f xs =
+  let rec loop index = function
+      [] -> []
+    | x :: rest -> f index x :: loop (index + 1) rest in
+  loop 0 xs
 
 let cons x l = x :: l
 
