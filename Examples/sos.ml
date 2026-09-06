@@ -974,7 +974,7 @@ let sdpa_of_blockdiagonal k m =
   let pfx = string_of_int k ^" " in
   let ents =
     foldl (fun a (b,i,j) c -> if i > j then a else ((b,i,j),c)::a) [] m in
-  let entss = sort (increasing fst) ents in
+  let entss = sort (increasing_by _int_triple_cmp fst) ents in
   itlist (fun ((b,i,j),c) a ->
      pfx ^ string_of_int b ^ " " ^ string_of_int i ^ " " ^ string_of_int j ^
      " " ^ decimalize 20 c ^ "\n" ^ a) entss "";;
