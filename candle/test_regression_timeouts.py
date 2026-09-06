@@ -130,6 +130,20 @@ class TimeoutPolicyTest(unittest.TestCase):
         finally:
             repl.kill()
 
+    def test_complete_progress_lines_can_drive_a_diagnostic_handler(self):
+        repl = self._stream_repl(
+            "print('diagnostic request', flush=True)\n"
+            "print('- Finished loading long.ml', flush=True)\n",
+            inactivity_timeout=1)
+        observed = []
+        repl._progress_line_handler = lambda active, line: observed.append(
+            (active, line))
+        try:
+            repl._check_output()
+            self.assertEqual(observed, [(repl, "diagnostic request")])
+        finally:
+            repl.kill()
+
     def test_progress_never_extends_absolute_wall_deadline(self):
         repl = self._stream_repl(
             "import time\n"

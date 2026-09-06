@@ -601,6 +601,17 @@ class CandleREPL:
                         f"Expected to finish loading {expected}. Actual: {finished}")
                     return
                 case 6:
+                    progress_handler = getattr(
+                        self, "_progress_line_handler", None)
+                    if progress_handler is not None:
+                        line = self.process.match.group(0)
+                        if line.startswith("\n"):
+                            line = line[1:]
+                        if line.endswith("\n"):
+                            line = line[:-1]
+                        if line.endswith("\r"):
+                            line = line[:-1]
+                        progress_handler(self, line)
                     continue
                 case 7:
                     if wall_limited:
