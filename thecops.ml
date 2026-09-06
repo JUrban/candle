@@ -276,7 +276,7 @@ module type Substitution = sig
   val to_list : t -> (int * iterm) list
 end
 
-module Substlist : Substitution with type t = (int * iterm) list =
+module Substlist =
 struct
 
 exception Unify
@@ -438,9 +438,9 @@ let ground_lit ((suba, _), _ as sub) (p, l) =
 
 end
 
-module Substoff (Sub : Substitution) = struct
+module Substoff = struct
 
-include Sub
+include Substarray
 
 let eq (sub, off) l1 l2 = eq_lit sub l1 l2
 
@@ -462,7 +462,7 @@ end
 
 module Cop = struct
 
-module Subst = Substoff (Substarray)
+module Subst = struct include Substoff end
 
 type search_opts =
 { cut1 : bool
@@ -783,11 +783,13 @@ module Ncmatrix = struct
 open Utils
 open Fol_term
 
-type 't litmat = Lit of lit | Mat of 't imatrix
-and 't imatrix = 't * 't matrix
-and 't matrix = 't iclause list
-and 't iclause = ('t * int list) * 't clause
-and 't clause = 't  litmat list
+type 't litmat =
+    Lit of lit
+  | Mat of ('t * ((('t * int list) * 't litmat list) list))
+type 't clause = 't litmat list
+type 't iclause = ('t * int list) * 't clause
+type 't matrix = 't iclause list
+type 't imatrix = 't * 't matrix
 
 let map_litmat fl fm = function
     Lit lit -> fl lit
@@ -997,9 +999,11 @@ type 'v litmat_ext =
     (* beta clause (left & right), whole clause *)
     Litext of ('v clause * 'v clause) * 'v clause
     (* matrix index, surrounding clause, path in clause *)
-  | Matext of int * ('v clause * 'v clause) * 'v clause_ext
+  | Matext of int * ('v clause * 'v clause) *
+      ((int * 'v list) * ('v matrix * 'v matrix) * 'v litmat_ext)
 (* clause index, surrounding matrix, path in litmat *)
-and 'v clause_ext = (int * 'v list) * ('v matrix * 'v matrix) * 'v litmat_ext
+type 'v clause_ext =
+  (int * 'v list) * ('v matrix * 'v matrix) * 'v litmat_ext
 
 let offset_iv off (i, v) = (i, List.map ((+) off) v)
 
@@ -1264,7 +1268,7 @@ let CONTRADICTION x y =
   if !copverb then Format.printf "contra: %s with %s\n%!" (string_of_term xc) (string_of_term yc);
   if is_neg xc && not (is_neg yc) then MP (NOT_ELIM x) y
   else if is_neg yc && not (is_neg xc) then MP (NOT_ELIM y) x
-  else failwith "no contradiction found"
+  else failwith "no contradiction found";;
 
 assert (concl (CONTRADICTION (ASSUME `~p`) (ASSUME `p:bool`)) = `F`);;
 assert (concl (CONTRADICTION (ASSUME `p:bool`) (ASSUME `~p`)) = `F`);;
