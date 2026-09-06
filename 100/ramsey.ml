@@ -197,8 +197,7 @@ let find_match u =
            tmin,tyin;;
 
 let rec mk_primed_var(name,ty) =
-  if can get_const_type name then
-    let primed_name = name^"'" in mk_primed_var(primed_name,ty)
+  if can get_const_type name then mk_primed_var(name^"'",ty)
   else mk_var(name,ty);;
 
 let subst_occs =
