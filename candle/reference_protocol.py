@@ -1,4 +1,4 @@
-"""Stdlib-only structural fingerprint request and parsing contract."""
+"""Stdlib-only candidate-V3 fingerprint request and parsing contract."""
 
 import hashlib
 import json
@@ -7,10 +7,10 @@ import re
 
 
 CANDLE_ROOT = Path(__file__).resolve().parent.parent
-FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V2"
-STATE_FINGERPRINT_MARKER = "CANDLE_STATE_FINGERPRINT_V2"
+FINGERPRINT_MARKER = "CANDLE_FINGERPRINT_V3"
+STATE_FINGERPRINT_MARKER = "CANDLE_STATE_FINGERPRINT_V3"
 PROCESS_MARKER = "CANDLE_GREAT100_PROCESS_V1"
-FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint.ml"
+FINGERPRINT_HELPER = CANDLE_ROOT / "candle" / "fingerprint_v3.ml"
 OCAML_VALUE_PATH_RE = re.compile(
     r"^[A-Za-z][A-Za-z0-9_']*(?:\.[A-Za-z][A-Za-z0-9_']*)*$")
 EMPTY_HYPOTHESES_WIRE = b"4:list1:0"
@@ -72,7 +72,7 @@ def _match_expected_identities(records, post_state, expected_identities,
 
 def _read_fingerprint_records(log_path, theorem_names, mapping_status,
                               expected_identities=None):
-    """Parse structural identities emitted by candle/fingerprint.ml."""
+    """Parse structural identities emitted by candle/fingerprint_v3.ml."""
     lines = Path(log_path).read_text(encoding="utf-8").splitlines()
     records = {}
     state_records = []
@@ -194,4 +194,3 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
             expected_identities["approval_sha256"]
             if expected_identities is not None else None),
     }
-

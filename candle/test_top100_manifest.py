@@ -243,6 +243,44 @@ class Top100ManifestTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
                     top100_manifest._load_identity_approval(targets)
 
+    def test_schema5_execution_and_v3_serializer_contract_are_exact(self):
+        contract = {
+            "execution": {
+                "scheduler": "bounded-independent-targets-v1",
+                "max_parallel_targets": 7,
+                "sweep_overlap_allowed": False,
+                "stop_scheduling_after_failure": True,
+            },
+            "candle": {"serializer": {
+                "path": "candle/fingerprint_v3.ml",
+                "bytes": top100_manifest.V3_REFERENCE_SERIALIZER_BYTES,
+                "sha256": top100_manifest.V3_REFERENCE_SERIALIZER_SHA256,
+            }},
+        }
+        top100_manifest._validate_schema5_collection_extensions(contract)
+        self.assertEqual(
+            top100_manifest.V3_REFERENCE_SERIALIZER_SHA256,
+            top100_manifest._sha256(
+                top100_manifest.ROOT / "candle/fingerprint_v3.ml"))
+        for path, value, message in (
+                (("execution", "max_parallel_targets"), 0, "execution"),
+                (("execution", "max_parallel_targets"), True, "execution"),
+                (("execution", "sweep_overlap_allowed"), True, "execution"),
+                (("candle", "serializer", "path"),
+                 "candle/fingerprint.ml", "V3 serializer"),
+                (("candle", "serializer", "bytes"), 12289,
+                 "V3 serializer"),
+                (("candle", "serializer", "sha256"), "0" * 64,
+                 "V3 serializer")):
+            changed = json.loads(json.dumps(contract))
+            parent = changed
+            for key in path[:-1]:
+                parent = parent[key]
+            parent[path[-1]] = value
+            with self.subTest(path=path), self.assertRaisesRegex(
+                    ValueError, message):
+                top100_manifest._validate_schema5_collection_extensions(changed)
+
     def test_approved_artifact_requires_two_retained_independent_runs(self):
         targets = self.manifest["targets"]
         with tempfile.TemporaryDirectory() as temporary:
@@ -250,7 +288,7 @@ class Top100ManifestTest(unittest.TestCase):
             (root / "candle/evidence").mkdir(parents=True)
             serializer = root / "candle/fingerprint.ml"
             serializer.write_bytes(top100_manifest.ROOT.joinpath(
-                "candle/fingerprint.ml").read_bytes())
+                "candle/fingerprint_v3.ml").read_bytes())
             serializer_sha256 = top100_manifest._sha256(serializer)
             collector = root / "candle/reference_fingerprints.py"
             collector.write_bytes(

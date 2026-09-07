@@ -280,7 +280,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.assertEqual(
             len(plan["input"]["source_contract"]["compatibility_deltas"]), 3)
         source = plan["request"]["source"]
-        self.assertLess(source.index("candle/fingerprint.ml"),
+        self.assertLess(source.index("candle/fingerprint_v3.ml"),
                         source.index('loadt "100/gcd.ml"'))
         self.assertLess(source.index('loadt "100/gcd.ml"'),
                         source.index('candle_s1_emit_fingerprint "EGCD" EGCD'))
@@ -946,6 +946,48 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 reference.validate_candidate(
                     candidate, plan, plan["request"]["source"],
                     transcript + "x")
+
+    def test_v9_candidate_requires_exact_v3_serializer_and_wire(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, runtime, runtime_stublib, ocamlc, ocamlfind = \
+                self._fake_reference(directory)
+            plan = self._build_plan(
+                "100/gcd", root, runtime, runtime_stublib, ocamlc,
+                ocamlfind, NONCE)
+            record = "\t".join([
+                regression.FINGERPRINT_MARKER,
+                b"EGCD".hex(), b"theorem".hex(),
+                regression.EMPTY_HYPOTHESES_WIRE.hex(),
+                b"conclusion".hex(), b"axioms".hex(), "0", "3",
+            ])
+            transcript = "\n".join([
+                f"{reference.SESSION_MARKER}\t{NONCE}", record,
+                self._state_record(),
+                f"{reference.COMPLETE_MARKER}\t{NONCE}", "",
+            ])
+            candidate = reference.candidate_from_transcript(plan, transcript)
+            reference.validate_candidate(
+                candidate, plan, plan["request"]["source"], transcript)
+
+            for field, value in (
+                    ("path", "/tmp/candle/fingerprint.ml"),
+                    ("sha256", "0" * 64)):
+                changed = copy.deepcopy(plan)
+                changed["input"]["serializer"][field] = value
+                with self.subTest(field=field), self.assertRaisesRegex(
+                        reference.CollectionError, "exact V3 serializer"):
+                    reference.validate_candidate(
+                        candidate, changed, plan["request"]["source"],
+                        transcript)
+
+            with mock.patch.object(
+                    reference.regression, "FINGERPRINT_MARKER",
+                    "CANDLE_FINGERPRINT_V2"):
+                with self.assertRaisesRegex(
+                        reference.CollectionError, "exact V3 wire identity"):
+                    reference.validate_candidate(
+                        candidate, plan, plan["request"]["source"],
+                        transcript)
 
 
 if __name__ == "__main__":
