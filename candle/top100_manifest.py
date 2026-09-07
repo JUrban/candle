@@ -185,6 +185,9 @@ REFERENCE_ARTIFACT_NAMES = {
     "controller_success", "collector_stdout", "collector_stderr",
     "validator_stdout", "validator_stderr"}
 COLLECTION_EVIDENCE_FIELDS = {"contract", "receipt"}
+V3_REFERENCE_SERIALIZER_RELATIVE = "candle/fingerprint_v3.ml"
+V3_REFERENCE_SERIALIZER_SHA256 = \
+    "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110"
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 EMPTY_HYPOTHESES_SHA256 = hashlib.sha256(b"4:list1:0").hexdigest()
@@ -476,6 +479,27 @@ def _read_evidence_record(record, label):
     return source
 
 
+def _validate_schema5_collection_extensions(contract):
+    """Validate the scheduler and serializer additions made by schema 5."""
+    execution = contract.get("execution")
+    candle = contract.get("candle")
+    serializer = candle.get("serializer") if isinstance(candle, dict) else None
+    if (not isinstance(execution, dict) or set(execution) != {
+            "scheduler", "max_parallel_targets", "sweep_overlap_allowed",
+            "stop_scheduling_after_failure"} or
+            execution["scheduler"] != "bounded-independent-targets-v1" or
+            type(execution["max_parallel_targets"]) is not int or
+            not 1 <= execution["max_parallel_targets"] <= 9 or
+            execution["sweep_overlap_allowed"] is not False or
+            execution["stop_scheduling_after_failure"] is not True):
+        raise ValueError("malformed schema-5 reference execution contract")
+    if (not isinstance(serializer, dict) or set(serializer) != {
+            "path", "sha256"} or
+            serializer["path"] != V3_REFERENCE_SERIALIZER_RELATIVE or
+            serializer["sha256"] != V3_REFERENCE_SERIALIZER_SHA256):
+        raise ValueError("schema-5 collection is not bound to V3 serializer")
+
+
 def _load_collection_evidence(approval, targets):
     evidence = approval["collection_evidence"]
     if (not isinstance(evidence, dict) or
@@ -494,12 +518,16 @@ def _load_collection_evidence(approval, targets):
             object_pairs_hook=_reject_duplicate_keys)
     except (UnicodeDecodeError, json.JSONDecodeError) as error:
         raise ValueError("malformed reference collection JSON") from error
-    if (not isinstance(contract, dict) or set(contract) != {
+    schema = contract.get("schema") if isinstance(contract, dict) else None
+    contract_fields = {
             "schema", "kind", "approval_status", "promotion_allowed",
             "sweep_count", "target_count", "total_target_runs", "source_mode",
             "project", "candle", "reference", "runtime", "external_runtime",
-            "elf_oracle", "deadlines", "inventory", "controller"} or
-            contract["schema"] not in {3, 4} or
+            "elf_oracle", "deadlines", "inventory", "controller"}
+    if schema == 5:
+        contract_fields.add("execution")
+    if (not isinstance(contract, dict) or set(contract) != contract_fields or
+            schema not in {3, 4, 5} or
             contract["kind"] !=
             "candle-great100-two-sweep-reference-collection" or
             contract["approval_status"] !=
@@ -509,11 +537,13 @@ def _load_collection_evidence(approval, targets):
             contract["total_target_runs"] != 130 or
             contract["source_mode"] != "manifest-exact"):
         raise ValueError("malformed reference collection contract")
+    if schema == 5:
+        _validate_schema5_collection_extensions(contract)
     external_policy = contract["external_runtime"].get("policy") \
         if isinstance(contract["external_runtime"], dict) else None
     if ((contract["schema"] == 3 and external_policy !=
          "single_private_path_gp_with_pinned_shell_v2") or
-            (contract["schema"] == 4 and external_policy !=
+            (contract["schema"] in {4, 5} and external_policy !=
              "single_private_path_gp_csdp_with_pinned_shell_v3")):
         raise ValueError("reference collection schema/policy mismatch")
     inventory = contract["inventory"]
@@ -939,7 +969,7 @@ def _load_identity_approval(targets):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind plan")
             route_keys = ("command_shell", "pari_gp", "csdp") \
-                if collection_contract["schema"] == 4 else \
+                if collection_contract["schema"] in {4, 5} else \
                 ("command_shell", "pari_gp")
             if (external_plan["policy"] != external_contract["policy"] or
                     any(external_plan[key]["argument_path"] !=
@@ -965,7 +995,7 @@ def _load_identity_approval(targets):
                 raise ValueError(
                     f"{target['name']}: collection contract does not bind "
                     "external runtime")
-            if collection_contract["schema"] == 4:
+            if collection_contract["schema"] in {4, 5}:
                 csdp_projection = {
                     "csdp_bytes": external_contract["csdp"]["bytes"],
                     "csdp_source_archive": {
