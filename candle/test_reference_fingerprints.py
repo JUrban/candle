@@ -23,7 +23,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
     @staticmethod
     def _state_record(axioms=b"axioms"):
         return "\t".join([
-            regression.STATE_FINGERPRINT_MARKER,
+            reference.regression.STATE_FINGERPRINT_MARKER,
             b"state".hex(), b"types".hex(), b"constants".hex(),
             b"definitions".hex(), axioms.hex(), "1", "2", "3", "3",
         ])
@@ -95,9 +95,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
         ocamlc = root / "ocamlc"
         ocamlfind = root / "ocamlfind"
         record = "\t".join([
-            regression.FINGERPRINT_MARKER,
+            reference.regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(),
-            regression.EMPTY_HYPOTHESES_WIRE.hex(),
+            reference.regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
         runtime.write_text(
@@ -729,20 +729,28 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.assertNotEqual(completed.returncode, 0)
         self.assertIn("differs from collector pin", completed.stderr)
 
-    def test_runner_and_reference_protocol_share_wire_behavior(self):
+    def test_runner_and_reference_protocol_share_v3_theorem_wire(self):
         theorem_names = ["EGCD", "Module.RESULT"]
-        self.assertEqual(
-            regression._fingerprint_request_source(theorem_names),
-            reference.regression._fingerprint_request_source(theorem_names))
         self.assertEqual(
             regression.FINGERPRINT_MARKER,
             reference.regression.FINGERPRINT_MARKER)
-        self.assertEqual(
+        self.assertNotEqual(
             regression.STATE_FINGERPRINT_MARKER,
             reference.regression.STATE_FINGERPRINT_MARKER)
         self.assertEqual(
             regression.EMPTY_HYPOTHESES_WIRE,
             reference.regression.EMPTY_HYPOTHESES_WIRE)
+        runtime_request = regression._fingerprint_request_source(theorem_names)
+        reference_request = \
+            reference.regression._fingerprint_request_source(theorem_names)
+        self.assertEqual(runtime_request.splitlines()[:-1],
+                         reference_request.splitlines()[:-1])
+        self.assertEqual(
+            runtime_request.splitlines()[-1],
+            "candle_s1_emit_state_fingerprint_v3_stream ();;")
+        self.assertEqual(
+            reference_request.splitlines()[-1],
+            "candle_s1_emit_state_fingerprint ();;")
 
     def test_exact_three_delta_contract_matches_both_git_sides(self):
         contract = reference._load_source_contract()
@@ -804,9 +812,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "100/gcd", root, runtime, runtime_stublib, ocamlc,
                 ocamlfind, NONCE)
         fields = [
-            regression.FINGERPRINT_MARKER,
+            reference.regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(),
-            regression.EMPTY_HYPOTHESES_WIRE.hex(),
+            reference.regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ]
         transcript = "\n".join([
@@ -896,9 +904,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
             "request": {"sha256": "2" * 64},
         }
         record = "\t".join([
-            regression.FINGERPRINT_MARKER,
+            reference.regression.FINGERPRINT_MARKER,
             b"EGCD".hex(), b"theorem".hex(),
-            regression.EMPTY_HYPOTHESES_WIRE.hex(),
+            reference.regression.EMPTY_HYPOTHESES_WIRE.hex(),
             b"conclusion".hex(), b"axioms".hex(), "0", "3",
         ])
         transcript = "\n".join([
@@ -929,9 +937,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "100/gcd", root, runtime, runtime_stublib, ocamlc,
                 ocamlfind, NONCE)
             record = "\t".join([
-                regression.FINGERPRINT_MARKER,
+                reference.regression.FINGERPRINT_MARKER,
                 b"EGCD".hex(), b"theorem".hex(),
-                regression.EMPTY_HYPOTHESES_WIRE.hex(),
+                reference.regression.EMPTY_HYPOTHESES_WIRE.hex(),
                 b"conclusion".hex(), b"axioms".hex(), "0", "3",
             ])
             transcript = "\n".join([
@@ -955,9 +963,9 @@ class ReferenceFingerprintTest(unittest.TestCase):
                 "100/gcd", root, runtime, runtime_stublib, ocamlc,
                 ocamlfind, NONCE)
             record = "\t".join([
-                regression.FINGERPRINT_MARKER,
+                reference.regression.FINGERPRINT_MARKER,
                 b"EGCD".hex(), b"theorem".hex(),
-                regression.EMPTY_HYPOTHESES_WIRE.hex(),
+                reference.regression.EMPTY_HYPOTHESES_WIRE.hex(),
                 b"conclusion".hex(), b"axioms".hex(), "0", "3",
             ])
             transcript = "\n".join([

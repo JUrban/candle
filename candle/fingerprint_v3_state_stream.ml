@@ -1,5 +1,5 @@
-(* Chunked transport for the diagnostic canonical V3 kernel state.  Load this
-   after candle/fingerprint_v3.ml.  The component item construction is the
+(* Chunked transport for the canonical V3 kernel state.  Load this after
+   candle/fingerprint.ml.  The component item construction is the
    same as the V3 serializer, but the aggregate list and kernel-state strings
    are never concatenated.  A controller can hash the exact wire by joining
    the ordered chunks and reconstructing the length-prefixed kernel node. *)

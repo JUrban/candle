@@ -11,12 +11,43 @@ import regression
 
 class FingerprintPlumbingTest(unittest.TestCase):
     @staticmethod
-    def state_fields(axioms=b"axiom-serialization"):
-        return [
+    def _field(value):
+        return str(len(value)).encode() + b":" + value
+
+    @classmethod
+    def kernel_state(cls, axioms=b"axiom-serialization"):
+        components = (b"types", b"constants", b"definitions", axioms)
+        return cls._field(b"kernel-state") + cls._field(b"4") + b"".join(
+            cls._field(component) for component in components)
+
+    @classmethod
+    def state_lines(cls, axioms=b"axiom-serialization"):
+        components = (
+            ("type_constants", b"types"),
+            ("term_constants", b"constants"),
+            ("definitions", b"definitions"),
+            ("global_axioms", axioms),
+        )
+        lines = ["\t".join([
             regression.STATE_FINGERPRINT_MARKER,
-            b"kernel-state".hex(), b"types".hex(), b"constants".hex(),
-            b"definitions".hex(), axioms.hex(), "11", "22", "33", "3",
-        ]
+            str(len(cls.kernel_state(axioms))),
+            *(str(len(value)) for _name, value in components),
+            "11", "22", "33", "3",
+        ])]
+        for name, value in components:
+            lines.extend([
+                "\t".join([
+                    regression._runtime_fingerprint_protocol.
+                    STREAM_COMPONENT_BEGIN, name, str(len(value))]),
+                "\t".join([
+                    regression._runtime_fingerprint_protocol.STREAM_CHUNK,
+                    name, "0", value.hex()]),
+                "\t".join([
+                    regression._runtime_fingerprint_protocol.
+                    STREAM_COMPONENT_END, name, str(len(value)), "1"]),
+            ])
+        lines.append(regression._runtime_fingerprint_protocol.STREAM_END)
+        return lines
 
     def test_request_source_accepts_only_safe_value_paths(self):
         self.assertEqual(
@@ -26,7 +57,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
              'candle_s1_emit_fingerprint "theorem\'" theorem\';;\n'
              'candle_s1_emit_fingerprint "Finale.TRANSCENDENTAL_E" '
              'Finale.TRANSCENDENTAL_E;;\n'
-             'candle_s1_emit_state_fingerprint ();;\n'))
+             'candle_s1_emit_state_fingerprint_v3_stream ();;\n'))
         with self.assertRaises(ValueError):
             regression._fingerprint_request_source(("THM; failwith",))
 
@@ -58,7 +89,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("ordinary Candle output\n")
             logfile.write("\t".join(fields) + "\n")
-            logfile.write("\t".join(self.state_fields()) + "\n")
+            logfile.write("\n".join(self.state_lines()) + "\n")
             path = Path(logfile.name)
         try:
             report = regression._read_fingerprint_records(
@@ -86,7 +117,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
-            logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
+            logfile.write("\n".join(self.state_lines(b"axioms")) + "\n")
             path = Path(logfile.name)
         serializer_sha256 = hashlib.sha256(
             regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
@@ -101,7 +132,8 @@ class FingerprintPlumbingTest(unittest.TestCase):
             "global_axiom_count": 3,
         }
         post_state = {
-            "kernel_state_sha256": hashlib.sha256(b"kernel-state").hexdigest(),
+            "kernel_state_sha256": hashlib.sha256(
+                self.kernel_state(b"axioms")).hexdigest(),
             "type_constants_sha256": hashlib.sha256(b"types").hexdigest(),
             "type_constant_count": 11,
             "term_constants_sha256": hashlib.sha256(b"constants").hexdigest(),
@@ -134,7 +166,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
-            logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
+            logfile.write("\n".join(self.state_lines(b"axioms")) + "\n")
             path = Path(logfile.name)
         serializer_sha256 = hashlib.sha256(
             regression.FINGERPRINT_HELPER.read_bytes()).hexdigest()
@@ -207,7 +239,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
         with tempfile.NamedTemporaryFile(
                 mode="w", encoding="utf-8", delete=False) as logfile:
             logfile.write("\t".join(fields) + "\n")
-            logfile.write("\t".join(self.state_fields()) + "\n")
+            logfile.write("\n".join(self.state_lines()) + "\n")
             path = Path(logfile.name)
         try:
             with self.assertRaisesRegex(
@@ -230,7 +262,7 @@ class FingerprintPlumbingTest(unittest.TestCase):
             with tempfile.NamedTemporaryFile(
                     mode="w", encoding="utf-8", delete=False) as logfile:
                 logfile.write("\t".join(fields) + "\n")
-                logfile.write("\t".join(self.state_fields(b"axioms")) + "\n")
+                logfile.write("\n".join(self.state_lines(b"axioms")) + "\n")
                 path = Path(logfile.name)
             try:
                 with self.assertRaisesRegex(
@@ -251,6 +283,34 @@ class FingerprintPlumbingTest(unittest.TestCase):
                     path, ("MISSING",), "audited")
         finally:
             path.unlink()
+
+    def test_state_stream_tampering_fails_closed(self):
+        theorem = "\t".join([
+            regression.FINGERPRINT_MARKER, b"THM".hex(), b"theorem".hex(),
+            regression.EMPTY_HYPOTHESES_WIRE.hex(), b"conclusion".hex(),
+            b"axiom-serialization".hex(), "0", "3",
+        ])
+        valid = self.state_lines()
+        variants = {
+            "sequence": [
+                line.replace("\ttype_constants\t0\t", "\ttype_constants\t1\t")
+                for line in valid],
+            "missing end": valid[:-1],
+            "aggregate record": [
+                "CANDLE_STATE_FINGERPRINT_V3\t00", *valid],
+        }
+        for label, state_lines in variants.items():
+            with self.subTest(label=label), tempfile.NamedTemporaryFile(
+                    mode="w", encoding="utf-8", delete=False) as logfile:
+                logfile.write(theorem + "\n")
+                logfile.write("\n".join(state_lines) + "\n")
+                path = Path(logfile.name)
+            try:
+                with self.assertRaises(regression.LoadFailure):
+                    regression._read_fingerprint_records(
+                        path, ("THM",), "audited")
+            finally:
+                path.unlink()
 
 
 if __name__ == "__main__":

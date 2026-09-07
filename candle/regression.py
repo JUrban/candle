@@ -289,8 +289,10 @@ EXECUTION_CONTRACT_PATHS = (
     "candle/cakeml_artifact_provenance.py",
     "candle/regression.py",
     "candle/reference_protocol.py",
+    "candle/runtime_fingerprint_protocol.py",
     "candle/top100_manifest.json",
     "candle/fingerprint.ml",
+    "candle/fingerprint_v3_state_stream.ml",
     "candle.sh",
 )
 
@@ -862,22 +864,28 @@ def _read_fingerprint_records(log_path, theorem_names, mapping_status,
     }
 
 
-# Keep the ordinary runner and the isolated reference collector on one exact,
-# stdlib-only wire/request/parser implementation.  The definitions immediately
-# above remain readable history for this compatibility branch; these bindings
-# are the active contract used below and by tests.
-_reference_protocol = _load_exact_local_source(
-    "_candle_regression_reference_protocol",
-    CANDLE_ROOT / "candle/reference_protocol.py",
+# Reference evidence retains aggregate V3 records; the final Candle runner has
+# a separate exact protocol which reconstructs that same state wire from
+# bounded chunks.  The definitions immediately above remain readable history;
+# these bindings are the active contract used below and by tests.
+_runtime_fingerprint_protocol = _load_exact_local_source(
+    "_candle_runtime_fingerprint_protocol",
+    CANDLE_ROOT / "candle/runtime_fingerprint_protocol.py",
 )
-EMPTY_HYPOTHESES_WIRE = _reference_protocol.EMPTY_HYPOTHESES_WIRE
-FINGERPRINT_MARKER = _reference_protocol.FINGERPRINT_MARKER
-LoadFailure = _reference_protocol.LoadFailure
-PROCESS_MARKER = _reference_protocol.PROCESS_MARKER
-STATE_FINGERPRINT_MARKER = _reference_protocol.STATE_FINGERPRINT_MARKER
-_fingerprint_request_source = _reference_protocol._fingerprint_request_source
-_match_expected_identities = _reference_protocol._match_expected_identities
-_read_fingerprint_records = _reference_protocol._read_fingerprint_records
+EMPTY_HYPOTHESES_WIRE = _runtime_fingerprint_protocol.EMPTY_HYPOTHESES_WIRE
+FINGERPRINT_MARKER = _runtime_fingerprint_protocol.FINGERPRINT_MARKER
+FINGERPRINT_HELPER = _runtime_fingerprint_protocol.FINGERPRINT_HELPER
+STATE_STREAM_HELPER = _runtime_fingerprint_protocol.STATE_STREAM_HELPER
+LoadFailure = _runtime_fingerprint_protocol.LoadFailure
+PROCESS_MARKER = _runtime_fingerprint_protocol.PROCESS_MARKER
+STATE_FINGERPRINT_MARKER = \
+    _runtime_fingerprint_protocol.STATE_FINGERPRINT_MARKER
+_fingerprint_request_source = \
+    _runtime_fingerprint_protocol._fingerprint_request_source
+_match_expected_identities = \
+    _runtime_fingerprint_protocol._match_expected_identities
+_read_fingerprint_records = \
+    _runtime_fingerprint_protocol._read_fingerprint_records
 
 
 def _read_process_markers(log_path, suite_nonce, process_nonce,
@@ -917,7 +925,8 @@ def _read_process_markers(log_path, suite_nonce, process_nonce,
                 not line.startswith(FINGERPRINT_MARKER + "\t")):
             raise LoadFailure("unsupported theorem fingerprint protocol version")
         if (line.startswith("CANDLE_STATE_FINGERPRINT_V") and
-                not line.startswith(STATE_FINGERPRINT_MARKER + "\t")):
+                not _runtime_fingerprint_protocol.
+                _is_supported_state_fingerprint_line(line)):
             raise LoadFailure("unsupported state fingerprint protocol version")
     indices = {}
     for name, marker in expected.items():
@@ -933,8 +942,9 @@ def _read_process_markers(log_path, suite_nonce, process_nonce,
         raise LoadFailure("linked provenance PASS witness is out of order")
     fingerprint_indices = [
         index for index, line in enumerate(lines)
-        if line.startswith((FINGERPRINT_MARKER + "\t",
-                            STATE_FINGERPRINT_MARKER + "\t"))
+        if (line.startswith(FINGERPRINT_MARKER + "\t") or
+            _runtime_fingerprint_protocol._is_supported_state_fingerprint_line(
+                line))
     ]
     if not fingerprint_indices or any(
             not indices["linked"] < index < indices["complete"]
@@ -1137,6 +1147,7 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
         if test.fingerprint_theorems:
             fingerprint_start = time.perf_counter()
             repl.load(FINGERPRINT_HELPER.relative_to(CANDLE_ROOT).as_posix())
+            repl.load(STATE_STREAM_HELPER.relative_to(CANDLE_ROOT).as_posix())
             request_fd, request_path = tempfile.mkstemp(
                 prefix=f"candle-{safe_name}-fingerprints-", suffix=".ml")
             with os.fdopen(request_fd, "w", encoding="utf-8") as request_file:
@@ -1422,7 +1433,9 @@ class Reporter:
                 _ordinary_file_record(CANDLE_ROOT / "candle/build/cake")),
             "log_directory": str(Path(log_dir).resolve()),
             "fingerprint_contract": {
-                "serializer": "candle/fingerprint.ml structural v2",
+                "serializer": (
+                    "candle/fingerprint.ml structural v3 with exact chunked "
+                    "state transport"),
                 "load_pass_is_fingerprint_match": False,
                 "expected_identity_source": (
                     "separate independently reviewed approval artifact, "

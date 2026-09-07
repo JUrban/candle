@@ -1574,7 +1574,7 @@ def _theorem_request(target, load_files):
         "review_note": review_note,
         "theorems": theorems,
         "identity_contract": {
-            "serializer_wire": "candle structural fingerprint v2",
+            "serializer_wire": "candle canonical structural fingerprint v3",
             "theorem": "canonical structural theorem serialization",
             "hypotheses": "canonical sorted structural term serializations",
             "assumptions": "canonical sorted global HOL axiom serializations",

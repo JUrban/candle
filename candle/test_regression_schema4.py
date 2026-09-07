@@ -15,14 +15,41 @@ import regression
 
 
 class Great100Schema4Test(unittest.TestCase):
+    @staticmethod
+    def _state_lines(axioms=b"a"):
+        protocol = regression._runtime_fingerprint_protocol
+        components = (
+            ("type_constants", b"y"),
+            ("term_constants", b"c"),
+            ("definitions", b"d"),
+            ("global_axioms", axioms),
+        )
+        field = lambda value: str(len(value)).encode() + b":" + value
+        kernel = field(b"kernel-state") + field(b"4") + b"".join(
+            field(value) for _name, value in components)
+        lines = ["\t".join([
+            regression.STATE_FINGERPRINT_MARKER, str(len(kernel)),
+            *(str(len(value)) for _name, value in components),
+            "1", "2", "3", "3",
+        ])]
+        for name, value in components:
+            lines.extend([
+                "\t".join([
+                    protocol.STREAM_COMPONENT_BEGIN, name, str(len(value))]),
+                "\t".join([
+                    protocol.STREAM_CHUNK, name, "0", value.hex()]),
+                "\t".join([
+                    protocol.STREAM_COMPONENT_END, name, str(len(value)), "1"]),
+            ])
+        lines.append(protocol.STREAM_END)
+        return lines
+
     def _transcript(self, suite, process, linked, fingerprint_inside=True):
         fingerprint = "\t".join([
             regression.FINGERPRINT_MARKER, b"T".hex(), b"t".hex(),
             regression.EMPTY_HYPOTHESES_WIRE.hex(), b"c".hex(), b"a".hex(),
             "0", "3"])
-        state = "\t".join([
-            regression.STATE_FINGERPRINT_MARKER, b"s".hex(), b"y".hex(),
-            b"c".hex(), b"d".hex(), b"a".hex(), "1", "2", "3", "3"])
+        state = self._state_lines()
         lines = [
             f"{regression.SUITE_MARKER}\t{suite}",
             f"{regression.PROCESS_MARKER}\t{suite}\t{process}\tSTART",
@@ -30,11 +57,11 @@ class Great100Schema4Test(unittest.TestCase):
             f"{regression.LINKED_RECORD_MARKER}\t{linked}",
         ]
         if fingerprint_inside:
-            lines.extend([fingerprint, state])
+            lines.extend([fingerprint, *state])
         lines.append(
             f"{regression.PROCESS_MARKER}\t{suite}\t{process}\tCOMPLETE")
         if not fingerprint_inside:
-            lines.extend([fingerprint, state])
+            lines.extend([fingerprint, *state])
         return "\n".join(lines) + "\n"
 
     def test_marker_order_and_exact_linked_observation(self):
@@ -47,7 +74,7 @@ class Great100Schema4Test(unittest.TestCase):
             self.assertEqual(
                 regression._read_process_markers(path, suite, process, linked),
                 {"suite_line": 0, "start_line": 1, "linked_line": 3,
-                 "complete_line": 6})
+                 "complete_line": 19})
             with self.assertRaisesRegex(
                     regression.LoadFailure, "linked.*protocol"):
                 regression._read_process_markers(
@@ -219,13 +246,17 @@ class Great100Schema4Test(unittest.TestCase):
         self.assertLess(source.index("check-linked"),
                         source.index("CANDLE_LINKED_PROVENANCE_V1"))
 
-    def test_isolated_cli_and_reference_protocol_execution_closure(self):
+    def test_isolated_cli_and_runtime_protocol_execution_closure(self):
         self.assertIn(
             "candle/reference_protocol.py",
             regression.EXECUTION_CONTRACT_PATHS)
-        loaded = sys.modules["_candle_regression_reference_protocol"]
+        self.assertIn(
+            "candle/runtime_fingerprint_protocol.py",
+            regression.EXECUTION_CONTRACT_PATHS)
+        loaded = sys.modules["_candle_runtime_fingerprint_protocol"]
         protocol_path = (
-            regression.CANDLE_ROOT / "candle/reference_protocol.py").resolve()
+            regression.CANDLE_ROOT /
+            "candle/runtime_fingerprint_protocol.py").resolve()
         self.assertEqual(loaded.__candle_source_bytes__, protocol_path.read_bytes())
         completed = subprocess.run(
             [sys.executable, "-I", str(Path(regression.__file__).resolve()),
@@ -314,8 +345,11 @@ class Great100Schema4Test(unittest.TestCase):
             "hypothesis_count": 0,
             "global_axiom_count": 3,
         }
+        field = lambda value: str(len(value)).encode() + b":" + value
+        kernel = field(b"kernel-state") + field(b"4") + b"".join(
+            field(value) for value in (b"y", b"c", b"d", b"a"))
         post_state = {
-            "kernel_state_sha256": hashlib.sha256(b"s").hexdigest(),
+            "kernel_state_sha256": hashlib.sha256(kernel).hexdigest(),
             "type_constants_sha256": hashlib.sha256(b"y").hexdigest(),
             "type_constant_count": 1,
             "term_constants_sha256": hashlib.sha256(b"c").hexdigest(),
