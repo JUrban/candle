@@ -2236,10 +2236,10 @@
     "activation_status": "verified-source-stack-integration-pending-compiler-rebuild-and-corpus-run",
     "earliest_stratum_counts": [
       {
-        "module_path_count": 15,
+        "module_path_count": 26,
         "name": "base",
-        "occurrence_count": 29,
-        "source_file_count": 11
+        "occurrence_count": 66,
+        "source_file_count": 12
       },
       {
         "module_path_count": 7,
@@ -2285,18 +2285,18 @@
       }
     ],
     "exclusions": "local let-open and parenthesized local-open expressions are separate frontend forms and are not Dopen declarations",
-    "module_path_count": 193,
-    "occurrence_count": 3180,
+    "module_path_count": 204,
+    "occurrence_count": 3217,
     "override_warning_suppression_count": 0,
     "path_form_counts": {
       "dotted": 0,
-      "simple": 3180
+      "simple": 3217
     },
     "required_gate": "rebuild the x64-64 compiler from the pinned verified integration, then require a real corpus-derived open-dependent compiled Candle slice to match pinned OCaml/HOL Light reference fingerprints",
     "scope": "declaration opens in the reachable direct-source full-build graph",
     "site_digest_format": "SHA-256 of canonical compact sorted JSON records with source, line, module_path, path_form, and override_warning_suppression",
-    "site_sha256": "bce30814051df12ea23c14f2918a55e6b839b72760fd58b8996e32f1c05bf282",
-    "source_file_count": 234,
+    "site_sha256": "74f096fe809a6da1f57edcb66149f8fd9e1ce59b2785af9db8fff080e816dbea",
+    "source_file_count": 235,
     "verified_cakeml_integration": {
       "branch": "codex/flyspeck-v13-frontend-batch",
       "commit": "8a8926906ec97204eeec961496d191103cda3229",
@@ -3184,25 +3184,25 @@
         "source": "candle:lists.ml"
       },
       {
-        "line": 5983,
+        "line": 5986,
         "member": "make",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5993,
+        "line": 5996,
         "member": "get",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5999,
+        "line": 6002,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 6010,
+        "line": 6013,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
@@ -3290,6 +3290,156 @@
         "member": "get",
         "module": "Array",
         "source": "candle:printer.ml"
+      },
+      {
+        "line": 248,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 248,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 251,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 253,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 256,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 368,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 373,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 378,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 383,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 400,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 403,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 412,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 418,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 419,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 425,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 431,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 434,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 444,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1096,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1096,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1104,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1104,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1105,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1109,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1112,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
       },
       {
         "line": 18,
@@ -5115,25 +5265,25 @@
         "source": "candle:lists.ml"
       },
       {
-        "line": 5983,
+        "line": 5986,
         "member": "make",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5993,
+        "line": 5996,
         "member": "get",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 5999,
+        "line": 6002,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
       },
       {
-        "line": 6010,
+        "line": 6013,
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
@@ -5221,6 +5371,156 @@
         "member": "get",
         "module": "Array",
         "source": "candle:printer.ml"
+      },
+      {
+        "line": 248,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 248,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 251,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 253,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 256,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 368,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 373,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 378,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 383,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 400,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 403,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 412,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 418,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 419,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 425,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 431,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 434,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 444,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1096,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1096,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1104,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1104,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1105,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1109,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
+      },
+      {
+        "line": 1112,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "candle:thecops.ml"
       },
       {
         "line": 18,
@@ -8475,8 +8775,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "9f81d4fe0a3701394532bab9daac149f",
-    "generated_source_sha256": "051ecc529732284dd782ba5defe8b3ace6810fd6ad2c823ae82a84ab455c0c4d",
+    "generated_source_md5": "956f1f27a4dc8e68db3459759934b68d",
+    "generated_source_sha256": "2591fd40477b972ce350e4c4a6f3f61be2200bd3f8c3baa292f7a5509bf46a71",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -8641,10 +8941,6 @@
       "final_assembly"
     ],
     "candle:calc_rat.ml": [
-      "base",
-      "final_assembly"
-    ],
-    "candle:candle/compute.ml": [
       "base",
       "final_assembly"
     ],
@@ -8825,6 +9121,10 @@
       "final_assembly"
     ],
     "candle:tactics.ml": [
+      "base",
+      "final_assembly"
+    ],
+    "candle:thecops.ml": [
       "base",
       "final_assembly"
     ],
@@ -10255,7 +10555,7 @@
       "sha256": "84240db1850274eafd358777086c71f2c049d127543dd006acf89c54d06f17b2"
     },
     "candle:Library/grouptheory.ml": {
-      "bytes": 792523,
+      "bytes": 792588,
       "dependencies": [
         {
           "kind": "needs",
@@ -10291,10 +10591,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "603b01fbb9a20727f8459dd6b35e05d3",
+      "md5": "6a69bcd71f0184df33b93d0f89deaf40",
       "path": "Library/grouptheory.ml",
       "repository": "candle",
-      "sha256": "49d35fd2f8d243baa14ee74a47e66fd5b604f138f25a9d39dce227503331a6d4"
+      "sha256": "0d4679dc3fa3d596a458a0b96b515d10408ddfb7296c2205654d39f4df993730"
     },
     "candle:Library/iter.ml": {
       "bytes": 6724,
@@ -11092,7 +11392,7 @@
       "sha256": "f96f0483447bab4251f6a147795a5fa1dcedc1300f18f52ac5dd956f29644fa9"
     },
     "candle:arith.ml": {
-      "bytes": 75499,
+      "bytes": 75563,
       "dependencies": [
         {
           "kind": "needs",
@@ -11106,13 +11406,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "e20d4aaf6843a163c635a757a8d4e662",
+      "md5": "673812d8f5fdd2028d814d019fbbf6e6",
       "path": "arith.ml",
       "repository": "candle",
-      "sha256": "92dc21a82748422aed4fbb3216b849391eb8e5515ee674575b08691e4ed02894"
+      "sha256": "fbb34a10bc0fc2a76a3c7f12d2d9cdbded3a994b9696b814ef4dc4e5daac7a83"
     },
     "candle:basics.ml": {
-      "bytes": 18049,
+      "bytes": 18104,
       "dependencies": [
         {
           "kind": "needs",
@@ -11126,10 +11426,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f2b4786e415473d998c852897ee119e2",
+      "md5": "4bc9f0b7b1f71a7e6ce74933f3b2fe15",
       "path": "basics.ml",
       "repository": "candle",
-      "sha256": "9eb5edc5f4c0c9f4a8ccf02f4bf91a78cc6d3380846c2f11c4be384304a13758"
+      "sha256": "d73308a5be7bdfeea3a9ec9bffb9eee9893a1727a3191f3073d05d1b56152d4b"
     },
     "candle:bignum_num.ml": {
       "bytes": 702,
@@ -11218,26 +11518,6 @@
       "path": "calc_rat.ml",
       "repository": "candle",
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
-    },
-    "candle:candle/compute.ml": {
-      "bytes": 10787,
-      "dependencies": [
-        {
-          "kind": "needs",
-          "line": 11,
-          "literal": "define.ml",
-          "matches": [
-            "candle:define.ml"
-          ],
-          "selected": "candle:define.ml",
-          "status": "resolved",
-          "syntax_position": "standalone-phrase"
-        }
-      ],
-      "md5": "f52e74193a5c4f0357d8e1aa977f5bc5",
-      "path": "candle/compute.ml",
-      "repository": "candle",
-      "sha256": "cf327c067fa7cb127ed14bb5909cbbecb9f9ac48b13f59d576c9ca2230cbb6d9"
     },
     "candle:candle/flyspeck_full_build.ml": {
       "bytes": 56753,
@@ -14594,10 +14874,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "178a58defc0ca6fc1a489cbb8dcbb473",
+      "md5": "936254b420efda0ec9792ab08634670c",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "33ec2d282595533fdde2a8492a2e1ee53b5e1c8c54158858abd4cea8712d3995"
+      "sha256": "2219dfb802fa2a22a58537c463ea47be03e1cc61d5c7996e85d5a2df60a0952f"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -14608,12 +14888,12 @@
       "sha256": "7004ab29e2755221e7a01db77db2a305ab3afbd1da09fb96211069f6fc86cbc6"
     },
     "candle:candle/kernel.ml": {
-      "bytes": 6365,
+      "bytes": 6686,
       "dependencies": [],
-      "md5": "8cd7a521de3f82bc4670854e58b3eae1",
+      "md5": "fa2e94287ca00e9153e937b606b3c7ea",
       "path": "candle/kernel.ml",
       "repository": "candle",
-      "sha256": "dacbb768a04f571fd067ecd6b3857254ef7024ff506e051dd08b1f8a99dcc886"
+      "sha256": "bd79eef975e9e5258d6ad9c10fc144fe02f7e551faeced05c6e09ce5ecb0dbf6"
     },
     "candle:candle/nums.ml": {
       "bytes": 8683,
@@ -14624,12 +14904,12 @@
       "sha256": "67543a75a9e11989e422e612c775e4bccd63843c446b849e3033c29086d74f3d"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 35441,
+      "bytes": 35687,
       "dependencies": [],
-      "md5": "44e8c70e392c766f2784de66aa6ddaba",
+      "md5": "122a3cffcf8678856d662d3385122bca",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "b7e30ffc6bdebeb7dedc8c8bccfaecfb29961105579b058c6cb698c54d391a32"
+      "sha256": "fa00b834ff86c13628a813b82c808e5fbd58e34d29a8f7918647cb70f1a756b4"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -14780,7 +15060,7 @@
       "sha256": "a538af0ed2524e844b2e5cd24c19e616e16346ec3ad27d5d5ac440623e610f89"
     },
     "candle:firstorder.ml": {
-      "bytes": 8500,
+      "bytes": 9015,
       "dependencies": [
         {
           "kind": "needs",
@@ -14794,10 +15074,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "c7ac17ae36c1eaa6d0934fb254592e95",
+      "md5": "3ef2a659e3ea36f659916cab83e059b1",
       "path": "firstorder.ml",
       "repository": "candle",
-      "sha256": "e173475f89dee2c5f9ebb3b61c16d7bcf3b80bb81e0df192b2643a9a9b9aebdf"
+      "sha256": "715d25f644e018eda889d1ffcbc215ca47d9927ca374b9506c70373846b31871"
     },
     "candle:grobner.ml": {
       "bytes": 34291,
@@ -14851,7 +15131,7 @@
       "sha256": "4c0fccc21c931ef71e11cbe728c4c74f37948d3176e7c741cfce23cfae46c7ca"
     },
     "candle:hol_lib.ml": {
-      "bytes": 8325,
+      "bytes": 7997,
       "dependencies": [
         {
           "generation": {
@@ -15153,7 +15433,18 @@
         },
         {
           "kind": "loads",
-          "line": 90,
+          "line": 87,
+          "literal": "thecops.ml",
+          "matches": [
+            "candle:thecops.ml"
+          ],
+          "selected": "candle:thecops.ml",
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
+        },
+        {
+          "kind": "loads",
+          "line": 88,
           "literal": "quot.ml",
           "matches": [
             "candle:quot.ml"
@@ -15164,7 +15455,7 @@
         },
         {
           "kind": "loads",
-          "line": 91,
+          "line": 89,
           "literal": "impconv.ml",
           "matches": [
             "candle:impconv.ml"
@@ -15175,7 +15466,7 @@
         },
         {
           "kind": "loads",
-          "line": 97,
+          "line": 95,
           "literal": "pair.ml",
           "matches": [
             "candle:pair.ml"
@@ -15186,7 +15477,7 @@
         },
         {
           "kind": "loads",
-          "line": 98,
+          "line": 96,
           "literal": "compute.ml",
           "matches": [
             "candle:compute.ml"
@@ -15197,7 +15488,7 @@
         },
         {
           "kind": "loads",
-          "line": 99,
+          "line": 97,
           "literal": "nums.ml",
           "matches": [
             "candle:nums.ml"
@@ -15208,7 +15499,7 @@
         },
         {
           "kind": "loads",
-          "line": 100,
+          "line": 98,
           "literal": "recursion.ml",
           "matches": [
             "candle:recursion.ml"
@@ -15219,7 +15510,7 @@
         },
         {
           "kind": "loads",
-          "line": 101,
+          "line": 99,
           "literal": "arith.ml",
           "matches": [
             "candle:arith.ml"
@@ -15230,7 +15521,7 @@
         },
         {
           "kind": "loads",
-          "line": 102,
+          "line": 100,
           "literal": "wf.ml",
           "matches": [
             "candle:wf.ml"
@@ -15241,7 +15532,7 @@
         },
         {
           "kind": "loads",
-          "line": 103,
+          "line": 101,
           "literal": "calc_num.ml",
           "matches": [
             "candle:calc_num.ml"
@@ -15252,7 +15543,7 @@
         },
         {
           "kind": "loads",
-          "line": 104,
+          "line": 102,
           "literal": "normalizer.ml",
           "matches": [
             "candle:normalizer.ml"
@@ -15263,7 +15554,7 @@
         },
         {
           "kind": "loads",
-          "line": 105,
+          "line": 103,
           "literal": "grobner.ml",
           "matches": [
             "candle:grobner.ml"
@@ -15274,7 +15565,7 @@
         },
         {
           "kind": "loads",
-          "line": 106,
+          "line": 104,
           "literal": "ind_types.ml",
           "matches": [
             "candle:ind_types.ml"
@@ -15285,7 +15576,7 @@
         },
         {
           "kind": "loads",
-          "line": 107,
+          "line": 105,
           "literal": "lists.ml",
           "matches": [
             "candle:lists.ml"
@@ -15296,7 +15587,7 @@
         },
         {
           "kind": "loads",
-          "line": 108,
+          "line": 106,
           "literal": "realax.ml",
           "matches": [
             "candle:realax.ml"
@@ -15307,7 +15598,7 @@
         },
         {
           "kind": "loads",
-          "line": 109,
+          "line": 107,
           "literal": "calc_int.ml",
           "matches": [
             "candle:calc_int.ml"
@@ -15318,7 +15609,7 @@
         },
         {
           "kind": "loads",
-          "line": 110,
+          "line": 108,
           "literal": "realarith.ml",
           "matches": [
             "candle:realarith.ml"
@@ -15329,7 +15620,7 @@
         },
         {
           "kind": "loads",
-          "line": 111,
+          "line": 109,
           "literal": "real.ml",
           "matches": [
             "candle:real.ml"
@@ -15340,7 +15631,7 @@
         },
         {
           "kind": "loads",
-          "line": 112,
+          "line": 110,
           "literal": "calc_rat.ml",
           "matches": [
             "candle:calc_rat.ml"
@@ -15351,7 +15642,7 @@
         },
         {
           "kind": "loads",
-          "line": 113,
+          "line": 111,
           "literal": "int.ml",
           "matches": [
             "candle:int.ml"
@@ -15362,7 +15653,7 @@
         },
         {
           "kind": "loads",
-          "line": 114,
+          "line": 112,
           "literal": "sets.ml",
           "matches": [
             "candle:sets.ml"
@@ -15373,7 +15664,7 @@
         },
         {
           "kind": "loads",
-          "line": 115,
+          "line": 113,
           "literal": "iterate.ml",
           "matches": [
             "candle:iterate.ml"
@@ -15384,7 +15675,7 @@
         },
         {
           "kind": "loads",
-          "line": 116,
+          "line": 114,
           "literal": "cart.ml",
           "matches": [
             "candle:cart.ml"
@@ -15395,7 +15686,7 @@
         },
         {
           "kind": "loads",
-          "line": 117,
+          "line": 115,
           "literal": "define.ml",
           "matches": [
             "candle:define.ml"
@@ -15403,23 +15694,12 @@
           "selected": "candle:define.ml",
           "status": "resolved",
           "syntax_position": "standalone-phrase"
-        },
-        {
-          "kind": "loads",
-          "line": 123,
-          "literal": "candle/compute.ml",
-          "matches": [
-            "candle:candle/compute.ml"
-          ],
-          "selected": "candle:candle/compute.ml",
-          "status": "resolved",
-          "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "d0d3b0c04ca0729c4b3b64fa00e9fab9",
+      "md5": "9979c5a870af215dcc89e52f47f3e7ac",
       "path": "hol_lib.ml",
       "repository": "candle",
-      "sha256": "fe847817174ca56d9bb6c57a775b257d996beff3af3e6c4ea1a3fd54e0ae8ca3"
+      "sha256": "8496f4c9c8834e5f052a1d6fede2ac0a0a71fe92819532ba1f925a14f70e191f"
     },
     "candle:hol_loader.ml": {
       "bytes": 2209,
@@ -15450,7 +15730,7 @@
       "sha256": "b9a94610ace7f3591f8136d76aa04870385b719c347aae8d01aa9a4f55c1799c"
     },
     "candle:ind_defs.ml": {
-      "bytes": 20472,
+      "bytes": 20505,
       "dependencies": [
         {
           "kind": "needs",
@@ -15464,13 +15744,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f2998dbc42594245ea89b579b6aefa94",
+      "md5": "d5049329a888b912b80ec56046b13bd6",
       "path": "ind_defs.ml",
       "repository": "candle",
-      "sha256": "eb9db66483d2e963a0ae43bd5d24c24fa9b9587cfc924b17d0f967e28c8f872a"
+      "sha256": "d03e45259e2e5dfacde77907a9bf035458e097dfcc561b99dec8f9ca29857916"
     },
     "candle:ind_types.ml": {
-      "bytes": 73043,
+      "bytes": 73072,
       "dependencies": [
         {
           "kind": "needs",
@@ -15484,10 +15764,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "5526373388e46283f251e6600004614b",
+      "md5": "0480eaeccb65a07d342d6ad402d7c11a",
       "path": "ind_types.ml",
       "repository": "candle",
-      "sha256": "ef91bf1329b30d9d04b88380e70ced69e38b0728425d37e230986ae8bdce42ea"
+      "sha256": "e14abaaed40bdacad3c6ec768a211f456c0de87a57473f46ab24bbf42e80dd3d"
     },
     "candle:int.ml": {
       "bytes": 119025,
@@ -15578,7 +15858,7 @@
       "sha256": "33aab7873bb93614df2e292f9115f1899db0037a81cf397432f7ef7ce8e3dfe0"
     },
     "candle:meson.ml": {
-      "bytes": 37164,
+      "bytes": 37330,
       "dependencies": [
         {
           "kind": "needs",
@@ -15592,13 +15872,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "e87109fec8872e30863ec56d0b4e9311",
+      "md5": "82c2e085333dd07a0d76b3efd0f964eb",
       "path": "meson.ml",
       "repository": "candle",
-      "sha256": "b94b489b7bb95552cf9c3737dff8bad55b26f01f47c0359501facd95b4b2d41f"
+      "sha256": "d7cc6f9006830bce4d1f76dd9437876ad4433de091fe7f5822c136b9baa82534"
     },
     "candle:metis.ml": {
-      "bytes": 343995,
+      "bytes": 344202,
       "dependencies": [
         {
           "kind": "needs",
@@ -15612,13 +15892,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "4295844d17da434e96f1835f81f93829",
+      "md5": "b11fb2b8bc5e8b1f30e7f1af2c72f9d0",
       "path": "metis.ml",
       "repository": "candle",
-      "sha256": "caef5e5f29d4e5e8301c35b5df1fa5eef5dc83fb25d66ae12dd1e70c3351066e"
+      "sha256": "ceeaf0f02dc5062311eaeb25b235026f4d16b563da05df2dc4b6d10c0fc44743"
     },
     "candle:nets.ml": {
-      "bytes": 4726,
+      "bytes": 4802,
       "dependencies": [
         {
           "kind": "needs",
@@ -15632,10 +15912,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "c973fe7157a4efe10d4b487790abcf49",
+      "md5": "f724918bb1727323ac649163e26c05be",
       "path": "nets.ml",
       "repository": "candle",
-      "sha256": "848a6505774d455f229d571fa93cc16ef84675479324b70c7420590e57dd9420"
+      "sha256": "51e57d6a6b96483465c32b9ea6539ecf1519383e526ce074459986a8158cee81"
     },
     "candle:normalizer.ml": {
       "bytes": 24964,
@@ -15678,7 +15958,7 @@
       "sha256": "62cde85f42a2d8a6d732031e616ab69123076ccaa3bd28acb55f0852159ed512"
     },
     "candle:pair.ml": {
-      "bytes": 19929,
+      "bytes": 19958,
       "dependencies": [
         {
           "kind": "needs",
@@ -15692,13 +15972,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "965e14b94f7820e498ffd73908f5894a",
+      "md5": "849422c9e757b5f9a58bf9e9de665b98",
       "path": "pair.ml",
       "repository": "candle",
-      "sha256": "321036ce5aee4b82249dc9ef49c4b207ce8441480d3c26a5fc8831dd8b8fbfa0"
+      "sha256": "ddeecb63541e4c49e9fd6c985ba26004acc63c67bdc996c9a4f8771a83cde98d"
     },
     "candle:parser.ml": {
-      "bytes": 24094,
+      "bytes": 24127,
       "dependencies": [
         {
           "kind": "needs",
@@ -15712,13 +15992,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1e2bf0b5e7505d9eb606eca211596259",
+      "md5": "634e0b492825160f66fc7f408ed1798c",
       "path": "parser.ml",
       "repository": "candle",
-      "sha256": "2193953347b7139fa688a56e48658ab5ede407faca218b2206b20631d9eb20c8"
+      "sha256": "2e9fc29c36d1bf9b75809a20c0261034edbf7ae1dead788c68f0d35700883b91"
     },
     "candle:preterm.ml": {
-      "bytes": 20555,
+      "bytes": 20641,
       "dependencies": [
         {
           "kind": "needs",
@@ -15732,10 +16012,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "78719ecaedb7b06b9797d12c4c9fb390",
+      "md5": "cc8e21b5532a3a515823a0c3269602dc",
       "path": "preterm.ml",
       "repository": "candle",
-      "sha256": "df12658464e7f2567d4847faca37dce85e17f660f827ad4ab5bd6761e567f7ba"
+      "sha256": "7982a33e75640de2df8d0d209190bb960a9308d1598be161fad3b713893e51e7"
     },
     "candle:printer.ml": {
       "bytes": 33465,
@@ -15858,7 +16138,7 @@
       "sha256": "0ab2c9f39d529dd5fdc032138248fc6603d6f0cbfa5c743de7a47a6ff78eda28"
     },
     "candle:sets.ml": {
-      "bytes": 210900,
+      "bytes": 210929,
       "dependencies": [
         {
           "kind": "needs",
@@ -15872,13 +16152,13 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "2d148d4d44ba98e66cc0638c319cf116",
+      "md5": "afd654b761ec00f912356d2b7d325e59",
       "path": "sets.ml",
       "repository": "candle",
-      "sha256": "31f0006ba4dd6160cb2c05c71570d2967236c5976af70fbb94894d75197e08ef"
+      "sha256": "a3a72d4eb435571bc4fb4608b1cad289a9aeb5482700477c89760177bde17f9b"
     },
     "candle:simp.ml": {
-      "bytes": 24787,
+      "bytes": 24832,
       "dependencies": [
         {
           "kind": "needs",
@@ -15892,10 +16172,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "c5828eba03a147feda42801b0c6ad55a",
+      "md5": "0c3cc9f33e3ba7627af78ee7267974fa",
       "path": "simp.ml",
       "repository": "candle",
-      "sha256": "55a450fc16dfe69fc32fcc3c9243a2a864787cbbda8744494f83f7e060e9dd99"
+      "sha256": "480ea74a2fe3bfc4fcf64085b18d3f28ae4037a6ddd28887b95beafbe7189616"
     },
     "candle:system.ml": {
       "bytes": 1170,
@@ -15906,7 +16186,7 @@
       "sha256": "d1466e572b93a9d8fcb3cc906c079ca3efb23775c1b4143c341862d03dc3e882"
     },
     "candle:tactics.ml": {
-      "bytes": 40154,
+      "bytes": 40264,
       "dependencies": [
         {
           "kind": "needs",
@@ -15920,10 +16200,30 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "901a3ac9742edc434a25bbe19efa7c15",
+      "md5": "c2a3158842699127f4257dc82bd4fad0",
       "path": "tactics.ml",
       "repository": "candle",
-      "sha256": "6e2563098599649b1f6c15539376462ec6ccdb2ff35082f33f40d840135b2f63"
+      "sha256": "963abfaea9ceacc0343770e41ad885e66c22ce0e52bc3222f703b366f75217a2"
+    },
+    "candle:thecops.ml": {
+      "bytes": 53122,
+      "dependencies": [
+        {
+          "kind": "needs",
+          "line": 8,
+          "literal": "metis.ml",
+          "matches": [
+            "candle:metis.ml"
+          ],
+          "selected": "candle:metis.ml",
+          "status": "resolved",
+          "syntax_position": "standalone-phrase"
+        }
+      ],
+      "md5": "fe12039b717179b963c215128401c7a1",
+      "path": "thecops.ml",
+      "repository": "candle",
+      "sha256": "8444c4310a766962d89b39a7956a48c4d352b77e7bd97869988c065fa398c6e2"
     },
     "candle:theorems.ml": {
       "bytes": 20652,
@@ -23839,13 +24139,13 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 655,
+        "line": 661,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 656,
+        "line": 662,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
@@ -23911,58 +24211,52 @@
         "source": "candle:lib.ml"
       },
       {
-        "line": 455,
+        "line": 459,
         "member": "print_string",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 458,
+        "line": 462,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 460,
+        "line": 464,
         "member": "print_string",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 461,
+        "line": 465,
         "member": "print_flush",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 467,
+        "line": 471,
         "member": "print_string",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 470,
+        "line": 474,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 472,
+        "line": 476,
         "member": "print_string",
         "module": "Format",
         "source": "candle:meson.ml"
       },
       {
-        "line": 473,
+        "line": 477,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:meson.ml"
-      },
-      {
-        "line": 4100,
-        "member": "print_break",
-        "module": "Format",
-        "source": "candle:metis.ml"
       },
       {
         "line": 4103,
@@ -23971,31 +24265,37 @@
         "source": "candle:metis.ml"
       },
       {
-        "line": 4109,
+        "line": 4106,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
-        "line": 4110,
-        "member": "open_vbox",
-        "module": "Format",
-        "source": "candle:metis.ml"
-      },
-      {
-        "line": 4111,
+        "line": 4112,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
         "line": 4113,
+        "member": "open_vbox",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4114,
+        "member": "print_break",
+        "module": "Format",
+        "source": "candle:metis.ml"
+      },
+      {
+        "line": 4116,
         "member": "close_box",
         "module": "Format",
         "source": "candle:metis.ml"
       },
       {
-        "line": 4115,
+        "line": 4118,
         "member": "print_break",
         "module": "Format",
         "source": "candle:metis.ml"
@@ -24133,91 +24433,91 @@
         "source": "candle:printer.ml"
       },
       {
-        "line": 768,
+        "line": 772,
         "member": "formatter",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 769,
+        "line": 773,
         "member": "formatter",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 777,
+        "line": 781,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 778,
+        "line": 782,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 788,
+        "line": 792,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 789,
+        "line": 793,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 791,
+        "line": 795,
         "member": "pp_print_newline",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 797,
+        "line": 801,
         "member": "pp_print_newline",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 799,
+        "line": 803,
         "member": "pp_print_newline",
-        "module": "Format",
-        "source": "candle:tactics.ml"
-      },
-      {
-        "line": 802,
-        "member": "pp_print_newline",
-        "module": "Format",
-        "source": "candle:tactics.ml"
-      },
-      {
-        "line": 805,
-        "member": "formatter",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
         "line": 806,
-        "member": "formatter",
-        "module": "Format",
-        "source": "candle:tactics.ml"
-      },
-      {
-        "line": 813,
         "member": "pp_print_newline",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 813,
+        "line": 809,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 810,
+        "member": "formatter",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 817,
+        "member": "pp_print_newline",
+        "module": "Format",
+        "source": "candle:tactics.ml"
+      },
+      {
+        "line": 817,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"
       },
       {
-        "line": 820,
+        "line": 824,
         "member": "pp_print_string",
         "module": "Format",
         "source": "candle:tactics.ml"

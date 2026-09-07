@@ -22,7 +22,7 @@
       "path": "candle/flyspeck_loader.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "33ec2d282595533fdde2a8492a2e1ee53b5e1c8c54158858abd4cea8712d3995",
+      "sha256": "2219dfb802fa2a22a58537c463ea47be03e1cc61d5c7996e85d5a2df60a0952f",
       "source_key": "candle:candle/flyspeck_loader.ml"
     },
     {
@@ -133,7 +133,7 @@
       "source_key": "candle:hol_loader.ml"
     },
     {
-      "bytes": 8325,
+      "bytes": 7997,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 1,
@@ -142,10 +142,10 @@
         "parent_source": "candle:hol.ml"
       },
       "index": 2,
-      "md5": "d0d3b0c04ca0729c4b3b64fa00e9fab9",
+      "md5": "9979c5a870af215dcc89e52f47f3e7ac",
       "path": "hol_lib.ml",
       "repository": "candle",
-      "sha256": "fe847817174ca56d9bb6c57a775b257d996beff3af3e6c4ea1a3fd54e0ae8ca3",
+      "sha256": "8496f4c9c8834e5f052a1d6fede2ac0a0a71fe92819532ba1f925a14f70e191f",
       "source_key": "candle:hol_lib.ml"
     },
     {
@@ -181,7 +181,7 @@
       "source_key": "candle:candle/pretty.ml"
     },
     {
-      "bytes": 35441,
+      "bytes": 35687,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 3,
@@ -190,10 +190,10 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 5,
-      "md5": "44e8c70e392c766f2784de66aa6ddaba",
+      "md5": "122a3cffcf8678856d662d3385122bca",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "b7e30ffc6bdebeb7dedc8c8bccfaecfb29961105579b058c6cb698c54d391a32",
+      "sha256": "fa00b834ff86c13628a813b82c808e5fbd58e34d29a8f7918647cb70f1a756b4",
       "source_key": "candle:candle/ocaml.ml"
     },
     {
@@ -245,7 +245,7 @@
       "source_key": "candle:lib.ml"
     },
     {
-      "bytes": 6365,
+      "bytes": 6686,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 7,
@@ -254,14 +254,14 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 9,
-      "md5": "8cd7a521de3f82bc4670854e58b3eae1",
+      "md5": "fa2e94287ca00e9153e937b606b3c7ea",
       "path": "candle/kernel.ml",
       "repository": "candle",
-      "sha256": "dacbb768a04f571fd067ecd6b3857254ef7024ff506e051dd08b1f8a99dcc886",
+      "sha256": "bd79eef975e9e5258d6ad9c10fc144fe02f7e551faeced05c6e09ce5ecb0dbf6",
       "source_key": "candle:candle/kernel.ml"
     },
     {
-      "bytes": 18049,
+      "bytes": 18104,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 8,
@@ -270,14 +270,14 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 10,
-      "md5": "f2b4786e415473d998c852897ee119e2",
+      "md5": "4bc9f0b7b1f71a7e6ce74933f3b2fe15",
       "path": "basics.ml",
       "repository": "candle",
-      "sha256": "9eb5edc5f4c0c9f4a8ccf02f4bf91a78cc6d3380846c2f11c4be384304a13758",
+      "sha256": "d73308a5be7bdfeea3a9ec9bffb9eee9893a1727a3191f3073d05d1b56152d4b",
       "source_key": "candle:basics.ml"
     },
     {
-      "bytes": 4726,
+      "bytes": 4802,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 9,
@@ -286,10 +286,10 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 11,
-      "md5": "c973fe7157a4efe10d4b487790abcf49",
+      "md5": "f724918bb1727323ac649163e26c05be",
       "path": "nets.ml",
       "repository": "candle",
-      "sha256": "848a6505774d455f229d571fa93cc16ef84675479324b70c7420590e57dd9420",
+      "sha256": "51e57d6a6b96483465c32b9ea6539ecf1519383e526ce074459986a8158cee81",
       "source_key": "candle:nets.ml"
     },
     {
@@ -309,7 +309,7 @@
       "source_key": "candle:printer.ml"
     },
     {
-      "bytes": 20555,
+      "bytes": 20641,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 11,
@@ -318,14 +318,14 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 13,
-      "md5": "78719ecaedb7b06b9797d12c4c9fb390",
+      "md5": "cc8e21b5532a3a515823a0c3269602dc",
       "path": "preterm.ml",
       "repository": "candle",
-      "sha256": "df12658464e7f2567d4847faca37dce85e17f660f827ad4ab5bd6761e567f7ba",
+      "sha256": "7982a33e75640de2df8d0d209190bb960a9308d1598be161fad3b713893e51e7",
       "source_key": "candle:preterm.ml"
     },
     {
-      "bytes": 24094,
+      "bytes": 24127,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 12,
@@ -334,10 +334,10 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 14,
-      "md5": "1e2bf0b5e7505d9eb606eca211596259",
+      "md5": "634e0b492825160f66fc7f408ed1798c",
       "path": "parser.ml",
       "repository": "candle",
-      "sha256": "2193953347b7139fa688a56e48658ab5ede407faca218b2206b20631d9eb20c8",
+      "sha256": "2e9fc29c36d1bf9b75809a20c0261034edbf7ae1dead788c68f0d35700883b91",
       "source_key": "candle:parser.ml"
     },
     {
@@ -389,7 +389,7 @@
       "source_key": "candle:drule.ml"
     },
     {
-      "bytes": 40154,
+      "bytes": 40264,
       "discovery": {
         "action_kind": "loads",
         "dependency_index": 16,
@@ -398,10 +398,10 @@
         "parent_source": "candle:hol_lib.ml"
       },
       "index": 18,
-      "md5": "901a3ac9742edc434a25bbe19efa7c15",
+      "md5": "c2a3158842699127f4257dc82bd4fad0",
       "path": "tactics.ml",
       "repository": "candle",
-      "sha256": "6e2563098599649b1f6c15539376462ec6ccdb2ff35082f33f40d840135b2f63",
+      "sha256": "963abfaea9ceacc0343770e41ad885e66c22ce0e52bc3222f703b366f75217a2",
       "source_key": "candle:tactics.ml"
     },
     {
@@ -423,9 +423,9 @@
   ],
   "kind": "candle-flyspeck-parser-diagnostic-pilot",
   "manifest": {
-    "bytes": 826127,
+    "bytes": 832568,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "eaa86cc614fa2a86ba9c9624197252493481b05952a80f7ba6e6f5ba3d628e90"
+    "sha256": "bf1186163905e9560ba341cd85961ae2064b57f2e9c34a22244335edae7ee4a1"
   },
   "schema": 1,
   "selection": {

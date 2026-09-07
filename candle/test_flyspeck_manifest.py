@@ -423,16 +423,16 @@ class GeneratedManifestTests(unittest.TestCase):
                 ],
             },
         )
-        self.assertEqual(contract["occurrence_count"], 3180)
-        self.assertEqual(contract["source_file_count"], 234)
-        self.assertEqual(contract["module_path_count"], 193)
+        self.assertEqual(contract["occurrence_count"], 3217)
+        self.assertEqual(contract["source_file_count"], 235)
+        self.assertEqual(contract["module_path_count"], 204)
         self.assertEqual(
-            contract["path_form_counts"], {"simple": 3180, "dotted": 0},
+            contract["path_form_counts"], {"simple": 3217, "dotted": 0},
         )
         self.assertEqual(contract["override_warning_suppression_count"], 0)
         self.assertEqual(
             contract["site_sha256"],
-            "bce30814051df12ea23c14f2918a55e6b839b72760fd58b8996e32f1c05bf282",
+            "74f096fe809a6da1f57edcb66149f8fd9e1ce59b2785af9db8fff080e816dbea",
         )
         strata = contract["earliest_stratum_counts"]
         self.assertEqual(
@@ -441,10 +441,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertEqual(
             [entry["occurrence_count"] for entry in strata],
-            [29, 22, 13, 35, 841, 177, 2048, 15],
+            [66, 22, 13, 35, 841, 177, 2048, 15],
         )
         self.assertEqual(
-            sum(entry["occurrence_count"] for entry in strata), 3180,
+            sum(entry["occurrence_count"] for entry in strata), 3217,
         )
 
     def test_static_full_build_program_is_exact_and_fail_closed(self):
