@@ -2051,7 +2051,7 @@ class StratumRuntimeTests(unittest.TestCase):
                     runtime_executable_path=self.runtime_executable_path,
                 )
 
-    def test_postlude_uses_actual_v2_theorem_and_state_serializer(self) -> None:
+    def test_postlude_uses_actual_v3_theorem_and_state_serializer(self) -> None:
         serializer_source = subject.reference_protocol.FINGERPRINT_HELPER.read_text(
             encoding="utf-8",
         )
@@ -2108,16 +2108,16 @@ class StratumRuntimeTests(unittest.TestCase):
         terminal = (
             f"{subject.FINGERPRINT_SUCCESS_MARKER} {self.nonce} {boundary} 1"
         )
-        v2_record = f"{subject.FINGERPRINT_MARKER}\t00"
-        valid = [preflight, action0, action1, success, v2_record, terminal]
+        v3_record = f"{subject.FINGERPRINT_MARKER}\t00"
+        valid = [preflight, action0, action1, success, v3_record, terminal]
         subject.validate_log(
             "\n".join(valid), self.actions, boundary, self.nonce, theorem_names,
         )
         for forged in (
             ["CANDLE_FINGERPRINT_V1\t00", *valid],
             [*valid, "CANDLE_STATE_FINGERPRINT_V3\t00"],
-            [v2_record, *valid],
-            [*valid, v2_record],
+            [v3_record, *valid],
+            [*valid, v3_record],
             [*valid, f"{subject.FINGERPRINT_SUCCESS_MARKER} {'b' * 32} forged 99"],
         ):
             with self.assertRaisesRegex(

@@ -2517,7 +2517,7 @@ def write_config(
 def parse_fingerprints(
     log_path: Path, theorem_names: list[str], serializer: Path,
 ) -> dict[str, Any]:
-    """Parse direct evidence through the exact shared structural-v2 protocol."""
+    """Parse aggregate V3 evidence and bind it to the official serializer."""
     if not theorem_names:
         log = log_path.read_text(encoding="utf-8", errors="strict")
         require(not any(line.startswith((
@@ -2541,16 +2541,23 @@ def parse_fingerprints(
         "path": FINGERPRINT_RELATIVE.as_posix(),
         "sha256": hash_file(serializer)["sha256"],
     }
+    protocol_serializer = {
+        "path": reference_protocol.FINGERPRINT_HELPER.relative_to(
+            HERE.parent,
+        ).as_posix(),
+        "sha256": hash_file(reference_protocol.FINGERPRINT_HELPER)["sha256"],
+    }
     require(parsed["status"] == "observed_uncompared" and
             parsed["expected_identities_present"] is False and
             parsed["approval_sha256"] is None and
             parsed["mapping_status"] == "audited" and
-            parsed["serializer"] == serializer_record,
+            parsed["serializer"] == protocol_serializer and
+            protocol_serializer["sha256"] == serializer_record["sha256"],
             "shared fingerprint protocol returned an unexpected evidence state")
     return {
         "status": parsed["status"],
         "approved_reference_present": False,
-        "serializer": parsed["serializer"],
+        "serializer": serializer_record,
         "theorems": parsed["theorems"],
         "post_state": parsed["post_state"],
     }
