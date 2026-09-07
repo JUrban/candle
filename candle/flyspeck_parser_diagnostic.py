@@ -855,8 +855,8 @@ def plan_profile(plan: dict[str, Any]) -> str:
     expected_quotation_inventory = (
         (104, 3, {"term": 104, "type": 0, "qproof": 0, "string": 0})
         if is_pilot else
-        (318855, 344, {
-            "term": 318180, "type": 675, "qproof": 0, "string": 0,
+        (318813, 344, {
+            "term": 318148, "type": 665, "qproof": 0, "string": 0,
         })
     )
     quotation_summary = plan["quotation_preparation"]

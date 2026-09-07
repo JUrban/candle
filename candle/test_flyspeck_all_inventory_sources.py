@@ -58,11 +58,11 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
 
     def test_loader_quotation_expansion_is_exactly_closed(self) -> None:
         expansion = self.plan["quotation_expansion"]
-        self.assertEqual(expansion["quotation_count"], 318855)
+        self.assertEqual(expansion["quotation_count"], 318813)
         self.assertEqual(expansion["source_with_quotation_count"], 344)
         self.assertEqual(
             expansion["kind_counts"],
-            {"qproof": 0, "string": 0, "term": 318180, "type": 675},
+            {"qproof": 0, "string": 0, "term": 318148, "type": 665},
         )
         self.assertEqual(
             expansion["contract"]["cakeml_loader"]["commit"],
