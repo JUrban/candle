@@ -186,6 +186,7 @@ REFERENCE_ARTIFACT_NAMES = {
     "validator_stdout", "validator_stderr"}
 COLLECTION_EVIDENCE_FIELDS = {"contract", "receipt"}
 V3_REFERENCE_SERIALIZER_RELATIVE = "candle/fingerprint_v3.ml"
+V3_REFERENCE_SERIALIZER_BYTES = 12290
 V3_REFERENCE_SERIALIZER_SHA256 = \
     "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110"
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -494,8 +495,9 @@ def _validate_schema5_collection_extensions(contract):
             execution["stop_scheduling_after_failure"] is not True):
         raise ValueError("malformed schema-5 reference execution contract")
     if (not isinstance(serializer, dict) or set(serializer) != {
-            "path", "sha256"} or
+            "path", "bytes", "sha256"} or
             serializer["path"] != V3_REFERENCE_SERIALIZER_RELATIVE or
+            serializer["bytes"] != V3_REFERENCE_SERIALIZER_BYTES or
             serializer["sha256"] != V3_REFERENCE_SERIALIZER_SHA256):
         raise ValueError("schema-5 collection is not bound to V3 serializer")
 

@@ -236,6 +236,7 @@ class Top100ManifestTest(unittest.TestCase):
             },
             "candle": {"serializer": {
                 "path": "candle/fingerprint_v3.ml",
+                "bytes": top100_manifest.V3_REFERENCE_SERIALIZER_BYTES,
                 "sha256": top100_manifest.V3_REFERENCE_SERIALIZER_SHA256,
             }},
         }
@@ -250,6 +251,8 @@ class Top100ManifestTest(unittest.TestCase):
                 (("execution", "sweep_overlap_allowed"), True, "execution"),
                 (("candle", "serializer", "path"),
                  "candle/fingerprint.ml", "V3 serializer"),
+                (("candle", "serializer", "bytes"), 12289,
+                 "V3 serializer"),
                 (("candle", "serializer", "sha256"), "0" * 64,
                  "V3 serializer")):
             changed = json.loads(json.dumps(contract))
