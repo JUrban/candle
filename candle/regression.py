@@ -566,12 +566,15 @@ class CandleREPL:
                 self.inactivity_timeout, self.wall_deadline)
             try:
                 index = self.process.expect([
-                    r'(?:^|\n)\- Loading (\S+)',
+                    # Require the line terminator.  Without it pexpect may
+                    # accept a path prefix when a long marker is split across
+                    # PTY reads, corrupting the load stack nondeterministically.
+                    r'(?:^|\n)\- Loading (\S+)\r?\n',
                     r'(?:^|\n)val (\w+) =',
                     r'(?:^|\n)(ERROR: .+)',
                     r'(?:^|\n)(Parsing failed)',
                     r'(?:^|\n)(EXCEPTION: .+)',
-                    r'(?:^|\n)\- Finished loading (\S+)',
+                    r'(?:^|\n)\- Finished loading (\S+)\r?\n',
                     # Semantic sentinels take priority at the same position.
                     # Consume any other complete line as progress, bounding
                     # the unmatched buffer and restarting inactivity only.

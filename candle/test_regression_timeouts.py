@@ -130,6 +130,28 @@ class TimeoutPolicyTest(unittest.TestCase):
         finally:
             repl.kill()
 
+    def test_fragmented_load_markers_wait_for_complete_path_lines(self):
+        expected = "/tmp/candle-long-fingerprints.ml"
+        repl = self._stream_repl(
+            "import sys, time\n"
+            "sys.stdout.write('- Loading /tmp/candle-long-fi')\n"
+            "sys.stdout.flush()\n"
+            "time.sleep(0.05)\n"
+            "print('ngerprints.ml', flush=True)\n"
+            "sys.stdout.write('- Finished loading /tmp/candle-long-fi')\n"
+            "sys.stdout.flush()\n"
+            "time.sleep(0.05)\n"
+            "print('ngerprints.ml', flush=True)\n",
+            inactivity_timeout=1)
+        repl.load_stack = []
+        try:
+            repl._check_output()
+            self.assertEqual(repl.load_stack, [expected])
+            repl._check_output()
+            self.assertEqual(repl.load_stack, [])
+        finally:
+            repl.kill()
+
     def test_complete_progress_lines_can_drive_a_diagnostic_handler(self):
         repl = self._stream_repl(
             "print('diagnostic request', flush=True)\n"
