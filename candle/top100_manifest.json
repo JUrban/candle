@@ -17,7 +17,7 @@
   },
   "identity_approval": {
     "path": "candle/top100_identity_approval.json",
-    "sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0",
+    "sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8",
     "schema": "candle-s1-identity-approval-v2",
     "approval_status": "approved",
     "promotion_allowed": true
@@ -75,14 +75,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "AGM",
@@ -104,17 +104,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "kernel_state_sha256": "607c007836204c5fe8d0eb8a5720c64db6996926cd74a1e1c454174c1296f8cf",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
-            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "term_constants_sha256": "09854f0dc5fad87ecaf7469fcf368544ee70ab89fa68e117a63d1271cda796f3",
+            "definitions_sha256": "87fe178bf06e532cab704313790ed00e71a1158d6c6510d90346efcc7b7a957f",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 360,
             "definition_count": 316,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -151,14 +151,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "ARITHMETIC_PROGRESSION",
@@ -171,17 +171,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "kernel_state_sha256": "91c508e52572a16b1fd400c978dd6e4aa25fd33085758ba95cbeba8649c2c6d9",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
-            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "term_constants_sha256": "1b84e5b7ecdaf2b23e9e89c399ad891880bbdbe06de355acbc1f9983486e62b4",
+            "definitions_sha256": "1d9bad133d5cf7a5663bcf9a16583578d3d71dc03b1add682b7c756335bfbe4b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 303,
             "definition_count": 263,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -220,14 +220,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "BALLOT",
@@ -240,17 +240,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d730efd1231cb42fb210e221d71180ce84c9df9a84022e316f62995b66bbf628",
+            "kernel_state_sha256": "6285a9faabf56d466fce85bc283a23e065fb0335c5cf8b87d1b639cb67f45754",
             "type_constants_sha256": "5dc08559d67341f54af2bb47e1418a69a6c198960075e5b622adacd9bfbdbe24",
-            "term_constants_sha256": "29a9eb8dc85c94a53af3310b91b0df3315438d9fcd81c0baf77a11fab99d4aeb",
-            "definitions_sha256": "70c2f63611262c92ec5aba6a125ca2c626e9ff3f93b1c462cbc2a5059d503a28",
+            "term_constants_sha256": "e99ce6e3f3c672d4311c47b0ec2e96f0c2f878e7630a8f76ed0bdd5b4927de86",
+            "definitions_sha256": "bbe88ac41b9a4d3586d593661240ce5c264ddd27e94a4987bd8ee98bdfe7332e",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 23,
             "term_constant_count": 313,
             "definition_count": 271,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -291,14 +291,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "SUM_OF_POWERS",
@@ -311,17 +311,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "0bd0264b3721417d1b977ca6ee3b98d949eeeb716f29f9412a1e504e64fb53c5",
+            "kernel_state_sha256": "cb384799d305ab1987ae2591c511635a172eddf791a6dbbe53f95ccb537a9596",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "c9ddb7616de2bb16cb3730fad64621c09f684823bc7e5149b6215874622e473f",
-            "definitions_sha256": "9d3c94788399d2b5c55ca334d9a2b241f63cff7e50f2b8882c1eb6545820df91",
+            "term_constants_sha256": "c314f28d62db13bfccc383c8dba80bf8ec069fd0f880b753b205116d95900fa9",
+            "definitions_sha256": "d962d93d1f2d453098a180eb43ee4b09cc07a8117ac5255b9d660872449b47cc",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 363,
             "definition_count": 319,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -377,14 +377,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "BERTRAND",
@@ -406,17 +406,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d2faae88de8dacc5a5ad5011dd874f216d27a45d26d851225ccd6faafd59cc08",
+            "kernel_state_sha256": "bab27c1d75fdb2093cfcfe6ccfdb7a46d7aaa040e920c7727596ede8f46d7e56",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "b38715acd66623b1c88c6aab74981808208bfa15f67195e3b816a695f68723de",
-            "definitions_sha256": "f7b1ea4cdbd8884bd1d854b2e182a2053dd8c04320541df1bdc8d649f5daf9b1",
+            "term_constants_sha256": "3224c48f3531daad4f37b755d273c50f9361843673d94e6b375ec1d82d41951c",
+            "definitions_sha256": "367f270da506b05b5edb0c86c86204b3f64abcc8196878404a8e4ab1858b0d4d",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 377,
             "definition_count": 333,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -475,14 +475,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "BIRTHDAY_THM",
@@ -495,26 +495,26 @@
             },
             {
               "name": "BIRTHDAY_THM_EXPLICIT",
-              "theorem_sha256": "51b3dcb9ae9996f3cd5167704aaab45a4fe67337e1ebf6b8fe1c837fcd4db07c",
+              "theorem_sha256": "d2c623e307fdda5362303eb14060bea9b037b842ddd6482c1c096a9c15bcf0d6",
               "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
-              "conclusion_sha256": "0b6f341ca3864eccf34a371be0287204bed60ba5a29d80e772ddc25f69c976f3",
+              "conclusion_sha256": "7fb5cfa16062dc3828a1998f7cafc00fd3433c2b80da5d2d9e0785d6cebefd60",
               "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
               "hypothesis_count": 0,
               "global_axiom_count": 3
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "8532899187018e31853283d8eb4e94b5bafac843428494a7de3f37a013668ccd",
+            "kernel_state_sha256": "886b04f9367a6e2170485a8f4c72be4b6e024003f2fb0df0383ba68be2c0fd20",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "d2a10f1f0a8543dc974c24dc0e43cadd15351e4bb600be4548987ad5667f840e",
-            "definitions_sha256": "ba766b97b29188076ce482b4feee41ed858a58c63ef4dda624bd2f8918b23709",
+            "term_constants_sha256": "ba40c6b3a497d2202be763c861638624ac443b9539eb6746595191bfdbf6b973",
+            "definitions_sha256": "c003322c74d7b611641e48aa150c1f06f9cc124b8cd48b930cca3f7fa6b64d01",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 304,
             "definition_count": 264,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -572,14 +572,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "BUFFON_GENERAL",
@@ -610,17 +610,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "84e0865d02425d8dcd32bdc2ef8f1f66cd23a442fd7c848842a9fc76093752ee",
+            "kernel_state_sha256": "7f75a6e5fea61f1140abe379219d38b589b328c4aeb22a19c2b824d68532d3df",
             "type_constants_sha256": "125e62424f2900d824214b573137789c227b066f36831a175de1ef6eba5b2be7",
-            "term_constants_sha256": "2d157c54f53a03d69a97b82ad4ba58c7ad8c4803c867919a7eeb9ac90ccd1f1c",
-            "definitions_sha256": "66336b8dcb7d2d676ee6e0ffd8f906e74273b9715988de0aab9acb574050ff89",
+            "term_constants_sha256": "1a9522fa238d28ad3c43a657ee9cf2972bc93a7d518636d098e36a1a70dc77a3",
+            "definitions_sha256": "9277745c405d1f93820e1e480f8b6fdc73cf52b157fcb88a67a868e82c0f29e2",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 925,
             "definition_count": 871,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -662,14 +662,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "CANTOR",
@@ -682,17 +682,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "kernel_state_sha256": "91c508e52572a16b1fd400c978dd6e4aa25fd33085758ba95cbeba8649c2c6d9",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
-            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "term_constants_sha256": "1b84e5b7ecdaf2b23e9e89c399ad891880bbdbe06de355acbc1f9983486e62b4",
+            "definitions_sha256": "1d9bad133d5cf7a5663bcf9a16583578d3d71dc03b1add682b7c756335bfbe4b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 303,
             "definition_count": 263,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -732,14 +732,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "CAYLEY_HAMILTON",
@@ -752,17 +752,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9180aa75a85f2f1485e2c69e6294819d0182e9cf0e93b46787d7735e12a1bd06",
+            "kernel_state_sha256": "1cdabac89922cd3fbe8fdcb18e919735fc2ae84dbf04941c6652ec94376b7d67",
             "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
-            "term_constants_sha256": "619c934339f4fe707e45c7cb3ab996dfc34e8afbd0f8c477e37c4def0186aa57",
-            "definitions_sha256": "18822f7db38432a26f41ecac20b82130ecde1c497f6e90a120b33ff7733cca10",
+            "term_constants_sha256": "f42c925fa19cab71db5a0c4a74e63df779f4caef026c160eca443afc073452b1",
+            "definitions_sha256": "b8ce048c43b42bcfa0f13eb8e12c06e288069dda2e4ae742ac48ba44aef1877a",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 26,
             "term_constant_count": 635,
             "definition_count": 587,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -802,14 +802,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "CEVA",
@@ -822,17 +822,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "fd1060a5fbcd0e9a48cb545d4e6bc69cb0691496252b346bf7e1a8fc313cdc79",
+            "kernel_state_sha256": "5dbe681061d7ff693feeb30eb6d1cae5d86e5dfa8ab246ad74b6e839b7265d0f",
             "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
-            "term_constants_sha256": "c9aab1e826391f3a1ae3c03ed3dc69fd358848d41944143c594c6ceb4278f186",
-            "definitions_sha256": "97cc1bba717401a771ecee5818fc1c7976aa59036f9b15d52ab1959dd8186f16",
+            "term_constants_sha256": "ea7287636e274431a9df5bea60e2a1a5014b2f0b933204ed0517eddeb93b6127",
+            "definitions_sha256": "1da7cb8fb7c190e30a595b31a1b7ccd15678a4d5b38c75a1dea4d8ba021772e8",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 26,
             "term_constant_count": 618,
             "definition_count": 570,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -902,14 +902,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "AREA_CBALL",
@@ -931,17 +931,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d5b08911dd2daeae8971aeffaed9a71e76a64bd72a6551dd5d108ce161fb2991",
+            "kernel_state_sha256": "beba527664db4a818dc1e04cad4c8bcbeb2f9683aa3d72647490c7c69a1f8e65",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "5b1a764b65a452210565a9bacd5cd95b4b465c1032b016692a1b2418872c0c3f",
-            "definitions_sha256": "8fa07a1e4d699dee929e5f6075e2c8a0f4e15f91e7ba3777cdfa2fc4f9ecad83",
+            "term_constants_sha256": "3a1060793fd68a92b66fbe97cc91fbda19b24efc0b014ddc00261e61c1f3079b",
+            "definitions_sha256": "739f51d5551b90cb5ec1371af28d0bc68d5adaf002966620a4e4106f3c8ac0e1",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 871,
             "definition_count": 819,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -980,14 +980,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "SEGMENT_CHORDS",
@@ -1000,17 +1000,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "6b28600c275afa380064ec8b9503e0c02c0a36541f728133ba645e1c14847c63",
+            "kernel_state_sha256": "5d0fd7125cff5f0f42ad8c3701c63cc716189c25a1653e7a082a5bdc4eef021a",
             "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
-            "term_constants_sha256": "1277c06a055c13e737f1f0e6776f20ccb683c2df20ef7b6083e9839c1bd46a75",
-            "definitions_sha256": "627899614de08ef2498913a30a904820d4d96beb57b2268363a85e7c69f23e9f",
+            "term_constants_sha256": "3079d0e7b6d2ae02543f34c0ce261d5d3fa04ee8b970699c1352c27327299654",
+            "definitions_sha256": "8b076f4455ab988b43e389254ed0114aa5b1fa8cf16d3223f99b65db4ac7153b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 26,
             "term_constant_count": 619,
             "definition_count": 571,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1057,14 +1057,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "NUMBER_OF_COMBINATIONS",
@@ -1086,17 +1086,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "2e82ee9573e937002210f336c649894b8a4141846e785b2d9d53b2fa97e726b2",
+            "kernel_state_sha256": "b0d6d2d2d5bc940e0aea35031cff7818f4a862c0406e6a9e91c0097dc764dae5",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a8cd984d71647da65cde413a6012a642414a46b23913692dc6bb031dd044b157",
-            "definitions_sha256": "1361e324e1293aa140bc795f5354872a0c4f11f91e2dd1320006cc774bc14aaf",
+            "term_constants_sha256": "acc7c9a1e9fc838d8130987d3f2059febda6d1de17b094b744df7ea8e2e9723c",
+            "definitions_sha256": "17d7be35da2bbbc720d1d056f6cca2314de17a03081a5d643e548fbc7edebce3",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 304,
             "definition_count": 264,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1145,14 +1145,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "DOUBLE_THE_CUBE",
@@ -1174,17 +1174,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "f56036fe62d57e8bb8f527b004c9e85aca44305b7c46243336d47f5dd466e3c3",
+            "kernel_state_sha256": "96fc91d6277b556c908276fb218ac5eab2ad28462fef36ed3ebb9fb4842b17a0",
             "type_constants_sha256": "5d5f1dfbb2e83e89ee3b777dda4b97bce549053d18a0fe1a51226af79e61d19a",
-            "term_constants_sha256": "30fc43a26b858e217d9fa7ec4dd5044375623e4bfdcf3f3307e073a4065ed1c3",
-            "definitions_sha256": "b0a251503a35c9106b494738227fd81133dd067c4e47bb8e0e4fcf7df33a9d4f",
+            "term_constants_sha256": "f240a84f594cf469ae3b20675fd6e8b8088265ced335cf861b3ef25166fb47a9",
+            "definitions_sha256": "7511259eb26e11a07ad49ecd09ac33cebfa364724052b30e103dda313b57f7ed",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 862,
             "definition_count": 808,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1241,14 +1241,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "LAW_OF_COSINES",
@@ -1261,17 +1261,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "078234fc0db6b8a481eb64a2d701093b24e9637c04819750f8991b68ed8c6779",
+            "kernel_state_sha256": "f37e91f544560187b9007fc350af58aa90b697c6857f91a639657174b02d69be",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "839257cea0d302a39eec2d39685e3c3af9c5f6d04f019de2776871dc0749d71a",
-            "definitions_sha256": "194e302bc64e90fda33a213e31b8e14c2e597f7ac59a9ea4c26ce65b983c9915",
+            "term_constants_sha256": "dc6498b15d371f38e63206aaf3c202adf5c8a30982a33bc139f9e977278c2084",
+            "definitions_sha256": "400dcdc4641b268ff0abddf72070b398b89ac719c143bd4c5de5bf51c09e06c3",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 839,
             "definition_count": 787,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1310,14 +1310,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "ONLY_TRIVIAL_CUBE_DISSECTION",
@@ -1330,17 +1330,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "464541ecdd236eb987d754d7f84424d30ab2a9b40f5a69624ce799568ac97ef8",
+            "kernel_state_sha256": "dc41478f651035f46b3e99babbae238aac07099c2972cb9ee2bbfe2300b6e687",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "519218c465b95a79ba92143b0e96461a938f64b214bce4846e771f21b01f84f8",
-            "definitions_sha256": "91f151ae2958f8f75bcb8d334f732983094dd561dc951fb0f13ceff6dbd9014b",
+            "term_constants_sha256": "cad539650c96bcbb952661ba37ea8ebd67edb51c10d6ab42dfb8a4f75cd85198",
+            "definitions_sha256": "9fc76b7e0895d0f58bb81e90388a255f33eed462ce7dee7065a0cb04d3970aa8",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 794,
             "definition_count": 742,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1390,14 +1390,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "CUBIC",
@@ -1410,17 +1410,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "ce18f1c4add00c4480776e7e5bd20671262a9aecc00215e515f02f8711d679ed",
+            "kernel_state_sha256": "d14cd49d179db3696f310b4bde8ff294639bd6045ba71773903e9cc98e676f81",
             "type_constants_sha256": "bc66985e35849099d1051a22088a285507dc3e95a4cd13d7c4e936ea0c41ca86",
-            "term_constants_sha256": "ffdbbbc4bbdd06b23393498e67d6127c5c674bb3120e13217a0eab7d43171a2e",
-            "definitions_sha256": "11a956636ac7475a36c306520180e9397fcc93eb9118883ccd1013a4e26abafe",
+            "term_constants_sha256": "7b99ee4e9c5ee6ce6c9eacfd34c7238c5a6450542e34cda67757a9332f85a240",
+            "definitions_sha256": "5edb52299c43381cd88e062efca40a96817cc6daf0e2f075bf10161a44cd49a8",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 25,
             "term_constant_count": 385,
             "definition_count": 339,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1482,37 +1482,37 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "THE_DERANGEMENTS_FORMULA",
-              "theorem_sha256": "62cfad679a5e596a1112d0c66606f5cac605d4c5e6549de9e84834025dc9ef5b",
+              "theorem_sha256": "240c7ed5610480f83329e05a3e236067a85a5e50d6c966c6ef1db34692265e6c",
               "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
-              "conclusion_sha256": "945077228bfcf3331fc016bec86c10ad979cd120564be59f4cd4d7f3df0a66c1",
+              "conclusion_sha256": "ffdfd18beae58fb9073e6aed491985a7c49c366d772c3b1068335c3491c9f0fd",
               "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
               "hypothesis_count": 0,
               "global_axiom_count": 3
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "5978db847751318b9e399456d940da30f6755360386abd787b7bc21e925f9ce3",
+            "kernel_state_sha256": "8471b1e5dc7277a579f1b0e91e3ce427c917f98ae566ddd145b4fa6f0ce506cf",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "1e5d1751829ee84e189d28e2ff44f82531da118b4620fb0aecda13e1f83ae89f",
-            "definitions_sha256": "ca99ba29b0da0dd32866ac45e7b04e697f6763fac78903fe5dbc90f063f012e8",
+            "term_constants_sha256": "f5ace9be8289fff225f6eb2eb1a2493a12ee10b3ca624aa24f67a843aca7e85a",
+            "definitions_sha256": "c5d6751c30b8ae2f3f1f88ce6554a65c4ca9c13eaa4615313b41380b38d1630a",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 374,
             "definition_count": 330,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1551,14 +1551,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "DESARGUES_DIRECT",
@@ -1571,17 +1571,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "c5891df7dbf887d1382234159c7de36c7b5e1ab2457fd687497f8e10c01c3658",
+            "kernel_state_sha256": "627e1404e1e7dc559b5d61e65bb5aea321567d3d0d884069146e4cb70a11c931",
             "type_constants_sha256": "b446dcb79fe8b38c98a7372a11c5c54ea948f4cb37042aa5aec3eaf8901e373c",
-            "term_constants_sha256": "f072edd0de01d31fa2e9678fbe6751669bfdc29c43e28b02df0015930e6212d1",
-            "definitions_sha256": "66b7ad603d5a49a60b7e2a527c7ec646a4dfb133496c5d2fc624bbe8bfda64ba",
+            "term_constants_sha256": "105812351cf5410ef0985d56191d0da74473208f15887d376576a225acee85f4",
+            "definitions_sha256": "79e96a49b8f0762b74ade6eb0f8a4261361060aedfc4c3372f6c90c8bc9a30b4",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 622,
             "definition_count": 568,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1631,14 +1631,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "DESCARTES_RULE_OF_SIGNS",
@@ -1651,17 +1651,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "34e20cfba7d9cce2ddcd6f9d6f5b94f139b5d9fb1811e2489e5367e2b94d6d43",
+            "kernel_state_sha256": "103efc3f736650dff98520f08791f1651c4708eaeb98f61b0100b7e3a4a520bc",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "b23fb64100b9aa27503adf89c5142ea91ad93365a18d1d8598262f12e67c49a7",
-            "definitions_sha256": "8479a503741214f000718fd5c8c900f1ee9177c63c61a629e16fc695e7c03f2a",
+            "term_constants_sha256": "cd3d2aec13fd3bf9c799430c50cf2c82a240e612808f12de76e0429a9b215b0f",
+            "definitions_sha256": "02f8d69ce0e748316473b31f5003373949e16d072c980be73e65f323fde6090a",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 873,
             "definition_count": 821,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1716,14 +1716,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "DIRICHLET",
@@ -1736,17 +1736,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "145bd594df90a8ee128d5de23830d09b36ee9066723a316b0447cec8b59830cd",
+            "kernel_state_sha256": "1f0257aa7283707e6d8f05fa459df224a4835e6bd833846d45462a0845045e78",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "4830b4ffada1f1f62c38c46595b6158a3ae56c8f3b8d41eb56cb4cc7ffd36c04",
-            "definitions_sha256": "d7f69fdd1715ee2c054250187412a32603f42117598ab3e945710857adfe01dc",
+            "term_constants_sha256": "7a962db041a62bea878a28b0c37f949a72940381d3419d359e55adecae3e315a",
+            "definitions_sha256": "2dc0098b9cfd2bcbe6fb0a2f84a19412e670e0ee5ab5a47b2853b5e4f914c708",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 851,
             "definition_count": 799,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1797,14 +1797,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "DIVISIBILITY_BY_3",
@@ -1817,17 +1817,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "a93f9c1f33f46bb6336d08886cd76bd370e0236f01a645c04c3ff9f77adad4be",
+            "kernel_state_sha256": "a408882cb7c1efd7d48fe94cf56899d3c1ea4fddb7a794da44477f913ed8cf5b",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "9cc2aae06344cc485f0e513d4e7a9711830351aa222d02a708aa574da3e1aa3c",
-            "definitions_sha256": "57bb513e4cf0cabf34a9a0b040a12a348aff4e759dd2baa35ebe1328a4494756",
+            "term_constants_sha256": "9da944c41f4ac2dfb72bd3639d588f6b4234a7a054809bc4717523cbe33c4bd1",
+            "definitions_sha256": "990a5718d90cf6a4d4d566d9a05e55461bbf72b0cb3d31f4ca8b0b89d5ace5b2",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 310,
             "definition_count": 270,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1878,14 +1878,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "HARMONIC_DIVERGES",
@@ -1898,17 +1898,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "kernel_state_sha256": "607c007836204c5fe8d0eb8a5720c64db6996926cd74a1e1c454174c1296f8cf",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
-            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "term_constants_sha256": "09854f0dc5fad87ecaf7469fcf368544ee70ab89fa68e117a63d1271cda796f3",
+            "definitions_sha256": "87fe178bf06e532cab704313790ed00e71a1158d6c6510d90346efcc7b7a957f",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 360,
             "definition_count": 316,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -1971,14 +1971,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "Finale.TRANSCENDENTAL_E",
@@ -1991,17 +1991,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "01fd6089e7fea7fe2cd1effd24c75d141bf690877ea72cf5fcf757907917f6c3",
+            "kernel_state_sha256": "d32c60003dddbb36e2b405f3b6096c019d4e3a183a03162cfcf974763ac2480d",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "5042bbda9812ad46a00e738e8131f5b3722c8788d422fbb4cbac18ab75f23843",
-            "definitions_sha256": "a01b6241654065f8c97fce503319f4c540441daf35ac65c0acce5a4c3b3e0854",
+            "term_constants_sha256": "0c2c9acf33e3986e22560147c1098d484665e49f498fbb77f0f00c56212b8da6",
+            "definitions_sha256": "97d78c9d1072eb20fe5a69895c00b29e7ebf2cffe77a668647bd83b8a61c3d4d",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 396,
             "definition_count": 352,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2063,14 +2063,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "EULER_PARTITION_THEOREM",
@@ -2083,17 +2083,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9d3ba8e372f33b458b5291b2276e78120be56385ad84e85ab88df8f9e311f0c9",
+            "kernel_state_sha256": "4afcd08c70fb4859db1a5ac0eec40c3706c6f83870ad2770dfff25590c0f975d",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "1f0747465681d80ad7118a2dfc42ba84eeeb8dbcd227d825f49cf4bff8f7f822",
-            "definitions_sha256": "654beb900e1b696f986829383456fe51cddfa5c922c8a1dd5c752b3372bb025e",
+            "term_constants_sha256": "c1ad9aa28bbf0dded0479133867a604200d35ecf2c99546325fccc5e9b6e2a6a",
+            "definitions_sha256": "a70cd7b76b59d7d0b6bf1c55478f9952de14f3c455f042c5a2c7d1ccc67931ea",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 310,
             "definition_count": 270,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2143,14 +2143,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "FEUERBACH",
@@ -2163,17 +2163,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "fd1060a5fbcd0e9a48cb545d4e6bc69cb0691496252b346bf7e1a8fc313cdc79",
+            "kernel_state_sha256": "5dbe681061d7ff693feeb30eb6d1cae5d86e5dfa8ab246ad74b6e839b7265d0f",
             "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
-            "term_constants_sha256": "c9aab1e826391f3a1ae3c03ed3dc69fd358848d41944143c594c6ceb4278f186",
-            "definitions_sha256": "97cc1bba717401a771ecee5818fc1c7976aa59036f9b15d52ab1959dd8186f16",
+            "term_constants_sha256": "ea7287636e274431a9df5bea60e2a1a5014b2f0b933204ed0517eddeb93b6127",
+            "definitions_sha256": "1da7cb8fb7c190e30a595b31a1b7ccd15678a4d5b38c75a1dea4d8ba021772e8",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 26,
             "term_constant_count": 618,
             "definition_count": 570,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2247,14 +2247,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "FOURIER_SERIES_L2",
@@ -2285,26 +2285,26 @@
             },
             {
               "name": "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE",
-              "theorem_sha256": "f8c8de131fbdebfca29410a9f921f77f41f3b9cd2124e2ac7a0a60bb76cea74b",
+              "theorem_sha256": "27bf3acccd648f16e1f9899e0a28332350710384c2cad4368e2e5d90baeecfd8",
               "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
-              "conclusion_sha256": "f93ab88781eb69ae1a4ddb99afeb8195fca9de344a0977000964afed70dcd047",
+              "conclusion_sha256": "cf83b7e3c68fd75174e1fe5a94bc34e119c110698eae4251f40fa1457f513069",
               "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
               "hypothesis_count": 0,
               "global_axiom_count": 3
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "2944f71c1addddac832b0d112e342a6d3c5f2867e2c70aed3438058d174bbade",
+            "kernel_state_sha256": "74c54db24ba6671932d17c563e8e0375f213672d796f7112ae95531c6180f515",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "83cd8fba275e1657f7cf080ffa611a5b964a8f6c3023b292132c067f14054eea",
-            "definitions_sha256": "09998508896cfa0b5f0d3e685b569e4772122e1c54aeada666809c2513717b1e",
+            "term_constants_sha256": "6c7f2ccd15247c54bce91f747a157484f0a69d926628a1c2d52d860788d1d141",
+            "definitions_sha256": "cd18f58991936494a4e5cb7920ec185c11d80e10ce72c346b49d0f5be5c167f1",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 882,
             "definition_count": 830,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2363,14 +2363,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "SUM_OF_TWO_SQUARES",
@@ -2392,17 +2392,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "03836899d3eda76f40e95ba67938837ebb8f1bf6e68037c8fb82ba1c492b92a1",
+            "kernel_state_sha256": "1f0f6677455df497b445a9e5f93d7a61552d000c1ed5162f85639f221474adc3",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "a1f711d285d49ef55d1161f790808f7b29368601d9b87dbe78d1d2e2f98e25e2",
-            "definitions_sha256": "da546a44add9e8c0f0770f0b676cceefe2d5f8db1754d8b92c577de43dfa7d2e",
+            "term_constants_sha256": "0d2c1820b2a6fdb4179339e1e42181ecac18ee78d4d4b32bb5078fba05114a0c",
+            "definitions_sha256": "7cd75f431c88cbb7c566ad577c99cfc322c116bda8701f6cff6b81794bc0f7da",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 345,
             "definition_count": 301,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2453,14 +2453,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "FRIENDSHIP",
@@ -2473,17 +2473,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "f5d7ebe09aeca5f7fa9b94ffd5dd64b2766631d069b303ebcc02a94cf3c64766",
+            "kernel_state_sha256": "84e6756fd7037b9cdfedb2f42b3510cd6bcfc12a195446fc8022682f111651eb",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "00cdf34c0b82f296bc5740a20186d35585538d5a46f37e5e3c25e8edb7e3e9ac",
-            "definitions_sha256": "b8009d7ea3397581e34bbdf4bad81bf0b854a0ac406e712e54b82f1c67dd554f",
+            "term_constants_sha256": "788a6cbead5f756b5dcabcdb8ee9540f08dd09e514f4d473b21fc79d1b73d7f2",
+            "definitions_sha256": "f2b72c5b1eb17077e0a453bb731fcef9f6171353d2bac216713cdcc6a683e7b3",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 313,
             "definition_count": 273,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2533,14 +2533,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "FTA",
@@ -2553,17 +2553,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "312440afc0ecfe29eedf5d43403c5c1b2e99753e5ecb0f93f9c8baeb534641cf",
+            "kernel_state_sha256": "e25a8e387c5a7405622095ad2e2736a86f7b446cfb4041131a31fae508141265",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "b72af4de2ede53153fe41865bc2cf12ae4f24e438b4d22efeab6b804803e0ed9",
-            "definitions_sha256": "82c13e646de921140984c0e9a1a9b9b56be0fb917ba8a6e8ac1b079687afdf01",
+            "term_constants_sha256": "872c989f6bc194c48235321cd816cacb6c333a331868906a44b902912cea442a",
+            "definitions_sha256": "52df3c9f48beada33427ff7ae3c173b20cb70db0c39c72086b420a60fd8f4399",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 304,
             "definition_count": 264,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2613,14 +2613,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "EGCD",
@@ -2633,17 +2633,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "a93f695a2917c4a0b0e7804c7e2890f61c095ce6be5d17f0e010c7a966cc00d5",
+            "kernel_state_sha256": "0b7ef97988f4ff7d8e73388180dd7cacc9edb5fa1b1db2934dea71186a9188ea",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "e9964d0fa836b4b07373e1901309f349fadfe5a64bb19df4578b1d412e4e619e",
-            "definitions_sha256": "40425f2afc78b1515aba0451af93fc1d1736d5f03ce84c3bc9151667437c78ec",
+            "term_constants_sha256": "6e678f19b7d94fd896e07ac6173ef4e06d7b37b1dde44bd7f8a097a2b7a8f135",
+            "definitions_sha256": "f5a263a3859bc9e84b4c41b78ce8dca33ae3a1230d5121a719b7e0f7459c1e11",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 305,
             "definition_count": 265,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2694,14 +2694,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "GREEN_THEOREM_CURL",
@@ -2714,17 +2714,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "40702418c2efee1a6f1ae37957a6e20981dfe4eef750cacd15c5eb3b7c91178e",
+            "kernel_state_sha256": "0165af781cc16aa33b50f2e4ca0db898a849a6eb37d2fdd9478dc3215a816914",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "426e55b49f45f48e441dfeff4e2811ac1c818cfa9f59ab81bde0bb654313b965",
-            "definitions_sha256": "bf3a51266953cc721dfe74267ce14dd2a9f93869523219b66e0eed9d1e407775",
+            "term_constants_sha256": "9a6e3183275c283b2fe91b1f0d34231ad29b73320ffa532c47a56ff761b886f2",
+            "definitions_sha256": "c22206a5ea87d689cac280ae5c9164255c71978e1aaec00a1455baefd793bd46",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 890,
             "definition_count": 838,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2774,14 +2774,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "HERON",
@@ -2794,17 +2794,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "fec44e4dd322e96bc98d2a286fabaa965edb72e90f82cb3bc61f146883b40411",
+            "kernel_state_sha256": "7d6d0b01d66261cc944b0f5678eb4741218b69d1ffb02af815f94136c6c39dfd",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "ee74688b5108f734428fe9bdbed889d23b68573fb89a89e0a4d058e64febca1c",
-            "definitions_sha256": "da4dc13cad6cef485141fc43e5ba0728b06acc8ea1c362f62a8e100c286ea974",
+            "term_constants_sha256": "9baa610976a02e65328e3bdb1a51b91fcf3bff0fcd2f7196ff6ab804a74cba63",
+            "definitions_sha256": "f6ebf04dc1d53a3b9471419cca2161aab0b2ebf81cde5a9a24ff7d939df00b24",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 795,
             "definition_count": 743,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2845,14 +2845,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "ISOPERIMETRIC_THEOREM",
@@ -2865,17 +2865,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "40702418c2efee1a6f1ae37957a6e20981dfe4eef750cacd15c5eb3b7c91178e",
+            "kernel_state_sha256": "0165af781cc16aa33b50f2e4ca0db898a849a6eb37d2fdd9478dc3215a816914",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "426e55b49f45f48e441dfeff4e2811ac1c818cfa9f59ab81bde0bb654313b965",
-            "definitions_sha256": "bf3a51266953cc721dfe74267ce14dd2a9f93869523219b66e0eed9d1e407775",
+            "term_constants_sha256": "9a6e3183275c283b2fe91b1f0d34231ad29b73320ffa532c47a56ff761b886f2",
+            "definitions_sha256": "c22206a5ea87d689cac280ae5c9164255c71978e1aaec00a1455baefd793bd46",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 890,
             "definition_count": 838,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -2922,14 +2922,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "INCLUSION_EXCLUSION_USUAL",
@@ -2951,17 +2951,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "kernel_state_sha256": "91c508e52572a16b1fd400c978dd6e4aa25fd33085758ba95cbeba8649c2c6d9",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
-            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "term_constants_sha256": "1b84e5b7ecdaf2b23e9e89c399ad891880bbdbe06de355acbc1f9983486e62b4",
+            "definitions_sha256": "1d9bad133d5cf7a5663bcf9a16583578d3d71dc03b1add682b7c756335bfbe4b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 303,
             "definition_count": 263,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3081,14 +3081,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "TARSKI_AXIOM_1_NONEUCLIDEAN",
@@ -3191,17 +3191,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "ae447289426360119da716823f07ed9344305d4c9470139229968d0ae736e972",
+            "kernel_state_sha256": "cf4d569a354f9e6a78e085e25d67c9ee216153100f3a4a5098ebc5fa288205de",
             "type_constants_sha256": "ef26006c361401986e59c90bf07474574daea9c266410ea5998ccf0b1c2510ad",
-            "term_constants_sha256": "bf64c7a0b97e924e2271b35dd55f650c67624c863ee7659a0f925889e3cdb33c",
-            "definitions_sha256": "4a1f2b33bff3fadac87d8fde2f97ea4cfc24363f6069d8551d9b9ffd74814396",
+            "term_constants_sha256": "faccf852c06ec08d2bbb4c6411eb41d8a0c5f4e82d162cdbd2b2bfb0cb9874ac",
+            "definitions_sha256": "8993569718a81a26ff2f075df2774fb8c4db7c83e3e4a107e89549220410c093",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 892,
             "definition_count": 838,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3248,14 +3248,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "ISOSCELES_TRIANGLE_THEOREM",
@@ -3277,17 +3277,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "8d0c514f95527a9b46165e1410141d8f083993bb65c3b71cd9717178f7954566",
+            "kernel_state_sha256": "12ed5803ba39f43e1a6847999ecd8d3e14362d2e12545112b301b94a8a236cef",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "4a49e66b1a69311b78fa7a3d76e8580d1bbbed56a790b92bc4851e64146fa007",
-            "definitions_sha256": "6ec2faad8927ff911c168d7eb7c9443602705611134e408ae7c600567859efda",
+            "term_constants_sha256": "29ad6da3fb9001995679c5aa963cc726952b5a9635b7fd47555942e3751949f6",
+            "definitions_sha256": "45f34a1649404f6827e5458289db81fb91a7f89865a82038e7f5242dbbe4239d",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 873,
             "definition_count": 821,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3324,14 +3324,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "KOENIGSBERG",
@@ -3344,17 +3344,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "74a55c15febd300a923c5d445824d26c3bea38fd645a7436b1a48bb88336acda",
+            "kernel_state_sha256": "83f65c984f513d38c78ddce7b682ec0cdeeaf12e727fb7369112b9470afd166f",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "cdd6e30f1aadf5dbb385646f4bd28a7c91e03b916c3716b87e0effa9448ea9eb",
-            "definitions_sha256": "4dacd0557ff3720af7c70e3a3423754ca40fcedb6d80ca30de1ba0543855a640",
+            "term_constants_sha256": "cc16b30c01b8816ea6fe8a3045898795588abd81c312921f88e605d78edf26da",
+            "definitions_sha256": "17d79cf57026b443c93f69e1455b1b5746760c334ccc7723ac23d09feff45dd2",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 313,
             "definition_count": 273,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3393,14 +3393,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "GROUP_LAGRANGE",
@@ -3413,17 +3413,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "182618011b332f7829f3f78b1af3039520227c689c130197cca3f9a2afe822c1",
+            "kernel_state_sha256": "a92945baa8b85572ae070111373935a7cec9a23dbd81865e4323eb2135b4cc3e",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "f0b4d866aaf56a8268b265803d363cec295599f68a1efa05c15e980c7a8fbdcb",
-            "definitions_sha256": "519a9e6a220033decab47257fc33ea7bed6f80dede60393e0756da23dfc787e6",
+            "term_constants_sha256": "ecc3bec2cfe8ac1291acc822869aafad35ddb00b6bbf12181f0715f07fecf2bc",
+            "definitions_sha256": "a4dadedc4e2de7f1fd8089b787d4f2849e9b17c592d72a9d52a2d53921c7b746",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 306,
             "definition_count": 266,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3462,14 +3462,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "LEIBNIZ_PI",
@@ -3482,17 +3482,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d4314461066eb87e56d6dbbcf9027de0789c4c457165996dca5e3d69e30381a6",
+            "kernel_state_sha256": "607c007836204c5fe8d0eb8a5720c64db6996926cd74a1e1c454174c1296f8cf",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "bb8ab116752374aac3f386afa586f7ed40bb416e59a1e66e098baabb3fc002b7",
-            "definitions_sha256": "2e413f4662f330219a2fd0872510e4d72594e0148f9730ee0a3ae9283a0bed70",
+            "term_constants_sha256": "09854f0dc5fad87ecaf7469fcf368544ee70ab89fa68e117a63d1271cda796f3",
+            "definitions_sha256": "87fe178bf06e532cab704313790ed00e71a1158d6c6510d90346efcc7b7a957f",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 360,
             "definition_count": 316,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3531,14 +3531,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "LHOPITAL",
@@ -3551,17 +3551,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d70bc3925427feb02273ec5aa0f94ccbca32391b52a64c89852e7dc42d6beeb2",
+            "kernel_state_sha256": "93b8e863cf3690b8280b00d4cfb9ac73e4a01a20c240b6b59ff17bd635999c26",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "9ecabfc9cae05c841c69c0f84343c72b5d86961ed8cb66fa44813202219a502a",
-            "definitions_sha256": "babc5bcd6666a26482c933d84cb49b60b767dc097576fe05ef8ad041893bfbd0",
+            "term_constants_sha256": "ea1a6a25317ba5e2965ba41e9a12bf110d960783f2800164e56af3b58550dc61",
+            "definitions_sha256": "82e718ae6dc008d4a70e6188a116c23414cd3778f5f082b81a6f50ea5844afdc",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 340,
             "definition_count": 296,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3601,14 +3601,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "TRANSCENDENTAL_LIOUVILLE",
@@ -3621,17 +3621,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "f6f2f4dfd53371f823b44905852ad3bb1f1b5fa9503f0121bcace29798abd659",
+            "kernel_state_sha256": "1f228ca51f33daf6ae8a97222febc3b572a0852780fd27414cbb4947e2f86687",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "5a14b14b7e53e4dbcf430eb94f0e8eef514bd0f3bcc8ab61733265cd0f417a7d",
-            "definitions_sha256": "0b2cfb9fbac800d67fb3a6680eea2241aecb61956cbe19317e3fa0031310e8de",
+            "term_constants_sha256": "754edd579af202af1188538bce9ddce3a29d1f342899edda64e638c529d56525",
+            "definitions_sha256": "f6827a3802aa73db0ee0160d831f61f72a2b32147166f0ea18046b1173a0fab6",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 359,
             "definition_count": 315,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3670,14 +3670,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "MINKOWSKI",
@@ -3690,17 +3690,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "fec44e4dd322e96bc98d2a286fabaa965edb72e90f82cb3bc61f146883b40411",
+            "kernel_state_sha256": "7d6d0b01d66261cc944b0f5678eb4741218b69d1ffb02af815f94136c6c39dfd",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "ee74688b5108f734428fe9bdbed889d23b68573fb89a89e0a4d058e64febca1c",
-            "definitions_sha256": "da4dc13cad6cef485141fc43e5ba0728b06acc8ea1c362f62a8e100c286ea974",
+            "term_constants_sha256": "9baa610976a02e65328e3bdb1a51b91fcf3bff0fcd2f7196ff6ab804a74cba63",
+            "definitions_sha256": "f6ebf04dc1d53a3b9471419cca2161aab0b2ebf81cde5a9a24ff7d939df00b24",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 795,
             "definition_count": 743,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3740,14 +3740,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "MORLEY",
@@ -3760,17 +3760,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "5c69315feed58b413d56ef8c40b6bb69d120d1a12bb733fff94b01e4cd01f1a2",
+            "kernel_state_sha256": "6216d873967919d2abfd47873b1a3699a413fb7b6cf1dd74d80495ce2d888ab4",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "d734a49657941aa314c9757b7bbfb36c0ed26a134c2a8ab5fe819e4493d6ee5e",
-            "definitions_sha256": "e19e81a4f40890ae7a056143b019f4fdb74bcc8ee8761216b20b29d7f290f350",
+            "term_constants_sha256": "39092a29bd4bbc452664add56008d5eeb8e5f09d2e53e7300123255a666b02ba",
+            "definitions_sha256": "bd9b9a6d91be850d0b6d7d06da92100c681537fe7f53f9067e0e982cbf72ebed",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 876,
             "definition_count": 824,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3809,37 +3809,37 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PASCAL",
-              "theorem_sha256": "ab946c218f8013459d64a7e1c57a8bd2b9d15e67c3a3258f298736839ce1a72d",
+              "theorem_sha256": "0fc34692ea7b5bb713322c042e2e4af474b574100cd7b4125d13abe8f3fb99e7",
               "hypotheses_sha256": "950658aa635772722f2cbc0a6302c2a2bd444b88f5669dcc3abe099f8ab6a5a2",
-              "conclusion_sha256": "5de5793bf155023dfa680b5622a83fd148817fc965dfd5221f55d72c51d2bd49",
+              "conclusion_sha256": "98e02393eb5b446343b746a3feea5bc42a65e1f91690e6b4c7a60bc23c4e76e5",
               "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
               "hypothesis_count": 0,
               "global_axiom_count": 3
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "5bd0b73fabdbd61c0ba915fd12550d8832ab50e72092b0d322dc62b65021791c",
+            "kernel_state_sha256": "59270f09489f17b4f0e5c71fb9b44a9db5222460eb601fa3427462cf8364cfca",
             "type_constants_sha256": "b446dcb79fe8b38c98a7372a11c5c54ea948f4cb37042aa5aec3eaf8901e373c",
-            "term_constants_sha256": "2cc8b0091b7e056aac7d27dddf47270791028faae3613a2a11981c50c51cec9d",
-            "definitions_sha256": "a6025c1f8f151024b9cd8e9d27c47b0ccc6262633ebcaccaa4661584c53c94b8",
+            "term_constants_sha256": "4c151b5e2060b33c9a3540007dee021a682e869ddf5d4e17a0f879884efcbab4",
+            "definitions_sha256": "4bc0993261b85b74450e1a574dc01a5349c6a0236547468175c188236e5c727e",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 627,
             "definition_count": 573,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3886,14 +3886,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PERFECT_EUCLID",
@@ -3915,17 +3915,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "7b06d2f56f64c84dd582e8d8d23df25f2e12e78a2d7030e3e1a158353ba6dfc3",
+            "kernel_state_sha256": "27ce768afa61d638f95e822c5bce6acb23fdfd1170a662014fc1f90e65f0dd81",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "2059e01f9a9d7ea714846e451a0e2816d75d7e8a58d38e76a96d5805db715dd7",
-            "definitions_sha256": "238396edf2cda5d0aea2ce7a503ac340ddc3940f17edce65b5dfd6bf309bc2d7",
+            "term_constants_sha256": "0599abb464d741883a72830aaa6976b958b0e35c334fafed5d33c6b84aafb9e9",
+            "definitions_sha256": "e2ac049c09e4d68e25e8229dbaae580f4d6922c2e428ec5d4a0cf76d6b4df60d",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 306,
             "definition_count": 266,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -3966,14 +3966,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PICK",
@@ -3986,17 +3986,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "bd1df6142b1952ab0b11620b32b243314815cb40285eacb5d11423680a5449e1",
+            "kernel_state_sha256": "a126ddff3039e2b2275cf777514991cd5ce3c54bd9c7a7321345dc62b359e5f8",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "b2a72f9fcd758be68f5b37ba4931c34ae689f3fe4fa1a7a8fbb3156a13297a1a",
-            "definitions_sha256": "c6a7ecf839271865816e447b85031125a9dd024413ae7ccbc695c5015bf69bc2",
+            "term_constants_sha256": "bccc45b862ab6d8aedf937d7e2d41809b43bddeef4db72f8ab95acb44bd7b11f",
+            "definitions_sha256": "18ed6ebd94d1e5f22d61cdf12094a39b0c2a81a35936b2bfda8bb4950cbd7204",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 875,
             "definition_count": 823,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4040,14 +4040,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "EULER_HARMONIC_SUM",
@@ -4060,17 +4060,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "58d0c408b9a37b160f4da5f5dfe2013f24fd41e4f4f5dbfa8767b8ad1826e176",
+            "kernel_state_sha256": "c76c4ea6c92f3fe7055ca80ceb8e391e4ea5033c6fb54cd24d2f245d96483dff",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "155e5bbc4d9c127e4717a5655698c84904e755c686cf6dc6878cf97730950d08",
-            "definitions_sha256": "f218c3c2ff65f02cffe05fee06f900921340490ad1b7de06b0703c94b07129c7",
+            "term_constants_sha256": "1fb5771aa7383f267686a0c9d0c561ae727cdda8180b2785184acac9637090ec",
+            "definitions_sha256": "2ffe3049bd42eade8146114e5d01cf068c981c9c9e5b96142d1ad078f61c73b2",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 380,
             "definition_count": 336,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4110,14 +4110,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PLATONIC_SOLIDS",
@@ -4130,17 +4130,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "432a679afc98fcda9bfe5e114454c486de8b471ad728f21433b1edb631d9bd99",
+            "kernel_state_sha256": "789ebf1277a5fc150b313526130df47d9ebe7863b122bb62a9282f9c0b8d1297",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "a5b3e0852172db0740cc119a5fdbc7b4495b4d17904e922bad9a25c2cfc64836",
-            "definitions_sha256": "90edbbf868ca74a6c91e80cff3a38aa0baaff1aeb20ec5f88d8d3844830f4837",
+            "term_constants_sha256": "a58b0005395a1acc9eb889dcd2cad98c0ee77cca12887282abb4b9b697db685a",
+            "definitions_sha256": "5d4fe597f4fcf9d5a5b598b1fea819370735ea72fce4c5ae8e39b17a0414ef51",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 762,
             "definition_count": 710,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4181,14 +4181,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PNT",
@@ -4201,17 +4201,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "269c0c4206b14c3d360bb31529e8c449808d06e4912df831172ab5169fa1e749",
+            "kernel_state_sha256": "a333c0598faa26c9d22c952a91a79ebd4d91fc689366c518417bdf2e3990e5ad",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "c61ed0316470725ba778ae48dd9ba2d1f1a12c4d3625eb453247ad1bca00a920",
-            "definitions_sha256": "b58cdedb1a2b965592d5646a0e6e370d5ea682a3a98766545ea9863a69db24c0",
+            "term_constants_sha256": "265ece223fd27bc5161f6b0e165a5cbb4bc8edcb201639871ffc455a6bf2d3eb",
+            "definitions_sha256": "f2f30f9a6a02f0c15b2cdea518dfe2a86f57edfd42f7ab7f6589d8bebeda63db",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 897,
             "definition_count": 845,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4253,14 +4253,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "EULER_RELATION",
@@ -4273,17 +4273,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "6693cb60a1e2811a9a6260af768af4455fcc0876380e0fa87ddae34218417343",
+            "kernel_state_sha256": "482613e77ea1f1a6727879525fa09aa9aa95b7e15d42e4a5da34b9448d98f5da",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "fad4783427ae7ca9cac8527c4be24052b5cb4e0995151a9fc949a666b8eb13fc",
-            "definitions_sha256": "e401ae947d0926f29cbec4a0b7f64bdb9f56823c3743a291decb1cbaadb8a32e",
+            "term_constants_sha256": "3b6a018bc8796deda21711da7a09f73b172cd3a2a7f94931c692d4a2382bcacb",
+            "definitions_sha256": "f252c63cf2bf74cdf26977edfe646d19f8dcecbae1ac28129adf465add0d0fd1",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 755,
             "definition_count": 703,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4322,14 +4322,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PTOLEMY",
@@ -4342,17 +4342,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "7cdbe82f6984f041cfac381ba11a95d21a0e58485111d1e38fdfa2eeca601767",
+            "kernel_state_sha256": "d116dad46a8dc08b92f7c8007510f5ee18b58be50463153941d0d9ff4a986ee6",
             "type_constants_sha256": "b318fa2169ca0a8d299b964a501d1f3099b742617772059d2ca2786afaf87e42",
-            "term_constants_sha256": "163fea33f5c53f2354e1d1d8592a873594b28f5bb26987106c362a2448625a83",
-            "definitions_sha256": "9574cb783f199df3da4ee716c2636a6031c6cd2e731f8c75a57db2bc67299014",
+            "term_constants_sha256": "79cf626f33631236c40e0641c29756d78ac09dfeeeacb9679b0af2d73a396d27",
+            "definitions_sha256": "562fecbe886188646c4e7ff117342a913b1930493d22cc7c1b71bfcae0ea67b7",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 28,
             "term_constant_count": 837,
             "definition_count": 785,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4397,14 +4397,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "PYTHAGORAS",
@@ -4417,17 +4417,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "22201b6a6ab665dd3edd2c3dc6160a1dd45d7f4eb6e7eeb9259edabd2f26f3a3",
+            "kernel_state_sha256": "7c42ea8c4e78c9baf61f0968312d4229636f5ad6de054b4137798cc93345748e",
             "type_constants_sha256": "00e156407675b4535f2fe5699c2da72f56db4cf2227299991fe93731fd5e5256",
-            "term_constants_sha256": "d9d3d0a2d923416758c29db13d4d12a9cc4afd057dcfdf4660d88f9064dfad1d",
-            "definitions_sha256": "d8cc664fa94ab864d4df6884d345da583c6c250610087022d333c76897b26bc2",
+            "term_constants_sha256": "3306ad5a95a0930ec6a31dd00b144e48c5fd75405c3cfea5c636779e6566a612",
+            "definitions_sha256": "d837e34a9ad6f0ffc665a3ff57a78756faae23c174799465a7f0c87e413783bb",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 23,
             "term_constant_count": 399,
             "definition_count": 357,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4473,14 +4473,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "QUARTIC_CASES",
@@ -4493,17 +4493,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "kernel_state_sha256": "91c508e52572a16b1fd400c978dd6e4aa25fd33085758ba95cbeba8649c2c6d9",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
-            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "term_constants_sha256": "1b84e5b7ecdaf2b23e9e89c399ad891880bbdbe06de355acbc1f9983486e62b4",
+            "definitions_sha256": "1d9bad133d5cf7a5663bcf9a16583578d3d71dc03b1add682b7c756335bfbe4b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 303,
             "definition_count": 263,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4540,14 +4540,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "RAMSEY",
@@ -4560,17 +4560,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "9b203db171086d9b66156fab41d2cbfa8a6351eeb7dd6f0d6e742f441b0e2e80",
+            "kernel_state_sha256": "91c508e52572a16b1fd400c978dd6e4aa25fd33085758ba95cbeba8649c2c6d9",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "a2c53a7bc45fa80ed7ed27588662d764c1f0dc06d4a4c9354f4da92f5b01fb26",
-            "definitions_sha256": "26dbd7d9b7ed3e337ef4e18927e019a4bc1c71b6e37ecaceda2ce274c29bcfb2",
+            "term_constants_sha256": "1b84e5b7ecdaf2b23e9e89c399ad891880bbdbe06de355acbc1f9983486e62b4",
+            "definitions_sha256": "1d9bad133d5cf7a5663bcf9a16583578d3d71dc03b1add682b7c756335bfbe4b",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 303,
             "definition_count": 263,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4617,14 +4617,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "COUNTABLE_RATIONALS",
@@ -4646,17 +4646,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "7d6b17fb41ed34674bcd4b4d457b668e6c5075a23e7fceecfd17543115c30c12",
+            "kernel_state_sha256": "af77a73f2ebe2da478ea374319e6b050c615589f8049729aa0195afdc6ed775a",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "2cbb62c5597f6a86c3ac87b45551ec9b5889e2dc20e1ef8adee14021983278cf",
-            "definitions_sha256": "0205cb711604b85d78a1ad5201bf3b7a7bf4cbcb72806f22113c0dc4ae006ee0",
+            "term_constants_sha256": "79cbf8099694e769b63a56083ee855902c900f27e0068fc03fe6909d8c2e2095",
+            "definitions_sha256": "ae9ef0147883a4f2cc7409791d339b7cc61216f982f61d6af0f350dbe0ab7cd3",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 322,
             "definition_count": 282,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4696,14 +4696,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "UNCOUNTABLE_REALS",
@@ -4716,17 +4716,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "5980346e8c1ad9b6b70f9aea50e8d3f208fa2d4e58fb185f4dde25c1362808bd",
+            "kernel_state_sha256": "8bea1dc4cd610d3530309d0f9f154d040c2595bd8be84797069bbcbf33223ce3",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "bdf13766c3df36bbc1c7c9600b3efb85bad5388db0156cb24e8c113acca2c00d",
-            "definitions_sha256": "4519f8e1df4fa3037e39482384e56d41f35b65e1b76ad7853a3ff3adb72adc5d",
+            "term_constants_sha256": "6b4df93f3141693c126379c79e0a086f54ccb3a590281357286c3c296e73bb7a",
+            "definitions_sha256": "c5459582eaf8609697cf0507c9cd314ae446b4b2ebd06c7b73a742492c5d823e",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 359,
             "definition_count": 315,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4767,14 +4767,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "RECIPROCITY_LEGENDRE",
@@ -4787,17 +4787,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "a39e92984bc3b37783890e6ccff8e8ff6edc13a6749e5656b6753969599e3a8c",
+            "kernel_state_sha256": "92b40ccf8246b42b93d53ff80fc2da0c4a004591bca7553c311b16199fd9f20c",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "8a21954914d63f0bd2f5d516e35ce0bc27da4ecdc32ffae6b0ffd5c862aed206",
-            "definitions_sha256": "c8e72aef9a948fc84bb58238ddf17cd7cee12580e054ab945d6666f18adc9a11",
+            "term_constants_sha256": "f479fa635c5cd212b1ccc2df9b2dc7b781f030e93cd20e5c13a06c692de2e870",
+            "definitions_sha256": "003ac1cfe967751122cf6c9cdc1b23ee01e29a8adfdf35e5b8f911bf02ff16b4",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 312,
             "definition_count": 272,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4837,14 +4837,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "STIRLING",
@@ -4857,17 +4857,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "1dec056150c8f5d24a885f897886b5b1c88df3151938bedd0af03193cf1b5cb4",
+            "kernel_state_sha256": "2cc573ca2d2bd4e5dfb65c6e95ea3d51ae1b4134f10dae9b22ffcf8e1a2b982e",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "02012860ea45074a640489670c427ea73b145ba9fae5e038cf07fe2ebbfc2baa",
-            "definitions_sha256": "a71164cfd978d7f211e56f018a48bc26a2a583a7ba90be9bb702a60ae4049158",
+            "term_constants_sha256": "fc84e3115c4c5c60d60fc3070ba4807391aa357aed26ed951fe8da53a043af8c",
+            "definitions_sha256": "43449b6cc234003ad94e72a7765c6e7a3b2e50e6ea9464e05bc95f0a78d9f482",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 361,
             "definition_count": 317,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4904,14 +4904,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "ERDOS_SZEKERES",
@@ -4924,17 +4924,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "55feff04c063030ab2c80d8351a05eec01538c7978201440effe6600f0a947ea",
+            "kernel_state_sha256": "2261e2d8abe270347a2257bacc359ead1094bdfed1f5367a6016cd5d02119734",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "43e6bb130525a803bf6351be797f1c88bb6382c5442937047046ee9cc41357c3",
-            "definitions_sha256": "a31b7a3f10857aed873e832bb83943dda8abddb12b7f96a9c17f0005ffce1e43",
+            "term_constants_sha256": "50b52bd6cce93e9d08799bc125d12fce705a05fc4386ff2821f11a572b031f66",
+            "definitions_sha256": "05076fe0ec0b217e30d65c7f9dee24e4d5ccda33f320b6de608a16a5ebca4f78",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 304,
             "definition_count": 264,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -4979,14 +4979,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "THALES",
@@ -4999,17 +4999,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d1aa0b4cfeb847600f5d7088825ddf402301b70d135fde89385ddd910670f1da",
+            "kernel_state_sha256": "7b7ddebbfa6ff65d347ef970261c9a924afbcaca91d44f9d953e2f43486e4bea",
             "type_constants_sha256": "02f1569215c8e5e97197abe4c8498d9f9770fe5cdf9027c9e3bf668e425c8d2d",
-            "term_constants_sha256": "2b8706a66943fb21210acdd7f698b68d40403683fdeef380af8deb020afd0cfe",
-            "definitions_sha256": "d2ab40c8fd6d01703ae2148f6cc3af391f3e854d66085915035ea4d29b7f5c0f",
+            "term_constants_sha256": "a2cd8d68c7a6afc2e1d2303c5b4f1262cbe7c89f22bbad876d2abd280a2584ab",
+            "definitions_sha256": "fdb2eac792a8c80e9295bad4b0f9a2bc8b58d17fe245a54d218dcb36dfca06c7",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 26,
             "term_constant_count": 620,
             "definition_count": 572,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -5107,14 +5107,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "e_is_irrational",
@@ -5163,17 +5163,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "6092158a55644ba56d7b95b96a05bea1f900ed66e8f6d56b258eee3e586c6224",
+            "kernel_state_sha256": "63a5bbdfe5bbf40ccd6ceaae3444574815a5808adfe118e35f314f589f0e7e3a",
             "type_constants_sha256": "895ac9c88e748058ac49ebde6a23aaad26385170c284a99dc66e7efb972f2d2a",
-            "term_constants_sha256": "25d238c2dd73f64543c8a6fb5dfddcf3f7444ab57bfc17bc3da4aa5ddae0214f",
-            "definitions_sha256": "53d247e1f008b371e437c662217318c26b3a70592af05723b6a975eb3512fc23",
+            "term_constants_sha256": "d9c96363dc4514e75c22289a1bfe355810e7ebf86b91d952370a58fb23f5d854",
+            "definitions_sha256": "6db36e6faf1a8e8cbc038b820825a7a06ad786b3a64fe353749cbd8c6a582f33",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 29,
             "term_constant_count": 1039,
             "definition_count": 985,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -5221,14 +5221,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "TRIANGLE_FINITE_SUM",
@@ -5250,17 +5250,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "d7e9fe94a09b9bc25144181d82bec24749dd89e9a1dd0f5c54b3e7c2548cb8c9",
+            "kernel_state_sha256": "12b031d2195c5d66b55c5c708a6712c714850176334d8ad2621520bac486d0ef",
             "type_constants_sha256": "5746cbcc6da3ef2c93cc1f40c47844be1df3917f279fbce9cf2bff3dcef9f43f",
-            "term_constants_sha256": "a54742c900b928e3da8228a6b1349ccd06153330fe95bb1c6dcda62b7b6a70b6",
-            "definitions_sha256": "985ad97533c9bba914ae50cbd9469531f5f66ee480870839a24702c4845d3567",
+            "term_constants_sha256": "5040f9f2add6ca44f72668b4e5a44415b0b56d5f49bdcbeae4c62aabf9b25b8a",
+            "definitions_sha256": "64e97b60e8f5062feafcbdfcf9b57d08e9eca5546682fdd31b3b47082630f382",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 24,
             "term_constant_count": 370,
             "definition_count": 326,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -5299,14 +5299,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "SUM_OF_TWO_SQUARES",
@@ -5319,17 +5319,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "15eb3f53e7b9348d6ed5190f6742b82c74d8f67ba48834c9abdd0103188dd39a",
+            "kernel_state_sha256": "dfa42eb98db64d75d6fda6d09e7f3eed70c46a12dcdfa53935a1625b39ac092c",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "12293a05adf3caf1f4b1f964654c570d7f521e013a67a15072aede903086b3aa",
-            "definitions_sha256": "503ff4df3f8ea85f5cd50d256d4e3323f48a94d7dac64586bf193b076311c80f",
+            "term_constants_sha256": "f8ab9dec8c28d64fec6be6dbccae9705ee34e32a4c5ab38ba73d1a26dad4141b",
+            "definitions_sha256": "c91b6ea22a24e13905d7dc6747f76d4e0e10d480350f0ac94c8f1d3f952cea51",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 308,
             "definition_count": 268,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {
@@ -5377,14 +5377,14 @@
           }
         ],
         "identity_contract": {
-          "serializer_wire": "candle structural fingerprint v2",
+          "serializer_wire": "candle canonical structural fingerprint v3",
           "theorem": "canonical structural theorem serialization",
           "hypotheses": "canonical sorted structural term serializations",
           "assumptions": "canonical sorted global HOL axiom serializations",
           "post_state": "canonical sorted type declarations, term declarations, primitive definition theorems, and global axioms"
         },
         "expected_identities": {
-          "serializer_sha256": "ec150fcb1af48c5554cf535b0b076b0607e44e67d12367b7a0fb8a565e5639ff",
+          "serializer_sha256": "444edaba460b2e9ab01c535fbfb18e9fe9932dcf6fe7f8996e2008b47991b110",
           "theorems": [
             {
               "name": "WILSON",
@@ -5406,17 +5406,17 @@
             }
           ],
           "post_state": {
-            "kernel_state_sha256": "a93f9c1f33f46bb6336d08886cd76bd370e0236f01a645c04c3ff9f77adad4be",
+            "kernel_state_sha256": "a408882cb7c1efd7d48fe94cf56899d3c1ea4fddb7a794da44477f913ed8cf5b",
             "type_constants_sha256": "0ecdf0200ab64fd4fabef3fe4f5172d4f54ce640f54247808ba4986672218afb",
-            "term_constants_sha256": "9cc2aae06344cc485f0e513d4e7a9711830351aa222d02a708aa574da3e1aa3c",
-            "definitions_sha256": "57bb513e4cf0cabf34a9a0b040a12a348aff4e759dd2baa35ebe1328a4494756",
+            "term_constants_sha256": "9da944c41f4ac2dfb72bd3639d588f6b4234a7a054809bc4717523cbe33c4bd1",
+            "definitions_sha256": "990a5718d90cf6a4d4d566d9a05e55461bbf72b0cb3d31f4ca8b0b89d5ace5b2",
             "global_axioms_sha256": "dfb1d9dc639bd0567152fb5c2ff8127d284d6f5ab3a67689dee4dd0ecf7e4eb8",
             "type_constant_count": 22,
             "term_constant_count": 310,
             "definition_count": 270,
             "global_axiom_count": 3
           },
-          "approval_sha256": "57adc0ce2968d155c56c918ef96447cd89c330dd6ffc4203e717f203deeb37f0"
+          "approval_sha256": "d82d0e8a413fdb78ded902e5a6d8537d95da65ef5bb194a39883b80a751a3de8"
         }
       },
       "fingerprints": {

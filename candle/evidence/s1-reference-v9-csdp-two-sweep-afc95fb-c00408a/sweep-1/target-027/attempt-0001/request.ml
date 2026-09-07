@@ -1,0 +1,10 @@
+print_endline ("CANDLE_REFERENCE_SESSION_V1\t6bfd0d37b1df513f181006cbf9af9961472d10ee8aed281d30bff84a390655e8");;
+loadt "/project/worktrees/candle-v3-reference-collector-v13/candle/fingerprint_v3.ml";;
+loadt "100/fourier.ml";;
+candle_s1_emit_fingerprint "FOURIER_SERIES_L2" FOURIER_SERIES_L2;;
+candle_s1_emit_fingerprint "FOURIER_DINI_TEST" FOURIER_DINI_TEST;;
+candle_s1_emit_fingerprint "FOURIER_JORDAN_BOUNDED_VARIATION" FOURIER_JORDAN_BOUNDED_VARIATION;;
+candle_s1_emit_fingerprint "FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE" FOURIER_FEJER_CESARO_SUMMABLE_SIMPLE;;
+candle_s1_emit_state_fingerprint ();;
+print_endline ("CANDLE_REFERENCE_COMPLETE_V1\t6bfd0d37b1df513f181006cbf9af9961472d10ee8aed281d30bff84a390655e8");;
+exit 0;;

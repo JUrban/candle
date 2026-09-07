@@ -1,0 +1,11 @@
+print_endline ("CANDLE_REFERENCE_SESSION_V1\t2117e973d65a7edb7d558cc475451cb1c66e1450a7105a9ee9008e165ad45319");;
+loadt "/project/worktrees/candle-v3-reference-collector-v13/candle/fingerprint_v3.ml";;
+loadt "100/transcendence.ml";;
+candle_s1_emit_fingerprint "e_is_irrational" e_is_irrational;;
+candle_s1_emit_fingerprint "e_is_transcendental" e_is_transcendental;;
+candle_s1_emit_fingerprint "pi_is_transcendental" pi_is_transcendental;;
+candle_s1_emit_fingerprint "transcendental_if_exp_nonzero_algebraic" transcendental_if_exp_nonzero_algebraic;;
+candle_s1_emit_fingerprint "zero_sum_algebraic_exp_algebraic" zero_sum_algebraic_exp_algebraic;;
+candle_s1_emit_state_fingerprint ();;
+print_endline ("CANDLE_REFERENCE_COMPLETE_V1\t2117e973d65a7edb7d558cc475451cb1c66e1450a7105a9ee9008e165ad45319");;
+exit 0;;
