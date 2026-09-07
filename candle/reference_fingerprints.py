@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Collect review-only S1 identities from a pinned HOL Light reference.
+"""Collect review-only candidate-V3 identities from pinned HOL Light.
 
 The output is deliberately not an EXPECTED_IDENTITIES object.  Collection and
 approval are separate operations; this tool implements collection only.
@@ -21,7 +21,7 @@ import types
 
 REFERENCE_PROTOCOL_RELATIVE = "candle/reference_protocol.py"
 REFERENCE_PROTOCOL_SHA256 = \
-    "e44ed73330e65058f759e30e90ede0bca0bfdedc7920534d632ecb6806299f68"
+    "5365462cdafc38efff436c77cb8fe36225cdbf400ae5320a073282ded5f551a1"
 
 
 def _load_reference_protocol():
@@ -60,7 +60,7 @@ regression = _load_reference_protocol()
 
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "candle" / "top100_manifest.json"
-SERIALIZER = ROOT / "candle" / "fingerprint.ml"
+SERIALIZER = ROOT / "candle" / "fingerprint_v3.ml"
 SOURCE_CONTRACT = ROOT / "candle" / "reference_source_contracts.json"
 SESSION_MARKER = "CANDLE_REFERENCE_SESSION_V1"
 COMPLETE_MARKER = "CANDLE_REFERENCE_COMPLETE_V1"

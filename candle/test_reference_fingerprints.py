@@ -253,7 +253,7 @@ class ReferenceFingerprintTest(unittest.TestCase):
         self.assertEqual(
             len(plan["input"]["source_contract"]["compatibility_deltas"]), 3)
         source = plan["request"]["source"]
-        self.assertLess(source.index("candle/fingerprint.ml"),
+        self.assertLess(source.index("candle/fingerprint_v3.ml"),
                         source.index('loadt "100/gcd.ml"'))
         self.assertLess(source.index('loadt "100/gcd.ml"'),
                         source.index('candle_s1_emit_fingerprint "EGCD" EGCD'))
