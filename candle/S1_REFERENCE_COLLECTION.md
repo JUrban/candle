@@ -11,7 +11,8 @@ Before execution, the tool requires and records:
 - a clean reference git tree and full commit ID;
 - exact SHA-256 pins for the collector, OCaml/HOL runtime executable, required
   runtime stub library, the bytecode interpreter selected by the runtime
-  shebang, `ocamlc`, `hol.ml`, the manifest, and `candle/fingerprint.ml`;
+  shebang, `ocamlc`, `hol.ml`, the manifest, and
+  `candle/fingerprint_v3.ml`;
 - exact pins for `hol_loader.cmo`, `pa_j.cmo`, and
   `load_camlp5_topfind.ml`, including the ignored generated objects that a
   clean reference Git status does not cover;
@@ -33,8 +34,10 @@ Before execution, the tool requires and records:
   `GPRC`, a read-only empty optional-data root, `/bin/sh` and its resolved
   executable, their recursive ELF closure, and an exact shell-route
   probe that requires both `default(nbthreads) = 1` and `factorint(15)`; the
-  HOL process receives a single-directory `PATH` containing only that `gp`
-  route;
+  exact single-thread CSDP route, reviewed source archive, build receipt,
+  solver probe input and result, and executable ELF closure; the HOL process
+  receives a single-directory `PATH` containing only the pinned `gp` and
+  `csdp` routes;
 - the collector repository commit, status, committed collector hash, and an
   assertion that the executing collector equals that committed file;
 - the probed OCaml compiler version;
@@ -73,16 +76,19 @@ standalone collection omits the variable and retains the same runtime inputs.
 Generate and inspect a plan without starting HOL Light:
 
 ```sh
-python3 candle/reference_fingerprints.py plan \
+/usr/bin/python3 -I -S candle/reference_fingerprints.py plan \
   --target 100/gcd \
-  --reference-root /project/repos/hol-light \
-  --runtime /project/repos/hol-light/ocaml-hol \
+  --reference-root /project/worktrees/hol-light-s1-exact-reference-v13 \
+  --runtime /project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
-  --ocamlc /usr/bin/ocamlc \
+  --ocamlc /usr/bin/ocamlc.opt \
   --ocamlfind /usr/bin/ocamlfind \
-  --pari-gp-root /project/deps/pari-gp-2.15.4-2.1build1 \
+  --pari-gp-root /project/deps/hol-light-external-tools-v9 \
   --pari-gp-package /project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb \
   --command-shell /bin/sh \
+  --csdp-source /project/deps/hol-light-external-tools-v9/candle-csdp-source.tar.gz \
+  --csdp-build-receipt /project/deps/hol-light-external-tools-v9/candle-csdp-build.json \
+  --csdp-probe-input /project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml
 ```
@@ -91,16 +97,19 @@ After review and only when heavy workloads permit, collect in one fresh
 process with an explicit total wall deadline:
 
 ```sh
-python3 candle/reference_fingerprints.py collect \
+/usr/bin/python3 -I -S candle/reference_fingerprints.py collect \
   --target 100/gcd \
-  --reference-root /project/repos/hol-light \
-  --runtime /project/repos/hol-light/ocaml-hol \
+  --reference-root /project/worktrees/hol-light-s1-exact-reference-v13 \
+  --runtime /project/worktrees/hol-light-s1-exact-reference-v13/ocaml-hol \
   --runtime-stublib /project/repos/hol-light/_opam/lib/stublibs/dllzarith.so \
-  --ocamlc /usr/bin/ocamlc \
+  --ocamlc /usr/bin/ocamlc.opt \
   --ocamlfind /usr/bin/ocamlfind \
-  --pari-gp-root /project/deps/pari-gp-2.15.4-2.1build1 \
+  --pari-gp-root /project/deps/hol-light-external-tools-v9 \
   --pari-gp-package /project/deps/apt-noble-pari/packages/pari-gp_2.15.4-2.1build1_amd64.deb \
   --command-shell /bin/sh \
+  --csdp-source /project/deps/hol-light-external-tools-v9/candle-csdp-source.tar.gz \
+  --csdp-build-receipt /project/deps/hol-light-external-tools-v9/candle-csdp-build.json \
+  --csdp-probe-input /project/deps/hol-light-external-tools-v9/candle-csdp-theta1.dat-s \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml \
   --transcript /tmp/gcd-reference.log \
@@ -111,7 +120,7 @@ python3 candle/reference_fingerprints.py collect \
 Validate the review-only shape later with:
 
 ```sh
-python3 candle/reference_fingerprints.py validate \
+/usr/bin/python3 -I -S candle/reference_fingerprints.py validate \
   /tmp/gcd-reference-candidate.json \
   --plan /tmp/gcd-reference-plan.json \
   --request /tmp/gcd-reference-request.ml \
@@ -133,8 +142,9 @@ field for field.
 
 ## Deliberate promotion barrier
 
-The candidate schema is `candle-s1-reference-candidate-v8`, its approval status
-is always `candidate_unapproved`, `promotion_allowed` is always false, and
+The current candidate schema is `candle-s1-reference-candidate-v9`; its
+approval status is always `candidate_unapproved`, `promotion_allowed` is
+always false, and
 observations remain `observed_uncompared`. Identities are nested under
 `candidate_identities`; the object has a different shape from the exact
 approved identity object. Manifest generation and the runner both
@@ -163,7 +173,7 @@ independent reviewer must establish reference suitability, inspect the exact
 three source deltas, and create `top100_identity_approval.json`. An approved
 artifact must retain ordinary-file path/byte/SHA records for both candidates,
 plans, requests, transcripts, and source contracts; manifest regeneration
-rehashes every attachment. It also parses every exact schema-v8 plan and
+rehashes every attachment. It also parses every exact schema-v9 plan and
 candidate, mechanically calls `validate_candidate` with the retained request
 and transcript bytes, regenerates the nonce-bound request, and requires the
 replayed identity projection to equal the independently approved theorem and
@@ -173,9 +183,14 @@ cross-bound. Arbitrary hash-consistent attachment text therefore cannot become
 an approval. The unapproved committed template contains no identity data and
 keeps the 65-target runtime gate disabled.
 
-The two-sweep collection contract used by an approval is schema 3. It pins one
-plan-independent `elf_oracle` projection and requires both the core OCaml/HOL
-and external PARI/GP closure in all 130 plans to use that exact projection.
+The current two-sweep collection contract used by an approval is schema 5. It
+pins one plan-independent `elf_oracle` projection and requires both the core
+OCaml/HOL and external PARI/GP/CSDP closure in all 130 plans to use that exact
+projection. It also pins the exact V3 serializer and the bounded independent-
+target scheduler: seven workers, no overlap between sweeps, and no new target
+scheduling after a failure. The approval consumer continues to understand the
+retained schema-3 and schema-4 historical evidence, but new V3 authority uses
+schema 5.
 Approval replay requires exactly one selected successful attempt per target.
 A contiguous earlier prefix may contain only explicitly interrupted attempts;
 each must retain the canonical candidate, plan, request, and transcript records
@@ -213,9 +228,12 @@ validator files to be identical would defeat that independent-review boundary.
 - The historical source mode recognizes exactly three compatibility deltas.
   Equivalence remains an independent review obligation; a matching hash is not
   a proof that a source rewrite preserves theorem behavior.
-- The structural serializer preserves free and type-variable names. Its
-  cross-runtime canonicality remains an acceptance assumption to validate on
-  reference/Candle differential samples before approving all 65 identities.
+- The V3 structural serializer preserves ordinary names and canonicalizes only
+  positive-numeric generated type variables, anonymous free variables, and
+  anonymous constants by their numeric rank in the relevant object or state.
+  Cross-runtime canonicality must still be established by complete native
+  two-sweep agreement and independent comparison with all 65 Candle
+  theorem-and-state results before approval.
 - The first wrapper-based GCD attempt failed closed before HOL initialization;
   a direct-runtime initialization smoke and one schema-v2 GCD collection then
   passed. Independent review found its identity coherent but rejected it for
@@ -229,13 +247,16 @@ validator files to be identical would defeat that independent-review boundary.
   were tree-pinned while their ELF dependencies were not enumerated. A
   schema-v6 collection then failed closed at `100/bertrand-primerecip` because
   the intended PARI/GP prerequisite was absent and not modeled by its plan.
-  Schema v7 adds the shell/GP/config/data/ELF closure and factor probe. A v7
-  candidate must repeat the pristine run, include the full structural
-  post-state identity, and still match an independent second reference run
-  before any identity can be considered for approval. No v6 root may be
-  resumed after introducing GP.
+  Schema v7 adds the shell/GP/config/data/ELF closure and factor probe. The v9
+  path adds the CSDP route and its build/probe evidence. The current schema-5
+  controller further binds those v9 candidates to the exact candidate-V3
+  serializer and complete canonical V3 post-state identity. A current v9
+  candidate must still match an independent second reference run and the
+  complete Candle theorem-and-state result before any identity can be
+  considered for approval. No older root may be resumed after changing its
+  external-runtime or serializer contract.
 - Promotion uses approval schema v2. It binds every run to its controller
   `success.json`, collector/validator stdout and stderr, the exact collection
   contract, and a closed 130/130 aggregate receipt. The approval consumer also
-  validates the exact fresh-process HOL/OCaml/GP runtime projections; the
+  validates the exact fresh-process HOL/OCaml/GP/CSDP runtime projections; the
   project finalizer reauthenticates and retains their file and tree bytes.
