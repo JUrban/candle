@@ -22,7 +22,66 @@ class _FakeProcess:
         self.close_calls.append(force)
 
 
+class _FakeFinishProcess:
+    def __init__(self, exitstatus=0, expect_result=0):
+        self.exitstatus = exitstatus
+        self.signalstatus = None
+        self.expect_result = expect_result
+        self.sendeof_calls = 0
+        self.expect_calls = []
+        self.close_calls = []
+
+    def sendeof(self):
+        self.sendeof_calls += 1
+
+    def expect(self, patterns, timeout):
+        self.expect_calls.append((patterns, timeout))
+        return self.expect_result
+
+    def close(self, force=False):
+        self.close_calls.append(force)
+
+
 class TimeoutPolicyTest(unittest.TestCase):
+    @staticmethod
+    def _finish_repl(process):
+        repl = object.__new__(regression.CandleREPL)
+        repl.inactivity_timeout = 10
+        repl.wall_deadline = None
+        repl.process = process
+        return repl
+
+    def test_finish_uses_eof_and_accepts_ordinary_zero_exit(self):
+        process = _FakeFinishProcess()
+        repl = self._finish_repl(process)
+
+        self.assertEqual(repl.finish(), 0)
+        self.assertEqual(process.sendeof_calls, 1)
+        self.assertEqual(len(process.expect_calls), 1)
+        self.assertEqual(
+            process.expect_calls[0][0], [pexpect.EOF, pexpect.TIMEOUT])
+        self.assertEqual(process.expect_calls[0][1], 10.0)
+        self.assertEqual(process.close_calls, [False])
+
+    def test_finish_eof_ends_live_pty_process_with_zero_status(self):
+        process = pexpect.spawn(
+            sys.executable, ["-c", "import sys; sys.stdin.read()"],
+            encoding="utf-8")
+        repl = self._finish_repl(process)
+
+        self.assertEqual(repl.finish(), 0)
+        self.assertEqual(process.exitstatus, 0)
+        self.assertIsNone(process.signalstatus)
+
+    def test_finish_rejects_nonzero_exit_after_eof(self):
+        process = _FakeFinishProcess(exitstatus=7)
+        repl = self._finish_repl(process)
+
+        with self.assertRaisesRegex(
+                regression.LoadFailure, "completed but exited with status 7"):
+            repl.finish()
+        self.assertEqual(process.sendeof_calls, 1)
+
     def test_unbounded_wall_uses_inactivity_limit(self):
         self.assertEqual(
             regression._effective_expect_timeout(10, None, now=100),

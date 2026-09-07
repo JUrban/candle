@@ -641,7 +641,11 @@ class CandleREPL:
         """Request an ordinary zero exit and return the observed exit status."""
         timeout, wall_limited = _effective_expect_timeout(
             self.inactivity_timeout, self.wall_deadline)
-        self.process.sendline("exit 0;;")
+        # Candle has no source-level ``exit`` binding.  Close the terminal's
+        # input side instead: the REPL treats EOF as the ordinary successful
+        # end of a session, without adding a post-completion toplevel error to
+        # the retained Great100 transcript.
+        self.process.sendeof()
         index = self.process.expect([pexpect.EOF, pexpect.TIMEOUT], timeout=timeout)
         if index == 1:
             if wall_limited:
