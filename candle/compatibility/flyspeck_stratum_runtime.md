@@ -89,10 +89,13 @@ The LP-support and later boundaries emit the canonical structural identity of
 `Linear_programming_results.linear_programming_results_th`.  At the final
 boundary, the postlude additionally loads the pinned Candle L2 target and emits
 identities for the nonlinear theorem, Flyspeck implication, and final Candle
-implication.  The same postlude emits the structural-v2 post-state identity for
-the complete type-constant, term-constant, primitive-definition, and global-
-axiom tables.  Every observed theorem must have zero hypotheses, and theorem
-and post-state evidence must agree on exactly three global axioms.  Until
+implication.  The same postlude uses the official `candle/fingerprint.ml`
+aggregate V3 wire to emit the theorem records and the complete post-state
+identity for the type-constant, term-constant, primitive-definition, and
+global-axiom tables.  The shared reference protocol parses that aggregate
+record and requires its serializer hash to equal the official serializer's
+hash.  Every observed theorem must have zero hypotheses, and theorem and
+post-state evidence must agree on exactly three global axioms.  Until
 independently approved reference identities are installed, receipts label
 these records `observed_uncompared`.
 
