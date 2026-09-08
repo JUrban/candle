@@ -37,6 +37,7 @@ import hashlib
 import json
 import re
 import secrets
+import shutil
 import signal
 import stat
 import subprocess
@@ -116,6 +117,211 @@ PROMOTABLE_TOP100_SUITE = "top100"
 TRANSITION_DIAGNOSTIC_SUITE = "top100-transition-diagnostic"
 PROMOTABLE_LINKED_SCHEMA = 6
 TRANSITION_LINKED_SCHEMA = 7
+CSDP_REQUEST_MARKER = "CANDLE_GREAT100_CSDP_REQUEST_V1"
+CSDP_BINARY = Path(
+    "/project/deps/hol-light-external-tools-v9/usr/bin/csdp")
+CSDP_BINARY_SHA256 = (
+    "50a07f934ffac42b774e0991ff5e44cc68a6d8db180258a8fc1d1676cc7e898d"
+)
+# These sequences are fixed by the retained native replay and by the
+# authoritative 65/65 G100-S execution.  CSDP only proposes numerical
+# certificates; HOL reconstructs and checks every accepted certificate.
+CSDP_TARGET_RETURN_CODES = {
+    "100/ceva": (
+        2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 3, 2, 2, 0, 2, 2, 0, 2,
+        2, 0, 2, 2, 0,
+    ),
+    "100/thales": (
+        2, 2, 2, 2, 2, 2, 7, 0, 2, 2, 2, 2, 2, 2, 7, 0, 2, 2, 2, 2, 2,
+        2, 7, 0, 2, 2, 2, 2, 2, 2, 7, 0,
+    ),
+}
+
+
+@dataclass(frozen=True)
+class SourceNormalization:
+    """An exact, execution-contract-bound rewrite of an approved source."""
+    targets: tuple[str, ...]
+    source: str
+    expected_sha256: str
+    normalized_sha256: str
+    replacements: tuple[tuple[bytes, bytes], ...]
+
+
+TOP100_NORMALIZATIONS = (
+    SourceNormalization(
+        targets=("100/ceva", "100/thales"),
+        source="Examples/sos.ml",
+        expected_sha256=(
+            "137f9c7f8a4d9cfb7ed840bc8257345137b4ce447db582675b825bafc3590d83"
+        ),
+        normalized_sha256=(
+            "7618018fe0437d3ebaa77c56ed17f7fdfd9612aedacee980f0efe2274a6adfd3"
+        ),
+        replacements=(
+            (
+                b'''(* The same thing with CSDP.                                                 *)\n'''
+                b'''(* ------------------------------------------------------------------------- *)\n\n'''
+                b'''let run_csdp dbg obj mats =\n'''
+                b'''  let input_file = Filename.temp_file "sos" ".dat-s" in''',
+                b'''(* The same thing with CSDP.                                                 *)\n'''
+                b'''(* ------------------------------------------------------------------------- *)\n\n'''
+                b'''let run_csdp dbg obj mats =\n'''
+                b'''  let input_file = Filename.concat (!temp_path) "sos.dat-s" in''',
+            ),
+            (
+                b'''let run_csdp dbg nblocks blocksizes obj mats =\n'''
+                b'''  let input_file = Filename.temp_file "sos" ".dat-s" in''',
+                b'''let run_csdp dbg nblocks blocksizes obj mats =\n'''
+                b'''  let input_file = Filename.concat (!temp_path) "sos.dat-s" in''',
+            ),
+            (
+                b'''let sdpa obj mats = run_sdpa (!debugging) obj mats;;\n\n'''
+                b'''let run_csdp dbg obj mats =\n'''
+                b'''  let input_file = Filename.temp_file "sos" ".dat-s" in''',
+                b'''let sdpa obj mats = run_sdpa (!debugging) obj mats;;\n\n'''
+                b'''let run_csdp dbg obj mats =\n'''
+                b'''  let input_file = Filename.concat (!temp_path) "sos.dat-s" in''',
+            ),
+            (
+                b'''let csdp_params = csdp_default_parameters;;''',
+                b'''let csdp_params = csdp_default_parameters;;
+
+(* Read one controller acknowledgement without relying on OCaml's read_line,
+   which is absent from Candle, or on whether the REPL left its newline. *)
+let candle_great100_csdp_read_status () =
+  let rec read_digits n =
+    match (!Cakeml.input1) () with
+    | Some '0' -> read_digits (10 * n)
+    | Some '1' -> read_digits (10 * n + 1)
+    | Some '2' -> read_digits (10 * n + 2)
+    | Some '3' -> read_digits (10 * n + 3)
+    | Some '4' -> read_digits (10 * n + 4)
+    | Some '5' -> read_digits (10 * n + 5)
+    | Some '6' -> read_digits (10 * n + 6)
+    | Some '7' -> read_digits (10 * n + 7)
+    | Some '8' -> read_digits (10 * n + 8)
+    | Some '9' -> read_digits (10 * n + 9)
+    | Some '\\r' -> read_digits n
+    | Some '\\n' -> n
+    | Some _ -> failwith "invalid diagnostic CSDP acknowledgement"
+    | None -> failwith "missing diagnostic CSDP acknowledgement" in
+  let rec read_start () =
+    match (!Cakeml.input1) () with
+    | Some '0' -> read_digits 0
+    | Some '1' -> read_digits 1
+    | Some '2' -> read_digits 2
+    | Some '3' -> read_digits 3
+    | Some '4' -> read_digits 4
+    | Some '5' -> read_digits 5
+    | Some '6' -> read_digits 6
+    | Some '7' -> read_digits 7
+    | Some '8' -> read_digits 8
+    | Some '9' -> read_digits 9
+    | Some ' ' -> read_start ()
+    | Some '\\t' -> read_start ()
+    | Some '\\r' -> read_start ()
+    | Some '\\n' -> read_start ()
+    | Some _ -> failwith "invalid diagnostic CSDP acknowledgement"
+    | None -> failwith "missing diagnostic CSDP acknowledgement" in
+  read_start ();;''',
+            ),
+            (
+                b'''  file_of_string input_file (sdpa_of_problem "" obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  let rv = Sys.command("cd "^(!temp_path)^"; csdp "^input_file ^\n'''
+                b'''                        " " ^ output_file ^\n'''
+                b'''                       (if dbg then "" else "> /dev/null")) in''',
+                b'''  file_of_string input_file (sdpa_of_problem "" obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  print_endline ("CANDLE_GREAT100_CSDP_REQUEST_V1\\t" ^\n'''
+                b'''                 input_file ^ "\\t" ^ output_file);\n'''
+                b'''  let rv = candle_great100_csdp_read_status () in''',
+            ),
+            (
+                b'''  file_of_string input_file\n'''
+                b'''   (sdpa_of_blockproblem "" nblocks blocksizes obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  let rv = Sys.command("cd "^(!temp_path)^"; csdp "^input_file ^\n'''
+                b'''                        " " ^ output_file ^\n'''
+                b'''                       (if dbg then "" else "> /dev/null")) in''',
+                b'''  file_of_string input_file\n'''
+                b'''   (sdpa_of_blockproblem "" nblocks blocksizes obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  print_endline ("CANDLE_GREAT100_CSDP_REQUEST_V1\\t" ^\n'''
+                b'''                 input_file ^ "\\t" ^ output_file);\n'''
+                b'''  let rv = candle_great100_csdp_read_status () in''',
+            ),
+            (
+                b'''  file_of_string input_file (sdpa_of_problem "" obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  let rv = Sys.command("cd "^(!temp_path)^"; csdp "^input_file ^\n'''
+                b'''                       " " ^ output_file ^\n'''
+                b'''                       (if dbg then "" else "> /dev/null")) in''',
+                b'''  file_of_string input_file (sdpa_of_problem "" obj mats);\n'''
+                b'''  file_of_string params_file csdp_params;\n'''
+                b'''  print_endline ("CANDLE_GREAT100_CSDP_REQUEST_V1\\t" ^\n'''
+                b'''                 input_file ^ "\\t" ^ output_file);\n'''
+                b'''  let rv = candle_great100_csdp_read_status () in''',
+            ),
+        ),
+    ),
+    SourceNormalization(
+        targets=("100/ramsey",),
+        source="100/ramsey.ml",
+        expected_sha256=(
+            "c27a2197fd0faa1a8197523ec8b7e8182a122959c3ce3b76f0f0f70326ced94f"
+        ),
+        normalized_sha256=(
+            "d48947f2ffb6b5dc20da21eafcc704e08cf709b40bdb2236f8fe81b315cae17c"
+        ),
+        replacements=(
+            (
+                b'''let rec mk_primed_var(name,ty) =\n'''
+                b'''  if can get_const_type name then mk_primed_var(name^"'",ty)\n'''
+                b'''  else mk_var(name,ty);;''',
+                b'''let rec mk_primed_var(name,ty) =\n'''
+                b'''  if can get_const_type name then\n'''
+                b'''    let next_name = name ^ "'" in\n'''
+                b'''    mk_primed_var(next_name,ty)\n'''
+                b'''  else mk_var(name,ty);;''',
+            ),
+            (
+                b'''  let check st l = (if l = [] then failwith st else l) in\n'''
+                b'''  let IMP_RES_THEN ttac impth =''',
+                b'''  let check_thm st l : thm list =\n'''
+                b'''    (if l = [] then failwith st else l) in\n'''
+                b'''  let check_tac st l : tactic list =\n'''
+                b'''    (if l = [] then failwith st else l) in\n'''
+                b'''  let IMP_RES_THEN ttac impth =''',
+            ),
+            (b'''        let res = check "IMP_RES_THEN: no resolvents " l in''',
+             b'''        let res = check_thm "IMP_RES_THEN: no resolvents " l in'''),
+            (b'''        let tacs = check "IMP_RES_THEN: no tactics" (mapfilter ttac res) in''',
+             b'''        let tacs = check_tac "IMP_RES_THEN: no tactics" (mapfilter ttac res) in'''),
+            (b'''      let imps = check "RES_THEN: no implication" ths in''',
+             b'''      let imps = check_thm "RES_THEN: no implication" ths in'''),
+            (b'''      let res = check "RES_THEN: no resolvents " l in''',
+             b'''      let res = check_thm "RES_THEN: no resolvents " l in'''),
+            (b'''      let tacs = check "RES_THEN: no tactics" (mapfilter ttac res) in''',
+             b'''      let tacs = check_tac "RES_THEN: no tactics" (mapfilter ttac res) in'''),
+        ),
+    ),
+    SourceNormalization(
+        targets=("100/heron",),
+        source="100/heron.ml",
+        expected_sha256=(
+            "de7cd4bd92e9d6fa19076ae2195d58fe6c68901307a15da05c366bc0b2b40763"
+        ),
+        normalized_sha256=(
+            "c8a2de1a36931331d156196fa1578f14ffa85043f3b541393ae1f553f813bc59"
+        ),
+        replacements=((
+            b'''    let stms = setify(find_terms is_sqrt w) in''',
+            b'''    let stms = setify Term.(<) (find_terms is_sqrt w) in''',
+        ),),
+    ),
+)
 
 
 def _reject_duplicate_json_keys(pairs):
@@ -314,6 +520,336 @@ def _ordinary_file_record(path, display_path=None):
         "bytes": len(data),
         "sha256": _sha256_bytes(data),
     }
+
+
+def _validated_csdp_binary(path=CSDP_BINARY):
+    """Return the fixed executable after rejecting identity or mode drift."""
+    path = Path(path)
+    metadata = path.lstat()
+    if (path.is_symlink() or not path.is_file() or metadata.st_nlink != 1 or
+            stat.S_IMODE(metadata.st_mode) != 0o555):
+        raise ValueError("Great 100 CSDP executable is not the pinned file")
+    path = path.resolve(strict=True)
+    record = _ordinary_file_record(path)
+    if (record["sha256"] != CSDP_BINARY_SHA256 or
+            not os.access(path, os.X_OK)):
+        raise ValueError("Great 100 CSDP executable identity mismatch")
+    return path, record
+
+
+def _ocaml_string(value):
+    """Quote the restricted absolute paths used by the CSDP setup file."""
+    if any(character in value for character in ('"', "\\", "\n", "\r")):
+        raise ValueError(f"path cannot be represented safely in setup: {value!r}")
+    return f'"{value}"'
+
+
+def _stable_source_bytes(path):
+    """Read one approved source while detecting path or content replacement."""
+    before = _ordinary_file_record(path)
+    source = Path(path).read_bytes()
+    after = _ordinary_file_record(path)
+    if before != after or len(source) != before["bytes"]:
+        raise ValueError(f"source changed while reading: {path}")
+    return source, before
+
+
+def _prepare_normalization_overlay(test, log_path):
+    """Materialize the exact G100-S rewrite selected for this target."""
+    selected = [
+        specification for specification in TOP100_NORMALIZATIONS
+        if test.name in specification.targets
+    ]
+    if not selected:
+        return None
+    log_path = Path(log_path).resolve()
+    parent = log_path.parent / "normalizations"
+    parent.mkdir(mode=0o700, exist_ok=True)
+    if (parent.is_symlink() or not parent.is_dir() or
+            stat.S_IMODE(parent.stat().st_mode) != 0o700):
+        raise ValueError("Great 100 normalization root is not private")
+    root = parent / log_path.stem
+    root.mkdir(mode=0o700)
+
+    mappings = []
+    records = []
+    aliases = {}
+    for specification in selected:
+        relative = Path(specification.source)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError("unsafe Great 100 normalization source path")
+        original = CANDLE_ROOT / relative
+        source, original_record = _stable_source_bytes(original)
+        if original_record["sha256"] != specification.expected_sha256:
+            raise ValueError(
+                f"normalization source identity mismatch: {specification.source}")
+        normalized = source
+        for old, new in specification.replacements:
+            count = normalized.count(old)
+            if count != 1:
+                raise ValueError(
+                    f"normalization replacement count for "
+                    f"{specification.source}: {count}")
+            normalized = normalized.replace(old, new, 1)
+        if hashlib.sha256(normalized).hexdigest() != \
+                specification.normalized_sha256:
+            raise ValueError(
+                f"normalized source identity mismatch: {specification.source}")
+        output = root / relative
+        output.parent.mkdir(parents=True, exist_ok=True)
+        with output.open("xb") as destination:
+            destination.write(normalized)
+        output_record = _ordinary_file_record(output)
+        original_md5 = hashlib.md5(
+            source, usedforsecurity=False).hexdigest()
+        normalized_md5 = hashlib.md5(
+            normalized, usedforsecurity=False).hexdigest()
+        mappings.append((
+            specification.source, str(output.resolve()),
+            original_md5, normalized_md5,
+        ))
+        aliases[str(output.resolve())] = specification.source
+        records.append({
+            "source": specification.source,
+            "original": original_record,
+            "normalized": output_record,
+            "expected_normalized_sha256": specification.normalized_sha256,
+        })
+
+    setup_lines = [
+        "let candle_great100_check_normalization label path expected =",
+        "  if Digest.to_hex (Digest.file path) = expected then ()",
+        "  else failwith (\"Great 100 normalization digest mismatch: \" ^ label);;",
+    ]
+    mapping_names = []
+    for index, (original, normalized, original_md5,
+                normalized_md5) in enumerate(mappings, 1):
+        original_name = f"candle_great100_original_{index}"
+        normalized_name = f"candle_great100_normalized_{index}"
+        mapping_names.append(f"({original_name},{normalized_name})")
+        setup_lines.extend([
+            f"let {original_name} = {_ocaml_string(original)};;",
+            f"let {normalized_name} = {_ocaml_string(normalized)};;",
+            ("candle_great100_check_normalization \"original\" "
+             f"{original_name} \"{original_md5}\";;"),
+            ("candle_great100_check_normalization \"normalized\" "
+             f"{normalized_name} \"{normalized_md5}\";;"),
+        ])
+    setup_lines.extend([
+        "Cakeml.configureNormalizationOverlay",
+        "  [" + ";".join(mapping_names) + "];;",
+    ])
+    setup_path = root / "setup.ml"
+    with setup_path.open("x", encoding="ascii", newline="\n") as setup:
+        setup.write("\n".join(setup_lines) + "\n")
+    return {
+        "target": test.name,
+        "root": root,
+        "setup": setup_path,
+        "setup_record": _ordinary_file_record(setup_path),
+        "aliases": aliases,
+        "records": records,
+        "receipt": None,
+    }
+
+
+def _finish_normalization_overlay(overlay):
+    """Rehash the approved and derived source inputs and retain a receipt."""
+    if overlay is None:
+        return
+    for record in overlay["records"]:
+        if (_ordinary_file_record(CANDLE_ROOT / record["source"]) !=
+                record["original"] or
+                _ordinary_file_record(record["normalized"]["path"]) !=
+                record["normalized"]):
+            raise LoadFailure("Great 100 normalization input changed during load")
+    if _ordinary_file_record(overlay["setup"]) != overlay["setup_record"]:
+        raise LoadFailure("Great 100 normalization setup changed during load")
+    receipt_path = overlay["root"] / "receipt.json"
+    payload = {
+        "schema": "candle-great100-normalization-overlay-v1",
+        "target": overlay["target"],
+        "setup": overlay["setup_record"],
+        "sources": overlay["records"],
+    }
+    with receipt_path.open("x", encoding="utf-8") as receipt:
+        json.dump(payload, receipt, sort_keys=True, separators=(",", ":"))
+        receipt.write("\n")
+    overlay["receipt"] = _ordinary_file_record(receipt_path)
+
+
+def _prepare_csdp_bridge(test, log_path):
+    """Create the private, fail-closed bridge for a declared CSDP target."""
+    expected = CSDP_TARGET_RETURN_CODES.get(test.name)
+    if expected is None:
+        return None
+    binary, binary_record = _validated_csdp_binary()
+    log_path = Path(log_path).resolve()
+    bridge_root = log_path.parent / "csdp"
+    bridge_root.mkdir(mode=0o700, exist_ok=True)
+    if (bridge_root.is_symlink() or not bridge_root.is_dir() or
+            stat.S_IMODE(bridge_root.stat().st_mode) != 0o700):
+        raise ValueError("Great 100 CSDP bridge root is not private")
+    directory = bridge_root / log_path.stem
+    directory.mkdir(mode=0o700)
+    setup_path = directory / "setup.ml"
+    with setup_path.open("x", encoding="ascii", newline="\n") as setup:
+        setup.write(f"temp_path := {_ocaml_string(str(directory))};;\n")
+    return {
+        "target": test.name,
+        "binary": binary,
+        "binary_record": binary_record,
+        "directory": directory,
+        "setup": setup_path,
+        "setup_record": _ordinary_file_record(setup_path),
+        "expected_return_codes": expected,
+        "requests": [],
+        "receipt": None,
+    }
+
+
+def _copy_csdp_snapshot(source, destination):
+    """Copy one ordinary solver artifact into an exclusive retained file."""
+    _ordinary_file_record(source)
+    with (Path(source).open("rb") as input_stream,
+          Path(destination).open("xb") as output_stream):
+        shutil.copyfileobj(input_stream, output_stream)
+    return _ordinary_file_record(destination)
+
+
+def _csdp_handler_timeout(repl):
+    """Keep a host solver call inside both target timeout boundaries."""
+    limit = min(300.0, float(repl.inactivity_timeout))
+    if repl.wall_deadline is not None:
+        remaining = repl.wall_deadline - time.monotonic()
+        if remaining <= 0:
+            raise WallTimeout("total wall deadline expired before CSDP request")
+        limit = min(limit, remaining)
+    return limit
+
+
+def _csdp_progress_handler(repl, line):
+    """Service one exact-path request with the identity-pinned CSDP binary."""
+    prefix = CSDP_REQUEST_MARKER + "\t"
+    if not line.startswith(prefix):
+        return
+    fields = line.split("\t")
+    bridge = getattr(repl, "_great100_csdp_bridge", None)
+    if len(fields) != 3 or fields[0] != CSDP_REQUEST_MARKER:
+        raise LoadFailure("malformed Great 100 CSDP request")
+    if bridge is None:
+        raise LoadFailure("CSDP request from an unconfigured target")
+    directory = bridge["directory"]
+    expected_input = directory / "sos.dat-s"
+    expected_output = directory / "sos.out"
+    if fields[1:] != [str(expected_input), str(expected_output)]:
+        raise LoadFailure("CSDP request path escaped its target directory")
+
+    try:
+        request_index = len(bridge["requests"]) + 1
+        expected_codes = bridge["expected_return_codes"]
+        if request_index > len(expected_codes):
+            raise LoadFailure("unexpected additional Great 100 CSDP request")
+        stem = f"request-{request_index:03d}"
+        input_record = _copy_csdp_snapshot(
+            expected_input, directory / f"{stem}.input.dat-s")
+        parameters_record = _copy_csdp_snapshot(
+            directory / "param.csdp", directory / f"{stem}.param.csdp")
+        if expected_output.exists() or expected_output.is_symlink():
+            _ordinary_file_record(expected_output)
+            expected_output.unlink()
+        stdout_path = directory / f"{stem}.stdout"
+        stderr_path = directory / f"{stem}.stderr"
+        started = time.monotonic()
+        with (stdout_path.open("xb") as stdout,
+              stderr_path.open("xb") as stderr):
+            _current_binary, current_binary_record = \
+                _validated_csdp_binary(bridge["binary"])
+            if current_binary_record != bridge["binary_record"]:
+                raise LoadFailure(
+                    "Great 100 CSDP executable changed before request")
+            completed = subprocess.run(
+                [str(bridge["binary"]), str(expected_input),
+                 str(expected_output)],
+                cwd=directory,
+                env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+                stdin=subprocess.DEVNULL,
+                stdout=stdout,
+                stderr=stderr,
+                timeout=_csdp_handler_timeout(repl),
+                check=False,
+            )
+        elapsed = time.monotonic() - started
+        _current_binary, current_binary_record = \
+            _validated_csdp_binary(bridge["binary"])
+        if current_binary_record != bridge["binary_record"]:
+            raise LoadFailure("Great 100 CSDP executable changed during request")
+        if (isinstance(completed.returncode, bool) or
+                not isinstance(completed.returncode, int) or
+                not 0 <= completed.returncode <= 255):
+            raise LoadFailure("Great 100 CSDP terminated abnormally")
+        expected_code = expected_codes[request_index - 1]
+        if completed.returncode != expected_code:
+            raise LoadFailure(
+                "Great 100 CSDP return-code sequence mismatch: "
+                f"request {request_index}, expected {expected_code}, "
+                f"got {completed.returncode}")
+        output_record = None
+        if expected_output.exists() or expected_output.is_symlink():
+            output_record = _copy_csdp_snapshot(
+                expected_output, directory / f"{stem}.output.sol")
+        request = {
+            "index": request_index,
+            "input": input_record,
+            "parameters": parameters_record,
+            "output": output_record,
+            "stdout": _ordinary_file_record(stdout_path),
+            "stderr": _ordinary_file_record(stderr_path),
+            "return_code": completed.returncode,
+            "elapsed_seconds": elapsed,
+        }
+        bridge["requests"].append(request)
+        repl.process.sendline(str(completed.returncode))
+    except LoadFailure:
+        raise
+    except subprocess.TimeoutExpired as error:
+        raise InactivityTimeout("CSDP request exceeded its timeout") from error
+    except (OSError, subprocess.SubprocessError, ValueError) as error:
+        raise LoadFailure(f"Great 100 CSDP bridge failed: {error}") from error
+
+
+def _finish_csdp_bridge(bridge):
+    """Require the audited exchange sequence and retain a hashed receipt."""
+    if bridge is None:
+        return
+    observed = tuple(request["return_code"] for request in bridge["requests"])
+    if observed != bridge["expected_return_codes"]:
+        raise LoadFailure(
+            f"incomplete Great 100 CSDP exchange sequence for {bridge['target']}: "
+            f"{len(observed)}/{len(bridge['expected_return_codes'])}")
+    _current_binary, binary_record = _validated_csdp_binary(bridge["binary"])
+    if binary_record != bridge["binary_record"]:
+        raise LoadFailure("Great 100 CSDP executable changed during target")
+    if _ordinary_file_record(bridge["setup"]) != bridge["setup_record"]:
+        raise LoadFailure("Great 100 CSDP setup changed during target")
+    for request in bridge["requests"]:
+        for field in ("input", "parameters", "output", "stdout", "stderr"):
+            record = request[field]
+            if record is not None and _ordinary_file_record(record["path"]) != record:
+                raise LoadFailure(
+                    f"Great 100 CSDP {field} evidence changed during target")
+    receipt_path = bridge["directory"] / "receipt.json"
+    payload = {
+        "schema": "candle-great100-csdp-bridge-v1",
+        "target": bridge["target"],
+        "solver": bridge["binary_record"],
+        "expected_return_codes": list(bridge["expected_return_codes"]),
+        "requests": bridge["requests"],
+    }
+    with receipt_path.open("x", encoding="utf-8") as receipt:
+        json.dump(payload, receipt, sort_keys=True, separators=(",", ":"))
+        receipt.write("\n")
+    bridge["receipt"] = _ordinary_file_record(receipt_path)
 
 
 def _canonical_digest(value):
@@ -602,7 +1138,8 @@ class CandleREPL:
                 case 5:
                     finished = self._get_match(1)
                     expected = self.load_stack.pop()
-                    assert finished == expected, (
+                    aliases = getattr(self, "_normalization_finish_aliases", {})
+                    assert finished == expected or aliases.get(expected) == finished, (
                         f"Expected to finish loading {expected}. Actual: {finished}")
                     return
                 case 6:
@@ -1125,15 +1662,25 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
     markers = None
     pre_runtime_state = None
     post_runtime_state = None
+    normalization_overlay = None
+    csdp_bridge = None
     if suite_contract is not None:
         pre_runtime_state = _runtime_state(suite_contract)
         env = dict(os.environ if env is None else env)
         env["CANDLE_GREAT100_SUITE_NONCE"] = suite_nonce
         env["CANDLE_GREAT100_PROCESS_NONCE"] = process_nonce
     try:
+        normalization_overlay = _prepare_normalization_overlay(test, log_path)
+        csdp_bridge = _prepare_csdp_bridge(test, log_path)
         repl = CandleREPL(
             logfile=logfile, inactivity_timeout=inactivity_timeout,
             wall_deadline=wall_deadline, env=env)
+        if normalization_overlay is not None:
+            repl._normalization_finish_aliases = \
+                normalization_overlay["aliases"]
+        if csdp_bridge is not None:
+            repl._great100_csdp_bridge = csdp_bridge
+            repl._progress_line_handler = _csdp_progress_handler
         boot_elapsed = time.perf_counter() - run_started
         process_pid = repl.process.pid
         sampler = ProcessTreeSampler(repl.process.pid)
@@ -1143,8 +1690,14 @@ def run_test(test, inactivity_timeout, wall_timeout=None, env=None,
         repl.load("hol.ml")
         hol_elapsed = time.perf_counter() - start
 
+        if normalization_overlay is not None:
+            repl.load(str(normalization_overlay["setup"].resolve()))
+        if csdp_bridge is not None:
+            repl.load(str(csdp_bridge["setup"].resolve()))
         for f in test.files:
             repl.load(f)
+        _finish_normalization_overlay(normalization_overlay)
+        _finish_csdp_bridge(csdp_bridge)
         test_elapsed = time.perf_counter() - start - hol_elapsed
 
         fingerprints = None
