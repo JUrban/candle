@@ -129,8 +129,25 @@ class StratumRuntimeTests(unittest.TestCase):
                 "selected_sha256": f"{index + 1:064x}",
                 "normalization": "-",
             }
+            logical_identity = {
+                "schema": 1,
+                "artifact_role": "attempt-control",
+                "source_key": key,
+                "source_repository": "attempt-control",
+                "source_relative_path": f"trace/{index:02d}.ml",
+                "request_repository": "attempt-control",
+                "request_relative_path": f"trace/{index:02d}.ml",
+                "request_contexts": ["test-top-level-control"],
+                "source_md5": payload["source_md5"],
+                "source_sha256": payload["source_sha256"],
+                "selected_repository": "attempt-control",
+                "selected_relative_path": f"trace/{index:02d}.ml",
+                "selected_sha256": payload["selected_sha256"],
+                "normalization": payload["normalization"],
+            }
             trace_bindings.append({
-                "binding_id": subject.canonical_sha256(payload), **payload,
+                "binding_id": subject.canonical_sha256(logical_identity),
+                **payload, "logical_identity": logical_identity,
             })
         for index, record in enumerate(closure_records, start=4):
             path = f"/trace/{index:02d}.ml"
@@ -151,8 +168,27 @@ class StratumRuntimeTests(unittest.TestCase):
                     "-" if normalization is None else normalization["id"]
                 ),
             }
+            logical_identity = {
+                "schema": 1,
+                "artifact_role": "manifest-source",
+                "source_key": record["key"],
+                "source_repository": "flyspeck",
+                "source_relative_path": f"trace/{index:02d}.ml",
+                "request_repository": "flyspeck",
+                "request_relative_path": f"trace/{index:02d}.ml",
+                "request_contexts": ["test-manifest-loader"],
+                "source_md5": payload["source_md5"],
+                "source_sha256": payload["source_sha256"],
+                "selected_repository": (
+                    "flyspeck" if normalization is None else "overlay"
+                ),
+                "selected_relative_path": f"trace/{index:02d}.ml",
+                "selected_sha256": payload["selected_sha256"],
+                "normalization": payload["normalization"],
+            }
             trace_bindings.append({
-                "binding_id": subject.canonical_sha256(payload), **payload,
+                "binding_id": subject.canonical_sha256(logical_identity),
+                **payload, "logical_identity": logical_identity,
             })
         trace_binding_by_key = {item["key"]: item for item in trace_bindings}
         trace_events = []
@@ -197,7 +233,7 @@ class StratumRuntimeTests(unittest.TestCase):
             *(record["key"] for record in closure_records),
         })
         self.source_trace_contract = {
-            "schema": 1,
+            "schema": 2,
             "protocol": subject.SOURCE_TRACE_PROTOCOL,
             "nonce": self.nonce,
             "activation": subject.SOURCE_TRACE_ACTIVATION,
@@ -1711,8 +1747,25 @@ class StratumRuntimeTests(unittest.TestCase):
             "selected_sha256": "f" * 64,
             "normalization": "-",
         }
+        logical_identity = {
+            "schema": 1,
+            "artifact_role": "runtime-control",
+            "source_key": "control:fingerprint-serializer",
+            "source_repository": "candle",
+            "source_relative_path": "trace/99-fingerprint.ml",
+            "request_repository": "candle",
+            "request_relative_path": "trace/99-fingerprint.ml",
+            "request_contexts": ["test-top-level-control"],
+            "source_md5": payload["source_md5"],
+            "source_sha256": payload["source_sha256"],
+            "selected_repository": "candle",
+            "selected_relative_path": "trace/99-fingerprint.ml",
+            "selected_sha256": payload["selected_sha256"],
+            "normalization": "-",
+        }
         trace["bindings"].append({
-            "binding_id": subject.canonical_sha256(payload), **payload,
+            "binding_id": subject.canonical_sha256(logical_identity),
+            **payload, "logical_identity": logical_identity,
         })
         trace["binding_count"] = len(trace["bindings"])
         trace["ordered_binding_sha256"] = subject.canonical_sha256(
@@ -1881,8 +1934,25 @@ class StratumRuntimeTests(unittest.TestCase):
             "selected_sha256": "f" * 64,
             "normalization": "-",
         }
+        logical_identity = {
+            "schema": 1,
+            "artifact_role": "runtime-control",
+            "source_key": "control:fingerprint-serializer",
+            "source_repository": "candle",
+            "source_relative_path": "trace/99-fingerprint.ml",
+            "request_repository": "candle",
+            "request_relative_path": "trace/99-fingerprint.ml",
+            "request_contexts": ["test-top-level-control"],
+            "source_md5": payload["source_md5"],
+            "source_sha256": payload["source_sha256"],
+            "selected_repository": "candle",
+            "selected_relative_path": "trace/99-fingerprint.ml",
+            "selected_sha256": payload["selected_sha256"],
+            "normalization": "-",
+        }
         trace["bindings"].append({
-            "binding_id": subject.canonical_sha256(payload), **payload,
+            "binding_id": subject.canonical_sha256(logical_identity),
+            **payload, "logical_identity": logical_identity,
         })
         trace["binding_count"] = len(trace["bindings"])
         trace["ordered_binding_sha256"] = subject.canonical_sha256(

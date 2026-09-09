@@ -726,10 +726,10 @@ def loader_filename_concat(directory: Path | str, filename: str) -> str:
     return filename if directory_string == "." else directory_string + "/" + filename
 
 
-def derive_source_alias_contract(
+def derive_source_resolution_occurrences(
     manifest: dict[str, Any], candle_root: Path, flyspeck_root: Path,
-) -> dict[str, Any]:
-    """Reconstruct alias provenance from the independently recorded load graph."""
+) -> list[dict[str, Any]]:
+    """Resolve every recorded lexical request through the pinned search path."""
     require(manifest.get("load_path_order") == list(SOURCE_ALIAS_LOAD_PATH_ORDER),
             "source alias load-path order mismatch")
     text_root = loader_filename_concat(flyspeck_root, "text_formalization")
@@ -841,6 +841,16 @@ def derive_source_alias_contract(
                     ),
                 })
 
+    return occurrences
+
+
+def derive_source_alias_contract(
+    manifest: dict[str, Any], candle_root: Path, flyspeck_root: Path,
+) -> dict[str, Any]:
+    """Reconstruct alias provenance from the independently recorded load graph."""
+    occurrences = derive_source_resolution_occurrences(
+        manifest, candle_root, flyspeck_root,
+    )
     grouped: dict[tuple[str, str], dict[str, Any]] = {}
     for occurrence in occurrences:
         lookup = occurrence["lookup"]
@@ -875,6 +885,178 @@ def derive_source_alias_contract(
         "occurrence_count": sum(record["occurrence_count"] for record in records),
         "records": records,
     }
+
+
+def derive_source_loader_runtime(
+    manifest: dict[str, Any], source_by_key: dict[str, dict[str, Any]],
+    candle_root: Path, flyspeck_root: Path,
+) -> list[dict[str, Any]]:
+    """Bind exact loader requests to authenticated manifest source nodes.
+
+    Setup requests are read from the authenticated setup program and resolved
+    through the loader context in force at their exact source position.  Later
+    requests come from the manifest's source graph and exact ordered search
+    roots.  Basenames are never used as an authority lookup.
+    """
+    setup_path = candle_root / SETUP_RELATIVE
+    setup_text = setup_path.read_text(encoding="utf-8")
+    setup_requests = list(re.finditer(
+        r'(?m)^[ \t]*(#use|needs|loads)[ \t]+"([^"\n\r]+)"'
+        r'[ \t]*;;[ \t]*$',
+        setup_text,
+    ))
+    require(setup_requests,
+            "runtime setup has no authenticated loader requests")
+    load_path_marker = "List.iter candle_flyspeck_stratum_add_load_path"
+    require(setup_text.count(load_path_marker) == 1,
+            "runtime setup load-path transition drift")
+    transition_start = setup_text.index(load_path_marker)
+    transition_end = setup_text.find("];;", transition_start)
+    require(transition_end >= transition_start,
+            "runtime setup load-path transition is incomplete")
+    transition_end += 3
+    text_root = loader_filename_concat(flyspeck_root, "text_formalization")
+    setup_search_roots = (
+        ("flyspeck", "jHOLLight",
+         loader_filename_concat(flyspeck_root, "jHOLLight")),
+        ("flyspeck", "formal_ineqs",
+         loader_filename_concat(flyspeck_root, "formal_ineqs")),
+        ("flyspeck", "text_formalization", text_root),
+        ("candle", "", str(candle_root)),
+    )
+    raw_records: list[dict[str, Any]] = []
+    for request in setup_requests:
+        target = request.group(2)
+        require(not os.path.isabs(target),
+                "runtime setup loader request must be relative")
+        if request.start() < transition_start:
+            relative = safe_relative(target, "pre-transition setup loader request")
+            require(relative.as_posix() == target and
+                    all(part not in {"", "."} for part in relative.parts),
+                    "pre-transition setup loader request is not canonical")
+            record = {
+                "source_key": f"candle:{target}",
+                "request_repository": "candle",
+                "request_relative": target,
+                "canonical_repository": "candle",
+                "canonical_relative": target,
+                "search_context": "setup-pre-load-path-candle-dot",
+            }
+        else:
+            require(request.start() >= transition_end,
+                    "loader request occurs during setup load-path transition")
+            record = {}
+            for index, (repository, prefix, root) in enumerate(setup_search_roots):
+                lexical = loader_filename_concat(root, target)
+                if not os.path.isfile(lexical):
+                    continue
+                resolved = Path(lexical).resolve(strict=True)
+                selected_repository = ""
+                selected_relative: Path | None = None
+                for candidate_repository, candidate_root in (
+                    ("candle", candle_root), ("flyspeck", flyspeck_root),
+                ):
+                    try:
+                        selected_relative = resolved.relative_to(candidate_root)
+                        selected_repository = candidate_repository
+                        break
+                    except ValueError:
+                        pass
+                require(selected_relative is not None,
+                        "setup loader request escapes pinned repositories")
+                selected_path = selected_relative.as_posix()
+                record = {
+                    "source_key": f"{selected_repository}:{selected_path}",
+                    "request_repository": repository,
+                    "request_relative": (
+                        target if not prefix else
+                        loader_filename_concat(prefix, target)
+                    ),
+                    "canonical_repository": selected_repository,
+                    "canonical_relative": selected_path,
+                    "search_context": f"setup-post-load-path-index-{index}",
+                }
+                break
+            require(record, f"runtime setup loader request does not resolve: {target}")
+        raw_records.append({
+            **record,
+            "uses": [{
+                "kind": "authenticated-runtime-setup-loader-request",
+                "directive": request.group(1),
+                "line": setup_text.count("\n", 0, request.start()) + 1,
+            }],
+        })
+    for occurrence in derive_source_resolution_occurrences(
+        manifest, candle_root, flyspeck_root,
+    ):
+        lookup = occurrence["lookup"]
+        raw_records.append({
+            "source_key": lookup["selected"],
+            "request_repository": lookup["alias_repository"],
+            "request_relative": lookup["alias_path"],
+            "canonical_repository": lookup["canonical_repository"],
+            "canonical_relative": lookup["canonical_path"],
+            "search_context": (
+                "manifest-load-path-index-" + str(lookup["search_root_index"])
+            ),
+            "uses": [{
+                key: value for key, value in occurrence.items()
+                if key != "lookup"
+            }],
+        })
+
+    grouped: dict[tuple[str, str], dict[str, Any]] = {}
+    for record in raw_records:
+        source_key = record["source_key"]
+        source = source_by_key.get(source_key)
+        require(isinstance(source, dict),
+                f"loader resolution selects undeclared source: {source_key}")
+        require(source.get("repository") == record["canonical_repository"] and
+                source.get("path") == record["canonical_relative"],
+                f"loader resolution differs from manifest node: {source_key}")
+        source_path = resolve_source(source, candle_root, flyspeck_root)
+        require(source_path.is_file() and not source_path.is_symlink() and
+                source_path.stat().st_nlink == 1,
+                f"loader resolution is not a unique ordinary manifest node: "
+                f"{source_key}")
+        validate_file(source_path, source,
+                      f"loader-resolved manifest source {source_key}")
+        record["artifact_role"] = source.get(
+            "artifact_role", "manifest-source",
+        )
+        record["source_md5"] = source["md5"]
+        record["source_sha256"] = source["sha256"]
+        request_key = (
+            record["request_repository"], record["request_relative"],
+        )
+        prior = grouped.get(request_key)
+        if prior is None:
+            grouped[request_key] = {
+                **{key: value for key, value in record.items()
+                   if key != "search_context"},
+                "search_contexts": [record["search_context"]],
+            }
+        else:
+            require(all(prior[field] == record[field] for field in (
+                "source_key", "canonical_repository", "canonical_relative",
+                "artifact_role", "source_md5", "source_sha256",
+            )), "loader request has conflicting authenticated resolutions")
+            prior["uses"].extend(record["uses"])
+            if record["search_context"] not in prior["search_contexts"]:
+                prior["search_contexts"].append(record["search_context"])
+
+    records = []
+    for request_key in sorted(grouped):
+        record = grouped[request_key]
+        uses = sorted(
+            record["uses"],
+            key=lambda use: json.dumps(use, sort_keys=True, separators=(",", ":")),
+        )
+        records.append({
+            **record, "search_contexts": sorted(record["search_contexts"]),
+            "uses": uses,
+        })
+    return records
 
 
 def validate_source_alias_contract(
@@ -1105,7 +1287,6 @@ def validate_plan(
     source_alias_runtime = validate_source_alias_contract(
         manifest, source_by_key, candle_root, flyspeck_root,
     )
-
     digest_contract = manifest.get("source_digest_contract")
     require(isinstance(digest_contract, dict), "missing source digest contract")
     require(digest_contract.get("entry_count") == 399, "source digest count drift")
@@ -1119,6 +1300,18 @@ def validate_plan(
     for relative in (SETUP_RELATIVE, CHECK_RELATIVE, FINGERPRINT_RELATIVE,
                      L2_TARGET_RELATIVE):
         harness_records[relative.as_posix()] = hash_file(candle_root / relative)
+    source_loader_runtime = derive_source_loader_runtime(
+        manifest, {
+            **source_by_key,
+            "candle:candle/flyspeck_source_digests.ml": {
+                "key": "candle:candle/flyspeck_source_digests.ml",
+                "repository": "candle",
+                "path": SOURCE_DIGEST_RELATIVE.as_posix(),
+                "artifact_role": "generated-runtime-control",
+                **source_digest_record,
+            },
+        }, candle_root, flyspeck_root,
+    )
 
     normalization = plan.get("normalization_overlay")
     require(isinstance(normalization, dict), "missing normalization overlay")
@@ -1306,6 +1499,7 @@ def validate_plan(
         "logical_source_closure": logical_source_closure,
         "source_runtime": source_runtime,
         "source_alias_runtime": source_alias_runtime,
+        "source_loader_runtime": source_loader_runtime,
         "normalized_runtime": normalized_runtime,
         "generated_runtime": generated_runtime,
         "lp_certificate_runtime": lp_certificate_runtime,
@@ -2237,12 +2431,45 @@ def build_source_trace_contract(
     require(len(normalization_by_original) == len(prepared["normalized_runtime"]),
             "duplicate runtime normalization while building trace")
     bindings_by_resolved: dict[str, dict[str, Any]] = {}
+    candle_root = Path(prepared["candle_runtime_root"])
+
+    def logical_identity(
+        *, artifact_role: str, key: str,
+        source_repository: str, source_relative: str,
+        request_repository: str, request_relative: str,
+        request_contexts: list[str],
+        source_record: dict[str, Any], selected_repository: str,
+        selected_relative: str, selected_sha256: str,
+        normalization: str,
+    ) -> dict[str, Any]:
+        return {
+            "schema": 1,
+            "artifact_role": artifact_role,
+            "source_key": key,
+            "source_repository": source_repository,
+            "source_relative_path": source_relative,
+            "request_repository": request_repository,
+            "request_relative_path": request_relative,
+            "request_contexts": request_contexts,
+            "source_md5": source_record["md5"],
+            "source_sha256": source_record["sha256"],
+            "selected_repository": selected_repository,
+            "selected_relative_path": selected_relative,
+            "selected_sha256": selected_sha256,
+            "normalization": normalization,
+        }
+
+    def observation_file(value: str) -> Path:
+        path = Path(value)
+        return path if path.is_absolute() else candle_root / path
 
     def add_binding(
         resolved: Path | str,
         canonical: Path | str,
         key: str,
         source_record: dict[str, Any],
+        *,
+        identity: dict[str, Any],
         selected: Path | str | None = None,
         selected_sha256: str | None = None,
         normalization: str = "-",
@@ -2252,12 +2479,10 @@ def build_source_trace_contract(
         selected_value = (
             str(selected) if selected is not None else canonical_value
         )
-        require(all(os.path.isabs(path) and os.path.isfile(path) and
-                    not os.path.islink(path)
-                    for path in (
-                        resolved_value, canonical_value, selected_value,
-                    )),
-                f"source trace binding is not an ordinary absolute file: {key}")
+        require(all(observation_file(path).is_file() and
+                    not observation_file(path).is_symlink()
+                    for path in (resolved_value, canonical_value, selected_value)),
+                f"source trace binding is not an ordinary observed file: {key}")
         record = {
             "resolved": resolved_value,
             "canonical": canonical_value,
@@ -2271,6 +2496,7 @@ def build_source_trace_contract(
                 else source_record["sha256"]
             ),
             "normalization": normalization,
+            "logical_identity": identity,
         }
         require(re.fullmatch(r"[0-9a-f]{32}", str(record["source_md5"]))
                 is not None and
@@ -2280,7 +2506,20 @@ def build_source_trace_contract(
                 is not None and isinstance(key, str) and key and
                 isinstance(normalization, str) and normalization,
                 f"malformed source trace digest binding: {key}")
-        binding = {"binding_id": canonical_sha256(record), **record}
+        require(identity == logical_identity(
+            artifact_role=identity.get("artifact_role", ""), key=key,
+            source_repository=identity.get("source_repository", ""),
+            source_relative=identity.get("source_relative_path", ""),
+            request_repository=identity.get("request_repository", ""),
+            request_relative=identity.get("request_relative_path", ""),
+            request_contexts=identity.get("request_contexts", []),
+            source_record=source_record,
+            selected_repository=identity.get("selected_repository", ""),
+            selected_relative=identity.get("selected_relative_path", ""),
+            selected_sha256=str(record["selected_sha256"]),
+            normalization=normalization,
+        ), f"source trace logical identity mismatch: {key}")
+        binding = {"binding_id": canonical_sha256(identity), **record}
         prior = bindings_by_resolved.get(record["resolved"])
         if prior is None:
             bindings_by_resolved[record["resolved"]] = binding
@@ -2289,52 +2528,184 @@ def build_source_trace_contract(
                     f"conflicting source trace resolved path: {record['resolved']}")
         return key
 
-    for key in sorted(required_source_keys & set(source_by_key)):
+    alias_by_request = {
+        (item["alias_repository"], item["alias_relative"]): item
+        for item in prepared["source_alias_runtime"]
+    }
+    require(len(alias_by_request) == len(prepared["source_alias_runtime"]),
+            "duplicate runtime source alias while building trace")
+    loader_bound_keys: set[str] = set()
+    for item in sorted(
+        prepared["source_loader_runtime"],
+        key=lambda value: (
+            value["request_repository"], value["request_relative"],
+        ),
+    ):
+        key = item["source_key"]
+        if key not in required_source_keys:
+            continue
+        source = source_by_key.get(key)
+        if source is None:
+            source = {
+                "key": key,
+                "repository": item["canonical_repository"],
+                "path": item["canonical_relative"],
+                "md5": item["source_md5"],
+                "sha256": item["source_sha256"],
+            }
+        request_repository = item["request_repository"]
+        request_relative = item["request_relative"]
+        if request_repository == "candle":
+            resolved = request_relative
+        else:
+            require(request_repository == "flyspeck",
+                    "unknown loader request repository")
+            resolved = loader_filename_concat(
+                prepared["flyspeck_root"], request_relative,
+            )
+        alias = alias_by_request.get((request_repository, request_relative))
+        canonical = alias["canonical"] if alias is not None else resolved
+        canonical_repository = item["canonical_repository"]
+        canonical_relative = item["canonical_relative"]
+        canonical_root = (
+            candle_root if canonical_repository == "candle"
+            else Path(prepared["flyspeck_root"])
+        )
+        canonical_node = canonical_root / safe_relative(
+            canonical_relative, "loader canonical source",
+        )
+        resolved_node = observation_file(resolved)
+        require(resolved_node.is_file() and not resolved_node.is_symlink() and
+                canonical_node.is_file() and not canonical_node.is_symlink() and
+                resolved_node.resolve(strict=True) ==
+                canonical_node.resolve(strict=True) and
+                canonical_node.stat().st_nlink == 1,
+                f"loader observation is not the exact manifest node: {key}")
+        validate_file(canonical_node, source,
+                      f"loader trace source {key}")
+        normalization_record = normalization_by_original.get(str(canonical_node))
+        selected = (
+            normalization_record["output"]
+            if normalization_record else canonical
+        )
+        selected_hash = (
+            normalization_record["sha256"]
+            if normalization_record else source["sha256"]
+        )
+        add_binding(
+            resolved, canonical, key, source, selected=selected,
+            selected_sha256=selected_hash,
+            normalization=(
+                normalization_record["normalization_id"]
+                if normalization_record else "-"
+            ),
+            identity=logical_identity(
+                artifact_role=item.get("artifact_role", "manifest-source"), key=key,
+                source_repository=source["repository"],
+                source_relative=source["path"],
+                request_repository=request_repository,
+                request_relative=request_relative,
+                request_contexts=item["search_contexts"],
+                source_record=source,
+                selected_repository=(
+                    "overlay" if normalization_record
+                    else source["repository"]
+                ),
+                selected_relative=(
+                    normalization_record["relative"]
+                    if normalization_record else source["path"]
+                ),
+                selected_sha256=selected_hash,
+                normalization=(
+                    normalization_record["normalization_id"]
+                    if normalization_record else "-"
+                ),
+            ),
+        )
+        loader_bound_keys.add(key)
+
+    for key in sorted(
+        (required_source_keys & set(source_by_key)) - loader_bound_keys
+    ):
         source = source_by_key[key]
         canonical = source["absolute"]
         normalization = normalization_by_original.get(canonical)
+        selected_hash = normalization["sha256"] if normalization else source["sha256"]
         add_binding(
             canonical, canonical, key, source,
             selected=(normalization["output"] if normalization else canonical),
-            selected_sha256=(normalization["sha256"] if normalization else None),
+            selected_sha256=selected_hash,
             normalization=(normalization["normalization_id"]
                            if normalization else "-"),
+            identity=logical_identity(
+                artifact_role="manifest-source", key=key,
+                source_repository=source["repository"],
+                source_relative=source["path"],
+                request_repository=source["repository"],
+                request_relative=source["path"],
+                request_contexts=["direct-logical-source-path"],
+                source_record=source,
+                selected_repository=("overlay" if normalization
+                                     else source["repository"]),
+                selected_relative=(normalization["relative"] if normalization
+                                   else source["path"]),
+                selected_sha256=selected_hash,
+                normalization=(normalization["normalization_id"]
+                               if normalization else "-"),
+            ),
         )
-    for item in sorted(
-        prepared["source_alias_runtime"], key=lambda value: value["alias"],
-    ):
-        if item["source_key"] not in required_source_keys:
-            continue
-        source = source_by_key[item["source_key"]]
-        normalization = normalization_by_original.get(item["canonical"])
-        add_binding(
-            item["alias"], item["canonical"], item["source_key"], source,
-            selected=(normalization["output"]
-                      if normalization else item["canonical"]),
-            selected_sha256=(normalization["sha256"] if normalization else None),
-            normalization=(normalization["normalization_id"]
-                           if normalization else "-"),
-        )
-
-    candle_root = Path(prepared["candle_runtime_root"])
     control_specs = (
-        ("control:runtime-setup", candle_root / SETUP_RELATIVE),
+        ("control:runtime-setup", candle_root / SETUP_RELATIVE,
+         "runtime-control", "candle", SETUP_RELATIVE.as_posix()),
         ("candle:candle/flyspeck_source_digests.ml",
-         candle_root / SOURCE_DIGEST_RELATIVE),
+         candle_root / SOURCE_DIGEST_RELATIVE, "generated-runtime-control",
+         "candle", SOURCE_DIGEST_RELATIVE.as_posix()),
         ("candle:candle/build/insulate.ml",
-         candle_root / "candle/build/insulate.ml"),
-        ("control:instrumented-prefix", program_path),
-        ("control:stratum-check", candle_root / CHECK_RELATIVE),
-        ("control:postlude", postlude_path),
+         candle_root / "candle/build/insulate.ml", "linked-runtime-control",
+         "candle", "candle/build/insulate.ml"),
+        ("control:instrumented-prefix", program_path, "attempt-control",
+         "attempt-control", "control/instrumented-prefix.ml"),
+        ("control:stratum-check", candle_root / CHECK_RELATIVE,
+         "runtime-control", "candle", CHECK_RELATIVE.as_posix()),
+        ("control:postlude", postlude_path, "attempt-control",
+         "attempt-control", "control/postlude.ml"),
     )
-    for key, path in control_specs:
+    for key, path, role, repository, relative in control_specs:
+        if key in loader_bound_keys:
+            required_source_keys.add(key)
+            continue
         record = hash_file(path)
-        add_binding(path, path, key, record)
+        add_binding(
+            path, path, key, record,
+            identity=logical_identity(
+                artifact_role=role, key=key,
+                source_repository=repository, source_relative=relative,
+                request_repository=repository, request_relative=relative,
+                request_contexts=["authenticated-top-level-control"],
+                source_record=record, selected_repository=repository,
+                selected_relative=relative, selected_sha256=record["sha256"],
+                normalization="-",
+            ),
+        )
         required_source_keys.add(key)
     if theorem_names:
         key = "control:fingerprint-serializer"
         path = candle_root / FINGERPRINT_RELATIVE
-        add_binding(path, path, key, hash_file(path))
+        record = hash_file(path)
+        add_binding(
+            path, path, key, record,
+            identity=logical_identity(
+                artifact_role="runtime-control", key=key,
+                source_repository="candle",
+                source_relative=FINGERPRINT_RELATIVE.as_posix(),
+                request_repository="candle",
+                request_relative=FINGERPRINT_RELATIVE.as_posix(),
+                request_contexts=["authenticated-top-level-control"],
+                source_record=record, selected_repository="candle",
+                selected_relative=FINGERPRINT_RELATIVE.as_posix(),
+                selected_sha256=record["sha256"], normalization="-",
+            ),
+        )
         required_source_keys.add(key)
 
     missing = sorted(
@@ -2351,7 +2722,7 @@ def build_source_trace_contract(
             "duplicate source trace binding identity")
     required_keys = sorted(required_source_keys)
     contract = {
-        "schema": 1,
+        "schema": 2,
         "protocol": SOURCE_TRACE_PROTOCOL,
         "nonce": nonce,
         "activation": SOURCE_TRACE_ACTIVATION,
@@ -2733,7 +3104,7 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
         "ordered_required_key_sha256", "required_keys",
         "top_level_control_keys",
     }, "malformed physical source trace contract")
-    require(type(contract["schema"]) is int and contract["schema"] == 1 and
+    require(type(contract["schema"]) is int and contract["schema"] == 2 and
             contract["protocol"] == SOURCE_TRACE_PROTOCOL and
             contract["activation"] == SOURCE_TRACE_ACTIVATION and
             isinstance(contract["nonce"], str) and
@@ -2750,27 +3121,49 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
     binding_ids: set[str] = set()
     bound_keys: set[str] = set()
     identity_by_key: dict[str, tuple[str, ...]] = {}
-    key_by_canonical: dict[str, str] = {}
+    key_by_logical_source: dict[tuple[str, str], str] = {}
     binding_fields = {
         "binding_id", "resolved", "canonical", "key", "basename",
         "source_md5", "source_sha256", "selected", "selected_sha256",
-        "normalization",
+        "normalization", "logical_identity",
+    }
+    logical_fields = {
+        "schema", "artifact_role", "source_key", "source_repository",
+        "source_relative_path", "request_repository", "request_relative_path",
+        "request_contexts", "source_md5", "source_sha256", "selected_repository",
+        "selected_relative_path", "selected_sha256", "normalization",
+    }
+    repositories = {"candle", "flyspeck", "overlay", "attempt-control"}
+    roles = {
+        "manifest-source", "runtime-control", "generated-runtime-control",
+        "linked-runtime-control", "attempt-control",
     }
     for index, binding in enumerate(bindings):
         require(isinstance(binding, dict) and set(binding) == binding_fields,
                 f"malformed physical source trace binding: {index}")
-        binding_payload = {
-            field: binding[field] for field in binding
-            if field != "binding_id"
-        }
+        logical = binding["logical_identity"]
+        require(isinstance(logical, dict) and set(logical) == logical_fields,
+                f"malformed logical source trace identity: {index}")
         resolved = binding["resolved"]
-        require(isinstance(resolved, str) and Path(resolved).is_absolute() and
+        relative_observation = (
+            isinstance(resolved, str) and not Path(resolved).is_absolute()
+        )
+        request_relative = logical["request_relative_path"]
+        source_relative = logical["source_relative_path"]
+        selected_relative = logical["selected_relative_path"]
+        require(isinstance(resolved, str) and resolved and
                 resolved not in resolved_paths and
                 (previous_resolved is None or previous_resolved < resolved) and
                 isinstance(binding["canonical"], str) and
-                Path(binding["canonical"]).is_absolute() and
+                binding["canonical"] and
                 isinstance(binding["selected"], str) and
-                Path(binding["selected"]).is_absolute() and
+                binding["selected"] and
+                (not relative_observation or (
+                    logical["request_repository"] == "candle" and
+                    resolved == request_relative and
+                    binding["canonical"] == resolved and
+                    binding["selected"] == resolved
+                )) and
                 isinstance(binding["key"], str) and binding["key"] and
                 not any(character in binding["key"] for character in "\t\n\r") and
                 isinstance(binding["basename"], str) and binding["basename"] and
@@ -2793,26 +3186,55 @@ def validate_source_trace_contract(contract: object) -> dict[str, Any]:
                 isinstance(binding["binding_id"], str) and
                 re.fullmatch(r"[0-9a-f]{64}", binding["binding_id"])
                 is not None and
-                binding["binding_id"] == canonical_sha256(binding_payload) and
+                logical["schema"] == 1 and
+                logical["artifact_role"] in roles and
+                logical["source_key"] == binding["key"] and
+                logical["source_repository"] in repositories and
+                logical["request_repository"] in repositories and
+                logical["selected_repository"] in repositories and
+                isinstance(source_relative, str) and source_relative and
+                safe_relative(source_relative, "logical source trace source").as_posix() ==
+                source_relative and
+                isinstance(selected_relative, str) and selected_relative and
+                safe_relative(selected_relative, "logical source trace selection").as_posix() ==
+                selected_relative and
+                isinstance(request_relative, str) and request_relative and
+                not os.path.isabs(request_relative) and
+                not any(character in request_relative for character in "\t\n\r\0") and
+                isinstance(logical["request_contexts"], list) and
+                logical["request_contexts"] ==
+                sorted(set(logical["request_contexts"])) and
+                logical["request_contexts"] and
+                all(isinstance(context, str) and context and
+                    not any(character in context for character in "\t\n\r")
+                    for context in logical["request_contexts"]) and
+                logical["source_md5"] == binding["source_md5"] and
+                logical["source_sha256"] == binding["source_sha256"] and
+                logical["selected_sha256"] == binding["selected_sha256"] and
+                logical["normalization"] == binding["normalization"] and
+                binding["basename"] == Path(source_relative).name and
+                binding["binding_id"] == canonical_sha256(logical) and
                 binding["binding_id"] not in binding_ids,
                 f"invalid physical source trace binding: {index}")
         previous_resolved = resolved
         resolved_paths.add(resolved)
         binding_ids.add(binding["binding_id"])
         bound_keys.add(binding["key"])
-        identity = tuple(binding[field] for field in (
-            "canonical", "basename", "source_md5", "source_sha256",
-            "selected", "selected_sha256", "normalization",
+        identity = tuple(logical[field] for field in (
+            "artifact_role", "source_repository", "source_relative_path",
+            "source_md5", "source_sha256", "selected_repository",
+            "selected_relative_path", "selected_sha256", "normalization",
         ))
         prior_identity = identity_by_key.setdefault(binding["key"], identity)
         require(prior_identity == identity,
                 f"inconsistent physical source trace key: {binding['key']}")
-        prior_key = key_by_canonical.setdefault(
-            binding["canonical"], binding["key"],
+        logical_source = (
+            logical["source_repository"], logical["source_relative_path"],
         )
+        prior_key = key_by_logical_source.setdefault(logical_source, binding["key"])
         require(prior_key == binding["key"],
-                f"physical source trace canonical path has multiple keys: "
-                f"{binding['canonical']}")
+                f"logical source trace identity has multiple keys: "
+                f"{logical_source}")
     required_keys = contract["required_keys"]
     require(isinstance(required_keys, list) and
             all(isinstance(key, str) and key for key in required_keys),

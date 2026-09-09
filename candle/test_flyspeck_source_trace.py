@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import copy
+import os
 import sys
 import tempfile
 import unittest
@@ -13,12 +14,115 @@ import flyspeck_stratum_runtime as subject
 class SourceTraceTests(unittest.TestCase):
     nonce = "a" * 32
 
+    def loader_tree(self, root: Path) -> tuple[
+        dict[str, object], dict[str, dict[str, object]], dict[str, object],
+        dict[str, object], Path, Path,
+    ]:
+        candle = root / "candle"
+        flyspeck = root / "flyspeck"
+        files = {
+            candle / subject.SETUP_RELATIVE: (
+                b'#use "hol.ml";;\n'
+                b'let candle_flyspeck_stratum_add_load_path path = ();;\n'
+                b'List.iter candle_flyspeck_stratum_add_load_path [];;\n'
+            ),
+            candle / "hol.ml": b"(* authenticated HOL entry *)\n",
+            flyspeck / "text_formalization/general/a.hl": b"(* action *)\n",
+            candle / subject.SOURCE_DIGEST_RELATIVE: b"(* digests *)\n",
+            candle / "candle/build/insulate.ml": b"(* insulate *)\n",
+            candle / subject.CHECK_RELATIVE: b"(* check *)\n",
+            root / "control/instrumented-prefix.ml": b"(* prefix *)\n",
+            root / "control/postlude.ml": b"(* postlude *)\n",
+        }
+        for path, content in files.items():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+        (flyspeck / "jHOLLight").mkdir()
+        (flyspeck / "formal_ineqs").mkdir()
+        source_by_key = {}
+        for repository, relative in (
+            ("candle", "hol.ml"),
+            ("flyspeck", "text_formalization/general/a.hl"),
+        ):
+            source_root = candle if repository == "candle" else flyspeck
+            path = source_root / relative
+            key = f"{repository}:{relative}"
+            source_by_key[key] = {
+                "key": key, "repository": repository, "path": relative,
+                **subject.hash_file(path),
+            }
+        manifest = {
+            "load_path_order": list(subject.SOURCE_ALIAS_LOAD_PATH_ORDER),
+            "build_sequence_roots": [{
+                "index": 0, "target": "general/a.hl", "status": "resolved",
+                "selected": "flyspeck:text_formalization/general/a.hl",
+            }],
+            "source_nodes": {},
+        }
+        source_loader_runtime = subject.derive_source_loader_runtime(
+            manifest, source_by_key, candle, flyspeck,
+        )
+        prepared = {
+            "candle_runtime_root": candle,
+            "flyspeck_root": flyspeck,
+            "source_runtime": [
+                {**record, "absolute": str(
+                    (candle if record["repository"] == "candle" else flyspeck) /
+                    record["path"]
+                )}
+                for record in source_by_key.values()
+            ],
+            "source_alias_runtime": [],
+            "source_loader_runtime": source_loader_runtime,
+            "normalized_runtime": [],
+        }
+        closure = {
+            "records": [
+                {"key": "candle:hol.ml",
+                 "classification": "expected-nested-source"},
+                {"key": "flyspeck:text_formalization/general/a.hl",
+                 "classification": "observed-outer-source"},
+                {"key": "candle:candle/flyspeck_source_digests.ml",
+                 "classification": "generated-executed-control"},
+                {"key": "candle:candle/build/insulate.ml",
+                 "classification": "generated-executed-control"},
+            ],
+        }
+        return (
+            manifest, source_by_key, prepared, closure,
+            root / "control/instrumented-prefix.ml",
+            root / "control/postlude.ml",
+        )
+
     def binding(
         self, index: int, key: str, *, resolved: str | None = None,
         canonical: str | None = None,
     ) -> dict[str, object]:
         resolved = resolved or f"/trace/{index:02d}.ml"
         canonical = canonical or resolved
+        source_repository, _ = key.split(":", 1)
+        if source_repository == "control":
+            source_repository = "attempt-control"
+        source_relative = Path(canonical).name
+        logical_identity = {
+            "schema": 1,
+            "artifact_role": (
+                "manifest-source" if key.startswith("flyspeck:")
+                else "attempt-control"
+            ),
+            "source_key": key,
+            "source_repository": source_repository,
+            "source_relative_path": source_relative,
+            "request_repository": source_repository,
+            "request_relative_path": Path(resolved).name,
+            "request_contexts": ["test-loader-context"],
+            "source_md5": f"{index + 1:032x}",
+            "source_sha256": f"{index + 1:064x}",
+            "selected_repository": source_repository,
+            "selected_relative_path": source_relative,
+            "selected_sha256": f"{index + 1:064x}",
+            "normalization": "-",
+        }
         payload = {
             "resolved": resolved,
             "canonical": canonical,
@@ -29,8 +133,19 @@ class SourceTraceTests(unittest.TestCase):
             "selected": canonical,
             "selected_sha256": f"{index + 1:064x}",
             "normalization": "-",
+            "logical_identity": logical_identity,
         }
-        return {"binding_id": subject.canonical_sha256(payload), **payload}
+        return {
+            "binding_id": subject.canonical_sha256(logical_identity), **payload,
+        }
+
+    def refresh_binding(self, binding: dict[str, object]) -> None:
+        logical = binding["logical_identity"]
+        for field in (
+            "source_md5", "source_sha256", "selected_sha256", "normalization",
+        ):
+            logical[field] = binding[field]
+        binding["binding_id"] = subject.canonical_sha256(logical)
 
     def contract(self) -> dict[str, object]:
         source = self.binding(1, "flyspeck:a")
@@ -42,10 +157,13 @@ class SourceTraceTests(unittest.TestCase):
             "source_md5", "source_sha256", "selected_sha256",
         ):
             source_alias[field] = source[field]
-        source_alias["binding_id"] = subject.canonical_sha256({
-            field: value for field, value in source_alias.items()
-            if field != "binding_id"
-        })
+        source_alias["logical_identity"] = copy.deepcopy(
+            source["logical_identity"]
+        )
+        source_alias["logical_identity"]["request_relative_path"] = (
+            Path(source_alias["resolved"]).name
+        )
+        self.refresh_binding(source_alias)
         bindings = [
             self.binding(0, "control:runtime-setup"),
             source,
@@ -57,7 +175,7 @@ class SourceTraceTests(unittest.TestCase):
         bindings.sort(key=lambda item: item["resolved"])
         required_keys = sorted({item["key"] for item in bindings})
         return {
-            "schema": 1,
+            "schema": 2,
             "protocol": subject.SOURCE_TRACE_PROTOCOL,
             "nonce": self.nonce,
             "activation": subject.SOURCE_TRACE_ACTIVATION,
@@ -204,13 +322,7 @@ class SourceTraceTests(unittest.TestCase):
         cases.append(("binding identity", forged_id))
         inconsistent_alias = copy.deepcopy(valid)
         inconsistent_alias["bindings"][2]["source_sha256"] = "f" * 64
-        inconsistent_alias["bindings"][2]["binding_id"] = (
-            subject.canonical_sha256({
-                field: value
-                for field, value in inconsistent_alias["bindings"][2].items()
-                if field != "binding_id"
-            })
-        )
+        self.refresh_binding(inconsistent_alias["bindings"][2])
         inconsistent_alias["ordered_binding_sha256"] = subject.canonical_sha256(
             inconsistent_alias["bindings"]
         )
@@ -254,13 +366,10 @@ class SourceTraceTests(unittest.TestCase):
         cases.append(("binding order", reordered))
         duplicate_canonical = copy.deepcopy(valid)
         duplicate_canonical["bindings"][2]["key"] = "flyspeck:b"
-        duplicate_canonical["bindings"][2]["binding_id"] = (
-            subject.canonical_sha256({
-                field: value
-                for field, value in duplicate_canonical["bindings"][2].items()
-                if field != "binding_id"
-            })
+        duplicate_canonical["bindings"][2]["logical_identity"]["source_key"] = (
+            "flyspeck:b"
         )
+        self.refresh_binding(duplicate_canonical["bindings"][2])
         duplicate_canonical["required_keys"].append("flyspeck:b")
         duplicate_canonical["required_keys"].sort()
         duplicate_canonical["required_key_count"] = len(
@@ -283,9 +392,9 @@ class SourceTraceTests(unittest.TestCase):
             root = Path(temporary)
             candle = root / "candle"
             source = root / "flyspeck/a.ml"
-            alias = root / "flyspeck/alias-a.ml"
+            alias = root / "flyspeck/nested/../a.ml"
             normalized = root / "overlay/a.ml"
-            program = root / "control/program.ml"
+            program = root / "control/instrumented-prefix.ml"
             postlude = root / "control/postlude.ml"
             for path in (
                 candle / subject.SETUP_RELATIVE,
@@ -293,25 +402,51 @@ class SourceTraceTests(unittest.TestCase):
                 candle / "candle/build/insulate.ml",
                 candle / subject.CHECK_RELATIVE,
                 candle / subject.FINGERPRINT_RELATIVE,
-                source, alias, normalized, program, postlude,
+                source, normalized, program, postlude,
             ):
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text(f"(* {path.name} *)\n", encoding="utf-8")
+            (root / "flyspeck/nested").mkdir()
             source_record = subject.hash_file(source)
             normalized_record = subject.hash_file(normalized)
             prepared = {
                 "candle_runtime_root": candle,
+                "flyspeck_root": root / "flyspeck",
                 "source_runtime": [{
                     "key": "flyspeck:a", "absolute": str(source),
+                    "repository": "flyspeck", "path": "a.ml",
                     **source_record,
                 }],
                 "source_alias_runtime": [{
                     "source_key": "flyspeck:a", "alias": str(alias),
                     "canonical": str(source),
+                    "alias_repository": "flyspeck",
+                    "alias_relative": "nested/../a.ml",
+                    "canonical_repository": "flyspeck",
+                    "canonical_relative": "a.ml",
                 }],
+                "source_loader_runtime": [
+                    {
+                        "source_key": "flyspeck:a",
+                        "request_repository": "flyspeck",
+                        "request_relative": "a.ml",
+                        "canonical_repository": "flyspeck",
+                        "canonical_relative": "a.ml",
+                        "search_contexts": ["test-flyspeck-root"],
+                    },
+                    {
+                        "source_key": "flyspeck:a",
+                        "request_repository": "flyspeck",
+                        "request_relative": "nested/../a.ml",
+                        "canonical_repository": "flyspeck",
+                        "canonical_relative": "a.ml",
+                        "search_contexts": ["test-flyspeck-alias-root"],
+                    },
+                ],
                 "normalized_runtime": [{
                     "source_key": "flyspeck:a", "original": str(source),
                     "output": str(normalized),
+                    "relative": "a.ml",
                     "normalization_id": "TEST-NORMALIZATION-001",
                     **normalized_record,
                 }],
@@ -376,6 +511,101 @@ class SourceTraceTests(unittest.TestCase):
                 rendered.index("Cakeml.configureSourceTrace"),
                 rendered.index("candle_flyspeck_stratum_source_aliases"),
             )
+
+    def test_loader_logical_authority_survives_absolute_root_relocation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            left = self.loader_tree(base / "left")
+            right = self.loader_tree(base / "relocated/right")
+            left_contract = subject.build_source_trace_contract(
+                left[2], left[3], left[4], left[5], [], self.nonce,
+            )
+            right_contract = subject.build_source_trace_contract(
+                right[2], right[3], right[4], right[5], [], self.nonce,
+            )
+            left_logical = sorted(
+                (binding["binding_id"], binding["logical_identity"])
+                for binding in left_contract["bindings"]
+            )
+            right_logical = sorted(
+                (binding["binding_id"], binding["logical_identity"])
+                for binding in right_contract["bindings"]
+            )
+            self.assertEqual(left_logical, right_logical)
+            hol = next(
+                binding for binding in left_contract["bindings"]
+                if binding["key"] == "candle:hol.ml"
+            )
+            self.assertEqual(hol["resolved"], "hol.ml")
+            self.assertEqual(
+                hol["logical_identity"]["request_contexts"],
+                ["setup-pre-load-path-candle-dot"],
+            )
+            self.assertNotEqual(
+                left_contract["ordered_binding_sha256"],
+                right_contract["ordered_binding_sha256"],
+            )
+
+    def test_loader_context_rejects_substitution_bytes_links_and_basename_alias(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+
+            changed = self.loader_tree(base / "changed")
+            (base / "changed/candle/hol.ml").write_bytes(b"changed")
+            with self.assertRaisesRegex(subject.ContractError, "mismatch"):
+                subject.derive_source_loader_runtime(
+                    changed[0], changed[1], base / "changed/candle",
+                    base / "changed/flyspeck",
+                )
+
+            substituted = self.loader_tree(base / "substituted")
+            setup = base / "substituted/candle" / subject.SETUP_RELATIVE
+            setup.write_bytes(
+                setup.read_bytes().replace(b'"hol.ml"', b'"nested/hol.ml"')
+            )
+            with self.assertRaisesRegex(subject.ContractError, "undeclared source"):
+                subject.derive_source_loader_runtime(
+                    substituted[0], substituted[1], base / "substituted/candle",
+                    base / "substituted/flyspeck",
+                )
+
+            symlinked = self.loader_tree(base / "symlinked")
+            hol = base / "symlinked/candle/hol.ml"
+            replacement = base / "symlinked/candle/replacement.ml"
+            replacement.write_bytes(hol.read_bytes())
+            hol.unlink()
+            hol.symlink_to(replacement.name)
+            with self.assertRaisesRegex(subject.ContractError, "unique ordinary"):
+                subject.derive_source_loader_runtime(
+                    symlinked[0], symlinked[1], base / "symlinked/candle",
+                    base / "symlinked/flyspeck",
+                )
+
+            hardlinked = self.loader_tree(base / "hardlinked")
+            hol = base / "hardlinked/candle/hol.ml"
+            replacement = base / "hardlinked/candle/replacement.ml"
+            replacement.write_bytes(hol.read_bytes())
+            hol.unlink()
+            os.link(replacement, hol)
+            with self.assertRaisesRegex(subject.ContractError, "unique ordinary"):
+                subject.derive_source_loader_runtime(
+                    hardlinked[0], hardlinked[1], base / "hardlinked/candle",
+                    base / "hardlinked/flyspeck",
+                )
+
+            collision = self.loader_tree(base / "collision")
+            flyspeck_hol = base / "collision/flyspeck/hol.ml"
+            flyspeck_hol.write_bytes(b"untrusted same basename")
+            observed = subject.derive_source_loader_runtime(
+                collision[0], collision[1], base / "collision/candle",
+                base / "collision/flyspeck",
+            )
+            startup = next(
+                item for item in observed
+                if "setup-pre-load-path-candle-dot"
+                in item["search_contexts"]
+            )
+            self.assertEqual(startup["source_key"], "candle:hol.ml")
 
 
 if __name__ == "__main__":
