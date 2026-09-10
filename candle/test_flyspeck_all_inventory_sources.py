@@ -47,7 +47,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         self.assertEqual(len(self.files), 400)
         self.assertEqual(
             self.plan["effective_kind_counts"],
-            {"exact-normalized": 20, "exact-original": 380},
+            {"exact-normalized": 21, "exact-original": 379},
         )
         self.assertFalse(self.plan["promotion_allowed"])
         self.assertFalse(self.plan["parser_run"])
@@ -78,9 +78,9 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
 
     def test_exact_loader_site_and_masking_contract(self) -> None:
         actions = self.plan["loader_actions"]
-        self.assertEqual(actions["recognized_site_count"], 727)
+        self.assertEqual(actions["recognized_site_count"], 726)
         self.assertEqual(actions["masked_whole_line_count"], 721)
-        self.assertEqual(actions["embedded_retained_count"], 6)
+        self.assertEqual(actions["embedded_retained_count"], 5)
         self.assertEqual(actions["kind_counts"], subject.EXPECTED_ACTION_KIND_COUNTS)
         self.assertEqual(
             actions["ordered_site_sha256"], subject.EXPECTED_ACTION_SITE_SHA256,
@@ -94,7 +94,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
             handling.count("masked-complete-whole-line-before-parser"), 721,
         )
         self.assertEqual(
-            handling.count("retained-exactly-in-source-only-input"), 6,
+            handling.count("retained-exactly-in-source-only-input"), 5,
         )
         self.assertTrue(all(
             not action["action_semantics_executed"]
@@ -108,7 +108,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
                 self.files[entry["prepared_input"]["path"]]
             )
         ]
-        self.assertEqual(len(remaining), 6)
+        self.assertEqual(len(remaining), 5)
         self.assertTrue(all(
             call["syntax_position"] == "embedded-expression"
             for call in remaining
@@ -146,7 +146,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
             entry for entry in self.plan["inputs"]
             if entry["effective_kind"] == "exact-original"
         ]
-        self.assertEqual((len(original), len(normalized)), (380, 20))
+        self.assertEqual((len(original), len(normalized)), (379, 21))
         self.assertTrue(all(entry["normalization"] is None for entry in original))
         self.assertTrue(all(
             entry["normalization"]["contract_sha256"]

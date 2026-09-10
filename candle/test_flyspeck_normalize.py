@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 20)
+        self.assertEqual(len(self.contract["entries"]), 21)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -190,6 +190,22 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             4,
         )
         self.assertIn("later numeric comparisons", print_types["scope_limit"])
+        hol_pervasives = entries[
+            "PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001"
+        ]
+        self.assertEqual(
+            [operation["line"] for operation in hol_pervasives["operations"]],
+            [21, 48],
+        )
+        self.assertIn("dynamic Hol_pervasives.needs is disabled", (
+            hol_pervasives["operations"][0]["after"]
+        ))
+        self.assertIn("String.compare x y < 0", (
+            hol_pervasives["operations"][1]["after"]
+        ))
+        self.assertIn("no qualified Hol_pervasives.needs", (
+            hol_pervasives["semantic_rule"]
+        ))
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertIn("not (y = x)", relabel["operations"][0]["after"])
         self.assertIn("Hash_term.hash_of_term", relabel["operations"][1]["after"])
@@ -372,7 +388,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 54)
+        self.assertEqual(len(operation_ids), 56)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

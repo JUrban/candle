@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 20)
+        self.assertEqual(contract["entry_count"], 21)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -520,6 +520,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertIn(
             "candle:candle/test_flyspeck_print_types_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_flyspeck_hol_pervasives_normalization.sh",
             contract["gates"],
         )
         self.assertIn(
@@ -580,6 +584,18 @@ class GeneratedManifestTests(unittest.TestCase):
             "Pair.compare String.compare Type.compare",
             print_types["operations"][1]["after"],
         )
+        hol_pervasives = entries[
+            "PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001"
+        ]
+        self.assertEqual(
+            hol_pervasives["source_key"],
+            "flyspeck:text_formalization/general/hol_pervasives.hl",
+        )
+        self.assertEqual(
+            [operation["line"] for operation in hol_pervasives["operations"]],
+            [21, 48],
+        )
+        self.assertEqual(hol_pervasives["operation_count"], 2)
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(
             parser_orpattern["source_key"],
@@ -618,6 +634,20 @@ class GeneratedManifestTests(unittest.TestCase):
             ],
         )
         self.assertIn("any occurrence drift aborts", non_use["policy"])
+        self.assertEqual(non_use["qualified_absences"], [{
+            "module": "Hol_pervasives",
+            "member": "needs",
+            "qualified_call_count": 0,
+            "module_definition": {
+                "source": (
+                    "flyspeck:text_formalization/general/hol_pervasives.hl"
+                ),
+                "line": 19,
+                "role": "module-definition",
+            },
+            "other_qualified_member_count": 18,
+            "unqualified_exposure_count": 0,
+        }])
         self.assertIn(
             "candle:candle/test_flyspeck_identity_normalization.sh",
             contract["gates"],
@@ -773,7 +803,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 19", source,
+            "List.length candle_flyspeck_normalized_sources <> 20", source,
         )
         self.assertIn("formal_graph/archive/archive_all.ml", source)
         self.assertIn("787e8244a0350c237a406f7e91fb97b7", source)
@@ -1003,13 +1033,13 @@ class GeneratedManifestTests(unittest.TestCase):
             use for use in contract["qualified_uses"]
             if use["module"] == "Digest"
         ]
-        self.assertEqual(len(uses), 22)
+        self.assertEqual(len(uses), 21)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 10, "string": 2, "t": 3, "to_hex": 7},
+            {"file": 9, "string": 2, "t": 3, "to_hex": 7},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")

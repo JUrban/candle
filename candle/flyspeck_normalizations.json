@@ -453,6 +453,34 @@
       "scope_limit": "The sequence correction is confined to Debug.print_m at pinned line 22. The lexer correction is confined to the paired lines 107 and 115 around two definitions; it does not implement dynamic JRH lexer switching or authorize replacing these keywords where the enclosed tokenization differs. The explicit wildcard bindings are required because raw structure evaluations do not give Candle a reliable internal phrase boundary in this module. The registration correction is confined to the only two selected Debug Quotation.add calls and does not claim a general Camlp5 Quotation API. The setify correction is confined to the term list at line 126 and does not authorize a comparator for other element types. Native preprocessing equivalence is required for the isolated lexer-toggle oracle, and Candle runtime state/effect plus complete normalized Debug-load oracles are required for the runtime adaptations. Any source drift or newly selected occurrence requires a separate inventory and remedy."
     },
     {
+      "id": "PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001",
+      "source_key": "flyspeck:text_formalization/general/hol_pervasives.hl",
+      "path": "text_formalization/general/hol_pervasives.hl",
+      "source_sha256": "d9a64b56a366a45b5caa587000eb54963606e223f8a5f772aa9c1b98a54627e2",
+      "source_md5": "5917b805cae8737b5dd296e2a91613b0",
+      "normalized_sha256": "a082b217a7942fa1344ae3034ee9776ed1368d0a732043a43d52f8dc2b23ad41",
+      "normalized_md5": "fe90a871fbd8e40750f5445480af2e40",
+      "normalized_bytes": 2365,
+      "operations": [
+        {
+          "id": "PROJECT-HOL-PERVASIVES-S3-NEEDS-NONUSE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 21,
+          "before": "let needs s =\n  let s' = file_on_path (!load_path) s in\n  let fileid = (Filename.basename s',Digest.file s') in\n  if List.mem fileid (!loaded_files)\n  then Format.print_string(\"File \\\"\"^s^\"\\\" already loaded\\n\") else loadt s;;",
+          "after": "let needs (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic Hol_pervasives.needs is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-HOL-PERVASIVES-S3-STRING-ORDER-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 48,
+          "before": "let fvs = sort (<) (map (fst o dest_var) (frees t)) in",
+          "after": "let fvs = sort (fun x y -> String.compare x y < 0)\n                 (map (fst o dest_var) (frees t)) in"
+        }
+      ],
+      "semantic_rule": "The exact selected source graph has no qualified Hol_pervasives.needs use and never opens or includes Hol_pervasives. The normalized binding therefore preserves every selected accepted run and fails explicitly if a missed dynamic or future call reaches the historical loader wrapper; no general runtime loadt API is introduced. Hol_pervasives.g sorts the string names obtained from dest_var. Candle has no polymorphic comparison, and the comparator-explicit form is byte-for-byte the current Candle tactics.ml implementation for the same expression. String.compare followed by < 0 supplies the same lexicographic string order used by pinned OCaml structural comparison, preserving the free-variable warning order and goal state.",
+      "scope_limit": "The needs replacement is a selected-graph non-use refinement, not dynamic source-loader compatibility. It requires a fail-closed manifest gate over all selected qualified module uses and module open/include declarations. The comparator replacement is confined to the one pinned string list in Hol_pervasives.g and does not authorize comparison for another representation. Source/caller drift, a non-failing needs call, changed string order, or failure of the complete normalized Hol_pervasives load blocks release."
+    },
+    {
       "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
       "source_key": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
       "path": "formal_lp/hypermap/main/lp_certificate.hl",

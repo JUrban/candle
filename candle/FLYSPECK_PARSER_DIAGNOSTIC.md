@@ -37,8 +37,8 @@ its 400 inputs are an exact set-equal partition of the authenticated manifest.
 `materialize --profile all-inventory` and `run --profile all-inventory` require
 all 400 inputs to be ready and launch exactly one fresh parser process per
 input; there is no accepted partial profile. Materialization of the committed
-authorities produces 380 byte-identical inputs and 20 normalized inputs. The
-normalization contract accounts for all 727 classified loader sites.
+authorities produces 379 byte-identical inputs and 21 normalized inputs. The
+normalization contract accounts for all 726 classified loader sites.
 
 Raw HOL Light source is not the parser input used by Candle.  The loader's
 `Lexer.scan` emits `T_quote` for a backtick body, `Lexer.string_of_token`

@@ -151,6 +151,12 @@ NORMALIZATION_NONUSE_SITE_REVIEWS = (
     ("flyspeck:text_formalization/general/print_types.hl", 21, "unsuppress", "signature"),
     ("flyspeck:text_formalization/general/print_types.hl", 34, "unsuppress", "definition"),
 )
+NORMALIZATION_QUALIFIED_NONUSE_MODULE = "Hol_pervasives"
+NORMALIZATION_QUALIFIED_NONUSE_MEMBER = "needs"
+NORMALIZATION_QUALIFIED_NONUSE_DEFINITION = (
+    "flyspeck:text_formalization/general/hol_pervasives.hl", 19,
+    "module-definition",
+)
 # The selected graph loads the historical GLPK generator modules because their
 # pure parsers and data types are shared with verification.  Their shell/process
 # helpers are ordinary function bodies, however, and the proof route has no
@@ -1157,6 +1163,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
     toplevel_interface_uses: list[dict[str, object]] = []
     toplevel_consumer_uses: list[dict[str, object]] = []
     normalization_nonuse_uses: list[dict[str, object]] = []
+    normalization_qualified_nonuse_tokens: list[dict[str, object]] = []
+    normalization_qualified_module_uses: list[dict[str, object]] = []
     process_route_uses: list[dict[str, object]] = []
     process_route_qualified_uses: list[dict[str, object]] = []
     typed_theorem_lookup_counts: dict[str, int] = {}
@@ -1191,6 +1199,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         ):
             qualified_compatibility_uses.append({"source": ref.key, **use})
         if ref.repository == "flyspeck":
+            for use in scan_identifier_uses(
+                text, {NORMALIZATION_QUALIFIED_NONUSE_MODULE},
+            ):
+                normalization_qualified_nonuse_tokens.append({
+                    "source": ref.key, **use,
+                })
+            for use in scan_qualified_module_uses(
+                text, {NORMALIZATION_QUALIFIED_NONUSE_MODULE},
+            ):
+                normalization_qualified_module_uses.append({
+                    "source": ref.key, **use,
+                })
             for use in scan_identifier_uses(
                 capability_text, OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS,
             ):
@@ -1582,6 +1602,43 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
         }
         for use in normalization_nonuse_uses
     ]
+    unqualified_nonuse_module_tokens = list(
+        normalization_qualified_nonuse_tokens
+    )
+    for qualified_use in normalization_qualified_module_uses:
+        site = (str(qualified_use["source"]), int(qualified_use["line"]))
+        matching_index = next((
+            index for index, token in enumerate(unqualified_nonuse_module_tokens)
+            if (str(token["source"]), int(token["line"])) == site
+        ), None)
+        if matching_index is None:
+            raise ValueError(
+                "qualified normalization non-use module accounting drifted"
+            )
+        unqualified_nonuse_module_tokens.pop(matching_index)
+    expected_module_definition = (
+        NORMALIZATION_QUALIFIED_NONUSE_DEFINITION[0],
+        NORMALIZATION_QUALIFIED_NONUSE_DEFINITION[1],
+    )
+    observed_unqualified_module_tokens = [
+        (str(token["source"]), int(token["line"]))
+        for token in unqualified_nonuse_module_tokens
+    ]
+    if observed_unqualified_module_tokens != [expected_module_definition]:
+        raise ValueError(
+            "normalization qualified non-use module exposure drifted: "
+            f"expected={[expected_module_definition]}; "
+            f"observed={observed_unqualified_module_tokens}"
+        )
+    forbidden_qualified_nonuse_calls = [
+        use for use in normalization_qualified_module_uses
+        if use["member"] == NORMALIZATION_QUALIFIED_NONUSE_MEMBER
+    ]
+    if forbidden_qualified_nonuse_calls:
+        raise ValueError(
+            "normalization qualified non-use binding acquired a caller: "
+            f"{forbidden_qualified_nonuse_calls}"
+        )
     observed_process_route_sites = {
         (str(use["source"]), int(use["line"]), str(use["identifier"]))
         for use in process_route_uses
@@ -1802,10 +1859,28 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         str(entry["identifier"]),
                     ),
                 ),
+                "qualified_absences": [
+                    {
+                        "module": NORMALIZATION_QUALIFIED_NONUSE_MODULE,
+                        "member": NORMALIZATION_QUALIFIED_NONUSE_MEMBER,
+                        "qualified_call_count": 0,
+                        "module_definition": {
+                            "source": NORMALIZATION_QUALIFIED_NONUSE_DEFINITION[0],
+                            "line": NORMALIZATION_QUALIFIED_NONUSE_DEFINITION[1],
+                            "role": NORMALIZATION_QUALIFIED_NONUSE_DEFINITION[2],
+                        },
+                        "other_qualified_member_count": len(
+                            normalization_qualified_module_uses
+                        ),
+                        "unqualified_exposure_count": 0,
+                    },
+                ],
                 "policy": (
                     "only the exact reviewed signature, definition, recursive-body, "
-                    "and deferred-body occurrences are allowed; any occurrence drift "
-                    "aborts regeneration"
+                    "and deferred-body occurrences are allowed; the qualified "
+                    "Hol_pervasives.needs binding must remain absent, and the module "
+                    "name may be unqualified only at its exact definition; any "
+                    "occurrence drift aborts regeneration"
                 ),
             },
             "input_policy": (
@@ -1823,9 +1898,10 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "blanket rewrites are forbidden"
             ),
             "scope_limit": (
-                "the rules are site-specific; qmap, unsuppress, and strictbuild's "
-                "use_file_b are selected-static-route non-use refinements that fail "
-                "closed on any call; the LP rules require the exact prepared-input "
+                "the rules are site-specific; qmap, unsuppress, strictbuild's "
+                "use_file_b, and Hol_pervasives.needs are selected-static-route "
+                "non-use refinements that fail closed on any call; the LP rules "
+                "require the exact prepared-input "
                 "contract and static 39-file inventory; the Serialization.St rule "
                 "implements only the exact selected empty/add/mem observations; "
                 "dynamic eval_command, obsolete ssreflect lookup, and future theorem-"
@@ -1856,6 +1932,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
                 "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
                 "candle:candle/test_flyspeck_print_types_normalization.sh",
+                "candle:candle/test_flyspeck_hol_pervasives_normalization.sh",
                 "candle:candle/test_flyspeck_set_make_normalization.sh",
                 "candle:candle/test_flyspeck_toplevel_normalization.sh",
             ],

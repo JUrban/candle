@@ -4,7 +4,7 @@
    candle/flyspeck_manifest.json. *)
 
 (* stratum: base *)
-(* 000 selected=flyspeck:text_formalization/general/hol_pervasives.hl sha256=d9a64b56a366a45b5caa587000eb54963606e223f8a5f772aa9c1b98a54627e2 *)
+(* 000 selected=flyspeck:text_formalization/general/hol_pervasives.hl sha256=d9a64b56a366a45b5caa587000eb54963606e223f8a5f772aa9c1b98a54627e2 normalization=PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001 normalized_sha256=a082b217a7942fa1344ae3034ee9776ed1368d0a732043a43d52f8dc2b23ad41 *)
 #flyspeck_needs "general/hol_pervasives.hl";;
 (* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 normalization=PROJECT-POINTER-S3-ALLOCATED-LIB-001 normalized_sha256=d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f *)
 #flyspeck_needs "general/lib.hl";;

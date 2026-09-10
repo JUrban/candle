@@ -64,7 +64,7 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement twenty
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement twenty-one
 site-specific, hash-bound source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -102,7 +102,14 @@ maps Debug's two quotation registrations to Candle's active `Cakeml.unquote`
 reference, and supplies `Term.(<)` to Candle's comparator-explicit `setify`.
 The mapping is limited to these hash-pinned Debug sites and is checked by
 native pa_j equivalence plus Candle toggle, registration, term-distinctness,
-and full-source-load oracles.  Each
+and full-source-load oracles.
+`PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001` replaces the definition-only
+`Hol_pervasives.needs` wrapper by an explicit failure; the manifest freezes
+the absence of any selected qualified caller or module exposure, so no general
+runtime `loadt` API is added.  It also uses the exact comparator-explicit
+string sort from current Candle `tactics.ml` for the free-variable names in
+`Hol_pervasives.g`.  The complete normalized module, fail-closed binding, and
+string order have a focused Candle gate.  Each
 `PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001` re-expresses the one hash-locked
 19,715-element generated archive as forty top-level thunks of at most 500
 ordered values.  Reverse non-recursive lexical shadowing and list append build
@@ -191,7 +198,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates all
-twenty exact normalization outputs, registers the nineteen selected by the
+twenty-one exact normalization outputs, registers the twenty selected by the
 direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
