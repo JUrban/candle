@@ -734,6 +734,32 @@ class StratumRuntimeTests(unittest.TestCase):
             "cache without its logical identity",
         ])
 
+    def test_setup_roots_candle_ordinary_needs_in_authenticated_search_path(
+        self,
+    ) -> None:
+        setup = (
+            Path(subject.__file__).parent / "flyspeck_stratum_setup.ml"
+        ).read_text(encoding="utf-8")
+        add_start = setup.index(
+            "List.iter candle_flyspeck_stratum_add_load_path"
+        )
+        strictbuild = setup.index('needs "build/strictbuild.hl";;', add_start)
+        configured_search_path = setup[add_start:strictbuild]
+        self.assertIn(
+            "[candle_hollight_root;\n   candle_flyspeck_text_root;",
+            configured_search_path,
+        )
+
+        expected_start = setup.index(
+            "let candle_flyspeck_stratum_expected_load_path_prefix ="
+        )
+        expected_end = setup.index(
+            "let rec candle_flyspeck_stratum_has_load_path_prefix",
+            expected_start,
+        )
+        expected_search_path = setup[expected_start:expected_end]
+        self.assertIn("   candle_hollight_root];;", expected_search_path)
+
     def test_exact_check_action_identity_projection_compiles_and_runs(self) -> None:
         check = (
             Path(subject.__file__).parent / "flyspeck_stratum_check.ml"
