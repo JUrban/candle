@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "05062387facc58b8eebc1da0483d12c6" then
+     "5dce2ccfbfd9f19b735149a30893a3f2" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "fb2b2669df54af66ea93ffb3bda6d541" then
+     "c0c68c5147f1b0f577f6fa86014bb644" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all twenty-five outputs in a separate tree;
-   this process registers only the twenty-four selected by the direct source graph.
+(* The host-side normalizer materializes all thirty-five outputs in a separate tree;
+   this process registers only the thirty-four selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -166,7 +166,7 @@ let candle_flyspeck_normalized_sources =
   [(Filename.concat candle_flyspeck_text_root "build/strictbuild.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/build/strictbuild.hl",
-    "05ec78d1d0efad0c1f3554ffd47b94d0");
+    "74e99f344b84daae4e890dd5b8126812");
    (Filename.concat candle_flyspeck_text_root "general/flyspeck_eval_4.14.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/flyspeck_eval_4.14.hl",
@@ -190,15 +190,56 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "general/sphere.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/sphere.hl",
-    "1e134647152103f755a0884313b3ad72");
+    "5aeef4c9b86a5f829c0ad3edb07e21ce");
    (Filename.concat candle_flyspeck_text_root "general/hales_tactic.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/hales_tactic.hl",
-    "f5155d756ee2da58d1957f8892a60517");
+    "3945b87bbbcf00c8d4414542725feff9");
    (Filename.concat candle_flyspeck_text_root "general/truong_tactic.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/truong_tactic.hl",
-    "1f369a87dc5dcbc4c1b75eae67cb4afb");
+    "1c9fd2e8252945b87d5a982d3ca4b446");
+   (Filename.concat candle_flyspeck_text_root "leg/collect_geom.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/leg/collect_geom.hl",
+    "b0385370f84a0fe4b33dc2f067958860");
+   (Filename.concat candle_flyspeck_text_root "jordan/refinement.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/refinement.hl",
+    "04199a9023c0a5eed04a6e9332ab2ec5");
+   (Filename.concat candle_flyspeck_text_root "jordan/hash_term.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/hash_term.hl",
+    "4eb74e9553aae99fe76f8cc30472678b");
+   (Filename.concat candle_flyspeck_text_root "jordan/goal_printer.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/goal_printer.hl",
+    "1034846f67a46c37f0dce2e43b5bf948");
+   (Filename.concat candle_flyspeck_text_root "jordan/real_ext.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/real_ext.hl",
+    "070a72758b0459a034b13490dba2320e");
+   (Filename.concat candle_flyspeck_text_root "jordan/num_ext_nabs.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/num_ext_nabs.hl",
+    "3347ed48a4102a18a798dc9d683aadc9");
+   (Filename.concat candle_flyspeck_text_root "jordan/taylor_atn.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/taylor_atn.hl",
+    "2430d7c87631a16adb78d3783d70fb04");
+   (Filename.concat candle_flyspeck_text_root "jordan/float.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/float.hl",
+    "ea87a6372d53a9b3cf5e5e778e936bde");
+   (Filename.concat candle_flyspeck_text_root
+      "jordan/misc_defs_and_lemmas.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/misc_defs_and_lemmas.hl",
+    "cfcf6693405414b171913042a71b1e68");
+   (Filename.concat candle_flyspeck_text_root "general/tactics.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/tactics.hl",
+    "8c425e4138bb5c24c98fe61a1c304b37");
    (Filename.concat candle_flyspeck_text_root "general/parser_verbose.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/parser_verbose.hl",
@@ -233,7 +274,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/tactics_jordan.hl",
-    "750508a2cadac11cd053fec89cb2a5fb");
+    "758063dd1a24eacc5cca75596a7fe0c9");
    (Filename.concat candle_flyspeck_text_root
       "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -268,7 +309,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 24 then
+if List.length candle_flyspeck_normalized_sources <> 34 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

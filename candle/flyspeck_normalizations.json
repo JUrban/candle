@@ -229,10 +229,24 @@
       "path": "text_formalization/jordan/tactics_jordan.hl",
       "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe",
       "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
-      "normalized_sha256": "6d28b0d1ba6300a9dca6705530e15a555567ca31bd1661a21a23703bf913df8d",
-      "normalized_md5": "750508a2cadac11cd053fec89cb2a5fb",
-      "normalized_bytes": 54870,
+      "normalized_sha256": "4b41f97afc6011600d24f3c3c33d21b07daa53175f4c9f71214e907a7c71324d",
+      "normalized_md5": "758063dd1a24eacc5cca75596a7fe0c9",
+      "normalized_bytes": 54886,
       "operations": [
+        {
+          "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 21,
+          "before": "Parse_ext_override_interface.unambiguous_interface();;",
+          "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-SELECT-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 303,
+          "before": "select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;",
+          "after": "let _ = select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;"
+        },
         {
           "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
           "kind": "exact_bytes_replace_once",
@@ -248,8 +262,8 @@
           "after": "num (Hash_term.hash_of_term tm)"
         }
       ],
-      "semantic_rule": "The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
-      "scope_limit": "The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; it does not implement polymorphic hashing. A compiled theorem/output oracle and final fingerprint remain required, and any exact-fingerprint difference blocks release."
+      "semantic_rule": "The two wildcard bindings evaluate the identical unambiguous-interface call and SELECT example once at their original Tactics_jordan initialization positions and discard the same unit and theorem results, preserving effects, order, and exceptions. The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
+      "scope_limit": "The structure-effect rewrites are confined to the two pinned anonymous expressions. The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; none provides general structure-expression, physical-identity, or polymorphic-hash compatibility. Compiled effect, theorem/output, cumulative, and final fingerprint oracles remain required, and any exact-fingerprint difference blocks release."
     },
     {
       "id": "PROJECT-MODULE-S3-SET-MAKE-001",
@@ -405,9 +419,9 @@
       "path": "text_formalization/build/strictbuild.hl",
       "source_sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a",
       "source_md5": "7d1e3729a05042883713cda2c9fad1f1",
-      "normalized_sha256": "c8bcaa06303ffcb5febb76207284b991d9168765c9cf2c29fc92282244715a5d",
-      "normalized_md5": "05ec78d1d0efad0c1f3554ffd47b94d0",
-      "normalized_bytes": 8964,
+      "normalized_sha256": "1ef5825d7a45b4e8a4514492435fa52fdde125de953cad8ae40589427f791e49",
+      "normalized_md5": "74e99f344b84daae4e890dd5b8126812",
+      "normalized_bytes": 9012,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-FAIL-CLOSED",
@@ -445,6 +459,27 @@
           "after": "let reneeds (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild reneeds is disabled by the static manifest: \"^s);;"
         },
         {
+          "id": "PROJECT-TOPLOOP-S3-LOGICAL-DIGEST-001-LOAD-ON-PATH",
+          "kind": "exact_bytes_replace_once",
+          "line": 94,
+          "before": "let load_on_path_b p s =\n  let s' = file_on_path p s in\n  let fileid = (Filename.basename s',Digest.file s') in",
+          "after": "let load_on_path_b p s =\n  let s' = file_on_path p s in\n  let fileid = (Filename.basename s',Digest.to_hex (Digest.file s')) in"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-LOGICAL-DIGEST-001-NEEDB",
+          "kind": "exact_bytes_replace_once",
+          "line": 126,
+          "before": "let needb s =\n  let s' = file_on_path (!load_path) s in\n  let fileid = (Filename.basename s',Digest.file s') in",
+          "after": "let needb s =\n  let s' = file_on_path (!load_path) s in\n  let fileid = (Filename.basename s',Digest.to_hex (Digest.file s')) in"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-LOGICAL-DIGEST-001-FLYSPECKID",
+          "kind": "exact_bytes_replace_once",
+          "line": 173,
+          "before": "    (Filename.basename s',Digest.file s');;",
+          "after": "    (Filename.basename s',Digest.to_hex (Digest.file s'));;"
+        },
+        {
           "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-BUILD-REPORT-FAIL-CLOSED",
           "kind": "exact_bytes_replace_once",
           "line": 244,
@@ -452,8 +487,8 @@
           "after": "let build_and_report () : unit =\n  failwith \"Candle Flyspeck: dynamic strictbuild build_and_report is disabled by the static manifest\";;"
         }
       ],
-      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, reneeds, or build_and_report chains; their normalized bindings fail explicitly if that assumption is wrong. build_and_report cannot be mapped to Candle's truncating open_out without changing the original append and permission semantics, so the exact definition-only non-use is made explicit instead. No Toploop or open_out_gen shim or successful no-op is installed.",
-      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file, dynamic loadt, or append-mode output compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, caller, or build_and_report occurrence drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. The authenticated loader ledger represents each MD5 as the canonical 32-character lowercase hexadecimal string; Digest.file returns the corresponding raw 16-byte Digest.t. Applying Digest.to_hex at all three surviving strictbuild file-identity constructors therefore makes nested flyspeck_needs membership checks compare the same basename and content identity already authenticated and committed by the direct loader. Dependency-order-complete actions skip their already-loaded children; an absent identity still reaches the fail-closed use_file_b binding. The other dynamic needs, reneeds, and build_and_report chains remain explicit failures. build_and_report cannot be mapped to Candle's truncating open_out without changing the original append and permission semantics, so the exact definition-only non-use is made explicit instead. No Toploop or open_out_gen shim or successful no-op is installed.",
+      "scope_limit": "This is a representation normalization of the exact basename-plus-content-digest ledger, not a path, basename, or content alias and not general Toploop.use_file, dynamic loadt, or append-mode output compatibility. It accepts no new artifact: bytes are hashed at the same resolved source path and must equal an already-authenticated logical identity to skip. The full run must prove every expected nested dependency skips and every undeclared or absent identity still fails closed; exact source-action order, ledger deltas, success observations, and semantic fingerprints remain gates. Source, action-order, caller, or build_and_report occurrence drift blocks release."
     },
     {
       "id": "PROJECT-SPHERE-S3-TERM-ORDER-001",
@@ -461,10 +496,17 @@
       "path": "text_formalization/general/sphere.hl",
       "source_sha256": "3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32",
       "source_md5": "542740b87edf39bfe0faaa5005e9f7eb",
-      "normalized_sha256": "0d19b68571baea91aa63014c4cec54c6ef26356e14004179d7fb3b8bbe42f51e",
-      "normalized_md5": "1e134647152103f755a0884313b3ad72",
-      "normalized_bytes": 36167,
+      "normalized_sha256": "c603db1406e86a1cab71e2f54035c425aa8392b49cdec619232812793c4c0d3d",
+      "normalized_md5": "5aeef4c9b86a5f829c0ad3edb07e21ce",
+      "normalized_bytes": 36175,
       "operations": [
+        {
+          "id": "PROJECT-SPHERE-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 16,
+          "before": "prioritize_real();;",
+          "after": "let _ = prioritize_real();;"
+        },
         {
           "id": "PROJECT-SPHERE-S3-TERM-ORDER-001-ALL-FORALL",
           "kind": "exact_bytes_replace_once",
@@ -473,8 +515,8 @@
           "after": "sort Term.(<) (frees bod)"
         }
       ],
-      "semantic_rule": "Candle requires an explicit element comparator where pinned native OCaml inferred polymorphic comparison. Term.(<) is Candle's established term ordering and is already used at the same sort-over-frees shape in current Candle lists.ml. Only the ordering argument changes; the free-term input, quantifier constructor, fold order, theorem term, and all proof operations remain unchanged.",
-      "scope_limit": "This is the one hash-pinned Sphere.all_forall term-sort site, not general polymorphic comparison compatibility. The focused exact-shape negative/positive oracle and a complete cumulative run remain required."
+      "semantic_rule": "Candle requires an explicit element comparator where pinned native OCaml inferred polymorphic comparison. Term.(<) is Candle's established term ordering and is already used at the same sort-over-frees shape in current Candle lists.ml. Only the ordering argument changes; the free-term input, quantifier constructor, fold order, theorem term, and all proof operations remain unchanged. The wildcard binding evaluates the identical prioritize_real call once at the same Sphere initialization position and discards the same unit result, preserving its effect and exceptions.",
+      "scope_limit": "This is confined to the one hash-pinned Sphere.all_forall term-sort site and the one module-initialization priority call, not general polymorphic comparison or structure-expression compatibility. Focused exact-shape, effect/order, and complete cumulative oracles remain required."
     },
     {
       "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
@@ -482,9 +524,9 @@
       "path": "text_formalization/general/hales_tactic.hl",
       "source_sha256": "2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408",
       "source_md5": "7a6198ddba9748c820ec5d4bbd07afa4",
-      "normalized_sha256": "634a120123d4851bcf188aed0ea63e81acd7ff76cdc3e03913288861c27bc258",
-      "normalized_md5": "f5155d756ee2da58d1957f8892a60517",
-      "normalized_bytes": 16481,
+      "normalized_sha256": "215adf6f1cc49c75175d7c1fb922834be34b8c57adcf3c7bb79ec4a5faa77cf6",
+      "normalized_md5": "3945b87bbbcf00c8d4414542725feff9",
+      "normalized_bytes": 16573,
       "operations": [
         {
           "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
@@ -497,12 +539,33 @@
           "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001-TERM-LIST-FREES",
           "kind": "exact_bytes_replace_once",
           "line": 142,
-          "before": "List.flatten(map frees tml)",
-          "after": "List.concat(map frees tml)"
+          "before": "  let varl = filter has_stv (setify (List.flatten(map frees tml))) in",
+          "after": "  let varl = filter has_stv (setify Term.(<) (List.concat(map frees tml))) in"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-TERM-SETIFY-001-RETYPE-INPUT",
+          "kind": "exact_bytes_replace_once",
+          "line": 125,
+          "before": "  let allv = setify(frees tm) in",
+          "after": "  let allv = setify Term.(<) (frees tm) in"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-TERM-SETIFY-001-RETYPE-OUTPUT",
+          "kind": "exact_bytes_replace_once",
+          "line": 133,
+          "before": "  let _ = map (fun x -> mem x glt || failwith (\"not found: \"^ fst (dest_var x))) (setify (frees tm')) in",
+          "after": "  let _ = map (fun x -> mem x glt || failwith (\"not found: \"^ fst (dest_var x))) (setify Term.(<) (frees tm')) in"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-TERM-SETIFY-001-ENVL-NAMED-TERMS",
+          "kind": "exact_bytes_replace_once",
+          "line": 143,
+          "before": "  let svarl = setify(map (fun t-> (fst(dest_var t),t)) varl) in",
+          "after": "  let svarl = setify (fun x y -> Pair.compare String.compare Term.compare x y <= 0) (map (fun t-> (fst(dest_var t),t)) varl) in"
         }
       ],
-      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order, duplicates, term identity, surrounding setification, and tactic behavior.",
-      "scope_limit": "This is limited to the two hash-pinned Hales_tactic free-term concatenations. It does not add a general List.flatten API or change unary setify sites, whose selected execution context is established by the preceding Flyspeck general/lib action."
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
+      "scope_limit": "This is limited to the six hash-pinned Hales_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required."
     },
     {
       "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
@@ -510,9 +573,9 @@
       "path": "text_formalization/general/truong_tactic.hl",
       "source_sha256": "5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548",
       "source_md5": "a3005daec1a8dd59200622ff3cf85779",
-      "normalized_sha256": "1fd0228f3b341582d2b614417f98741c64b890ae8366ff9234bf2ac6f143f52c",
-      "normalized_md5": "1f369a87dc5dcbc4c1b75eae67cb4afb",
-      "normalized_bytes": 18286,
+      "normalized_sha256": "e401631b2fc6a3f6285bd180169382ab4311c0fdd511d1e1e47771d3c38b202f",
+      "normalized_md5": "1c9fd2e8252945b87d5a982d3ca4b446",
+      "normalized_bytes": 18378,
       "operations": [
         {
           "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
@@ -525,12 +588,299 @@
           "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001-TERM-LIST-FREES",
           "kind": "exact_bytes_replace_once",
           "line": 133,
-          "before": "List.flatten(map frees tml)",
-          "after": "List.concat(map frees tml)"
+          "before": "  let varl = filter has_stv (setify (List.flatten(map frees tml))) in",
+          "after": "  let varl = filter has_stv (setify Term.(<) (List.concat(map frees tml))) in"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-TERM-SETIFY-001-RETYPE-INPUT",
+          "kind": "exact_bytes_replace_once",
+          "line": 105,
+          "before": "  let allv = setify(frees tm) in",
+          "after": "  let allv = setify Term.(<) (frees tm) in"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-TERM-SETIFY-001-RETYPE-OUTPUT",
+          "kind": "exact_bytes_replace_once",
+          "line": 113,
+          "before": "  let _ = map (fun x -> mem x glt || failwith (\"not found: \"^ fst (dest_var x))) (setify (frees tm')) in",
+          "after": "  let _ = map (fun x -> mem x glt || failwith (\"not found: \"^ fst (dest_var x))) (setify Term.(<) (frees tm')) in"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-TERM-SETIFY-001-ENVL-NAMED-TERMS",
+          "kind": "exact_bytes_replace_once",
+          "line": 134,
+          "before": "  let svarl = setify(map (fun t-> (fst(dest_var t),t)) varl) in",
+          "after": "  let svarl = setify (fun x y -> Pair.compare String.compare Term.compare x y <= 0) (map (fun t-> (fst(dest_var t),t)) varl) in"
         }
       ],
-      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order, duplicates, term identity, surrounding setification, and tactic behavior.",
-      "scope_limit": "This is limited to the two hash-pinned Truong_tactic free-term concatenations. It does not add a general List.flatten API or change unary setify sites, whose selected execution context is established by the preceding Flyspeck general/lib action."
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
+      "scope_limit": "This is limited to the six hash-pinned Truong_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required."
+    },
+    {
+      "id": "PROJECT-REFINEMENT-S3-FOR-LOOP-001",
+      "source_key": "flyspeck:text_formalization/jordan/refinement.hl",
+      "path": "text_formalization/jordan/refinement.hl",
+      "source_sha256": "83d7784b28176a16f578d2e31e3756bf99464d92dbed64626b647d2839211713",
+      "source_md5": "7bec92d4c61db0c84ce591af4ca43b59",
+      "normalized_sha256": "69c217f2688d3ae7e2c602de83508c11fc031294ea691d5cd2772d9d3d5f699d",
+      "normalized_md5": "04199a9023c0a5eed04a6e9332ab2ec5",
+      "normalized_bytes": 2959,
+      "operations": [
+        {
+          "id": "PROJECT-REFINEMENT-S3-FOR-LOOP-001-LABEL-ALL",
+          "kind": "exact_bytes_replace_once",
+          "line": 40,
+          "before": "  let aslp = ref asl in\n    (for i=0 to ((length asl)-1) do (aslp := update_label i !aslp) done;",
+          "after": "  let aslp = ref asl in\n  let n = length asl in\n  let rec update_all i =\n    if i = n then ()\n    else (aslp := update_label i !aslp; update_all (i+1)) in\n    (update_all 0;"
+        }
+      ],
+      "semantic_rule": "OCaml's ascending for loop evaluates the immutable upper bound length asl - 1 once, performs update_label on indices 0 through length asl - 1 in order, and performs no iteration for an empty list. The replacement captures the same immutable length once and tail-recurses from zero until that length, applying the same reference update at each index in the same order. It returns unit before the unchanged ALL_TAC application and preserves labels, assumptions, goal, effects, and exceptions.",
+      "scope_limit": "This exact normalization is confined to LABEL_ALL_TAC's single bounded ascending loop. It is not general for-loop support and changes no theorem or tactic body beyond the equivalent iteration spelling. Empty, singleton, pre-labelled, and multi-assumption structural oracles plus the cumulative action are required."
+    },
+    {
+      "id": "PROJECT-HASH-TERM-S3-CHAR-CODE-001",
+      "source_key": "flyspeck:text_formalization/jordan/hash_term.hl",
+      "path": "text_formalization/jordan/hash_term.hl",
+      "source_sha256": "04872c1fb60f0c8d86b345a6027a547144c535524c53b49ebe8555b6bcaac32d",
+      "source_md5": "ee44ee67227308990422c278eb92b708",
+      "normalized_sha256": "13212d6b0482d173270b3850271587f3be089d17902a37f6841d955452f56e22",
+      "normalized_md5": "4eb74e9553aae99fe76f8cc30472678b",
+      "normalized_bytes": 3174,
+      "operations": [
+        {
+          "id": "PROJECT-HASH-TERM-S3-CHAR-CODE-001-HASH-STRING",
+          "kind": "exact_bytes_replace_once",
+          "line": 20,
+          "before": "int_of_char (String.get h 0)",
+          "after": "Char.code (String.get h 0)"
+        },
+        {
+          "id": "PROJECT-HASH-TERM-S3-TUPLE-CONSTRUCTOR-001-RENAME-VAR",
+          "kind": "exact_bytes_replace_once",
+          "line": 57,
+          "before": "let rename_var n =\n  fun v -> mk_var (\"??_\"^(string_of_int n),type_of v);;",
+          "after": "let rename_var n =\n  fun v ->\n    let name = \"??_\"^(string_of_int n) in\n    mk_var (name,type_of v);;"
+        }
+      ],
+      "semantic_rule": "In pinned OCaml 4.14, int_of_char is the deprecated compatibility alias of Char.code. Candle exposes Char.code with the same byte-code result. The replacement therefore preserves each integer entering hashll, every modular hash result, memo-table key/value, term hash, and downstream behavior. Candle's tuple-constructor inference cannot directly type the concatenation expression paired with type_of v in mk_var. Binding that pure concatenation immediately before the identical mk_var pair preserves the generated name, variable type, alpha-normal form, term hash, effects, and exceptions.",
+      "scope_limit": "These exact replacements are confined to hash_of_string's one character conversion and rename_var's one generated-name tuple. They do not add a legacy global alias or change hashing constants, recursion, strings, memoization, alpha-renaming, or term traversal. Exhaustive 256-byte conversion, representative hash/name oracles, complete normalized file loading, and the cumulative action are required."
+    },
+    {
+      "id": "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/goal_printer.hl",
+      "path": "text_formalization/jordan/goal_printer.hl",
+      "source_sha256": "530a915c4f08ef6e46ed10bc8605497947c1cc4c77c9e9d46c59438d0e19bd6b",
+      "source_md5": "1cadc0c7975efb3bcc530a032dce0c7f",
+      "normalized_sha256": "fcf90ccd08a092bc146aa4ed6dcb97149ab005abf7dd802f330d99e8ce2ab42a",
+      "normalized_md5": "1034846f67a46c37f0dce2e43b5bf948",
+      "normalized_bytes": 4915,
+      "operations": [
+        {
+          "id": "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 21,
+          "before": "Parse_ext_override_interface.unambiguous_interface();;",
+          "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001-REAL-PRIORITY",
+          "kind": "exact_bytes_replace_once",
+          "line": 22,
+          "before": "Parse_ext_override_interface.prioritize_real();;",
+          "after": "let _ = Parse_ext_override_interface.prioritize_real();;"
+        }
+      ],
+      "semantic_rule": "In an OCaml structure, an anonymous expression is evaluated once during module initialization and its result is discarded. Binding that same expression to the wildcard pattern also evaluates it once at the same source position and discards the result. Both interface calls return unit, so the replacements preserve the unambiguous-interface effect, subsequent real-priority effect, their order, exceptions, and all following printer definitions and behavior.",
+      "scope_limit": "These hash-pinned replacements are confined to Goal_printer's two module-initialization calls. They do not alter the three namespace opens, install a general structure-expression translation, or change any printer or parser-interface operation. Native effect/order and complete normalized file-load oracles plus the cumulative action are required."
+    },
+    {
+      "id": "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/general/tactics.hl",
+      "path": "text_formalization/general/tactics.hl",
+      "source_sha256": "45cfef5bf4ca0fea5f1f9c59a4e8d0d56f569accaffe4b7f0d8fbf46dd42b7ba",
+      "source_md5": "b4fded960cef9b2dfbe2e4fa082a9c93",
+      "normalized_sha256": "87d763c11df4346e892bc2bdc3f7831f8766865a52101060839358a2261dc8b3",
+      "normalized_md5": "8c425e4138bb5c24c98fe61a1c304b37",
+      "normalized_bytes": 4219,
+      "operations": [
+        {
+          "id": "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001-SELECT-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 44,
+          "before": "select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <= n)` `n:num`;;",
+          "after": "let _ = select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <= n)` `n:num`;;"
+        }
+      ],
+      "semantic_rule": "The original anonymous structure expression evaluates select_thm once on the same two quotations during Tactics module initialization and discards the returned theorem. The wildcard binding evaluates the identical expression once at the same source position and also discards the theorem. Successful module exports, proof state, effects, evaluation order, and exceptions are therefore unchanged.",
+      "scope_limit": "This hash-pinned replacement is confined to the one documented SELECT-elimination example in general/tactics.hl. It does not alter select_thm, any theorem statement or proof, or provide a general structure-expression translation. Native effect/result and complete normalized file-load oracles plus the cumulative action are required."
+    },
+    {
+      "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/leg/collect_geom.hl",
+      "path": "text_formalization/leg/collect_geom.hl",
+      "source_sha256": "483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b",
+      "source_md5": "2ad75dd712b5aa2f7d4cfa49b841ed98",
+      "normalized_sha256": "4a158286ddd58f3e2540d1ff672a29cf71cd29f9144f4af7f8b4a2672f50e761",
+      "normalized_md5": "b0385370f84a0fe4b33dc2f067958860",
+      "normalized_bytes": 103047,
+      "operations": [
+        {
+          "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 52,
+          "before": "prioritize_real();;",
+          "after": "let _ = prioritize_real();;"
+        }
+      ],
+      "semantic_rule": "The wildcard binding evaluates the identical prioritize_real call once at its original Collect_geom module-initialization position and discards the same unit result. Priority state, evaluation order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+      "scope_limit": "This hash-pinned replacement is confined to Collect_geom's one anonymous priority call. It is not a general structure-expression translation; the cumulative action and native effect/order oracle remain required."
+    },
+    {
+      "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/real_ext.hl",
+      "path": "text_formalization/jordan/real_ext.hl",
+      "source_sha256": "07038124181fadb80326312d889390b93289fba28e1525dc3346adf24833edc4",
+      "source_md5": "2a83bfe1b3979dae4f7f000a1ab7ac06",
+      "normalized_sha256": "af2badd569b1fed22db40e120c31e79fe2058ec5eaec8aa4729948d0ede4c0ea",
+      "normalized_md5": "070a72758b0459a034b13490dba2320e",
+      "normalized_bytes": 13387,
+      "operations": [
+        {
+          "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 26,
+          "before": "unambiguous_interface();;",
+          "after": "let _ = unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001-PRIORITIZE-NUM",
+          "kind": "exact_bytes_replace_once",
+          "line": 27,
+          "before": "prioritize_num();;",
+          "after": "let _ = prioritize_num();;"
+        },
+        {
+          "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
+          "kind": "exact_bytes_replace_once",
+          "line": 304,
+          "before": "pop_priority();;",
+          "after": "let _ = pop_priority();;"
+        }
+      ],
+      "semantic_rule": "Each wildcard binding evaluates the identical unit-returning interface operation once at its original Real_ext initialization position. The unambiguous, numeric-priority, and final pop effects retain their order, state, exceptions, and balanced lifetime; all intervening theorem statements and proofs are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Real_ext's three anonymous interface calls. They are not general structure-expression or parser-priority compatibility; native state/order and cumulative action oracles remain required."
+    },
+    {
+      "id": "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/num_ext_nabs.hl",
+      "path": "text_formalization/jordan/num_ext_nabs.hl",
+      "source_sha256": "883ad0bc9adc88d392e652491c19e91697a158627c7774e8b2a54bf109771b59",
+      "source_md5": "d4424273be3ceb817a8f2ef44f8ce274",
+      "normalized_sha256": "7a425840bb53b881e74f8b56112f7efb5aad719aaea8def2351f1cea62f01ba8",
+      "normalized_md5": "3347ed48a4102a18a798dc9d683aadc9",
+      "normalized_bytes": 4758,
+      "operations": [
+        {
+          "id": "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 18,
+          "before": "Parse_ext_override_interface.unambiguous_interface();;",
+          "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;"
+        }
+      ],
+      "semantic_rule": "The wildcard binding evaluates the identical unambiguous_interface call once at the original Num_ext_nabs initialization position and discards the same unit result. Interface state, order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+      "scope_limit": "This hash-pinned replacement is confined to Num_ext_nabs's one anonymous interface call. It is not a general structure-expression translation; native effect/order and cumulative action oracles remain required."
+    },
+    {
+      "id": "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/taylor_atn.hl",
+      "path": "text_formalization/jordan/taylor_atn.hl",
+      "source_sha256": "7c043950b28277db6bc698773e15462f2c3722ec9bc7a92ed8e0c4ae0ddb71c1",
+      "source_md5": "9ddc82cbd56d7aef541fe0c3ade6299a",
+      "normalized_sha256": "803c2894b0437d2e9554badb050df6987ab2183c72ff091b4b319befbd4fdc04",
+      "normalized_md5": "2430d7c87631a16adb78d3783d70fb04",
+      "normalized_bytes": 28146,
+      "operations": [
+        {
+          "id": "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001-PRIORITIZE-COMPLEX",
+          "kind": "exact_bytes_replace_once",
+          "line": 252,
+          "before": "prioritize_complex();;",
+          "after": "let _ = prioritize_complex();;"
+        },
+        {
+          "id": "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 821,
+          "before": "prioritize_real();;",
+          "after": "let _ = prioritize_real();;"
+        }
+      ],
+      "semantic_rule": "The wildcard bindings evaluate the identical complex- then real-priority calls once at their original Taylor_atn initialization positions and discard the same unit results. The priority transition, order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Taylor_atn's two anonymous priority calls. They are not general structure-expression or priority compatibility; native state/order and cumulative action oracles remain required."
+    },
+    {
+      "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/float.hl",
+      "path": "text_formalization/jordan/float.hl",
+      "source_sha256": "11ea4ae6f28b1d12d4c7d6339342362fb5b261b2bfa17f64cd43579c3761a776",
+      "source_md5": "e36847771cb33f2fed6b451d74bd38d3",
+      "normalized_sha256": "b0201ed2cfd74406c67718d828afbddaf8fa026355e7e55de5fd1bfa84d2a806",
+      "normalized_md5": "ea87a6372d53a9b3cf5e5e778e936bde",
+      "normalized_bytes": 72276,
+      "operations": [
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 37,
+          "before": "Parse_ext_override_interface.unambiguous_interface();;",
+          "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 38,
+          "before": "Parse_ext_override_interface.prioritize_real();;",
+          "after": "let _ = Parse_ext_override_interface.prioritize_real();;"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1073,
+          "before": "test();;",
+          "after": "let _ = test();;"
+        }
+      ],
+      "semantic_rule": "The wildcard bindings evaluate the identical two interface calls and test call once at their original Float initialization positions and discard the same unit results. Interface state, order, assertions, exceptions, definitions, theorem statements, and proofs are unchanged; the load-time test remains mandatory and fail-closed.",
+      "scope_limit": "These hash-pinned replacements are confined to Float's three anonymous calls and do not suppress or weaken test(). They are not general structure-expression compatibility; native effect/order and cumulative action oracles remain required."
+    },
+    {
+      "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/jordan/misc_defs_and_lemmas.hl",
+      "path": "text_formalization/jordan/misc_defs_and_lemmas.hl",
+      "source_sha256": "6c5de278e41d7ad799bacb079e387f347aaa0cd2bfd6682d74ce979fb536b125",
+      "source_md5": "60cb9cf8efb85a457e76f89c81294e80",
+      "normalized_sha256": "614eb8434d4dc5ab3b0d8e30661c92c48dd4b30eca71ae7ed001578b1fefd8e8",
+      "normalized_md5": "cfcf6693405414b171913042a71b1e68",
+      "normalized_bytes": 20051,
+      "operations": [
+        {
+          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+          "kind": "exact_bytes_replace_once",
+          "line": 31,
+          "before": "unambiguous_interface();;",
+          "after": "let _ = unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
+          "kind": "exact_bytes_replace_once",
+          "line": 737,
+          "before": "pop_priority();;",
+          "after": "let _ = pop_priority();;"
+        }
+      ],
+      "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. Their balanced state lifetime, order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls. They are not general structure-expression or parser-priority compatibility; native state/order and cumulative action oracles remain required."
     },
     {
       "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",

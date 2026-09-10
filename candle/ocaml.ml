@@ -644,6 +644,10 @@ module Format = struct
 
   (* Functions that print to stdout: *)
 
+  let print_as l str =
+    Pretty.print_stdout
+      (fun state (length,string) -> pp_print_as state length string)
+      (l,str);;
   let print_string = Pretty.print_stdout pp_print_string;;
   let print_break l i =
     Pretty.print_stdout (fun s (l,i) -> pp_print_break s l i) (l, i);;
@@ -658,6 +662,7 @@ module Format = struct
   let close_box () = Pretty.print_stdout pp_close_box ();;
 end;;
 
+let print_as l s = Format.print_as l s;;
 let print_string s = Format.print_string s;;
 let print_newline () = Format.print_newline ();;
 let print_endline s = print_string s; print_newline ();;

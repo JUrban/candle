@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 25)
+        self.assertEqual(len(self.contract["entries"]), 35)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -274,8 +274,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             hol_pervasives["semantic_rule"]
         ))
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
-        self.assertIn("not (y = x)", relabel["operations"][0]["after"])
-        self.assertIn("Hash_term.hash_of_term", relabel["operations"][1]["after"])
+        self.assertEqual(
+            [operation["line"] for operation in relabel["operations"]],
+            [21, 303, 256, 529],
+        )
+        self.assertIn("not (y = x)", relabel["operations"][2]["after"])
+        self.assertIn("Hash_term.hash_of_term", relabel["operations"][3]["after"])
         set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
         self.assertEqual(set_make["operations"][0]["line"], 34)
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
@@ -328,20 +332,33 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("dynamic strictbuild reneeds is disabled", (
             strictbuild["operations"][4]["after"]
         ))
-        self.assertIn("dynamic strictbuild build_and_report is disabled", (
-            strictbuild["operations"][5]["after"]
+        logical_digest_operations = strictbuild["operations"][5:8]
+        self.assertEqual(
+            [operation["line"] for operation in logical_digest_operations],
+            [94, 126, 173],
+        )
+        self.assertTrue(all(
+            "Digest.to_hex (Digest.file s')" in operation["after"]
+            for operation in logical_digest_operations
         ))
+        self.assertIn("dynamic strictbuild build_and_report is disabled", (
+            strictbuild["operations"][8]["after"]
+        ))
+        self.assertIn("canonical 32-character", strictbuild["semantic_rule"])
         self.assertIn("open_out_gen shim", strictbuild["semantic_rule"])
         sphere = entries["PROJECT-SPHERE-S3-TERM-ORDER-001"]
         self.assertEqual(
-            [operation["line"] for operation in sphere["operations"]], [33],
+            [operation["line"] for operation in sphere["operations"]],
+            [16, 33],
         )
         self.assertIn("sort Term.(<) (frees bod)", (
-            sphere["operations"][0]["after"]
+            sphere["operations"][1]["after"]
         ))
         for entry_id, lines in (
-            ("PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001", [103, 142]),
-            ("PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001", [89, 133]),
+            ("PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
+             [103, 142, 125, 133, 143]),
+            ("PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
+             [89, 133, 105, 113, 134]),
         ):
             tactic = entries[entry_id]
             self.assertEqual(
@@ -351,7 +368,51 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             self.assertTrue(all(
                 "List.concat" in operation["after"]
                 and "List.flatten" not in operation["after"]
-                for operation in tactic["operations"]
+                for operation in tactic["operations"][:2]
+            ))
+            self.assertEqual(
+                sum("setify Term.(<)" in operation["after"]
+                    for operation in tactic["operations"]),
+                3,
+            )
+            self.assertIn(
+                "Pair.compare String.compare Term.compare",
+                tactic["operations"][4]["after"],
+            )
+        refinement = entries["PROJECT-REFINEMENT-S3-FOR-LOOP-001"]
+        self.assertEqual(refinement["operations"][0]["line"], 40)
+        self.assertIn("let rec update_all i", (
+            refinement["operations"][0]["after"]
+        ))
+        self.assertNotIn("for i", refinement["operations"][0]["after"])
+        hash_term = entries["PROJECT-HASH-TERM-S3-CHAR-CODE-001"]
+        self.assertEqual(hash_term["operations"][0]["line"], 20)
+        self.assertEqual(
+            hash_term["operations"][0]["after"],
+            "Char.code (String.get h 0)",
+        )
+        self.assertIn(
+            'let name = "??_"^(string_of_int n)',
+            hash_term["operations"][1]["after"],
+        )
+        structure_effect_lines = {
+            "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
+            "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
+            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52],
+            "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": [26, 27, 304],
+            "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": [18],
+            "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": [252, 821],
+            "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001": [37, 38, 1073],
+            "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001": [31, 737],
+        }
+        for entry_id, lines in structure_effect_lines.items():
+            operations = entries[entry_id]["operations"]
+            self.assertEqual(
+                [operation["line"] for operation in operations], lines,
+            )
+            self.assertTrue(all(
+                operation["after"].startswith("let _ = ")
+                for operation in operations
             ))
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(
@@ -480,7 +541,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 72)
+        self.assertEqual(len(operation_ids), 102)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

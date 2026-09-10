@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 25)
+        self.assertEqual(contract["entry_count"], 35)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -586,6 +586,47 @@ class GeneratedManifestTests(unittest.TestCase):
             flyspeck_lib["operations"][1]["after"],
             "output_string outs a",
         )
+        strictbuild = entries["PROJECT-TOPLOOP-S3-USE-FILE-B-001"]
+        self.assertEqual(strictbuild["operation_count"], 9)
+        self.assertEqual(
+            [operation["line"] for operation in strictbuild["operations"][5:8]],
+            [94, 126, 173],
+        )
+        for entry_id in (
+            "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
+            "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
+        ):
+            tactic = entries[entry_id]
+            self.assertEqual(tactic["operation_count"], 5)
+            self.assertEqual(
+                sum("setify Term.(<)" in operation["after"]
+                    for operation in tactic["operations"]),
+                3,
+            )
+        self.assertEqual(
+            entries["PROJECT-REFINEMENT-S3-FOR-LOOP-001"]["operation_count"],
+            1,
+        )
+        self.assertEqual(
+            entries["PROJECT-HASH-TERM-S3-CHAR-CODE-001"]["operation_count"],
+            2,
+        )
+        structure_effect_counts = {
+            "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": 2,
+            "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": 3,
+            "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": 2,
+            "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001": 3,
+            "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001": 2,
+        }
+        for entry_id, operation_count in structure_effect_counts.items():
+            self.assertEqual(entries[entry_id]["operation_count"], operation_count)
+            self.assertTrue(all(
+                operation["after"].startswith("let _ = ")
+                for operation in entries[entry_id]["operations"]
+            ))
         self.assertEqual(entry["operation_count"], 3)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
@@ -825,7 +866,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 24", source,
+            "List.length candle_flyspeck_normalized_sources <> 34", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -835,7 +876,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 24)
+        self.assertEqual(len(selected_normalizations), 34)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)
@@ -1066,13 +1107,13 @@ class GeneratedManifestTests(unittest.TestCase):
             use for use in contract["qualified_uses"]
             if use["module"] == "Digest"
         ]
-        self.assertEqual(len(uses), 21)
+        self.assertEqual(len(uses), 24)
         self.assertEqual(contract["opened_module_uses"], [])
         self.assertEqual(contract["module_opens"], [])
         self.assertEqual(
             {member: sum(use["member"] == member for use in uses)
              for member in {use["member"] for use in uses}},
-            {"file": 9, "string": 2, "t": 3, "to_hex": 7},
+            {"file": 9, "string": 2, "t": 3, "to_hex": 10},
         )
         evidence = contract["binding_evidence"]["Digest"]
         self.assertEqual(evidence["status"], "pure-source-differential-gate")
@@ -1114,11 +1155,11 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(len(disposition["definition_only_fail_closed"]), 3)
         self.assertIn("complete compiled", disposition["acceptance_gate"])
         uses = contract["qualified_uses"]
-        self.assertEqual(len(uses), 133)
+        self.assertEqual(len(uses), 134)
         self.assertEqual(
             {module: sum(use["module"] == module for use in uses)
              for module in {use["module"] for use in uses}},
-            {"Format": 106, "Lexing": 5, "Obj": 3, "Toploop": 19},
+            {"Format": 107, "Lexing": 5, "Obj": 3, "Toploop": 19},
         )
         self.assertEqual(
             contract["unbound_members"]["Format"],
