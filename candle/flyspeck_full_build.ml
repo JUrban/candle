@@ -6,7 +6,7 @@
 (* stratum: base *)
 (* 000 selected=flyspeck:text_formalization/general/hol_pervasives.hl sha256=d9a64b56a366a45b5caa587000eb54963606e223f8a5f772aa9c1b98a54627e2 normalization=PROJECT-HOL-PERVASIVES-S3-COMPATIBILITY-001 normalized_sha256=a082b217a7942fa1344ae3034ee9776ed1368d0a732043a43d52f8dc2b23ad41 *)
 #flyspeck_needs "general/hol_pervasives.hl";;
-(* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 normalization=PROJECT-POINTER-S3-ALLOCATED-LIB-001 normalized_sha256=4c649b94f2d4c96930bb1940468c68da37a606df92401728577b6140346821cb *)
+(* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 normalization=PROJECT-POINTER-S3-ALLOCATED-LIB-001 normalized_sha256=6380ec1b92532ab613d6d5157c4b32f50acd5c6a9be1b3d387bddaf268673ab5 *)
 #flyspeck_needs "general/lib.hl";;
 (* 002 selected=flyspeck:text_formalization/general/flyspeck_lib.hl sha256=2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5 normalization=PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001 normalized_sha256=16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca *)
 #flyspeck_needs "general/flyspeck_lib.hl";;
