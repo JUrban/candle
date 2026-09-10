@@ -23,6 +23,7 @@ python3 candle/flyspeck_normalize.py \
   >"$test_dir/normalization.log"
 
 strictbuild="$overlay/text_formalization/build/strictbuild.hl"
+lib="$overlay/text_formalization/general/lib.hl"
 flyspeck_lib="$overlay/text_formalization/general/flyspeck_lib.hl"
 sphere="$overlay/text_formalization/general/sphere.hl"
 hales="$overlay/text_formalization/general/hales_tactic.hl"
@@ -32,6 +33,11 @@ rg -Fq 'dynamic strictbuild build_and_report is disabled by the static manifest'
   "$strictbuild"
 if rg -Fq 'open_out_gen' "$strictbuild"; then
   echo 'normalized strictbuild retained unsupported open_out_gen' >&2
+  exit 1
+fi
+[[ $(rg -Fc 'let rev l =' "$lib") -eq 1 ]]
+if rg -Fq 'let rev =' "$lib"; then
+  echo 'normalized lib retained value-restricted rev binding' >&2
   exit 1
 fi
 [[ $(rg -Fc 'output_string outs a' "$flyspeck_lib") -eq 1 ]]
@@ -51,10 +57,11 @@ if rg -Fq 'List.flatten' "$hales" "$truong"; then
   exit 1
 fi
 
-printf '#use "hol.ml";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n' \
+printf '#use "hol.ml";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n' \
     "$fixture_root/base_prefix_api_original_sphere.ml" \
     "$fixture_root/base_prefix_api_original_flatten.ml" \
     "$fixture_root/base_prefix_api_original_printf.ml" \
+    "$fixture_root/base_prefix_api_original_rev.ml" \
     "$fixture_root/base_prefix_api_normalized.ml" |
   timeout 300 "$candle_binary" --candle \
     >"$test_dir/candle.log" 2>&1
@@ -63,6 +70,7 @@ rg -Fq 'Type mismatch between int list -> int list and term list' \
   "$test_dir/candle.log"
 rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: Printf.fprintf' "$test_dir/candle.log"
+rg -Fq 'Value restriction violated' "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_all_forall = <fun>: term -> term' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_flatten_frees = <fun>: term list -> term list' \
@@ -73,7 +81,7 @@ rg -Fq 'val candle_flyspeck_build_and_report_fail_closed = true: bool' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_base_prefix_api_oracle_ok = true: bool' \
   "$test_dir/candle.log"
-if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 3 ]]; then
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 4 ]]; then
   tail -n 80 "$test_dir/candle.log" >&2
   exit 1
 fi

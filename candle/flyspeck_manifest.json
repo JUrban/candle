@@ -8751,8 +8751,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "c3a8c5d72eb21a927ac2cd824b250f30",
-    "generated_source_sha256": "fd6d83259b18ad6dab82239556e3607bfd0397798f019c3857e745d4aa9b32f5",
+    "generated_source_md5": "2df597649c7023ad675a68de26fd2c26",
+    "generated_source_sha256": "e7051284de7086a74d93bbcbe321d28733f6bfb0d0e6af51b6d7aab8b7ff594a",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14766,10 +14766,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "03e6fcef23763b9ca450baf54e271157",
+      "md5": "57ebf0b7d24230754c5c3de66eee08cb",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "09d1d9839d07050c0f833c0829800d17b149f7685f9dce800d7909057ba06a43"
+      "sha256": "317fb0c3007fd20a1c92601d4d8ae5aa8f5bd7fa32406a426052e9ce4c4ac771"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14850,10 +14850,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "ab250dd83676724cc94e8273e5d0ac08",
+      "md5": "d5c1c8ffb85ce66a72f923c02c6a812c",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "7c981af2f3af7df1e0cb8903f5646c755b60925b6fce27a35f89abd408c41152"
+      "sha256": "0c7d59e0a703a3d709e77f36945ff6a4e328bbbee1fee5245bd83246a6b50ce5"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18229,10 +18229,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 29873,
-        "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
-        "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
-        "operation_count": 5
+        "normalized_bytes": 29866,
+        "normalized_md5": "ca5c64d44817108ae8245b66d2b1870f",
+        "normalized_sha256": "4c649b94f2d4c96930bb1940468c68da37a606df92401728577b6140346821cb",
+        "operation_count": 6
       },
       "md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
       "path": "text_formalization/general/lib.hl",
@@ -22079,7 +22079,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "6f4fc598d3bb7f90d7a5d2e4158d0705399148104c53474ecf7712adcd5ef7a8",
+    "contract_sha256": "4e5042021c6b0247399989c27024d40abc11c3f43445665387fe2bcc64c69a25",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22122,11 +22122,18 @@
       {
         "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 29873,
-        "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
-        "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
-        "operation_count": 5,
+        "normalized_bytes": 29866,
+        "normalized_md5": "ca5c64d44817108ae8245b66d2b1870f",
+        "normalized_sha256": "4c649b94f2d4c96930bb1940468c68da37a606df92401728577b6140346821cb",
+        "operation_count": 6,
         "operations": [
+          {
+            "after": "let rev l =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  rev_append [] l;;",
+            "before": "let rev =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  fun l -> rev_append [] l;;",
+            "id": "PROJECT-S3-LIB-REV-VALUE-RESTRICTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 70
+          },
           {
             "after": "let filter p l =\n  let rec changed l =\n    match l with\n      [] -> None\n    | h::t ->\n        (match changed t with\n           None -> if p(h) then None else Some t\n         | Some t' -> if p(h) then Some(h::t') else Some t') in\n  match changed l with None -> l | Some l' -> l';;",
             "before": "let rec filter p l =\n  match l with\n    [] -> l\n  | h::t -> let t' = filter p t in\n            if p(h) then if t'==t then l else h::t'\n            else t';;",
@@ -22164,8 +22171,8 @@
           }
         ],
         "path": "text_formalization/general/lib.hl",
-        "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates.",
-        "semantic_rule": "The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
+        "scope_limit": "The eta expansion is confined to the pure rev binding and does not change any theorem or proof. qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates.",
+        "semantic_rule": "The rev rewrite eta-expands the same total list function, preserving element order and polymorphism while avoiding CakeML's value restriction; it is the form independently used by the corresponding Candle/HOL Light lib.ml. The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
         "source_key": "flyspeck:text_formalization/general/lib.hl",
         "source_md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
         "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865"
@@ -23057,8 +23064,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "03e6fcef23763b9ca450baf54e271157",
-    "generated_source_sha256": "09d1d9839d07050c0f833c0829800d17b149f7685f9dce800d7909057ba06a43",
+    "generated_source_md5": "57ebf0b7d24230754c5c3de66eee08cb",
+    "generated_source_sha256": "317fb0c3007fd20a1c92601d4d8ae5aa8f5bd7fa32406a426052e9ce4c4ac771",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

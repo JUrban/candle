@@ -44,10 +44,17 @@
       "path": "text_formalization/general/lib.hl",
       "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865",
       "source_md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
-      "normalized_sha256": "d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f",
-      "normalized_md5": "3bc47551633759af22a39bcb4e1be8e5",
-      "normalized_bytes": 29873,
+      "normalized_sha256": "4c649b94f2d4c96930bb1940468c68da37a606df92401728577b6140346821cb",
+      "normalized_md5": "ca5c64d44817108ae8245b66d2b1870f",
+      "normalized_bytes": 29866,
       "operations": [
+        {
+          "id": "PROJECT-S3-LIB-REV-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 70,
+          "before": "let rev =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  fun l -> rev_append [] l;;",
+          "after": "let rev l =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  rev_append [] l;;"
+        },
         {
           "id": "PROJECT-POINTER-S3-LIB-FILTER-001",
           "kind": "exact_bytes_replace_once",
@@ -84,8 +91,8 @@
           "after": "let undefine =\n  let rec undefine_list_changed x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then Some t\n          else if c < 0 then None else\n          (match undefine_list_changed x t with\n             None -> None\n           | Some t' -> Some(ab::t'))\n    | [] -> None in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und_changed t =\n      match t with\n        Leaf(h,l) when h = k ->\n          (match undefine_list_changed x l with\n             None -> None\n           | Some l' ->\n               Some(if l' = [] then Empty else Leaf(h,l')))\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            (match und_changed l with\n               None -> None\n             | Some l' ->\n                 Some(match l' with Empty -> r\n                                    | _ -> Branch(p,b,l',r)))\n          else\n            (match und_changed r with\n               None -> None\n             | Some r' ->\n                 Some(match r' with Empty -> l\n                                    | _ -> Branch(p,b,l,r')))\n      | _ -> None in\n    fun t -> match und_changed t with None -> t | Some t' -> t';;"
         }
       ],
-      "semantic_rule": "The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
-      "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
+      "semantic_rule": "The rev rewrite eta-expands the same total list function, preserving element order and polymorphism while avoiding CakeML's value restriction; it is the form independently used by the corresponding Candle/HOL Light lib.ml. The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
+      "scope_limit": "The eta expansion is confined to the pure rev binding and does not change any theorem or proof. qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
     },
     {
       "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",

@@ -11,6 +11,13 @@ let candle_flyspeck_normalized_output_filestring tmpfile a =
           with _ as t -> (close_out outs; raise t) in
   close_out outs;;
 
+let candle_flyspeck_normalized_rev l =
+  let rec rev_append acc l =
+    match l with
+      [] -> acc
+    | h::t -> rev_append (h::acc) t in
+  rev_append [] l;;
+
 let build_and_report () : unit =
   failwith "Candle Flyspeck: dynamic strictbuild build_and_report is disabled by the static manifest";;
 
@@ -30,4 +37,6 @@ let candle_flyspeck_base_prefix_api_oracle_ok =
   binders = sort Term.(<) [x;y] && result = body &&
   candle_flyspeck_normalized_flatten_frees
     [mk_eq(x,y); mk_eq(y,z)] = [x;y;y;z] &&
+  candle_flyspeck_normalized_rev [1;2;3] = [3;2;1] &&
+  candle_flyspeck_normalized_rev ["a";"b"] = ["b";"a"] &&
   candle_flyspeck_build_and_report_fail_closed;;

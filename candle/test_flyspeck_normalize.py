@@ -174,7 +174,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertNotIn("==", immediate["operations"][2]["after"])
         self.assertIn("does not apply to allocated values", immediate["scope_limit"])
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
-        self.assertEqual(len(allocated["operations"]), 5)
+        self.assertEqual(len(allocated["operations"]), 6)
+        self.assertEqual(
+            allocated["operations"][0]["id"],
+            "PROJECT-S3-LIB-REV-VALUE-RESTRICTION-001",
+        )
+        self.assertEqual(allocated["operations"][0]["line"], 70)
+        self.assertTrue(allocated["operations"][0]["after"].startswith(
+            "let rev l =\n",
+        ))
+        self.assertNotIn(
+            "fun l -> rev_append [] l",
+            allocated["operations"][0]["after"],
+        )
+        self.assertIn("same total list function", allocated["semantic_rule"])
         self.assertIn("qmap is a selected-graph non-use", allocated["scope_limit"])
         flyspeck_lib = entries[
             "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"
@@ -425,7 +438,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 63)
+        self.assertEqual(len(operation_ids), 64)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
