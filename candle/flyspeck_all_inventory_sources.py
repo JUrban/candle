@@ -33,12 +33,12 @@ EXPECTED_AUTHORITIES = {
         "sha256": "85749092ae4dcee8ea3ca3538b5b4d1bff3ce804c7f9f7966c5a63ee46142dfa",
     },
     MANIFEST_RELATIVE.as_posix(): {
-        "bytes": 850924,
-        "sha256": "11c0d5f1ac19a6e38cae063d482b97f1b06d53ecfff3ee2711e17d451940a4dc",
+        "bytes": 852950,
+        "sha256": "2dfbea557bc65318496afbe53cf06a8e7c45a57ad96a982c5bd5ffab96c8726b",
     },
     NORMALIZATION_RELATIVE.as_posix(): {
-        "bytes": 69644,
-        "sha256": "b3fbdf9f8dccf257c2d829f64a0e53428a05b491a51bdc8210d30b2acf6697fa",
+        "bytes": 71098,
+        "sha256": "6f4fc598d3bb7f90d7a5d2e4158d0705399148104c53474ecf7712adcd5ef7a8",
     },
 }
 EXPECTED_SOURCE_COUNT = 400
