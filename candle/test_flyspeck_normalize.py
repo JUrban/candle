@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 24)
+        self.assertEqual(len(self.contract["entries"]), 25)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -176,6 +176,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
         self.assertEqual(len(allocated["operations"]), 5)
         self.assertIn("qmap is a selected-graph non-use", allocated["scope_limit"])
+        flyspeck_lib = entries[
+            "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"
+        ]
+        self.assertEqual(
+            flyspeck_lib["operations"][0]["before"],
+            'Printf.fprintf outs "%s" a',
+        )
+        self.assertEqual(
+            flyspeck_lib["operations"][0]["after"],
+            "output_string outs a",
+        )
+        self.assertIn("constant %s format", flyspeck_lib["semantic_rule"])
         print_types = entries["PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001"]
         self.assertEqual(
             [operation["line"] for operation in print_types["operations"]],
@@ -413,7 +425,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 62)
+        self.assertEqual(len(operation_ids), 63)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

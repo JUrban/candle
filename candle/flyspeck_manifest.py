@@ -1932,6 +1932,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_identity_normalization.sh",
                 "candle:candle/test_flyspeck_immediate_normalization.sh",
                 "candle:candle/test_flyspeck_needs_directive.sh",
+                "candle:candle/test_flyspeck_base_prefix_api_normalization.sh",
                 "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
                 "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
                 "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",

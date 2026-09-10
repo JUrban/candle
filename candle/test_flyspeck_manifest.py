@@ -383,8 +383,8 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(
             contract["verified_cakeml_integration"],
             {
-                "branch": "codex/flyspeck-v13-frontend-batch",
-                "commit": "8a8926906ec97204eeec961496d191103cda3229",
+                "branch": "codex/flyspeck-v14-ordinary-needs-identity",
+                "commit": "cea7c49d441c749bed4c8a987bee6d321816fbde",
                 "dopen_proof_target": "compiler/inference/tests/dopenTestsTheory.uo",
                 "dopen_proof_theories": 39,
                 "ocaml_parser_target": "compiler/parsing/ocaml/camlTestsTheory.uo",
@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 24)
+        self.assertEqual(contract["entry_count"], 25)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -516,6 +516,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertIn(
             "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_flyspeck_base_prefix_api_normalization.sh",
             contract["gates"],
         )
         self.assertIn(
@@ -565,6 +569,18 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(
             entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]["operation_count"],
             5,
+        )
+        flyspeck_lib = entries[
+            "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"
+        ]
+        self.assertEqual(
+            flyspeck_lib["source_key"],
+            "flyspeck:text_formalization/general/flyspeck_lib.hl",
+        )
+        self.assertEqual(flyspeck_lib["operation_count"], 1)
+        self.assertEqual(
+            flyspeck_lib["operations"][0]["after"],
+            "output_string outs a",
         )
         self.assertEqual(entry["operation_count"], 3)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
@@ -805,7 +821,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 23", source,
+            "List.length candle_flyspeck_normalized_sources <> 24", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -815,7 +831,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 23)
+        self.assertEqual(len(selected_normalizations), 24)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)

@@ -8,7 +8,7 @@
 #flyspeck_needs "general/hol_pervasives.hl";;
 (* 001 selected=flyspeck:text_formalization/general/lib.hl sha256=a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865 normalization=PROJECT-POINTER-S3-ALLOCATED-LIB-001 normalized_sha256=d1ae25218cce2f2f510966d574d48d283c04748a1b6c8d8dfc0c2ca52438a60f *)
 #flyspeck_needs "general/lib.hl";;
-(* 002 selected=flyspeck:text_formalization/general/flyspeck_lib.hl sha256=2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5 *)
+(* 002 selected=flyspeck:text_formalization/general/flyspeck_lib.hl sha256=2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5 normalization=PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001 normalized_sha256=16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca *)
 #flyspeck_needs "general/flyspeck_lib.hl";;
 (* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 normalization=PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001 normalized_sha256=5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd *)
 #flyspeck_needs "general/print_types.hl";;

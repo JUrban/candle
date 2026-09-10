@@ -60,7 +60,8 @@ let candle_flyspeck_dopen_add_load_path path =
   if List.mem path !load_path then () else load_path := path :: !load_path;;
 
 List.iter candle_flyspeck_dopen_add_load_path
-  [candle_flyspeck_text_root;
+  [candle_hollight_root;
+   candle_flyspeck_text_root;
    Filename.concat candle_flyspeck_root "formal_ineqs";
    Filename.concat candle_flyspeck_root "jHOLLight"];;
 

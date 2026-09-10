@@ -88,6 +88,27 @@
       "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
     },
     {
+      "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",
+      "source_key": "flyspeck:text_formalization/general/flyspeck_lib.hl",
+      "path": "text_formalization/general/flyspeck_lib.hl",
+      "source_sha256": "2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5",
+      "source_md5": "e707bc1ea80e0446c735bfe208885e6a",
+      "normalized_sha256": "16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca",
+      "normalized_md5": "881f211e6304e57032738026a89a7a52",
+      "normalized_bytes": 2316,
+      "operations": [
+        {
+          "id": "PROJECT-FLYSPECK-LIB-S3-FPRINTF-STRING-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 37,
+          "before": "Printf.fprintf outs \"%s\" a",
+          "after": "output_string outs a"
+        }
+      ],
+      "semantic_rule": "For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel. Candle's OCaml compatibility layer exposes output_string with the same output-channel and string argument order, so the replacement preserves bytes written, channel lifetime, surrounding exception handling, and the mathematical environment.",
+      "scope_limit": "This authorizes only the one constant-format string write in Flyspeck_lib.output_filestring. It is not a general Printf implementation or a rewrite of formatted, converted, padded, escaped, or variadic output."
+    },
+    {
       "id": "PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001",
       "source_key": "flyspeck:text_formalization/general/print_types.hl",
       "path": "text_formalization/general/print_types.hl",

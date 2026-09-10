@@ -5,6 +5,12 @@ let candle_flyspeck_normalized_all_forall bod =
 let candle_flyspeck_normalized_flatten_frees tms =
   List.concat (map frees tms);;
 
+let candle_flyspeck_normalized_output_filestring tmpfile a =
+  let outs = open_out tmpfile in
+  let _ = try output_string outs a
+          with _ as t -> (close_out outs; raise t) in
+  close_out outs;;
+
 let build_and_report () : unit =
   failwith "Candle Flyspeck: dynamic strictbuild build_and_report is disabled by the static manifest";;
 
