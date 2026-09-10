@@ -14874,10 +14874,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "936254b420efda0ec9792ab08634670c",
+      "md5": "63dad21434586c9a1fc959334dc2508c",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "2219dfb802fa2a22a58537c463ea47be03e1cc61d5c7996e85d5a2df60a0952f"
+      "sha256": "0ff85052f973218e49b856a6bb8bbda727872a77816d9ec75dcd8dee3e9b0f8b"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18245,10 +18245,10 @@
       "execution_normalization": {
         "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 13239,
-        "normalized_md5": "ca206581943b009ea815225c0ff9ad95",
-        "normalized_sha256": "1af4e5bc6e7fc7a95c3ae9d12a6a721e17575451573d595f015c1c6a2ef461d1",
-        "operation_count": 2
+        "normalized_bytes": 13273,
+        "normalized_md5": "3209a4491e57ae1c43afd673be59d7e3",
+        "normalized_sha256": "816cde42e0b9c10a1bfff04dcbc258433b7b7a02715284221f8b7af9b69419a5",
+        "operation_count": 3
       },
       "md5": "7ebe35d505dd4c5a4793bd55c49a5bce",
       "path": "text_formalization/general/parser_verbose.hl",
@@ -22063,7 +22063,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "2e7274c15ec56ffe864e11c100b2fb8493471111117b83036a116e2cfff00f0b",
+    "contract_sha256": "192348fb1d720b9292700dfdfd42019c185907fc5279a9d07ebfb0ecfae234f3",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22419,10 +22419,10 @@
       {
         "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 13239,
-        "normalized_md5": "ca206581943b009ea815225c0ff9ad95",
-        "normalized_sha256": "1af4e5bc6e7fc7a95c3ae9d12a6a721e17575451573d595f015c1c6a2ef461d1",
-        "operation_count": 2,
+        "normalized_bytes": 13273,
+        "normalized_md5": "3209a4491e57ae1c43afd673be59d7e3",
+        "normalized_sha256": "816cde42e0b9c10a1bfff04dcbc258433b7b7a02715284221f8b7af9b69419a5",
+        "operation_count": 3,
         "operations": [
           {
             "after": "        failwith (\"parse_pretype_verbose: mk_prefinty, n = \" ^ string_of_num n)",
@@ -22437,11 +22437,18 @@
             "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-LIFT-INNER-MATCH",
             "kind": "exact_bytes_replace_once",
             "line": 86
+          },
+          {
+            "after": "    fun () -> let count = !gcounter in\n              (gcounter := count + 1;\n               let name = \"GEN%PVAR%\"^(string_of_int count) in\n               Varp(name,dpty)) in",
+            "before": "    fun () -> let count = !gcounter in\n              (gcounter := count + 1;\n               Varp(\"GEN%PVAR%\"^(string_of_int count),dpty)) in",
+            "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001-SPLIT-TUPLE-CONSTRUCTOR-INPUT",
+            "kind": "exact_bytes_replace_once",
+            "line": 106
           }
         ],
         "path": "text_formalization/general/parser_verbose.hl",
-        "scope_limit": "The pinned selected graph contains one let-binding or-pattern, in parser_verbose.hl; the duplicate under azure/hol-light-nat is outside the selected graph. This exact rewrite does not claim general let-binding or-pattern or formatted-printing support. Source drift, a new selected occurrence, changed accepted results, changed failure text, or changed rejection class blocks release.",
-        "semantic_rule": "The constructor spine and returned subterms are unchanged. The two constant alternatives are moved from the function argument into an ordinary match, which CakeML already distributes into equivalent clauses. Both accepted operators return the identical l and r values; every other operator or constructor shape still aborts with Match_failure. The file's sole sprintf call has one %s conversion and is replaced by prefix concatenation, yielding the same bytes for every string_of_num result.",
+        "scope_limit": "The pinned selected graph contains one let-binding or-pattern and one generated-name expression in a tuple-valued Varp constructor in parser_verbose.hl; the duplicate parser under azure/hol-light-nat is outside the selected graph. The tuple rewrite uses the same narrow name-splitting compatibility class already validated in the selected Candle parser while retaining the original increment-before-name order. These exact rewrites do not claim general let-binding or-pattern, formatted-printing, or tuple-constructor inference support. Source drift, a new selected occurrence, changed accepted results, changed failure text, or changed rejection class blocks release.",
+        "semantic_rule": "The constructor spine and returned subterms are unchanged. The two constant alternatives are moved from the function argument into an ordinary match, which CakeML already distributes into equivalent clauses. Both accepted operators return the identical l and r values; every other operator or constructor shape still aborts with Match_failure. The file's sole sprintf call has one %s conversion and is replaced by prefix concatenation, yielding the same bytes for every string_of_num result. The generated variable name is bound locally after the original counter increment and immediately before the tuple-valued Varp constructor. On this total string_of_int/concatenation path, the observable effectful order remains counter increment, name computation, then construction; the immutable pure dpty lookup may be evaluated in a different order. Successful results and the next counter value are identical.",
         "source_key": "flyspeck:text_formalization/general/parser_verbose.hl",
         "source_md5": "7ebe35d505dd4c5a4793bd55c49a5bce",
         "source_sha256": "c999e6428ff402a781db826ca3b4c3e4b7ad400c9f549b6e964b4798e4981ba5"
@@ -22727,6 +22734,7 @@
       "candle:candle/test_flyspeck_immediate_normalization.sh",
       "candle:candle/test_flyspeck_needs_directive.sh",
       "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
+      "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
       "candle:candle/test_flyspeck_set_make_normalization.sh",
       "candle:candle/test_flyspeck_toplevel_normalization.sh"
     ],

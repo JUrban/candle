@@ -511,6 +511,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_flyspeck_set_make_normalization.sh",
             contract["gates"],
         )
@@ -564,8 +568,9 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertEqual(
             [operation["line"] for operation in parser_orpattern["operations"]],
-            [36, 86],
+            [36, 86, 106],
         )
+        self.assertEqual(parser_orpattern["operation_count"], 3)
         trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
         self.assertEqual(
             trailing_semi["source_key"],

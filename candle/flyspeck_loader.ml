@@ -182,7 +182,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "general/parser_verbose.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/parser_verbose.hl",
-    "ca206581943b009ea815225c0ff9ad95");
+    "3209a4491e57ae1c43afd673be59d7e3");
    (Filename.concat candle_flyspeck_text_root "general/debug.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/debug.hl",

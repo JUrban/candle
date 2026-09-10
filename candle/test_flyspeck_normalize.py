@@ -236,7 +236,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(
             [operation["line"] for operation in parser_orpattern["operations"]],
-            [36, 86],
+            [36, 86, 106],
         )
         self.assertIn("string_of_num n", (
             parser_orpattern["operations"][0]["after"]
@@ -247,6 +247,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertNotIn("Varp((\"=\"|\"<=>\")", (
             parser_orpattern["operations"][1]["after"]
         ))
+        self.assertIn("let name = \"GEN%PVAR%\"", (
+            parser_orpattern["operations"][2]["after"]
+        ))
+        self.assertIn("Varp(name,dpty)", (
+            parser_orpattern["operations"][2]["after"]
+        ))
+        tuple_after = parser_orpattern["operations"][2]["after"]
+        self.assertLess(tuple_after.index("gcounter := count + 1"),
+                        tuple_after.index("let name = \"GEN%PVAR%\""))
+        self.assertLess(tuple_after.index("let name = \"GEN%PVAR%\""),
+                        tuple_after.index("Varp(name,dpty)"))
+        self.assertIn("tuple-valued Varp", parser_orpattern["semantic_rule"])
         trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
         self.assertEqual(trailing_semi["operations"][0]["line"], 22)
         self.assertIn('print_string "\\n");;', (
@@ -333,7 +345,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 44)
+        self.assertEqual(len(operation_ids), 45)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
