@@ -402,7 +402,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         structure_effect_lines = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
-            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52],
+            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52, 720],
             "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": [26, 27, 304],
             "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": [18],
             "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": [252, 821],
@@ -545,7 +545,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 106)
+        self.assertEqual(len(operation_ids), 107)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

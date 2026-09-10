@@ -8787,8 +8787,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "97f4e7c140faa648433b11a1dfed6d13",
-    "generated_source_sha256": "a580cca9fbe50552c8175fa5e6fdc509b34b9150bff6811c53724cf6439f2e74",
+    "generated_source_md5": "a5ee4a1ccfabb336db6aae95274c443c",
+    "generated_source_sha256": "fc8c37ea1152b2876319c7c5043a9da6fba4ce32122e8b035c28e5b36a7ed4a8",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14802,10 +14802,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "2bd140fe4f236223547bbc9131a26b89",
+      "md5": "875af4cec53b034d307d81376ebdc8e6",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "99510a0e51c4298bc4c6fb9bb3ca4121094a404f6a04336848d99645ee308e4c"
+      "sha256": "6e65c233dbc2fe1cbf62938a8fd7cd15243fe6be0789d68a7758f9ee934498df"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,10 +14886,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "90503e03cbd8d05b15374357783c66c7",
+      "md5": "7a9de35ed98ba9a35ea046b615f0a026",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "de1598674def3f1b701c225b6b90f037e323ff6a824a6542f6ec857c2b55b7da"
+      "sha256": "076f52853d8a70025cff139534b462b49bfe6306e0ab13412b45a483efb63a47"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18819,10 +18819,10 @@
       "execution_normalization": {
         "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 103047,
-        "normalized_md5": "b0385370f84a0fe4b33dc2f067958860",
-        "normalized_sha256": "4a158286ddd58f3e2540d1ff672a29cf71cd29f9144f4af7f8b4a2672f50e761",
-        "operation_count": 1
+        "normalized_bytes": 103055,
+        "normalized_md5": "dc8885bd34830d81ed0ff10e0f26aad8",
+        "normalized_sha256": "deeedd4c0cbd1e2dc9250c1513b37ea2566ddd0b10dcee4974c27f0ee2daf378",
+        "operation_count": 2
       },
       "md5": "2ad75dd712b5aa2f7d4cfa49b841ed98",
       "path": "text_formalization/leg/collect_geom.hl",
@@ -22195,7 +22195,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "f60bcd164c76a57c27bf07a8583c78f41cfdf860092466d5cd2640d70fe6eacb",
+    "contract_sha256": "851c220da069c22f468a40485fc92cd04b613519a858e6a1692d4d59c160e424",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22976,10 +22976,10 @@
       {
         "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 103047,
-        "normalized_md5": "b0385370f84a0fe4b33dc2f067958860",
-        "normalized_sha256": "4a158286ddd58f3e2540d1ff672a29cf71cd29f9144f4af7f8b4a2672f50e761",
-        "operation_count": 1,
+        "normalized_bytes": 103055,
+        "normalized_md5": "dc8885bd34830d81ed0ff10e0f26aad8",
+        "normalized_sha256": "deeedd4c0cbd1e2dc9250c1513b37ea2566ddd0b10dcee4974c27f0ee2daf378",
+        "operation_count": 2,
         "operations": [
           {
             "after": "let _ = prioritize_real();;",
@@ -22987,11 +22987,18 @@
             "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
             "kind": "exact_bytes_replace_once",
             "line": 52
+          },
+          {
+            "after": "let _ = MESON[]` (!x y z.\n",
+            "before": "MESON[]` (!x y z.\n",
+            "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001-MESON-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 720
           }
         ],
         "path": "text_formalization/leg/collect_geom.hl",
-        "scope_limit": "This hash-pinned replacement is confined to Collect_geom's one anonymous priority call. It is not a general structure-expression translation; the cumulative action and native effect/order oracle remain required.",
-        "semantic_rule": "The wildcard binding evaluates the identical prioritize_real call once at its original Collect_geom module-initialization position and discards the same unit result. Priority state, evaluation order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+        "scope_limit": "These hash-pinned replacements are confined to Collect_geom's documented anonymous priority call and MESON example. They are not a general structure-expression translation; the cumulative action and native effect/order oracle remain required.",
+        "semantic_rule": "Each wildcard binding evaluates its identical original anonymous structure expression once at the same Collect_geom module-initialization position and discards the same result: prioritize_real returns unit and the MESON example returns a theorem. Priority state, proof construction, evaluation order, effects, exceptions, definitions, theorem statements, and proof bodies are unchanged.",
         "source_key": "flyspeck:text_formalization/leg/collect_geom.hl",
         "source_md5": "2ad75dd712b5aa2f7d4cfa49b841ed98",
         "source_sha256": "483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b"
@@ -23637,8 +23644,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "2bd140fe4f236223547bbc9131a26b89",
-    "generated_source_sha256": "99510a0e51c4298bc4c6fb9bb3ca4121094a404f6a04336848d99645ee308e4c",
+    "generated_source_md5": "875af4cec53b034d307d81376ebdc8e6",
+    "generated_source_sha256": "6e65c233dbc2fe1cbf62938a8fd7cd15243fe6be0789d68a7758f9ee934498df",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

@@ -748,9 +748,9 @@
       "path": "text_formalization/leg/collect_geom.hl",
       "source_sha256": "483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b",
       "source_md5": "2ad75dd712b5aa2f7d4cfa49b841ed98",
-      "normalized_sha256": "4a158286ddd58f3e2540d1ff672a29cf71cd29f9144f4af7f8b4a2672f50e761",
-      "normalized_md5": "b0385370f84a0fe4b33dc2f067958860",
-      "normalized_bytes": 103047,
+      "normalized_sha256": "deeedd4c0cbd1e2dc9250c1513b37ea2566ddd0b10dcee4974c27f0ee2daf378",
+      "normalized_md5": "dc8885bd34830d81ed0ff10e0f26aad8",
+      "normalized_bytes": 103055,
       "operations": [
         {
           "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
@@ -758,10 +758,17 @@
           "line": 52,
           "before": "prioritize_real();;",
           "after": "let _ = prioritize_real();;"
+        },
+        {
+          "id": "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001-MESON-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 720,
+          "before": "MESON[]` (!x y z.\n",
+          "after": "let _ = MESON[]` (!x y z.\n"
         }
       ],
-      "semantic_rule": "The wildcard binding evaluates the identical prioritize_real call once at its original Collect_geom module-initialization position and discards the same unit result. Priority state, evaluation order, exceptions, definitions, theorem statements, and proofs are unchanged.",
-      "scope_limit": "This hash-pinned replacement is confined to Collect_geom's one anonymous priority call. It is not a general structure-expression translation; the cumulative action and native effect/order oracle remain required."
+      "semantic_rule": "Each wildcard binding evaluates its identical original anonymous structure expression once at the same Collect_geom module-initialization position and discards the same result: prioritize_real returns unit and the MESON example returns a theorem. Priority state, proof construction, evaluation order, effects, exceptions, definitions, theorem statements, and proof bodies are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Collect_geom's documented anonymous priority call and MESON example. They are not a general structure-expression translation; the cumulative action and native effect/order oracle remain required."
     },
     {
       "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",

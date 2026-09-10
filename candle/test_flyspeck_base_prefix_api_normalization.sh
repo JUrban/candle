@@ -94,6 +94,11 @@ if rg -Fq 'sort (<) (frees bod)' "$sphere"; then
   exit 1
 fi
 rg -Fq 'let _ = prioritize_real();;' "$collect_geom"
+rg -Fq 'let _ = MESON[]` (!x y z.' "$collect_geom"
+if rg '^MESON' "$collect_geom" | rg -Fq 'MESON[]` (!x y z.'; then
+  echo 'normalized collect_geom retained anonymous MESON example' >&2
+  exit 1
+fi
 [[ $(rg -Fc 'List.concat' "$hales") -eq 2 ]]
 [[ $(rg -Fc 'List.concat' "$truong") -eq 2 ]]
 if rg -Fq 'List.flatten' "$hales" "$truong"; then
@@ -179,7 +184,7 @@ fi
 
 (
   cd "$candle_runtime_cwd"
-  printf '#use "hol.ml";;\nlet candle_focused_text_root = "%s";;\nlet candle_focused_eval_original = "%s";;\nload_path := candle_focused_text_root :: !load_path;;\nCakeml.configureSourceIdentities [(candle_focused_eval_original,("flyspeck_eval_4.14.hl","0f625ae4acb1fa69d4add5957e0ff308"))];;\nCakeml.configureNormalizationOverlay [(candle_focused_eval_original,"%s")];;\nneeds "general/flyspeck_eval_4.14.hl";;\nlet process_to_string unixstring =\n  let p = Unix.open_process_in unixstring\n  and b = Buffer.create 64 in\n  let rec read () = Buffer.add_channel b p 1; read () in\n    try read () with End_of_file -> (Unix.close_process_in p; Buffer.contents b);;\nlet dest_goal gl = gl;;\nlet mk_goal (asl,w) = (asl,w);;\nlet print_as l str = Pretty.print_stdout (fun state (length,string) -> Pretty_imp.print_as state length string) (l,str);;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\nlet prove_by_refinement = Prove_by_refinement.prove_by_refinement;;\n#use "%s";;\n' \
+  printf '#use "hol.ml";;\nlet candle_focused_text_root = "%s";;\nlet candle_focused_eval_original = "%s";;\nload_path := candle_focused_text_root :: !load_path;;\nCakeml.configureSourceIdentities [(candle_focused_eval_original,("flyspeck_eval_4.14.hl","0f625ae4acb1fa69d4add5957e0ff308"))];;\nCakeml.configureNormalizationOverlay [(candle_focused_eval_original,"%s")];;\nneeds "general/flyspeck_eval_4.14.hl";;\nlet process_to_string unixstring =\n  let p = Unix.open_process_in unixstring\n  and b = Buffer.create 64 in\n  let rec read () = Buffer.add_channel b p 1; read () in\n    try read () with End_of_file -> (Unix.close_process_in p; Buffer.contents b);;\nlet dest_goal gl = gl;;\nlet mk_goal (asl,w) = (asl,w);;\nlet print_as l str = Pretty.print_stdout (fun state (length,string) -> Pretty_imp.print_as state length string) (l,str);;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\nlet prove_by_refinement = Prove_by_refinement.prove_by_refinement;;\n#use "%s";;\n' \
       "$flyspeck_root/text_formalization" \
       "$flyspeck_root/text_formalization/general/flyspeck_eval_4.14.hl" \
       "$flyspeck_eval" \
@@ -189,6 +194,7 @@ fi
       "$fixture_root/base_prefix_api_original_printf.ml" \
       "$fixture_root/base_prefix_api_original_rev.ml" \
       "$fixture_root/base_prefix_api_original_rebind_structure.ml" \
+      "$fixture_root/base_prefix_api_original_meson_structure.ml" \
       "$fixture_root/base_prefix_api_normalized.ml" \
       "$lib" \
       "$fixture_root/flyspeck_boundary_compatibility_normalized.ml" \
@@ -209,6 +215,8 @@ rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: Printf.fprintf' "$test_dir/candle.log"
 rg -Fq 'Value restriction violated' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: REBIND_CONV' "$test_dir/candle.log"
+rg -Fq 'Type mismatch between thm and (thm list -> term -> thm)' \
+  "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_all_forall = <fun>: term -> term' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_flatten_frees = <fun>: term list -> term list' \
@@ -218,6 +226,8 @@ rg -Fq 'val candle_flyspeck_normalized_output_filestring = <fun>: string -> stri
 rg -Fq 'val candle_flyspeck_build_and_report_fail_closed = true: bool' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_base_prefix_api_oracle_ok = true: bool' \
+  "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_normalized_meson_structure_ok = true: bool' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_boundary_compatibility_oracle_ok = true: bool' \
   "$test_dir/candle.log"
@@ -232,7 +242,7 @@ rg -Fq -- "- Finished loading $parse_ext" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $goal_printer" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $prove_refinement" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $tactics" "$test_dir/candle.log"
-if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 5 ]]; then
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 6 ]]; then
   tail -n 80 "$test_dir/candle.log" >&2
   exit 1
 fi

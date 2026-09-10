@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "5dce2ccfbfd9f19b735149a30893a3f2" then
+     "a5ee4a1ccfabb336db6aae95274c443c" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "c0c68c5147f1b0f577f6fa86014bb644" then
+     "875af4cec53b034d307d81376ebdc8e6" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -194,15 +194,15 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "general/hales_tactic.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/hales_tactic.hl",
-    "3945b87bbbcf00c8d4414542725feff9");
+    "d172f2eac8581aba7a1f322717856d0d");
    (Filename.concat candle_flyspeck_text_root "general/truong_tactic.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/truong_tactic.hl",
-    "1c9fd2e8252945b87d5a982d3ca4b446");
+    "9137be956d3b3b8bd451663cda82f264");
    (Filename.concat candle_flyspeck_text_root "leg/collect_geom.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/leg/collect_geom.hl",
-    "b0385370f84a0fe4b33dc2f067958860");
+    "dc8885bd34830d81ed0ff10e0f26aad8");
    (Filename.concat candle_flyspeck_text_root "jordan/refinement.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/refinement.hl",

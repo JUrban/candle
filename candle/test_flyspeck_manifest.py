@@ -597,7 +597,7 @@ class GeneratedManifestTests(unittest.TestCase):
             "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
         ):
             tactic = entries[entry_id]
-            self.assertEqual(tactic["operation_count"], 5)
+            self.assertEqual(tactic["operation_count"], 7)
             self.assertEqual(
                 sum("setify Term.(<)" in operation["after"]
                     for operation in tactic["operations"]),
@@ -614,7 +614,7 @@ class GeneratedManifestTests(unittest.TestCase):
         structure_effect_counts = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": 2,
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": 2,
             "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": 3,
             "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": 1,
             "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": 2,

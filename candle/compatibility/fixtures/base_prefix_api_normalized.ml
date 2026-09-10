@@ -26,6 +26,16 @@ let candle_flyspeck_build_and_report_fail_closed =
     message =
       "Candle Flyspeck: dynamic strictbuild build_and_report is disabled by the static manifest";;
 
+module Candle_flyspeck_normalized_meson_structure = struct
+  let candle_before = TRUTH;;
+  let _ = MESON[] `T`;;
+  let candle_after = TRUTH;;
+end;;
+
+let candle_flyspeck_normalized_meson_structure_ok =
+  Candle_flyspeck_normalized_meson_structure.candle_before = TRUTH &&
+  Candle_flyspeck_normalized_meson_structure.candle_after = TRUTH;;
+
 let candle_flyspeck_base_prefix_api_oracle_ok =
   let aty = mk_vartype "A" in
   let x = mk_var("x",aty) in

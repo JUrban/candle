@@ -32,7 +32,7 @@
 #flyspeck_needs "leg/muR_def.hl";;
 (* 013 selected=flyspeck:text_formalization/leg/enclosed_def.hl sha256=b4c23ee653be59c0ff653e159cabab9cb22b185e44cc8fcceeb1bae5c38bbcb1 *)
 #flyspeck_needs "leg/enclosed_def.hl";;
-(* 014 selected=flyspeck:text_formalization/leg/collect_geom.hl sha256=483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b normalization=PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001 normalized_sha256=4a158286ddd58f3e2540d1ff672a29cf71cd29f9144f4af7f8b4a2672f50e761 *)
+(* 014 selected=flyspeck:text_formalization/leg/collect_geom.hl sha256=483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b normalization=PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001 normalized_sha256=deeedd4c0cbd1e2dc9250c1513b37ea2566ddd0b10dcee4974c27f0ee2daf378 *)
 #flyspeck_needs "leg/collect_geom.hl";;
 (* 015 selected=flyspeck:text_formalization/leg/collect_geom2.hl sha256=39381f07853656cd59be5f8a866b27cf59ffadd3e482d59eeb3544b4e788bc77 *)
 #flyspeck_needs "leg/collect_geom2.hl";;
