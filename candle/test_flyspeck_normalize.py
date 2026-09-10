@@ -176,8 +176,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
         self.assertEqual(len(allocated["operations"]), 5)
         self.assertIn("qmap is a selected-graph non-use", allocated["scope_limit"])
-        unsuppress = entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]
-        self.assertIn("failwith", unsuppress["operations"][0]["after"])
+        print_types = entries["PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001"]
+        self.assertEqual(
+            [operation["line"] for operation in print_types["operations"]],
+            [34, 64, 82, 83, 85],
+        )
+        self.assertIn("failwith", print_types["operations"][0]["after"])
+        comparator = "Pair.compare String.compare Type.compare x y < 0"
+        self.assertIn(comparator, print_types["operations"][1]["after"])
+        self.assertEqual(
+            sum(operation["after"].count("setify atom_type_lt")
+                for operation in print_types["operations"]),
+            4,
+        )
+        self.assertIn("later numeric comparisons", print_types["scope_limit"])
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertIn("not (y = x)", relabel["operations"][0]["after"])
         self.assertIn("Hash_term.hash_of_term", relabel["operations"][1]["after"])
@@ -360,7 +372,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 50)
+        self.assertEqual(len(operation_ids), 54)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

@@ -74,8 +74,13 @@ preserve the original unchanged objects for `filter`, `partition`, `uniq`, and
 `Print_types.unsuppress`, so both normalized bindings fail explicitly if a
 missed dynamic or future call reaches them; no general compatibility is
 claimed.  Accordingly,
-`PROJECT-POINTER-S3-UNSUPPRESS-001` replaces its identity-sensitive binding by
-an explicit failure.  `PROJECT-POINTER-S3-RELABEL-001` confines structural
+`PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001` replaces the identity-sensitive
+`unsuppress` binding by an explicit failure.  It also supplies the explicit
+lexicographic `Pair.compare String.compare Type.compare` ordering required by
+Candle's `setify` at the four hash-pinned `(string * hol_type)` sites, without
+shadowing the numeric comparison used later in the file, and spells OCaml's
+`List.flatten` alias as Candle's available `List.concat`.
+`PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
 fingerprints must still validate its selected calls.
 `PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces strictbuild's dynamic
@@ -123,6 +128,8 @@ CANDLE_BINARY=/path/to/candle.sh \
 CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
   candle/test_flyspeck_identity_normalization.sh
 candle/test_flyspeck_parser_orpattern_normalization.sh ./candle.sh
+CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
+  candle/test_flyspeck_print_types_normalization.sh
 ```
 
 For the immediate-integer entry, pinned OCaml 4.14.1 binds `==` through `%eq` directly to

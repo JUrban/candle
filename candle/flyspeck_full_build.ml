@@ -10,7 +10,7 @@
 #flyspeck_needs "general/lib.hl";;
 (* 002 selected=flyspeck:text_formalization/general/flyspeck_lib.hl sha256=2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5 *)
 #flyspeck_needs "general/flyspeck_lib.hl";;
-(* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 normalization=PROJECT-POINTER-S3-UNSUPPRESS-001 normalized_sha256=cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de *)
+(* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 normalization=PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001 normalized_sha256=5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd *)
 #flyspeck_needs "general/print_types.hl";;
 (* 004 selected=flyspeck:text_formalization/general/sphere.hl sha256=3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32 *)
 #flyspeck_needs "general/sphere.hl";;

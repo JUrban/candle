@@ -30,15 +30,15 @@ NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
 EXPECTED_AUTHORITIES = {
     DESCRIPTOR_RELATIVE.as_posix(): {
         "bytes": 206541,
-        "sha256": "b3082b27994f70f5a5c630bf2d70e54f2896d79354b9639acc320bcc16942d02",
+        "sha256": "5f08d153dc1f716ccc19d0676924ec9169ef2cc6c359f389c229cf7176d71b94",
     },
     MANIFEST_RELATIVE.as_posix(): {
-        "bytes": 837529,
-        "sha256": "7a1cb45bc6f87fbc7eadd3a1b83977fe4cb6e567eab7467a4679d29aebbf0de9",
+        "bytes": 840245,
+        "sha256": "ed352c40e1addecc25dd158eefc1cb5ad954533378c4ad495fdd4ce98c58c6ba",
     },
     NORMALIZATION_RELATIVE.as_posix(): {
-        "bytes": 58632,
-        "sha256": "499288e8c53de3dbbfd9be46f01e1318f206796148b935ce35bb230afe9c5fb2",
+        "bytes": 61219,
+        "sha256": "c80a8cc917fc59be9c0228bc8bd92ce150dc839474debfb94813d16bd1dae030",
     },
 }
 EXPECTED_SOURCE_COUNT = 400
@@ -68,10 +68,10 @@ EXPECTED_ORDERED_PATH_SHA256 = (
     "019b8eef7c4792314e7cbc9239d142c0e3252692426727a5589bd6e8103115fd"
 )
 EXPECTED_ORDERED_EFFECTIVE_SHA256 = (
-    "58fa490c9ea763a9072a3787a377ea7020bf40b821c9a4a3b5163dd74ffde76a"
+    "be3d25080be18b7c1579bc4004f92ad83d7be7674fc9af5c88c220533edbac9c"
 )
 EXPECTED_ORDERED_PREPARED_SHA256 = (
-    "dfca5e6d5557228f1844fe2d99f0202e3084645877707eeee67de9bb68ff3d18"
+    "02aba41ec2dd8fe28ee351493560c74136c18d083f739185d85afc4b461b07d7"
 )
 EXPECTED_QUOTATION_COUNT = 318813
 EXPECTED_QUOTATION_FILE_COUNT = 344

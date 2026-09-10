@@ -8775,8 +8775,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "956f1f27a4dc8e68db3459759934b68d",
-    "generated_source_sha256": "2591fd40477b972ce350e4c4a6f3f61be2200bd3f8c3baa292f7a5509bf46a71",
+    "generated_source_md5": "7a27e53c80a2fa23d3ec943ddc23b5cf",
+    "generated_source_sha256": "dd7fca6a3b19e7c6e5e5d99b50acb2ce64d4e4538dd8010880a3651e6182d1cf",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11520,7 +11520,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 56753,
+      "bytes": 56760,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14790,10 +14790,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "0d5627b78c71661520fb61da08397ed6",
+      "md5": "f970f4a1eb8c296052170e1b7f379626",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "dfdc6b549844c886a770eaecd33e15a06bd3421cf56467c3108933da64861402"
+      "sha256": "11c63e4c2467e5f7a57bd943d4629be9da0ea1bb64362a3ef9b2afb3b1b950d8"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14874,10 +14874,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "5c026f67bd9107566154e1fd713beb84",
+      "md5": "9492665dd159c938c76b2342bdafe0cf",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "bc6cd0655200905595132916cd1440f503e7fce29a5fe6bcad73d33e541150ee"
+      "sha256": "e5ea2bee320a61504bf00935df0dcaad35c6dca5a66bdec560b0119289b25150"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18259,12 +18259,12 @@
       "bytes": 3116,
       "dependencies": [],
       "execution_normalization": {
-        "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+        "id": "PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3140,
-        "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
-        "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
-        "operation_count": 1
+        "normalized_bytes": 3318,
+        "normalized_md5": "937774e3558ecfe48afda2f7f54dc5b9",
+        "normalized_sha256": "5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd",
+        "operation_count": 5
       },
       "md5": "d004cc811172daa7461e746516a215e6",
       "path": "text_formalization/general/print_types.hl",
@@ -22063,7 +22063,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "499288e8c53de3dbbfd9be46f01e1318f206796148b935ce35bb230afe9c5fb2",
+    "contract_sha256": "c80a8cc917fc59be9c0228bc8bd92ce150dc839474debfb94813d16bd1dae030",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22155,24 +22155,52 @@
         "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865"
       },
       {
-        "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+        "id": "PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3140,
-        "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
-        "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
-        "operation_count": 1,
+        "normalized_bytes": 3318,
+        "normalized_md5": "937774e3558ecfe48afda2f7f54dc5b9",
+        "normalized_sha256": "5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd",
+        "operation_count": 5,
         "operations": [
           {
             "after": "  let unsuppress _ = failwith \"Candle Flyspeck: unsuppress requires physical string identity\"",
             "before": "  let unsuppress s = suppressed := List.filter ((!=) s) (!suppressed)",
-            "id": "PROJECT-POINTER-S3-UNSUPPRESS-001-FAIL-CLOSED",
+            "id": "PROJECT-PRINT-TYPES-S3-UNSUPPRESS-001-FAIL-CLOSED",
             "kind": "exact_bytes_replace_once",
             "line": 34
+          },
+          {
+            "after": "  let atom_type_lt x y =\n    Pair.compare String.compare Type.compare x y < 0\n\n  let setify_types tm =\n    ((sort atom_type_lt) o (setify atom_type_lt) o get_term_types) tm ",
+            "before": "  let setify_types tm = ((sort (<)) o setify o get_term_types) tm ",
+            "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-DEFINE",
+            "kind": "exact_bytes_replace_once",
+            "line": 64
+          },
+          {
+            "after": "    let vt = ((sort atom_type_lt) o (setify atom_type_lt)) (get_var_types tm) in",
+            "before": "    let vt = ((sort (<)) o setify) (get_var_types tm) in",
+            "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-VARIABLES",
+            "kind": "exact_bytes_replace_once",
+            "line": 82
+          },
+          {
+            "after": "    let ct = ((sort atom_type_lt) o (setify atom_type_lt)) (get_const_types tm @ vt) in",
+            "before": "    let ct = ((sort (<)) o setify) (get_const_types tm @ vt) in",
+            "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-CONSTANTS",
+            "kind": "exact_bytes_replace_once",
+            "line": 83
+          },
+          {
+            "after": "    let ov = ((sort atom_type_lt) o (setify atom_type_lt)) (List.concat ( map ft vt )) in",
+            "before": "    let ov = ((sort (<)) o setify) (List.flatten ( map ft vt )) in",
+            "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-OVERLOADS",
+            "kind": "exact_bytes_replace_once",
+            "line": 85
           }
         ],
         "path": "text_formalization/general/print_types.hl",
-        "scope_limit": "This is a selected-graph non-use refinement, not general compatibility for Print_types.unsuppress; source/hash drift or any observed call keeps the release gate open.",
-        "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation.",
+        "scope_limit": "The unsuppress change is a selected-graph non-use refinement, not general compatibility for physical string identity. The comparator is named locally rather than redefining (<), because later numeric comparisons must retain their existing meaning. It is used only at the four pinned atom-type setify/sort sites and does not authorize comparison for any other representation. The List.concat spelling is limited to the one pinned List.flatten call. Source/hash drift, any observed unsuppress call, changed duplicate/distinct/order/concatenation behavior, or failure of the complete normalized Print_types load keeps the release gate open.",
+        "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation. Candle has no polymorphic comparison and makes setify's ordering argument explicit. Every setify and adjacent sort in this file operates on the same (string * hol_type) atom-type representation. Pair.compare String.compare Type.compare supplies the lexicographic structural order for that exact representation, matching the compatibility pattern in Candle preterm.ml and preserving duplicate removal, distinctness, and deterministic output order. OCaml List.flatten is an alias of List.concat; the pinned flatten call is expressed with Candle's available List.concat binding without changing list order or contents.",
         "source_key": "flyspeck:text_formalization/general/print_types.hl",
         "source_md5": "d004cc811172daa7461e746516a215e6",
         "source_sha256": "193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6"
@@ -22771,6 +22799,7 @@
       "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
       "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
+      "candle:candle/test_flyspeck_print_types_normalization.sh",
       "candle:candle/test_flyspeck_set_make_normalization.sh",
       "candle:candle/test_flyspeck_toplevel_normalization.sh"
     ],
@@ -22846,8 +22875,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "0d5627b78c71661520fb61da08397ed6",
-    "generated_source_sha256": "dfdc6b549844c886a770eaecd33e15a06bd3421cf56467c3108933da64861402",
+    "generated_source_md5": "f970f4a1eb8c296052170e1b7f379626",
+    "generated_source_sha256": "11c63e4c2467e5f7a57bd943d4629be9da0ea1bb64362a3ef9b2afb3b1b950d8",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

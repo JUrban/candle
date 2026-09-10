@@ -519,6 +519,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_flyspeck_print_types_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_flyspeck_set_make_normalization.sh",
             contract["gates"],
         )
@@ -561,9 +565,20 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(entry["operation_count"], 3)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
+        print_types = entries["PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001"]
+        self.assertEqual(
+            print_types["source_key"],
+            "flyspeck:text_formalization/general/print_types.hl",
+        )
+        self.assertEqual(
+            [operation["line"] for operation in print_types["operations"]],
+            [34, 64, 82, 83, 85],
+        )
+        self.assertEqual(print_types["operation_count"], 5)
+        self.assertIn("failwith", print_types["operations"][0]["after"])
         self.assertIn(
-            "failwith",
-            entries["PROJECT-POINTER-S3-UNSUPPRESS-001"]["operations"][0]["after"],
+            "Pair.compare String.compare Type.compare",
+            print_types["operations"][1]["after"],
         )
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(

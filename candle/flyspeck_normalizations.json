@@ -88,25 +88,53 @@
       "scope_limit": "qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
     },
     {
-      "id": "PROJECT-POINTER-S3-UNSUPPRESS-001",
+      "id": "PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001",
       "source_key": "flyspeck:text_formalization/general/print_types.hl",
       "path": "text_formalization/general/print_types.hl",
       "source_sha256": "193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6",
       "source_md5": "d004cc811172daa7461e746516a215e6",
-      "normalized_sha256": "cb6ab239f202554f204188a3feac089cd2cc69645088e0d95659aeabb304b6de",
-      "normalized_md5": "221e52fdf51a79f1910c55a9ba886be3",
-      "normalized_bytes": 3140,
+      "normalized_sha256": "5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd",
+      "normalized_md5": "937774e3558ecfe48afda2f7f54dc5b9",
+      "normalized_bytes": 3318,
       "operations": [
         {
-          "id": "PROJECT-POINTER-S3-UNSUPPRESS-001-FAIL-CLOSED",
+          "id": "PROJECT-PRINT-TYPES-S3-UNSUPPRESS-001-FAIL-CLOSED",
           "kind": "exact_bytes_replace_once",
           "line": 34,
           "before": "  let unsuppress s = suppressed := List.filter ((!=) s) (!suppressed)",
           "after": "  let unsuppress _ = failwith \"Candle Flyspeck: unsuppress requires physical string identity\""
+        },
+        {
+          "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-DEFINE",
+          "kind": "exact_bytes_replace_once",
+          "line": 64,
+          "before": "  let setify_types tm = ((sort (<)) o setify o get_term_types) tm ",
+          "after": "  let atom_type_lt x y =\n    Pair.compare String.compare Type.compare x y < 0\n\n  let setify_types tm =\n    ((sort atom_type_lt) o (setify atom_type_lt) o get_term_types) tm "
+        },
+        {
+          "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-VARIABLES",
+          "kind": "exact_bytes_replace_once",
+          "line": 82,
+          "before": "    let vt = ((sort (<)) o setify) (get_var_types tm) in",
+          "after": "    let vt = ((sort atom_type_lt) o (setify atom_type_lt)) (get_var_types tm) in"
+        },
+        {
+          "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-CONSTANTS",
+          "kind": "exact_bytes_replace_once",
+          "line": 83,
+          "before": "    let ct = ((sort (<)) o setify) (get_const_types tm @ vt) in",
+          "after": "    let ct = ((sort atom_type_lt) o (setify atom_type_lt)) (get_const_types tm @ vt) in"
+        },
+        {
+          "id": "PROJECT-PRINT-TYPES-S3-ATOM-ORDER-001-OVERLOADS",
+          "kind": "exact_bytes_replace_once",
+          "line": 85,
+          "before": "    let ov = ((sort (<)) o setify) (List.flatten ( map ft vt )) in",
+          "after": "    let ov = ((sort atom_type_lt) o (setify atom_type_lt)) (List.concat ( map ft vt )) in"
         }
       ],
-      "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation.",
-      "scope_limit": "This is a selected-graph non-use refinement, not general compatibility for Print_types.unsuppress; source/hash drift or any observed call keeps the release gate open."
+      "semantic_rule": "No identifier use of unsuppress exists outside its signature and definition in the exact selected source graph. The normalized binding therefore preserves all selected accepted runs and fails closed if a missed dynamic or future call reaches the identity-sensitive operation. Candle has no polymorphic comparison and makes setify's ordering argument explicit. Every setify and adjacent sort in this file operates on the same (string * hol_type) atom-type representation. Pair.compare String.compare Type.compare supplies the lexicographic structural order for that exact representation, matching the compatibility pattern in Candle preterm.ml and preserving duplicate removal, distinctness, and deterministic output order. OCaml List.flatten is an alias of List.concat; the pinned flatten call is expressed with Candle's available List.concat binding without changing list order or contents.",
+      "scope_limit": "The unsuppress change is a selected-graph non-use refinement, not general compatibility for physical string identity. The comparator is named locally rather than redefining (<), because later numeric comparisons must retain their existing meaning. It is used only at the four pinned atom-type setify/sort sites and does not authorize comparison for any other representation. The List.concat spelling is limited to the one pinned List.flatten call. Source/hash drift, any observed unsuppress call, changed duplicate/distinct/order/concatenation behavior, or failure of the complete normalized Print_types load keeps the release gate open."
     },
     {
       "id": "PROJECT-POINTER-S3-RELABEL-001",
