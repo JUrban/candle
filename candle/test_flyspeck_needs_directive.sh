@@ -3,6 +3,7 @@ set -euo pipefail
 
 candle_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 candle_binary=${CANDLE_BINARY:-"$candle_root/candle.sh"}
+development_runtime=${CANDLE_DEVELOPMENT_RUNTIME_ROOT:-}
 fixture_prefix=candle/compatibility/fixtures
 action_ok_md5=$(md5sum "$candle_root/$fixture_prefix/flyspeck_needs_action_ok.ml" | cut -d' ' -f1)
 action_eval_fail_md5=$(md5sum "$candle_root/$fixture_prefix/flyspeck_needs_action_eval_fail.ml" | cut -d' ' -f1)
@@ -14,12 +15,34 @@ cleanup() {
 }
 trap cleanup EXIT
 
+runtime_cwd=$candle_root
+candle_arguments=()
+if [[ -n $development_runtime ]]; then
+  [[ -x $development_runtime/cake &&
+     -f $development_runtime/candle_boot.ml &&
+     -f $development_runtime/config_enc_str.txt ]] || {
+    printf 'invalid Candle development runtime: %s\n' \
+      "$development_runtime" >&2
+    exit 1
+  }
+  runtime_cwd=$test_dir/runtime
+  mkdir "$runtime_cwd"
+  ln -s -- "$candle_root/candle" "$runtime_cwd/candle"
+  ln -s -- "$development_runtime/candle_boot.ml" \
+    "$runtime_cwd/candle_boot.ml"
+  ln -s -- "$development_runtime/config_enc_str.txt" \
+    "$runtime_cwd/config_enc_str.txt"
+  candle_binary=$development_runtime/cake
+  candle_arguments=(--candle)
+fi
+
 run_candle() {
   local name=$1
   shift
   (
-    cd "$candle_root"
-    timeout 90 "$candle_binary" >"$test_dir/$name.log" 2>&1 "$@"
+    cd "$runtime_cwd"
+    timeout 90 "$candle_binary" "${candle_arguments[@]}" \
+      >"$test_dir/$name.log" 2>&1 "$@"
   )
 }
 
