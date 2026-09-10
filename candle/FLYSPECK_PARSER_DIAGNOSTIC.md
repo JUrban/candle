@@ -37,16 +37,16 @@ its 400 inputs are an exact set-equal partition of the authenticated manifest.
 `materialize --profile all-inventory` and `run --profile all-inventory` require
 all 400 inputs to be ready and launch exactly one fresh parser process per
 input; there is no accepted partial profile. Materialization of the committed
-authorities produces 379 byte-identical inputs and 21 normalized inputs. The
-normalization contract accounts for all 726 classified loader sites.
+authorities produces 376 byte-identical inputs and 24 normalized inputs. The
+normalization contract accounts for all 725 classified loader sites.
 
 Raw HOL Light source is not the parser input used by Candle.  The loader's
 `Lexer.scan` emits `T_quote` for a backtick body, `Lexer.string_of_token`
 rewrites that token through `Cakeml.unquote`, and `system.ml` installs
 `quotexpander`.  The diagnostic therefore reproduces that exact byte
 transformation after loader-line masking.  The authenticated 400-input corpus
-contains 318,855 loader-visible quotations in 344 sources: 318,180 term
-quotations and 675 type quotations.  The current corpus has no qproof or
+contains 318,813 loader-visible quotations in 344 sources: 318,148 term
+quotations and 665 type quotations.  The current corpus has no qproof or
 string-quotation case.  The 20-input pilot has 104 term quotations in three
 sources.  Empty or unterminated quotations and lexically unclosed comments,
 strings, or character literals fail closed.

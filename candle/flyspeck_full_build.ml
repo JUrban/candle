@@ -12,11 +12,11 @@
 #flyspeck_needs "general/flyspeck_lib.hl";;
 (* 003 selected=flyspeck:text_formalization/general/print_types.hl sha256=193abcdff7657f421398203c67e67d32ce5204ce4ba5a04adad53f37fd161ae6 normalization=PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001 normalized_sha256=5135cd5b24a837a94ba49fab5eb54e3bbd8c2ed47c9198dc80e9bd6e73c886dd *)
 #flyspeck_needs "general/print_types.hl";;
-(* 004 selected=flyspeck:text_formalization/general/sphere.hl sha256=3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32 *)
+(* 004 selected=flyspeck:text_formalization/general/sphere.hl sha256=3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32 normalization=PROJECT-SPHERE-S3-TERM-ORDER-001 normalized_sha256=0d19b68571baea91aa63014c4cec54c6ef26356e14004179d7fb3b8bbe42f51e *)
 #flyspeck_needs "general/sphere.hl";;
-(* 005 selected=flyspeck:text_formalization/general/hales_tactic.hl sha256=2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408 *)
+(* 005 selected=flyspeck:text_formalization/general/hales_tactic.hl sha256=2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408 normalization=PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=634a120123d4851bcf188aed0ea63e81acd7ff76cdc3e03913288861c27bc258 *)
 #flyspeck_needs "general/hales_tactic.hl";;
-(* 006 selected=flyspeck:text_formalization/general/truong_tactic.hl sha256=5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548 *)
+(* 006 selected=flyspeck:text_formalization/general/truong_tactic.hl sha256=5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548 normalization=PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=1fd0228f3b341582d2b614417f98741c64b890ae8366ff9234bf2ac6f143f52c *)
 #flyspeck_needs "general/truong_tactic.hl";;
 (* 007 selected=flyspeck:text_formalization/leg/basics.hl sha256=76c152b020418c2f96652f6315db885640239443aeab1d9ed4bb7e29338bafe1 *)
 #flyspeck_needs "leg/basics.hl";;

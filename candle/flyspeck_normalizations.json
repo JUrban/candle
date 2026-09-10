@@ -318,9 +318,9 @@
       "path": "text_formalization/build/strictbuild.hl",
       "source_sha256": "c5238451804b274b8feab8ce9a60eb481a13e1015c3a3d9ad2037beba5e42c6a",
       "source_md5": "7d1e3729a05042883713cda2c9fad1f1",
-      "normalized_sha256": "e8678c01ebb0ddcd647b0155f05caee931be482161f1d34319c1c6cb3fdf74c3",
-      "normalized_md5": "35aa60993c762f45e08e7145e9da2bad",
-      "normalized_bytes": 9134,
+      "normalized_sha256": "c8bcaa06303ffcb5febb76207284b991d9168765c9cf2c29fc92282244715a5d",
+      "normalized_md5": "05ec78d1d0efad0c1f3554ffd47b94d0",
+      "normalized_bytes": 8964,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-FAIL-CLOSED",
@@ -356,10 +356,94 @@
           "line": 168,
           "before": "let reneeds s = loadt (flyspeckpath s);;",
           "after": "let reneeds (s:string) : unit =\n  failwith (\"Candle Flyspeck: dynamic strictbuild reneeds is disabled by the static manifest: \"^s);;"
+        },
+        {
+          "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001-BUILD-REPORT-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 244,
+          "before": "let build_and_report() = \n  let s = try\n    (let _ = map flyspeck_needs Build.build_sequence_main_statement in  \"full load completed\")\n  with Failure t -> t  in\n  let oc = open_out_gen [Open_append;Open_text] 436 (flyspeckpath \"logs/log.txt\") in\n  (Stdlib.output_string oc (build_report s); close_out oc);;",
+          "after": "let build_and_report () : unit =\n  failwith \"Candle Flyspeck: dynamic strictbuild build_and_report is disabled by the static manifest\";;"
         }
       ],
-      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, or reneeds chains; their normalized bindings fail explicitly if that assumption is wrong. No Toploop shim or successful no-op is installed.",
-      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file or dynamic loadt compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, or caller drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+      "semantic_rule": "The exact direct route evaluates strictbuild only to establish its base environment and then executes the manifest-generated #flyspeck_needs sequence. Its three selected standalone loadt phrases become exact always-evaluate source actions that commit the original logical identity after success and do not neutralize state. No selected accepted action calls strictbuild's dynamic use_file_b, needs, reneeds, or build_and_report chains; their normalized bindings fail explicitly if that assumption is wrong. build_and_report cannot be mapped to Candle's truncating open_out without changing the original append and permission semantics, so the exact definition-only non-use is made explicit instead. No Toploop or open_out_gen shim or successful no-op is installed.",
+      "scope_limit": "This is a fail-closed selected-static-route refinement, not general Toploop.use_file, dynamic loadt, or append-mode output compatibility. The full run must prove the disabled bindings are not called; the exact source-action order, success observations, loaded-file identities, and semantic fingerprints remain promotion gates. Source, action-order, caller, or build_and_report occurrence drift blocks release, and a two-phase transactional action remains the fallback if non-use is disproved."
+    },
+    {
+      "id": "PROJECT-SPHERE-S3-TERM-ORDER-001",
+      "source_key": "flyspeck:text_formalization/general/sphere.hl",
+      "path": "text_formalization/general/sphere.hl",
+      "source_sha256": "3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32",
+      "source_md5": "542740b87edf39bfe0faaa5005e9f7eb",
+      "normalized_sha256": "0d19b68571baea91aa63014c4cec54c6ef26356e14004179d7fb3b8bbe42f51e",
+      "normalized_md5": "1e134647152103f755a0884313b3ad72",
+      "normalized_bytes": 36167,
+      "operations": [
+        {
+          "id": "PROJECT-SPHERE-S3-TERM-ORDER-001-ALL-FORALL",
+          "kind": "exact_bytes_replace_once",
+          "line": 33,
+          "before": "sort (<) (frees bod)",
+          "after": "sort Term.(<) (frees bod)"
+        }
+      ],
+      "semantic_rule": "Candle requires an explicit element comparator where pinned native OCaml inferred polymorphic comparison. Term.(<) is Candle's established term ordering and is already used at the same sort-over-frees shape in current Candle lists.ml. Only the ordering argument changes; the free-term input, quantifier constructor, fold order, theorem term, and all proof operations remain unchanged.",
+      "scope_limit": "This is the one hash-pinned Sphere.all_forall term-sort site, not general polymorphic comparison compatibility. The focused exact-shape negative/positive oracle and a complete cumulative run remain required."
+    },
+    {
+      "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
+      "source_key": "flyspeck:text_formalization/general/hales_tactic.hl",
+      "path": "text_formalization/general/hales_tactic.hl",
+      "source_sha256": "2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408",
+      "source_md5": "7a6198ddba9748c820ec5d4bbd07afa4",
+      "normalized_sha256": "634a120123d4851bcf188aed0ea63e81acd7ff76cdc3e03913288861c27bc258",
+      "normalized_md5": "f5155d756ee2da58d1957f8892a60517",
+      "normalized_bytes": 16481,
+      "operations": [
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
+          "kind": "exact_bytes_replace_once",
+          "line": 103,
+          "before": "List.flatten (map frees tms)",
+          "after": "List.concat (map frees tms)"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001-TERM-LIST-FREES",
+          "kind": "exact_bytes_replace_once",
+          "line": 142,
+          "before": "List.flatten(map frees tml)",
+          "after": "List.concat(map frees tml)"
+        }
+      ],
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order, duplicates, term identity, surrounding setification, and tactic behavior.",
+      "scope_limit": "This is limited to the two hash-pinned Hales_tactic free-term concatenations. It does not add a general List.flatten API or change unary setify sites, whose selected execution context is established by the preceding Flyspeck general/lib action."
+    },
+    {
+      "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
+      "source_key": "flyspeck:text_formalization/general/truong_tactic.hl",
+      "path": "text_formalization/general/truong_tactic.hl",
+      "source_sha256": "5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548",
+      "source_md5": "a3005daec1a8dd59200622ff3cf85779",
+      "normalized_sha256": "1fd0228f3b341582d2b614417f98741c64b890ae8366ff9234bf2ac6f143f52c",
+      "normalized_md5": "1f369a87dc5dcbc4c1b75eae67cb4afb",
+      "normalized_bytes": 18286,
+      "operations": [
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
+          "kind": "exact_bytes_replace_once",
+          "line": 89,
+          "before": "List.flatten (map frees tms)",
+          "after": "List.concat (map frees tms)"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001-TERM-LIST-FREES",
+          "kind": "exact_bytes_replace_once",
+          "line": 133,
+          "before": "List.flatten(map frees tml)",
+          "after": "List.concat(map frees tml)"
+        }
+      ],
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order, duplicates, term identity, surrounding setification, and tactic behavior.",
+      "scope_limit": "This is limited to the two hash-pinned Truong_tactic free-term concatenations. It does not add a general List.flatten API or change unary setify sites, whose selected execution context is established by the preceding Flyspeck general/lib action."
     },
     {
       "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",

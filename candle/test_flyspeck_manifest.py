@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 21)
+        self.assertEqual(contract["entry_count"], 24)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -617,7 +617,8 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         non_use = contract["selected_graph_non_use_bindings"]
         self.assertEqual(
-            non_use["identifiers"], ["qmap", "unsuppress", "use_file_b"],
+            non_use["identifiers"],
+            ["build_and_report", "qmap", "unsuppress", "use_file_b"],
         )
         self.assertEqual(
             [
@@ -627,6 +628,7 @@ class GeneratedManifestTests(unittest.TestCase):
             [
                 ("use_file_b", "definition"),
                 ("use_file_b", "deferred-body"),
+                ("build_and_report", "definition"),
                 ("qmap", "definition"),
                 ("qmap", "recursive-body"),
                 ("unsuppress", "signature"),
@@ -803,8 +805,19 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 20", source,
+            "List.length candle_flyspeck_normalized_sources <> 23", source,
         )
+        normalization_entries = self.payload[
+            "source_normalization_contract"
+        ]["entries"]
+        selected_normalizations = [
+            entry for entry in normalization_entries
+            if entry["id"]
+            != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
+        ]
+        self.assertEqual(len(selected_normalizations), 23)
+        for entry in selected_normalizations:
+            self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)
         self.assertIn("787e8244a0350c237a406f7e91fb97b7", source)
         self.assertNotIn("general/update_database_310.ml", source)

@@ -142,10 +142,13 @@ TOPLEVEL_CONSUMER_SITE_REVIEWS = (
     ("flyspeck:text_formalization/general/update_database_400.ml", 332, "theorems", "deferred-body", "selected-4.x"),
     ("flyspeck:text_formalization/general/update_database_400.ml", 338, "update_database", "top-level-call", "selected-4.x"),
 )
-NORMALIZATION_NONUSE_IDENTIFIERS = {"qmap", "unsuppress", "use_file_b"}
+NORMALIZATION_NONUSE_IDENTIFIERS = {
+    "build_and_report", "qmap", "unsuppress", "use_file_b",
+}
 NORMALIZATION_NONUSE_SITE_REVIEWS = (
     ("flyspeck:text_formalization/build/strictbuild.hl", 86, "use_file_b", "definition"),
     ("flyspeck:text_formalization/build/strictbuild.hl", 97, "use_file_b", "deferred-body"),
+    ("flyspeck:text_formalization/build/strictbuild.hl", 244, "build_and_report", "definition"),
     ("flyspeck:text_formalization/general/lib.hl", 474, "qmap", "definition"),
     ("flyspeck:text_formalization/general/lib.hl", 476, "qmap", "recursive-body"),
     ("flyspeck:text_formalization/general/print_types.hl", 21, "unsuppress", "signature"),
@@ -1899,7 +1902,8 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
             ),
             "scope_limit": (
                 "the rules are site-specific; qmap, unsuppress, strictbuild's "
-                "use_file_b, and Hol_pervasives.needs are selected-static-route "
+                "use_file_b and build_and_report, and Hol_pervasives.needs are "
+                "selected-static-route "
                 "non-use refinements that fail closed on any call; the LP rules "
                 "require the exact prepared-input "
                 "contract and static 39-file inventory; the Serialization.St rule "

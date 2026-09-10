@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 21)
+        self.assertEqual(len(self.contract["entries"]), 24)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -261,6 +261,31 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("dynamic strictbuild reneeds is disabled", (
             strictbuild["operations"][4]["after"]
         ))
+        self.assertIn("dynamic strictbuild build_and_report is disabled", (
+            strictbuild["operations"][5]["after"]
+        ))
+        self.assertIn("open_out_gen shim", strictbuild["semantic_rule"])
+        sphere = entries["PROJECT-SPHERE-S3-TERM-ORDER-001"]
+        self.assertEqual(
+            [operation["line"] for operation in sphere["operations"]], [33],
+        )
+        self.assertIn("sort Term.(<) (frees bod)", (
+            sphere["operations"][0]["after"]
+        ))
+        for entry_id, lines in (
+            ("PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001", [103, 142]),
+            ("PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001", [89, 133]),
+        ):
+            tactic = entries[entry_id]
+            self.assertEqual(
+                [operation["line"] for operation in tactic["operations"]],
+                lines,
+            )
+            self.assertTrue(all(
+                "List.concat" in operation["after"]
+                and "List.flatten" not in operation["after"]
+                for operation in tactic["operations"]
+            ))
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(
             [operation["line"] for operation in parser_orpattern["operations"]],
@@ -388,7 +413,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 56)
+        self.assertEqual(len(operation_ids), 62)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

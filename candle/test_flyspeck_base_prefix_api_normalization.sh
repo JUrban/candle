@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+candle_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+candle_binary=${CANDLE_BINARY:-"$candle_root/candle/build/cake"}
+flyspeck_root=${FLYSPECK_ROOT:-${1:-}}
+if [[ -z "$flyspeck_root" || ! -d "$flyspeck_root" ]]; then
+  echo "usage: FLYSPECK_ROOT=/exact/source/root $0" >&2
+  exit 1
+fi
+flyspeck_root=$(realpath -- "$flyspeck_root")
+fixture_root="$candle_root/candle/compatibility/fixtures"
+test_dir=$(mktemp -d /tmp/candle-flyspeck-base-prefix-api.XXXXXX)
+cleanup() {
+  find "$test_dir" -depth -delete 2>/dev/null || true
+}
+trap cleanup EXIT
+overlay="$test_dir/overlay"
+cd "$candle_root"
+
+python3 candle/flyspeck_normalize.py \
+  --flyspeck-root "$flyspeck_root" --write "$overlay" \
+  >"$test_dir/normalization.log"
+
+strictbuild="$overlay/text_formalization/build/strictbuild.hl"
+sphere="$overlay/text_formalization/general/sphere.hl"
+hales="$overlay/text_formalization/general/hales_tactic.hl"
+truong="$overlay/text_formalization/general/truong_tactic.hl"
+
+rg -Fq 'dynamic strictbuild build_and_report is disabled by the static manifest' \
+  "$strictbuild"
+if rg -Fq 'open_out_gen' "$strictbuild"; then
+  echo 'normalized strictbuild retained unsupported open_out_gen' >&2
+  exit 1
+fi
+[[ $(rg -Fc 'sort Term.(<) (frees bod)' "$sphere") -eq 1 ]]
+if rg -Fq 'sort (<) (frees bod)' "$sphere"; then
+  echo 'normalized sphere retained implicit term comparison' >&2
+  exit 1
+fi
+[[ $(rg -Fc 'List.concat' "$hales") -eq 2 ]]
+[[ $(rg -Fc 'List.concat' "$truong") -eq 2 ]]
+if rg -Fq 'List.flatten' "$hales" "$truong"; then
+  echo 'normalized tactic source retained unavailable List.flatten' >&2
+  exit 1
+fi
+
+printf '#use "hol.ml";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n' \
+    "$fixture_root/base_prefix_api_original_sphere.ml" \
+    "$fixture_root/base_prefix_api_original_flatten.ml" \
+    "$fixture_root/base_prefix_api_normalized.ml" |
+  timeout 300 "$candle_binary" --candle \
+    >"$test_dir/candle.log" 2>&1
+
+rg -Fq 'Type mismatch between int list -> int list and term list' \
+  "$test_dir/candle.log"
+rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_normalized_all_forall = <fun>: term -> term' \
+  "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_normalized_flatten_frees = <fun>: term list -> term list' \
+  "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_build_and_report_fail_closed = true: bool' \
+  "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_base_prefix_api_oracle_ok = true: bool' \
+  "$test_dir/candle.log"
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 2 ]]; then
+  tail -n 80 "$test_dir/candle.log" >&2
+  exit 1
+fi
+
+printf 'PASS: exact Flyspeck base-prefix API normalizations\n'
