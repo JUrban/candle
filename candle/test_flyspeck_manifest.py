@@ -568,7 +568,7 @@ class GeneratedManifestTests(unittest.TestCase):
         })
         self.assertEqual(
             entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]["operation_count"],
-            6,
+            13,
         )
         flyspeck_lib = entries[
             "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"

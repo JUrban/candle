@@ -44,9 +44,9 @@
       "path": "text_formalization/general/lib.hl",
       "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865",
       "source_md5": "30a7e35c3ddb8204216c41eb03b0a7bb",
-      "normalized_sha256": "4c649b94f2d4c96930bb1940468c68da37a606df92401728577b6140346821cb",
-      "normalized_md5": "ca5c64d44817108ae8245b66d2b1870f",
-      "normalized_bytes": 29866,
+      "normalized_sha256": "6380ec1b92532ab613d6d5157c4b32f50acd5c6a9be1b3d387bddaf268673ab5",
+      "normalized_md5": "9c119e851799375ea9e0b65080eafa0f",
+      "normalized_bytes": 30000,
       "operations": [
         {
           "id": "PROJECT-S3-LIB-REV-VALUE-RESTRICTION-001",
@@ -54,6 +54,13 @@
           "line": 70,
           "before": "let rev =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  fun l -> rev_append [] l;;",
           "after": "let rev l =\n  let rec rev_append acc l =\n    match l with\n      [] -> acc\n    | h::t -> rev_append (h::acc) t in\n  rev_append [] l;;"
+        },
+        {
+          "id": "PROJECT-S3-LIB-LENGTH-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 204,
+          "before": "let length =\n  let rec len k l =\n    if l = [] then k else len (k + 1) (tl l) in\n  fun l -> len 0 l;;",
+          "after": "let length l =\n  let rec len k l =\n    if l = [] then k else len (k + 1) (tl l) in\n  len 0 l;;"
         },
         {
           "id": "PROJECT-POINTER-S3-LIB-FILTER-001",
@@ -77,6 +84,13 @@
           "after": "let uniq l =\n  let rec changed l =\n    match l with\n      x::(y::_ as t) ->\n        (match changed t with\n           None ->\n             if Stdlib.compare x y = 0 then Some t else None\n         | Some t' ->\n             if Stdlib.compare x y = 0 then Some t' else Some(x::t'))\n    | _ -> None in\n  match changed l with None -> l | Some l' -> l';;"
         },
         {
+          "id": "PROJECT-S3-LIB-GCD-NUM-API-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 395,
+          "before": "let gcd_num n1 n2 =\n  num_of_big_int(Big_int.gcd_big_int (big_int_of_num n1) (big_int_of_num n2));;",
+          "after": "(* Candle already provides the same integer gcd_num operation. *)"
+        },
+        {
           "id": "PROJECT-POINTER-S3-LIB-QMAP-001",
           "kind": "exact_bytes_replace_once",
           "line": 474,
@@ -84,15 +98,53 @@
           "after": "let qmap _ _ =\n  failwith \"Candle Flyspeck: qmap requires physical sharing observation\";;"
         },
         {
+          "id": "PROJECT-S3-LIB-MAPF-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 542,
+          "before": "let mapf =\n  let rec map_list f l =\n    match l with\n      [] -> []\n    | (x,y)::t -> (x,f(y))::(map_list f t) in\n  let rec mapf f t =\n    match t with\n      Empty -> Empty\n    | Leaf(h,l) -> Leaf(h,map_list f l)\n    | Branch(p,b,l,r) -> Branch(p,b,mapf f l,mapf f r) in\n  mapf;;",
+          "after": "let mapf f t =\n  let rec map_list f l =\n    match l with\n      [] -> []\n    | (x,y)::t -> (x,f(y))::(map_list f t) in\n  let rec mapf f t =\n    match t with\n      Empty -> Empty\n    | Leaf(h,l) -> Leaf(h,map_list f l)\n    | Branch(p,b,l,r) -> Branch(p,b,mapf f l,mapf f r) in\n  mapf f t;;"
+        },
+        {
+          "id": "PROJECT-S3-LIB-FOLDL-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 558,
+          "before": "let foldl =\n  let rec foldl_list f a l =\n    match l with\n      [] -> a\n    | (x,y)::t -> foldl_list f (f a x y) t in\n  let rec foldl f a t =\n    match t with\n      Empty -> a\n    | Leaf(h,l) -> foldl_list f a l\n    | Branch(p,b,l,r) -> foldl f (foldl f a l) r in\n  foldl;;",
+          "after": "let foldl f a t =\n  let rec foldl_list f a l =\n    match l with\n      [] -> a\n    | (x,y)::t -> foldl_list f (f a x y) t in\n  let rec foldl f a t =\n    match t with\n      Empty -> a\n    | Leaf(h,l) -> foldl_list f a l\n    | Branch(p,b,l,r) -> foldl f (foldl f a l) r in\n  foldl f a t;;"
+        },
+        {
+          "id": "PROJECT-S3-LIB-FOLDR-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 570,
+          "before": "let foldr =\n  let rec foldr_list f l a =\n    match l with\n      [] -> a\n    | (x,y)::t -> f x y (foldr_list f t a) in\n  let rec foldr f t a =\n    match t with\n      Empty -> a\n    | Leaf(h,l) -> foldr_list f l a\n    | Branch(p,b,l,r) -> foldr f l (foldr f r a) in\n  foldr;;",
+          "after": "let foldr f t a =\n  let rec foldr_list f l a =\n    match l with\n      [] -> a\n    | (x,y)::t -> f x y (foldr_list f t a) in\n  let rec foldr f t a =\n    match t with\n      Empty -> a\n    | Leaf(h,l) -> foldr_list f l a\n    | Branch(p,b,l,r) -> foldr f l (foldr f r a) in\n  foldr f t a;;"
+        },
+        {
+          "id": "PROJECT-S3-LIB-APPLYD-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 596,
+          "before": "let applyd =\n  let rec apply_listd l d x =\n    match l with\n      (a,b)::t -> let c = Stdlib.compare x a in\n                  if c = 0 then b else if c > 0 then apply_listd t d x else d x\n    | [] -> d x in\n  fun f d x ->\n    let k = Hashtbl.hash x in\n    let rec look t =\n      match t with\n        Leaf(h,l) when h = k -> apply_listd l d x\n      | Branch(p,b,l,r) when (k lxor p) land (b - 1) = 0\n                -> look (if k land b = 0 then l else r)\n      | _ -> d x in\n    look f;;",
+          "after": "let applyd f d x =\n  let rec apply_listd l d x =\n    match l with\n      (a,b)::t -> let c = Stdlib.compare x a in\n                  if c = 0 then b else if c > 0 then apply_listd t d x else d x\n    | [] -> d x in\n  let k = Hashtbl.hash x in\n  let rec look t =\n    match t with\n      Leaf(h,l) when h = k -> apply_listd l d x\n    | Branch(p,b,l,r) when (k lxor p) land (b - 1) = 0\n              -> look (if k land b = 0 then l else r)\n    | _ -> d x in\n  look f;;"
+        },
+        {
           "id": "PROJECT-POINTER-S3-LIB-UNDEFINE-001",
           "kind": "exact_bytes_replace_once",
           "line": 622,
           "before": "let undefine =\n  let rec undefine_list x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then t\n          else if c < 0 then l else\n          let t' = undefine_list x t in\n          if t' == t then l else ab::t'\n    | [] -> [] in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und t =\n      match t with\n        Leaf(h,l) when h = k ->\n          let l' = undefine_list x l in\n          if l' == l then t\n          else if l' = [] then Empty\n          else Leaf(h,l')\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            let l' = und l in\n            if l' == l then t\n            else (match l' with Empty -> r | _ -> Branch(p,b,l',r))\n          else\n            let r' = und r in\n            if r' == r then t\n            else (match r' with Empty -> l | _ -> Branch(p,b,l,r'))\n      | _ -> t in\n    und;;",
-          "after": "let undefine =\n  let rec undefine_list_changed x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then Some t\n          else if c < 0 then None else\n          (match undefine_list_changed x t with\n             None -> None\n           | Some t' -> Some(ab::t'))\n    | [] -> None in\n  fun x ->\n    let k = Hashtbl.hash x in\n    let rec und_changed t =\n      match t with\n        Leaf(h,l) when h = k ->\n          (match undefine_list_changed x l with\n             None -> None\n           | Some l' ->\n               Some(if l' = [] then Empty else Leaf(h,l')))\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            (match und_changed l with\n               None -> None\n             | Some l' ->\n                 Some(match l' with Empty -> r\n                                    | _ -> Branch(p,b,l',r)))\n          else\n            (match und_changed r with\n               None -> None\n             | Some r' ->\n                 Some(match r' with Empty -> l\n                                    | _ -> Branch(p,b,l,r')))\n      | _ -> None in\n    fun t -> match und_changed t with None -> t | Some t' -> t';;"
+          "after": "let undefine x t =\n  let rec undefine_list_changed x l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then Some t\n          else if c < 0 then None else\n          (match undefine_list_changed x t with\n             None -> None\n           | Some t' -> Some(ab::t'))\n    | [] -> None in\n    let k = Hashtbl.hash x in\n    let rec und_changed t =\n      match t with\n        Leaf(h,l) when h = k ->\n          (match undefine_list_changed x l with\n             None -> None\n           | Some l' ->\n               Some(if l' = [] then Empty else Leaf(h,l')))\n      | Branch(p,b,l,r) when k land (b - 1) = p ->\n          if k land b = 0 then\n            (match und_changed l with\n               None -> None\n             | Some l' ->\n                 Some(match l' with Empty -> r\n                                    | _ -> Branch(p,b,l',r)))\n          else\n            (match und_changed r with\n               None -> None\n             | Some r' ->\n                 Some(match r' with Empty -> l\n                                    | _ -> Branch(p,b,l,r')))\n      | _ -> None in\n  match und_changed t with None -> t | Some t' -> t';;"
+        },
+        {
+          "id": "PROJECT-S3-LIB-PAIR-VALUE-RESTRICTION-001",
+          "kind": "exact_span_replace_once",
+          "line": 657,
+          "end_line": 746,
+          "start": "let (|->),combine =\n",
+          "end": "  (|->),combine;;",
+          "span_sha256": "9dba084e8e98ef3f8f1dec3bd29c447f5dd4fa90ec46d5a544ad5ba23532811a",
+          "after": "let (|->) x y t =\n  let newbranch p1 t1 p2 t2 =\n    let zp = p1 lxor p2 in\n    let b = zp land (-zp) in\n    let p = p1 land (b - 1) in\n    if p1 land b = 0 then Branch(p,b,t1,t2)\n    else Branch(p,b,t2,t1) in\n  let rec define_list (x,y as xy) l =\n    match l with\n      (a,b as ab)::t ->\n          let c = Stdlib.compare x a in\n          if c = 0 then xy::t\n          else if c < 0 then xy::l\n          else ab::(define_list xy t)\n    | [] -> [xy] in\n  let k = Hashtbl.hash x in\n  let rec upd t =\n    match t with\n      Empty -> Leaf (k,[x,y])\n    | Leaf(h,l) ->\n         if h = k then Leaf(h,define_list (x,y) l)\n         else newbranch h t k (Leaf(k,[x,y]))\n    | Branch(p,b,l,r) ->\n        if k land (b - 1) <> p then newbranch p t k (Leaf(k,[x,y]))\n        else if k land b = 0 then Branch(p,b,upd l,r)\n        else Branch(p,b,l,upd r) in\n  upd t;;\n\nlet combine op z t1 t2 =\n  let newbranch p1 t1 p2 t2 =\n    let zp = p1 lxor p2 in\n    let b = zp land (-zp) in\n    let p = p1 land (b - 1) in\n    if p1 land b = 0 then Branch(p,b,t1,t2)\n    else Branch(p,b,t2,t1) in\n  let rec combine_list op z l1 l2 =\n    match (l1,l2) with\n      [],_ -> l2\n    | _,[] -> l1\n    | ((x1,y1 as xy1)::t1,(x2,y2 as xy2)::t2) ->\n          let c = Stdlib.compare x1 x2 in\n          if c < 0 then xy1::(combine_list op z t1 l2)\n          else if c > 0 then xy2::(combine_list op z l1 t2) else\n          let y = op y1 y2 and l = combine_list op z t1 t2 in\n          if z(y) then l else (x1,y)::l in\n  let rec combine op z t1 t2 =\n    match (t1,t2) with\n      Empty,_ -> t2\n    | _,Empty -> t1\n    | Leaf(h1,l1),Leaf(h2,l2) ->\n          if h1 = h2 then\n            let l = combine_list op z l1 l2 in\n            if l = [] then Empty else Leaf(h1,l)\n          else newbranch h1 t1 h2 t2\n    | (Leaf(k,lis) as lf),(Branch(p,b,l,r) as br) ->\n          if k land (b - 1) = p then\n            if k land b = 0 then\n              (match combine op z lf l with\n                 Empty -> r | l' -> Branch(p,b,l',r))\n            else\n              (match combine op z lf r with\n                 Empty -> l | r' -> Branch(p,b,l,r'))\n          else\n            newbranch k lf p br\n    | (Branch(p,b,l,r) as br),(Leaf(k,lis) as lf) ->\n          if k land (b - 1) = p then\n            if k land b = 0 then\n              (match combine op z l lf with\n                Empty -> r | l' -> Branch(p,b,l',r))\n            else\n              (match combine op z r lf with\n                 Empty -> l | r' -> Branch(p,b,l,r'))\n          else\n            newbranch p br k lf\n    | Branch(p1,b1,l1,r1),Branch(p2,b2,l2,r2) ->\n          if b1 < b2 then\n            if p2 land (b1 - 1) <> p1 then newbranch p1 t1 p2 t2\n            else if p2 land b1 = 0 then\n              (match combine op z l1 t2 with\n                 Empty -> r1 | l -> Branch(p1,b1,l,r1))\n            else\n              (match combine op z r1 t2 with\n                 Empty -> l1 | r -> Branch(p1,b1,l1,r))\n          else if b2 < b1 then\n            if p1 land (b2 - 1) <> p2 then newbranch p1 t1 p2 t2\n            else if p1 land b2 = 0 then\n              (match combine op z t1 l2 with\n                 Empty -> r2 | l -> Branch(p2,b2,l,r2))\n            else\n              (match combine op z t1 r2 with\n                 Empty -> l2 | r -> Branch(p2,b2,l2,r))\n          else if p1 = p2 then\n           (match (combine op z l1 l2,combine op z r1 r2) with\n              (Empty,r) -> r | (l,Empty) -> l | (l,r) -> Branch(p1,b1,l,r))\n          else\n            newbranch p1 t1 p2 t2 in\n  combine op z t1 t2;;"
         }
       ],
-      "semantic_rule": "The rev rewrite eta-expands the same total list function, preserving element order and polymorphism while avoiding CakeML's value restriction; it is the form independently used by the corresponding Candle/HOL Light lib.ml. The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
-      "scope_limit": "The eta expansion is confined to the pure rev binding and does not change any theorem or proof. qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
+      "semantic_rule": "The rev, length, mapf, foldl, foldr, applyd, and already identity-normalized undefine rewrites eta-expand the same total list or Patricia-tree functions, preserving element order, tree shape, callback order, fold order, lookup/default behavior, result values, and polymorphism while avoiding CakeML's value restriction; rev and length are also the forms independently used by the corresponding Candle/HOL Light lib.ml. The paired Patricia-tree update/combine binding is split into two parameterized public functions containing the same private algorithms: update retains newbranch and define_list, while combine retains newbranch, combine_list, and its original recursion. This preserves argument order, hashing, comparison, branching, callback order, zero-elision, and returned tree values without relying on polymorphic generalization of an expansive pair. Candle's already-loaded Num.gcd_num implements the same integer gcd operation as the unavailable OCaml Big_int conversion sequence, so the redundant inner module binding is omitted exactly as in Candle lib.ml. The filter, partition, uniq, and Patricia-tree undefine rewrites carry an explicit changed/all-unchanged result instead of observing physical identity, preserving structural results, callback order, exception order, and the original unchanged object whenever the source did. The exact selected graph has no qmap caller outside its recursive definition, so the normalized binding fails closed if a missed dynamic or future call reaches it.",
+      "scope_limit": "The eta expansions and pair split are confined to the pure rev, length, mapf, foldl, foldr, applyd, undefine, (|->), and combine bindings and do not change any theorem or proof. The split reallocates private pure helper closures at each public update/combine call, so compiled behavior and practical performance remain direct-run gates. The gcd reuse is confined to integer-valued num inputs, matching both source and Candle implementations. qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
     },
     {
       "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",
