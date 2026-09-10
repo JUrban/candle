@@ -7,6 +7,7 @@ fixture_prefix=candle/compatibility/fixtures
 action_ok_md5=$(md5sum "$candle_root/$fixture_prefix/flyspeck_needs_action_ok.ml" | cut -d' ' -f1)
 action_eval_fail_md5=$(md5sum "$candle_root/$fixture_prefix/flyspeck_needs_action_eval_fail.ml" | cut -d' ' -f1)
 loadt_action_md5=$(md5sum "$candle_root/$fixture_prefix/flyspeck_loadt_action.ml" | cut -d' ' -f1)
+ordinary_outer_md5=$(md5sum "$candle_root/$fixture_prefix/ordinary_needs_identity_outer.ml" | cut -d' ' -f1)
 test_dir=$(mktemp -d /tmp/candle-flyspeck-needs.XXXXXX)
 cleanup() {
   find "$test_dir" -depth -delete 2>/dev/null || true
@@ -48,6 +49,46 @@ EOF
 rg -Fq 'FLYSPECK_NEEDS_ACCEPTED_OK' "$test_dir/accepted.log"
 [[ $(rg -c -- '- Flyspeck source action complete:' "$test_dir/accepted.log") == 1 ]]
 rg -Fq -- '- Already loaded:' "$test_dir/accepted.log"
+
+# Reproduce the direct-boundary setup transition: authenticated ordinary
+# [needs] loads (including a nested one) must populate the same logical ledger
+# later inspected by a cache-skipped #flyspeck_needs action.  Neither ordinary
+# load is itself a Flyspeck action or a neutralization boundary.
+run_candle ordinary-identity <<EOF
+let flyspeck_action_value = ref 0;;
+let flyspeck_neutralize_count = ref 0;;
+module State_manager = struct
+  let neutralize_state () =
+    flyspeck_neutralize_count := !flyspeck_neutralize_count + 1
+end;;
+let ordinary_outer_id =
+  ("ordinary_needs_identity_outer.ml","$ordinary_outer_md5");;
+let ordinary_nested_id =
+  ("flyspeck_needs_action_ok.ml","$action_ok_md5");;
+Cakeml.configureSourceIdentities
+  [(Filename.concat Filename.currentDir "$fixture_prefix/ordinary_needs_identity_outer.ml",
+    ordinary_outer_id);
+   (Filename.concat Filename.currentDir "$fixture_prefix/flyspeck_needs_action_ok.ml",
+    ordinary_nested_id)];;
+needs "$fixture_prefix/ordinary_needs_identity_outer.ml";;
+needs "$fixture_prefix/flyspeck_needs_action_ok.ml";;
+#flyspeck_needs "$fixture_prefix/flyspeck_needs_action_ok.ml";;
+if !flyspeck_action_value = 1 &&
+   ordinary_needs_identity_outer_value = 7 &&
+   !flyspeck_neutralize_count = 0 &&
+   !Cakeml.loadedSourceIds = [ordinary_outer_id;ordinary_nested_id] &&
+   !Cakeml.pendingLoadedSourceIds = [] then
+  print "ORDINARY_NEEDS_LOGICAL_IDENTITY_OK\n"
+else failwith "ordinary needs logical identity mismatch";;
+EOF
+rg -Fq 'ORDINARY_NEEDS_LOGICAL_IDENTITY_OK' "$test_dir/ordinary-identity.log"
+[[ $(rg -c -- '- Already loaded:' "$test_dir/ordinary-identity.log") == 2 ]]
+if rg -q 'Flyspeck source action complete|EXCEPTION:|Parsing failed' \
+  "$test_dir/ordinary-identity.log"
+then
+  tail -n 50 "$test_dir/ordinary-identity.log" >&2
+  exit 1
+fi
 
 run_candle loadt <<EOF
 let flyspeck_loadt_value = ref 0;;

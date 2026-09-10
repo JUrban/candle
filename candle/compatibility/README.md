@@ -43,7 +43,7 @@ It records 15,775 decimal-float code occurrences in nine selected runtime
 files and all 1,741 exact spellings. The scanner follows the proved CakeML
 decimal grammar and excludes nested comments, strings, and HOL backtick
 quotations. Before scanning, it authenticates all 400 original manifest nodes,
-the exact schema-3 normalization receipt, all 20 normalized outputs, and the
+the exact schema-3 normalization receipt, all 24 normalized outputs, and the
 complete no-extra-file tree and deterministic 0555/0444 mode closure. Failed
 staging trees contain no canonical receipt and are rejected.
 

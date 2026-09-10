@@ -6,7 +6,7 @@ compiled Candle process.  It first validates the linked CakeML provenance.
 It independently reconstructs the plan and every prefix from the pinned
 manifest/full driver rather than trusting plan-supplied self-digests, then
 requires exact equality and rechecks the clean repository revisions, all 400
-source nodes, all 20 normalization outputs, all 43 generated inputs,
+source nodes, all 24 normalization outputs, all 43 generated inputs,
 deterministic `date`/`whoami` inputs, and the selected prefix.  The config also
 provides the exact ordered 39-certificate list required by normalized
 `verify_all.hl`.

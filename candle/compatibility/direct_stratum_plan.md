@@ -46,7 +46,7 @@ candle_head=$(GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null \
 
 The command requires a clean Candle descendant of the exact integration base,
 an exact clean Flyspeck revision, and authenticates all 400
-selected source nodes, all 20 normalized outputs and their schema-3 receipt,
+selected source nodes, all 24 normalized outputs and their schema-3 receipt,
 all 43 generated inputs and the schema-2 prepared-archive receipt, both exact
 no-extra-file/mode closures, the manifest, and the exact full-build driver.
 Descendant commits cannot silently change a selected input:
