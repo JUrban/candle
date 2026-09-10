@@ -220,16 +220,28 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ))
         self.assertIn("qmap is a selected-graph non-use", allocated["scope_limit"])
         flyspeck_lib = entries[
-            "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"
+            "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002"
         ]
         self.assertEqual(
             flyspeck_lib["operations"][0]["before"],
-            'Printf.fprintf outs "%s" a',
+            'needs (String.concat "/" ["general"; if version_ge_4_14 '
+            'then "flyspeck_eval_4.14.hl" else "flyspeck_eval.hl"]);;',
         )
         self.assertEqual(
             flyspeck_lib["operations"][0]["after"],
+            'needs "general/flyspeck_eval_4.14.hl";;',
+        )
+        self.assertEqual(
+            flyspeck_lib["operations"][1]["before"],
+            'Printf.fprintf outs "%s" a',
+        )
+        self.assertEqual(
+            flyspeck_lib["operations"][1]["after"],
             "output_string outs a",
         )
+        self.assertIn("same logical relative-path literal", (
+            flyspeck_lib["semantic_rule"]
+        ))
         self.assertIn("constant %s format", flyspeck_lib["semantic_rule"])
         print_types = entries["PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001"]
         self.assertEqual(
@@ -468,7 +480,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 71)
+        self.assertEqual(len(operation_ids), 72)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

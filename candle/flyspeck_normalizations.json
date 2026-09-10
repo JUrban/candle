@@ -147,15 +147,22 @@
       "scope_limit": "The eta expansions and pair split are confined to the pure rev, length, mapf, foldl, foldr, applyd, undefine, (|->), and combine bindings and do not change any theorem or proof. The split reallocates private pure helper closures at each public update/combine call, so compiled behavior and practical performance remain direct-run gates. The gcd reuse is confined to integer-valued num inputs, matching both source and Candle implementations. qmap is a selected-graph non-use refinement, not general qmap compatibility; final full-run fingerprints, performance measurements, and a compiled normalized-source run remain release gates."
     },
     {
-      "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",
+      "id": "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002",
       "source_key": "flyspeck:text_formalization/general/flyspeck_lib.hl",
       "path": "text_formalization/general/flyspeck_lib.hl",
       "source_sha256": "2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5",
       "source_md5": "e707bc1ea80e0446c735bfe208885e6a",
-      "normalized_sha256": "16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca",
-      "normalized_md5": "881f211e6304e57032738026a89a7a52",
-      "normalized_bytes": 2316,
+      "normalized_sha256": "b6dd0f8a4b6dc9e44d5e4f5a5105b8ade3d04f6127e292eda68113f3dd50028d",
+      "normalized_md5": "bd55c20647b6d66f47dd1b119c8a51d1",
+      "normalized_bytes": 2243,
       "operations": [
+        {
+          "id": "PROJECT-FLYSPECK-LIB-S3-LITERAL-EVAL-DEPENDENCY-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 15,
+          "before": "needs (String.concat \"/\" [\"general\"; if version_ge_4_14 then \"flyspeck_eval_4.14.hl\" else \"flyspeck_eval.hl\"]);;",
+          "after": "needs \"general/flyspeck_eval_4.14.hl\";;"
+        },
         {
           "id": "PROJECT-FLYSPECK-LIB-S3-FPRINTF-STRING-001",
           "kind": "exact_bytes_replace_once",
@@ -164,8 +171,8 @@
           "after": "output_string outs a"
         }
       ],
-      "semantic_rule": "For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel. Candle's OCaml compatibility layer exposes output_string with the same output-channel and string argument order, so the replacement preserves bytes written, channel lifetime, surrounding exception handling, and the mathematical environment.",
-      "scope_limit": "This authorizes only the one constant-format string write in Flyspeck_lib.output_filestring. It is not a general Printf implementation or a rewrite of formatted, converted, padded, escaped, or variadic output."
+      "semantic_rule": "The project manifest resolves the exact source expression at line 15 to general/flyspeck_eval_4.14.hl because the pinned v1.3 execution environment selects its OCaml-4.14 compatibility branch. Replacing that expression with the same logical relative-path literal preserves the selected dependency while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel. Candle's OCaml compatibility layer exposes output_string with the same output-channel and string argument order, so the second replacement preserves bytes written, channel lifetime, surrounding exception handling, and the mathematical environment.",
+      "scope_limit": "The dependency rewrite is confined to this already-resolved standalone phrase and authorizes only the manifest-selected logical node general/flyspeck_eval_4.14.hl; it does not whitelist a basename, absolute path, alternate version branch, or arbitrary dynamic load. The output rewrite authorizes only the one constant-format string write in Flyspeck_lib.output_filestring, not general formatted, converted, padded, escaped, or variadic output."
     },
     {
       "id": "PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001",

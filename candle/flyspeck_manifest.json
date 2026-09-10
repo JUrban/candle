@@ -8751,8 +8751,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "01b4addfeebbca88c6aa3480fb5c49c1",
-    "generated_source_sha256": "3298a075f0fdeaf5884283e654f067f6383143285e8f30f27e0f89350fdc5a33",
+    "generated_source_md5": "fb2b2669df54af66ea93ffb3bda6d541",
+    "generated_source_sha256": "10c3cc76971ceb3877faea216b733092f53e43dda10caccd0324b7c3ae4d0930",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14766,10 +14766,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "97d0b4bc6c0a9efb9c3a9a063aef3666",
+      "md5": "05062387facc58b8eebc1da0483d12c6",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "faa466c46e4962175c958f9706ed8b6a2b1a59fa01490d6017c1e9a55a1ab87f"
+      "sha256": "eeccf258137eae907bce156cba6d878ba0f2b734dd2e638decf56c3ceecb9dc4"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14850,10 +14850,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a1ba386874ce75255b405e4cd7cf1022",
+      "md5": "51ad643f85bd4d106b48e8b8b419b2eb",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "f87ddaf1fa0ec212fcbf2670d855b07ea10188b24477624129c38294c164d762"
+      "sha256": "7e4aee30d2fddd3672652f69131020a91544db509798574964cb7f98a72d6cfd"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18154,12 +18154,12 @@
         }
       ],
       "execution_normalization": {
-        "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",
+        "id": "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 2316,
-        "normalized_md5": "881f211e6304e57032738026a89a7a52",
-        "normalized_sha256": "16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca",
-        "operation_count": 1
+        "normalized_bytes": 2243,
+        "normalized_md5": "bd55c20647b6d66f47dd1b119c8a51d1",
+        "normalized_sha256": "b6dd0f8a4b6dc9e44d5e4f5a5105b8ade3d04f6127e292eda68113f3dd50028d",
+        "operation_count": 2
       },
       "md5": "e707bc1ea80e0446c735bfe208885e6a",
       "path": "text_formalization/general/flyspeck_lib.hl",
@@ -22079,7 +22079,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "33e5d6a6448bf48c59c8ba2efc22aa5d3865177bb95330fbf957947b13506a98",
+    "contract_sha256": "d363be36d245e2156a6ad1502a48f022eac043ea4c83c6fb10d30eb9240f30d6",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22230,13 +22230,20 @@
         "source_sha256": "a429247955e1e095e5663813e9609c43697d83d80f357c7855af3b76a3145865"
       },
       {
-        "id": "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001",
+        "id": "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 2316,
-        "normalized_md5": "881f211e6304e57032738026a89a7a52",
-        "normalized_sha256": "16679effafb250fdce57acdc8872133b95c41d80bab71cd72f3b12e504f08dca",
-        "operation_count": 1,
+        "normalized_bytes": 2243,
+        "normalized_md5": "bd55c20647b6d66f47dd1b119c8a51d1",
+        "normalized_sha256": "b6dd0f8a4b6dc9e44d5e4f5a5105b8ade3d04f6127e292eda68113f3dd50028d",
+        "operation_count": 2,
         "operations": [
+          {
+            "after": "needs \"general/flyspeck_eval_4.14.hl\";;",
+            "before": "needs (String.concat \"/\" [\"general\"; if version_ge_4_14 then \"flyspeck_eval_4.14.hl\" else \"flyspeck_eval.hl\"]);;",
+            "id": "PROJECT-FLYSPECK-LIB-S3-LITERAL-EVAL-DEPENDENCY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 15
+          },
           {
             "after": "output_string outs a",
             "before": "Printf.fprintf outs \"%s\" a",
@@ -22246,8 +22253,8 @@
           }
         ],
         "path": "text_formalization/general/flyspeck_lib.hl",
-        "scope_limit": "This authorizes only the one constant-format string write in Flyspeck_lib.output_filestring. It is not a general Printf implementation or a rewrite of formatted, converted, padded, escaped, or variadic output.",
-        "semantic_rule": "For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel. Candle's OCaml compatibility layer exposes output_string with the same output-channel and string argument order, so the replacement preserves bytes written, channel lifetime, surrounding exception handling, and the mathematical environment.",
+        "scope_limit": "The dependency rewrite is confined to this already-resolved standalone phrase and authorizes only the manifest-selected logical node general/flyspeck_eval_4.14.hl; it does not whitelist a basename, absolute path, alternate version branch, or arbitrary dynamic load. The output rewrite authorizes only the one constant-format string write in Flyspeck_lib.output_filestring, not general formatted, converted, padded, escaped, or variadic output.",
+        "semantic_rule": "The project manifest resolves the exact source expression at line 15 to general/flyspeck_eval_4.14.hl because the pinned v1.3 execution environment selects its OCaml-4.14 compatibility branch. Replacing that expression with the same logical relative-path literal preserves the selected dependency while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel. Candle's OCaml compatibility layer exposes output_string with the same output-channel and string argument order, so the second replacement preserves bytes written, channel lifetime, surrounding exception handling, and the mathematical environment.",
         "source_key": "flyspeck:text_formalization/general/flyspeck_lib.hl",
         "source_md5": "e707bc1ea80e0446c735bfe208885e6a",
         "source_sha256": "2ae1a0d173275035c4e418e9aa314654edfe38db5619eb75292a8cbac3106de5"
@@ -23116,8 +23123,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "97d0b4bc6c0a9efb9c3a9a063aef3666",
-    "generated_source_sha256": "faa466c46e4962175c958f9706ed8b6a2b1a59fa01490d6017c1e9a55a1ab87f",
+    "generated_source_md5": "05062387facc58b8eebc1da0483d12c6",
+    "generated_source_sha256": "eeccf258137eae907bce156cba6d878ba0f2b734dd2e638decf56c3ceecb9dc4",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

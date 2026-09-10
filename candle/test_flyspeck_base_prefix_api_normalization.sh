@@ -59,6 +59,11 @@ rg -Fq 'let undefine x t =' "$lib"
 rg -Fq 'let (|->) x y t =' "$lib"
 rg -Fq 'let combine op z t1 t2 =' "$lib"
 [[ $(rg -Fc 'output_string outs a' "$flyspeck_lib") -eq 1 ]]
+[[ $(rg -Fc 'needs "general/flyspeck_eval_4.14.hl";;' "$flyspeck_lib") -eq 1 ]]
+if rg -Fq 'needs (String.concat "/"' "$flyspeck_lib"; then
+  echo 'normalized flyspeck_lib retained dynamic needs expression' >&2
+  exit 1
+fi
 if rg -Fq 'Printf.fprintf outs "%s" a' "$flyspeck_lib"; then
   echo 'normalized flyspeck_lib retained unavailable Printf.fprintf' >&2
   exit 1

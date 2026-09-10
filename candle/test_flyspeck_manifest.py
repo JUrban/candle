@@ -571,15 +571,19 @@ class GeneratedManifestTests(unittest.TestCase):
             13,
         )
         flyspeck_lib = entries[
-            "PROJECT-FLYSPECK-LIB-S3-OUTPUT-STRING-001"
+            "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002"
         ]
         self.assertEqual(
             flyspeck_lib["source_key"],
             "flyspeck:text_formalization/general/flyspeck_lib.hl",
         )
-        self.assertEqual(flyspeck_lib["operation_count"], 1)
+        self.assertEqual(flyspeck_lib["operation_count"], 2)
         self.assertEqual(
             flyspeck_lib["operations"][0]["after"],
+            'needs "general/flyspeck_eval_4.14.hl";;',
+        )
+        self.assertEqual(
+            flyspeck_lib["operations"][1]["after"],
             "output_string outs a",
         )
         self.assertEqual(entry["operation_count"], 3)
