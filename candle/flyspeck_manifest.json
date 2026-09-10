@@ -14874,10 +14874,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "63dad21434586c9a1fc959334dc2508c",
+      "md5": "5c026f67bd9107566154e1fd713beb84",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0ff85052f973218e49b856a6bb8bbda727872a77816d9ec75dcd8dee3e9b0f8b"
+      "sha256": "bc6cd0655200905595132916cd1440f503e7fce29a5fe6bcad73d33e541150ee"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18131,12 +18131,12 @@
       "bytes": 6123,
       "dependencies": [],
       "execution_normalization": {
-        "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001",
+        "id": "PROJECT-DEBUG-S3-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 6122,
-        "normalized_md5": "9180a21c2ba1ae40ae032387d0418255",
-        "normalized_sha256": "a456dba39b239cfbe135ec10c9acfebcade7857fbfc36e1d52487f7856cfa187",
-        "operation_count": 1
+        "normalized_bytes": 6070,
+        "normalized_md5": "318079c3dbff839fb4a778aff20a8204",
+        "normalized_sha256": "092f498f732a60f44451c24c64b2872de4b10bdb1b4316c9a253f3f08fc8bf3e",
+        "operation_count": 6
       },
       "md5": "e34834e6b77b9f01836c28eca156119b",
       "path": "text_formalization/general/debug.hl",
@@ -22063,7 +22063,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "192348fb1d720b9292700dfdfd42019c185907fc5279a9d07ebfb0ecfae234f3",
+    "contract_sha256": "499288e8c53de3dbbfd9be46f01e1318f206796148b935ce35bb230afe9c5fb2",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22454,24 +22454,59 @@
         "source_sha256": "c999e6428ff402a781db826ca3b4c3e4b7ad400c9f549b6e964b4798e4981ba5"
       },
       {
-        "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001",
+        "id": "PROJECT-DEBUG-S3-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 6122,
-        "normalized_md5": "9180a21c2ba1ae40ae032387d0418255",
-        "normalized_sha256": "a456dba39b239cfbe135ec10c9acfebcade7857fbfc36e1d52487f7856cfa187",
-        "operation_count": 1,
+        "normalized_bytes": 6070,
+        "normalized_md5": "318079c3dbff839fb4a778aff20a8204",
+        "normalized_sha256": "092f498f732a60f44451c24c64b2872de4b10bdb1b4316c9a253f3f08fc8bf3e",
+        "operation_count": 6,
         "operations": [
           {
             "after": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\");;",
             "before": "   (print_string (\"\\n\"^m^\"\\n\"); f s; print_string \"\\n\";);;",
-            "id": "PROJECT-PARSER-S3-TRAILING-SEMI-001-REMOVE",
+            "id": "PROJECT-DEBUG-S3-TRAILING-SEMI-001-REMOVE",
             "kind": "exact_bytes_replace_once",
             "line": 22
+          },
+          {
+            "after": "let _ = false;;",
+            "before": "unset_jrh_lexer",
+            "id": "PROJECT-DEBUG-S3-JRH-LEXER-001-UNSET",
+            "kind": "exact_bytes_replace_once",
+            "line": 107
+          },
+          {
+            "after": "let _ = true;;\n\n(* Feb 26, 2014. temp: slight modification of benign redefinition *)",
+            "before": "set_jrh_lexer\n\n(* Feb 26, 2014. temp: slight modification of benign redefinition *)",
+            "id": "PROJECT-DEBUG-S3-JRH-LEXER-001-SET",
+            "kind": "exact_bytes_replace_once",
+            "line": 115
+          },
+          {
+            "after": "   Cakeml.unquote := quotexpander_verbose;;",
+            "before": "   Quotation.add \"tot\" (Quotation.ExStr (fun x -> quotexpander_verbose));;",
+            "id": "PROJECT-DEBUG-S3-QUOTATION-REGISTRATION-001-VERBOSE",
+            "kind": "exact_bytes_replace_once",
+            "line": 110
+          },
+          {
+            "after": "      Cakeml.unquote := quotexpander;;",
+            "before": "      Quotation.add \"tot\" (Quotation.ExStr (fun x -> quotexpander));;",
+            "id": "PROJECT-DEBUG-S3-QUOTATION-REGISTRATION-001-RESTORE",
+            "kind": "exact_bytes_replace_once",
+            "line": 113
+          },
+          {
+            "after": "    if length (setify Term.(<) fs) <> 1",
+            "before": "    if length (setify fs) <> 1",
+            "id": "PROJECT-DEBUG-S3-TERM-SETIFY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 126
           }
         ],
         "path": "text_formalization/general/debug.hl",
-        "scope_limit": "This one-token correction is confined to Debug.print_m at pinned source line 22 and does not claim general parser support for trailing sequence separators. Any source drift or newly selected occurrence requires a separate inventory and remedy.",
-        "semantic_rule": "OCaml 4.14.1 accepts a trailing sequence separator immediately before the closing parenthesis and evaluates it as the same unit-valued sequence. Removing that one exact separator preserves evaluation order, effects, exceptions, and result.",
+        "scope_limit": "The sequence correction is confined to Debug.print_m at pinned line 22. The lexer correction is confined to the paired lines 107 and 115 around two definitions; it does not implement dynamic JRH lexer switching or authorize replacing these keywords where the enclosed tokenization differs. The explicit wildcard bindings are required because raw structure evaluations do not give Candle a reliable internal phrase boundary in this module. The registration correction is confined to the only two selected Debug Quotation.add calls and does not claim a general Camlp5 Quotation API. The setify correction is confined to the term list at line 126 and does not authorize a comparator for other element types. Native preprocessing equivalence is required for the isolated lexer-toggle oracle, and Candle runtime state/effect plus complete normalized Debug-load oracles are required for the runtime adaptations. Any source drift or newly selected occurrence requires a separate inventory and remedy.",
+        "semantic_rule": "OCaml 4.14.1 accepts a trailing sequence separator immediately before the closing parenthesis and evaluates it as the same unit-valued sequence. Removing that one exact separator preserves evaluation order, effects, exceptions, and result. The pinned pa_j preprocessor maps unset_jrh_lexer and set_jrh_lexer to false and true structure evaluations while selecting standard OCaml identifier tokenization for the enclosed definitions. Explicit wildcard bindings of those boolean expressions preserve the structure effects and values while giving Candle unambiguous internal phrase boundaries. A focused decomposition confirms Candle assigns the same types to every String operation and the complete quotexpander_verbose expression after HOL is loaded. In HOL Light, Quotation.add installs the active tot expander and each Debug function returns unit. Candle's quotation lexer consults the string-to-string function in Cakeml.unquote for every quotation; assigning quotexpander_verbose or quotexpander to that reference preserves the corresponding active expander, function result, and subsequent quotation behavior. Candle's verified HOL library makes the ordering argument to setify explicit because it has no polymorphic comparison; Term.(<) supplies the canonical strict term order and preserves the sole observable predicate here, whether the term list has exactly one distinct member. The identical define.ml correction is part of Candle's historical source-compatibility commit 065aeb8.",
         "source_key": "flyspeck:text_formalization/general/debug.hl",
         "source_md5": "e34834e6b77b9f01836c28eca156119b",
         "source_sha256": "b19e1e179b0863e551671688d76c24b13498965b460c0f514b9065a1bb8a8483"
@@ -22735,6 +22770,7 @@
       "candle:candle/test_flyspeck_needs_directive.sh",
       "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
       "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
+      "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
       "candle:candle/test_flyspeck_set_make_normalization.sh",
       "candle:candle/test_flyspeck_toplevel_normalization.sh"
     ],

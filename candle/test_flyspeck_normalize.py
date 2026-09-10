@@ -259,10 +259,25 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertLess(tuple_after.index("let name = \"GEN%PVAR%\""),
                         tuple_after.index("Varp(name,dpty)"))
         self.assertIn("tuple-valued Varp", parser_orpattern["semantic_rule"])
-        trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
-        self.assertEqual(trailing_semi["operations"][0]["line"], 22)
+        debug_compatibility = entries["PROJECT-DEBUG-S3-COMPATIBILITY-001"]
+        self.assertEqual(debug_compatibility["operations"][0]["line"], 22)
         self.assertIn('print_string "\\n");;', (
-            trailing_semi["operations"][0]["after"]
+            debug_compatibility["operations"][0]["after"]
+        ))
+        self.assertEqual(
+            [operation["line"] for operation in debug_compatibility["operations"]],
+            [22, 107, 115, 110, 113, 126],
+        )
+        self.assertIn("let _ = false;;", debug_compatibility["operations"][1]["after"])
+        self.assertIn("let _ = true;;", debug_compatibility["operations"][2]["after"])
+        self.assertIn("Cakeml.unquote := quotexpander_verbose", (
+            debug_compatibility["operations"][3]["after"]
+        ))
+        self.assertIn("Cakeml.unquote := quotexpander", (
+            debug_compatibility["operations"][4]["after"]
+        ))
+        self.assertIn("setify Term.(<) fs", (
+            debug_compatibility["operations"][5]["after"]
         ))
         shell_free = entries["PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001"]
         self.assertEqual(
@@ -345,7 +360,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 45)
+        self.assertEqual(len(operation_ids), 50)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

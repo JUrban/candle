@@ -515,6 +515,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_flyspeck_set_make_normalization.sh",
             contract["gates"],
         )
@@ -571,12 +575,15 @@ class GeneratedManifestTests(unittest.TestCase):
             [36, 86, 106],
         )
         self.assertEqual(parser_orpattern["operation_count"], 3)
-        trailing_semi = entries["PROJECT-PARSER-S3-TRAILING-SEMI-001"]
+        trailing_semi = entries["PROJECT-DEBUG-S3-COMPATIBILITY-001"]
         self.assertEqual(
             trailing_semi["source_key"],
             "flyspeck:text_formalization/general/debug.hl",
         )
-        self.assertEqual(trailing_semi["operations"][0]["line"], 22)
+        self.assertEqual(
+            [operation["line"] for operation in trailing_semi["operations"]],
+            [22, 107, 115, 110, 113, 126],
+        )
         non_use = contract["selected_graph_non_use_bindings"]
         self.assertEqual(
             non_use["identifiers"], ["qmap", "unsuppress", "use_file_b"],

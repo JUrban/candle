@@ -89,9 +89,15 @@ than silently succeeding.  `PROJECT-PARSER-S3-LET-OR-PATTERN-001` rewrites the
 single selected let-binding or-pattern in `general/parser_verbose.hl` as an
 ordinary match over the same two constructor alternatives; it also replaces
 one `%s`-only `sprintf` call by concatenation with the same rendered number.
-`PROJECT-PARSER-S3-TRAILING-SEMI-001` removes the single trailing sequence
+`PROJECT-DEBUG-S3-COMPATIBILITY-001` removes the single trailing sequence
 separator immediately before the closing parenthesis of `Debug.print_m` in
-`general/debug.hl`; expression order, effects, and result are unchanged.  Each
+`general/debug.hl`; expression order, effects, and result are unchanged.  It
+also gives the paired pa_j lexer toggles explicit boolean structure bindings,
+maps Debug's two quotation registrations to Candle's active `Cakeml.unquote`
+reference, and supplies `Term.(<)` to Candle's comparator-explicit `setify`.
+The mapping is limited to these hash-pinned Debug sites and is checked by
+native pa_j equivalence plus Candle toggle, registration, term-distinctness,
+and full-source-load oracles.  Each
 `PROJECT-ARCHIVE-S3-TAME-LIST-THUNKS-001` re-expresses the one hash-locked
 19,715-element generated archive as forty top-level thunks of at most 500
 ordered values.  Reverse non-recursive lexical shadowing and list append build

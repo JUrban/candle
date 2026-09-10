@@ -186,7 +186,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "general/debug.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/debug.hl",
-    "9180a21c2ba1ae40ae032387d0418255");
+    "318079c3dbff839fb4a778aff20a8204");
    (Filename.concat candle_flyspeck_text_root "general/serialization.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/serialization.hl",
