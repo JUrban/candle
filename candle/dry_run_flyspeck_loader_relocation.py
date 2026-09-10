@@ -78,7 +78,7 @@ def normalization_records(plan: dict[str, Any]) -> list[dict[str, Any]]:
 def build_prepared(
     manifest: dict[str, Any], sources: list[dict[str, Any]],
     normalizations: list[dict[str, Any]], candle_root: Path,
-    flyspeck_root: Path, overlay_root: Path,
+    flyspeck_root: Path, overlay_root: Path, linked_record: dict[str, Any],
 ) -> dict[str, Any]:
     source_by_key = {record["key"]: record for record in sources}
     runtime.require(len(source_by_key) == len(sources),
@@ -101,6 +101,9 @@ def build_prepared(
             "artifact_role": "generated-runtime-control",
             **digest,
         },
+        **runtime.derive_linked_runtime_sources(
+            manifest, linked_record, candle_root,
+        ),
     }
     source_alias_runtime = runtime.validate_source_alias_contract(
         manifest, source_by_key, candle_root, flyspeck_root,
@@ -169,25 +172,57 @@ def run(plan_root: Path, attempt_root: Path) -> dict[str, Any]:
     candle_root = Path(roots["candle"])
     flyspeck_root = Path(roots["flyspeck"])
     overlay_root = Path(roots["normalization_overlay"])
+    linked = runtime.cakeml_bootstrap_transition.validate_linked_record(
+        candle_root,
+    )
+    validated = runtime.validate_plan(
+        candle_root, linked, plan_root, attempt.get("boundary_id"),
+    )
     manifest_path = candle_root / runtime.MANIFEST_RELATIVE
     manifest = load(manifest_path, "Flyspeck manifest")
     sources = source_records(plan)
     normalizations = normalization_records(plan)
-    closure = attempt.get("expected_logical_source_closure")
-    runtime.require(isinstance(closure, dict),
-                    "missing actual attempt logical source closure")
+    closure = validated["logical_source_closure"]
+    runtime.require(
+        closure == attempt.get("expected_logical_source_closure"),
+        "actual attempt logical source closure differs from validated plan",
+    )
     nonce = attempt.get("attempt_nonce")
     runtime.require(isinstance(nonce, str), "missing actual attempt nonce")
     original_program = attempt_root / "control/instrumented-prefix.ml"
     original_postlude = attempt_root / "control/postlude.ml"
+    theorem_names = runtime.fingerprint_requests(attempt["boundary_id"])
 
     original = build_prepared(
         manifest, sources, normalizations, candle_root, flyspeck_root,
-        overlay_root,
+        overlay_root, linked,
     )
+    for field in (
+        "source_runtime", "source_alias_runtime", "source_loader_runtime",
+        "normalized_runtime",
+    ):
+        runtime.require(
+            original[field] == validated[field],
+            f"relocation dry-run {field} differs from validated plan",
+        )
     original_contract = runtime.build_source_trace_contract(
-        original, closure, original_program, original_postlude, [], nonce,
+        original, closure, original_program, original_postlude, theorem_names,
+        nonce,
     )
+    expected_trace = attempt.get("expected_physical_source_trace")
+    runtime.require(original_contract == expected_trace,
+                    "reconstructed trace differs from actual attempt contract")
+    log_record = receipt.get("log")
+    runtime.require(isinstance(log_record, dict), "missing actual receipt log")
+    log_path = attempt_root / runtime.safe_relative(
+        log_record.get("path"), "actual receipt log",
+    )
+    runtime.validate_file(log_path, log_record, "actual receipt log")
+    observed_trace = runtime.validate_source_trace(
+        log_path.read_text(encoding="utf-8", errors="replace"), expected_trace,
+    )
+    runtime.require(observed_trace == receipt.get("physical_source_trace"),
+                    "actual receipt physical trace differs from bound log")
 
     with tempfile.TemporaryDirectory(prefix="candle-loader-relocation-") as temporary:
         relocated = Path(temporary) / "authenticated-snapshot-relocation"
@@ -229,11 +264,11 @@ def run(plan_root: Path, attempt_root: Path) -> dict[str, Any]:
         )
         relocated_prepared = build_prepared(
             manifest, sources, normalizations, relocated_candle,
-            relocated_flyspeck, relocated_overlay,
+            relocated_flyspeck, relocated_overlay, linked,
         )
         relocated_contract = runtime.build_source_trace_contract(
             relocated_prepared, closure, relocated_program,
-            relocated_postlude, [], nonce,
+            relocated_postlude, theorem_names, nonce,
         )
         original_logical = logical_projection(original_contract)
         relocated_logical = logical_projection(relocated_contract)
@@ -290,6 +325,10 @@ def run(plan_root: Path, attempt_root: Path) -> dict[str, Any]:
         "original_observation_sha256": original_contract["ordered_binding_sha256"],
         "relocated_observation_sha256": relocated_contract["ordered_binding_sha256"],
         "logical_projection_sha256": runtime.canonical_sha256(original_logical),
+        "observed_physical_trace_sha256": runtime.canonical_sha256(
+            observed_trace,
+        ),
+        "actual_physical_trace_validated": True,
         "logical_authority_unchanged": True,
         "absolute_observations_changed": True,
         "initial_request": "hol.ml",

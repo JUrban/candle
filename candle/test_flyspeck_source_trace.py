@@ -51,13 +51,40 @@ class SourceTraceTests(unittest.TestCase):
                 "key": key, "repository": repository, "path": relative,
                 **subject.hash_file(path),
             }
+        linked_dependency = {
+            "generation": {
+                "generator": "candle/insulate.py",
+                "recipe": "build-instructions.sh",
+                "runtime_input": "candle/build/types.txt",
+            },
+            "kind": "loads",
+            "line": 23,
+            "literal": "candle/build/insulate.ml",
+            "status": "generated-contract",
+            "syntax_position": "standalone-phrase",
+        }
+        insulate = candle / "candle/build/insulate.ml"
+        source_by_key["candle:candle/build/insulate.ml"] = {
+            "key": "candle:candle/build/insulate.ml",
+            "repository": "candle",
+            "path": "candle/build/insulate.ml",
+            "artifact_role": "linked-runtime-control",
+            **subject.hash_file(insulate),
+        }
         manifest = {
             "load_path_order": list(subject.SOURCE_ALIAS_LOAD_PATH_ORDER),
             "build_sequence_roots": [{
                 "index": 0, "target": "general/a.hl", "status": "resolved",
                 "selected": "flyspeck:text_formalization/general/a.hl",
             }],
-            "source_nodes": {},
+            "source_nodes": {
+                "candle:hol_lib.ml": {
+                    "dependencies": [linked_dependency],
+                },
+            },
+            "generated_dependency_contracts": [{
+                **linked_dependency, "source": "candle:hol_lib.ml",
+            }],
         }
         source_loader_runtime = subject.derive_source_loader_runtime(
             manifest, source_by_key, candle, flyspeck,
@@ -442,6 +469,23 @@ class SourceTraceTests(unittest.TestCase):
                         "canonical_relative": "a.ml",
                         "search_contexts": ["test-flyspeck-alias-root"],
                     },
+                    {
+                        "source_key": "candle:candle/build/insulate.ml",
+                        "request_repository": "candle",
+                        "request_relative": "candle/build/insulate.ml",
+                        "canonical_repository": "candle",
+                        "canonical_relative": "candle/build/insulate.ml",
+                        "artifact_role": "linked-runtime-control",
+                        "source_md5": subject.hash_file(
+                            candle / "candle/build/insulate.ml"
+                        )["md5"],
+                        "source_sha256": subject.hash_file(
+                            candle / "candle/build/insulate.ml"
+                        )["sha256"],
+                        "search_contexts": [
+                            "manifest-generated-loader-contract"
+                        ],
+                    },
                 ],
                 "normalized_runtime": [{
                     "source_key": "flyspeck:a", "original": str(source),
@@ -541,10 +585,127 @@ class SourceTraceTests(unittest.TestCase):
                 hol["logical_identity"]["request_contexts"],
                 ["setup-pre-load-path-candle-dot"],
             )
+            insulate = next(
+                binding for binding in left_contract["bindings"]
+                if binding["key"] == "candle:candle/build/insulate.ml"
+            )
+            self.assertEqual(insulate["resolved"], "candle/build/insulate.ml")
+            self.assertEqual(
+                insulate["logical_identity"], {
+                    "schema": 1,
+                    "artifact_role": "linked-runtime-control",
+                    "source_key": "candle:candle/build/insulate.ml",
+                    "source_repository": "candle",
+                    "source_relative_path": "candle/build/insulate.ml",
+                    "request_repository": "candle",
+                    "request_relative_path": "candle/build/insulate.ml",
+                    "request_contexts": [
+                        "manifest-generated-loader-contract"
+                    ],
+                    "source_md5": insulate["source_md5"],
+                    "source_sha256": insulate["source_sha256"],
+                    "selected_repository": "candle",
+                    "selected_relative_path": "candle/build/insulate.ml",
+                    "selected_sha256": insulate["selected_sha256"],
+                    "normalization": "-",
+                },
+            )
             self.assertNotEqual(
                 left_contract["ordered_binding_sha256"],
                 right_contract["ordered_binding_sha256"],
             )
+
+    def test_linked_runtime_source_authority_is_complete_and_fail_closed(self) -> None:
+        dependency = {
+            "generation": {
+                "generator": "candle/insulate.py",
+                "recipe": "build-instructions.sh",
+                "runtime_input": "candle/build/types.txt",
+            },
+            "kind": "loads",
+            "line": 23,
+            "literal": "candle/build/insulate.ml",
+            "status": "generated-contract",
+            "syntax_position": "standalone-phrase",
+        }
+
+        def fixture(root: Path) -> tuple[dict[str, object], dict[str, object], Path]:
+            path = root / "candle/build/insulate.ml"
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"(* exact linked runtime source *)\n")
+            output = subject.hash_file(path)
+            manifest = {
+                "generated_dependency_contracts": [{
+                    **dependency, "source": "candle:hol_lib.ml",
+                }],
+                "source_nodes": {
+                    "candle:hol_lib.ml": {"dependencies": [dependency]},
+                },
+            }
+            linked = {
+                "outputs": {
+                    "insulate.ml": {
+                        field: output[field] for field in ("bytes", "sha256")
+                    },
+                },
+            }
+            return manifest, linked, path
+
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            valid_manifest, valid_linked, valid_path = fixture(base / "valid")
+            observed = subject.derive_linked_runtime_sources(
+                valid_manifest, valid_linked, base / "valid",
+            )
+            self.assertEqual(list(observed), [
+                "candle:candle/build/insulate.ml"
+            ])
+            self.assertEqual(observed[
+                "candle:candle/build/insulate.ml"
+            ]["artifact_role"], "linked-runtime-control")
+
+            changed_manifest, changed_linked, changed_path = fixture(base / "changed")
+            changed_path.write_bytes(b"changed bytes")
+            with self.assertRaisesRegex(subject.ContractError, "mismatch"):
+                subject.derive_linked_runtime_sources(
+                    changed_manifest, changed_linked, base / "changed",
+                )
+
+            symlink_manifest, symlink_linked, symlink_path = fixture(base / "symlink")
+            replacement = symlink_path.with_name("replacement.ml")
+            replacement.write_bytes(symlink_path.read_bytes())
+            symlink_path.unlink()
+            symlink_path.symlink_to(replacement.name)
+            with self.assertRaisesRegex(subject.ContractError, "missing ordinary"):
+                subject.derive_linked_runtime_sources(
+                    symlink_manifest, symlink_linked, base / "symlink",
+                )
+
+            hardlink_manifest, hardlink_linked, hardlink_path = fixture(base / "hardlink")
+            replacement = hardlink_path.with_name("replacement.ml")
+            hardlink_path.rename(replacement)
+            os.link(replacement, hardlink_path)
+            with self.assertRaisesRegex(subject.ContractError, "unique ordinary"):
+                subject.derive_linked_runtime_sources(
+                    hardlink_manifest, hardlink_linked, base / "hardlink",
+                )
+
+            substituted_manifest, substituted_linked, _ = fixture(base / "substituted")
+            substituted_manifest["generated_dependency_contracts"][0]["literal"] = (
+                "candle/build/substitute.ml"
+            )
+            with self.assertRaisesRegex(subject.ContractError, "parent dependency"):
+                subject.derive_linked_runtime_sources(
+                    substituted_manifest, substituted_linked,
+                    base / "substituted",
+                )
+
+            missing_manifest, missing_linked, _ = fixture(base / "missing")
+            missing_linked["outputs"] = {}
+            with self.assertRaisesRegex(subject.ContractError, "lacks an exact linked output"):
+                subject.derive_linked_runtime_sources(
+                    missing_manifest, missing_linked, base / "missing",
+                )
 
     def test_loader_context_rejects_substitution_bytes_links_and_basename_alias(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

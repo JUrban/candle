@@ -887,6 +887,70 @@ def derive_source_alias_contract(
     }
 
 
+def derive_linked_runtime_sources(
+    manifest: dict[str, Any], linked_record: dict[str, Any], candle_root: Path,
+) -> dict[str, dict[str, Any]]:
+    """Bind the complete manifest-declared linked-build loader source class."""
+    dependencies = manifest.get("generated_dependency_contracts")
+    nodes = manifest.get("source_nodes")
+    outputs = linked_record.get("outputs")
+    require(isinstance(dependencies, list) and
+            all(isinstance(item, dict) for item in dependencies) and
+            isinstance(nodes, dict) and isinstance(outputs, dict),
+            "missing linked runtime source authority")
+    records: dict[str, dict[str, Any]] = {}
+    for dependency in dependencies:
+        if dependency.get("status") != "generated-contract":
+            continue
+        require(dependency.get("syntax_position") == "standalone-phrase" and
+                dependency.get("kind") in SOURCE_TRACE_KINDS,
+                "generated loader contract is not a standalone source action")
+        relative = safe_relative(
+            dependency.get("literal"), "generated loader contract path",
+        )
+        if relative.parts[:2] != ("candle", "build"):
+            continue
+        require(relative.as_posix() == dependency["literal"] and
+                len(relative.parts) > 2,
+                "linked runtime source path is not canonical")
+        parent_key = dependency.get("source")
+        parent = nodes.get(parent_key)
+        require(isinstance(parent_key, str) and isinstance(parent, dict),
+                "linked runtime source parent is not a manifest node")
+        parent_dependencies = parent.get("dependencies")
+        expected_parent_dependency = {
+            key: value for key, value in dependency.items() if key != "source"
+        }
+        require(isinstance(parent_dependencies, list) and
+                sum(item == expected_parent_dependency
+                    for item in parent_dependencies) == 1,
+                "linked runtime source differs from parent dependency provenance")
+        output_name = Path(*relative.parts[2:]).as_posix()
+        output_record = outputs.get(output_name)
+        require(isinstance(output_record, dict) and
+                set(output_record) == {"bytes", "sha256"},
+                f"linked runtime source lacks an exact linked output: {output_name}")
+        path = candle_root / relative
+        observed = validate_file(
+            path, output_record, f"linked runtime source {output_name}",
+        )
+        require(path.stat().st_nlink == 1,
+                f"linked runtime source is not a unique ordinary file: {path}")
+        key = f"candle:{relative.as_posix()}"
+        require(key not in records,
+                f"duplicate linked runtime source authority: {key}")
+        records[key] = {
+            "key": key,
+            "repository": "candle",
+            "path": relative.as_posix(),
+            "artifact_role": "linked-runtime-control",
+            "linked_output": output_name,
+            **observed,
+        }
+    require(records, "manifest declares no linked-build runtime loader sources")
+    return records
+
+
 def derive_source_loader_runtime(
     manifest: dict[str, Any], source_by_key: dict[str, dict[str, Any]],
     candle_root: Path, flyspeck_root: Path,
@@ -1002,6 +1066,49 @@ def derive_source_loader_runtime(
             "uses": [{
                 key: value for key, value in occurrence.items()
                 if key != "lookup"
+            }],
+        })
+
+    generated_dependencies = manifest.get("generated_dependency_contracts")
+    require(isinstance(generated_dependencies, list) and
+            all(isinstance(item, dict) for item in generated_dependencies),
+            "missing generated loader dependency provenance")
+    for dependency in generated_dependencies:
+        if dependency.get("status") != "generated-contract":
+            continue
+        require(dependency.get("syntax_position") == "standalone-phrase" and
+                dependency.get("kind") in SOURCE_TRACE_KINDS,
+                "generated loader dependency is not a standalone source action")
+        relative = safe_relative(
+            dependency.get("literal"), "generated loader dependency path",
+        )
+        require(relative.as_posix() == dependency["literal"],
+                "generated loader dependency path is not canonical")
+        source_key = f"candle:{relative.as_posix()}"
+        require(source_key in source_by_key,
+                f"generated loader dependency is unbound: {source_key}")
+        parent_key = dependency.get("source")
+        parent = manifest.get("source_nodes", {}).get(parent_key)
+        expected_parent_dependency = {
+            key: value for key, value in dependency.items() if key != "source"
+        }
+        require(isinstance(parent, dict) and
+                sum(item == expected_parent_dependency
+                    for item in parent.get("dependencies", [])) == 1,
+                "generated loader dependency differs from source graph")
+        raw_records.append({
+            "source_key": source_key,
+            "request_repository": "candle",
+            "request_relative": relative.as_posix(),
+            "canonical_repository": "candle",
+            "canonical_relative": relative.as_posix(),
+            "search_context": "manifest-generated-loader-contract",
+            "uses": [{
+                "kind": "manifest-generated-source-action",
+                "parent_source": parent_key,
+                "line": dependency.get("line"),
+                "action_kind": dependency.get("kind"),
+                "generation": dependency.get("generation"),
             }],
         })
 
@@ -1300,6 +1407,9 @@ def validate_plan(
     for relative in (SETUP_RELATIVE, CHECK_RELATIVE, FINGERPRINT_RELATIVE,
                      L2_TARGET_RELATIVE):
         harness_records[relative.as_posix()] = hash_file(candle_root / relative)
+    linked_runtime_sources = derive_linked_runtime_sources(
+        manifest, linked_record, candle_root,
+    )
     source_loader_runtime = derive_source_loader_runtime(
         manifest, {
             **source_by_key,
@@ -1310,6 +1420,7 @@ def validate_plan(
                 "artifact_role": "generated-runtime-control",
                 **source_digest_record,
             },
+            **linked_runtime_sources,
         }, candle_root, flyspeck_root,
     )
 
@@ -1465,19 +1576,15 @@ def validate_plan(
             "logical_source_delta": ledger_delta,
             "logical_source_delta_sha256": canonical_sha256(ledger_delta),
         })
-    linked_outputs = linked_record.get("outputs")
-    require(isinstance(linked_outputs, dict) and
-            isinstance(linked_outputs.get("insulate.ml"), dict),
-            "missing linked insulate output")
-    insulate_record = validate_file(
-        candle_root / "candle/build/insulate.ml",
-        linked_outputs["insulate.ml"], "linked insulate generated control",
-    )
+    generated_control_records = {
+        key: record for key, record in linked_runtime_sources.items()
+    }
+    generated_control_records[
+        "candle:candle/flyspeck_source_digests.ml"
+    ] = source_digest_record
     logical_source_closure = derive_logical_source_closure(
-        manifest, count, boundary_id.startswith("07-"), {
-            "candle:candle/build/insulate.ml": insulate_record,
-            "candle:candle/flyspeck_source_digests.ml": source_digest_record,
-        },
+        manifest, count, boundary_id.startswith("07-"),
+        generated_control_records,
     )
 
     return {
@@ -2660,9 +2767,6 @@ def build_source_trace_contract(
         ("candle:candle/flyspeck_source_digests.ml",
          candle_root / SOURCE_DIGEST_RELATIVE, "generated-runtime-control",
          "candle", SOURCE_DIGEST_RELATIVE.as_posix()),
-        ("candle:candle/build/insulate.ml",
-         candle_root / "candle/build/insulate.ml", "linked-runtime-control",
-         "candle", "candle/build/insulate.ml"),
         ("control:instrumented-prefix", program_path, "attempt-control",
          "attempt-control", "control/instrumented-prefix.ml"),
         ("control:stratum-check", candle_root / CHECK_RELATIVE,
