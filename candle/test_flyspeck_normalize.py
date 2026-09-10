@@ -356,9 +356,9 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ))
         for entry_id, lines in (
             ("PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
-             [103, 142, 125, 133, 143]),
+             [103, 142, 125, 133, 143, 485, 489]),
             ("PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
-             [89, 133, 105, 113, 134]),
+             [89, 133, 105, 113, 134, 432, 436]),
         ):
             tactic = entries[entry_id]
             self.assertEqual(
@@ -379,6 +379,10 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 "Pair.compare String.compare Term.compare",
                 tactic["operations"][4]["after"],
             )
+            self.assertTrue(all(
+                operation["after"].startswith("let _ = REBIND_")
+                for operation in tactic["operations"][5:]
+            ))
         refinement = entries["PROJECT-REFINEMENT-S3-FOR-LOOP-001"]
         self.assertEqual(refinement["operations"][0]["line"], 40)
         self.assertIn("let rec update_all i", (
@@ -541,7 +545,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 102)
+        self.assertEqual(len(operation_ids), 106)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

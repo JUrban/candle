@@ -8787,8 +8787,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "5dce2ccfbfd9f19b735149a30893a3f2",
-    "generated_source_sha256": "474033f5fe7ada279976d9c97d522ded6465ef62b21cdb26fbb1d16ea6fc27d0",
+    "generated_source_md5": "97f4e7c140faa648433b11a1dfed6d13",
+    "generated_source_sha256": "a580cca9fbe50552c8175fa5e6fdc509b34b9150bff6811c53724cf6439f2e74",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14802,10 +14802,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "c0c68c5147f1b0f577f6fa86014bb644",
+      "md5": "2bd140fe4f236223547bbc9131a26b89",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "9ce95347636144c0d5c28c9aaac123e59f748741d322564dad6f6a33fd7c3ac0"
+      "sha256": "99510a0e51c4298bc4c6fb9bb3ca4121094a404f6a04336848d99645ee308e4c"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -18208,10 +18208,10 @@
       "execution_normalization": {
         "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16573,
-        "normalized_md5": "3945b87bbbcf00c8d4414542725feff9",
-        "normalized_sha256": "215adf6f1cc49c75175d7c1fb922834be34b8c57adcf3c7bb79ec4a5faa77cf6",
-        "operation_count": 5
+        "normalized_bytes": 16589,
+        "normalized_md5": "d172f2eac8581aba7a1f322717856d0d",
+        "normalized_sha256": "942cfb42c3ebabf9a264c98a2158361526e6b8338d7f2a9053cb6bfc6407315d",
+        "operation_count": 7
       },
       "md5": "7a6198ddba9748c820ec5d4bbd07afa4",
       "path": "text_formalization/general/hales_tactic.hl",
@@ -18486,10 +18486,10 @@
       "execution_normalization": {
         "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 18378,
-        "normalized_md5": "1c9fd2e8252945b87d5a982d3ca4b446",
-        "normalized_sha256": "e401631b2fc6a3f6285bd180169382ab4311c0fdd511d1e1e47771d3c38b202f",
-        "operation_count": 5
+        "normalized_bytes": 18394,
+        "normalized_md5": "9137be956d3b3b8bd451663cda82f264",
+        "normalized_sha256": "a96876c5f54a4532ee67e56ca9b33a7245546364640ba66d882506de999f0951",
+        "operation_count": 7
       },
       "md5": "a3005daec1a8dd59200622ff3cf85779",
       "path": "text_formalization/general/truong_tactic.hl",
@@ -22195,7 +22195,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "5f01bd96faa46f5e0e66cc146cf833596f06466f8f71917cc2c0588b4e982463",
+    "contract_sha256": "f60bcd164c76a57c27bf07a8583c78f41cfdf860092466d5cd2640d70fe6eacb",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22740,10 +22740,10 @@
       {
         "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16573,
-        "normalized_md5": "3945b87bbbcf00c8d4414542725feff9",
-        "normalized_sha256": "215adf6f1cc49c75175d7c1fb922834be34b8c57adcf3c7bb79ec4a5faa77cf6",
-        "operation_count": 5,
+        "normalized_bytes": 16589,
+        "normalized_md5": "d172f2eac8581aba7a1f322717856d0d",
+        "normalized_sha256": "942cfb42c3ebabf9a264c98a2158361526e6b8338d7f2a9053cb6bfc6407315d",
+        "operation_count": 7,
         "operations": [
           {
             "after": "List.concat (map frees tms)",
@@ -22779,11 +22779,25 @@
             "id": "PROJECT-HALES-TACTIC-S3-TERM-SETIFY-001-ENVL-NAMED-TERMS",
             "kind": "exact_bytes_replace_once",
             "line": 143
+          },
+          {
+            "after": "let _ = REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+            "before": "REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+            "id": "PROJECT-HALES-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-CONV",
+            "kind": "exact_bytes_replace_once",
+            "line": 485
+          },
+          {
+            "after": "let _ = REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+            "before": "REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+            "id": "PROJECT-HALES-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-RULE",
+            "kind": "exact_bytes_replace_once",
+            "line": 489
           }
         ],
         "path": "text_formalization/general/hales_tactic.hl",
-        "scope_limit": "This is limited to the six hash-pinned Hales_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required.",
-        "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
+        "scope_limit": "This is limited to the hash-pinned Hales_tactic list operations and two REBIND examples. It does not authorize a comparator for another element representation, general structure-expression translation, or any change to a theorem, tactic, matching, or instantiation operation. Focused comparator/type/effect oracles and the complete cumulative action remain required.",
+        "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Each added wildcard binding evaluates the identical REBIND example once at its original module-initialization position and discards the same theorem result, preserving evaluation order, effects, and exceptions. Inputs, term identities, matching, instantiation, theorem statements, and tactic bodies are unchanged.",
         "source_key": "flyspeck:text_formalization/general/hales_tactic.hl",
         "source_md5": "7a6198ddba9748c820ec5d4bbd07afa4",
         "source_sha256": "2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408"
@@ -22791,10 +22805,10 @@
       {
         "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 18378,
-        "normalized_md5": "1c9fd2e8252945b87d5a982d3ca4b446",
-        "normalized_sha256": "e401631b2fc6a3f6285bd180169382ab4311c0fdd511d1e1e47771d3c38b202f",
-        "operation_count": 5,
+        "normalized_bytes": 18394,
+        "normalized_md5": "9137be956d3b3b8bd451663cda82f264",
+        "normalized_sha256": "a96876c5f54a4532ee67e56ca9b33a7245546364640ba66d882506de999f0951",
+        "operation_count": 7,
         "operations": [
           {
             "after": "List.concat (map frees tms)",
@@ -22830,11 +22844,25 @@
             "id": "PROJECT-TRUONG-TACTIC-S3-TERM-SETIFY-001-ENVL-NAMED-TERMS",
             "kind": "exact_bytes_replace_once",
             "line": 134
+          },
+          {
+            "after": "let _ = REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+            "before": "REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+            "id": "PROJECT-TRUONG-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-CONV",
+            "kind": "exact_bytes_replace_once",
+            "line": 432
+          },
+          {
+            "after": "let _ = REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+            "before": "REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+            "id": "PROJECT-TRUONG-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-RULE",
+            "kind": "exact_bytes_replace_once",
+            "line": 436
           }
         ],
         "path": "text_formalization/general/truong_tactic.hl",
-        "scope_limit": "This is limited to the six hash-pinned Truong_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required.",
-        "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
+        "scope_limit": "This is limited to the hash-pinned Truong_tactic list operations and two REBIND examples. It does not authorize a comparator for another element representation, general structure-expression translation, or any change to a theorem, tactic, matching, or instantiation operation. Focused comparator/type/effect oracles and the complete cumulative action remain required.",
+        "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Each added wildcard binding evaluates the identical REBIND example once at its original module-initialization position and discards the same theorem result, preserving evaluation order, effects, and exceptions. Inputs, term identities, matching, instantiation, theorem statements, and tactic bodies are unchanged.",
         "source_key": "flyspeck:text_formalization/general/truong_tactic.hl",
         "source_md5": "a3005daec1a8dd59200622ff3cf85779",
         "source_sha256": "5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548"
@@ -23609,8 +23637,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "c0c68c5147f1b0f577f6fa86014bb644",
-    "generated_source_sha256": "9ce95347636144c0d5c28c9aaac123e59f748741d322564dad6f6a33fd7c3ac0",
+    "generated_source_md5": "2bd140fe4f236223547bbc9131a26b89",
+    "generated_source_sha256": "99510a0e51c4298bc4c6fb9bb3ca4121094a404f6a04336848d99645ee308e4c",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

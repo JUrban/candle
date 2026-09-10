@@ -524,9 +524,9 @@
       "path": "text_formalization/general/hales_tactic.hl",
       "source_sha256": "2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408",
       "source_md5": "7a6198ddba9748c820ec5d4bbd07afa4",
-      "normalized_sha256": "215adf6f1cc49c75175d7c1fb922834be34b8c57adcf3c7bb79ec4a5faa77cf6",
-      "normalized_md5": "3945b87bbbcf00c8d4414542725feff9",
-      "normalized_bytes": 16573,
+      "normalized_sha256": "942cfb42c3ebabf9a264c98a2158361526e6b8338d7f2a9053cb6bfc6407315d",
+      "normalized_md5": "d172f2eac8581aba7a1f322717856d0d",
+      "normalized_bytes": 16589,
       "operations": [
         {
           "id": "PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
@@ -562,10 +562,24 @@
           "line": 143,
           "before": "  let svarl = setify(map (fun t-> (fst(dest_var t),t)) varl) in",
           "after": "  let svarl = setify (fun x y -> Pair.compare String.compare Term.compare x y <= 0) (map (fun t-> (fst(dest_var t),t)) varl) in"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-CONV",
+          "kind": "exact_bytes_replace_once",
+          "line": 485,
+          "before": "REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+          "after": "let _ = REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;"
+        },
+        {
+          "id": "PROJECT-HALES-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-RULE",
+          "kind": "exact_bytes_replace_once",
+          "line": 489,
+          "before": "REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+          "after": "let _ = REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;"
         }
       ],
-      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
-      "scope_limit": "This is limited to the six hash-pinned Hales_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required."
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Each added wildcard binding evaluates the identical REBIND example once at its original module-initialization position and discards the same theorem result, preserving evaluation order, effects, and exceptions. Inputs, term identities, matching, instantiation, theorem statements, and tactic bodies are unchanged.",
+      "scope_limit": "This is limited to the hash-pinned Hales_tactic list operations and two REBIND examples. It does not authorize a comparator for another element representation, general structure-expression translation, or any change to a theorem, tactic, matching, or instantiation operation. Focused comparator/type/effect oracles and the complete cumulative action remain required."
     },
     {
       "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
@@ -573,9 +587,9 @@
       "path": "text_formalization/general/truong_tactic.hl",
       "source_sha256": "5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548",
       "source_md5": "a3005daec1a8dd59200622ff3cf85779",
-      "normalized_sha256": "e401631b2fc6a3f6285bd180169382ab4311c0fdd511d1e1e47771d3c38b202f",
-      "normalized_md5": "1c9fd2e8252945b87d5a982d3ca4b446",
-      "normalized_bytes": 18378,
+      "normalized_sha256": "a96876c5f54a4532ee67e56ca9b33a7245546364640ba66d882506de999f0951",
+      "normalized_md5": "9137be956d3b3b8bd451663cda82f264",
+      "normalized_bytes": 18394,
       "operations": [
         {
           "id": "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001-GOAL-FREES",
@@ -611,10 +625,24 @@
           "line": 134,
           "before": "  let svarl = setify(map (fun t-> (fst(dest_var t),t)) varl) in",
           "after": "  let svarl = setify (fun x y -> Pair.compare String.compare Term.compare x y <= 0) (map (fun t-> (fst(dest_var t),t)) varl) in"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-CONV",
+          "kind": "exact_bytes_replace_once",
+          "line": 432,
+          "before": "REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;",
+          "after": "let _ = REBIND_CONV (`x:real`,\"y\") (`pi + (\\ x . x + pi) pi`);;"
+        },
+        {
+          "id": "PROJECT-TRUONG-TACTIC-S3-STRUCTURE-EFFECT-001-REBIND-RULE",
+          "kind": "exact_bytes_replace_once",
+          "line": 436,
+          "before": "REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;",
+          "after": "let _ = REBIND_RULE (`x:real`,\"y\") (ASSUME (`pi + (\\ x . x + pi) pi = &1`));;"
         }
       ],
-      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Inputs, term identities, matching, instantiation, and tactic bodies are unchanged.",
-      "scope_limit": "This is limited to the six hash-pinned Truong_tactic list operations: two concatenations, three term-list setifications, and one string/term-pair setification. It does not authorize a comparator for another element representation or change any theorem, tactic, matching, or instantiation operation. Focused comparator/type oracles and the complete cumulative action remain required."
+      "semantic_rule": "OCaml List.flatten is an alias of List.concat, while Candle's compatibility List module exposes the latter name only. The two exact replacements retain list order and duplicates. Native unary setify orders and deduplicates terms with polymorphic structural comparison. Candle's Term.compare follows the same Var, Const, Comb, Abs constructor order and recursively compares the same names, types, and children; its explicit strict relation therefore produces the same distinct ascending term list. For named terms, Pair.compare String.compare Term.compare is the same lexicographic string-then-term order, with <= 0 retaining the native non-strict comparator at the sort boundary. Each added wildcard binding evaluates the identical REBIND example once at its original module-initialization position and discards the same theorem result, preserving evaluation order, effects, and exceptions. Inputs, term identities, matching, instantiation, theorem statements, and tactic bodies are unchanged.",
+      "scope_limit": "This is limited to the hash-pinned Truong_tactic list operations and two REBIND examples. It does not authorize a comparator for another element representation, general structure-expression translation, or any change to a theorem, tactic, matching, or instantiation operation. Focused comparator/type/effect oracles and the complete cumulative action remain required."
     },
     {
       "id": "PROJECT-REFINEMENT-S3-FOR-LOOP-001",

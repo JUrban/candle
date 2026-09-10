@@ -26,11 +26,16 @@ let candle_flyspeck_hash_of_string s =
 
 let candle_flyspeck_structure_effects = ref ([]:int list);;
 module Candle_flyspeck_structure_effects = struct
-  let emit value =
+  let REBIND_CONV value =
     candle_flyspeck_structure_effects :=
-      value::!candle_flyspeck_structure_effects;;
-  let _ = emit 1;;
-  let _ = emit 2;;
+      value::!candle_flyspeck_structure_effects;
+    value;;
+  let _ = REBIND_CONV 1;;
+  let REBIND_RULE value =
+    candle_flyspeck_structure_effects :=
+      value::!candle_flyspeck_structure_effects;
+    value;;
+  let _ = REBIND_RULE 2;;
 end;;
 
 let candle_flyspeck_boundary_compatibility_oracle_ok =

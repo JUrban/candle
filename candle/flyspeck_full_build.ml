@@ -14,9 +14,9 @@
 #flyspeck_needs "general/print_types.hl";;
 (* 004 selected=flyspeck:text_formalization/general/sphere.hl sha256=3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32 normalization=PROJECT-SPHERE-S3-TERM-ORDER-001 normalized_sha256=c603db1406e86a1cab71e2f54035c425aa8392b49cdec619232812793c4c0d3d *)
 #flyspeck_needs "general/sphere.hl";;
-(* 005 selected=flyspeck:text_formalization/general/hales_tactic.hl sha256=2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408 normalization=PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=215adf6f1cc49c75175d7c1fb922834be34b8c57adcf3c7bb79ec4a5faa77cf6 *)
+(* 005 selected=flyspeck:text_formalization/general/hales_tactic.hl sha256=2f066101a59c74dd24c48985413534e653c90f96b82d97f8422aa5335d1c8408 normalization=PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=942cfb42c3ebabf9a264c98a2158361526e6b8338d7f2a9053cb6bfc6407315d *)
 #flyspeck_needs "general/hales_tactic.hl";;
-(* 006 selected=flyspeck:text_formalization/general/truong_tactic.hl sha256=5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548 normalization=PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=e401631b2fc6a3f6285bd180169382ab4311c0fdd511d1e1e47771d3c38b202f *)
+(* 006 selected=flyspeck:text_formalization/general/truong_tactic.hl sha256=5491a391c6e4925384eda9b5edb9fc888aa13dbf0aef93b31594770b28908548 normalization=PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001 normalized_sha256=a96876c5f54a4532ee67e56ca9b33a7245546364640ba66d882506de999f0951 *)
 #flyspeck_needs "general/truong_tactic.hl";;
 (* 007 selected=flyspeck:text_formalization/leg/basics.hl sha256=76c152b020418c2f96652f6315db885640239443aeab1d9ed4bb7e29338bafe1 *)
 #flyspeck_needs "leg/basics.hl";;

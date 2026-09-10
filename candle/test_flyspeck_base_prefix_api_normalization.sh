@@ -121,6 +121,10 @@ rg -Fq 'let _ = Parse_ext_override_interface.prioritize_real();;' \
   "$goal_printer"
 [[ $(rg -c '^open (Refinement|Hash_term|Lib_ext);;$' "$goal_printer") -eq 3 ]]
 rg -Fq 'let _ = select_thm' "$tactics"
+[[ $(rg -Fc 'let _ = REBIND_CONV' "$hales") -eq 1 ]]
+[[ $(rg -Fc 'let _ = REBIND_RULE' "$hales") -eq 1 ]]
+[[ $(rg -Fc 'let _ = REBIND_CONV' "$truong") -eq 1 ]]
+[[ $(rg -Fc 'let _ = REBIND_RULE' "$truong") -eq 1 ]]
 if rg -q '^select_thm$' "$tactics"; then
   echo 'normalized general tactics retained anonymous select example' >&2
   exit 1
@@ -175,7 +179,7 @@ fi
 
 (
   cd "$candle_runtime_cwd"
-  printf '#use "hol.ml";;\nlet candle_focused_text_root = "%s";;\nlet candle_focused_eval_original = "%s";;\nload_path := candle_focused_text_root :: !load_path;;\nCakeml.configureSourceIdentities [(candle_focused_eval_original,("flyspeck_eval_4.14.hl","0f625ae4acb1fa69d4add5957e0ff308"))];;\nCakeml.configureNormalizationOverlay [(candle_focused_eval_original,"%s")];;\nneeds "general/flyspeck_eval_4.14.hl";;\nlet process_to_string unixstring =\n  let p = Unix.open_process_in unixstring\n  and b = Buffer.create 64 in\n  let rec read () = Buffer.add_channel b p 1; read () in\n    try read () with End_of_file -> (Unix.close_process_in p; Buffer.contents b);;\nlet dest_goal gl = gl;;\nlet mk_goal (asl,w) = (asl,w);;\nlet print_as l str = Pretty.print_stdout (fun state (length,string) -> Pretty_imp.print_as state length string) (l,str);;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\nlet prove_by_refinement = Prove_by_refinement.prove_by_refinement;;\n#use "%s";;\n' \
+  printf '#use "hol.ml";;\nlet candle_focused_text_root = "%s";;\nlet candle_focused_eval_original = "%s";;\nload_path := candle_focused_text_root :: !load_path;;\nCakeml.configureSourceIdentities [(candle_focused_eval_original,("flyspeck_eval_4.14.hl","0f625ae4acb1fa69d4add5957e0ff308"))];;\nCakeml.configureNormalizationOverlay [(candle_focused_eval_original,"%s")];;\nneeds "general/flyspeck_eval_4.14.hl";;\nlet process_to_string unixstring =\n  let p = Unix.open_process_in unixstring\n  and b = Buffer.create 64 in\n  let rec read () = Buffer.add_channel b p 1; read () in\n    try read () with End_of_file -> (Unix.close_process_in p; Buffer.contents b);;\nlet dest_goal gl = gl;;\nlet mk_goal (asl,w) = (asl,w);;\nlet print_as l str = Pretty.print_stdout (fun state (length,string) -> Pretty_imp.print_as state length string) (l,str);;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\n#use "%s";;\nlet prove_by_refinement = Prove_by_refinement.prove_by_refinement;;\n#use "%s";;\n' \
       "$flyspeck_root/text_formalization" \
       "$flyspeck_root/text_formalization/general/flyspeck_eval_4.14.hl" \
       "$flyspeck_eval" \
@@ -184,6 +188,7 @@ fi
       "$fixture_root/base_prefix_api_original_flatten.ml" \
       "$fixture_root/base_prefix_api_original_printf.ml" \
       "$fixture_root/base_prefix_api_original_rev.ml" \
+      "$fixture_root/base_prefix_api_original_rebind_structure.ml" \
       "$fixture_root/base_prefix_api_normalized.ml" \
       "$lib" \
       "$fixture_root/flyspeck_boundary_compatibility_normalized.ml" \
@@ -203,6 +208,7 @@ rg -Fq 'Type mismatch between int list -> int list and term list' \
 rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: Printf.fprintf' "$test_dir/candle.log"
 rg -Fq 'Value restriction violated' "$test_dir/candle.log"
+rg -Fq 'Undefined variable: REBIND_CONV' "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_all_forall = <fun>: term -> term' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_flatten_frees = <fun>: term list -> term list' \
@@ -226,7 +232,7 @@ rg -Fq -- "- Finished loading $parse_ext" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $goal_printer" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $prove_refinement" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $tactics" "$test_dir/candle.log"
-if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 4 ]]; then
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 5 ]]; then
   tail -n 80 "$test_dir/candle.log" >&2
   exit 1
 fi
