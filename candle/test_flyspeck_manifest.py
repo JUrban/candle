@@ -627,9 +627,9 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         nonlinear_boundary_counts = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 9,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 10,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }

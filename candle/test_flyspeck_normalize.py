@@ -451,17 +451,21 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         nonlinear_boundary_entries = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 9,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 10,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }
         for entry_id, operation_count in nonlinear_boundary_entries.items():
             self.assertEqual(len(entries[entry_id]["operations"]), operation_count)
-        ineq_structure = entries[
+        ineq_operations = entries[
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001"
-        ]["operations"][0]
+        ]["operations"]
+        ineq_structure = next(
+            operation for operation in ineq_operations
+            if operation["id"] == "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001"
+        )
         self.assertEqual(ineq_structure["kind"], "exact_lines_replace_once")
         self.assertEqual(ineq_structure["replacement_count"], 218)
         self.assertEqual(len(ineq_structure["replacements"]), 218)
@@ -471,6 +475,14 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "let _ = " in replacement["after"]
             for replacement in ineq_structure["replacements"]
         ))
+        ineqdoc = next(
+            operation for operation in ineq_operations
+            if operation["id"] == "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001"
+        )
+        self.assertEqual(
+            ineqdoc["after"],
+            "let ineqdoc = ref ([]:(texmarker * string * string) list);;",
+        )
         main_estimate_structure = entries[
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001"
         ]["operations"][0]
@@ -495,10 +507,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             entries["PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"]
             ["operations"][0]["after"],
         )
+        parse_ineq_cfsqp = next(
+            operation
+            for operation in entries[
+                "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+            ]["operations"]
+            if operation["id"].endswith("DISABLE-CFSQP-CODE")
+        )
+        self.assertEqual(parse_ineq_cfsqp["kind"], "exact_span_replace_once")
+        self.assertEqual(parse_ineq_cfsqp["line"], 408)
+        self.assertEqual(parse_ineq_cfsqp["end_line"], 449)
         self.assertIn(
-            "CFSQP code generation is disabled",
-            entries["PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"]
-            ["operations"][5]["after"],
+            "CFSQP code generation is disabled", parse_ineq_cfsqp["after"],
         )
         structure_effect_lines = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],

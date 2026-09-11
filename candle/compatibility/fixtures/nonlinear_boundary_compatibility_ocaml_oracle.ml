@@ -183,12 +183,32 @@ let structure_effects_ok =
   !original_structure_trace = ["second";"first"] &&
   !normalized_structure_trace = !original_structure_trace;;
 
+type ineqdoc_marker = Section | Ineqdoc | Comment;;
+
+module Original_ineqdoc = struct
+  let ineqdoc = ref [];;
+  let addtex (marker,name,text) =
+    ineqdoc := (marker,name,text)::!ineqdoc;;
+end;;
+
+module Normalized_ineqdoc = struct
+  let ineqdoc = ref ([]:(ineqdoc_marker * string * string) list);;
+  let addtex (marker,name,text) =
+    ineqdoc := (marker,name,text)::!ineqdoc;;
+end;;
+
+let ineqdoc_value_ok =
+  let value = (Section,"section","text") in
+  let _ = Original_ineqdoc.addtex value in
+  let _ = Normalized_ineqdoc.addtex value in
+  !Original_ineqdoc.ineqdoc = !Normalized_ineqdoc.ineqdoc;;
+
 let string_order_ok =
   List.sort (fun left right -> if left < right then -1 else 1) strings =
   List.sort String.compare strings;;
 
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
-     string_order_ok && structure_effects_ok
+     string_order_ok && structure_effects_ok && ineqdoc_value_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "dfdb3a9896e6c60fe23abaa2cbd7f2a2",
-    "generated_source_sha256": "998a882c28d1c09f7379be1a748e6c96e99a23f82258687b2fce125b7f5ba61f",
+    "generated_source_md5": "e2f1e890585053d6c191992f04e5333c",
+    "generated_source_sha256": "f5ba1fcaef41b78b3f476ff0fb358f6ae3271db6b581d68b2cfd67e985c46ce8",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "80939e55ec968075273bebc0a843ca0e",
+      "md5": "36523671a97075e4a06d2f7775f1c2b0",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "20b76dcf5852a62fde20a4dc1fcf27da91a28ac4484fd1d224e0cb46c80e5285"
+      "sha256": "f30483551093394b9b92571ee94d8bf141b001c60d80e17fc69e5d72c077496b"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "7def8023b5316358b53b8d969aaec523",
+      "md5": "b7ad9f9851f04f3351d18d0bc65c8764",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "8d07f8f1767f7198f0a90fca91b193408a718a8897abdab6a472894cab581967"
+      "sha256": "01cff0281d4e6704508f65fa3deb90720775419bbcfc1566ef08c2dbd3cafeee"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19716,10 +19716,10 @@
       "execution_normalization": {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 122178,
-        "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
-        "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
-        "operation_count": 9
+        "normalized_bytes": 122215,
+        "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
+        "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
+        "operation_count": 10
       },
       "md5": "4603172e71db7ee1ff945a337932a900",
       "path": "text_formalization/nonlinear/ineq.hl",
@@ -19896,10 +19896,10 @@
       "execution_normalization": {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 23718,
-        "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
-        "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
-        "operation_count": 10
+        "normalized_bytes": 21863,
+        "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
+        "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
+        "operation_count": 9
       },
       "md5": "51ad450836d0180f77572c7e824668f3",
       "path": "text_formalization/nonlinear/parse_ineq.hl",
@@ -22321,7 +22321,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "24f95d2315d7167a27525e068e50cc57f16eac3be7ebc4e57ecebd5c1ea53c93",
+    "contract_sha256": "97c90baa261a3cbc2f17657b2bbcccbf7bbe564f51cf260cc352ede0ee5147e4",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23927,11 +23927,18 @@
       {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 122178,
-        "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
-        "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
-        "operation_count": 9,
+        "normalized_bytes": 122215,
+        "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
+        "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
+        "operation_count": 10,
         "operations": [
+          {
+            "after": "let ineqdoc = ref ([]:(texmarker * string * string) list);;",
+            "before": "let ineqdoc = ref [];;",
+            "id": "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 33
+          },
           {
             "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
             "kind": "exact_lines_replace_once",
@@ -25088,8 +25095,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/ineq.hl",
-        "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact.",
-        "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
+        "scope_limit": "These hash-pinned rewrites cover only the one empty-reference annotation, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact.",
+        "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. It initializes the same empty mutable list and only resolves CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
         "source_key": "flyspeck:text_formalization/nonlinear/ineq.hl",
         "source_md5": "4603172e71db7ee1ff945a337932a900",
         "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68"
@@ -25595,10 +25602,10 @@
       {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 23718,
-        "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
-        "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
-        "operation_count": 10,
+        "normalized_bytes": 21863,
+        "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
+        "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
+        "operation_count": 9,
         "operations": [
           {
             "after": "  nub (sort (fun left right -> String.compare left right < 0) (cn [] i));;",
@@ -25629,18 +25636,14 @@
             "line": 330
           },
           {
-            "after": "(* Candle's direct proof route does not authorize CFSQP code generation.\nlet cc_code outs iqd = \n",
-            "before": "let cc_code outs iqd = \n",
-            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-BEGIN",
-            "kind": "exact_bytes_replace_once",
-            "line": 408
-          },
-          {
-            "after": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n*)\n\nlet cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;\n\nlet mk_cc tmpfile iqd = ",
-            "before": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n\nlet mk_cc tmpfile iqd = ",
-            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-END",
-            "kind": "exact_bytes_replace_once",
-            "line": 449
+            "after": "let cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;",
+            "end": "  Printf.fprintf outs \"%s %s\" s cc_main;;  ",
+            "end_line": 449,
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE",
+            "kind": "exact_span_replace_once",
+            "line": 408,
+            "span_sha256": "f3f272d566163edcc1d6d53b325692c13fb96aa6790a7c6e9b3ce4ba2f35cc82",
+            "start": "let cc_code outs iqd = \n"
           },
           {
             "after": " let execute_cfsqp_list xs = \n   let fails = ref [] in\n   let run i =\n     try (execute_cfsqp (List.nth xs i); let _ = Sys.command(\"date\") in ())\n     with Failure s -> (fails := s :: (!fails)) in\n   let _ = do_list run (0--(List.length xs - 1)) in\n     fails;;",
@@ -26023,8 +26026,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "80939e55ec968075273bebc0a843ca0e",
-    "generated_source_sha256": "20b76dcf5852a62fde20a4dc1fcf27da91a28ac4484fd1d224e0cb46c80e5285",
+    "generated_source_md5": "36523671a97075e4a06d2f7775f1c2b0",
+    "generated_source_sha256": "f30483551093394b9b92571ee94d8bf141b001c60d80e17fc69e5d72c077496b",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

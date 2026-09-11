@@ -1539,10 +1539,17 @@
       "path": "text_formalization/nonlinear/ineq.hl",
       "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68",
       "source_md5": "4603172e71db7ee1ff945a337932a900",
-      "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
-      "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
-      "normalized_bytes": 122178,
+      "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
+      "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
+      "normalized_bytes": 122215,
       "operations": [
+        {
+          "id": "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 33,
+          "before": "let ineqdoc = ref [];;",
+          "after": "let ineqdoc = ref ([]:(texmarker * string * string) list);;"
+        },
         {
           "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
           "kind": "exact_lines_replace_once",
@@ -2698,8 +2705,8 @@
           "after": "   idv = \"181212899 \" ^ string_of_int d;"
         }
       ],
-      "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
-      "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact."
+      "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. It initializes the same empty mutable list and only resolves CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
+      "scope_limit": "These hash-pinned rewrites cover only the one empty-reference annotation, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact."
     },
     {
       "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
@@ -3203,9 +3210,9 @@
       "path": "text_formalization/nonlinear/parse_ineq.hl",
       "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee",
       "source_md5": "51ad450836d0180f77572c7e824668f3",
-      "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
-      "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
-      "normalized_bytes": 23718,
+      "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
+      "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
+      "normalized_bytes": 21863,
       "operations": [
         {
           "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-STRING-ORDER",
@@ -3236,18 +3243,14 @@
           "after": "  let v j = \"double \" ^ List.nth varname j ^ \" = \" ^ y ^ \"[\" ^\n    string_of_int j ^ \"];\" in"
         },
         {
-          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-BEGIN",
-          "kind": "exact_bytes_replace_once",
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE",
+          "kind": "exact_span_replace_once",
           "line": 408,
-          "before": "let cc_code outs iqd = \n",
-          "after": "(* Candle's direct proof route does not authorize CFSQP code generation.\nlet cc_code outs iqd = \n"
-        },
-        {
-          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-END",
-          "kind": "exact_bytes_replace_once",
-          "line": 449,
-          "before": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n\nlet mk_cc tmpfile iqd = ",
-          "after": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n*)\n\nlet cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;\n\nlet mk_cc tmpfile iqd = "
+          "end_line": 449,
+          "start": "let cc_code outs iqd = \n",
+          "end": "  Printf.fprintf outs \"%s %s\" s cc_main;;  ",
+          "span_sha256": "f3f272d566163edcc1d6d53b325692c13fb96aa6790a7c6e9b3ce4ba2f35cc82",
+          "after": "let cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;"
         },
         {
           "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-EXECUTE-LIST-ITERATION",
