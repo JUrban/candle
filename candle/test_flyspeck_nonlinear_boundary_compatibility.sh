@@ -56,6 +56,12 @@ run_candle "$fixture_root/nonlinear_autogen_value_restriction_normalized.ml" \
   "$test_dir/autogen-normalized.log"
 run_candle "$fixture_root/nonlinear_boundary_compatibility_normalized.ml" \
   "$test_dir/boundary-normalized.log"
+(
+  cd "$candle_runtime_cwd"
+  timeout 300 "$candle_binary" --candle \
+    <"$fixture_root/nonlinear_merge_ineq_setify_normalized.ml" \
+    >"$test_dir/merge-ineq-setify-normalized.log" 2>&1
+)
 
 rg -Fq \
   'Type mismatch between string list -> string * string and (string * string * string * string) list' \
@@ -85,12 +91,14 @@ rg -Fq 'val candle_nonlinear_autogen_value_ok = true: bool' \
   "$test_dir/autogen-normalized.log"
 rg -Fq 'val candle_nonlinear_boundary_compatibility_ok = true: bool' \
   "$test_dir/boundary-normalized.log"
+rg -Fq 'val candle_merge_ineq_setify_ok = true: bool' \
+  "$test_dir/merge-ineq-setify-normalized.log"
 
 for output in nth-normalized.log string-order-normalized.log \
               structure-effect-normalized.log ineqdoc-normalized.log \
               assignment-original.log assignment-normalized.log \
               dart-classes-normalized.log autogen-normalized.log \
-              boundary-normalized.log; do
+              boundary-normalized.log merge-ineq-setify-normalized.log; do
   if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/$output"; then
     tail -n 60 "$test_dir/$output" >&2
     exit 1

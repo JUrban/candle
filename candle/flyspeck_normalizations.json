@@ -3322,9 +3322,9 @@
       "path": "text_formalization/nonlinear/optimize.hl",
       "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b",
       "source_md5": "8a19d244740ff42de82adbe2dcd89413",
-      "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
-      "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
-      "normalized_bytes": 26261,
+      "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
+      "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
+      "normalized_bytes": 26311,
       "operations": [
         {
           "id": "PROJECT-OPTIMIZE-S3-PRINTF-001-SPLIT-SUFFIX",
@@ -3332,10 +3332,17 @@
           "line": 673,
           "before": "  let suffix i n = Printf.sprintf \"prep-%s split(%d/%d)\" s i n in ",
           "after": "  let suffix i n = \"prep-\" ^ s ^ \" split(\" ^ string_of_int i ^ \"/\" ^\n    string_of_int n ^ \")\" in "
+        },
+        {
+          "id": "PROJECT-OPTIMIZE-S3-TUPLE-CONSTRUCTOR-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 76,
+          "before": "let mk_x i = mk_var(\"x\"^string_of_int i,real_ty);;\nlet mk_a i = mk_var(\"a\"^string_of_int i,real_ty);;",
+          "after": "let mk_x i =\n  let name = \"x\"^string_of_int i in\n    mk_var(name,real_ty);;\nlet mk_a i =\n  let name = \"a\"^string_of_int i in\n    mk_var(name,real_ty);;"
         }
       ],
-      "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception.",
-      "scope_limit": "This hash-pinned rewrite is confined to the diagnostic suffix string in preprocess_split_idq. It changes no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string equivalence and cumulative loading are required."
+      "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions while avoiding Candle's independently reproduced tuple-constructor inference failure.",
+      "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix in preprocess_split_idq and the two generated-name mk_var calls at lines 76--77. They change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, the existing focused Candle tuple-constructor rejection/acceptance oracle, and cumulative loading are required."
     },
     {
       "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
@@ -3343,9 +3350,9 @@
       "path": "text_formalization/nonlinear/merge_ineq.hl",
       "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58",
       "source_md5": "99065b4fef591cab34175bd2952ef60c",
-      "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
-      "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
-      "normalized_bytes": 247458,
+      "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
+      "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
+      "normalized_bytes": 247572,
       "operations": [
         {
           "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-OX-ID",
@@ -3373,7 +3380,7 @@
           "kind": "exact_bytes_replace_once",
           "line": 327,
           "before": "let allbounds n = setify(List.flatten (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
-          "after": "let allbounds n = setify(List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;"
+          "after": "let allbounds n =\n  setify\n    (fun x y ->\n      Pair.compare Term.compare (Pair.compare Term.compare Term.compare)\n        x y <= 0)\n    (List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;"
         },
         {
           "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-COMBOS-CONCAT",
@@ -3383,8 +3390,8 @@
           "after": "let partial_merge() = end_itlist CONJ (map fst (List.concat (combos())));;"
         }
       ],
-      "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing.",
-      "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, and one parser-priority structure spelling. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect oracles and cumulative source loading are required."
+      "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order.",
+      "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, one parser-priority structure spelling, and the one allbounds setify call whose exact nested-term representation is pinned. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator oracles and cumulative source loading are required; this comparator is not authorized for any other representation."
     },
     {
       "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",

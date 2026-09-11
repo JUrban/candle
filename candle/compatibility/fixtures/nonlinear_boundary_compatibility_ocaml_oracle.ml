@@ -201,6 +201,22 @@ let assignment_effect_ok =
   !original_assignment_state = [1;3] &&
   !normalized_assignment_state = !original_assignment_state;;
 
+let compare_pair compare_left compare_right
+    (left_a,left_b) (right_a,right_b) =
+  let first = compare_left left_a right_a in
+  if first <> 0 then first else compare_right left_b right_b;;
+
+let compare_nested_string_pair =
+  compare_pair String.compare (compare_pair String.compare String.compare);;
+
+let original_nested_bounds =
+  [("y",("x","y")); ("x",("y","x"));
+   ("y",("x","y")); ("x",("x","y"))];;
+
+let nested_comparator_ok =
+  List.sort_uniq Stdlib.compare original_nested_bounds =
+  List.sort_uniq compare_nested_string_pair original_nested_bounds;;
+
 type ineqdoc_marker = Section | Ineqdoc | Comment;;
 
 module Original_ineqdoc = struct
@@ -268,6 +284,7 @@ let string_order_ok =
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
      string_order_ok && structure_effects_ok && assignment_effect_ok &&
+     nested_comparator_ok &&
      ineqdoc_value_ok &&
      remaining_empty_reference_values_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
