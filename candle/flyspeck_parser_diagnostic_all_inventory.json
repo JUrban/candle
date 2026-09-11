@@ -6,7 +6,7 @@
       "path": "candle/flyspeck_full_build.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "d06ab4500072b294182abd914696a2800f258b8875efeb413b461ef827b22109",
+      "sha256": "f71332fbeb066fc7c3f7c24bbd0128334e2161e6ab8da363dda22eedb91b4a06",
       "source_key": "candle:candle/flyspeck_full_build.ml"
     },
     {
@@ -22,7 +22,7 @@
       "path": "candle/flyspeck_loader.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "b716b0ef92d9c53c2b0260420ac1901827c88e171b8b6fa2ee7bfd09780607bb",
+      "sha256": "478b725eec653d50657e52f0d74d3934c5aafa249b4a8d68988ae77d7d3ea545",
       "source_key": "candle:candle/flyspeck_loader.ml"
     },
     {
@@ -5802,23 +5802,23 @@
       "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl"
     },
     {
-      "bytes": 58967,
+      "bytes": 59237,
       "discovery": {
         "exclusion": {
           "incoming_nontraversed_actions": [],
           "path": "candle/flyspeck_full_build.ml",
           "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
           "repository": "candle",
-          "sha256": "d06ab4500072b294182abd914696a2800f258b8875efeb413b461ef827b22109",
+          "sha256": "f71332fbeb066fc7c3f7c24bbd0128334e2161e6ab8da363dda22eedb91b4a06",
           "source_key": "candle:candle/flyspeck_full_build.ml"
         },
         "kind": "explicit-first-discovery-remainder"
       },
       "index": 392,
-      "md5": "1ec9c6c89b8189f72914846391442335",
+      "md5": "6bb5c5371f3e9bdf0aab701b8fb4a241",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "d06ab4500072b294182abd914696a2800f258b8875efeb413b461ef827b22109",
+      "sha256": "f71332fbeb066fc7c3f7c24bbd0128334e2161e6ab8da363dda22eedb91b4a06",
       "source_key": "candle:candle/flyspeck_full_build.ml"
     },
     {
@@ -5842,23 +5842,23 @@
       "source_key": "candle:candle/flyspeck_l2_target.ml"
     },
     {
-      "bytes": 15693,
+      "bytes": 16117,
       "discovery": {
         "exclusion": {
           "incoming_nontraversed_actions": [],
           "path": "candle/flyspeck_loader.ml",
           "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
           "repository": "candle",
-          "sha256": "b716b0ef92d9c53c2b0260420ac1901827c88e171b8b6fa2ee7bfd09780607bb",
+          "sha256": "478b725eec653d50657e52f0d74d3934c5aafa249b4a8d68988ae77d7d3ea545",
           "source_key": "candle:candle/flyspeck_loader.ml"
         },
         "kind": "explicit-first-discovery-remainder"
       },
       "index": 394,
-      "md5": "a63966d020e4c0d2aa28bbbe552c5b71",
+      "md5": "0f843fec2479e4ddde1beeb8cbb7a2d7",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "b716b0ef92d9c53c2b0260420ac1901827c88e171b8b6fa2ee7bfd09780607bb",
+      "sha256": "478b725eec653d50657e52f0d74d3934c5aafa249b4a8d68988ae77d7d3ea545",
       "source_key": "candle:candle/flyspeck_loader.ml"
     },
     {
@@ -6000,9 +6000,9 @@
   ],
   "kind": "candle-flyspeck-parser-diagnostic-all-inventory",
   "manifest": {
-    "bytes": 916252,
+    "bytes": 921142,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "9be5763e44c2bf175b454d67c006a644c0e12a95a4dd33b281fe71d3003241e0"
+    "sha256": "e19e5bb9ef4330daae3d7491b586687ab0d752978d83acf489cfcd822c7ce62d"
   },
   "schema": 1,
   "selection": {

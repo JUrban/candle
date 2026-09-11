@@ -49,6 +49,8 @@ num_ext="$overlay/text_formalization/jordan/num_ext_nabs.hl"
 taylor_atn="$overlay/text_formalization/jordan/taylor_atn.hl"
 float_source="$overlay/text_formalization/jordan/float.hl"
 misc_defs="$overlay/text_formalization/jordan/misc_defs_and_lemmas.hl"
+trig1="$overlay/text_formalization/trigonometry/trig1.hl"
+trig2="$overlay/text_formalization/trigonometry/trig2.hl"
 
 rg -Fq 'dynamic strictbuild build_and_report is disabled by the static manifest' \
   "$strictbuild"
@@ -185,6 +187,13 @@ rg -Fq "SUBGOAL_MP_TAC \`?t. t = x+|y'\`;" "$misc_defs"
 rg -Fq 'SPEC_TAC (`x:num`,`a:num`);' "$misc_defs"
 if rg -Fq "SUBGOAL_MP_TAC \`?t. t = x'+|y'\`;" "$misc_defs"; then
   echo 'normalized misc_defs retained the unrelated renamed coordinate' >&2
+  exit 1
+fi
+rg -Fq 'let _ = prioritize_real();;' "$trig1"
+[[ $(rg -Fc 'let _ = parse_as_infix' "$trig2") -eq 4 ]]
+if rg -q '^prioritize_real();;$' "$trig1" ||
+   rg -q '^parse_as_infix' "$trig2"; then
+  echo 'normalized trigonometry retained an anonymous structure effect' >&2
   exit 1
 fi
 [[ $(rg -Fc "Digest.to_hex (Digest.file s')" "$strictbuild") -eq 3 ]]

@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "876dc491536f0f87c3225af8c260fe4b" then
+     "c0ead49cc1dc08bed8945b8e995137a5" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "1ec9c6c89b8189f72914846391442335" then
+     "6bb5c5371f3e9bdf0aab701b8fb4a241" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all thirty-five outputs in a separate tree;
-   this process registers only the thirty-four selected by the direct source graph.
+(* The host-side normalizer materializes all thirty-eight outputs in a separate tree;
+   this process registers only the thirty-seven selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -207,6 +207,14 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/leg/collect_geom2.hl",
     "5bfaffa957b66c2d23b19813a1417e29");
+   (Filename.concat candle_flyspeck_text_root "trigonometry/trig1.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/trigonometry/trig1.hl",
+    "216925b86d65702faaebc2c7fc314b8c");
+   (Filename.concat candle_flyspeck_text_root "trigonometry/trig2.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/trigonometry/trig2.hl",
+    "9d2d35ac6e4e76d3abca6c6454ad023e");
    (Filename.concat candle_flyspeck_text_root "jordan/refinement.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/refinement.hl",
@@ -313,7 +321,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 35 then
+if List.length candle_flyspeck_normalized_sources <> 37 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

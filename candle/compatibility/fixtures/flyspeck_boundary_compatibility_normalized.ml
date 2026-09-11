@@ -38,6 +38,18 @@ module Candle_flyspeck_structure_effects = struct
   let _ = REBIND_RULE 2;;
 end;;
 
+let candle_flyspeck_arithmetic_structure_effects = ref ([]:string list);;
+let candle_flyspeck_arithmetic_structure_effect name =
+  candle_flyspeck_arithmetic_structure_effects :=
+    name::!candle_flyspeck_arithmetic_structure_effects;;
+module Candle_flyspeck_arithmetic_structure_effects = struct
+  let _ = candle_flyspeck_arithmetic_structure_effect "prioritize_real";;
+  let _ = candle_flyspeck_arithmetic_structure_effect "polar_lt";;
+  let _ = candle_flyspeck_arithmetic_structure_effect "polar_le";;
+  let _ = candle_flyspeck_arithmetic_structure_effect "polar_cycle_on";;
+  let _ = candle_flyspeck_arithmetic_structure_effect "re_eqvl";;
+end;;
+
 let candle_flyspeck_boundary_compatibility_oracle_ok =
   let aty = mk_vartype "A" in
   let x = mk_var("x",aty) in
@@ -51,4 +63,6 @@ let candle_flyspeck_boundary_compatibility_oracle_ok =
   candle_flyspeck_update_all (fun i state -> i::state) 4 [] = [3;2;1;0] &&
   map Char.code ['\000';'A';'z';'\255'] = [0;65;122;255] &&
   candle_flyspeck_hash_of_string "abc" = 4111 &&
-  !candle_flyspeck_structure_effects = [2;1];;
+  !candle_flyspeck_structure_effects = [2;1] &&
+  !candle_flyspeck_arithmetic_structure_effects =
+    ["re_eqvl";"polar_cycle_on";"polar_le";"polar_lt";"prioritize_real"];;

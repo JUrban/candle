@@ -827,6 +827,69 @@
       "scope_limit": "These hash-pinned replacements are confined to Collect_geom2's two anonymous theorem examples. They are not a general structure-expression translation; the complete normalized source load and cumulative action remain required."
     },
     {
+      "id": "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/trigonometry/trig1.hl",
+      "path": "text_formalization/trigonometry/trig1.hl",
+      "source_sha256": "18c28fa59364b83c9f91111475ffdd292e037685fd1e3160eac41c016ac1ae78",
+      "source_md5": "90265e5c09a18b5df82f41d595995f37",
+      "normalized_sha256": "0425a46e53b1254736c47d432e66bcfa487080ef2798568bba2cceb373a7c360",
+      "normalized_md5": "216925b86d65702faaebc2c7fc314b8c",
+      "normalized_bytes": 36623,
+      "operations": [
+        {
+          "id": "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001-PRIORITIZE-REAL",
+          "kind": "exact_bytes_replace_once",
+          "line": 24,
+          "before": "prioritize_real();;",
+          "after": "let _ = prioritize_real();;"
+        }
+      ],
+      "semantic_rule": "The wildcard binding evaluates the identical prioritize_real call once at the same Trigonometry1 module-initialization position and discards the same unit result. It preserves priority state, order, effects, exceptions, every following definition, and all theorem statements and proofs.",
+      "scope_limit": "This hash-pinned replacement is confined to Trigonometry1's one anonymous priority call. It is not a general structure-expression translation; native effect/order, complete normalized source loading, and the cumulative action remain required."
+    },
+    {
+      "id": "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/trigonometry/trig2.hl",
+      "path": "text_formalization/trigonometry/trig2.hl",
+      "source_sha256": "04c091bf919e4d590d5e53252333dfa8259a9a28d76013680486565d0ba5ab56",
+      "source_md5": "7feae83a4f4e307ce14e8e6d532755e6",
+      "normalized_sha256": "d42ea72e66494a07db2b337c0d06f638a7ace0311946db35045713927275a3e0",
+      "normalized_md5": "9d2d35ac6e4e76d3abca6c6454ad023e",
+      "normalized_bytes": 187423,
+      "operations": [
+        {
+          "id": "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001-POLAR-LT",
+          "kind": "exact_bytes_replace_once",
+          "line": 2916,
+          "before": "parse_as_infix(\"polar_lt\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"polar_lt\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001-POLAR-LE",
+          "kind": "exact_bytes_replace_once",
+          "line": 2931,
+          "before": "parse_as_infix(\"polar_le\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"polar_le\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001-POLAR-CYCLE-ON",
+          "kind": "exact_bytes_replace_once",
+          "line": 2937,
+          "before": "parse_as_infix(\"polar_cycle_on\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"polar_cycle_on\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001-RE-EQVL",
+          "kind": "exact_bytes_replace_once",
+          "line": 4236,
+          "before": "parse_as_infix(\"re_eqvl\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"re_eqvl\",(12,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "Each wildcard binding evaluates the identical parse_as_infix registration once at its original Trigonometry2 module-initialization position and discards the same unit result. The four parser registrations, their names, precedence, associativity, order, effects, and exceptions are unchanged, as are every definition and theorem statement or proof.",
+      "scope_limit": "These hash-pinned replacements are confined to Trigonometry2's four anonymous parser-registration calls. They are not a general structure-expression translation; native registration/effect order, complete normalized source loading, parser selection, and the cumulative action remain required."
+    },
+    {
       "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",
       "source_key": "flyspeck:text_formalization/jordan/real_ext.hl",
       "path": "text_formalization/jordan/real_ext.hl",

@@ -66,9 +66,9 @@
 #flyspeck_needs "general/vukhacky_tactics.hl";;
 
 (* stratum: arithmetic *)
-(* 030 selected=flyspeck:text_formalization/trigonometry/trig1.hl sha256=18c28fa59364b83c9f91111475ffdd292e037685fd1e3160eac41c016ac1ae78 *)
+(* 030 selected=flyspeck:text_formalization/trigonometry/trig1.hl sha256=18c28fa59364b83c9f91111475ffdd292e037685fd1e3160eac41c016ac1ae78 normalization=PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001 normalized_sha256=0425a46e53b1254736c47d432e66bcfa487080ef2798568bba2cceb373a7c360 *)
 #flyspeck_needs "trigonometry/trig1.hl";;
-(* 031 selected=flyspeck:text_formalization/trigonometry/trig2.hl sha256=04c091bf919e4d590d5e53252333dfa8259a9a28d76013680486565d0ba5ab56 *)
+(* 031 selected=flyspeck:text_formalization/trigonometry/trig2.hl sha256=04c091bf919e4d590d5e53252333dfa8259a9a28d76013680486565d0ba5ab56 normalization=PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001 normalized_sha256=d42ea72e66494a07db2b337c0d06f638a7ace0311946db35045713927275a3e0 *)
 #flyspeck_needs "trigonometry/trig2.hl";;
 (* 032 selected=flyspeck:text_formalization/trigonometry/delta_x.hl sha256=2009822be120f6e1e6b1e2f60c6533cf17b53ec93a3c09664eebb1b46e36f2d2 *)
 #flyspeck_needs "trigonometry/delta_x.hl";;

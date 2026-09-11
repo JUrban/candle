@@ -109,6 +109,30 @@ module Normalized_structure_effects = struct
   let _ = emit 2;;
 end;;
 
+let original_arithmetic_structure_effects = ref [];;
+let original_arithmetic_structure_effect name =
+  original_arithmetic_structure_effects :=
+    name::!original_arithmetic_structure_effects;;
+module Original_arithmetic_structure_effects = struct
+  original_arithmetic_structure_effect "prioritize_real";;
+  original_arithmetic_structure_effect "polar_lt";;
+  original_arithmetic_structure_effect "polar_le";;
+  original_arithmetic_structure_effect "polar_cycle_on";;
+  original_arithmetic_structure_effect "re_eqvl";;
+end;;
+
+let normalized_arithmetic_structure_effects = ref [];;
+let normalized_arithmetic_structure_effect name =
+  normalized_arithmetic_structure_effects :=
+    name::!normalized_arithmetic_structure_effects;;
+module Normalized_arithmetic_structure_effects = struct
+  let _ = normalized_arithmetic_structure_effect "prioritize_real";;
+  let _ = normalized_arithmetic_structure_effect "polar_lt";;
+  let _ = normalized_arithmetic_structure_effect "polar_le";;
+  let _ = normalized_arithmetic_structure_effect "polar_cycle_on";;
+  let _ = normalized_arithmetic_structure_effect "re_eqvl";;
+end;;
+
 let aty = Tyvar "A";;
 let bty = Tyapp("fun",[aty;Tyvar "B"]);;
 let x = Var("x",aty);;
@@ -151,9 +175,14 @@ let hash_ok =
 let structure_effect_ok =
   !original_structure_effects = [2;1] &&
   !normalized_structure_effects = !original_structure_effects;;
+let arithmetic_structure_effect_ok =
+  !original_arithmetic_structure_effects =
+    ["re_eqvl";"polar_cycle_on";"polar_le";"polar_lt";"prioritize_real"] &&
+  !normalized_arithmetic_structure_effects =
+    !original_arithmetic_structure_effects;;
 
 let () =
   if compare_ok && setify_ok && loop_ok && char_ok && hash_ok &&
-     structure_effect_ok then
+     structure_effect_ok && arithmetic_structure_effect_ok then
     print_endline "FLYSPECK_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "Flyspeck boundary compatibility OCaml oracle failed";;

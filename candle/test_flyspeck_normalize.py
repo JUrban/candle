@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 36)
+        self.assertEqual(len(self.contract["entries"]), 38)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -410,6 +410,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
             "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52, 720],
             "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001": [870, 1328],
+            "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001": [24],
+            "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001": [2916, 2931, 2937, 4236],
             "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": [26, 27, 304],
             "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": [18],
             "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": [252, 821],
@@ -586,7 +588,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 145)
+        self.assertEqual(len(operation_ids), 150)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
