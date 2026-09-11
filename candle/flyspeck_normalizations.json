@@ -3825,6 +3825,48 @@
       ],
       "semantic_rule": "All eight invariant registrations execute once in original source order with their exact theorem lists. Explicit wildcard bindings preserve each discarded unit result and only normalize its module-structure representation.",
       "scope_limit": "Only the eight mechanically enumerated registration phrases are changed. All geometric definitions, theorem statements, proofs, hypotheses, and invariant lists remain byte-identical around them."
+    },
+    {
+      "id": "PROJECT-EMNWUUS-S2-TERM-SETIFY-001",
+      "source_key": "flyspeck:text_formalization/packing/EMNWUUS.hl",
+      "path": "text_formalization/packing/EMNWUUS.hl",
+      "source_sha256": "d9945fdd8f34300708c43cb0df4cbd832b02d196696b546650a012d317b7eff4",
+      "source_md5": "04c1aed65b7ba288f34858ce833a8a9a",
+      "normalized_sha256": "e6a824a3871005daf6b41dd99b4f33820f4fa1d50d3916cb079ccd9a31b29200",
+      "normalized_md5": "49847a2b33348b673321c1daca202ea3",
+      "normalized_bytes": 18563,
+      "operations": [
+        {
+          "id": "PROJECT-EMNWUUS-S2-TERM-SETIFY-001-EXPLICIT-COMPARATOR",
+          "kind": "exact_bytes_replace_once",
+          "line": 50,
+          "before": "let vs = setify (flat vss) in",
+          "after": "let vs = setify Term.(<) (flat vss) in"
+        }
+      ],
+      "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
+      "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at EMNWUUS.hl line 50. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-OXLZLEZ2-S2-TERM-SETIFY-001",
+      "source_key": "flyspeck:text_formalization/packing/OXLZLEZ2.hl",
+      "path": "text_formalization/packing/OXLZLEZ2.hl",
+      "source_sha256": "8c068facbc067aa2990210e45c9945e7b010d1e150a6b623a59af5199a1a0235",
+      "source_md5": "b1d81cc3430bdc5e2cf10484ee0a83dc",
+      "normalized_sha256": "09aff5b7b7eb1d7ba78074671b22498d4575048c262d0ee52e2e6d874ebfb261",
+      "normalized_md5": "1e9d210b32fedae512af4154ca1abdc9",
+      "normalized_bytes": 136644,
+      "operations": [
+        {
+          "id": "PROJECT-OXLZLEZ2-S2-TERM-SETIFY-001-EXPLICIT-COMPARATOR",
+          "kind": "exact_bytes_replace_once",
+          "line": 117,
+          "before": "let vs = setify (flat vss) in",
+          "after": "let vs = setify Term.(<) (flat vss) in"
+        }
+      ],
+      "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
+      "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at OXLZLEZ2.hl line 117. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
     }
   ]
 }

@@ -30,20 +30,20 @@ NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
 EXPECTED_AUTHORITIES = {
     DESCRIPTOR_RELATIVE.as_posix(): {
         "bytes": 206543,
-        "sha256": "49bb44c768624bc1fdb0ebde0c847b24e46ca33b14e822efd2a02746355cf171",
+        "sha256": "4e2398818974735745094fa7268e2ce1f491c507ca429bc5de68e9805373a224",
     },
     MANIFEST_RELATIVE.as_posix(): {
-        "bytes": 1019454,
-        "sha256": "3a10b2e5c18aff92155ef06bfa029dafc27a3e77ad9c7e9bbe87d3d79b2824d7",
+        "bytes": 1023954,
+        "sha256": "5eaa4d513f6189d9627390660efdcee8454093d8509dd6dedba0f12b4eb5c7f4",
     },
     NORMALIZATION_RELATIVE.as_posix(): {
-        "bytes": 217476,
-        "sha256": "6e3f60d72df4e0ba32e9468936caad1af92da66534d1964e4f0853f337f5767b",
+        "bytes": 220940,
+        "sha256": "7aca96ca76ba565ce95b506abd001c0805adfd3e0dbe725507cccdc7a6a074a3",
     },
 }
 EXPECTED_SOURCE_COUNT = 400
-EXPECTED_ORIGINAL_COUNT = 350
-EXPECTED_NORMALIZED_COUNT = 50
+EXPECTED_ORIGINAL_COUNT = 348
+EXPECTED_NORMALIZED_COUNT = 52
 EXPECTED_ACTION_COUNT = 725
 EXPECTED_MASKED_COUNT = 721
 EXPECTED_EMBEDDED_COUNT = 4
@@ -61,16 +61,16 @@ EXPECTED_ACTION_KIND_COUNTS = {
     "reneeds": 1,
 }
 EXPECTED_ACTION_SITE_SHA256 = (
-    "f8050d0c51ec7c226d9fb94560a50d259b52c6fa14bbcae78db11539baed6a38"
+    "d6e628a222a0b2523a370690f87d6cea52f55fda99b17425e4f26080a126bca5"
 )
 EXPECTED_ORDERED_PATH_SHA256 = (
     "019b8eef7c4792314e7cbc9239d142c0e3252692426727a5589bd6e8103115fd"
 )
 EXPECTED_ORDERED_EFFECTIVE_SHA256 = (
-    "32cf5b113e408bf5df9a66a0574f03f405eeb880a558d9726d2a57a8d1409e9a"
+    "5040e99d8a144e67e740afa6ca036aca139e50fc8a12ce707f9d099c0caaa2f1"
 )
 EXPECTED_ORDERED_PREPARED_SHA256 = (
-    "f8789fbf7c6d17783d5f908a3398c36c280a4979b12690dbff24eee94171cba1"
+    "85bdb24cf503bb57d93589d836204e74a629e2ec5fe460ac8d2341ce1cd9be8e"
 )
 EXPECTED_QUOTATION_COUNT = 318813
 EXPECTED_QUOTATION_FILE_COUNT = 344
@@ -604,8 +604,11 @@ def _validate_action_inventory(sites: list[dict[str, Any]]) -> None:
     kinds = Counter(site.get("kind") for site in sites)
     require(kinds == Counter(EXPECTED_ACTION_KIND_COUNTS),
             "effective loader kind count drift")
-    require(canonical_sha256(sites) == EXPECTED_ACTION_SITE_SHA256,
-            "effective loader action site/order drift")
+    observed_site_sha256 = canonical_sha256(sites)
+    require(
+        observed_site_sha256 == EXPECTED_ACTION_SITE_SHA256,
+        f"effective loader action site/order drift: {observed_site_sha256}",
+    )
 
 
 def _read_source(path: Path, label: str) -> bytes:
