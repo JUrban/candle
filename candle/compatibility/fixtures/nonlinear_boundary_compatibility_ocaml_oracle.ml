@@ -159,12 +159,36 @@ let iteration_ok =
 let list_alias_ok =
   List.flatten [[1;2];[];[3]] = List.concat [[1;2];[];[3]];;
 
+type structure_datum = { structure_id : string; structure_enabled : bool };;
+
+let original_structure_trace = ref [];;
+let original_structure_emit name =
+  original_structure_trace := name::!original_structure_trace;;
+module Original_structure_effects = struct
+  original_structure_emit "first";;
+  original_structure_emit "second";;
+  { structure_id = "discarded"; structure_enabled = false };;
+end;;
+
+let normalized_structure_trace = ref [];;
+let normalized_structure_emit name =
+  normalized_structure_trace := name::!normalized_structure_trace;;
+module Normalized_structure_effects = struct
+  let _ = normalized_structure_emit "first";;
+  let _ = normalized_structure_emit "second";;
+  let _ = { structure_id = "discarded"; structure_enabled = false };;
+end;;
+
+let structure_effects_ok =
+  !original_structure_trace = ["second";"first"] &&
+  !normalized_structure_trace = !original_structure_trace;;
+
 let string_order_ok =
   List.sort (fun left right -> if left < right then -1 else 1) strings =
   List.sort String.compare strings;;
 
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
-     string_order_ok
+     string_order_ok && structure_effects_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

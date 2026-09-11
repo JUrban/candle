@@ -34,6 +34,10 @@ run_candle "$fixture_root/nonlinear_string_order_original.ml" \
   "$test_dir/string-order-original.log"
 run_candle "$fixture_root/nonlinear_string_order_normalized.ml" \
   "$test_dir/string-order-normalized.log"
+run_candle "$fixture_root/nonlinear_structure_effect_original.ml" \
+  "$test_dir/structure-effect-original.log"
+run_candle "$fixture_root/nonlinear_structure_effect_normalized.ml" \
+  "$test_dir/structure-effect-normalized.log"
 run_candle "$fixture_root/nonlinear_boundary_compatibility_normalized.ml" \
   "$test_dir/boundary-normalized.log"
 
@@ -46,10 +50,15 @@ rg -Fq 'Type mismatch between int list -> int list and string list' \
   "$test_dir/string-order-original.log"
 rg -Fq 'val candle_nonlinear_string_order_ok = true: bool' \
   "$test_dir/string-order-normalized.log"
+rg -Fq 'Type mismatch between unit and (string -> unit)' \
+  "$test_dir/structure-effect-original.log"
+rg -Fq 'val candle_nonlinear_structure_effect_ok = true: bool' \
+  "$test_dir/structure-effect-normalized.log"
 rg -Fq 'val candle_nonlinear_boundary_compatibility_ok = true: bool' \
   "$test_dir/boundary-normalized.log"
 
-for output in nth-normalized.log string-order-normalized.log boundary-normalized.log; do
+for output in nth-normalized.log string-order-normalized.log \
+              structure-effect-normalized.log boundary-normalized.log; do
   if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/$output"; then
     tail -n 60 "$test_dir/$output" >&2
     exit 1

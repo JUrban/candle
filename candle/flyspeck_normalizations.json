@@ -1228,37 +1228,37 @@
       "normalized_md5": "411a71cc887ebd8c5c8fbf8ce87d3da4",
       "normalized_bytes": 20049,
       "operations": [
-    {
-      "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+        {
+          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
           "kind": "exact_bytes_replace_once",
           "line": 31,
-      "before": "unambiguous_interface();;",
-      "after": "let _ = unambiguous_interface();;"
-    },
-    {
-      "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-WITNESS-SUM",
-      "kind": "exact_bytes_replace_once",
-      "line": 365,
-      "before": "SUBGOAL_MP_TAC `?t. t = x'+|y'`;",
-      "after": "SUBGOAL_MP_TAC `?t. t = x+|y'`;"
-    },
-    {
-      "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-GENERALIZE",
-      "kind": "exact_bytes_replace_once",
-      "line": 367,
-      "before": "SPEC_TAC (`x':num`,`a:num`);",
-      "after": "SPEC_TAC (`x:num`,`a:num`);"
-    },
-    {
-      "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
+          "before": "unambiguous_interface();;",
+          "after": "let _ = unambiguous_interface();;"
+        },
+        {
+          "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-WITNESS-SUM",
+          "kind": "exact_bytes_replace_once",
+          "line": 365,
+          "before": "SUBGOAL_MP_TAC `?t. t = x'+|y'`;",
+          "after": "SUBGOAL_MP_TAC `?t. t = x+|y'`;"
+        },
+        {
+          "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-GENERALIZE",
+          "kind": "exact_bytes_replace_once",
+          "line": 367,
+          "before": "SPEC_TAC (`x':num`,`a:num`);",
+          "after": "SPEC_TAC (`x:num`,`a:num`);"
+        },
+        {
+          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
           "kind": "exact_bytes_replace_once",
           "line": 737,
           "before": "pop_priority();;",
           "after": "let _ = pop_priority();;"
         }
       ],
-  "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. The two NUM2_COUNTABLE edits consistently select the free first coordinate x both when constructing the diagonal-sum witness and when generalizing that coordinate; this is the historically validated proof spelling and avoids generalizing the unrelated NAME_CONFLICT-renamed x'. The theorem statement, hypotheses, recursive enumerator, induction, proof intent, allowed axioms, interface state lifetime, order, and exceptions are unchanged.",
-  "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls and the two exact bound-variable references inside NUM2_COUNTABLE. They are not general structure-expression, parser-priority, name-conflict, or proof normalization; complete source-load, theorem-export, and cumulative action oracles remain required."
+      "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. The two NUM2_COUNTABLE edits consistently select the free first coordinate x both when constructing the diagonal-sum witness and when generalizing that coordinate; this is the historically validated proof spelling and avoids generalizing the unrelated NAME_CONFLICT-renamed x'. The theorem statement, hypotheses, recursive enumerator, induction, proof intent, allowed axioms, interface state lifetime, order, and exceptions are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls and the two exact bound-variable references inside NUM2_COUNTABLE. They are not general structure-expression, parser-priority, name-conflict, or proof normalization; complete source-load, theorem-export, and cumulative action oracles remain required."
     },
     {
       "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",
@@ -1539,10 +1539,1108 @@
       "path": "text_formalization/nonlinear/ineq.hl",
       "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68",
       "source_md5": "4603172e71db7ee1ff945a337932a900",
-      "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
-      "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
-      "normalized_bytes": 120434,
+      "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
+      "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
+      "normalized_bytes": 122178,
       "operations": [
+        {
+          "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
+          "kind": "exact_lines_replace_once",
+          "line": 83,
+          "replacement_count": 218,
+          "replacements": [
+            {
+              "line": 83,
+              "before": "addtex (Section,\"Packing -- Marchal Inequality\",\"\");;",
+              "after": "let _ = addtex (Section,\"Packing -- Marchal Inequality\",\"\");;"
+            },
+            {
+              "line": 85,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 125,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 144,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 163,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 181,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 202,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 221,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 240,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 258,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 279,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 302,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 323,
+              "before": "  add {",
+              "after": "  let _ = add {"
+            },
+            {
+              "line": 340,
+              "before": "  add {",
+              "after": "  let _ = add {"
+            },
+            {
+              "line": 357,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 396,
+              "before": "addtex(Section,\"Packing Cluster Inequality -- Five or more leaves\",\"\");;",
+              "after": "let _ = addtex(Section,\"Packing Cluster Inequality -- Five or more leaves\",\"\");;"
+            },
+            {
+              "line": 398,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 445,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 495,
+              "before": " for i3=0 to 1 do ",
+              "after": " let _ = for i3=0 to 1 do "
+            },
+            {
+              "line": 501,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 522,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 549,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 558,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 585,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 622,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 648,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 674,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 700,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 720,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 738,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 757,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 775,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 797,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 860,
+              "before": "for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)",
+              "after": "let _ = for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)"
+            },
+            {
+              "line": 864,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 887,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 913,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 941,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 966,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 984,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1003,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1022,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1040,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1058,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1077,
+              "before": "addtex(Section,\"Packing -- Cluster Inequality\",\"\");;",
+              "after": "let _ = addtex(Section,\"Packing -- Cluster Inequality\",\"\");;"
+            },
+            {
+              "line": 1080,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 1103,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1121,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1145,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1168,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1192,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1221,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1240,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1264,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1289,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1324,
+              "before": "addtex(Section,\"Marchal 3-cell nonnegativity\",\"\");;",
+              "after": "let _ = addtex(Section,\"Marchal 3-cell nonnegativity\",\"\");;"
+            },
+            {
+              "line": 1331,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1351,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1370,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1387,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1404,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1423,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1441,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1460,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1477,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1494,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1516,
+              "before": "addtex(Section,\"Marchal 2-cell nonnegativity\",\"\");;",
+              "after": "let _ = addtex(Section,\"Marchal 2-cell nonnegativity\",\"\");;"
+            },
+            {
+              "line": 1518,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1535,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1585,
+              "before": "addtex (Section,\"Packing -- Polyhedra\",\"\");;",
+              "after": "let _ = addtex (Section,\"Packing -- Polyhedra\",\"\");;"
+            },
+            {
+              "line": 1587,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1598,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1634,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1650,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1661,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1696,
+              "before": "addtex(Section,\"Local Fan -- Standard Fan\",\"\");;",
+              "after": "let _ = addtex(Section,\"Local Fan -- Standard Fan\",\"\");;"
+            },
+            {
+              "line": 1698,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1717,
+              "before": "addtex(Section,\"Local Fan\",\" -- Minimal Fan\");;",
+              "after": "let _ = addtex(Section,\"Local Fan\",\" -- Minimal Fan\");;"
+            },
+            {
+              "line": 1721,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1737,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1754,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1773,
+              "before": "addtex (Section,\"Tame Hypermap\",\"\");;",
+              "after": "let _ = addtex (Section,\"Tame Hypermap\",\"\");;"
+            },
+            {
+              "line": 1775,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1792,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1811,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1831,
+              "before": "addtex(Section,\"Linear Programs\",\"\");;",
+              "after": "let _ = addtex(Section,\"Linear Programs\",\"\");;"
+            },
+            {
+              "line": 1848,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1876,
+              "before": "skip{",
+              "after": "let _ = skip{"
+            },
+            {
+              "line": 1896,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1914,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1932,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1950,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1969,
+              "before": "addtex(Comment,\"Quad convexity justification\",\"",
+              "after": "let _ = addtex(Comment,\"Quad convexity justification\",\""
+            },
+            {
+              "line": 1978,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1989,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2011,
+              "before": "add {",
+              "after": "let _ = add {"
+            },
+            {
+              "line": 2021,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2043,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2055,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 2073,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2096,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2117,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2140,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2160,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2183,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2204,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2223,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2244,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2263,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2277,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2296,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2318,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2337,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2358,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2378,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2399,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2420,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2442,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2458,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2474,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2493,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 2506,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 2523,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2551,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 2569,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2620,
+              "before": "(* add *) {",
+              "after": "(* add *) let _ = {"
+            },
+            {
+              "line": 2636,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2656,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2675,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 2695,
+              "before": "addtex(Section,\"Linear Programs\",\" -- dart\\_ std3\");;",
+              "after": "let _ = addtex(Section,\"Linear Programs\",\" -- dart\\_ std3\");;"
+            },
+            {
+              "line": 2709,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2721,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2735,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2743,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2751,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2759,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2769,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2779,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2790,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2800,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2811,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2824,
+              "before": "addtex(Section,\"Linear Programs\",\" -- dartXYZ\");;",
+              "after": "let _ = addtex(Section,\"Linear Programs\",\" -- dartXYZ\");;"
+            },
+            {
+              "line": 2837,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2856,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2875,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2897,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2906,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2918,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2930,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2942,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2957,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2970,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 2993,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3003,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3016,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3031,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3054,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3065,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3081,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3092,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3112,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3123,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3134,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3144,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3155,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3167,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3178,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3202,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3214,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3226,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3244,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3264,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 3334,
+              "before": "add (mk_iqd false (0,`apexffA`,`y4:real`));;",
+              "after": "let _ = add (mk_iqd false (0,`apexffA`,`y4:real`));;"
+            },
+            {
+              "line": 3335,
+              "before": "add (mk_iqd true (1,`apexfA`,`y4:real`));;",
+              "after": "let _ = add (mk_iqd true (1,`apexfA`,`y4:real`));;"
+            },
+            {
+              "line": 3336,
+              "before": "add (mk_iqd false (2,`apexf4`,`sqrt8`));;",
+              "after": "let _ = add (mk_iqd false (2,`apexf4`,`sqrt8`));;"
+            },
+            {
+              "line": 3337,
+              "before": "add (mk_iqd true (3,`apexff4`,`sqrt8`));;",
+              "after": "let _ = add (mk_iqd true (3,`apexff4`,`sqrt8`));;"
+            },
+            {
+              "line": 3338,
+              "before": "add (mk_iqd false (4,`apexf5`,`#2.52`));;",
+              "after": "let _ = add (mk_iqd false (4,`apexf5`,`#2.52`));;"
+            },
+            {
+              "line": 3339,
+              "before": "add (mk_iqd true (5,`apexff5`,`#2.52`));;",
+              "after": "let _ = add (mk_iqd true (5,`apexff5`,`#2.52`));;"
+            },
+            {
+              "line": 3341,
+              "before": "addtex(Section,\"Linear Programs\",\" -- apex std3 hll\");;",
+              "after": "let _ = addtex(Section,\"Linear Programs\",\" -- apex std3 hll\");;"
+            },
+            {
+              "line": 3461,
+              "before": "add(iqd \"2151506422\" \"apex_std3_hll\" false ",
+              "after": "let _ = add(iqd \"2151506422\" \"apex_std3_hll\" false "
+            },
+            {
+              "line": 3466,
+              "before": "add(iqd \"6836427086\" \"apex_std3_hll\" false ",
+              "after": "let _ = add(iqd \"6836427086\" \"apex_std3_hll\" false "
+            },
+            {
+              "line": 3471,
+              "before": "add(iqd \"3636849632\" \"apex_std3_hll\" false ",
+              "after": "let _ = add(iqd \"3636849632\" \"apex_std3_hll\" false "
+            },
+            {
+              "line": 3476,
+              "before": "add(iqd \"5298513205\" \"apex_std3_hll\" true ",
+              "after": "let _ = add(iqd \"5298513205\" \"apex_std3_hll\" true "
+            },
+            {
+              "line": 3481,
+              "before": "add(iqd \"7743522046\" \"apex_std3_hll\" true",
+              "after": "let _ = add(iqd \"7743522046\" \"apex_std3_hll\" true"
+            },
+            {
+              "line": 3488,
+              "before": "add(iqd \"8657368829\" \"apex_std3_small_hll\" false ",
+              "after": "let _ = add(iqd \"8657368829\" \"apex_std3_small_hll\" false "
+            },
+            {
+              "line": 3493,
+              "before": "add(iqd \"6619134733\" \"apex_std3_small_hll\" false ",
+              "after": "let _ = add(iqd \"6619134733\" \"apex_std3_small_hll\" false "
+            },
+            {
+              "line": 3498,
+              "before": "add(iqd \"1284543870\" \"apex_std3_small_hll\" true",
+              "after": "let _ = add(iqd \"1284543870\" \"apex_std3_small_hll\" true"
+            },
+            {
+              "line": 3503,
+              "before": "add(iqd \"4041673283\" \"apex_std3_small_hll\" true",
+              "after": "let _ = add(iqd \"4041673283\" \"apex_std3_small_hll\" true"
+            },
+            {
+              "line": 3508,
+              "before": "add(iqd \"3872614111\" \"dart_mll_w\" false",
+              "after": "let _ = add(iqd \"3872614111\" \"dart_mll_w\" false"
+            },
+            {
+              "line": 3513,
+              "before": "add(iqd \"3139693500\" \"dart_mll_n\" false",
+              "after": "let _ = add(iqd \"3139693500\" \"dart_mll_n\" false"
+            },
+            {
+              "line": 3518,
+              "before": "add(iqd \"4841020453\" \"dart_Hll_n\" false",
+              "after": "let _ = add(iqd \"4841020453\" \"dart_Hll_n\" false"
+            },
+            {
+              "line": 3523,
+              "before": "add(iqd \"9925287433\" \"dart_Hll_w\" false",
+              "after": "let _ = add(iqd \"9925287433\" \"dart_Hll_w\" false"
+            },
+            {
+              "line": 3528,
+              "before": "add(iqd \"7409690040\" \"dart_mll_w\" true",
+              "after": "let _ = add(iqd \"7409690040\" \"dart_mll_w\" true"
+            },
+            {
+              "line": 3533,
+              "before": "add(iqd \"4002562507\" \"dart_mll_n\" true",
+              "after": "let _ = add(iqd \"4002562507\" \"dart_mll_n\" true"
+            },
+            {
+              "line": 3538,
+              "before": "add(iqd \"5835568093\" \"dart_Hll_n\" true",
+              "after": "let _ = add(iqd \"5835568093\" \"dart_Hll_n\" true"
+            },
+            {
+              "line": 3543,
+              "before": " add(iqd \"1894886027\" \"dart_Hll_w\" true",
+              "after": " let _ = add(iqd \"1894886027\" \"dart_Hll_w\" true"
+            },
+            {
+              "line": 3590,
+              "before": "add  i4750199435;;",
+              "after": "let _ = add  i4750199435;;"
+            },
+            {
+              "line": 3613,
+              "before": "add i8384511215;;",
+              "after": "let _ = add i8384511215;;"
+            },
+            {
+              "line": 3637,
+              "before": "add  i7819193535;;",
+              "after": "let _ = add  i7819193535;;"
+            },
+            {
+              "line": 3662,
+              "before": "add  i6987934000;;",
+              "after": "let _ = add  i6987934000;;"
+            },
+            {
+              "line": 3680,
+              "before": "add i7291663656;;",
+              "after": "let _ = add i7291663656;;"
+            },
+            {
+              "line": 3698,
+              "before": "add i2390583444;;",
+              "after": "let _ = add i2390583444;;"
+            },
+            {
+              "line": 3722,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3748,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3774,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3790,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3807,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3823,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3839,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3855,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3871,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3887,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3913,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3929,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3947,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3963,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3979,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            },
+            {
+              "line": 3995,
+              "before": "add{ineq =",
+              "after": "let _ = add{ineq ="
+            }
+          ]
+        },
         {
           "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-FLYPAPER-CONCAT",
           "kind": "exact_bytes_replace_once",
@@ -1600,8 +2698,8 @@
           "after": "   idv = \"181212899 \" ^ string_of_int d;"
         }
       ],
-      "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects.",
-      "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required."
+      "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
+      "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact."
     },
     {
       "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",

@@ -92,7 +92,7 @@
 #flyspeck_needs "nonlinear/types.hl";;
 (* 041 selected=flyspeck:text_formalization/nonlinear/nonlin_def.hl sha256=a5f9c3edceed3d64c79bccad05db5b1e960346571d92f9ab3dd8981c43113a1f *)
 #flyspeck_needs "nonlinear/nonlin_def.hl";;
-(* 042 selected=flyspeck:text_formalization/nonlinear/ineq.hl sha256=d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68 normalization=PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001 normalized_sha256=d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f *)
+(* 042 selected=flyspeck:text_formalization/nonlinear/ineq.hl sha256=d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68 normalization=PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001 normalized_sha256=e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90 *)
 #flyspeck_needs "nonlinear/ineq.hl";;
 (* 043 selected=flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl sha256=ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220 normalization=PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001 normalized_sha256=b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d *)
 #flyspeck_needs "nonlinear/main_estimate_ineq.hl";;

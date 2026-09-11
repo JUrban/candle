@@ -143,6 +143,54 @@ def load_contract_bytes(contract_bytes: bytes) -> dict[str, Any]:
                     raise ValueError(
                         f"invalid exact OCaml global thunk list for {operation_id}"
                     )
+            elif kind == "exact_lines_replace_once":
+                replacements = operation.get("replacements")
+                if (
+                    not isinstance(replacements, list)
+                    or not replacements
+                    or operation.get("replacement_count") != len(replacements)
+                ):
+                    raise ValueError(
+                        f"invalid exact line replacements for {operation_id}"
+                    )
+                replacement_lines: list[int] = []
+                for replacement in replacements:
+                    replacement_line = (
+                        replacement.get("line")
+                        if isinstance(replacement, dict) else None
+                    )
+                    before = (
+                        replacement.get("before")
+                        if isinstance(replacement, dict) else None
+                    )
+                    replacement_after = (
+                        replacement.get("after")
+                        if isinstance(replacement, dict) else None
+                    )
+                    if (
+                        not isinstance(replacement_line, int)
+                        or isinstance(replacement_line, bool)
+                        or replacement_line < 1
+                        or not isinstance(before, str)
+                        or not before
+                        or "\n" in before
+                        or "\r" in before
+                        or not isinstance(replacement_after, str)
+                        or replacement_after == before
+                        or "\n" in replacement_after
+                        or "\r" in replacement_after
+                    ):
+                        raise ValueError(
+                            f"invalid exact line replacement for {operation_id}"
+                        )
+                    replacement_lines.append(replacement_line)
+                if (
+                    replacement_lines != sorted(set(replacement_lines))
+                    or line != replacement_lines[0]
+                ):
+                    raise ValueError(
+                        f"invalid exact line replacement order for {operation_id}"
+                    )
             elif kind == "exact_span_replace_once":
                 start = operation.get("start")
                 end = operation.get("end")
@@ -235,6 +283,24 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
                     f"expected {operation['line']}, got 1"
                 )
             continue
+        if operation["kind"] == "exact_lines_replace_once":
+            source_lines = source.splitlines(keepends=True)
+            for replacement in operation["replacements"]:
+                line_index = replacement["line"] - 1
+                if line_index >= len(source_lines):
+                    raise ValueError(
+                        f"source line is absent for {operation_id}: "
+                        f"{replacement['line']}"
+                    )
+                observed = source_lines[line_index]
+                newline = b"\n" if observed.endswith(b"\n") else b""
+                observed = observed[:-len(newline)] if newline else observed
+                if observed != replacement["before"].encode("utf-8"):
+                    raise ValueError(
+                        f"source line anchor mismatch for {operation_id}: "
+                        f"{replacement['line']}"
+                    )
+            continue
         start_offset, end_offset = operation_bounds(source, operation, "original")
         observed_line = source.count(b"\n", 0, start_offset) + 1
         if observed_line != operation["line"]:
@@ -293,6 +359,28 @@ def normalize_bytes(source: bytes, entry: dict[str, Any]) -> bytes:
             rendered.extend(b"let " + binding_name + b" = " + accumulator)
             rendered.extend(b" ();;\n\n" + module_suffix)
             normalized = bytes(rendered)
+            continue
+        if operation["kind"] == "exact_lines_replace_once":
+            normalized_lines = normalized.splitlines(keepends=True)
+            for replacement in operation["replacements"]:
+                line_index = replacement["line"] - 1
+                if line_index >= len(normalized_lines):
+                    raise ValueError(
+                        f"exact line is absent for {operation_id}: "
+                        f"{replacement['line']}"
+                    )
+                observed = normalized_lines[line_index]
+                newline = b"\n" if observed.endswith(b"\n") else b""
+                observed_body = observed[:-len(newline)] if newline else observed
+                if observed_body != replacement["before"].encode("utf-8"):
+                    raise ValueError(
+                        f"exact line anchor mismatch for {operation_id}: "
+                        f"{replacement['line']}"
+                    )
+                normalized_lines[line_index] = (
+                    replacement["after"].encode("utf-8") + newline
+                )
+            normalized = b"".join(normalized_lines)
             continue
         after = str(operation["after"]).encode("utf-8")
         start_offset, end_offset = operation_bounds(normalized, operation, "exact")

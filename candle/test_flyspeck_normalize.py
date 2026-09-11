@@ -154,6 +154,42 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 "entries": [entry],
             }).encode())
 
+    def test_exact_line_batch_preserves_order_and_fails_closed(self):
+        source = b"module M = struct\nemit 1;;\nemit 2;;\nend;;\n"
+        normalized = (
+            b"module M = struct\nlet _ = emit 1;;\n"
+            b"let _ = emit 2;;\nend;;\n"
+        )
+        entry = copy.deepcopy(self.contract["entries"][0])
+        entry["operations"] = [{
+            "id": "fixture-exact-lines",
+            "kind": "exact_lines_replace_once",
+            "line": 2,
+            "replacement_count": 2,
+            "replacements": [
+                {"line": 2, "before": "emit 1;;", "after": "let _ = emit 1;;"},
+                {"line": 3, "before": "emit 2;;", "after": "let _ = emit 2;;"},
+            ],
+        }]
+        entry["source_sha256"], entry["source_md5"] = digests(source)
+        entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
+        entry["normalized_bytes"] = len(normalized)
+        self.assertEqual(
+            flyspeck_normalize.normalize_bytes(source, entry), normalized,
+        )
+        entry["operations"][0]["replacements"][1]["before"] = "emit 3;;"
+        with self.assertRaisesRegex(ValueError, "source line anchor mismatch"):
+            flyspeck_normalize.normalize_bytes(source, entry)
+
+        duplicate = copy.deepcopy(entry)
+        duplicate["operations"][0]["replacements"][1]["line"] = 2
+        with self.assertRaisesRegex(ValueError, "invalid exact line replacement order"):
+            flyspeck_normalize.load_contract_bytes(json.dumps({
+                "schema": 2,
+                "flyspeck_commit": "a" * 40,
+                "entries": [duplicate],
+            }).encode())
+
     def test_output_digest_fails_closed(self):
         entry, source, _ = self.fixture_entry()
         entry["normalized_sha256"] = "0" * 64
@@ -415,7 +451,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         nonlinear_boundary_entries = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 8,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 9,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 2,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
@@ -423,6 +459,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         }
         for entry_id, operation_count in nonlinear_boundary_entries.items():
             self.assertEqual(len(entries[entry_id]["operations"]), operation_count)
+        ineq_structure = entries[
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001"
+        ]["operations"][0]
+        self.assertEqual(ineq_structure["kind"], "exact_lines_replace_once")
+        self.assertEqual(ineq_structure["replacement_count"], 218)
+        self.assertEqual(len(ineq_structure["replacements"]), 218)
+        self.assertEqual(ineq_structure["replacements"][0]["line"], 83)
+        self.assertEqual(ineq_structure["replacements"][-1]["line"], 3995)
+        self.assertTrue(all(
+            "let _ = " in replacement["after"]
+            for replacement in ineq_structure["replacements"]
+        ))
         self.assertEqual(
             entries["PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001"]
             ["operations"][0]["after"],
@@ -621,7 +669,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 182)
+        self.assertEqual(len(operation_ids), 183)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

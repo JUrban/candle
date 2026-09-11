@@ -627,7 +627,7 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         nonlinear_boundary_counts = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 8,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 9,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 2,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
@@ -635,6 +635,14 @@ class GeneratedManifestTests(unittest.TestCase):
         }
         for entry_id, operation_count in nonlinear_boundary_counts.items():
             self.assertEqual(entries[entry_id]["operation_count"], operation_count)
+        ineq_structure = next(
+            operation
+            for operation in entries[
+                "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001"
+            ]["operations"]
+            if operation["id"] == "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001"
+        )
+        self.assertEqual(ineq_structure["replacement_count"], 218)
         structure_effect_counts = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": 2,
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": 1,

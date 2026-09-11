@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "f1df990ac200cecc4150a3c32697b3bc",
-    "generated_source_sha256": "c3f2292a24b3916b3aa5515328176aea885bb36d76cb46e7b34c7593de2e3305",
+    "generated_source_md5": "25c0281bb8e7077c168e34333b957b93",
+    "generated_source_sha256": "c5fb6f9e68c86572cb853e8790ee5202487cc9a20395f2364b4338032c676284",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1d186d8610f4c9a9c07710c813b0eb51",
+      "md5": "1e52726e2bbde68b64b5d9c4b487ede9",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "42bccbdcec1969afcf49afe241b42ec2639606e64c508f406103dbc7cfcd4668"
+      "sha256": "2dfea1194b75aeafaf9a962474888cbc5cc547c2f04d5e20a22af6f9fa200037"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "0ba3994f9b667b0e8cbc80bd02dfa6d3",
+      "md5": "f4b1341240bd6b8f1984a46a18e91ad8",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "8567a6e552f8031841895befdf925afb5e1c5e88f267f0a60504ba0971f295d5"
+      "sha256": "a1c5d33ed57de241430379828ee158ad4163e9430130fb3e73777972607aa9ea"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19716,10 +19716,10 @@
       "execution_normalization": {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 120434,
-        "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
-        "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
-        "operation_count": 8
+        "normalized_bytes": 122178,
+        "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
+        "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
+        "operation_count": 9
       },
       "md5": "4603172e71db7ee1ff945a337932a900",
       "path": "text_formalization/nonlinear/ineq.hl",
@@ -22321,7 +22321,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "d9794b7b705be70daea4ddcaeb755d698939df64e1be80c4c3bd4100d300e047",
+    "contract_sha256": "46e74079f54268545b4e7f5c6fe951165bd89e988283a62d2ae5316f88be5ba1",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23927,11 +23927,1109 @@
       {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 120434,
-        "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
-        "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
-        "operation_count": 8,
+        "normalized_bytes": 122178,
+        "normalized_md5": "3dc965c4ebc926ed30a466f220118f33",
+        "normalized_sha256": "e2d3be55e7a23c2335e974eba5b90a523f479eb660f034dbc1c447c8a0dd1f90",
+        "operation_count": 9,
         "operations": [
+          {
+            "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
+            "kind": "exact_lines_replace_once",
+            "line": 83,
+            "replacement_count": 218,
+            "replacements": [
+              {
+                "after": "let _ = addtex (Section,\"Packing -- Marchal Inequality\",\"\");;",
+                "before": "addtex (Section,\"Packing -- Marchal Inequality\",\"\");;",
+                "line": 83
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 85
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 125
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 144
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 163
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 181
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 202
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 221
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 240
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 258
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 279
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 302
+              },
+              {
+                "after": "  let _ = add {",
+                "before": "  add {",
+                "line": 323
+              },
+              {
+                "after": "  let _ = add {",
+                "before": "  add {",
+                "line": 340
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 357
+              },
+              {
+                "after": "let _ = addtex(Section,\"Packing Cluster Inequality -- Five or more leaves\",\"\");;",
+                "before": "addtex(Section,\"Packing Cluster Inequality -- Five or more leaves\",\"\");;",
+                "line": 396
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 398
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 445
+              },
+              {
+                "after": " let _ = for i3=0 to 1 do ",
+                "before": " for i3=0 to 1 do ",
+                "line": 495
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 501
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 522
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 549
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 558
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 585
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 622
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 648
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 674
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 700
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 720
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 738
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 757
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 775
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 797
+              },
+              {
+                "after": "let _ = for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)",
+                "before": "for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)",
+                "line": 860
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 864
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 887
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 913
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 941
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 966
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 984
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1003
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1022
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1040
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1058
+              },
+              {
+                "after": "let _ = addtex(Section,\"Packing -- Cluster Inequality\",\"\");;",
+                "before": "addtex(Section,\"Packing -- Cluster Inequality\",\"\");;",
+                "line": 1077
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 1080
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1103
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1121
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1145
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1168
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1192
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1221
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1240
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1264
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1289
+              },
+              {
+                "after": "let _ = addtex(Section,\"Marchal 3-cell nonnegativity\",\"\");;",
+                "before": "addtex(Section,\"Marchal 3-cell nonnegativity\",\"\");;",
+                "line": 1324
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1331
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1351
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1370
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1387
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1404
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1423
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1441
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1460
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1477
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1494
+              },
+              {
+                "after": "let _ = addtex(Section,\"Marchal 2-cell nonnegativity\",\"\");;",
+                "before": "addtex(Section,\"Marchal 2-cell nonnegativity\",\"\");;",
+                "line": 1516
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1518
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1535
+              },
+              {
+                "after": "let _ = addtex (Section,\"Packing -- Polyhedra\",\"\");;",
+                "before": "addtex (Section,\"Packing -- Polyhedra\",\"\");;",
+                "line": 1585
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1587
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1598
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1634
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1650
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1661
+              },
+              {
+                "after": "let _ = addtex(Section,\"Local Fan -- Standard Fan\",\"\");;",
+                "before": "addtex(Section,\"Local Fan -- Standard Fan\",\"\");;",
+                "line": 1696
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1698
+              },
+              {
+                "after": "let _ = addtex(Section,\"Local Fan\",\" -- Minimal Fan\");;",
+                "before": "addtex(Section,\"Local Fan\",\" -- Minimal Fan\");;",
+                "line": 1717
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1721
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1737
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1754
+              },
+              {
+                "after": "let _ = addtex (Section,\"Tame Hypermap\",\"\");;",
+                "before": "addtex (Section,\"Tame Hypermap\",\"\");;",
+                "line": 1773
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1775
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1792
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1811
+              },
+              {
+                "after": "let _ = addtex(Section,\"Linear Programs\",\"\");;",
+                "before": "addtex(Section,\"Linear Programs\",\"\");;",
+                "line": 1831
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1848
+              },
+              {
+                "after": "let _ = skip{",
+                "before": "skip{",
+                "line": 1876
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1896
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1914
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1932
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1950
+              },
+              {
+                "after": "let _ = addtex(Comment,\"Quad convexity justification\",\"",
+                "before": "addtex(Comment,\"Quad convexity justification\",\"",
+                "line": 1969
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1978
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1989
+              },
+              {
+                "after": "let _ = add {",
+                "before": "add {",
+                "line": 2011
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2021
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2043
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 2055
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2073
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2096
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2117
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2140
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2160
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2183
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2204
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2223
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2244
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2263
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2277
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2296
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2318
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2337
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2358
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2378
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2399
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2420
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2442
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2458
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2474
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 2493
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 2506
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2523
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 2551
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2569
+              },
+              {
+                "after": "(* add *) let _ = {",
+                "before": "(* add *) {",
+                "line": 2620
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2636
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2656
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 2675
+              },
+              {
+                "after": "let _ = addtex(Section,\"Linear Programs\",\" -- dart\\_ std3\");;",
+                "before": "addtex(Section,\"Linear Programs\",\" -- dart\\_ std3\");;",
+                "line": 2695
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2709
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2721
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2735
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2743
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2751
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2759
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2769
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2779
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2790
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2800
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2811
+              },
+              {
+                "after": "let _ = addtex(Section,\"Linear Programs\",\" -- dartXYZ\");;",
+                "before": "addtex(Section,\"Linear Programs\",\" -- dartXYZ\");;",
+                "line": 2824
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2837
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2856
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2875
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2897
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2906
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2918
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2930
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2942
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2957
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2970
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 2993
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3003
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3016
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3031
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3054
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3065
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3081
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3092
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3112
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3123
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3134
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3144
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3155
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3167
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3178
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3202
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3214
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3226
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3244
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 3264
+              },
+              {
+                "after": "let _ = add (mk_iqd false (0,`apexffA`,`y4:real`));;",
+                "before": "add (mk_iqd false (0,`apexffA`,`y4:real`));;",
+                "line": 3334
+              },
+              {
+                "after": "let _ = add (mk_iqd true (1,`apexfA`,`y4:real`));;",
+                "before": "add (mk_iqd true (1,`apexfA`,`y4:real`));;",
+                "line": 3335
+              },
+              {
+                "after": "let _ = add (mk_iqd false (2,`apexf4`,`sqrt8`));;",
+                "before": "add (mk_iqd false (2,`apexf4`,`sqrt8`));;",
+                "line": 3336
+              },
+              {
+                "after": "let _ = add (mk_iqd true (3,`apexff4`,`sqrt8`));;",
+                "before": "add (mk_iqd true (3,`apexff4`,`sqrt8`));;",
+                "line": 3337
+              },
+              {
+                "after": "let _ = add (mk_iqd false (4,`apexf5`,`#2.52`));;",
+                "before": "add (mk_iqd false (4,`apexf5`,`#2.52`));;",
+                "line": 3338
+              },
+              {
+                "after": "let _ = add (mk_iqd true (5,`apexff5`,`#2.52`));;",
+                "before": "add (mk_iqd true (5,`apexff5`,`#2.52`));;",
+                "line": 3339
+              },
+              {
+                "after": "let _ = addtex(Section,\"Linear Programs\",\" -- apex std3 hll\");;",
+                "before": "addtex(Section,\"Linear Programs\",\" -- apex std3 hll\");;",
+                "line": 3341
+              },
+              {
+                "after": "let _ = add(iqd \"2151506422\" \"apex_std3_hll\" false ",
+                "before": "add(iqd \"2151506422\" \"apex_std3_hll\" false ",
+                "line": 3461
+              },
+              {
+                "after": "let _ = add(iqd \"6836427086\" \"apex_std3_hll\" false ",
+                "before": "add(iqd \"6836427086\" \"apex_std3_hll\" false ",
+                "line": 3466
+              },
+              {
+                "after": "let _ = add(iqd \"3636849632\" \"apex_std3_hll\" false ",
+                "before": "add(iqd \"3636849632\" \"apex_std3_hll\" false ",
+                "line": 3471
+              },
+              {
+                "after": "let _ = add(iqd \"5298513205\" \"apex_std3_hll\" true ",
+                "before": "add(iqd \"5298513205\" \"apex_std3_hll\" true ",
+                "line": 3476
+              },
+              {
+                "after": "let _ = add(iqd \"7743522046\" \"apex_std3_hll\" true",
+                "before": "add(iqd \"7743522046\" \"apex_std3_hll\" true",
+                "line": 3481
+              },
+              {
+                "after": "let _ = add(iqd \"8657368829\" \"apex_std3_small_hll\" false ",
+                "before": "add(iqd \"8657368829\" \"apex_std3_small_hll\" false ",
+                "line": 3488
+              },
+              {
+                "after": "let _ = add(iqd \"6619134733\" \"apex_std3_small_hll\" false ",
+                "before": "add(iqd \"6619134733\" \"apex_std3_small_hll\" false ",
+                "line": 3493
+              },
+              {
+                "after": "let _ = add(iqd \"1284543870\" \"apex_std3_small_hll\" true",
+                "before": "add(iqd \"1284543870\" \"apex_std3_small_hll\" true",
+                "line": 3498
+              },
+              {
+                "after": "let _ = add(iqd \"4041673283\" \"apex_std3_small_hll\" true",
+                "before": "add(iqd \"4041673283\" \"apex_std3_small_hll\" true",
+                "line": 3503
+              },
+              {
+                "after": "let _ = add(iqd \"3872614111\" \"dart_mll_w\" false",
+                "before": "add(iqd \"3872614111\" \"dart_mll_w\" false",
+                "line": 3508
+              },
+              {
+                "after": "let _ = add(iqd \"3139693500\" \"dart_mll_n\" false",
+                "before": "add(iqd \"3139693500\" \"dart_mll_n\" false",
+                "line": 3513
+              },
+              {
+                "after": "let _ = add(iqd \"4841020453\" \"dart_Hll_n\" false",
+                "before": "add(iqd \"4841020453\" \"dart_Hll_n\" false",
+                "line": 3518
+              },
+              {
+                "after": "let _ = add(iqd \"9925287433\" \"dart_Hll_w\" false",
+                "before": "add(iqd \"9925287433\" \"dart_Hll_w\" false",
+                "line": 3523
+              },
+              {
+                "after": "let _ = add(iqd \"7409690040\" \"dart_mll_w\" true",
+                "before": "add(iqd \"7409690040\" \"dart_mll_w\" true",
+                "line": 3528
+              },
+              {
+                "after": "let _ = add(iqd \"4002562507\" \"dart_mll_n\" true",
+                "before": "add(iqd \"4002562507\" \"dart_mll_n\" true",
+                "line": 3533
+              },
+              {
+                "after": "let _ = add(iqd \"5835568093\" \"dart_Hll_n\" true",
+                "before": "add(iqd \"5835568093\" \"dart_Hll_n\" true",
+                "line": 3538
+              },
+              {
+                "after": " let _ = add(iqd \"1894886027\" \"dart_Hll_w\" true",
+                "before": " add(iqd \"1894886027\" \"dart_Hll_w\" true",
+                "line": 3543
+              },
+              {
+                "after": "let _ = add  i4750199435;;",
+                "before": "add  i4750199435;;",
+                "line": 3590
+              },
+              {
+                "after": "let _ = add i8384511215;;",
+                "before": "add i8384511215;;",
+                "line": 3613
+              },
+              {
+                "after": "let _ = add  i7819193535;;",
+                "before": "add  i7819193535;;",
+                "line": 3637
+              },
+              {
+                "after": "let _ = add  i6987934000;;",
+                "before": "add  i6987934000;;",
+                "line": 3662
+              },
+              {
+                "after": "let _ = add i7291663656;;",
+                "before": "add i7291663656;;",
+                "line": 3680
+              },
+              {
+                "after": "let _ = add i2390583444;;",
+                "before": "add i2390583444;;",
+                "line": 3698
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3722
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3748
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3774
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3790
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3807
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3823
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3839
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3855
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3871
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3887
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3913
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3929
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3947
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3963
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3979
+              },
+              {
+                "after": "let _ = add{ineq =",
+                "before": "add{ineq =",
+                "line": 3995
+              }
+            ]
+          },
           {
             "after": "  List.concat(    map (function Flypaper s -> s | _ -> []) idv.tags);;",
             "before": "  List.flatten(    map (function Flypaper s -> s | _ -> []) idv.tags);;",
@@ -23990,8 +25088,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/ineq.hl",
-        "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required.",
-        "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects.",
+        "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact.",
+        "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
         "source_key": "flyspeck:text_formalization/nonlinear/ineq.hl",
         "source_md5": "4603172e71db7ee1ff945a337932a900",
         "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68"
@@ -24457,8 +25555,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "1d186d8610f4c9a9c07710c813b0eb51",
-    "generated_source_sha256": "42bccbdcec1969afcf49afe241b42ec2639606e64c508f406103dbc7cfcd4668",
+    "generated_source_md5": "1e52726e2bbde68b64b5d9c4b487ede9",
+    "generated_source_sha256": "2dfea1194b75aeafaf9a962474888cbc5cc547c2f04d5e20a22af6f9fa200037",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
