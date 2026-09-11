@@ -2922,12 +2922,15 @@
         "source": "candle:candle/ocaml.ml",
         "status": "typed-source-bindings-and-exact-normalizations"
       },
-      "toplevel_float": {
-        "assurance_limit": "float_of_num converts through verified integer-to-double and division primitives; frexp uses proved IEEE-754 field extraction and reconstruction without a new FFI",
+      "toplevel_numeric_and_assertion": {
+        "assurance_limit": "float_of_num performs exact rational scaling and nearest-even binary64 rounding; frexp and ldexp use proved IEEE-754 field extraction and reconstruction; ceil uses the primitive correctly-rounded floor; and Assert_failure remains distinct from Failure, all without a new FFI",
         "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
         "members": [
+          "Assert_failure",
+          "ceil",
           "float_of_num",
-          "frexp"
+          "frexp",
+          "ldexp"
         ],
         "source": [
           "candle:candle/nums.ml",
@@ -3082,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 318,
+        "line": 322,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 318,
+        "line": 322,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -4888,13 +4891,13 @@
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 1823,
+        "line": 1827,
         "member": "sqrt",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
-        "line": 1829,
+        "line": 1833,
         "member": "sqrt",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/jordan/float.hl"
@@ -5169,13 +5172,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 318,
+        "line": 322,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 318,
+        "line": 322,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -6975,13 +6978,13 @@
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 1823,
+        "line": 1827,
         "member": "sqrt",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
-        "line": 1829,
+        "line": 1833,
         "member": "sqrt",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/jordan/float.hl"
@@ -7198,8 +7201,11 @@
       ]
     },
     "toplevel_supported_members": [
+      "Assert_failure",
+      "ceil",
       "float_of_num",
-      "frexp"
+      "frexp",
+      "ldexp"
     ],
     "toplevel_uses": [
       {
@@ -7213,38 +7219,78 @@
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
       },
       {
+        "identifier": "ceil",
+        "line": 243,
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
         "identifier": "float_of_num",
         "line": 76,
         "source": "flyspeck:text_formalization/general/flyspeck_lib.hl"
       },
       {
-        "identifier": "float_of_num",
-        "line": 1096,
+        "identifier": "Assert_failure",
+        "line": 185,
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
-        "identifier": "frexp",
-        "line": 1097,
-        "source": "flyspeck:text_formalization/jordan/float.hl"
-      },
-      {
-        "identifier": "frexp",
-        "line": 1150,
-        "source": "flyspeck:text_formalization/jordan/float.hl"
-      },
-      {
-        "identifier": "frexp",
-        "line": 1163,
+        "identifier": "Assert_failure",
+        "line": 193,
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
         "identifier": "float_of_num",
-        "line": 1822,
+        "line": 1098,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1099,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1152,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "ceil",
+        "line": 1153,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "ldexp",
+        "line": 1153,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "frexp",
+        "line": 1165,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "ldexp",
+        "line": 1166,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "Assert_failure",
+        "line": 1541,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "Assert_failure",
+        "line": 1685,
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
         "identifier": "float_of_num",
-        "line": 1829,
+        "line": 1826,
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "identifier": "float_of_num",
+        "line": 1833,
         "source": "flyspeck:text_formalization/jordan/float.hl"
       },
       {
@@ -8787,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "a5ee4a1ccfabb336db6aae95274c443c",
-    "generated_source_sha256": "fc8c37ea1152b2876319c7c5043a9da6fba4ce32122e8b035c28e5b36a7ed4a8",
+    "generated_source_md5": "876dc491536f0f87c3225af8c260fe4b",
+    "generated_source_sha256": "915d5d2a94b99d8018ebd8de77b64361d262768ec373ff590ae615d33c242bd2",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11532,7 +11578,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 58824,
+      "bytes": 58967,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14802,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "875af4cec53b034d307d81376ebdc8e6",
+      "md5": "1ec9c6c89b8189f72914846391442335",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "6e65c233dbc2fe1cbf62938a8fd7cd15243fe6be0789d68a7758f9ee934498df"
+      "sha256": "d06ab4500072b294182abd914696a2800f258b8875efeb413b461ef827b22109"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14816,7 +14862,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 15484,
+      "bytes": 15693,
       "dependencies": [
         {
           "kind": "#use",
@@ -14854,7 +14900,7 @@
         },
         {
           "kind": "needs",
-          "line": 340,
+          "line": 344,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14865,7 +14911,7 @@
         },
         {
           "kind": "needs",
-          "line": 346,
+          "line": 350,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14876,7 +14922,7 @@
         },
         {
           "kind": "needs",
-          "line": 348,
+          "line": 352,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14886,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "7a9de35ed98ba9a35ea046b615f0a026",
+      "md5": "a63966d020e4c0d2aa28bbbe552c5b71",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "076f52853d8a70025cff139534b462b49bfe6306e0ab13412b45a483efb63a47"
+      "sha256": "b716b0ef92d9c53c2b0260420ac1901827c88e171b8b6fa2ee7bfd09780607bb"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -14908,20 +14954,20 @@
       "sha256": "bd79eef975e9e5258d6ad9c10fc144fe02f7e551faeced05c6e09ce5ecb0dbf6"
     },
     "candle:candle/nums.ml": {
-      "bytes": 8683,
+      "bytes": 11339,
       "dependencies": [],
-      "md5": "c6467fb5d11c943a2f5d8b8a7c8fd647",
+      "md5": "f5c1c95b0c225751f6de28aba908dc9c",
       "path": "candle/nums.ml",
       "repository": "candle",
-      "sha256": "67543a75a9e11989e422e612c775e4bccd63843c446b849e3033c29086d74f3d"
+      "sha256": "3b79dc8197ce23ff90c9e6b1653d99aaae6601899a02aa07d4acd3c227b2f868"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 35860,
+      "bytes": 38387,
       "dependencies": [],
-      "md5": "1d9553bb0fc6ada28c878b093b3ec4e5",
+      "md5": "f583350824a82f9fc5aef0fd98b2691d",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "f53c915993da4660d49a6546695ce76cd2a4fcda3d9bb51241332b71c572973e"
+      "sha256": "886bb796ecadb7a2992108e8b901e33a0ea690b410f460f144ee0d7ee226e591"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -18562,10 +18608,10 @@
       "execution_normalization": {
         "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 72276,
-        "normalized_md5": "ea87a6372d53a9b3cf5e5e778e936bde",
-        "normalized_sha256": "b0201ed2cfd74406c67718d828afbddaf8fa026355e7e55de5fd1bfa84d2a806",
-        "operation_count": 3
+        "normalized_bytes": 72819,
+        "normalized_md5": "3946ca21321186485d20c3016311910c",
+        "normalized_sha256": "34cfe8f531c899aea86ca8402db38710f2c638c0f8f29a8163775c2360058f59",
+        "operation_count": 33
       },
       "md5": "e36847771cb33f2fed6b451d74bd38d3",
       "path": "text_formalization/jordan/float.hl",
@@ -18626,10 +18672,10 @@
       "execution_normalization": {
         "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 20051,
-        "normalized_md5": "cfcf6693405414b171913042a71b1e68",
-        "normalized_sha256": "614eb8434d4dc5ab3b0d8e30661c92c48dd4b30eca71ae7ed001578b1fefd8e8",
-        "operation_count": 2
+        "normalized_bytes": 20049,
+        "normalized_md5": "411a71cc887ebd8c5c8fbf8ce87d3da4",
+        "normalized_sha256": "e0df2788785223bd3d5f22f69839bdaa92b8221bc1540be0ccc76c60b0ac9538",
+        "operation_count": 4
       },
       "md5": "60cb9cf8efb85a457e76f89c81294e80",
       "path": "text_formalization/jordan/misc_defs_and_lemmas.hl",
@@ -18698,10 +18744,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-RELABEL-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 54886,
-        "normalized_md5": "758063dd1a24eacc5cca75596a7fe0c9",
-        "normalized_sha256": "4b41f97afc6011600d24f3c3c33d21b07daa53175f4c9f71214e907a7c71324d",
-        "operation_count": 4
+        "normalized_bytes": 54969,
+        "normalized_md5": "86769e441b60b6579b0fc07b856785d6",
+        "normalized_sha256": "b9b0d263d84603e7c9c6bd4893a3ad9080d18b88b7fdc97d4c862ffed8927a1b",
+        "operation_count": 8
       },
       "md5": "bd35c3dc23e929b6495940412fcc7c03",
       "path": "text_formalization/jordan/tactics_jordan.hl",
@@ -18855,6 +18901,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 73507,
+        "normalized_md5": "5bfaffa957b66c2d23b19813a1417e29",
+        "normalized_sha256": "3dd6402c9dad7f5957f7a900811f829b556a7bdaadbc0942765ed759a49b1b26",
+        "operation_count": 2
+      },
       "md5": "bfbe7e25e992200c6101115ff8c45273",
       "path": "text_formalization/leg/collect_geom2.hl",
       "repository": "flyspeck",
@@ -22195,7 +22249,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "851c220da069c22f468a40485fc92cd04b613519a858e6a1692d4d59c160e424",
+    "contract_sha256": "34d594f78a64b0e019a3ebacdbb746b7ba25faae3f2257fd25e5ea08ac4f22b1",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22429,10 +22483,10 @@
       {
         "id": "PROJECT-POINTER-S3-RELABEL-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 54886,
-        "normalized_md5": "758063dd1a24eacc5cca75596a7fe0c9",
-        "normalized_sha256": "4b41f97afc6011600d24f3c3c33d21b07daa53175f4c9f71214e907a7c71324d",
-        "operation_count": 4,
+        "normalized_bytes": 54969,
+        "normalized_md5": "86769e441b60b6579b0fc07b856785d6",
+        "normalized_sha256": "b9b0d263d84603e7c9c6bd4893a3ad9080d18b88b7fdc97d4c862ffed8927a1b",
+        "operation_count": 8,
         "operations": [
           {
             "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;",
@@ -22442,11 +22496,39 @@
             "line": 21
           },
           {
+            "after": "let abbrev_type ty s =\n   let absname = \"mk_\"^s in\n   let repname = \"dest_\"^s in\n   let (a,b) = new_basic_type_definition s\n   (absname,repname)",
+            "before": "let abbrev_type ty s = let (a,b) = new_basic_type_definition s\n   (\"mk_\"^s,\"dest_\"^s)",
+            "id": "PROJECT-TACTICS-JORDAN-S3-TUPLE-CONSTRUCTOR-001-BASIC-TYPE-NAMES",
+            "kind": "exact_bytes_replace_once",
+            "line": 182
+          },
+          {
             "after": "let _ = select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;",
             "before": "select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;",
             "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-SELECT-EXAMPLE",
             "kind": "exact_bytes_replace_once",
             "line": 303
+          },
+          {
+            "after": "let _ = dropq_conv \"u\" `!P Q R . (?(u:B). (?(x:A). (u = P x) /\\ (Q x)) /\\ (R u))`;;",
+            "before": "dropq_conv \"u\" `!P Q R . (?(u:B). (?(x:A). (u = P x) /\\ (Q x)) /\\ (R u))`;;",
+            "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-U-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 1122
+          },
+          {
+            "after": "let _ = dropq_conv \"t\" `!P Q R. (!(t:B). (?(x:A). P x /\\ (t = Q x)) ==> R t)`;;",
+            "before": "dropq_conv \"t\" `!P Q R. (!(t:B). (?(x:A). P x /\\ (t = Q x)) ==> R t)`;;",
+            "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-T-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 1123
+          },
+          {
+            "after": "let _ = dropq_conv \"u\" `?u v.\n     ((t * (a + &1) + (&1 - t) *a = u) /\\\n      (t * (b + &0) + (&1 - t) * b = v)) /\\\n     a < u /\\\n     u < r /\\\n     (v = b)`;;",
+            "before": "dropq_conv \"u\" `?u v.\n     ((t * (a + &1) + (&1 - t) *a = u) /\\\n      (t * (b + &0) + (&1 - t) * b = v)) /\\\n     a < u /\\\n     u < r /\\\n     (v = b)`;;",
+            "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-UV-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 1125
           },
           {
             "after": "        let avoids = filter (fun y -> not (y = x)) (vars_and_constants tm []) in",
@@ -22464,8 +22546,8 @@
           }
         ],
         "path": "text_formalization/jordan/tactics_jordan.hl",
-        "scope_limit": "The structure-effect rewrites are confined to the two pinned anonymous expressions. The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; none provides general structure-expression, physical-identity, or polymorphic-hash compatibility. Compiled effect, theorem/output, cumulative, and final fingerprint oracles remain required, and any exact-fingerprint difference blocks release.",
-        "semantic_rule": "The two wildcard bindings evaluate the identical unambiguous-interface call and SELECT example once at their original Tactics_jordan initialization positions and discard the same unit and theorem results, preserving effects, order, and exceptions. The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
+        "scope_limit": "The structure-effect rewrites are confined to the five pinned anonymous expressions. The tuple-constructor rewrite is confined to the exact new_basic_type_definition call and does not alter its type witness, theorem, names, or result handling. The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; none provides general structure-expression, tuple-constructor, physical-identity, or polymorphic-hash compatibility. Compiled effect, theorem/output, cumulative, and final fingerprint oracles remain required, and any exact-fingerprint difference blocks release.",
+        "semantic_rule": "The five wildcard bindings evaluate the identical unambiguous-interface call, SELECT example, and three dropq_conv examples once at their original Tactics_jordan initialization positions and discard the same unit and theorem results, preserving effects, order, and exceptions. The constructor-name split evaluates the same two pure string concatenations once, in the same left-to-right order, and passes the identical string pair to new_basic_type_definition; it only avoids CakeML's premature tuple-component type unification. The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
         "source_key": "flyspeck:text_formalization/jordan/tactics_jordan.hl",
         "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
         "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe"
@@ -23004,6 +23086,36 @@
         "source_sha256": "483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b"
       },
       {
+        "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 73507,
+        "normalized_md5": "5bfaffa957b66c2d23b19813a1417e29",
+        "normalized_sha256": "3dd6402c9dad7f5957f7a900811f829b556a7bdaadbc0942765ed759a49b1b26",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "let _ = MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE) (MESON[FINITE_RULES] ` FINITE {(a:real^N),b,c} `) ;;",
+            "before": "MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE) (MESON[FINITE_RULES] ` FINITE {(a:real^N),b,c} `) ;;",
+            "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001-AFFINE-HULL-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 870
+          },
+          {
+            "after": "let _ = MESON[POW_2_SQRT; DIST_POS_LE]` dist (x,y) pow 2 = r ==> dist (x,y) = sqrt ( r ) `;;",
+            "before": "MESON[POW_2_SQRT; DIST_POS_LE]` dist (x,y) pow 2 = r ==> dist (x,y) = sqrt ( r ) `;;",
+            "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001-SQRT-EXAMPLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 1328
+          }
+        ],
+        "path": "text_formalization/leg/collect_geom2.hl",
+        "scope_limit": "These hash-pinned replacements are confined to Collect_geom2's two anonymous theorem examples. They are not a general structure-expression translation; the complete normalized source load and cumulative action remain required.",
+        "semantic_rule": "Each wildcard binding evaluates its identical original anonymous theorem computation once at the same Collect_geom2 initialization position and discards the same theorem result. Proof construction, evaluation order, effects, exceptions, definitions, theorem statements, and proof bodies are unchanged.",
+        "source_key": "flyspeck:text_formalization/leg/collect_geom2.hl",
+        "source_md5": "bfbe7e25e992200c6101115ff8c45273",
+        "source_sha256": "39381f07853656cd59be5f8a866b27cf59ffadd3e482d59eeb3544b4e788bc77"
+      },
+      {
         "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 13387,
@@ -23096,10 +23208,10 @@
       {
         "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 72276,
-        "normalized_md5": "ea87a6372d53a9b3cf5e5e778e936bde",
-        "normalized_sha256": "b0201ed2cfd74406c67718d828afbddaf8fa026355e7e55de5fd1bfa84d2a806",
-        "operation_count": 3,
+        "normalized_bytes": 72819,
+        "normalized_md5": "3946ca21321186485d20c3016311910c",
+        "normalized_sha256": "34cfe8f531c899aea86ca8402db38710f2c638c0f8f29a8163775c2360058f59",
+        "operation_count": 33,
         "operations": [
           {
             "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;",
@@ -23116,16 +23228,226 @@
             "line": 38
           },
           {
+            "after": "let _ = add_test(\"mk_interval\",",
+            "before": "add_test(\"mk_interval\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-INTERVAL-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 75
+          },
+          {
+            "after": "let _ = add_test(\"mk_int\",",
+            "before": "add_test(\"mk_int\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-INT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 112
+          },
+          {
+            "after": "let _ = add_test(\"split_ratio\",",
+            "before": "add_test(\"split_ratio\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-SPLIT-RATIO-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 120
+          },
+          {
+            "after": "let _ = add_test(\"factor_C\",",
+            "before": "add_test(\"factor_C\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FACTOR-C-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 137
+          },
+          {
+            "after": "let _ = add_test(\"dest_float\",",
+            "before": "add_test(\"dest_float\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-FLOAT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 149
+          },
+          {
+            "after": "let _ = add_test(\"dest_float2\", (* must express as numeral first *)",
+            "before": "add_test(\"dest_float2\", (* must express as numeral first *)",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-FLOAT2-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 152
+          },
+          {
+            "after": "let _ = add_test(\"mk_float\",",
+            "before": "add_test(\"mk_float\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-FLOAT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 167
+          },
+          {
+            "after": "let _ = add_test(\"mk_float2\",  (* throws exception exactly when denom != 2^k *)",
+            "before": "add_test(\"mk_float2\",  (* throws exception exactly when denom != 2^k *)",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-FLOAT2-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 171
+          },
+          {
+            "after": "let _ = add_test(\"mk_float dest_float\",  (* constructs canonical form of float *)",
+            "before": "add_test(\"mk_float dest_float\",  (* constructs canonical form of float *)",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-DEST-FLOAT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 176
+          },
+          {
+            "after": "    let _ = if r >=/ (num 0) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",184,0)) in",
+            "before": "    let _ = assert (r >=/ (num 0)) in",
+            "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-MK-POS-DECIMAL-NONNEGATIVE",
+            "kind": "exact_bytes_replace_once",
+            "line": 184
+          },
+          {
+            "after": "    let _ = if b2 =/ (num 1) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",191,0)) in",
+            "before": "    let _ = assert(b2 =/ (num 1)) in",
+            "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DECIMAL-DENOMINATOR",
+            "kind": "exact_bytes_replace_once",
+            "line": 191
+          },
+          {
+            "after": "let _ = add_test(\"mk_pos_decimal\",",
+            "before": "add_test(\"mk_pos_decimal\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-POS-DECIMAL-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 198
+          },
+          {
+            "after": "let _ = add_test(\"mk_decimal\",",
+            "before": "add_test(\"mk_decimal\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-DECIMAL-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 212
+          },
+          {
+            "after": "let _ = add_test(\"dest_decimal\",",
+            "before": "add_test(\"dest_decimal\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-DECIMAL-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 227
+          },
+          {
+            "after": "let _ = add_test(\"dest_decimal2\",",
+            "before": "add_test(\"dest_decimal2\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-DECIMAL2-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 229
+          },
+          {
+            "after": "let _ = add_test(\"FLOAT_CONV1\",",
+            "before": "add_test(\"FLOAT_CONV1\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FLOAT-CONV1-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 625
+          },
+          {
             "after": "let _ = test();;",
             "before": "test();;",
             "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-TEST",
             "kind": "exact_bytes_replace_once",
             "line": 1073
+          },
+          {
+            "after": "(*test*) let _ = let f (u,v) = ((num_exponent u) =(num v)) in",
+            "before": "(*test*)let f (u,v) = ((num_exponent u) =(num v)) in",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-NUM-EXPONENT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1099
+          },
+          {
+            "after": "let (round_outward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    let b = float_fabs f in\n    let sign = if Cake.Double.(>=) f 0.0 then I else minus_num in",
+            "before": "let (round_outward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    let b = abs_float f in\n    let sign = if (f >= 0.0) then I else minus_num in",
+            "id": "PROJECT-FLOAT-S3-DOUBLE-API-001-ROUND-OUTWARD",
+            "kind": "exact_bytes_replace_once",
+            "line": 1144
+          },
+          {
+            "after": "let (round_inward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    (* avoid overflow on 30 bit integers *)\n    let bprec = if (bprec > 25) then 25 else bprec in\n    let b = float_fabs f in\n    let sign = if Cake.Double.(>=) f 0.0 then I else minus_num in",
+            "before": "let (round_inward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    (* avoid overflow on 30 bit integers *)\n    let bprec = if (bprec > 25) then 25 else bprec in\n    let b = abs_float f in\n    let sign = if (f >= 0.0) then I else minus_num in",
+            "id": "PROJECT-FLOAT-S3-DOUBLE-API-001-ROUND-INWARD",
+            "kind": "exact_bytes_replace_once",
+            "line": 1155
+          },
+          {
+            "after": "let _ = add_test(\"SUBST_TERM\",",
+            "before": "add_test(\"SUBST_TERM\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-SUBST-TERM-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1175
+          },
+          {
+            "after": "(*test*) let _ = add_test(\"INTERVAL_CLEAN_CONV\",",
+            "before": "(*test*) add_test(\"INTERVAL_CLEAN_CONV\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-CLEAN-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1192
+          },
+          {
+            "after": "let _ = add_test(\"INTERVAL_OF_NUM\",",
+            "before": "add_test(\"INTERVAL_OF_NUM\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-NUM-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1380
+          },
+          {
+            "after": "let _ = add_test(\"FLOAT_INEQ_CONV\",",
+            "before": "add_test(\"FLOAT_INEQ_CONV\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FLOAT-INEQ-CONV-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1398
+          },
+          {
+            "after": "let _ = add_test(\"INTERVAL_TO_LESS_CONV\",",
+            "before": "add_test(\"INTERVAL_TO_LESS_CONV\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-TO-LESS-CONV-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1418
+          },
+          {
+            "after": "let _ = add_test(\"INTERVAL_TO_LESS_CONV2\",",
+            "before": "add_test(\"INTERVAL_TO_LESS_CONV2\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-TO-LESS-CONV2-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1425
+          },
+          {
+            "after": "let _ = add_test(\"DEC_FLOAT\",",
+            "before": "add_test(\"DEC_FLOAT\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEC-FLOAT-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1458
+          },
+          {
+            "after": "  let _ = if ex_num <=/ f_num then () else\n    raise (Assert_failure (\"text_formalization/jordan/float.hl\",1538,0)) in",
+            "before": "  let _ = assert (ex_num <=/ f_num) in",
+            "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DECIMAL-ERROR-BOUND",
+            "kind": "exact_bytes_replace_once",
+            "line": 1538
+          },
+          {
+            "after": "let _ = add_test(\"INTERVAL_OF_DECIMAL\",",
+            "before": "add_test(\"INTERVAL_OF_DECIMAL\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-DECIMAL-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1550
+          },
+          {
+            "after": "let _ = add_test(\"INTERVAL_OF_DECIMAL2\",",
+            "before": "add_test(\"INTERVAL_OF_DECIMAL2\",",
+            "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-DECIMAL2-TEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 1555
+          },
+          {
+            "after": "    let _ = if ez_num >=/ (num 0) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",1681,0)) in",
+            "before": "    let _ = assert((ez_num >=/ (num 0))) in",
+            "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DIVISION-ERROR-BOUND",
+            "kind": "exact_bytes_replace_once",
+            "line": 1681
           }
         ],
         "path": "text_formalization/jordan/float.hl",
-        "scope_limit": "These hash-pinned replacements are confined to Float's three anonymous calls and do not suppress or weaken test(). They are not general structure-expression compatibility; native effect/order and cumulative action oracles remain required.",
-        "semantic_rule": "The wildcard bindings evaluate the identical two interface calls and test call once at their original Float initialization positions and discard the same unit results. Interface state, order, assertions, exceptions, definitions, theorem statements, and proofs are unchanged; the load-time test remains mandatory and fail-closed.",
+        "scope_limit": "These hash-pinned replacements are confined to Float's enumerated anonymous calls, four assertions, and two typed rounding helpers. They do not suppress or weaken any add_test, test, or assertion invocation and do not authorize general structure-expression, assertion, or floating-point rewrites. Native effect/order, complete normalized source load, and cumulative action oracles remain required.",
+        "semantic_rule": "The wildcard bindings evaluate the identical two interface calls, 24 formerly anonymous add_test calls, and test call once at their original Float initialization positions and discard the same results. Together with the source's already explicit dest_interval wildcard binding, all 25 add_test calls remain active in their original order. Each assert is expanded to the same boolean guard and raises the runtime's distinct Assert_failure constructor with its original source line when false; no Failure handler can absorb it. The historical float_fabs compatibility name denotes the same CakeML double absolute-value operation, and the two explicit Cake.Double orderings are the typed double interpretation of the original OCaml comparisons. Interface state, test evaluation, assertions, exceptions, definitions, theorem statements, and proofs are unchanged; every load-time test remains mandatory and fail-closed.",
         "source_key": "flyspeck:text_formalization/jordan/float.hl",
         "source_md5": "e36847771cb33f2fed6b451d74bd38d3",
         "source_sha256": "11ea4ae6f28b1d12d4c7d6339342362fb5b261b2bfa17f64cd43579c3761a776"
@@ -23133,10 +23455,10 @@
       {
         "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 20051,
-        "normalized_md5": "cfcf6693405414b171913042a71b1e68",
-        "normalized_sha256": "614eb8434d4dc5ab3b0d8e30661c92c48dd4b30eca71ae7ed001578b1fefd8e8",
-        "operation_count": 2,
+        "normalized_bytes": 20049,
+        "normalized_md5": "411a71cc887ebd8c5c8fbf8ce87d3da4",
+        "normalized_sha256": "e0df2788785223bd3d5f22f69839bdaa92b8221bc1540be0ccc76c60b0ac9538",
+        "operation_count": 4,
         "operations": [
           {
             "after": "let _ = unambiguous_interface();;",
@@ -23144,6 +23466,20 @@
             "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
             "kind": "exact_bytes_replace_once",
             "line": 31
+          },
+          {
+            "after": "SUBGOAL_MP_TAC `?t. t = x+|y'`;",
+            "before": "SUBGOAL_MP_TAC `?t. t = x'+|y'`;",
+            "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-WITNESS-SUM",
+            "kind": "exact_bytes_replace_once",
+            "line": 365
+          },
+          {
+            "after": "SPEC_TAC (`x:num`,`a:num`);",
+            "before": "SPEC_TAC (`x':num`,`a:num`);",
+            "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-GENERALIZE",
+            "kind": "exact_bytes_replace_once",
+            "line": 367
           },
           {
             "after": "let _ = pop_priority();;",
@@ -23154,8 +23490,8 @@
           }
         ],
         "path": "text_formalization/jordan/misc_defs_and_lemmas.hl",
-        "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls. They are not general structure-expression or parser-priority compatibility; native state/order and cumulative action oracles remain required.",
-        "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. Their balanced state lifetime, order, exceptions, definitions, theorem statements, and proofs are unchanged.",
+        "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls and the two exact bound-variable references inside NUM2_COUNTABLE. They are not general structure-expression, parser-priority, name-conflict, or proof normalization; complete source-load, theorem-export, and cumulative action oracles remain required.",
+        "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. The two NUM2_COUNTABLE edits consistently select the free first coordinate x both when constructing the diagonal-sum witness and when generalizing that coordinate; this is the historically validated proof spelling and avoids generalizing the unrelated NAME_CONFLICT-renamed x'. The theorem statement, hypotheses, recursive enumerator, induction, proof intent, allowed axioms, interface state lifetime, order, and exceptions are unchanged.",
         "source_key": "flyspeck:text_formalization/jordan/misc_defs_and_lemmas.hl",
         "source_md5": "60cb9cf8efb85a457e76f89c81294e80",
         "source_sha256": "6c5de278e41d7ad799bacb079e387f347aaa0cd2bfd6682d74ce979fb536b125"
@@ -23533,7 +23869,7 @@
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
       }
     ],
-    "entry_count": 35,
+    "entry_count": 36,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -23644,8 +23980,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "875af4cec53b034d307d81376ebdc8e6",
-    "generated_source_sha256": "6e65c233dbc2fe1cbf62938a8fd7cd15243fe6be0789d68a7758f9ee934498df",
+    "generated_source_md5": "1ec9c6c89b8189f72914846391442335",
+    "generated_source_sha256": "d06ab4500072b294182abd914696a2800f258b8875efeb413b461ef827b22109",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
@@ -24982,19 +25318,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 665,
+        "line": 723,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 666,
+        "line": 724,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 667,
+        "line": 725,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"

@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "a5ee4a1ccfabb336db6aae95274c443c" then
+     "876dc491536f0f87c3225af8c260fe4b" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "875af4cec53b034d307d81376ebdc8e6" then
+     "1ec9c6c89b8189f72914846391442335" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -203,6 +203,10 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/leg/collect_geom.hl",
     "dc8885bd34830d81ed0ff10e0f26aad8");
+   (Filename.concat candle_flyspeck_text_root "leg/collect_geom2.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/leg/collect_geom2.hl",
+    "5bfaffa957b66c2d23b19813a1417e29");
    (Filename.concat candle_flyspeck_text_root "jordan/refinement.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/refinement.hl",
@@ -230,12 +234,12 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "jordan/float.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/float.hl",
-    "ea87a6372d53a9b3cf5e5e778e936bde");
+    "3946ca21321186485d20c3016311910c");
    (Filename.concat candle_flyspeck_text_root
       "jordan/misc_defs_and_lemmas.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/misc_defs_and_lemmas.hl",
-    "cfcf6693405414b171913042a71b1e68");
+    "411a71cc887ebd8c5c8fbf8ce87d3da4");
    (Filename.concat candle_flyspeck_text_root "general/tactics.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/tactics.hl",
@@ -274,7 +278,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/jordan/tactics_jordan.hl",
-    "758063dd1a24eacc5cca75596a7fe0c9");
+    "86769e441b60b6579b0fc07b856785d6");
    (Filename.concat candle_flyspeck_text_root
       "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -309,7 +313,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 34 then
+if List.length candle_flyspeck_normalized_sources <> 35 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

@@ -34,7 +34,7 @@
 #flyspeck_needs "leg/enclosed_def.hl";;
 (* 014 selected=flyspeck:text_formalization/leg/collect_geom.hl sha256=483ec7371a944a8d37cf7ca0d9c138c6492ec13c44c26298d0d97a84288dbf3b normalization=PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001 normalized_sha256=deeedd4c0cbd1e2dc9250c1513b37ea2566ddd0b10dcee4974c27f0ee2daf378 *)
 #flyspeck_needs "leg/collect_geom.hl";;
-(* 015 selected=flyspeck:text_formalization/leg/collect_geom2.hl sha256=39381f07853656cd59be5f8a866b27cf59ffadd3e482d59eeb3544b4e788bc77 *)
+(* 015 selected=flyspeck:text_formalization/leg/collect_geom2.hl sha256=39381f07853656cd59be5f8a866b27cf59ffadd3e482d59eeb3544b4e788bc77 normalization=PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001 normalized_sha256=3dd6402c9dad7f5957f7a900811f829b556a7bdaadbc0942765ed759a49b1b26 *)
 #flyspeck_needs "leg/collect_geom2.hl";;
 (* 016 selected=flyspeck:text_formalization/jordan/refinement.hl sha256=83d7784b28176a16f578d2e31e3756bf99464d92dbed64626b647d2839211713 normalization=PROJECT-REFINEMENT-S3-FOR-LOOP-001 normalized_sha256=69c217f2688d3ae7e2c602de83508c11fc031294ea691d5cd2772d9d3d5f699d *)
 #flyspeck_needs "jordan/refinement.hl";;
@@ -48,17 +48,17 @@
 #flyspeck_needs "jordan/goal_printer.hl";;
 (* 021 selected=flyspeck:text_formalization/jordan/real_ext.hl sha256=07038124181fadb80326312d889390b93289fba28e1525dc3346adf24833edc4 normalization=PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001 normalized_sha256=af2badd569b1fed22db40e120c31e79fe2058ec5eaec8aa4729948d0ede4c0ea *)
 #flyspeck_needs "jordan/real_ext.hl";;
-(* 022 selected=flyspeck:text_formalization/jordan/tactics_jordan.hl sha256=3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe normalization=PROJECT-POINTER-S3-RELABEL-001 normalized_sha256=4b41f97afc6011600d24f3c3c33d21b07daa53175f4c9f71214e907a7c71324d *)
+(* 022 selected=flyspeck:text_formalization/jordan/tactics_jordan.hl sha256=3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe normalization=PROJECT-POINTER-S3-RELABEL-001 normalized_sha256=b9b0d263d84603e7c9c6bd4893a3ad9080d18b88b7fdc97d4c862ffed8927a1b *)
 #flyspeck_needs "jordan/tactics_jordan.hl";;
 (* 023 selected=flyspeck:text_formalization/jordan/num_ext_nabs.hl sha256=883ad0bc9adc88d392e652491c19e91697a158627c7774e8b2a54bf109771b59 normalization=PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001 normalized_sha256=7a425840bb53b881e74f8b56112f7efb5aad719aaea8def2351f1cea62f01ba8 *)
 #flyspeck_needs "jordan/num_ext_nabs.hl";;
 (* 024 selected=flyspeck:text_formalization/jordan/taylor_atn.hl sha256=7c043950b28277db6bc698773e15462f2c3722ec9bc7a92ed8e0c4ae0ddb71c1 normalization=PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001 normalized_sha256=803c2894b0437d2e9554badb050df6987ab2183c72ff091b4b319befbd4fdc04 *)
 #flyspeck_needs "jordan/taylor_atn.hl";;
-(* 025 selected=flyspeck:text_formalization/jordan/float.hl sha256=11ea4ae6f28b1d12d4c7d6339342362fb5b261b2bfa17f64cd43579c3761a776 normalization=PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001 normalized_sha256=b0201ed2cfd74406c67718d828afbddaf8fa026355e7e55de5fd1bfa84d2a806 *)
+(* 025 selected=flyspeck:text_formalization/jordan/float.hl sha256=11ea4ae6f28b1d12d4c7d6339342362fb5b261b2bfa17f64cd43579c3761a776 normalization=PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001 normalized_sha256=34cfe8f531c899aea86ca8402db38710f2c638c0f8f29a8163775c2360058f59 *)
 #flyspeck_needs "jordan/float.hl";;
 (* 026 selected=flyspeck:text_formalization/jordan/flyspeck_constants.hl sha256=c43c8b80c23c7e94ab50cf34d8332f3984bbf9499b07ecc694af4fb9093a0149 *)
 #flyspeck_needs "jordan/flyspeck_constants.hl";;
-(* 027 selected=flyspeck:text_formalization/jordan/misc_defs_and_lemmas.hl sha256=6c5de278e41d7ad799bacb079e387f347aaa0cd2bfd6682d74ce979fb536b125 normalization=PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001 normalized_sha256=614eb8434d4dc5ab3b0d8e30661c92c48dd4b30eca71ae7ed001578b1fefd8e8 *)
+(* 027 selected=flyspeck:text_formalization/jordan/misc_defs_and_lemmas.hl sha256=6c5de278e41d7ad799bacb079e387f347aaa0cd2bfd6682d74ce979fb536b125 normalization=PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001 normalized_sha256=e0df2788785223bd3d5f22f69839bdaa92b8221bc1540be0ccc76c60b0ac9538 *)
 #flyspeck_needs "jordan/misc_defs_and_lemmas.hl";;
 (* 028 selected=flyspeck:text_formalization/general/tactics.hl sha256=45cfef5bf4ca0fea5f1f9c59a4e8d0d56f569accaffe4b7f0d8fbf46dd42b7ba normalization=PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001 normalized_sha256=87d763c11df4346e892bc2bdc3f7831f8766865a52101060839358a2261dc8b3 *)
 #flyspeck_needs "general/tactics.hl";;

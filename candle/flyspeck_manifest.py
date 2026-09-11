@@ -63,7 +63,9 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
         "open_out", "output_string", "sqrt",
     },
 }
-OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS = {"float_of_num", "frexp"}
+OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS = {
+    "Assert_failure", "ceil", "float_of_num", "frexp", "ldexp",
+}
 TOPLEVEL_INTERFACE_MODULES = {"Format", "Lexing", "Obj", "Toploop"}
 TOPLEVEL_INTERFACE_SOURCE_MEMBERS = {
     "Format": {
@@ -2198,15 +2200,18 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         "ordering site uses an exact type-specific comparator"
                     ),
                 },
-                "toplevel_float": {
+                "toplevel_numeric_and_assertion": {
                     "status": "pure-source-compiled-gate",
                     "source": ["candle:candle/nums.ml", "candle:candle/ocaml.ml"],
                     "members": sorted(OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS),
                     "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
                     "assurance_limit": (
-                        "float_of_num converts through verified integer-to-double "
-                        "and division primitives; frexp uses proved IEEE-754 "
-                        "field extraction and reconstruction without a new FFI"
+                        "float_of_num performs exact rational scaling and "
+                        "nearest-even binary64 rounding; frexp and ldexp use "
+                        "proved IEEE-754 field extraction and reconstruction; "
+                        "ceil uses the primitive correctly-rounded floor; and "
+                        "Assert_failure remains distinct from Failure, all "
+                        "without a new FFI"
                     ),
                 },
             },

@@ -2,6 +2,7 @@ exception Sys_error of string;;
 exception Invalid_argument of string;;
 exception End_of_file;;
 exception Not_found;;
+exception Assert_failure of (string * int * int);;
 
 (* CakeML integer division rounds down, whereas OCaml integer division
    truncates toward zero. *)
@@ -118,6 +119,63 @@ module Float = struct
 end;;
 
 let frexp = Float.frexp;;
+
+(* OCaml floating-point compatibility used by Flyspeck's interval seed.
+   [ceil] is derived from the primitive, correctly-rounded [floor]. *)
+let ceil value = negfloat (floor (negfloat value));;
+
+(* Scale a binary64 value by an integral power of two by editing its proved
+   IEEE fields.  This avoids a host libm dependency and, unlike repeated
+   division, rounds only once when a normal value becomes subnormal. *)
+let ldexp value scale =
+  let rec int_power base exponent =
+    if exponent = 0 then 1 else
+    let half = int_power base (exponent / 2) in
+    let square = half * half in
+    if exponent mod 2 = 0 then square else base * square in
+  let power_two exponent = int_power 2 exponent in
+  let round_shift_right significand shift =
+    if shift > 53 then 0 else
+    let divisor = power_two shift in
+    let quotient = significand / divisor in
+    let remainder = significand mod divisor in
+    let twice_remainder = 2 * remainder in
+    if twice_remainder > divisor ||
+       (twice_remainder = divisor && quotient mod 2 = 1)
+    then quotient + 1
+    else quotient in
+  let rec highest_bit index bits =
+    if bits < 2 then index else highest_bit (index + 1) (bits / 2) in
+  let sign = Cake.Double.sign value in
+  let exponent = Cake.Word64.toInt (Cake.Double.exponent value) in
+  let significand = Cake.Word64.toInt (Cake.Double.significand value) in
+  let construct exponent significand =
+    Cake.Double.construct sign (Cake.Word64.fromInt exponent)
+      (Cake.Word64.fromInt significand) in
+  if exponent = 2047 || (exponent = 0 && significand = 0) then value
+  else if exponent > 0 then
+    let scaled_exponent = exponent + scale in
+    if scaled_exponent >= 2047 then construct 2047 0
+    else if scaled_exponent > 0 then construct scaled_exponent significand
+    else
+      let rounded =
+        round_shift_right (power_two 52 + significand)
+          (1 - scaled_exponent) in
+      if rounded >= power_two 52 then construct 1 0
+      else construct 0 rounded
+  else if scale <= 0 then
+    construct 0 (round_shift_right significand (~-scale))
+  else
+    let bit = highest_bit 0 significand in
+    let target_bit = bit + scale in
+    if target_bit < 52 then construct 0 (significand * power_two scale)
+    else
+      let scaled_exponent = target_bit - 51 in
+      if scaled_exponent >= 2047 then construct 2047 0
+      else
+        let normalized = significand * power_two (52 - bit) in
+        construct scaled_exponent (normalized - power_two 52)
+;;
 
 type float = Float.float;;
 

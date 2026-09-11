@@ -144,13 +144,71 @@ let string_of_num n =
       string_of_int n ^ "/" ^ string_of_int d
 ;;
 
+(* Convert an arbitrary-precision rational directly to its nearest IEEE-754
+   binary64 value.  [Cake.Double.fromInt] communicates through a word64 and
+   therefore cannot be applied separately to an unbounded numerator and
+   denominator: doing so truncates the large rational seeds used by
+   Flyspeck's interval calculator. *)
 let float_of_num n =
+  let rec int_power base exponent =
+    if exponent = 0 then 1 else
+    let half = int_power base (exponent / 2) in
+    let square = half * half in
+    if exponent mod 2 = 0 then square else base * square in
+  let power_two exponent = int_power 2 exponent in
+  let rec bit_length value length =
+    if value = 0 then length else bit_length (value / 2) (length + 1) in
+  let round_quotient numerator denominator =
+    let quotient = numerator / denominator in
+    let remainder = numerator mod denominator in
+    let twice_remainder = 2 * remainder in
+    if twice_remainder > denominator ||
+       (twice_remainder = denominator && quotient mod 2 = 1)
+    then quotient + 1
+    else quotient in
+  let construct sign exponent significand =
+    Cake.Double.construct
+      (Cake.Word64.fromInt sign)
+      (Cake.Word64.fromInt exponent)
+      (Cake.Word64.fromInt significand) in
+  let of_ratio numerator denominator =
+    let sign = if numerator < 0 then 1 else 0 in
+    let magnitude = abs numerator in
+    if magnitude = 0 then construct sign 0 0 else
+    let candidate =
+      bit_length magnitude 0 - bit_length denominator 0 in
+    let exponent =
+      if candidate >= 0 then
+        if magnitude < denominator * power_two candidate
+        then candidate - 1 else candidate
+      else
+        if magnitude * power_two (~-candidate) < denominator
+        then candidate - 1 else candidate in
+    if exponent > 1023 then construct sign 2047 0
+    else if exponent < ~-1022 then
+      let significand =
+        round_quotient (magnitude * power_two 1074) denominator in
+      if significand = 0 then construct sign 0 0
+      else if significand >= power_two 52 then construct sign 1 0
+      else construct sign 0 significand
+    else
+      let shift = 52 - exponent in
+      let scaled_numerator =
+        if shift >= 0 then magnitude * power_two shift else magnitude in
+      let scaled_denominator =
+        if shift >= 0 then denominator
+        else denominator * power_two (~-shift) in
+      let significand =
+        round_quotient scaled_numerator scaled_denominator in
+      let carry = significand >= power_two 53 in
+      let exponent = if carry then exponent + 1 else exponent in
+      let significand = if carry then significand / 2 else significand in
+      if exponent > 1023 then construct sign 2047 0
+      else construct sign (exponent + 1023)
+             (significand - power_two 52) in
   match n with
-  | Int i -> Cake.Double.fromInt i
-  | Rat r ->
-      Cake.Double.(/)
-        (Cake.Double.fromInt (Cake.Rat.numerator r))
-        (Cake.Double.fromInt (Cake.Rat.denominator r))
+  | Int i -> of_ratio i 1
+  | Rat r -> of_ratio (Cake.Rat.numerator r) (Cake.Rat.denominator r)
 ;;
 
 let minus_num n =

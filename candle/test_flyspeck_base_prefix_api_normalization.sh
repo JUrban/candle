@@ -35,6 +35,7 @@ sphere="$overlay/text_formalization/general/sphere.hl"
 hales="$overlay/text_formalization/general/hales_tactic.hl"
 truong="$overlay/text_formalization/general/truong_tactic.hl"
 collect_geom="$overlay/text_formalization/leg/collect_geom.hl"
+collect_geom2="$overlay/text_formalization/leg/collect_geom2.hl"
 refinement="$overlay/text_formalization/jordan/refinement.hl"
 lib_ext="$flyspeck_root/text_formalization/jordan/lib_ext.hl"
 hash_term="$overlay/text_formalization/jordan/hash_term.hl"
@@ -99,6 +100,13 @@ if rg '^MESON' "$collect_geom" | rg -Fq 'MESON[]` (!x y z.'; then
   echo 'normalized collect_geom retained anonymous MESON example' >&2
   exit 1
 fi
+rg -Fq 'let _ = MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE)' "$collect_geom2"
+rg -Fq 'let _ = MESON[POW_2_SQRT; DIST_POS_LE]' "$collect_geom2"
+if rg -q '^MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE)|^MESON\[POW_2_SQRT' \
+    "$collect_geom2"; then
+  echo 'normalized collect_geom2 retained an anonymous theorem example' >&2
+  exit 1
+fi
 [[ $(rg -Fc 'List.concat' "$hales") -eq 2 ]]
 [[ $(rg -Fc 'List.concat' "$truong") -eq 2 ]]
 if rg -Fq 'List.flatten' "$hales" "$truong"; then
@@ -140,6 +148,14 @@ fi
 [[ $(rg -Fc 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
   "$tactics_jordan") -eq 1 ]]
 rg -Fq 'let _ = select_thm' "$tactics_jordan"
+rg -Fq 'let absname = "mk_"^s in' "$tactics_jordan"
+rg -Fq 'let repname = "dest_"^s in' "$tactics_jordan"
+rg -Fq '(absname,repname)' "$tactics_jordan"
+[[ $(rg -Fc 'let _ = dropq_conv' "$tactics_jordan") -eq 3 ]]
+if rg -Fq '("mk_"^s,"dest_"^s)' "$tactics_jordan"; then
+  echo 'normalized tactics_jordan retained the inferred string tuple' >&2
+  exit 1
+fi
 [[ $(rg -Fc 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
   "$num_ext") -eq 1 ]]
 rg -Fq 'let _ = prioritize_complex();;' "$taylor_atn"
@@ -149,10 +165,36 @@ rg -Fq 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
 rg -Fq 'let _ = Parse_ext_override_interface.prioritize_real();;' \
   "$float_source"
 rg -Fq 'let _ = test();;' "$float_source"
+[[ $(rg -Fc 'let _ = add_test' "$float_source") -eq 24 ]]
+rg -Fq '(*test*) let _ = let f (u,v)' "$float_source"
+[[ $(rg -Fc 'Assert_failure' "$float_source") -eq 4 ]]
+[[ $(rg -Fc 'let b = float_fabs f in' "$float_source") -eq 2 ]]
+[[ $(rg -Fc 'if Cake.Double.(>=) f 0.0 then I else minus_num' \
+  "$float_source") -eq 2 ]]
+if rg -q '^add_test' "$float_source"; then
+  echo 'normalized float retained an anonymous test call' >&2
+  exit 1
+fi
+if rg -q '\bassert\s*\(' "$float_source"; then
+  echo 'normalized float retained an unsupported assert expression' >&2
+  exit 1
+fi
 rg -Fq 'let _ = unambiguous_interface();;' "$misc_defs"
 rg -Fq 'let _ = pop_priority();;' "$misc_defs"
+rg -Fq "SUBGOAL_MP_TAC \`?t. t = x+|y'\`;" "$misc_defs"
+rg -Fq 'SPEC_TAC (`x:num`,`a:num`);' "$misc_defs"
+if rg -Fq "SUBGOAL_MP_TAC \`?t. t = x'+|y'\`;" "$misc_defs"; then
+  echo 'normalized misc_defs retained the unrelated renamed coordinate' >&2
+  exit 1
+fi
 [[ $(rg -Fc "Digest.to_hex (Digest.file s')" "$strictbuild") -eq 3 ]]
 rg -Fq 'let print_as l str =' "$candle_root/candle/ocaml.ml"
+rg -Fq 'exception Assert_failure of (string * int * int);;' \
+  "$candle_root/candle/ocaml.ml"
+rg -Fq 'let ceil value = negfloat (floor (negfloat value));;' \
+  "$candle_root/candle/ocaml.ml"
+rg -Fq 'let ldexp value scale =' "$candle_root/candle/ocaml.ml"
+rg -Fq 'let float_of_num n =' "$candle_root/candle/nums.ml"
 
 if ! command -v ocaml >/dev/null; then
   echo 'OCaml is required for the structural compatibility oracles' >&2

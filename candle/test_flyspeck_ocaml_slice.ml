@@ -5,6 +5,11 @@
 
 let require condition message = if condition then () else failwith message;;
 
+let assertion_is_distinct =
+  try raise (Assert_failure ("fixture", 1, 0)); false
+  with Assert_failure _ -> true | Failure _ -> false;;
+require assertion_is_distinct "assert compatibility exception mismatch";;
+
 let encoded = Bytes.create 2;;
 Bytes.set encoded 0 'A';;
 Bytes.set encoded 1 'z';;
@@ -45,6 +50,50 @@ let three_quarters = (num_of_int 3) // (num_of_int 4);;
 require
   (same_float_bits (float_of_num three_quarters) (Float.of_string "0.75"))
   "float_of_num rational mismatch";;
+
+let two_to_53 = power_num (num_of_int 2) (num_of_int 53);;
+let halfway_odd = two_to_53 +/ num_of_int 1;;
+require
+  (same_float_bits (float_of_num halfway_odd)
+     (Float.of_string "9007199254740992"))
+  "float_of_num nearest-even integer mismatch";;
+
+let huge_denominator = Num.num_of_string
+  "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";;
+let huge_near_one =
+  (huge_denominator +/ num_of_int 1) // huge_denominator;;
+require
+  (same_float_bits (float_of_num huge_near_one) Float.one)
+  "float_of_num large rational mismatch";;
+
+let two_to_1074 = power_num (num_of_int 2) (num_of_int 1074);;
+let minimum_subnormal_num = (num_of_int 1) // two_to_1074;;
+require
+  (same_float_bits (float_of_num minimum_subnormal_num) minimum_subnormal)
+  "float_of_num minimum subnormal mismatch";;
+let two_to_1075 = two_to_1074 */ num_of_int 2;;
+let halfway_to_zero = (num_of_int 1) // two_to_1075;;
+require
+  (same_float_bits (float_of_num halfway_to_zero) Float.zero)
+  "float_of_num subnormal nearest-even mismatch";;
+
+let eight_from_ldexp = ldexp half 4;;
+require (same_float_bits eight_from_ldexp eight) "ldexp normal mismatch";;
+require
+  (same_float_bits (ldexp Float.one (~-1074)) minimum_subnormal)
+  "ldexp normal-to-subnormal mismatch";;
+require
+  (same_float_bits (ldexp Float.one (~-1075)) Float.zero)
+  "ldexp subnormal nearest-even mismatch";;
+require
+  (same_float_bits (ldexp minimum_subnormal 1074) Float.one)
+  "ldexp subnormal-to-normal mismatch";;
+require (same_float_bits (ceil (Float.of_string "1.25"))
+                          (Float.of_string "2.0"))
+  "ceil positive mismatch";;
+require (same_float_bits (ceil (Float.of_string "-1.25"))
+                          (Float.of_string "-1.0"))
+  "ceil negative mismatch";;
 
 let linear = ((Hashtbl.create 3) : (string, int) Hashtbl.t);;
 Hashtbl.add linear "k" 1;;

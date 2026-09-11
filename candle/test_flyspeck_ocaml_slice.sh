@@ -19,7 +19,8 @@ trap cleanup EXIT
 
 (
   cd "$candle_root"
-  timeout 1800 "$candle" <"$candle_root/candle/test_flyspeck_ocaml_slice.ml"
+  timeout 1800 "$candle" --candle \
+    <"$candle_root/candle/test_flyspeck_ocaml_slice.ml"
 ) >"$temporary/candle.log" 2>&1
 
 rg -a -q 'CANDLE_FLYSPECK_OCAML_SLICE_OK' "$temporary/candle.log"

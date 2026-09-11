@@ -229,9 +229,9 @@
       "path": "text_formalization/jordan/tactics_jordan.hl",
       "source_sha256": "3af61cf6961097eae9b67f3f3aaeef8fbd8c9a2ec2dfef1e95594561bac58ebe",
       "source_md5": "bd35c3dc23e929b6495940412fcc7c03",
-      "normalized_sha256": "4b41f97afc6011600d24f3c3c33d21b07daa53175f4c9f71214e907a7c71324d",
-      "normalized_md5": "758063dd1a24eacc5cca75596a7fe0c9",
-      "normalized_bytes": 54886,
+      "normalized_sha256": "b9b0d263d84603e7c9c6bd4893a3ad9080d18b88b7fdc97d4c862ffed8927a1b",
+      "normalized_md5": "86769e441b60b6579b0fc07b856785d6",
+      "normalized_bytes": 54969,
       "operations": [
         {
           "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
@@ -241,11 +241,39 @@
           "after": "let _ = Parse_ext_override_interface.unambiguous_interface();;"
         },
         {
+          "id": "PROJECT-TACTICS-JORDAN-S3-TUPLE-CONSTRUCTOR-001-BASIC-TYPE-NAMES",
+          "kind": "exact_bytes_replace_once",
+          "line": 182,
+          "before": "let abbrev_type ty s = let (a,b) = new_basic_type_definition s\n   (\"mk_\"^s,\"dest_\"^s)",
+          "after": "let abbrev_type ty s =\n   let absname = \"mk_\"^s in\n   let repname = \"dest_\"^s in\n   let (a,b) = new_basic_type_definition s\n   (absname,repname)"
+        },
+        {
           "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-SELECT-EXAMPLE",
           "kind": "exact_bytes_replace_once",
           "line": 303,
           "before": "select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;",
           "after": "let _ = select_thm\n    `\\m. (X:num->bool) m /\\ (!n. X n ==> m <=| n)` `n:num`;;"
+        },
+        {
+          "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-U-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 1122,
+          "before": "dropq_conv \"u\" `!P Q R . (?(u:B). (?(x:A). (u = P x) /\\ (Q x)) /\\ (R u))`;;",
+          "after": "let _ = dropq_conv \"u\" `!P Q R . (?(u:B). (?(x:A). (u = P x) /\\ (Q x)) /\\ (R u))`;;"
+        },
+        {
+          "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-T-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 1123,
+          "before": "dropq_conv \"t\" `!P Q R. (!(t:B). (?(x:A). P x /\\ (t = Q x)) ==> R t)`;;",
+          "after": "let _ = dropq_conv \"t\" `!P Q R. (!(t:B). (?(x:A). P x /\\ (t = Q x)) ==> R t)`;;"
+        },
+        {
+          "id": "PROJECT-TACTICS-JORDAN-S3-STRUCTURE-EFFECT-001-DROPQ-UV-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 1125,
+          "before": "dropq_conv \"u\" `?u v.\n     ((t * (a + &1) + (&1 - t) *a = u) /\\\n      (t * (b + &0) + (&1 - t) * b = v)) /\\\n     a < u /\\\n     u < r /\\\n     (v = b)`;;",
+          "after": "let _ = dropq_conv \"u\" `?u v.\n     ((t * (a + &1) + (&1 - t) *a = u) /\\\n      (t * (b + &0) + (&1 - t) * b = v)) /\\\n     a < u /\\\n     u < r /\\\n     (v = b)`;;"
         },
         {
           "id": "PROJECT-POINTER-S3-RELABEL-001-STRUCTURAL",
@@ -262,8 +290,8 @@
           "after": "num (Hash_term.hash_of_term tm)"
         }
       ],
-      "semantic_rule": "The two wildcard bindings evaluate the identical unambiguous-interface call and SELECT example once at their original Tactics_jordan initialization positions and discard the same unit and theorem results, preserving effects, order, and exceptions. The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
-      "scope_limit": "The structure-effect rewrites are confined to the two pinned anonymous expressions. The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; none provides general structure-expression, physical-identity, or polymorphic-hash compatibility. Compiled effect, theorem/output, cumulative, and final fingerprint oracles remain required, and any exact-fingerprint difference blocks release."
+      "semantic_rule": "The five wildcard bindings evaluate the identical unambiguous-interface call, SELECT example, and three dropq_conv examples once at their original Tactics_jordan initialization positions and discard the same unit and theorem results, preserving effects, order, and exceptions. The constructor-name split evaluates the same two pure string concatenations once, in the same left-to-right order, and passes the identical string pair to new_basic_type_definition; it only avoids CakeML's premature tuple-component type unification. The filter is used only to construct the avoidance set passed to mk_primed_var. Structural exclusion removes every occurrence equal to the abstraction binder. For separately allocated equal variable nodes this can choose a less-primed binder than OCaml's physical filter, but relabel_bound_conv still returns an alpha-equivalent theorem; the exact selected-run fingerprint must determine whether even the binder spelling is unchanged. The monomial-size heuristic now uses Flyspeck's already-loaded, alpha-invariant Hash_term.hash_of_term rather than unavailable polymorphic hashing.",
+      "scope_limit": "The structure-effect rewrites are confined to the five pinned anonymous expressions. The tuple-constructor rewrite is confined to the exact new_basic_type_definition call and does not alter its type witness, theorem, names, or result handling. The pointer rule is specific to relabel_bound_conv and its fresh-name consumer. The hash substitution is specific to HOL terms and a tactic-ordering heuristic; none provides general structure-expression, tuple-constructor, physical-identity, or polymorphic-hash compatibility. Compiled effect, theorem/output, cumulative, and final fingerprint oracles remain required, and any exact-fingerprint difference blocks release."
     },
     {
       "id": "PROJECT-MODULE-S3-SET-MAKE-001",
@@ -771,6 +799,34 @@
       "scope_limit": "These hash-pinned replacements are confined to Collect_geom's documented anonymous priority call and MESON example. They are not a general structure-expression translation; the cumulative action and native effect/order oracle remain required."
     },
     {
+      "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/leg/collect_geom2.hl",
+      "path": "text_formalization/leg/collect_geom2.hl",
+      "source_sha256": "39381f07853656cd59be5f8a866b27cf59ffadd3e482d59eeb3544b4e788bc77",
+      "source_md5": "bfbe7e25e992200c6101115ff8c45273",
+      "normalized_sha256": "3dd6402c9dad7f5957f7a900811f829b556a7bdaadbc0942765ed759a49b1b26",
+      "normalized_md5": "5bfaffa957b66c2d23b19813a1417e29",
+      "normalized_bytes": 73507,
+      "operations": [
+        {
+          "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001-AFFINE-HULL-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 870,
+          "before": "MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE) (MESON[FINITE_RULES] ` FINITE {(a:real^N),b,c} `) ;;",
+          "after": "let _ = MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE) (MESON[FINITE_RULES] ` FINITE {(a:real^N),b,c} `) ;;"
+        },
+        {
+          "id": "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001-SQRT-EXAMPLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 1328,
+          "before": "MESON[POW_2_SQRT; DIST_POS_LE]` dist (x,y) pow 2 = r ==> dist (x,y) = sqrt ( r ) `;;",
+          "after": "let _ = MESON[POW_2_SQRT; DIST_POS_LE]` dist (x,y) pow 2 = r ==> dist (x,y) = sqrt ( r ) `;;"
+        }
+      ],
+      "semantic_rule": "Each wildcard binding evaluates its identical original anonymous theorem computation once at the same Collect_geom2 initialization position and discards the same theorem result. Proof construction, evaluation order, effects, exceptions, definitions, theorem statements, and proof bodies are unchanged.",
+      "scope_limit": "These hash-pinned replacements are confined to Collect_geom2's two anonymous theorem examples. They are not a general structure-expression translation; the complete normalized source load and cumulative action remain required."
+    },
+    {
       "id": "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",
       "source_key": "flyspeck:text_formalization/jordan/real_ext.hl",
       "path": "text_formalization/jordan/real_ext.hl",
@@ -860,9 +916,9 @@
       "path": "text_formalization/jordan/float.hl",
       "source_sha256": "11ea4ae6f28b1d12d4c7d6339342362fb5b261b2bfa17f64cd43579c3761a776",
       "source_md5": "e36847771cb33f2fed6b451d74bd38d3",
-      "normalized_sha256": "b0201ed2cfd74406c67718d828afbddaf8fa026355e7e55de5fd1bfa84d2a806",
-      "normalized_md5": "ea87a6372d53a9b3cf5e5e778e936bde",
-      "normalized_bytes": 72276,
+      "normalized_sha256": "34cfe8f531c899aea86ca8402db38710f2c638c0f8f29a8163775c2360058f59",
+      "normalized_md5": "3946ca21321186485d20c3016311910c",
+      "normalized_bytes": 72819,
       "operations": [
         {
           "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
@@ -879,15 +935,225 @@
           "after": "let _ = Parse_ext_override_interface.prioritize_real();;"
         },
         {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-INTERVAL-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 75,
+          "before": "add_test(\"mk_interval\",",
+          "after": "let _ = add_test(\"mk_interval\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-INT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 112,
+          "before": "add_test(\"mk_int\",",
+          "after": "let _ = add_test(\"mk_int\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-SPLIT-RATIO-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 120,
+          "before": "add_test(\"split_ratio\",",
+          "after": "let _ = add_test(\"split_ratio\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FACTOR-C-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 137,
+          "before": "add_test(\"factor_C\",",
+          "after": "let _ = add_test(\"factor_C\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-FLOAT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 149,
+          "before": "add_test(\"dest_float\",",
+          "after": "let _ = add_test(\"dest_float\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-FLOAT2-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 152,
+          "before": "add_test(\"dest_float2\", (* must express as numeral first *)",
+          "after": "let _ = add_test(\"dest_float2\", (* must express as numeral first *)"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-FLOAT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 167,
+          "before": "add_test(\"mk_float\",",
+          "after": "let _ = add_test(\"mk_float\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-FLOAT2-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 171,
+          "before": "add_test(\"mk_float2\",  (* throws exception exactly when denom != 2^k *)",
+          "after": "let _ = add_test(\"mk_float2\",  (* throws exception exactly when denom != 2^k *)"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-DEST-FLOAT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 176,
+          "before": "add_test(\"mk_float dest_float\",  (* constructs canonical form of float *)",
+          "after": "let _ = add_test(\"mk_float dest_float\",  (* constructs canonical form of float *)"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-MK-POS-DECIMAL-NONNEGATIVE",
+          "kind": "exact_bytes_replace_once",
+          "line": 184,
+          "before": "    let _ = assert (r >=/ (num 0)) in",
+          "after": "    let _ = if r >=/ (num 0) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",184,0)) in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DECIMAL-DENOMINATOR",
+          "kind": "exact_bytes_replace_once",
+          "line": 191,
+          "before": "    let _ = assert(b2 =/ (num 1)) in",
+          "after": "    let _ = if b2 =/ (num 1) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",191,0)) in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-POS-DECIMAL-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 198,
+          "before": "add_test(\"mk_pos_decimal\",",
+          "after": "let _ = add_test(\"mk_pos_decimal\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-MK-DECIMAL-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 212,
+          "before": "add_test(\"mk_decimal\",",
+          "after": "let _ = add_test(\"mk_decimal\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-DECIMAL-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 227,
+          "before": "add_test(\"dest_decimal\",",
+          "after": "let _ = add_test(\"dest_decimal\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEST-DECIMAL2-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 229,
+          "before": "add_test(\"dest_decimal2\",",
+          "after": "let _ = add_test(\"dest_decimal2\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FLOAT-CONV1-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 625,
+          "before": "add_test(\"FLOAT_CONV1\",",
+          "after": "let _ = add_test(\"FLOAT_CONV1\","
+        },
+        {
           "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-TEST",
           "kind": "exact_bytes_replace_once",
           "line": 1073,
           "before": "test();;",
           "after": "let _ = test();;"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-NUM-EXPONENT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1099,
+          "before": "(*test*)let f (u,v) = ((num_exponent u) =(num v)) in",
+          "after": "(*test*) let _ = let f (u,v) = ((num_exponent u) =(num v)) in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-DOUBLE-API-001-ROUND-OUTWARD",
+          "kind": "exact_bytes_replace_once",
+          "line": 1144,
+          "before": "let (round_outward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    let b = abs_float f in\n    let sign = if (f >= 0.0) then I else minus_num in",
+          "after": "let (round_outward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    let b = float_fabs f in\n    let sign = if Cake.Double.(>=) f 0.0 then I else minus_num in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-DOUBLE-API-001-ROUND-INWARD",
+          "kind": "exact_bytes_replace_once",
+          "line": 1155,
+          "before": "let (round_inward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    (* avoid overflow on 30 bit integers *)\n    let bprec = if (bprec > 25) then 25 else bprec in\n    let b = abs_float f in\n    let sign = if (f >= 0.0) then I else minus_num in",
+          "after": "let (round_inward_float: int -> float -> Num.num) =\n fun  bprec f ->\n  if (f=0.0) then (num 0) else\n  begin\n    (* avoid overflow on 30 bit integers *)\n    let bprec = if (bprec > 25) then 25 else bprec in\n    let b = float_fabs f in\n    let sign = if Cake.Double.(>=) f 0.0 then I else minus_num in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-SUBST-TERM-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1175,
+          "before": "add_test(\"SUBST_TERM\",",
+          "after": "let _ = add_test(\"SUBST_TERM\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-CLEAN-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1192,
+          "before": "(*test*) add_test(\"INTERVAL_CLEAN_CONV\",",
+          "after": "(*test*) let _ = add_test(\"INTERVAL_CLEAN_CONV\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-NUM-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1380,
+          "before": "add_test(\"INTERVAL_OF_NUM\",",
+          "after": "let _ = add_test(\"INTERVAL_OF_NUM\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-FLOAT-INEQ-CONV-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1398,
+          "before": "add_test(\"FLOAT_INEQ_CONV\",",
+          "after": "let _ = add_test(\"FLOAT_INEQ_CONV\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-TO-LESS-CONV-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1418,
+          "before": "add_test(\"INTERVAL_TO_LESS_CONV\",",
+          "after": "let _ = add_test(\"INTERVAL_TO_LESS_CONV\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-TO-LESS-CONV2-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1425,
+          "before": "add_test(\"INTERVAL_TO_LESS_CONV2\",",
+          "after": "let _ = add_test(\"INTERVAL_TO_LESS_CONV2\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-DEC-FLOAT-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1458,
+          "before": "add_test(\"DEC_FLOAT\",",
+          "after": "let _ = add_test(\"DEC_FLOAT\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DECIMAL-ERROR-BOUND",
+          "kind": "exact_bytes_replace_once",
+          "line": 1538,
+          "before": "  let _ = assert (ex_num <=/ f_num) in",
+          "after": "  let _ = if ex_num <=/ f_num then () else\n    raise (Assert_failure (\"text_formalization/jordan/float.hl\",1538,0)) in"
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-DECIMAL-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1550,
+          "before": "add_test(\"INTERVAL_OF_DECIMAL\",",
+          "after": "let _ = add_test(\"INTERVAL_OF_DECIMAL\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001-INTERVAL-OF-DECIMAL2-TEST",
+          "kind": "exact_bytes_replace_once",
+          "line": 1555,
+          "before": "add_test(\"INTERVAL_OF_DECIMAL2\",",
+          "after": "let _ = add_test(\"INTERVAL_OF_DECIMAL2\","
+        },
+        {
+          "id": "PROJECT-FLOAT-S3-ASSERT-COMPATIBILITY-001-DIVISION-ERROR-BOUND",
+          "kind": "exact_bytes_replace_once",
+          "line": 1681,
+          "before": "    let _ = assert((ez_num >=/ (num 0))) in",
+          "after": "    let _ = if ez_num >=/ (num 0) then () else\n      raise (Assert_failure (\"text_formalization/jordan/float.hl\",1681,0)) in"
         }
       ],
-      "semantic_rule": "The wildcard bindings evaluate the identical two interface calls and test call once at their original Float initialization positions and discard the same unit results. Interface state, order, assertions, exceptions, definitions, theorem statements, and proofs are unchanged; the load-time test remains mandatory and fail-closed.",
-      "scope_limit": "These hash-pinned replacements are confined to Float's three anonymous calls and do not suppress or weaken test(). They are not general structure-expression compatibility; native effect/order and cumulative action oracles remain required."
+      "semantic_rule": "The wildcard bindings evaluate the identical two interface calls, 24 formerly anonymous add_test calls, and test call once at their original Float initialization positions and discard the same results. Together with the source's already explicit dest_interval wildcard binding, all 25 add_test calls remain active in their original order. Each assert is expanded to the same boolean guard and raises the runtime's distinct Assert_failure constructor with its original source line when false; no Failure handler can absorb it. The historical float_fabs compatibility name denotes the same CakeML double absolute-value operation, and the two explicit Cake.Double orderings are the typed double interpretation of the original OCaml comparisons. Interface state, test evaluation, assertions, exceptions, definitions, theorem statements, and proofs are unchanged; every load-time test remains mandatory and fail-closed.",
+      "scope_limit": "These hash-pinned replacements are confined to Float's enumerated anonymous calls, four assertions, and two typed rounding helpers. They do not suppress or weaken any add_test, test, or assertion invocation and do not authorize general structure-expression, assertion, or floating-point rewrites. Native effect/order, complete normalized source load, and cumulative action oracles remain required."
     },
     {
       "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001",
@@ -895,27 +1161,41 @@
       "path": "text_formalization/jordan/misc_defs_and_lemmas.hl",
       "source_sha256": "6c5de278e41d7ad799bacb079e387f347aaa0cd2bfd6682d74ce979fb536b125",
       "source_md5": "60cb9cf8efb85a457e76f89c81294e80",
-      "normalized_sha256": "614eb8434d4dc5ab3b0d8e30661c92c48dd4b30eca71ae7ed001578b1fefd8e8",
-      "normalized_md5": "cfcf6693405414b171913042a71b1e68",
-      "normalized_bytes": 20051,
+      "normalized_sha256": "e0df2788785223bd3d5f22f69839bdaa92b8221bc1540be0ccc76c60b0ac9538",
+      "normalized_md5": "411a71cc887ebd8c5c8fbf8ce87d3da4",
+      "normalized_bytes": 20049,
       "operations": [
-        {
-          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
+    {
+      "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-UNAMBIGUOUS",
           "kind": "exact_bytes_replace_once",
           "line": 31,
-          "before": "unambiguous_interface();;",
-          "after": "let _ = unambiguous_interface();;"
-        },
-        {
-          "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
+      "before": "unambiguous_interface();;",
+      "after": "let _ = unambiguous_interface();;"
+    },
+    {
+      "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-WITNESS-SUM",
+      "kind": "exact_bytes_replace_once",
+      "line": 365,
+      "before": "SUBGOAL_MP_TAC `?t. t = x'+|y'`;",
+      "after": "SUBGOAL_MP_TAC `?t. t = x+|y'`;"
+    },
+    {
+      "id": "PROJECT-MISC-DEFS-S3-NUM2-COUNTABLE-X-001-GENERALIZE",
+      "kind": "exact_bytes_replace_once",
+      "line": 367,
+      "before": "SPEC_TAC (`x':num`,`a:num`);",
+      "after": "SPEC_TAC (`x:num`,`a:num`);"
+    },
+    {
+      "id": "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001-POP-PRIORITY",
           "kind": "exact_bytes_replace_once",
           "line": 737,
           "before": "pop_priority();;",
           "after": "let _ = pop_priority();;"
         }
       ],
-      "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. Their balanced state lifetime, order, exceptions, definitions, theorem statements, and proofs are unchanged.",
-      "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls. They are not general structure-expression or parser-priority compatibility; native state/order and cumulative action oracles remain required."
+  "semantic_rule": "The wildcard bindings evaluate the identical unambiguous-interface and final pop calls once at their original Misc_defs_and_lemmas initialization positions and discard the same unit results. The two NUM2_COUNTABLE edits consistently select the free first coordinate x both when constructing the diagonal-sum witness and when generalizing that coordinate; this is the historically validated proof spelling and avoids generalizing the unrelated NAME_CONFLICT-renamed x'. The theorem statement, hypotheses, recursive enumerator, induction, proof intent, allowed axioms, interface state lifetime, order, and exceptions are unchanged.",
+  "scope_limit": "These hash-pinned replacements are confined to Misc_defs_and_lemmas's two anonymous interface calls and the two exact bound-variable references inside NUM2_COUNTABLE. They are not general structure-expression, parser-priority, name-conflict, or proof normalization; complete source-load, theorem-export, and cumulative action oracles remain required."
     },
     {
       "id": "PROJECT-PARSER-S3-LET-OR-PATTERN-001",

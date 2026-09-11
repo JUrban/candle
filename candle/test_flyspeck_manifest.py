@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 35)
+        self.assertEqual(contract["entry_count"], 36)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -615,11 +615,10 @@ class GeneratedManifestTests(unittest.TestCase):
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": 2,
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": 1,
             "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": 2,
+            "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001": 2,
             "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": 3,
             "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": 1,
             "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001": 3,
-            "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001": 2,
         }
         for entry_id, operation_count in structure_effect_counts.items():
             self.assertEqual(entries[entry_id]["operation_count"], operation_count)
@@ -627,6 +626,28 @@ class GeneratedManifestTests(unittest.TestCase):
                 operation["after"].startswith("let _ = ")
                 for operation in entries[entry_id]["operations"]
             ))
+        tactics_jordan = entries["PROJECT-POINTER-S3-RELABEL-001"]
+        self.assertEqual(tactics_jordan["operation_count"], 8)
+        self.assertEqual(
+            [operation["line"] for operation in tactics_jordan["operations"]],
+            [21, 182, 303, 1122, 1123, 1125, 256, 529],
+        )
+        float_entry = entries["PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001"]
+        self.assertEqual(float_entry["operation_count"], 33)
+        self.assertEqual(
+            sum("Assert_failure" in operation["after"]
+                for operation in float_entry["operations"]),
+            4,
+        )
+        self.assertEqual(
+            sum("Cake.Double.(>=)" in operation["after"]
+                for operation in float_entry["operations"]),
+            2,
+        )
+        misc_defs = entries["PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001"]
+        self.assertEqual(misc_defs["operation_count"], 4)
+        self.assertIn("t = x+|y'", misc_defs["operations"][1]["after"])
+        self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][2]["after"])
         self.assertEqual(entry["operation_count"], 3)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
@@ -866,7 +887,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 34", source,
+            "List.length candle_flyspeck_normalized_sources <> 35", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -876,7 +897,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 34)
+        self.assertEqual(len(selected_normalizations), 35)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)
@@ -1122,13 +1143,19 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn("not yet formally linked", evidence["assurance_limit"])
         self.assertEqual(
             contract["toplevel_supported_members"],
-            ["float_of_num", "frexp"],
+            ["Assert_failure", "ceil", "float_of_num", "frexp", "ldexp"],
         )
         self.assertEqual(
             {name: sum(use["identifier"] == name
                        for use in contract["toplevel_uses"])
              for name in contract["toplevel_supported_members"]},
-            {"float_of_num": 7, "frexp": 3},
+            {
+                "Assert_failure": 4,
+                "ceil": 2,
+                "float_of_num": 7,
+                "frexp": 3,
+                "ldexp": 2,
+            },
         )
         self.assertEqual(
             contract["binding_evidence"]["Gc"]["status"],

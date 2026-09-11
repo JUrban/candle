@@ -162,7 +162,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 35)
+        self.assertEqual(len(self.contract["entries"]), 36)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -276,10 +276,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertEqual(
             [operation["line"] for operation in relabel["operations"]],
-            [21, 303, 256, 529],
+            [21, 182, 303, 1122, 1123, 1125, 256, 529],
         )
-        self.assertIn("not (y = x)", relabel["operations"][2]["after"])
-        self.assertIn("Hash_term.hash_of_term", relabel["operations"][3]["after"])
+        self.assertIn("let absname", relabel["operations"][1]["after"])
+        self.assertIn("(absname,repname)", relabel["operations"][1]["after"])
+        self.assertTrue(all(
+            operation["after"].startswith("let _ = dropq_conv")
+            for operation in relabel["operations"][3:6]
+        ))
+        self.assertIn("not (y = x)", relabel["operations"][6]["after"])
+        self.assertIn("Hash_term.hash_of_term", relabel["operations"][7]["after"])
         set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
         self.assertEqual(set_make["operations"][0]["line"], 34)
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
@@ -403,11 +409,10 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
             "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52, 720],
+            "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001": [870, 1328],
             "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": [26, 27, 304],
             "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": [18],
             "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": [252, 821],
-            "PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001": [37, 38, 1073],
-            "PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001": [31, 737],
         }
         for entry_id, lines in structure_effect_lines.items():
             operations = entries[entry_id]["operations"]
@@ -418,6 +423,42 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 operation["after"].startswith("let _ = ")
                 for operation in operations
             ))
+        float_entry = entries["PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001"]
+        self.assertEqual(
+            [operation["line"] for operation in float_entry["operations"]],
+            [
+                37, 38, 75, 112, 120, 137, 149, 152, 167, 171, 176,
+                184, 191, 198, 212, 227, 229, 625, 1073, 1099, 1144,
+                1155, 1175, 1192, 1380, 1398, 1418, 1425, 1458, 1538,
+                1550, 1555, 1681,
+            ],
+        )
+        self.assertEqual(
+            sum("Assert_failure" in operation["after"]
+                for operation in float_entry["operations"]),
+            4,
+        )
+        self.assertEqual(
+            sum("float_fabs" in operation["after"]
+                and "Cake.Double.(>=)" in operation["after"]
+                for operation in float_entry["operations"]),
+            2,
+        )
+        self.assertIn("let _ = let f", float_entry["operations"][19]["after"])
+        self.assertIn("let _ = add_test", float_entry["operations"][23]["after"])
+        misc_entry = entries["PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001"]
+        self.assertEqual(
+            [operation["line"] for operation in misc_entry["operations"]],
+            [31, 365, 367, 737],
+        )
+        self.assertEqual(
+            misc_entry["operations"][1]["after"],
+            "SUBGOAL_MP_TAC `?t. t = x+|y'`;",
+        )
+        self.assertEqual(
+            misc_entry["operations"][2]["after"],
+            "SPEC_TAC (`x:num`,`a:num`);",
+        )
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
         self.assertEqual(
             [operation["line"] for operation in parser_orpattern["operations"]],
@@ -545,7 +586,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 107)
+        self.assertEqual(len(operation_ids), 145)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
