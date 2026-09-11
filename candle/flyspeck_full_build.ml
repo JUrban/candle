@@ -128,7 +128,7 @@
 #flyspeck_needs "fan/planarity.hl";;
 (* 058 selected=flyspeck:text_formalization/fan/hypermap_and_fan.hl sha256=64a481043a6b5d4056264419856e12b75ce921747f2f54f8c09f8e2784fae22b *)
 #flyspeck_needs "fan/hypermap_and_fan.hl";;
-(* 059 selected=flyspeck:text_formalization/fan/Conforming.hl sha256=b056098535a5961667b27405c18d6a3cf45c690200a8d26a3e51ac1876f5d9b9 *)
+(* 059 selected=flyspeck:text_formalization/fan/Conforming.hl sha256=b056098535a5961667b27405c18d6a3cf45c690200a8d26a3e51ac1876f5d9b9 normalization=PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001 normalized_sha256=a5cd590474eaa2adcc95ef5a885a6331400387da689f1f4ee37a8c9ed37883b5 *)
 #flyspeck_needs "fan/Conforming.hl";;
 (* 060 selected=flyspeck:text_formalization/fan/polyhedron.hl sha256=0790e3acec2550e76f553198c7b80484bb09b7be7d93d98e23e9e50e56cc55bb normalization=PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001 normalized_sha256=4d72e360c3ce7cece81ba935db13fd12bc83f74288e790f12a88826f5f619697 *)
 #flyspeck_needs "fan/polyhedron.hl";;

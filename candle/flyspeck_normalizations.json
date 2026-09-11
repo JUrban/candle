@@ -3744,6 +3744,27 @@
       "scope_limit": "Only the nine mechanically enumerated anonymous registration phrases in this source are normalized. No invariant theorem, parser setting, proof, or declaration is replaced."
     },
     {
+      "id": "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001",
+      "source_key": "flyspeck:text_formalization/fan/Conforming.hl",
+      "path": "text_formalization/fan/Conforming.hl",
+      "source_sha256": "b056098535a5961667b27405c18d6a3cf45c690200a8d26a3e51ac1876f5d9b9",
+      "source_md5": "286adb6ed71a49351f8ab24cec5cb6c5",
+      "normalized_sha256": "a5cd590474eaa2adcc95ef5a885a6331400387da689f1f4ee37a8c9ed37883b5",
+      "normalized_md5": "5a243f132756bcfdc6fcdc324fc760ec",
+      "normalized_bytes": 917947,
+      "operations": [
+        {
+          "id": "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001-REMOVE-REDUNDANT-SEPARATOR",
+          "kind": "exact_bytes_replace_once",
+          "line": 1424,
+          "before": "THEN POP_ASSUM(fun th-> MP_TAC th THEN REWRITE_TAC[conforming_fan]; THEN ASSUME_TAC th THEN STRIP_TAC)",
+          "after": "THEN POP_ASSUM(fun th-> MP_TAC th THEN REWRITE_TAC[conforming_fan] THEN ASSUME_TAC th THEN STRIP_TAC)"
+        }
+      ],
+      "semantic_rule": "Flyspeck's selected native pa_j preprocessor maps the original `; THEN` spelling and the normalized `THEN` spelling to byte-identical nested then_ applications. Removing the redundant separator therefore preserves the exact MP_TAC, REWRITE_TAC, ASSUME_TAC, and STRIP_TAC tactic chain, its theorem argument, order, effects, exceptions, and resulting theorem while avoiding Candle's raw-source type ambiguity.",
+      "scope_limit": "This hash-pinned replacement removes one separator from the unique selected `; THEN` occurrence at Conforming.hl line 1424. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, geometric definition, or axiom. Byte-identical native preprocessing, focused actual-HOL Candle rejection/acceptance, and cumulative source loading are required."
+    },
+    {
       "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001",
       "source_key": "flyspeck:text_formalization/fan/polyhedron.hl",
       "path": "text_formalization/fan/polyhedron.hl",

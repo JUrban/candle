@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 49)
+        self.assertEqual(len(self.contract["entries"]), 50)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -792,6 +792,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001": 2,
             "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001": 4,
             "PROJECT-FAN-S2-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001": 1,
             "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001": 1,
         }
         for entry_id, operation_count in analysis_structure_counts.items():
@@ -806,6 +807,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ]["operations"][0]
         self.assertEqual(fan_structure["replacement_count"], 9)
         self.assertEqual(polyhedron_structure["replacement_count"], 8)
+        conforming_sequence = entries[
+            "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001"
+        ]["operations"][0]
+        self.assertEqual(conforming_sequence["line"], 1424)
+        self.assertIn("; THEN", conforming_sequence["before"])
+        self.assertNotIn("; THEN", conforming_sequence["after"])
         self.assertTrue(all(
             replacement["after"].startswith("let _ = ")
             for operation in (
@@ -825,7 +832,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 207)
+        self.assertEqual(len(operation_ids), 208)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
