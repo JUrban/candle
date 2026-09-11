@@ -6,7 +6,7 @@
       "path": "candle/flyspeck_full_build.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "f71332fbeb066fc7c3f7c24bbd0128334e2161e6ab8da363dda22eedb91b4a06",
+      "sha256": "1e80a23d68ed5575380094ef6f86d76149db0c7f58f681a48c8d787d1b6971b1",
       "source_key": "candle:candle/flyspeck_full_build.ml"
     },
     {
@@ -22,7 +22,7 @@
       "path": "candle/flyspeck_loader.ml",
       "reason": "not reachable from bootstrap/build roots through resolved selected dependencies",
       "repository": "candle",
-      "sha256": "478b725eec653d50657e52f0d74d3934c5aafa249b4a8d68988ae77d7d3ea545",
+      "sha256": "74f158c7fac2804016fbed79cf3759c63179c3867e2ed0b254b1648016f47682",
       "source_key": "candle:candle/flyspeck_loader.ml"
     },
     {
@@ -423,9 +423,9 @@
   ],
   "kind": "candle-flyspeck-parser-diagnostic-pilot",
   "manifest": {
-    "bytes": 921142,
+    "bytes": 923596,
     "path": "candle/flyspeck_manifest.json",
-    "sha256": "e19e5bb9ef4330daae3d7491b586687ab0d752978d83acf489cfcd822c7ce62d"
+    "sha256": "d08ec50b53ee510fd9fcce82a2d56c8b53e4e7a483e2606e7b56a34c4a6f8d3a"
   },
   "schema": 1,
   "selection": {

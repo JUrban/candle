@@ -84,7 +84,7 @@
 #flyspeck_needs "trigonometry/HVIHVEC.hl";;
 
 (* stratum: nonlinear_support *)
-(* 038 selected=flyspeck:text_formalization/nonlinear/calc_derivative.hl sha256=b34c63e9e7005a32dd536b40d0ef4bfc8cade31bdbba7eb3fdaf93617c7dd83a *)
+(* 038 selected=flyspeck:text_formalization/nonlinear/calc_derivative.hl sha256=b34c63e9e7005a32dd536b40d0ef4bfc8cade31bdbba7eb3fdaf93617c7dd83a normalization=PROJECT-CALC-DERIVATIVE-S3-TUPLE-CONSTRUCTOR-001 normalized_sha256=c321731deaad601505c922832e14e829ea4948bda0622676cce2fd5ae8ec450a *)
 #flyspeck_needs "nonlinear/calc_derivative.hl";;
 (* 039 selected=flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl sha256=681b98b6fbc836d696297f960b7650b13be6be9ce9868af0e929ed8573186605 *)
 #flyspeck_needs "nonlinear/ineqdata3q1h.hl";;

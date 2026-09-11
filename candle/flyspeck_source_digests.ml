@@ -40,7 +40,7 @@ let candle_flyspeck_source_digests = [
   ("candle","calc_int.ml","0b5301c4b14547be874bbaffbc5538d5");
   ("candle","calc_num.ml","9f415aa0a5149a2407ac7e0d6edfc5ae");
   ("candle","calc_rat.ml","d0f2c98da9cae7368370438c479de848");
-  ("candle","candle/flyspeck_full_build.ml","6bb5c5371f3e9bdf0aab701b8fb4a241");
+  ("candle","candle/flyspeck_full_build.ml","2a5433672f1e95034ae3641050520e68");
   ("candle","candle/flyspeck_l2_target.ml","aa726b6da79aae93e638b8a8233bf48b");
   ("candle","candle/flyspeck_source_integrity.ml","54b69b40c435b4b184a6ea88586f45b6");
   ("candle","candle/kernel.ml","fa2e94287ca00e9153e937b606b3c7ea");

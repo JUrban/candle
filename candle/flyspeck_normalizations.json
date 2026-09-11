@@ -1464,6 +1464,27 @@
       "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
     },
     {
+      "id": "PROJECT-CALC-DERIVATIVE-S3-TUPLE-CONSTRUCTOR-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/calc_derivative.hl",
+      "path": "text_formalization/nonlinear/calc_derivative.hl",
+      "source_sha256": "b34c63e9e7005a32dd536b40d0ef4bfc8cade31bdbba7eb3fdaf93617c7dd83a",
+      "source_md5": "5d5a32bc200ac291a487e1e964f3c45a",
+      "normalized_sha256": "c321731deaad601505c922832e14e829ea4948bda0622676cce2fd5ae8ec450a",
+      "normalized_md5": "0f281d7446704c953b6432caf15a419a",
+      "normalized_bytes": 46167,
+      "operations": [
+        {
+          "id": "PROJECT-CALC-DERIVATIVE-S3-TUPLE-CONSTRUCTOR-001-SPLIT-NAME",
+          "kind": "exact_bytes_replace_once",
+          "line": 1236,
+          "before": "\tmk_var(\"F\"^(string_of_int !c),real_ty) in",
+          "after": "      let name = \"F\"^(string_of_int !c) in\n        mk_var(name,real_ty) in"
+        }
+      ],
+      "semantic_rule": "Candle's tuple-constructor inference cannot directly type the concatenation expression paired with real_ty in mk_var. Binding that pure generated-name expression immediately after the unchanged counter increment and immediately before the identical mk_var pair preserves the generated F1, F2, ... names, counter state, variable type, returned HOL term, effects, and exceptions. This is the same independently reproduced CakeML inference class already encountered in parser_verbose.hl and hash_term.hl.",
+      "scope_limit": "This hash-pinned replacement is confined to differentiate's one generated-name tuple in calc_derivative.hl. It does not change any derivative theorem, rule table, recursion, tactic, hypothesis, proof intent, or allowed axiom. Native result/counter equivalence, the focused Candle rejection/acceptance oracle, complete normalized file loading, and cumulative source execution are required."
+    },
+    {
       "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
       "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
       "path": "text_formalization/nonlinear/break_case_exec.hl",
