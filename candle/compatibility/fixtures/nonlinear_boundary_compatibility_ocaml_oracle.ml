@@ -203,12 +203,53 @@ let ineqdoc_value_ok =
   let _ = Normalized_ineqdoc.addtex value in
   !Original_ineqdoc.ineqdoc = !Normalized_ineqdoc.ineqdoc;;
 
+type dart_thm = Dart_thm of int;;
+
+module Original_dart_classes = struct
+  let dart_classes = ref [];;
+  let define_dart th =
+    let _ = dart_classes := th::!dart_classes in
+    th;;
+end;;
+
+module Normalized_dart_classes = struct
+  let dart_classes = ref ([]:dart_thm list);;
+  let define_dart th =
+    let _ = dart_classes := th::!dart_classes in
+    th;;
+end;;
+
+type autogen_term = Autogen_term of int;;
+
+module Original_autogen = struct
+  let autogen = ref [];;
+  let autogen_add term = autogen := !autogen @ [term];;
+end;;
+
+module Normalized_autogen = struct
+  let autogen = ref ([]:autogen_term list);;
+  let autogen_add term = autogen := !autogen @ [term];;
+end;;
+
+let remaining_empty_reference_values_ok =
+  let dart = Dart_thm 7 in
+  let term = Autogen_term 11 in
+  let original_dart = Original_dart_classes.define_dart dart in
+  let normalized_dart = Normalized_dart_classes.define_dart dart in
+  let _ = Original_autogen.autogen_add term in
+  let _ = Normalized_autogen.autogen_add term in
+  original_dart = normalized_dart &&
+  !Original_dart_classes.dart_classes =
+    !Normalized_dart_classes.dart_classes &&
+  !Original_autogen.autogen = !Normalized_autogen.autogen;;
+
 let string_order_ok =
   List.sort (fun left right -> if left < right then -1 else 1) strings =
   List.sort String.compare strings;;
 
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
-     string_order_ok && structure_effects_ok && ineqdoc_value_ok
+     string_order_ok && structure_effects_ok && ineqdoc_value_ok &&
+     remaining_empty_reference_values_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

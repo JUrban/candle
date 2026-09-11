@@ -451,9 +451,9 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         nonlinear_boundary_entries = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 10,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }
@@ -483,6 +483,15 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             ineqdoc["after"],
             "let ineqdoc = ref ([]:(texmarker * string * string) list);;",
         )
+        dart_classes = next(
+            operation for operation in ineq_operations
+            if operation["id"] == (
+                "PROJECT-INEQ-S3-DART-CLASSES-VALUE-RESTRICTION-001"
+            )
+        )
+        self.assertEqual(
+            dart_classes["after"], "let dart_classes = ref ([]:thm list);;",
+        )
         main_estimate_structure = entries[
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001"
         ]["operations"][0]
@@ -505,7 +514,13 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn(
             "String.compare left right < 0",
             entries["PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"]
-            ["operations"][0]["after"],
+            ["operations"][1]["after"],
+        )
+        autogen = entries[
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+        ]["operations"][0]
+        self.assertEqual(
+            autogen["after"], "let autogen = ref ([]:term list);;",
         )
         parse_ineq_cfsqp = next(
             operation
@@ -703,7 +718,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 184)
+        self.assertEqual(len(operation_ids), 186)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

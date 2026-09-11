@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "e2f1e890585053d6c191992f04e5333c",
-    "generated_source_sha256": "f5ba1fcaef41b78b3f476ff0fb358f6ae3271db6b581d68b2cfd67e985c46ce8",
+    "generated_source_md5": "48233b4aae6635e305f5e82657de4b31",
+    "generated_source_sha256": "98fec18720d88e533c89d790e0a45fac67ea8af4d73a6d4ab7ef086d2d871bff",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "36523671a97075e4a06d2f7775f1c2b0",
+      "md5": "86c4898fefc58d355a69a20514870550",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "f30483551093394b9b92571ee94d8bf141b001c60d80e17fc69e5d72c077496b"
+      "sha256": "255b3e66241e7d81626dc8c272d601d639bba28b6eab5fbcdc20168626512e13"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "b7ad9f9851f04f3351d18d0bc65c8764",
+      "md5": "78483655a7c762ab9c4d772fe5470e21",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "01cff0281d4e6704508f65fa3deb90720775419bbcfc1566ef08c2dbd3cafeee"
+      "sha256": "b5de60de9ffb72f3a967b3d4a33c2f0f7ca58e0601d4f40bf64232a0c3b6f49f"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19716,10 +19716,10 @@
       "execution_normalization": {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 122215,
-        "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
-        "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
-        "operation_count": 10
+        "normalized_bytes": 122226,
+        "normalized_md5": "5b359b87557684fe9fa91cbd938e26fb",
+        "normalized_sha256": "16c59317378370832e0847be809b568edd65d35045f3ed7f1a74127e3509aff8",
+        "operation_count": 11
       },
       "md5": "4603172e71db7ee1ff945a337932a900",
       "path": "text_formalization/nonlinear/ineq.hl",
@@ -19896,10 +19896,10 @@
       "execution_normalization": {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 21863,
-        "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
-        "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
-        "operation_count": 9
+        "normalized_bytes": 21876,
+        "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
+        "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
+        "operation_count": 10
       },
       "md5": "51ad450836d0180f77572c7e824668f3",
       "path": "text_formalization/nonlinear/parse_ineq.hl",
@@ -22321,7 +22321,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "97c90baa261a3cbc2f17657b2bbcccbf7bbe564f51cf260cc352ede0ee5147e4",
+    "contract_sha256": "31256c56b142aabc97ec968f113b78a1506e4353e65a07de3009b058ffb1b3f3",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23927,10 +23927,10 @@
       {
         "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 122215,
-        "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
-        "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
-        "operation_count": 10,
+        "normalized_bytes": 122226,
+        "normalized_md5": "5b359b87557684fe9fa91cbd938e26fb",
+        "normalized_sha256": "16c59317378370832e0847be809b568edd65d35045f3ed7f1a74127e3509aff8",
+        "operation_count": 11,
         "operations": [
           {
             "after": "let ineqdoc = ref ([]:(texmarker * string * string) list);;",
@@ -23938,6 +23938,13 @@
             "id": "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001",
             "kind": "exact_bytes_replace_once",
             "line": 33
+          },
+          {
+            "after": "let dart_classes = ref ([]:thm list);;",
+            "before": "let dart_classes = ref [];;",
+            "id": "PROJECT-INEQ-S3-DART-CLASSES-VALUE-RESTRICTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 1833
           },
           {
             "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
@@ -25095,8 +25102,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/ineq.hl",
-        "scope_limit": "These hash-pinned rewrites cover only the one empty-reference annotation, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact.",
-        "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. It initializes the same empty mutable list and only resolves CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
+        "scope_limit": "These hash-pinned rewrites cover only the two empty-reference annotations, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration/value oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact.",
+        "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. The explicit dart_classes annotation likewise states the unique thm list type forced by define_dart and every selected dereference. Both initialize the same empty mutable lists and only resolve CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
         "source_key": "flyspeck:text_formalization/nonlinear/ineq.hl",
         "source_md5": "4603172e71db7ee1ff945a337932a900",
         "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68"
@@ -25602,11 +25609,18 @@
       {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 21863,
-        "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
-        "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
-        "operation_count": 9,
+        "normalized_bytes": 21876,
+        "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
+        "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
+        "operation_count": 10,
         "operations": [
+          {
+            "after": "let autogen = ref ([]:term list);;",
+            "before": "let autogen = ref[];;",
+            "id": "PROJECT-PARSE-INEQ-S3-AUTOGEN-VALUE-RESTRICTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 151
+          },
           {
             "after": "  nub (sort (fun left right -> String.compare left right < 0) (cn [] i));;",
             "before": "  nub (sort (<) (cn [] i ));;",
@@ -25675,8 +25689,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/parse_ineq.hl",
-        "scope_limit": "This hash-pinned compatibility slice does not authorize process execution or CFSQP generation and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required.",
-        "semantic_rule": "The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+        "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required.",
+        "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
         "source_key": "flyspeck:text_formalization/nonlinear/parse_ineq.hl",
         "source_md5": "51ad450836d0180f77572c7e824668f3",
         "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee"
@@ -26026,8 +26040,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "36523671a97075e4a06d2f7775f1c2b0",
-    "generated_source_sha256": "f30483551093394b9b92571ee94d8bf141b001c60d80e17fc69e5d72c077496b",
+    "generated_source_md5": "86c4898fefc58d355a69a20514870550",
+    "generated_source_sha256": "255b3e66241e7d81626dc8c272d601d639bba28b6eab5fbcdc20168626512e13",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

@@ -1539,9 +1539,9 @@
       "path": "text_formalization/nonlinear/ineq.hl",
       "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68",
       "source_md5": "4603172e71db7ee1ff945a337932a900",
-      "normalized_sha256": "d7288af08bf8311f44beff0f13031305054b26a0eecf3f00be8ac81bd2cdc0b5",
-      "normalized_md5": "fa964b7a0a9808efd3ca2cb008955b93",
-      "normalized_bytes": 122215,
+      "normalized_sha256": "16c59317378370832e0847be809b568edd65d35045f3ed7f1a74127e3509aff8",
+      "normalized_md5": "5b359b87557684fe9fa91cbd938e26fb",
+      "normalized_bytes": 122226,
       "operations": [
         {
           "id": "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001",
@@ -1549,6 +1549,13 @@
           "line": 33,
           "before": "let ineqdoc = ref [];;",
           "after": "let ineqdoc = ref ([]:(texmarker * string * string) list);;"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-DART-CLASSES-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 1833,
+          "before": "let dart_classes = ref [];;",
+          "after": "let dart_classes = ref ([]:thm list);;"
         },
         {
           "id": "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001",
@@ -2705,8 +2712,8 @@
           "after": "   idv = \"181212899 \" ^ string_of_int d;"
         }
       ],
-      "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. It initializes the same empty mutable list and only resolves CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
-      "scope_limit": "These hash-pinned rewrites cover only the one empty-reference annotation, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact."
+      "semantic_rule": "The explicit ineqdoc annotation states the unique type already forced by addtex and all selected uses: a reference to a list of texmarker/string/string triples. The explicit dart_classes annotation likewise states the unique thm list type forced by define_dart and every selected dereference. Both initialize the same empty mutable lists and only resolve CakeML's immediate value restriction. List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects. Every anonymous OCaml structure expression in the Ineq module is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving record construction, registration/data accumulation, iteration, order, effects, and exceptions.",
+      "scope_limit": "These hash-pinned rewrites cover only the two empty-reference annotations, two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration/value oracles and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 218 hash-pinned anonymous phrases in this one Ineq module; every exact source line is recorded and verified, and the module namespace remains intact."
     },
     {
       "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
@@ -3210,10 +3217,17 @@
       "path": "text_formalization/nonlinear/parse_ineq.hl",
       "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee",
       "source_md5": "51ad450836d0180f77572c7e824668f3",
-      "normalized_sha256": "cc5958c1de5c3b115336455d60e9b6a295625ef2d66e03c6f1ef2c2c6b619090",
-      "normalized_md5": "3b10c8f609bfd428258df064ed785c90",
-      "normalized_bytes": 21863,
+      "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
+      "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
+      "normalized_bytes": 21876,
       "operations": [
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-AUTOGEN-VALUE-RESTRICTION-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 151,
+          "before": "let autogen = ref[];;",
+          "after": "let autogen = ref ([]:term list);;"
+        },
         {
           "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-STRING-ORDER",
           "kind": "exact_bytes_replace_once",
@@ -3281,8 +3295,8 @@
           "after": "      (\" \" ^ fs ^ \" \" ^ vs (xs @ hv) ^\n       \" = \\n  let _ = ( \" ^ hbodys ^ \" ) || failwith \\\"domain6:\" ^ fs ^\n       \"\\\" in \\n      ( \" ^ gs ^ \" ) \" ^ vs hv) in"
         }
       ],
-      "semantic_rule": "The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
-      "scope_limit": "This hash-pinned compatibility slice does not authorize process execution or CFSQP generation and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required."
+      "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+      "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required."
     },
     {
       "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",

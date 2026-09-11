@@ -88,6 +88,23 @@ module Candle_nonlinear_structure_effects = struct
   };;
 end;;
 
+type candle_nonlinear_dart_thm = Candle_nonlinear_dart_thm of int;;
+let candle_nonlinear_dart_classes =
+  ref ([]:candle_nonlinear_dart_thm list);;
+let candle_nonlinear_define_dart th =
+  let _ = candle_nonlinear_dart_classes :=
+    th::!candle_nonlinear_dart_classes in
+  th;;
+let candle_nonlinear_dart_value =
+  candle_nonlinear_define_dart (Candle_nonlinear_dart_thm 7);;
+
+type candle_nonlinear_autogen_term = Candle_nonlinear_autogen_term of int;;
+let candle_nonlinear_autogen =
+  ref ([]:candle_nonlinear_autogen_term list);;
+let candle_nonlinear_autogen_add term =
+  candle_nonlinear_autogen := !candle_nonlinear_autogen @ [term];;
+let _ = candle_nonlinear_autogen_add (Candle_nonlinear_autogen_term 11);;
+
 let candle_nonlinear_boundary_compatibility_ok =
   candle_nonlinear_length (candle_nonlinear_f4_order()) = 16 &&
   candle_nonlinear_length (candle_nonlinear_hex_order()) = 35 &&
@@ -97,4 +114,7 @@ let candle_nonlinear_boundary_compatibility_ok =
   candle_nonlinear_first_counter = 0 &&
   candle_nonlinear_second_counter = 1 &&
   candle_nonlinear_reset_counter = 0 &&
-  !candle_nonlinear_structure_trace = ["second";"first"];;
+  !candle_nonlinear_structure_trace = ["second";"first"] &&
+  candle_nonlinear_dart_value = Candle_nonlinear_dart_thm 7 &&
+  !candle_nonlinear_dart_classes = [Candle_nonlinear_dart_thm 7] &&
+  !candle_nonlinear_autogen = [Candle_nonlinear_autogen_term 11];;
