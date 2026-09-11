@@ -102,6 +102,13 @@ class StratumRuntimeTests(unittest.TestCase):
             "self_certifies_nested_execution": False,
             "s2_s3_evidence": False,
         }
+        manifest_path = Path(subject.__file__).parent / "flyspeck_manifest.json"
+        digest_contract = json.loads(
+            manifest_path.read_text(encoding="utf-8")
+        )["source_digest_contract"]
+        source_digests_path = (
+            Path(subject.__file__).parent / "flyspeck_source_digests.ml"
+        )
         self.generated_control_records = {
             "candle:candle/build/insulate.ml": {
                 "bytes": 1,
@@ -109,10 +116,9 @@ class StratumRuntimeTests(unittest.TestCase):
                 "md5": "d" * 32,
             },
             "candle:candle/flyspeck_source_digests.ml": {
-                "bytes": 34697,
-                "sha256":
-                    "2591fd40477b972ce350e4c4a6f3f61be2200bd3f8c3baa292f7a5509bf46a71",
-                "md5": "956f1f27a4dc8e68db3459759934b68d",
+                "bytes": source_digests_path.stat().st_size,
+                "sha256": digest_contract["generated_source_sha256"],
+                "md5": digest_contract["generated_source_md5"],
             },
         }
         trace_bindings = []
@@ -1179,6 +1185,47 @@ class StratumRuntimeTests(unittest.TestCase):
             [record["key"] for record in diagnostic["records"]],
         )
 
+    def test_manifest_action_ledger_replays_nested_loads_and_cache_hits(self) -> None:
+        manifest = json.loads(
+            (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
+                encoding="utf-8",
+            )
+        )
+        deltas = subject.derive_action_ledger_delta_keys(manifest, 297)
+        self.assertEqual(len(deltas), 297)
+        self.assertEqual(deltas[0], [
+            "flyspeck:text_formalization/general/hol_pervasives.hl",
+        ])
+        self.assertEqual(deltas[2], [
+            "flyspeck:text_formalization/general/flyspeck_lib.hl",
+            "flyspeck:text_formalization/general/flyspeck_eval_4.14.hl",
+        ])
+        self.assertEqual(deltas[3], [
+            "flyspeck:text_formalization/general/print_types.hl",
+        ])
+        self.assertEqual(deltas[152], [
+            "flyspeck:formal_lp/hypermap/arith_link.hl",
+            "flyspeck:formal_ineqs/arith/arith_nat.hl",
+            "flyspeck:formal_ineqs/arith/arith_cache.hl",
+            "flyspeck:formal_ineqs/arith/arith_num.hl",
+            "flyspeck:formal_ineqs/misc/misc_vars.hl",
+            "flyspeck:formal_ineqs/misc/misc_functions.hl",
+            "flyspeck:formal_ineqs/arith_options.hl",
+        ])
+        self.assertEqual(deltas[295], [
+            subject.SERIALIZATION_SOURCE_KEY,
+            "flyspeck:text_formalization/general/update_database_400.ml",
+            "flyspeck:text_formalization/general/theorem_nonlinear_digest.hl",
+            "flyspeck:text_formalization/general/theorem_digest.hl",
+        ])
+        self.assertEqual(deltas[296], [
+            "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
+            "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
+            "flyspeck:text_formalization/nonlinear/break_case_log.hl",
+            "flyspeck:text_formalization/nonlinear/break_case_type.hl",
+            "flyspeck:text_formalization/nonlinear/prep.hl",
+        ])
+
     def test_manifest_closure_selects_serialization_only_at_action_295(self) -> None:
         manifest = json.loads(
             (Path(subject.__file__).parent / "flyspeck_manifest.json").read_text(
@@ -1196,8 +1243,12 @@ class StratumRuntimeTests(unittest.TestCase):
             "flyspeck:text_formalization/general/state_manager.hl",
         }
         deltas = subject.derive_action_ledger_delta_keys(manifest, 296)
-        self.assertTrue(all(len(delta) == 1 for delta in deltas[:295]))
-        self.assertEqual(deltas[295], [serialization, selected_branch])
+        self.assertEqual(deltas[295], [
+            serialization,
+            selected_branch,
+            "flyspeck:text_formalization/general/theorem_nonlinear_digest.hl",
+            "flyspeck:text_formalization/general/theorem_digest.hl",
+        ])
 
         def keys(count: int, final: bool = False) -> set[str]:
             return {

@@ -100,7 +100,7 @@ SOURCE_CLOSURE_SUCCESS_MARKER = "CANDLE_FLYSPECK_LOGICAL_SOURCE_CLOSURE_V3_OK"
 SOURCE_CLOSURE_POLICY = "manifest-selected-nested-logical-reachability-v3"
 SOURCE_CLOSURE_ORDER = "canonical-source-key-lexicographic-v1"
 SOURCE_CLOSURE_OBSERVATION = (
-    "outer-and-selected-loadt-ledger-observed-other-nested-expected"
+    "outer-and-manifest-selected-loader-ledger-observed-other-nested-expected"
 )
 SOURCE_TRACE_PREFIX = "CANDLE_FLYSPECK_SOURCE_TRACE_V1"
 SOURCE_TRACE_PROTOCOL = "candle-loader-owned-source-trace-v1"
@@ -1743,13 +1743,97 @@ def derive_action_ledger_delta_keys(
 ) -> list[list[str]]:
     """Return exact post-action logical-ledger prefixes in head-first order."""
     nodes = manifest.get("source_nodes")
+    bootstrap_roots = manifest.get("bootstrap_roots")
     action_roots = manifest.get("build_sequence_roots")
     require(isinstance(nodes, dict) and nodes and
+            isinstance(bootstrap_roots, list) and
+            STRICTBUILD_SOURCE_KEY in bootstrap_roots and
             isinstance(action_roots, list) and
             0 <= completed_action_count <= len(action_roots),
             "malformed action-ledger inputs")
     execution = selected_execution_edges(manifest, nodes)
-    nested_by_outer = execution["nested_loadt_by_outer"]
+    selected_serialization_branch = execution["serialization_selected"]
+    unselected_serialization_branch = execution["serialization_unselected"]
+
+    cached_actions = {"needs", "flyspeck_needs", "#flyspeck_needs"}
+    uncached_actions = {"loads", "loadt", "reneeds", "#flyspeck_loadt"}
+    loaded_identities: set[tuple[str, str]] = set()
+    active_sources: set[str] = set()
+
+    def source_identity(key: str) -> tuple[str, str]:
+        require(isinstance(key, str) and key in nodes,
+                f"unbound action-ledger source: {key}")
+        node = nodes[key]
+        path = node.get("path")
+        source_md5 = node.get("md5")
+        require(isinstance(path, str) and path and
+                isinstance(source_md5, str) and len(source_md5) == 32,
+                f"malformed action-ledger source identity: {key}")
+        return Path(path).name, source_md5
+
+    def selected_dependencies(key: str) -> list[tuple[str, str]]:
+        dependencies = nodes[key].get("dependencies")
+        require(isinstance(dependencies, list),
+                f"missing action-ledger dependencies: {key}")
+        selected: list[tuple[str, str]] = []
+        for dependency in dependencies:
+            require(isinstance(dependency, dict),
+                    f"malformed action-ledger dependency: {key}")
+            status = dependency.get("status")
+            if status == "resolved":
+                targets = [dependency.get("selected")]
+            elif status == "resolved-dynamic":
+                targets = dependency.get("selected_targets")
+                require(isinstance(targets, list) and targets and
+                        all(isinstance(target, str) for target in targets),
+                        f"dynamic action-ledger dependency is unbound: {key}")
+            else:
+                require(status in NON_SOURCE_DEPENDENCY_STATUSES,
+                        f"unsupported action-ledger dependency status: {status}")
+                targets = []
+            action_kind = dependency.get("kind")
+            for target in targets:
+                require(isinstance(target, str) and target in nodes,
+                        f"unbound action-ledger dependency target: {key}")
+                if (key == STRICTBUILD_SOURCE_KEY and
+                        target == STRICTBUILD_SERIALIZATION_OPT_IN_KEY):
+                    continue
+                if key == SERIALIZATION_SOURCE_KEY:
+                    if target == unselected_serialization_branch:
+                        continue
+                    if target == selected_serialization_branch:
+                        action_kind = "#flyspeck_loadt"
+                require(action_kind in cached_actions | uncached_actions,
+                        f"unsupported action-ledger source action: {action_kind}")
+                selected.append((target, str(action_kind)))
+        return selected
+
+    def execute_source(
+        key: str, action_kind: str, ledger_delta: list[str],
+    ) -> bool:
+        require(action_kind in cached_actions | uncached_actions,
+                f"unsupported action-ledger root action: {action_kind}")
+        identity = source_identity(key)
+        if action_kind in cached_actions and identity in loaded_identities:
+            return False
+        require(key not in active_sources,
+                f"cyclic action-ledger dependency: {key}")
+        active_sources.add(key)
+        for target, nested_action_kind in selected_dependencies(key):
+            execute_source(target, nested_action_kind, ledger_delta)
+        active_sources.remove(key)
+        loaded_identities.add(identity)
+        ledger_delta.insert(0, key)
+        return True
+
+    # The direct runner enters its action stream immediately after the exact
+    # normalized strictbuild action.  Replaying that manifest-rooted dependency
+    # tree yields the same 42-entry identity cache observed by setup, without
+    # treating the compiled HOL bootstrap graph as newly loaded source.
+    initial_delta: list[str] = []
+    require(execute_source(STRICTBUILD_SOURCE_KEY, "needs", initial_delta),
+            "strictbuild action-ledger seed unexpectedly skipped")
+
     deltas: list[list[str]] = []
     for index, root in enumerate(action_roots[:completed_action_count]):
         require(isinstance(root, dict) and root.get("index") == index and
@@ -1758,10 +1842,16 @@ def derive_action_ledger_delta_keys(
                 root["selected"] in nodes,
                 f"malformed selected action root: {index}")
         outer = root["selected"]
-        nested = nested_by_outer.get(outer, [])
-        require(all(key in nodes for key in nested),
-                f"unbound nested action-ledger source: {index}")
-        deltas.append([outer, *nested])
+        ledger_delta: list[str] = []
+        loaded = execute_source(outer, "#flyspeck_needs", ledger_delta)
+        if loaded:
+            require(ledger_delta and ledger_delta[0] == outer,
+                    f"action ledger outer source mismatch: {index}")
+            deltas.append(ledger_delta)
+        else:
+            # commit_action represents a cache hit with the selected outer
+            # identity itself; no nested source may have executed on a skip.
+            deltas.append([outer])
     return deltas
 
 
