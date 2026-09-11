@@ -3895,6 +3895,27 @@
       ],
       "semantic_rule": "Both parser registrations execute exactly once at their original module-initialization positions, in the original order, with identical names, precedences, and right associativity. Explicit wildcard bindings preserve their unit effects, exceptions, and the following definitions while giving Candle unambiguous module-structure items.",
       "scope_limit": "These hash-pinned replacements are confined to WRGCVDR.hl lines 75 and 76. They do not alter the preceding hypermap theorem, either following definition, any theorem statement, hypothesis, proof step, proof intent, or axiom. Native effect/order equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/tame/Inequalities.hl",
+      "path": "text_formalization/tame/Inequalities.hl",
+      "source_sha256": "cb89eb6e98594a2f3b76dd2f6ea5e26b5b1c948da617470fb462afa771ef58b4",
+      "source_md5": "32e850f39c74cb9d2bdb3ca1073335d5",
+      "normalized_sha256": "4ed68544b82ce151111746a78f3457a9bf025e043d339e5ab4c97ee92e795587",
+      "normalized_md5": "6bd3fcbea3dafde94e05f8d4ae7cf95f",
+      "normalized_bytes": 27055,
+      "operations": [
+        {
+          "id": "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001-EXPLICIT-BINDING",
+          "kind": "exact_bytes_replace_once",
+          "line": 657,
+          "before": "g(DIH_Y_INEQ_concl);;",
+          "after": "let _ = g(DIH_Y_INEQ_concl);;"
+        }
+      ],
+      "semantic_rule": "The goal-setting effect executes exactly once at its original module-initialization position on the identical DIH_Y_INEQ_concl term. The explicit wildcard binding discards the same goal-stack result while preserving effects, exceptions, and the following DIH_Y_INEQ proof binding.",
+      "scope_limit": "This hash-pinned replacement is confined to the unique g(DIH_Y_INEQ_concl) module-structure phrase at Inequalities.hl line 657. It changes no term construction, theorem statement, hypothesis, tactic, proof step, proof intent, definition, or axiom. Native effect equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
     }
   ]
 }

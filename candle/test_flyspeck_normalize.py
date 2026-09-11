@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 53)
+        self.assertEqual(len(self.contract["entries"]), 54)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -223,6 +223,14 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             for operation in wrgcvdr["operations"]
         ))
         self.assertIn("original order", wrgcvdr["semantic_rule"])
+        inequalities = entries["PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001"]
+        self.assertEqual(len(inequalities["operations"]), 1)
+        self.assertEqual(inequalities["operations"][0]["line"], 657)
+        self.assertEqual(
+            inequalities["operations"][0]["after"],
+            "let _ = g(DIH_Y_INEQ_concl);;",
+        )
+        self.assertIn("identical DIH_Y_INEQ_concl", inequalities["semantic_rule"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -855,7 +863,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 212)
+        self.assertEqual(len(operation_ids), 213)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

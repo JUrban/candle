@@ -178,7 +178,7 @@
 #flyspeck_needs "local/LDURDPN.hl";;
 (* 082 selected=flyspeck:text_formalization/local/local_lemmas.hl sha256=935a70e862fd3783a73df0cc6bc5afca94f90fefeccb1c49696b75870a031990 *)
 #flyspeck_needs "local/local_lemmas.hl";;
-(* 083 selected=flyspeck:text_formalization/tame/Inequalities.hl sha256=cb89eb6e98594a2f3b76dd2f6ea5e26b5b1c948da617470fb462afa771ef58b4 *)
+(* 083 selected=flyspeck:text_formalization/tame/Inequalities.hl sha256=cb89eb6e98594a2f3b76dd2f6ea5e26b5b1c948da617470fb462afa771ef58b4 normalization=PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001 normalized_sha256=4ed68544b82ce151111746a78f3457a9bf025e043d339e5ab4c97ee92e795587 *)
 #flyspeck_needs "tame/Inequalities.hl";;
 (* 084 selected=flyspeck:text_formalization/packing/YNHYJIT.hl sha256=6d4860d4777e5e73a255a2b26c2a006238169aeb6769ef1ccdfe3eeb525946cd *)
 #flyspeck_needs "packing/YNHYJIT.hl";;
