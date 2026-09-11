@@ -47,7 +47,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
         self.assertEqual(len(self.files), 400)
         self.assertEqual(
             self.plan["effective_kind_counts"],
-            {"exact-normalized": 39, "exact-original": 361},
+            {"exact-normalized": 45, "exact-original": 355},
         )
         self.assertFalse(self.plan["promotion_allowed"])
         self.assertFalse(self.plan["parser_run"])
@@ -146,7 +146,7 @@ class AllInventorySourcePreparationTests(unittest.TestCase):
             entry for entry in self.plan["inputs"]
             if entry["effective_kind"] == "exact-original"
         ]
-        self.assertEqual((len(original), len(normalized)), (361, 39))
+        self.assertEqual((len(original), len(normalized)), (355, 45))
         self.assertIn(
             "flyspeck:text_formalization/general/flyspeck_lib.hl",
             {entry["source_key"] for entry in normalized},

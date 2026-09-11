@@ -1485,6 +1485,307 @@
       "scope_limit": "This hash-pinned replacement is confined to differentiate's one generated-name tuple in calc_derivative.hl. It does not change any derivative theorem, rule table, recursion, tactic, hypothesis, proof intent, or allowed axiom. Native result/counter equivalence, the focused Candle rejection/acceptance oracle, complete normalized file loading, and cumulative source execution are required."
     },
     {
+      "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl",
+      "path": "text_formalization/nonlinear/ineqdata3q1h.hl",
+      "source_sha256": "681b98b6fbc836d696297f960b7650b13be6be9ce9868af0e929ed8573186605",
+      "source_md5": "4ce0d21f4f4a99607a9c3422641009a4",
+      "normalized_sha256": "4060000c92eadf6962784129727663a4e452984bb0347a1a0db6885444f3fc99",
+      "normalized_md5": "e456941142a1f3b1a3988640c50853c2",
+      "normalized_bytes": 83383,
+      "operations": [
+        {
+          "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-REMOVE-LOCAL-ALIAS",
+          "kind": "exact_bytes_replace_once",
+          "line": 211,
+          "before": "  let nth = List.nth in",
+          "after": ""
+        },
+        {
+          "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-Y-DOMAIN",
+          "kind": "exact_bytes_replace_once",
+          "line": 217,
+          "before": "  let y j =  nth [y1d;yd;yd;y4d;yd;yd] (j-1) in",
+          "after": "  let y j =  List.nth [y1d;yd;yd;y4d;yd;yd] (j-1) in"
+        },
+        {
+          "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-COEFFICIENT",
+          "kind": "exact_bytes_replace_once",
+          "line": 220,
+          "before": "  let (a,b,c,e) = nth [d.coef1;d.coef2;d.coef3;d.coef4] (i-1) in",
+          "after": "  let (a,b,c,e) = List.nth [d.coef1;d.coef2;d.coef3;d.coef4] (i-1) in"
+        },
+        {
+          "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-BRANCH4",
+          "kind": "exact_bytes_replace_once",
+          "line": 222,
+          "before": "  let p4 = nth [d.branch2;d.branch3;d.branch4;d.branch5] (i-1) in ",
+          "after": "  let p4 = List.nth [d.branch2;d.branch3;d.branch4;d.branch5] (i-1) in "
+        },
+        {
+          "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-BRANCH-DOMAIN",
+          "kind": "exact_bytes_replace_once",
+          "line": 223,
+          "before": "  let p j = nth [p1;[];[];p4;[];[]] (j-1) in",
+          "after": "  let p j = List.nth [p1;[];[];p4;[];[]] (j-1) in"
+        }
+      ],
+      "semantic_rule": "The local nth alias is used at both HOL-term and four-HOL-term-tuple element types, but CakeML does not generalize the local alias or its eta expansion. Removing that alias and spelling the identical global List.nth at each of its four calls restores independent polymorphic instantiation while preserving argument order, selected index, result, evaluation order, and List.nth exceptions.",
+      "scope_limit": "This hash-pinned rewrite is confined to mk_ineq1's local alias and its four exact call sites. It changes no inequality data, record field, branch path, generated HOL term, theorem, hypothesis, proof intent, or axiom. Native heterogeneous-call equivalence, a focused CakeML rejection/acceptance oracle, and cumulative action loading are required."
+    },
+    {
+      "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/ineq.hl",
+      "path": "text_formalization/nonlinear/ineq.hl",
+      "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68",
+      "source_md5": "4603172e71db7ee1ff945a337932a900",
+      "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
+      "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
+      "normalized_bytes": 120434,
+      "operations": [
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-FLYPAPER-CONCAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 71,
+          "before": "  List.flatten(    map (function Flypaper s -> s | _ -> []) idv.tags);;",
+          "after": "  List.concat(    map (function Flypaper s -> s | _ -> []) idv.tags);;"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-F4-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 489,
+          "before": "    idv = Printf.sprintf \"ZTGIJCF4 %d %d %d %d 1821661595\" i3 i4 i5 i6;",
+          "after": "    idv = \"ZTGIJCF4 \" ^ string_of_int i3 ^ \" \" ^ string_of_int i4 ^\n      \" \" ^ string_of_int i5 ^ \" \" ^ string_of_int i6 ^ \" 1821661595\";"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-F4-ITERATION",
+          "kind": "exact_bytes_replace_once",
+          "line": 495,
+          "before": " for i3=0 to 1 do \nfor i4 = 0 to 1 do\n for i5 = 0 to 1 do\n for i6 = 0 to 1 do\n   add(make_F4 i3 i4 i5 i6) done done done done;;",
+          "after": "do_list\n  (fun i3 ->\n    do_list\n      (fun i4 ->\n        do_list\n          (fun i5 ->\n            do_list (fun i6 -> add(make_F4 i3 i4 i5 i6)) (0--1))\n          (0--1))\n      (0--1))\n  (0--1);;"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-QITNPEA1-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 847,
+          "before": "    idv = Printf.sprintf \"QITNPEA1 %d %d 9063653052 A\" i3 i4 ;",
+          "after": "    idv = \"QITNPEA1 \" ^ string_of_int i3 ^ \" \" ^ string_of_int i4 ^\n      \" 9063653052 A\" ;"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-QITNPEA1-ITERATION",
+          "kind": "exact_bytes_replace_once",
+          "line": 860,
+          "before": "for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)\nfor i4 = 0 to 2 do\n   add_QITNPEA1 i3 i4   done done;;",
+          "after": "do_list\n  (fun i3 -> do_list (fun i4 -> add_QITNPEA1 i3 i4) (0--2))\n  (1--2);; (* start at 1 to force the triangle (y1,y3,y5) not to be small *)"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-3Q1H-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 1570,
+          "before": "\tidv = Printf.sprintf \"OXLZLEZ 6346351218 %d %d\" case r; ",
+          "after": "\tidv = \"OXLZLEZ 6346351218 \" ^ string_of_int case ^ \" \" ^ string_of_int r; "
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-3Q1H-CONCAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 1576,
+          "before": "  let mk_3q1h_all = List.flatten(map (mk_3q1hc) (0--((List.length records)-1))) in",
+          "after": "  let mk_3q1h_all = List.concat(map (mk_3q1hc) (0--((List.length records)-1))) in"
+        },
+        {
+          "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-IQD-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 3327,
+          "before": "   idv = Printf.sprintf \"181212899 %d\" d;",
+          "after": "   idv = \"181212899 \" ^ string_of_int d;"
+        }
+      ],
+      "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects.",
+      "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl",
+      "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
+      "source_sha256": "ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220",
+      "source_md5": "122ffb889de59b21bcf23c45b6a2cb66",
+      "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
+      "normalized_md5": "b875a65eb946735558074e104a32c4b6",
+      "normalized_bytes": 56399,
+      "operations": [
+        {
+          "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 951,
+          "before": "    idv = Printf.sprintf \"7550003505 %d %d %d\" i234 i126 i135;",
+          "after": "    idv = \"7550003505 \" ^ string_of_int i234 ^ \" \" ^\n      string_of_int i126 ^ \" \" ^ string_of_int i135;"
+        },
+        {
+          "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ITERATION",
+          "kind": "exact_bytes_replace_once",
+          "line": 959,
+          "before": "for i1=0 to 4 do\nfor i2=i1 to 4 do \nfor i3=i2 to 4 do \n      add (make_hex_ear i1 i2 i3) done done done;;",
+          "after": "do_list\n  (fun i1 ->\n    do_list\n      (fun i2 -> do_list (fun i3 -> add (make_hex_ear i1 i2 i3)) (i2--4))\n      (i1--4))\n  (0--4);;"
+        }
+      ],
+      "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records.",
+      "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/parse_ineq.hl",
+      "path": "text_formalization/nonlinear/parse_ineq.hl",
+      "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee",
+      "source_md5": "51ad450836d0180f77572c7e824668f3",
+      "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
+      "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
+      "normalized_bytes": 23718,
+      "operations": [
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-STRING-ORDER",
+          "kind": "exact_bytes_replace_once",
+          "line": 121,
+          "before": "  nub (sort (<) (cn [] i ));;",
+          "after": "  nub (sort (fun left right -> String.compare left right < 0) (cn [] i));;"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-CC-FUNCTION",
+          "kind": "exact_bytes_replace_once",
+          "line": 299,
+          "before": "  let p = Printf.sprintf in\n  let s = String.concat \"\\n\" [\n     p\"double %s(\" (fst (dest_const f)); args ss;\n     p\") { \\nreturn ( %s ); \\n}\\n\\n\"  (c_string_of_term rhs);\n     ]",
+          "after": "  let s = String.concat \"\\n\" [\n     \"double \" ^ fst (dest_const f) ^ \"(\"; args ss;\n     \") { \\nreturn ( \" ^ c_string_of_term rhs ^ \" ); \\n}\\n\\n\";\n     ]"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-CASE",
+          "kind": "exact_bytes_replace_once",
+          "line": 325,
+          "before": "  Printf.sprintf \"case %d: *ret = (%s) - (%s); break;\" j (List.nth i j) p;;",
+          "after": "  \"case \" ^ string_of_int j ^ \": *ret = (\" ^ List.nth i j ^\n    \") - (\" ^ p ^ \"); break;\";;"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-VARDECL",
+          "kind": "exact_bytes_replace_once",
+          "line": 330,
+          "before": "  let  v j = Printf.sprintf \"double %s = %s[%d];\"   (List.nth varname j) y j in",
+          "after": "  let v j = \"double \" ^ List.nth varname j ^ \" = \" ^ y ^ \"[\" ^\n    string_of_int j ^ \"];\" in"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-BEGIN",
+          "kind": "exact_bytes_replace_once",
+          "line": 408,
+          "before": "let cc_code outs iqd = \n",
+          "after": "(* Candle's direct proof route does not authorize CFSQP code generation.\nlet cc_code outs iqd = \n"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-END",
+          "kind": "exact_bytes_replace_once",
+          "line": 449,
+          "before": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n\nlet mk_cc tmpfile iqd = ",
+          "after": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n*)\n\nlet cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;\n\nlet mk_cc tmpfile iqd = "
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-EXECUTE-LIST-ITERATION",
+          "kind": "exact_bytes_replace_once",
+          "line": 475,
+          "before": " let execute_cfsqp_list xs = \n   let fails = ref [] in\n   let _ = for i=0 to (List.length xs - 1) \n      do \n\ttry  (execute_cfsqp (List.nth xs i); Sys.command(\"date\"); ())\n\twith Failure s -> (fails := s :: (!fails)) done in\n     fails;;",
+          "after": " let execute_cfsqp_list xs = \n   let fails = ref [] in\n   let run i =\n     try (execute_cfsqp (List.nth xs i); let _ = Sys.command(\"date\") in ())\n     with Failure s -> (fails := s :: (!fails)) in\n   let _ = do_list run (0--(List.length xs - 1)) in\n     fails;;"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-COUNTER-UNIT",
+          "kind": "exact_bytes_replace_once",
+          "line": 548,
+          "before": "      let counter_reset _ =  (ineqcounter := 0) in",
+          "after": "      let counter_reset () =  (ineqcounter := 0) in"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-GLPK-INEQ",
+          "kind": "exact_bytes_replace_once",
+          "line": 561,
+          "before": "  let p = Printf.sprintf in\n  let s =   p\"ineq%d 'ID[%s]' \\n  { (i,j) in %s } : \\n  %s >= 0.0;\\n\\n\" \n    (counter()) iqd.idv dart (glpk_form rev i') in",
+          "after": "  let s = \"ineq\" ^ string_of_int (counter()) ^ \" 'ID[\" ^ iqd.idv ^\n    \"]' \\n  { (i,j) in \" ^ dart ^ \" } : \\n  \" ^ glpk_form rev i' ^\n    \" >= 0.0;\\n\\n\" in"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DOMAIN6",
+          "kind": "exact_bytes_replace_once",
+          "line": 653,
+          "before": "      (Printf.sprintf \n\t \" %s %s = \\n  let _ = ( %s ) || failwith \\\"domain6:%s\\\" in \\n\n      ( %s ) %s\" fs (vs (xs @ hv)) hbodys fs gs (vs hv)) in",
+          "after": "      (\" \" ^ fs ^ \" \" ^ vs (xs @ hv) ^\n       \" = \\n  let _ = ( \" ^ hbodys ^ \" ) || failwith \\\"domain6:\" ^ fs ^\n       \"\\\" in \\n      ( \" ^ gs ^ \" ) \" ^ vs hv) in"
+        }
+      ],
+      "semantic_rule": "The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+      "scope_limit": "This hash-pinned compatibility slice does not authorize process execution or CFSQP generation and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required."
+    },
+    {
+      "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/optimize.hl",
+      "path": "text_formalization/nonlinear/optimize.hl",
+      "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b",
+      "source_md5": "8a19d244740ff42de82adbe2dcd89413",
+      "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
+      "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
+      "normalized_bytes": 26261,
+      "operations": [
+        {
+          "id": "PROJECT-OPTIMIZE-S3-PRINTF-001-SPLIT-SUFFIX",
+          "kind": "exact_bytes_replace_once",
+          "line": 673,
+          "before": "  let suffix i n = Printf.sprintf \"prep-%s split(%d/%d)\" s i n in ",
+          "after": "  let suffix i n = \"prep-\" ^ s ^ \" split(\" ^ string_of_int i ^ \"/\" ^\n    string_of_int n ^ \")\" in "
+        }
+      ],
+      "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception.",
+      "scope_limit": "This hash-pinned rewrite is confined to the diagnostic suffix string in preprocess_split_idq. It changes no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string equivalence and cumulative loading are required."
+    },
+    {
+      "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+      "source_key": "flyspeck:text_formalization/nonlinear/merge_ineq.hl",
+      "path": "text_formalization/nonlinear/merge_ineq.hl",
+      "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58",
+      "source_md5": "99065b4fef591cab34175bd2952ef60c",
+      "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
+      "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
+      "normalized_bytes": 247458,
+      "operations": [
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-OX-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 79,
+          "before": "  (idq_of_string (Printf.sprintf \"OXLZLEZ 6346351218 %d %d\" i n)).ineq;;",
+          "after": "  (idq_of_string (\"OXLZLEZ 6346351218 \" ^ string_of_int i ^ \" \" ^\n    string_of_int n)).ineq;;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-FLYPAPER-CONCAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 99,
+          "before": "  List.flatten (map (function",
+          "after": "  List.concat (map (function"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-PRIORITY-EFFECT",
+          "kind": "exact_bytes_replace_once",
+          "line": 166,
+          "before": "prioritize_real();;",
+          "after": "let _ = prioritize_real();;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-BOUNDS-CONCAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 327,
+          "before": "let allbounds n = setify(List.flatten (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
+          "after": "let allbounds n = setify(List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-COMBOS-CONCAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 523,
+          "before": "let partial_merge() = end_itlist CONJ (map fst (List.flatten (combos())));;",
+          "after": "let partial_merge() = end_itlist CONJ (map fst (List.concat (combos())));;"
+        }
+      ],
+      "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing.",
+      "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, and one parser-priority structure spelling. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect oracles and cumulative source loading are required."
+    },
+    {
       "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
       "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
       "path": "text_formalization/nonlinear/break_case_exec.hl",

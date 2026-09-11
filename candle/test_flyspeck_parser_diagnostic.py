@@ -341,7 +341,7 @@ class ParserDiagnosticTests(unittest.TestCase):
         )
         self.assertEqual(
             plan["source_preparation"]["effective_kind_counts"],
-            {"exact-normalized": 39, "exact-original": 361},
+            {"exact-normalized": 45, "exact-original": 355},
         )
         self.assertEqual(
             plan["source_preparation"]["loader_actions"]

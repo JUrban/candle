@@ -86,27 +86,27 @@
 (* stratum: nonlinear_support *)
 (* 038 selected=flyspeck:text_formalization/nonlinear/calc_derivative.hl sha256=b34c63e9e7005a32dd536b40d0ef4bfc8cade31bdbba7eb3fdaf93617c7dd83a normalization=PROJECT-CALC-DERIVATIVE-S3-TUPLE-CONSTRUCTOR-001 normalized_sha256=c321731deaad601505c922832e14e829ea4948bda0622676cce2fd5ae8ec450a *)
 #flyspeck_needs "nonlinear/calc_derivative.hl";;
-(* 039 selected=flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl sha256=681b98b6fbc836d696297f960b7650b13be6be9ce9868af0e929ed8573186605 *)
+(* 039 selected=flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl sha256=681b98b6fbc836d696297f960b7650b13be6be9ce9868af0e929ed8573186605 normalization=PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001 normalized_sha256=4060000c92eadf6962784129727663a4e452984bb0347a1a0db6885444f3fc99 *)
 #flyspeck_needs "nonlinear/ineqdata3q1h.hl";;
 (* 040 selected=flyspeck:text_formalization/nonlinear/types.hl sha256=675d1cfd4565e677d698903df066d6197781abc402d0bb56ca6efc797ce19dea *)
 #flyspeck_needs "nonlinear/types.hl";;
 (* 041 selected=flyspeck:text_formalization/nonlinear/nonlin_def.hl sha256=a5f9c3edceed3d64c79bccad05db5b1e960346571d92f9ab3dd8981c43113a1f *)
 #flyspeck_needs "nonlinear/nonlin_def.hl";;
-(* 042 selected=flyspeck:text_formalization/nonlinear/ineq.hl sha256=d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68 *)
+(* 042 selected=flyspeck:text_formalization/nonlinear/ineq.hl sha256=d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68 normalization=PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001 normalized_sha256=d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f *)
 #flyspeck_needs "nonlinear/ineq.hl";;
-(* 043 selected=flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl sha256=ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220 *)
+(* 043 selected=flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl sha256=ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220 normalization=PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001 normalized_sha256=b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d *)
 #flyspeck_needs "nonlinear/main_estimate_ineq.hl";;
 (* 044 selected=flyspeck:text_formalization/nonlinear/nonlinear_lemma.hl sha256=a80506d08b71b081f0d011f048d83c80c51e5eb6e479361c77762b6d2079cdeb *)
 #flyspeck_needs "nonlinear/nonlinear_lemma.hl";;
 (* 045 selected=flyspeck:text_formalization/nonlinear/functional_equation.hl sha256=cbf99bdf7bb15a14cd302670012468cb2dff24546044ae827f524a240fe090a3 *)
 #flyspeck_needs "nonlinear/functional_equation.hl";;
-(* 046 selected=flyspeck:text_formalization/nonlinear/parse_ineq.hl sha256=14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee *)
+(* 046 selected=flyspeck:text_formalization/nonlinear/parse_ineq.hl sha256=14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee normalization=PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6 *)
 #flyspeck_needs "nonlinear/parse_ineq.hl";;
-(* 047 selected=flyspeck:text_formalization/nonlinear/optimize.hl sha256=dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b *)
+(* 047 selected=flyspeck:text_formalization/nonlinear/optimize.hl sha256=dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b normalization=PROJECT-OPTIMIZE-S3-PRINTF-001 normalized_sha256=a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40 *)
 #flyspeck_needs "nonlinear/optimize.hl";;
 (* 048 selected=flyspeck:text_formalization/nonlinear/function_list.hl sha256=3bb151da37f2541c04bf4ba745ea5d5d3a0a7abc5c48b72ef2d944b5d7629941 *)
 #flyspeck_needs "nonlinear/function_list.hl";;
-(* 049 selected=flyspeck:text_formalization/nonlinear/merge_ineq.hl sha256=81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58 *)
+(* 049 selected=flyspeck:text_formalization/nonlinear/merge_ineq.hl sha256=81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58 normalization=PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6 *)
 #flyspeck_needs "nonlinear/merge_ineq.hl";;
 
 (* stratum: analysis *)

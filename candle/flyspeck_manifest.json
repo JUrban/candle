@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 335,
+        "line": 365,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 335,
+        "line": 365,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5172,13 +5172,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 335,
+        "line": 365,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 335,
+        "line": 365,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "33f810eee951b44dda7595777bd7d911",
-    "generated_source_sha256": "cee0f4ad02c7274c9044a5154e9dd5283542c4a0f79ee9226bcc493da5d742f9",
+    "generated_source_md5": "f1df990ac200cecc4150a3c32697b3bc",
+    "generated_source_sha256": "c3f2292a24b3916b3aa5515328176aea885bb36d76cb46e7b34c7593de2e3305",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11578,7 +11578,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 59383,
+      "bytes": 60221,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "2a5433672f1e95034ae3641050520e68",
+      "md5": "1d186d8610f4c9a9c07710c813b0eb51",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "1e80a23d68ed5575380094ef6f86d76149db0c7f58f681a48c8d787d1b6971b1"
+      "sha256": "42bccbdcec1969afcf49afe241b42ec2639606e64c508f406103dbc7cfcd4668"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14862,7 +14862,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 16347,
+      "bytes": 17674,
       "dependencies": [
         {
           "kind": "#use",
@@ -14900,7 +14900,7 @@
         },
         {
           "kind": "needs",
-          "line": 357,
+          "line": 387,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14911,7 +14911,7 @@
         },
         {
           "kind": "needs",
-          "line": 363,
+          "line": 393,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14922,7 +14922,7 @@
         },
         {
           "kind": "needs",
-          "line": 365,
+          "line": 395,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "ba8542cc76c5f290ce11c2ea56945eca",
+      "md5": "0ba3994f9b667b0e8cbc80bd02dfa6d3",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "74f158c7fac2804016fbed79cf3759c63179c3867e2ed0b254b1648016f47682"
+      "sha256": "8567a6e552f8031841895befdf925afb5e1c5e88f267f0a60504ba0971f295d5"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19713,6 +19713,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 120434,
+        "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
+        "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
+        "operation_count": 8
+      },
       "md5": "4603172e71db7ee1ff945a337932a900",
       "path": "text_formalization/nonlinear/ineq.hl",
       "repository": "flyspeck",
@@ -19721,6 +19729,14 @@
     "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl": {
       "bytes": 83386,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 83383,
+        "normalized_md5": "e456941142a1f3b1a3988640c50853c2",
+        "normalized_sha256": "4060000c92eadf6962784129727663a4e452984bb0347a1a0db6885444f3fc99",
+        "operation_count": 5
+      },
       "md5": "4ce0d21f4f4a99607a9c3422641009a4",
       "path": "text_formalization/nonlinear/ineqdata3q1h.hl",
       "repository": "flyspeck",
@@ -19729,6 +19745,14 @@
     "flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl": {
       "bytes": 56329,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 56399,
+        "normalized_md5": "b875a65eb946735558074e104a32c4b6",
+        "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
+        "operation_count": 2
+      },
       "md5": "122ffb889de59b21bcf23c45b6a2cb66",
       "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
       "repository": "flyspeck",
@@ -19749,6 +19773,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 247458,
+        "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
+        "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
+        "operation_count": 5
+      },
       "md5": "99065b4fef591cab34175bd2952ef60c",
       "path": "text_formalization/nonlinear/merge_ineq.hl",
       "repository": "flyspeck",
@@ -19845,6 +19877,14 @@
     "flyspeck:text_formalization/nonlinear/optimize.hl": {
       "bytes": 26229,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 26261,
+        "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
+        "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
+        "operation_count": 1
+      },
       "md5": "8a19d244740ff42de82adbe2dcd89413",
       "path": "text_formalization/nonlinear/optimize.hl",
       "repository": "flyspeck",
@@ -19853,6 +19893,14 @@
     "flyspeck:text_formalization/nonlinear/parse_ineq.hl": {
       "bytes": 23447,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 23718,
+        "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
+        "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
+        "operation_count": 10
+      },
       "md5": "51ad450836d0180f77572c7e824668f3",
       "path": "text_formalization/nonlinear/parse_ineq.hl",
       "repository": "flyspeck",
@@ -22273,7 +22321,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "1c6f83b5cb95542033a37f3e22195bd0c9e73652d55744abd9fd255b023b041a",
+    "contract_sha256": "d9794b7b705be70daea4ddcaeb755d698939df64e1be80c4c3bd4100d300e047",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23826,6 +23874,319 @@
         "source_sha256": "b34c63e9e7005a32dd536b40d0ef4bfc8cade31bdbba7eb3fdaf93617c7dd83a"
       },
       {
+        "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 83383,
+        "normalized_md5": "e456941142a1f3b1a3988640c50853c2",
+        "normalized_sha256": "4060000c92eadf6962784129727663a4e452984bb0347a1a0db6885444f3fc99",
+        "operation_count": 5,
+        "operations": [
+          {
+            "after": "",
+            "before": "  let nth = List.nth in",
+            "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-REMOVE-LOCAL-ALIAS",
+            "kind": "exact_bytes_replace_once",
+            "line": 211
+          },
+          {
+            "after": "  let y j =  List.nth [y1d;yd;yd;y4d;yd;yd] (j-1) in",
+            "before": "  let y j =  nth [y1d;yd;yd;y4d;yd;yd] (j-1) in",
+            "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-Y-DOMAIN",
+            "kind": "exact_bytes_replace_once",
+            "line": 217
+          },
+          {
+            "after": "  let (a,b,c,e) = List.nth [d.coef1;d.coef2;d.coef3;d.coef4] (i-1) in",
+            "before": "  let (a,b,c,e) = nth [d.coef1;d.coef2;d.coef3;d.coef4] (i-1) in",
+            "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-COEFFICIENT",
+            "kind": "exact_bytes_replace_once",
+            "line": 220
+          },
+          {
+            "after": "  let p4 = List.nth [d.branch2;d.branch3;d.branch4;d.branch5] (i-1) in ",
+            "before": "  let p4 = nth [d.branch2;d.branch3;d.branch4;d.branch5] (i-1) in ",
+            "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-BRANCH4",
+            "kind": "exact_bytes_replace_once",
+            "line": 222
+          },
+          {
+            "after": "  let p j = List.nth [p1;[];[];p4;[];[]] (j-1) in",
+            "before": "  let p j = nth [p1;[];[];p4;[];[]] (j-1) in",
+            "id": "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001-BRANCH-DOMAIN",
+            "kind": "exact_bytes_replace_once",
+            "line": 223
+          }
+        ],
+        "path": "text_formalization/nonlinear/ineqdata3q1h.hl",
+        "scope_limit": "This hash-pinned rewrite is confined to mk_ineq1's local alias and its four exact call sites. It changes no inequality data, record field, branch path, generated HOL term, theorem, hypothesis, proof intent, or axiom. Native heterogeneous-call equivalence, a focused CakeML rejection/acceptance oracle, and cumulative action loading are required.",
+        "semantic_rule": "The local nth alias is used at both HOL-term and four-HOL-term-tuple element types, but CakeML does not generalize the local alias or its eta expansion. Removing that alias and spelling the identical global List.nth at each of its four calls restores independent polymorphic instantiation while preserving argument order, selected index, result, evaluation order, and List.nth exceptions.",
+        "source_key": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl",
+        "source_md5": "4ce0d21f4f4a99607a9c3422641009a4",
+        "source_sha256": "681b98b6fbc836d696297f960b7650b13be6be9ce9868af0e929ed8573186605"
+      },
+      {
+        "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 120434,
+        "normalized_md5": "fa861206248d6bb4d6c9316d0a716053",
+        "normalized_sha256": "d279a8b069da9ec13cb30a7500fe452a144d0ecb55ab6eb290727c2cc0e6b77f",
+        "operation_count": 8,
+        "operations": [
+          {
+            "after": "  List.concat(    map (function Flypaper s -> s | _ -> []) idv.tags);;",
+            "before": "  List.flatten(    map (function Flypaper s -> s | _ -> []) idv.tags);;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-FLYPAPER-CONCAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 71
+          },
+          {
+            "after": "    idv = \"ZTGIJCF4 \" ^ string_of_int i3 ^ \" \" ^ string_of_int i4 ^\n      \" \" ^ string_of_int i5 ^ \" \" ^ string_of_int i6 ^ \" 1821661595\";",
+            "before": "    idv = Printf.sprintf \"ZTGIJCF4 %d %d %d %d 1821661595\" i3 i4 i5 i6;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-F4-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 489
+          },
+          {
+            "after": "do_list\n  (fun i3 ->\n    do_list\n      (fun i4 ->\n        do_list\n          (fun i5 ->\n            do_list (fun i6 -> add(make_F4 i3 i4 i5 i6)) (0--1))\n          (0--1))\n      (0--1))\n  (0--1);;",
+            "before": " for i3=0 to 1 do \nfor i4 = 0 to 1 do\n for i5 = 0 to 1 do\n for i6 = 0 to 1 do\n   add(make_F4 i3 i4 i5 i6) done done done done;;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-F4-ITERATION",
+            "kind": "exact_bytes_replace_once",
+            "line": 495
+          },
+          {
+            "after": "    idv = \"QITNPEA1 \" ^ string_of_int i3 ^ \" \" ^ string_of_int i4 ^\n      \" 9063653052 A\" ;",
+            "before": "    idv = Printf.sprintf \"QITNPEA1 %d %d 9063653052 A\" i3 i4 ;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-QITNPEA1-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 847
+          },
+          {
+            "after": "do_list\n  (fun i3 -> do_list (fun i4 -> add_QITNPEA1 i3 i4) (0--2))\n  (1--2);; (* start at 1 to force the triangle (y1,y3,y5) not to be small *)",
+            "before": "for i3=1 to 2 do (* start at 1 to force the triangle (y1,y3,y5) not to be small *)\nfor i4 = 0 to 2 do\n   add_QITNPEA1 i3 i4   done done;;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-QITNPEA1-ITERATION",
+            "kind": "exact_bytes_replace_once",
+            "line": 860
+          },
+          {
+            "after": "\tidv = \"OXLZLEZ 6346351218 \" ^ string_of_int case ^ \" \" ^ string_of_int r; ",
+            "before": "\tidv = Printf.sprintf \"OXLZLEZ 6346351218 %d %d\" case r; ",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-3Q1H-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 1570
+          },
+          {
+            "after": "  let mk_3q1h_all = List.concat(map (mk_3q1hc) (0--((List.length records)-1))) in",
+            "before": "  let mk_3q1h_all = List.flatten(map (mk_3q1hc) (0--((List.length records)-1))) in",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-3Q1H-CONCAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 1576
+          },
+          {
+            "after": "   idv = \"181212899 \" ^ string_of_int d;",
+            "before": "   idv = Printf.sprintf \"181212899 %d\" d;",
+            "id": "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-IQD-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 3327
+          }
+        ],
+        "path": "text_formalization/nonlinear/ineq.hl",
+        "scope_limit": "These hash-pinned rewrites cover only the two list aliases, four constant integer-only formats, and two small ascending iteration nests in Ineq's data construction. They change no inequality term, tags, theorem statement, hypothesis, proof, proof intent, or axiom. Exact native string/iteration oracles and cumulative source loading are required.",
+        "semantic_rule": "List.concat is the exact OCaml alias behavior required at the two nested-list sites. Each constant %d format is replaced by the same literals and string_of_int conversions in the same argument order. The two ascending loops are replaced by do_list over the already-defined inclusive integer range, preserving bounds, nesting, iteration order, calls to add, generated IDs, record contents, and effects.",
+        "source_key": "flyspeck:text_formalization/nonlinear/ineq.hl",
+        "source_md5": "4603172e71db7ee1ff945a337932a900",
+        "source_sha256": "d1160305349bbe0af190e78e178169f5b9165fbc7b5e9f83156094b1afeb2c68"
+      },
+      {
+        "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 56399,
+        "normalized_md5": "b875a65eb946735558074e104a32c4b6",
+        "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "    idv = \"7550003505 \" ^ string_of_int i234 ^ \" \" ^\n      string_of_int i126 ^ \" \" ^ string_of_int i135;",
+            "before": "    idv = Printf.sprintf \"7550003505 %d %d %d\" i234 i126 i135;",
+            "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 951
+          },
+          {
+            "after": "do_list\n  (fun i1 ->\n    do_list\n      (fun i2 -> do_list (fun i3 -> add (make_hex_ear i1 i2 i3)) (i2--4))\n      (i1--4))\n  (0--4);;",
+            "before": "for i1=0 to 4 do\nfor i2=i1 to 4 do \nfor i3=i2 to 4 do \n      add (make_hex_ear i1 i2 i3) done done done;;",
+            "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ITERATION",
+            "kind": "exact_bytes_replace_once",
+            "line": 959
+          }
+        ],
+        "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
+        "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required.",
+        "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records.",
+        "source_key": "flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl",
+        "source_md5": "122ffb889de59b21bcf23c45b6a2cb66",
+        "source_sha256": "ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220"
+      },
+      {
+        "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 23718,
+        "normalized_md5": "98fc86d82c33066b470328b69293d5bd",
+        "normalized_sha256": "b186725a10694666bdc76fc2305f669b4dfcce032230dce02613d696c62a9ff6",
+        "operation_count": 10,
+        "operations": [
+          {
+            "after": "  nub (sort (fun left right -> String.compare left right < 0) (cn [] i));;",
+            "before": "  nub (sort (<) (cn [] i ));;",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-STRING-ORDER",
+            "kind": "exact_bytes_replace_once",
+            "line": 121
+          },
+          {
+            "after": "  let s = String.concat \"\\n\" [\n     \"double \" ^ fst (dest_const f) ^ \"(\"; args ss;\n     \") { \\nreturn ( \" ^ c_string_of_term rhs ^ \" ); \\n}\\n\\n\";\n     ]",
+            "before": "  let p = Printf.sprintf in\n  let s = String.concat \"\\n\" [\n     p\"double %s(\" (fst (dest_const f)); args ss;\n     p\") { \\nreturn ( %s ); \\n}\\n\\n\"  (c_string_of_term rhs);\n     ]",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-CC-FUNCTION",
+            "kind": "exact_bytes_replace_once",
+            "line": 299
+          },
+          {
+            "after": "  \"case \" ^ string_of_int j ^ \": *ret = (\" ^ List.nth i j ^\n    \") - (\" ^ p ^ \"); break;\";;",
+            "before": "  Printf.sprintf \"case %d: *ret = (%s) - (%s); break;\" j (List.nth i j) p;;",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-CASE",
+            "kind": "exact_bytes_replace_once",
+            "line": 325
+          },
+          {
+            "after": "  let v j = \"double \" ^ List.nth varname j ^ \" = \" ^ y ^ \"[\" ^\n    string_of_int j ^ \"];\" in",
+            "before": "  let  v j = Printf.sprintf \"double %s = %s[%d];\"   (List.nth varname j) y j in",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-VARDECL",
+            "kind": "exact_bytes_replace_once",
+            "line": 330
+          },
+          {
+            "after": "(* Candle's direct proof route does not authorize CFSQP code generation.\nlet cc_code outs iqd = \n",
+            "before": "let cc_code outs iqd = \n",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-BEGIN",
+            "kind": "exact_bytes_replace_once",
+            "line": 408
+          },
+          {
+            "after": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n*)\n\nlet cc_code _ _ =\n  failwith \"CFSQP code generation is disabled by the Candle S3 runtime policy\";;\n\nlet mk_cc tmpfile iqd = ",
+            "before": "  Printf.fprintf outs \"%s %s\" s cc_main;;  \n\nlet mk_cc tmpfile iqd = ",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE-END",
+            "kind": "exact_bytes_replace_once",
+            "line": 449
+          },
+          {
+            "after": " let execute_cfsqp_list xs = \n   let fails = ref [] in\n   let run i =\n     try (execute_cfsqp (List.nth xs i); let _ = Sys.command(\"date\") in ())\n     with Failure s -> (fails := s :: (!fails)) in\n   let _ = do_list run (0--(List.length xs - 1)) in\n     fails;;",
+            "before": " let execute_cfsqp_list xs = \n   let fails = ref [] in\n   let _ = for i=0 to (List.length xs - 1) \n      do \n\ttry  (execute_cfsqp (List.nth xs i); Sys.command(\"date\"); ())\n\twith Failure s -> (fails := s :: (!fails)) done in\n     fails;;",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-EXECUTE-LIST-ITERATION",
+            "kind": "exact_bytes_replace_once",
+            "line": 475
+          },
+          {
+            "after": "      let counter_reset () =  (ineqcounter := 0) in",
+            "before": "      let counter_reset _ =  (ineqcounter := 0) in",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-COUNTER-UNIT",
+            "kind": "exact_bytes_replace_once",
+            "line": 548
+          },
+          {
+            "after": "  let s = \"ineq\" ^ string_of_int (counter()) ^ \" 'ID[\" ^ iqd.idv ^\n    \"]' \\n  { (i,j) in \" ^ dart ^ \" } : \\n  \" ^ glpk_form rev i' ^\n    \" >= 0.0;\\n\\n\" in",
+            "before": "  let p = Printf.sprintf in\n  let s =   p\"ineq%d 'ID[%s]' \\n  { (i,j) in %s } : \\n  %s >= 0.0;\\n\\n\" \n    (counter()) iqd.idv dart (glpk_form rev i') in",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-GLPK-INEQ",
+            "kind": "exact_bytes_replace_once",
+            "line": 561
+          },
+          {
+            "after": "      (\" \" ^ fs ^ \" \" ^ vs (xs @ hv) ^\n       \" = \\n  let _ = ( \" ^ hbodys ^ \" ) || failwith \\\"domain6:\" ^ fs ^\n       \"\\\" in \\n      ( \" ^ gs ^ \" ) \" ^ vs hv) in",
+            "before": "      (Printf.sprintf \n\t \" %s %s = \\n  let _ = ( %s ) || failwith \\\"domain6:%s\\\" in \\n\n      ( %s ) %s\" fs (vs (xs @ hv)) hbodys fs gs (vs hv)) in",
+            "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DOMAIN6",
+            "kind": "exact_bytes_replace_once",
+            "line": 653
+          }
+        ],
+        "path": "text_formalization/nonlinear/parse_ineq.hl",
+        "scope_limit": "This hash-pinned compatibility slice does not authorize process execution or CFSQP generation and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required.",
+        "semantic_rule": "The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+        "source_key": "flyspeck:text_formalization/nonlinear/parse_ineq.hl",
+        "source_md5": "51ad450836d0180f77572c7e824668f3",
+        "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee"
+      },
+      {
+        "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 26261,
+        "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
+        "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "  let suffix i n = \"prep-\" ^ s ^ \" split(\" ^ string_of_int i ^ \"/\" ^\n    string_of_int n ^ \")\" in ",
+            "before": "  let suffix i n = Printf.sprintf \"prep-%s split(%d/%d)\" s i n in ",
+            "id": "PROJECT-OPTIMIZE-S3-PRINTF-001-SPLIT-SUFFIX",
+            "kind": "exact_bytes_replace_once",
+            "line": 673
+          }
+        ],
+        "path": "text_formalization/nonlinear/optimize.hl",
+        "scope_limit": "This hash-pinned rewrite is confined to the diagnostic suffix string in preprocess_split_idq. It changes no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string equivalence and cumulative loading are required.",
+        "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception.",
+        "source_key": "flyspeck:text_formalization/nonlinear/optimize.hl",
+        "source_md5": "8a19d244740ff42de82adbe2dcd89413",
+        "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b"
+      },
+      {
+        "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 247458,
+        "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
+        "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
+        "operation_count": 5,
+        "operations": [
+          {
+            "after": "  (idq_of_string (\"OXLZLEZ 6346351218 \" ^ string_of_int i ^ \" \" ^\n    string_of_int n)).ineq;;",
+            "before": "  (idq_of_string (Printf.sprintf \"OXLZLEZ 6346351218 %d %d\" i n)).ineq;;",
+            "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-OX-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 79
+          },
+          {
+            "after": "  List.concat (map (function",
+            "before": "  List.flatten (map (function",
+            "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-FLYPAPER-CONCAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 99
+          },
+          {
+            "after": "let _ = prioritize_real();;",
+            "before": "prioritize_real();;",
+            "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-PRIORITY-EFFECT",
+            "kind": "exact_bytes_replace_once",
+            "line": 166
+          },
+          {
+            "after": "let allbounds n = setify(List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
+            "before": "let allbounds n = setify(List.flatten (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
+            "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-BOUNDS-CONCAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 327
+          },
+          {
+            "after": "let partial_merge() = end_itlist CONJ (map fst (List.concat (combos())));;",
+            "before": "let partial_merge() = end_itlist CONJ (map fst (List.flatten (combos())));;",
+            "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-COMBOS-CONCAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 523
+          }
+        ],
+        "path": "text_formalization/nonlinear/merge_ineq.hl",
+        "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, and one parser-priority structure spelling. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect oracles and cumulative source loading are required.",
+        "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing.",
+        "source_key": "flyspeck:text_formalization/nonlinear/merge_ineq.hl",
+        "source_md5": "99065b4fef591cab34175bd2952ef60c",
+        "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58"
+      },
+      {
         "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
         "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 62100,
@@ -23983,7 +24344,7 @@
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
       }
     ],
-    "entry_count": 39,
+    "entry_count": 45,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -23996,6 +24357,7 @@
       "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
       "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
       "candle:candle/test_flyspeck_calc_derivative_tuple_constructor_normalization.sh",
+      "candle:candle/test_flyspeck_nonlinear_boundary_compatibility.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
       "candle:candle/test_flyspeck_print_types_normalization.sh",
       "candle:candle/test_flyspeck_hol_pervasives_normalization.sh",
@@ -24095,8 +24457,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "2a5433672f1e95034ae3641050520e68",
-    "generated_source_sha256": "1e80a23d68ed5575380094ef6f86d76149db0c7f58f681a48c8d787d1b6971b1",
+    "generated_source_md5": "1d186d8610f4c9a9c07710c813b0eb51",
+    "generated_source_sha256": "42bccbdcec1969afcf49afe241b42ec2639606e64c508f406103dbc7cfcd4668",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
