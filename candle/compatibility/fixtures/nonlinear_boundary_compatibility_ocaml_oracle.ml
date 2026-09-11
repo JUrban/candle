@@ -183,6 +183,24 @@ let structure_effects_ok =
   !original_structure_trace = ["second";"first"] &&
   !normalized_structure_trace = !original_structure_trace;;
 
+let original_assignment_state = ref [1;2;3;2];;
+let normalized_assignment_state = ref [1;2;3;2];;
+
+let original_assignment_remove value =
+  original_assignment_state :=
+    List.filter (fun item -> not (item = value)) !original_assignment_state;;
+
+let normalized_assignment_remove value =
+  normalized_assignment_state :=
+    List.filter (fun item -> not (item = value))
+      (!normalized_assignment_state);;
+
+let assignment_effect_ok =
+  let _ = original_assignment_remove 2 in
+  let _ = normalized_assignment_remove 2 in
+  !original_assignment_state = [1;3] &&
+  !normalized_assignment_state = !original_assignment_state;;
+
 type ineqdoc_marker = Section | Ineqdoc | Comment;;
 
 module Original_ineqdoc = struct
@@ -249,7 +267,8 @@ let string_order_ok =
 
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
-     string_order_ok && structure_effects_ok && ineqdoc_value_ok &&
+     string_order_ok && structure_effects_ok && assignment_effect_ok &&
+     ineqdoc_value_ok &&
      remaining_empty_reference_values_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

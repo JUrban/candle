@@ -3217,9 +3217,9 @@
       "path": "text_formalization/nonlinear/parse_ineq.hl",
       "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee",
       "source_md5": "51ad450836d0180f77572c7e824668f3",
-      "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
-      "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
-      "normalized_bytes": 21876,
+      "normalized_sha256": "28f693355d068274986e800229c4d67a3ca84315da6b5aef02298d45c42dc867",
+      "normalized_md5": "928a1421cebce8585ddb9d0f9e8de302",
+      "normalized_bytes": 21880,
       "operations": [
         {
           "id": "PROJECT-PARSE-INEQ-S3-AUTOGEN-VALUE-RESTRICTION-001",
@@ -3227,6 +3227,24 @@
           "line": 151,
           "before": "let autogen = ref[];;",
           "after": "let autogen = ref ([]:term list);;"
+        },
+        {
+          "id": "PROJECT-PARSE-INEQ-S3-DEREFERENCE-ARGUMENTS-001",
+          "kind": "exact_lines_replace_once",
+          "line": 157,
+          "replacement_count": 2,
+          "replacements": [
+            {
+              "line": 157,
+              "before": "    autogen := filter (fun t -> not (t = thm')) !autogen;;",
+              "after": "    autogen := filter (fun t -> not (t = thm')) (!autogen);;"
+            },
+            {
+              "line": 205,
+              "before": "  let _ = macros := filter (fun t -> not (t = thm)) !macros in",
+              "after": "  let _ = macros := filter (fun t -> not (t = thm)) (!macros) in"
+            }
+          ]
         },
         {
           "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-STRING-ORDER",
@@ -3295,8 +3313,8 @@
           "after": "      (\" \" ^ fs ^ \" \" ^ vs (xs @ hv) ^\n       \" = \\n  let _ = ( \" ^ hbodys ^ \" ) || failwith \\\"domain6:\" ^ fs ^\n       \"\\\" in \\n      ( \" ^ gs ^ \" ) \" ^ vs hv) in"
         }
       ],
-      "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
-      "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required."
+      "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. Explicit grouping at the two filter calls evaluates the same reference dereference once as the same second filter argument before the same assignment, preserving list order, equality, mutation, and exceptions while removing the full-module CakeML inference ambiguity. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+      "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation and explicit grouping around two existing reference dereferences, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required."
     },
     {
       "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",

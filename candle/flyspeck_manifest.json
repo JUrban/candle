@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "ebb8a6411481cb799e7da08cf170c08d",
-    "generated_source_sha256": "ccb0daabfcb4a36ed8c110a45a0cb7ae9351f1b3aa001294677e99b5b16830f4",
+    "generated_source_md5": "bc344d57b8bac1a34e0f7110854b9d6d",
+    "generated_source_sha256": "05ca6a5f45333202d529539becaf5c7d41e9764b2af26a77db708b34bbeefe7d",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "039f9407a2b5fc70e5f9946cc6340511",
+      "md5": "51d73fcbc865defb738902c05c6f1184",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "8a5a890180971685c823307da379e31fad12b9959c5f163c94f3f13236dfdbd5"
+      "sha256": "eb4c21950a2565cd18f79d219b6ad93fa03cdda231714e69eac1bff243e6a057"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "72b34dc7f2a6cec06b6a1438caa1f808",
+      "md5": "480be229d87a49fb99cb87e20c3085e4",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "bfb46ba2f02c7a46c77279e7cc3b38e3cb14d2fe544c44c933504e48dfb9021d"
+      "sha256": "2640d805e09345930aa2eefa60e3a20675e447335ce92c04e5a0cde71b3f0c07"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19920,10 +19920,10 @@
       "execution_normalization": {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 21876,
-        "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
-        "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
-        "operation_count": 10
+        "normalized_bytes": 21880,
+        "normalized_md5": "928a1421cebce8585ddb9d0f9e8de302",
+        "normalized_sha256": "28f693355d068274986e800229c4d67a3ca84315da6b5aef02298d45c42dc867",
+        "operation_count": 11
       },
       "md5": "51ad450836d0180f77572c7e824668f3",
       "path": "text_formalization/nonlinear/parse_ineq.hl",
@@ -22353,7 +22353,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "2e7a1091202662dd4f02e407a8eef4e9ea049d0070c4fd5c306a377eaea7d3c0",
+    "contract_sha256": "f2a89edafb87161d274a3f2f7a1ddaad0166dd806002fea58a7658ce60df21e8",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25641,10 +25641,10 @@
       {
         "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 21876,
-        "normalized_md5": "8e7bcdecdd536e618a1c3e9224d07d40",
-        "normalized_sha256": "ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0",
-        "operation_count": 10,
+        "normalized_bytes": 21880,
+        "normalized_md5": "928a1421cebce8585ddb9d0f9e8de302",
+        "normalized_sha256": "28f693355d068274986e800229c4d67a3ca84315da6b5aef02298d45c42dc867",
+        "operation_count": 11,
         "operations": [
           {
             "after": "let autogen = ref ([]:term list);;",
@@ -25652,6 +25652,24 @@
             "id": "PROJECT-PARSE-INEQ-S3-AUTOGEN-VALUE-RESTRICTION-001",
             "kind": "exact_bytes_replace_once",
             "line": 151
+          },
+          {
+            "id": "PROJECT-PARSE-INEQ-S3-DEREFERENCE-ARGUMENTS-001",
+            "kind": "exact_lines_replace_once",
+            "line": 157,
+            "replacement_count": 2,
+            "replacements": [
+              {
+                "after": "    autogen := filter (fun t -> not (t = thm')) (!autogen);;",
+                "before": "    autogen := filter (fun t -> not (t = thm')) !autogen;;",
+                "line": 157
+              },
+              {
+                "after": "  let _ = macros := filter (fun t -> not (t = thm)) (!macros) in",
+                "before": "  let _ = macros := filter (fun t -> not (t = thm)) !macros in",
+                "line": 205
+              }
+            ]
           },
           {
             "after": "  nub (sort (fun left right -> String.compare left right < 0) (cn [] i));;",
@@ -25721,8 +25739,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/parse_ineq.hl",
-        "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required.",
-        "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
+        "scope_limit": "This hash-pinned compatibility slice adds one exact empty-reference type annotation and explicit grouping around two existing reference dereferences, does not authorize process execution or CFSQP generation, and changes no HOL term conversion, inequality, theorem, hypothesis, proof, proof intent, or axiom. The CFSQP path must remain fail-closed, selected-source non-use must remain true, and focused native/CakeML plus cumulative loading tests are required.",
+        "semantic_rule": "The explicit autogen annotation states the unique term list type forced by prep_autogen, every update, and every selected dereference; it initializes the same empty mutable list and only resolves CakeML's immediate value restriction. Explicit grouping at the two filter calls evaluates the same reference dereference once as the same second filter argument before the same assignment, preserving list order, equality, mutation, and exceptions while removing the full-module CakeML inference ambiguity. The exact string-list sort uses String.compare instead of host-polymorphic ordering, preserving OCaml's lexicographic string order while avoiding CakeML's integer-only <. The CFSQP C++ formatter is fail-closed because the authenticated Candle runtime already disables every selected Sys.command entry and the selected manifest has no external CFSQP generator caller. Remaining constant %d/%s formats use identical concatenation and conversions; the execution-list loop preserves ascending order; restricting counter_reset to its only selected unit call removes an otherwise unused polymorphic argument; the generated OCaml/domain and GLPK strings preserve their exact literals and field order.",
         "source_key": "flyspeck:text_formalization/nonlinear/parse_ineq.hl",
         "source_md5": "51ad450836d0180f77572c7e824668f3",
         "source_sha256": "14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee"
@@ -26280,8 +26298,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "039f9407a2b5fc70e5f9946cc6340511",
-    "generated_source_sha256": "8a5a890180971685c823307da379e31fad12b9959c5f163c94f3f13236dfdbd5",
+    "generated_source_md5": "51d73fcbc865defb738902c05c6f1184",
+    "generated_source_sha256": "eb4c21950a2565cd18f79d219b6ad93fa03cdda231714e69eac1bff243e6a057",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

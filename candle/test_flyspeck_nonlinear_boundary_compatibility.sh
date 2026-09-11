@@ -38,6 +38,10 @@ run_candle "$fixture_root/nonlinear_structure_effect_original.ml" \
   "$test_dir/structure-effect-original.log"
 run_candle "$fixture_root/nonlinear_structure_effect_normalized.ml" \
   "$test_dir/structure-effect-normalized.log"
+run_candle "$fixture_root/nonlinear_module_assignment_original.ml" \
+  "$test_dir/assignment-original.log"
+run_candle "$fixture_root/nonlinear_module_assignment_normalized.ml" \
+  "$test_dir/assignment-normalized.log"
 run_candle "$fixture_root/nonlinear_ineqdoc_value_restriction_original.ml" \
   "$test_dir/ineqdoc-original.log"
 run_candle "$fixture_root/nonlinear_ineqdoc_value_restriction_normalized.ml" \
@@ -66,6 +70,10 @@ rg -Fq 'Type mismatch between unit and candle_nonlinear_structure_datum' \
   "$test_dir/structure-effect-original.log"
 rg -Fq 'val candle_nonlinear_structure_effect_ok = true: bool' \
   "$test_dir/structure-effect-normalized.log"
+rg -Fq 'val candle_nonlinear_assignment_ok = true: bool' \
+  "$test_dir/assignment-original.log"
+rg -Fq 'val candle_nonlinear_assignment_ok = true: bool' \
+  "$test_dir/assignment-normalized.log"
 rg -Fq 'Value restriction violated' "$test_dir/ineqdoc-original.log"
 rg -Fq 'val candle_nonlinear_ineqdoc_value_ok = true: bool' \
   "$test_dir/ineqdoc-normalized.log"
@@ -80,6 +88,7 @@ rg -Fq 'val candle_nonlinear_boundary_compatibility_ok = true: bool' \
 
 for output in nth-normalized.log string-order-normalized.log \
               structure-effect-normalized.log ineqdoc-normalized.log \
+              assignment-original.log assignment-normalized.log \
               dart-classes-normalized.log autogen-normalized.log \
               boundary-normalized.log; do
   if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/$output"; then

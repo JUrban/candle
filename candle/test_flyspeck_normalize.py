@@ -453,7 +453,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 11,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }
@@ -511,10 +511,15 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             ["operations"][0]["after"],
             "",
         )
+        parse_ineq_string_order = next(
+            operation for operation in entries[
+                "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+            ]["operations"]
+            if operation["id"].endswith("STRING-ORDER")
+        )
         self.assertIn(
             "String.compare left right < 0",
-            entries["PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"]
-            ["operations"][1]["after"],
+            parse_ineq_string_order["after"],
         )
         autogen = entries[
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
@@ -534,6 +539,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertEqual(parse_ineq_cfsqp["end_line"], 449)
         self.assertIn(
             "CFSQP code generation is disabled", parse_ineq_cfsqp["after"],
+        )
+        parse_ineq_dereferences = next(
+            operation for operation in entries[
+                "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+            ]["operations"]
+            if operation["id"] ==
+            "PROJECT-PARSE-INEQ-S3-DEREFERENCE-ARGUMENTS-001"
+        )
+        self.assertEqual(
+            [replacement["line"]
+             for replacement in parse_ineq_dereferences["replacements"]],
+            [157, 205],
         )
         structure_effect_lines = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
@@ -743,7 +760,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 194)
+        self.assertEqual(len(operation_ids), 195)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
