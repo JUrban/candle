@@ -1940,6 +1940,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_calc_derivative_tuple_constructor_normalization.sh",
                 "candle:candle/test_flyspeck_conforming_tactic_sequence.sh",
                 "candle:candle/test_flyspeck_packing_term_setify.sh",
+                "candle:candle/test_flyspeck_wrgcvdr_structure_effect.sh",
                 "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
                 "candle:candle/test_flyspeck_nonlinear_boundary_compatibility.sh",
                 "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",

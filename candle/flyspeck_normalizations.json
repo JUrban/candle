@@ -3867,6 +3867,34 @@
       ],
       "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
       "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at OXLZLEZ2.hl line 117. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/WRGCVDR.hl",
+      "path": "text_formalization/local/WRGCVDR.hl",
+      "source_sha256": "9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d",
+      "source_md5": "d7b9d317226c36f2cbea68879c67ea74",
+      "normalized_sha256": "63ca37dfc173b5170ab660461d7b09ce4037120eec45fb5f8fef030d697bb3c5",
+      "normalized_md5": "e5c7bfc4dba1b13cd610eaf51134eb20",
+      "normalized_bytes": 95412,
+      "operations": [
+        {
+          "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001-HAS-ORDERS",
+          "kind": "exact_bytes_replace_once",
+          "line": 75,
+          "before": "parse_as_infix(\"has_orders\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"has_orders\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001-CYCLIC-ON",
+          "kind": "exact_bytes_replace_once",
+          "line": 76,
+          "before": "parse_as_infix(\"cyclic_on\",(13,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"cyclic_on\",(13,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "Both parser registrations execute exactly once at their original module-initialization positions, in the original order, with identical names, precedences, and right associativity. Explicit wildcard bindings preserve their unit effects, exceptions, and the following definitions while giving Candle unambiguous module-structure items.",
+      "scope_limit": "These hash-pinned replacements are confined to WRGCVDR.hl lines 75 and 76. They do not alter the preceding hypermap theorem, either following definition, any theorem statement, hypothesis, proof step, proof intent, or axiom. Native effect/order equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
     }
   ]
 }
