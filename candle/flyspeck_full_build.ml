@@ -102,11 +102,11 @@
 #flyspeck_needs "nonlinear/functional_equation.hl";;
 (* 046 selected=flyspeck:text_formalization/nonlinear/parse_ineq.hl sha256=14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee normalization=PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=9513a040c6b25b4361ab212e292e373e3b3189cf6a5e72ef428ce02a3397079a *)
 #flyspeck_needs "nonlinear/parse_ineq.hl";;
-(* 047 selected=flyspeck:text_formalization/nonlinear/optimize.hl sha256=dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b normalization=PROJECT-OPTIMIZE-S3-PRINTF-001 normalized_sha256=a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40 *)
+(* 047 selected=flyspeck:text_formalization/nonlinear/optimize.hl sha256=dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b normalization=PROJECT-OPTIMIZE-S3-PRINTF-001 normalized_sha256=2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788 *)
 #flyspeck_needs "nonlinear/optimize.hl";;
 (* 048 selected=flyspeck:text_formalization/nonlinear/function_list.hl sha256=3bb151da37f2541c04bf4ba745ea5d5d3a0a7abc5c48b72ef2d944b5d7629941 *)
 #flyspeck_needs "nonlinear/function_list.hl";;
-(* 049 selected=flyspeck:text_formalization/nonlinear/merge_ineq.hl sha256=81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58 normalization=PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6 *)
+(* 049 selected=flyspeck:text_formalization/nonlinear/merge_ineq.hl sha256=81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58 normalization=PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa *)
 #flyspeck_needs "nonlinear/merge_ineq.hl";;
 
 (* stratum: analysis *)

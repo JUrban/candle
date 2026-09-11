@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "6a272b66dc20fa16f034275574af7cfb",
-    "generated_source_sha256": "02055a016349226e8b4abb8f71301456a63a71d2dabdadf3edb786a2de409494",
+    "generated_source_md5": "fe3296eff52dcc7556731fa15cb12b5e",
+    "generated_source_sha256": "2476189d1bbad5e85430aff4516d69b43b467fbc8d0b1b1003f28e80fd3962e5",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "7b930279fe7f8eacb4b69fa53c697644",
+      "md5": "2424d81f22a463b238ace014647e9be8",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "18b6597dfc04f017dcde842eadf07e1abf1e4299ade7ffc47c07be960ae74a73"
+      "sha256": "da8887d16c6c53bbecd478cd753d7be4503644e01ed822e22db18df9312559a9"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "9c9eff17e99f41c7b291718ec9966ce4",
+      "md5": "10d1364db000dba8174462f59d1325e1",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "98ed390cead21ab2893f006b4a3381e3779c6fefa8b7c0fb2c25d1ecef58f899"
+      "sha256": "59b0cce0dad3fd9de245d33726fd017356a213b89b1de83e49cccdf1f731ee0b"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19800,9 +19800,9 @@
       "execution_normalization": {
         "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 247458,
-        "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
-        "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
+        "normalized_bytes": 247572,
+        "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
+        "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
         "operation_count": 5
       },
       "md5": "99065b4fef591cab34175bd2952ef60c",
@@ -19904,10 +19904,10 @@
       "execution_normalization": {
         "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26261,
-        "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
-        "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
-        "operation_count": 1
+        "normalized_bytes": 26311,
+        "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
+        "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
+        "operation_count": 2
       },
       "md5": "8a19d244740ff42de82adbe2dcd89413",
       "path": "text_formalization/nonlinear/optimize.hl",
@@ -22353,7 +22353,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "b001233045c2351d4fb2c0b6e6694363b74b945368530ad0e6fec37bcdc2c4b9",
+    "contract_sha256": "1a2cac4218669a0e4e30c1f432594a3e26b0dd28827a8986e88fb1ffec141522",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25772,10 +25772,10 @@
       {
         "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26261,
-        "normalized_md5": "5bf3d18d97bc9af383b6754e2d7a08fd",
-        "normalized_sha256": "a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40",
-        "operation_count": 1,
+        "normalized_bytes": 26311,
+        "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
+        "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
+        "operation_count": 2,
         "operations": [
           {
             "after": "  let suffix i n = \"prep-\" ^ s ^ \" split(\" ^ string_of_int i ^ \"/\" ^\n    string_of_int n ^ \")\" in ",
@@ -25783,11 +25783,18 @@
             "id": "PROJECT-OPTIMIZE-S3-PRINTF-001-SPLIT-SUFFIX",
             "kind": "exact_bytes_replace_once",
             "line": 673
+          },
+          {
+            "after": "let mk_x i =\n  let name = \"x\"^string_of_int i in\n    mk_var(name,real_ty);;\nlet mk_a i =\n  let name = \"a\"^string_of_int i in\n    mk_var(name,real_ty);;",
+            "before": "let mk_x i = mk_var(\"x\"^string_of_int i,real_ty);;\nlet mk_a i = mk_var(\"a\"^string_of_int i,real_ty);;",
+            "id": "PROJECT-OPTIMIZE-S3-TUPLE-CONSTRUCTOR-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 76
           }
         ],
         "path": "text_formalization/nonlinear/optimize.hl",
-        "scope_limit": "This hash-pinned rewrite is confined to the diagnostic suffix string in preprocess_split_idq. It changes no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string equivalence and cumulative loading are required.",
-        "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception.",
+        "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix in preprocess_split_idq and the two generated-name mk_var calls at lines 76--77. They change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, the existing focused Candle tuple-constructor rejection/acceptance oracle, and cumulative loading are required.",
+        "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions while avoiding Candle's independently reproduced tuple-constructor inference failure.",
         "source_key": "flyspeck:text_formalization/nonlinear/optimize.hl",
         "source_md5": "8a19d244740ff42de82adbe2dcd89413",
         "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b"
@@ -25795,9 +25802,9 @@
       {
         "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 247458,
-        "normalized_md5": "a273aed82a0328e6a4c43236d81da954",
-        "normalized_sha256": "77845ebe6c4b688b0c629c63b3d130a82082668ea2d9ee70f9d8edc307ce70f6",
+        "normalized_bytes": 247572,
+        "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
+        "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
         "operation_count": 5,
         "operations": [
           {
@@ -25822,7 +25829,7 @@
             "line": 166
           },
           {
-            "after": "let allbounds n = setify(List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
+            "after": "let allbounds n =\n  setify\n    (fun x y ->\n      Pair.compare Term.compare (Pair.compare Term.compare Term.compare)\n        x y <= 0)\n    (List.concat (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
             "before": "let allbounds n = setify(List.flatten (map getbounds [in1 n;in2 n;in3 n;in4 n]));;",
             "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-BOUNDS-CONCAT",
             "kind": "exact_bytes_replace_once",
@@ -25837,8 +25844,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/merge_ineq.hl",
-        "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, and one parser-priority structure spelling. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect oracles and cumulative source loading are required.",
-        "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing.",
+        "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, one parser-priority structure spelling, and the one allbounds setify call whose exact nested-term representation is pinned. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator oracles and cumulative source loading are required; this comparator is not authorized for any other representation.",
+        "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order.",
         "source_key": "flyspeck:text_formalization/nonlinear/merge_ineq.hl",
         "source_md5": "99065b4fef591cab34175bd2952ef60c",
         "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58"
@@ -26322,8 +26329,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "7b930279fe7f8eacb4b69fa53c697644",
-    "generated_source_sha256": "18b6597dfc04f017dcde842eadf07e1abf1e4299ade7ffc47c07be960ae74a73",
+    "generated_source_md5": "2424d81f22a463b238ace014647e9be8",
+    "generated_source_sha256": "da8887d16c6c53bbecd478cd753d7be4503644e01ed822e22db18df9312559a9",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

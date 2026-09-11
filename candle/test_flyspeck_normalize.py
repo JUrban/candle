@@ -454,7 +454,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
-            "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
+            "PROJECT-OPTIMIZE-S3-PRINTF-001": 2,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }
         for entry_id, operation_count in nonlinear_boundary_entries.items():
@@ -567,6 +567,25 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertEqual(parse_ineq_cfsqp["end_line"], 449)
         self.assertIn(
             "CFSQP code generation is disabled", parse_ineq_cfsqp["after"],
+        )
+        optimize_tuple = next(
+            operation for operation in entries[
+                "PROJECT-OPTIMIZE-S3-PRINTF-001"
+            ]["operations"]
+            if operation["id"] == "PROJECT-OPTIMIZE-S3-TUPLE-CONSTRUCTOR-001"
+        )
+        self.assertEqual(optimize_tuple["line"], 76)
+        self.assertIn('let name = "x"^string_of_int i', optimize_tuple["after"])
+        self.assertIn('let name = "a"^string_of_int i', optimize_tuple["after"])
+        merge_bounds = next(
+            operation for operation in entries[
+                "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+            ]["operations"]
+            if operation["id"].endswith("BOUNDS-CONCAT")
+        )
+        self.assertIn(
+            "Pair.compare Term.compare (Pair.compare Term.compare Term.compare)",
+            merge_bounds["after"],
         )
         structure_effect_lines = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
@@ -776,7 +795,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 200)
+        self.assertEqual(len(operation_ids), 201)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
