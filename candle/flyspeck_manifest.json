@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 365,
+        "line": 381,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 365,
+        "line": 381,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5172,13 +5172,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 365,
+        "line": 381,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 365,
+        "line": 381,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "48233b4aae6635e305f5e82657de4b31",
-    "generated_source_sha256": "98fec18720d88e533c89d790e0a45fac67ea8af4d73a6d4ab7ef086d2d871bff",
+    "generated_source_md5": "ebb8a6411481cb799e7da08cf170c08d",
+    "generated_source_sha256": "ccb0daabfcb4a36ed8c110a45a0cb7ae9351f1b3aa001294677e99b5b16830f4",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11578,7 +11578,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 60221,
+      "bytes": 60766,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "86c4898fefc58d355a69a20514870550",
+      "md5": "039f9407a2b5fc70e5f9946cc6340511",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "255b3e66241e7d81626dc8c272d601d639bba28b6eab5fbcdc20168626512e13"
+      "sha256": "8a5a890180971685c823307da379e31fad12b9959c5f163c94f3f13236dfdbd5"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14862,7 +14862,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 17674,
+      "bytes": 18473,
       "dependencies": [
         {
           "kind": "#use",
@@ -14900,7 +14900,7 @@
         },
         {
           "kind": "needs",
-          "line": 387,
+          "line": 403,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14911,7 +14911,7 @@
         },
         {
           "kind": "needs",
-          "line": 393,
+          "line": 409,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14922,7 +14922,7 @@
         },
         {
           "kind": "needs",
-          "line": 395,
+          "line": 411,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "78483655a7c762ab9c4d772fe5470e21",
+      "md5": "72b34dc7f2a6cec06b6a1438caa1f808",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "b5de60de9ffb72f3a967b3d4a33c2f0f7ca58e0601d4f40bf64232a0c3b6f49f"
+      "sha256": "bfb46ba2f02c7a46c77279e7cc3b38e3cb14d2fe544c44c933504e48dfb9021d"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17957,6 +17957,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-FAN-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 145660,
+        "normalized_md5": "9ab517a0974274018596807b6b6ffa28",
+        "normalized_sha256": "916b8e4aa69fae8f4553ccbf11e1870c6ab2f3ba2e2ea28977cd57aad34b7670",
+        "operation_count": 1
+      },
       "md5": "213fb3eaaf96e71864fac3fa35d28f0b",
       "path": "text_formalization/fan/fan.hl",
       "repository": "flyspeck",
@@ -18141,6 +18149,14 @@
     "flyspeck:text_formalization/fan/polyhedron.hl": {
       "bytes": 126720,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 126784,
+        "normalized_md5": "fdba28fd5b1c687b7c66c68a19a94ad1",
+        "normalized_sha256": "4d72e360c3ce7cece81ba935db13fd12bc83f74288e790f12a88826f5f619697",
+        "operation_count": 1
+      },
       "md5": "fd90cffc8444b4731df41fd47dff8e38",
       "path": "text_formalization/fan/polyhedron.hl",
       "repository": "flyspeck",
@@ -18585,6 +18601,14 @@
     "flyspeck:text_formalization/hypermap/hypermap.hl": {
       "bytes": 869593,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 869625,
+        "normalized_md5": "67d22fd92fcd246b84999a2f92cf5f31",
+        "normalized_sha256": "7abdc628daa5447393f66038aa8634604f6d88ac462082a85c9f6b046ef29df7",
+        "operation_count": 4
+      },
       "md5": "30e581dea375c4ff73a1cb9bcb03ba58",
       "path": "text_formalization/hypermap/hypermap.hl",
       "repository": "flyspeck",
@@ -22313,6 +22337,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 85319,
+        "normalized_md5": "87c6a807ce5541aed6f22c57d2414d5d",
+        "normalized_sha256": "48caae47ee5c442fff61c3a5fcd7ad2ffc73550dd133d634749827ee477ea6e0",
+        "operation_count": 2
+      },
       "md5": "4a4132df62866774bc1a888e654a06bf",
       "path": "text_formalization/volume/vol1.hl",
       "repository": "flyspeck",
@@ -22321,7 +22353,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "31256c56b142aabc97ec968f113b78a1506e4353e65a07de3009b058ffb1b3f3",
+    "contract_sha256": "2e7a1091202662dd4f02e407a8eef4e9ea049d0070c4fd5c306a377eaea7d3c0",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25925,9 +25957,216 @@
         "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
         "source_md5": "8e2eea27fffde333d431fc757fbe918e",
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
+      },
+      {
+        "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 85319,
+        "normalized_md5": "87c6a807ce5541aed6f22c57d2414d5d",
+        "normalized_sha256": "48caae47ee5c442fff61c3a5fcd7ad2ffc73550dd133d634749827ee477ea6e0",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "let _ = REAL_LE_SQUARE_ABS;;",
+            "before": "REAL_LE_SQUARE_ABS;;",
+            "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001-REAL-LE-SQUARE-ABS",
+            "kind": "exact_bytes_replace_once",
+            "line": 1168
+          },
+          {
+            "after": "let _ = REAL_ABS_REFL;;",
+            "before": "REAL_ABS_REFL;;",
+            "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001-REAL-ABS-REFL",
+            "kind": "exact_bytes_replace_once",
+            "line": 1169
+          }
+        ],
+        "path": "text_formalization/volume/vol1.hl",
+        "scope_limit": "Only the two anonymous theorem-valued module phrases are normalized. Theorems, definitions, hypotheses, tactics, and source order are unchanged; cumulative direct execution remains the functional gate.",
+        "semantic_rule": "The two theorem values are still evaluated once, in their original order, and discarded. Explicit wildcard bindings make the intended module-structure item form unambiguous to CakeML without changing either theorem or any following proof.",
+        "source_key": "flyspeck:text_formalization/volume/vol1.hl",
+        "source_md5": "4a4132df62866774bc1a888e654a06bf",
+        "source_sha256": "a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c"
+      },
+      {
+        "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 869625,
+        "normalized_md5": "67d22fd92fcd246b84999a2f92cf5f31",
+        "normalized_sha256": "7abdc628daa5447393f66038aa8634604f6d88ac462082a85c9f6b046ef29df7",
+        "operation_count": 4,
+        "operations": [
+          {
+            "after": "let _ = prioritize_num();;",
+            "before": "prioritize_num();;",
+            "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-PRIORITIZE-NUM",
+            "kind": "exact_bytes_replace_once",
+            "line": 21
+          },
+          {
+            "after": "let _ = parse_as_infix(\"POWER\",(24,\"right\"));;",
+            "before": "parse_as_infix(\"POWER\",(24,\"right\"));;",
+            "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-POWER-INFIX",
+            "kind": "exact_bytes_replace_once",
+            "line": 23
+          },
+          {
+            "after": "let _ = parse_as_infix(\"in_dart_of_loop\",(11,\"right\"));;",
+            "before": "parse_as_infix(\"in_dart_of_loop\",(11,\"right\"));;",
+            "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-DART-INFIX",
+            "kind": "exact_bytes_replace_once",
+            "line": 25
+          },
+          {
+            "after": "let _ = parse_as_infix(\"iso\",(24,\"right\"));;",
+            "before": "parse_as_infix(\"iso\",(24,\"right\"));;",
+            "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-ISO-INFIX",
+            "kind": "exact_bytes_replace_once",
+            "line": 27
+          }
+        ],
+        "path": "text_formalization/hypermap/hypermap.hl",
+        "scope_limit": "No basename alias or parser behavior is added. Only four authenticated module-structure phrases are normalized; exact cumulative loading remains the gate.",
+        "semantic_rule": "The numeric priority and all three infix registrations execute once in the original order with identical names, precedences, and associativities. Explicit wildcard bindings only express their discarded unit results as CakeML module bindings.",
+        "source_key": "flyspeck:text_formalization/hypermap/hypermap.hl",
+        "source_md5": "30e581dea375c4ff73a1cb9bcb03ba58",
+        "source_sha256": "ddbb89012f7fe13064cabd16eb94e3667d0dcff76340717a9db8dea91ae14b08"
+      },
+      {
+        "id": "PROJECT-FAN-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 145660,
+        "normalized_md5": "9ab517a0974274018596807b6b6ffa28",
+        "normalized_sha256": "916b8e4aa69fae8f4553ccbf11e1870c6ab2f3ba2e2ea28977cd57aad34b7670",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-FAN-S2-STRUCTURE-EFFECT-001-WILDCARD-REGISTRATIONS",
+            "kind": "exact_lines_replace_once",
+            "line": 111,
+            "replacement_count": 9,
+            "replacements": [
+              {
+                "after": "let _ = add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+                "before": "add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+                "line": 111
+              },
+              {
+                "after": "let _ = add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+                "before": "add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+                "line": 113
+              },
+              {
+                "after": "let _ = add_translation_invariants",
+                "before": "add_translation_invariants",
+                "line": 227
+              },
+              {
+                "after": "let _ = add_linear_invariants",
+                "before": "add_linear_invariants",
+                "line": 237
+              },
+              {
+                "after": "let _ = add_translation_invariants [FAN_TRANSLATION_EQ];;",
+                "before": "add_translation_invariants [FAN_TRANSLATION_EQ];;",
+                "line": 259
+              },
+              {
+                "after": "let _ = add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+                "before": "add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+                "line": 260
+              },
+              {
+                "after": "let _ = add_translation_invariants",
+                "before": "add_translation_invariants",
+                "line": 297
+              },
+              {
+                "after": "let _ = add_linear_invariants",
+                "before": "add_linear_invariants",
+                "line": 300
+              },
+              {
+                "after": "let _ = parse_as_infix(\"POWER\",(24,\"right\"));;",
+                "before": "parse_as_infix(\"POWER\",(24,\"right\"));;",
+                "line": 2228
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/fan/fan.hl",
+        "scope_limit": "Only the nine mechanically enumerated anonymous registration phrases in this source are normalized. No invariant theorem, parser setting, proof, or declaration is replaced.",
+        "semantic_rule": "All eight invariant registrations and the POWER infix registration execute once in original source order with their exact arguments. Wildcard bindings preserve the discarded unit results while giving CakeML valid module-structure items.",
+        "source_key": "flyspeck:text_formalization/fan/fan.hl",
+        "source_md5": "213fb3eaaf96e71864fac3fa35d28f0b",
+        "source_sha256": "210a09b4a338ef9960b83f00f03a2957ea6664ba7314c79e5730a01f5301412f"
+      },
+      {
+        "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 126784,
+        "normalized_md5": "fdba28fd5b1c687b7c66c68a19a94ad1",
+        "normalized_sha256": "4d72e360c3ce7cece81ba935db13fd12bc83f74288e790f12a88826f5f619697",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001-WILDCARD-REGISTRATIONS",
+            "kind": "exact_lines_replace_once",
+            "line": 147,
+            "replacement_count": 8,
+            "replacements": [
+              {
+                "after": "let _ = add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+                "before": "add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+                "line": 147
+              },
+              {
+                "after": "let _ = add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+                "before": "add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+                "line": 149
+              },
+              {
+                "after": "let _ = add_translation_invariants",
+                "before": "add_translation_invariants",
+                "line": 263
+              },
+              {
+                "after": "let _ = add_linear_invariants",
+                "before": "add_linear_invariants",
+                "line": 273
+              },
+              {
+                "after": "let _ = add_translation_invariants [FAN_TRANSLATION_EQ];;",
+                "before": "add_translation_invariants [FAN_TRANSLATION_EQ];;",
+                "line": 295
+              },
+              {
+                "after": "let _ = add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+                "before": "add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+                "line": 296
+              },
+              {
+                "after": "let _ = add_translation_invariants",
+                "before": "add_translation_invariants",
+                "line": 333
+              },
+              {
+                "after": "let _ = add_linear_invariants",
+                "before": "add_linear_invariants",
+                "line": 336
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/fan/polyhedron.hl",
+        "scope_limit": "Only the eight mechanically enumerated registration phrases are changed. All geometric definitions, theorem statements, proofs, hypotheses, and invariant lists remain byte-identical around them.",
+        "semantic_rule": "All eight invariant registrations execute once in original source order with their exact theorem lists. Explicit wildcard bindings preserve each discarded unit result and only normalize its module-structure representation.",
+        "source_key": "flyspeck:text_formalization/fan/polyhedron.hl",
+        "source_md5": "fd90cffc8444b4731df41fd47dff8e38",
+        "source_sha256": "0790e3acec2550e76f553198c7b80484bb09b7be7d93d98e23e9e50e56cc55bb"
       }
     ],
-    "entry_count": 45,
+    "entry_count": 49,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -25940,6 +26179,7 @@
       "candle:candle/test_flyspeck_parser_orpattern_normalization.sh",
       "candle:candle/test_flyspeck_parser_tuple_constructor_normalization.sh",
       "candle:candle/test_flyspeck_calc_derivative_tuple_constructor_normalization.sh",
+      "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
       "candle:candle/test_flyspeck_nonlinear_boundary_compatibility.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
       "candle:candle/test_flyspeck_print_types_normalization.sh",
@@ -26040,8 +26280,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "86c4898fefc58d355a69a20514870550",
-    "generated_source_sha256": "255b3e66241e7d81626dc8c272d601d639bba28b6eab5fbcdc20168626512e13",
+    "generated_source_md5": "039f9407a2b5fc70e5f9946cc6340511",
+    "generated_source_sha256": "8a5a890180971685c823307da379e31fad12b9959c5f163c94f3f13236dfdbd5",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

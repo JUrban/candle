@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 45)
+        self.assertEqual(contract["entry_count"], 49)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -516,6 +516,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertIn(
             "candle:candle/test_flyspeck_calc_derivative_tuple_constructor_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
             contract["gates"],
         )
         self.assertIn(
@@ -635,6 +639,24 @@ class GeneratedManifestTests(unittest.TestCase):
         }
         for entry_id, operation_count in nonlinear_boundary_counts.items():
             self.assertEqual(entries[entry_id]["operation_count"], operation_count)
+        analysis_structure_counts = {
+            "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001": 2,
+            "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001": 4,
+            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001": 1,
+        }
+        for entry_id, operation_count in analysis_structure_counts.items():
+            self.assertEqual(entries[entry_id]["operation_count"], operation_count)
+        self.assertEqual(
+            entries["PROJECT-FAN-S2-STRUCTURE-EFFECT-001"]
+            ["operations"][0]["replacement_count"],
+            9,
+        )
+        self.assertEqual(
+            entries["PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001"]
+            ["operations"][0]["replacement_count"],
+            8,
+        )
         ineq_structure = next(
             operation
             for operation in entries[
@@ -931,7 +953,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 44", source,
+            "List.length candle_flyspeck_normalized_sources <> 48", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -941,7 +963,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 44)
+        self.assertEqual(len(selected_normalizations), 48)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)

@@ -110,13 +110,13 @@
 #flyspeck_needs "nonlinear/merge_ineq.hl";;
 
 (* stratum: analysis *)
-(* 050 selected=flyspeck:text_formalization/volume/vol1.hl sha256=a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c *)
+(* 050 selected=flyspeck:text_formalization/volume/vol1.hl sha256=a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c normalization=PROJECT-VOL1-S2-STRUCTURE-EFFECT-001 normalized_sha256=48caae47ee5c442fff61c3a5fcd7ad2ffc73550dd133d634749827ee477ea6e0 *)
 #flyspeck_needs "volume/vol1.hl";;
-(* 051 selected=flyspeck:text_formalization/hypermap/hypermap.hl sha256=ddbb89012f7fe13064cabd16eb94e3667d0dcff76340717a9db8dea91ae14b08 *)
+(* 051 selected=flyspeck:text_formalization/hypermap/hypermap.hl sha256=ddbb89012f7fe13064cabd16eb94e3667d0dcff76340717a9db8dea91ae14b08 normalization=PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001 normalized_sha256=7abdc628daa5447393f66038aa8634604f6d88ac462082a85c9f6b046ef29df7 *)
 #flyspeck_needs "hypermap/hypermap.hl";;
 (* 052 selected=flyspeck:text_formalization/fan/fan_defs.hl sha256=18d9c204eb065e371fb3ab27612103cb8e5ca339819b957b11ebb55cd20ff2cc *)
 #flyspeck_needs "fan/fan_defs.hl";;
-(* 053 selected=flyspeck:text_formalization/fan/fan.hl sha256=210a09b4a338ef9960b83f00f03a2957ea6664ba7314c79e5730a01f5301412f *)
+(* 053 selected=flyspeck:text_formalization/fan/fan.hl sha256=210a09b4a338ef9960b83f00f03a2957ea6664ba7314c79e5730a01f5301412f normalization=PROJECT-FAN-S2-STRUCTURE-EFFECT-001 normalized_sha256=916b8e4aa69fae8f4553ccbf11e1870c6ab2f3ba2e2ea28977cd57aad34b7670 *)
 #flyspeck_needs "fan/fan.hl";;
 (* 054 selected=flyspeck:text_formalization/fan/GMLWKPK.hl sha256=0221bb5f7406793fb2fcc4c24b230b5359b41df93e6c0f4806d920f785a2cef2 *)
 #flyspeck_needs "fan/GMLWKPK.hl";;
@@ -130,7 +130,7 @@
 #flyspeck_needs "fan/hypermap_and_fan.hl";;
 (* 059 selected=flyspeck:text_formalization/fan/Conforming.hl sha256=b056098535a5961667b27405c18d6a3cf45c690200a8d26a3e51ac1876f5d9b9 *)
 #flyspeck_needs "fan/Conforming.hl";;
-(* 060 selected=flyspeck:text_formalization/fan/polyhedron.hl sha256=0790e3acec2550e76f553198c7b80484bb09b7be7d93d98e23e9e50e56cc55bb *)
+(* 060 selected=flyspeck:text_formalization/fan/polyhedron.hl sha256=0790e3acec2550e76f553198c7b80484bb09b7be7d93d98e23e9e50e56cc55bb normalization=PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001 normalized_sha256=4d72e360c3ce7cece81ba935db13fd12bc83f74288e790f12a88826f5f619697 *)
 #flyspeck_needs "fan/polyhedron.hl";;
 
 (* stratum: geometry *)

@@ -3514,6 +3514,205 @@
       ],
       "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison.",
       "scope_limit": "This rewrite is confined to the typed LP preprocessing count comparator. It does not implement polymorphic comparison; compiled list ordering and final theorem fingerprints remain gates."
+    },
+    {
+      "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/volume/vol1.hl",
+      "path": "text_formalization/volume/vol1.hl",
+      "source_sha256": "a7ddeae75143c842ac30633daa9dde8ba0cfc081d179b04b05a29b773bf12a7c",
+      "source_md5": "4a4132df62866774bc1a888e654a06bf",
+      "normalized_sha256": "48caae47ee5c442fff61c3a5fcd7ad2ffc73550dd133d634749827ee477ea6e0",
+      "normalized_md5": "87c6a807ce5541aed6f22c57d2414d5d",
+      "normalized_bytes": 85319,
+      "operations": [
+        {
+          "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001-REAL-LE-SQUARE-ABS",
+          "kind": "exact_bytes_replace_once",
+          "line": 1168,
+          "before": "REAL_LE_SQUARE_ABS;;",
+          "after": "let _ = REAL_LE_SQUARE_ABS;;"
+        },
+        {
+          "id": "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001-REAL-ABS-REFL",
+          "kind": "exact_bytes_replace_once",
+          "line": 1169,
+          "before": "REAL_ABS_REFL;;",
+          "after": "let _ = REAL_ABS_REFL;;"
+        }
+      ],
+      "semantic_rule": "The two theorem values are still evaluated once, in their original order, and discarded. Explicit wildcard bindings make the intended module-structure item form unambiguous to CakeML without changing either theorem or any following proof.",
+      "scope_limit": "Only the two anonymous theorem-valued module phrases are normalized. Theorems, definitions, hypotheses, tactics, and source order are unchanged; cumulative direct execution remains the functional gate."
+    },
+    {
+      "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/hypermap/hypermap.hl",
+      "path": "text_formalization/hypermap/hypermap.hl",
+      "source_sha256": "ddbb89012f7fe13064cabd16eb94e3667d0dcff76340717a9db8dea91ae14b08",
+      "source_md5": "30e581dea375c4ff73a1cb9bcb03ba58",
+      "normalized_sha256": "7abdc628daa5447393f66038aa8634604f6d88ac462082a85c9f6b046ef29df7",
+      "normalized_md5": "67d22fd92fcd246b84999a2f92cf5f31",
+      "normalized_bytes": 869625,
+      "operations": [
+        {
+          "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-PRIORITIZE-NUM",
+          "kind": "exact_bytes_replace_once",
+          "line": 21,
+          "before": "prioritize_num();;",
+          "after": "let _ = prioritize_num();;"
+        },
+        {
+          "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-POWER-INFIX",
+          "kind": "exact_bytes_replace_once",
+          "line": 23,
+          "before": "parse_as_infix(\"POWER\",(24,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"POWER\",(24,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-DART-INFIX",
+          "kind": "exact_bytes_replace_once",
+          "line": 25,
+          "before": "parse_as_infix(\"in_dart_of_loop\",(11,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"in_dart_of_loop\",(11,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001-ISO-INFIX",
+          "kind": "exact_bytes_replace_once",
+          "line": 27,
+          "before": "parse_as_infix(\"iso\",(24,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"iso\",(24,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "The numeric priority and all three infix registrations execute once in the original order with identical names, precedences, and associativities. Explicit wildcard bindings only express their discarded unit results as CakeML module bindings.",
+      "scope_limit": "No basename alias or parser behavior is added. Only four authenticated module-structure phrases are normalized; exact cumulative loading remains the gate."
+    },
+    {
+      "id": "PROJECT-FAN-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/fan/fan.hl",
+      "path": "text_formalization/fan/fan.hl",
+      "source_sha256": "210a09b4a338ef9960b83f00f03a2957ea6664ba7314c79e5730a01f5301412f",
+      "source_md5": "213fb3eaaf96e71864fac3fa35d28f0b",
+      "normalized_sha256": "916b8e4aa69fae8f4553ccbf11e1870c6ab2f3ba2e2ea28977cd57aad34b7670",
+      "normalized_md5": "9ab517a0974274018596807b6b6ffa28",
+      "normalized_bytes": 145660,
+      "operations": [
+        {
+          "id": "PROJECT-FAN-S2-STRUCTURE-EFFECT-001-WILDCARD-REGISTRATIONS",
+          "kind": "exact_lines_replace_once",
+          "line": 111,
+          "replacement_count": 9,
+          "replacements": [
+            {
+              "line": 111,
+              "before": "add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+              "after": "let _ = add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;"
+            },
+            {
+              "line": 113,
+              "before": "add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+              "after": "let _ = add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;"
+            },
+            {
+              "line": 227,
+              "before": "add_translation_invariants",
+              "after": "let _ = add_translation_invariants"
+            },
+            {
+              "line": 237,
+              "before": "add_linear_invariants",
+              "after": "let _ = add_linear_invariants"
+            },
+            {
+              "line": 259,
+              "before": "add_translation_invariants [FAN_TRANSLATION_EQ];;",
+              "after": "let _ = add_translation_invariants [FAN_TRANSLATION_EQ];;"
+            },
+            {
+              "line": 260,
+              "before": "add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+              "after": "let _ = add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;"
+            },
+            {
+              "line": 297,
+              "before": "add_translation_invariants",
+              "after": "let _ = add_translation_invariants"
+            },
+            {
+              "line": 300,
+              "before": "add_linear_invariants",
+              "after": "let _ = add_linear_invariants"
+            },
+            {
+              "line": 2228,
+              "before": "parse_as_infix(\"POWER\",(24,\"right\"));;",
+              "after": "let _ = parse_as_infix(\"POWER\",(24,\"right\"));;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "All eight invariant registrations and the POWER infix registration execute once in original source order with their exact arguments. Wildcard bindings preserve the discarded unit results while giving CakeML valid module-structure items.",
+      "scope_limit": "Only the nine mechanically enumerated anonymous registration phrases in this source are normalized. No invariant theorem, parser setting, proof, or declaration is replaced."
+    },
+    {
+      "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/fan/polyhedron.hl",
+      "path": "text_formalization/fan/polyhedron.hl",
+      "source_sha256": "0790e3acec2550e76f553198c7b80484bb09b7be7d93d98e23e9e50e56cc55bb",
+      "source_md5": "fd90cffc8444b4731df41fd47dff8e38",
+      "normalized_sha256": "4d72e360c3ce7cece81ba935db13fd12bc83f74288e790f12a88826f5f619697",
+      "normalized_md5": "fdba28fd5b1c687b7c66c68a19a94ad1",
+      "normalized_bytes": 126784,
+      "operations": [
+        {
+          "id": "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001-WILDCARD-REGISTRATIONS",
+          "kind": "exact_lines_replace_once",
+          "line": 147,
+          "replacement_count": 8,
+          "replacements": [
+            {
+              "line": 147,
+              "before": "add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;",
+              "after": "let _ = add_translation_invariants [CYCLIC_SET_TRANSLATION_EQ];;"
+            },
+            {
+              "line": 149,
+              "before": "add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;",
+              "after": "let _ = add_linear_invariants [CYCLIC_SET_LINEAR_IMAGE];;"
+            },
+            {
+              "line": 263,
+              "before": "add_translation_invariants",
+              "after": "let _ = add_translation_invariants"
+            },
+            {
+              "line": 273,
+              "before": "add_linear_invariants",
+              "after": "let _ = add_linear_invariants"
+            },
+            {
+              "line": 295,
+              "before": "add_translation_invariants [FAN_TRANSLATION_EQ];;",
+              "after": "let _ = add_translation_invariants [FAN_TRANSLATION_EQ];;"
+            },
+            {
+              "line": 296,
+              "before": "add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;",
+              "after": "let _ = add_linear_invariants [FAN_LINEAR_IMAGE_EQ];;"
+            },
+            {
+              "line": 333,
+              "before": "add_translation_invariants",
+              "after": "let _ = add_translation_invariants"
+            },
+            {
+              "line": 336,
+              "before": "add_linear_invariants",
+              "after": "let _ = add_linear_invariants"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "All eight invariant registrations execute once in original source order with their exact theorem lists. Explicit wildcard bindings preserve each discarded unit result and only normalize its module-structure representation.",
+      "scope_limit": "Only the eight mechanically enumerated registration phrases are changed. All geometric definitions, theorem statements, proofs, hypotheses, and invariant lists remain byte-identical around them."
     }
   ]
 }

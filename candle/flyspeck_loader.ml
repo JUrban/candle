@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "48233b4aae6635e305f5e82657de4b31" then
+     "ebb8a6411481cb799e7da08cf170c08d" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "86c4898fefc58d355a69a20514870550" then
+     "039f9407a2b5fc70e5f9946cc6340511" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all forty-five outputs in a separate tree;
-   this process registers only the forty-four selected by the direct source graph.
+(* The host-side normalizer materializes all forty-nine outputs in a separate tree;
+   this process registers only the forty-eight selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -342,6 +342,22 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/mk_all_ineq.hl",
     "44f7f8842ee7bf2d2aeca90d5a1d2d94");
+   (Filename.concat candle_flyspeck_text_root "volume/vol1.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/volume/vol1.hl",
+    "87c6a807ce5541aed6f22c57d2414d5d");
+   (Filename.concat candle_flyspeck_text_root "hypermap/hypermap.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/hypermap/hypermap.hl",
+    "67d22fd92fcd246b84999a2f92cf5f31");
+   (Filename.concat candle_flyspeck_text_root "fan/fan.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/fan/fan.hl",
+    "9ab517a0974274018596807b6b6ffa28");
+   (Filename.concat candle_flyspeck_text_root "fan/polyhedron.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/fan/polyhedron.hl",
+    "fdba28fd5b1c687b7c66c68a19a94ad1");
    (Filename.concat candle_flyspeck_root
       "formal_graph/archive/archive_all.ml",
     Filename.concat candle_flyspeck_overlay_root
@@ -356,7 +372,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 44 then
+if List.length candle_flyspeck_normalized_sources <> 48 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

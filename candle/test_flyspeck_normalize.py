@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 45)
+        self.assertEqual(len(self.contract["entries"]), 49)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -706,6 +706,31 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
         ))
+        analysis_structure_counts = {
+            "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001": 2,
+            "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001": 4,
+            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001": 1,
+            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001": 1,
+        }
+        for entry_id, operation_count in analysis_structure_counts.items():
+            self.assertEqual(
+                len(entries[entry_id]["operations"]), operation_count,
+            )
+        fan_structure = entries[
+            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001"
+        ]["operations"][0]
+        polyhedron_structure = entries[
+            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001"
+        ]["operations"][0]
+        self.assertEqual(fan_structure["replacement_count"], 9)
+        self.assertEqual(polyhedron_structure["replacement_count"], 8)
+        self.assertTrue(all(
+            replacement["after"].startswith("let _ = ")
+            for operation in (
+                fan_structure, polyhedron_structure,
+            )
+            for replacement in operation["replacements"]
+        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
@@ -718,7 +743,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 186)
+        self.assertEqual(len(operation_ids), 194)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
