@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "fe3296eff52dcc7556731fa15cb12b5e",
-    "generated_source_sha256": "2476189d1bbad5e85430aff4516d69b43b467fbc8d0b1b1003f28e80fd3962e5",
+    "generated_source_md5": "b69802703c5096d4e9d7a5ccabc4016a",
+    "generated_source_sha256": "b6dd5b0a1717b65b0b5fbab6175b2f6ebf82c90d95820c6057ed0bedb23690bc",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "2424d81f22a463b238ace014647e9be8",
+      "md5": "87d45dd69ad86aa57b80b428e2870783",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "da8887d16c6c53bbecd478cd753d7be4503644e01ed822e22db18df9312559a9"
+      "sha256": "6c1fd54eba5510e2cdb297f1d0c05d67cc6ca9eafdee4bbca32e490d6f20ccf4"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "10d1364db000dba8174462f59d1325e1",
+      "md5": "ee09642a77f19f603d1022ba6c270dd7",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "59b0cce0dad3fd9de245d33726fd017356a213b89b1de83e49cccdf1f731ee0b"
+      "sha256": "771b0bdf3d88a3a396dba6ee2f9bf129cbe7ceb87cea1ef56a2063574550a8a7"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19800,10 +19800,10 @@
       "execution_normalization": {
         "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 247572,
-        "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
-        "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
-        "operation_count": 5
+        "normalized_bytes": 247648,
+        "normalized_md5": "ce848d261f64a112e24eaaf2725a079f",
+        "normalized_sha256": "9f3891035a1688bb9e6680bdd5b6099640b9317caee6439838576f3f57fe4860",
+        "operation_count": 9
       },
       "md5": "99065b4fef591cab34175bd2952ef60c",
       "path": "text_formalization/nonlinear/merge_ineq.hl",
@@ -19904,10 +19904,10 @@
       "execution_normalization": {
         "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26311,
-        "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
-        "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
-        "operation_count": 2
+        "normalized_bytes": 26462,
+        "normalized_md5": "f18f79c743c1324839d655f38a0dcb92",
+        "normalized_sha256": "0c63edf733755a9e69275182049ffd51dd591f6010377a4991f0359715d815ac",
+        "operation_count": 4
       },
       "md5": "8a19d244740ff42de82adbe2dcd89413",
       "path": "text_formalization/nonlinear/optimize.hl",
@@ -22353,7 +22353,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "1a2cac4218669a0e4e30c1f432594a3e26b0dd28827a8986e88fb1ffec141522",
+    "contract_sha256": "ba8a251ec5882b5adad2fc31d4eb0b52b9efe88bf5db635d72eb13c8d3947ac2",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25772,10 +25772,10 @@
       {
         "id": "PROJECT-OPTIMIZE-S3-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26311,
-        "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
-        "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
-        "operation_count": 2,
+        "normalized_bytes": 26462,
+        "normalized_md5": "f18f79c743c1324839d655f38a0dcb92",
+        "normalized_sha256": "0c63edf733755a9e69275182049ffd51dd591f6010377a4991f0359715d815ac",
+        "operation_count": 4,
         "operations": [
           {
             "after": "  let suffix i n = \"prep-\" ^ s ^ \" split(\" ^ string_of_int i ^ \"/\" ^\n    string_of_int n ^ \")\" in ",
@@ -25790,11 +25790,25 @@
             "id": "PROJECT-OPTIMIZE-S3-TUPLE-CONSTRUCTOR-001",
             "kind": "exact_bytes_replace_once",
             "line": 76
+          },
+          {
+            "after": "    if (ls = []) then\n      let prep_name = \"prep-\" ^ s in\n        [preprocess (prep_name,tags,ineq_strip_let)]\n    else",
+            "before": "    if (ls = []) then [preprocess (\"prep-\"^s,tags,ineq_strip_let)] else",
+            "id": "PROJECT-OPTIMIZE-S3-PREPROCESS-TUPLE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 675
+          },
+          {
+            "after": "\tmap (fun i ->\n\t    try\n              let case_name = suffix i n in\n              let case_ineq = List.nth cases i in\n                preprocess (case_name,tags,case_ineq)\n\t    with Failure s -> failwith (s^ \" case fail: \" ^ (string_of_int i))) ",
+            "before": "\tmap (fun i ->\n\t    try preprocess (suffix i n,tags,List.nth cases i)\n\t    with Failure s -> failwith (s^ \" case fail: \" ^ (string_of_int i))) ",
+            "id": "PROJECT-OPTIMIZE-S3-PREPROCESS-SPLIT-TUPLE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 678
           }
         ],
         "path": "text_formalization/nonlinear/optimize.hl",
-        "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix in preprocess_split_idq and the two generated-name mk_var calls at lines 76--77. They change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, the existing focused Candle tuple-constructor rejection/acceptance oracle, and cumulative loading are required.",
-        "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions while avoiding Candle's independently reproduced tuple-constructor inference failure.",
+        "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix, three tuple-construction sites in preprocess_split_idq, and the two generated-name mk_var calls at lines 76--77. They only avoid independently reproduced Candle tuple-constructor inference failures and change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, focused Candle rejection/acceptance oracles, and cumulative loading are required.",
+        "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions. The two preprocessing call sites bind their previously inline pure name and selected-case expressions immediately before constructing the same triples, in the same left-to-right order; the split-case bindings remain inside the existing Failure handler, preserving its exception scope.",
         "source_key": "flyspeck:text_formalization/nonlinear/optimize.hl",
         "source_md5": "8a19d244740ff42de82adbe2dcd89413",
         "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b"
@@ -25802,10 +25816,10 @@
       {
         "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 247572,
-        "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
-        "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
-        "operation_count": 5,
+        "normalized_bytes": 247648,
+        "normalized_md5": "ce848d261f64a112e24eaaf2725a079f",
+        "normalized_sha256": "9f3891035a1688bb9e6680bdd5b6099640b9317caee6439838576f3f57fe4860",
+        "operation_count": 9,
         "operations": [
           {
             "after": "  (idq_of_string (\"OXLZLEZ 6346351218 \" ^ string_of_int i ^ \" \" ^\n    string_of_int n)).ineq;;",
@@ -25841,11 +25855,39 @@
             "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-COMBOS-CONCAT",
             "kind": "exact_bytes_replace_once",
             "line": 523
+          },
+          {
+            "after": "  let tsk_record = Ineq.TSKAJXY_DERIVED in\n  let tsk_concl = tsk_record.ineq in",
+            "before": "  let tsk_concl = Ineq.TSKAJXY_DERIVED.ineq in",
+            "id": "PROJECT-MERGE-INEQ-S3-QUALIFIED-RECORD-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 1380
+          },
+          {
+            "after": "let mk_y i =\n  let name = \"y\" ^ string_of_int i in\n    mk_var(name,real_ty);;",
+            "before": "let mk_y i = mk_var(\"y\"^string_of_int i,real_ty);;",
+            "id": "PROJECT-MERGE-INEQ-S3-TUPLE-CONSTRUCTOR-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 1670
+          },
+          {
+            "after": "let _ = g (mk_imp(cell3_hyp,cell3_from_ineq));;",
+            "before": "g (mk_imp(cell3_hyp,cell3_from_ineq));;",
+            "id": "PROJECT-MERGE-INEQ-S3-CELL3-GOAL-EFFECT-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 3505
+          },
+          {
+            "after": "let _ = g g_quqya_goal;;",
+            "before": "g g_quqya_goal;;",
+            "id": "PROJECT-MERGE-INEQ-S3-QUQYA-GOAL-EFFECT-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 3922
           }
         ],
         "path": "text_formalization/nonlinear/merge_ineq.hl",
-        "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, one parser-priority structure spelling, and the one allbounds setify call whose exact nested-term representation is pinned. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator oracles and cumulative source loading are required; this comparator is not authorized for any other representation.",
-        "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order.",
+        "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, three explicit wildcard structure-effect spellings, the one allbounds setify call whose exact nested-term representation is pinned, one qualified record-field spelling, and one generated-name mk_var call. Each goal-state initializer remains evaluated exactly once in its original position with the same result discarded. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator/record-field/tuple-result oracles and cumulative source loading are required; this comparator and qualified-field rewrite are not authorized for any other representation.",
+        "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order. Binding the exact `Ineq.TSKAJXY_DERIVED` record before selecting its `ineq` field preserves the same record lookup, field value, evaluation order, and exceptions while avoiding CakeML's interpretation of the final field name as a nested module component. Binding the pure generated y name immediately before the same mk_var pair preserves the exact string, type, HOL term, order, effects, and exceptions while avoiding the same independently reproduced tuple-constructor inference failure as optimize.hl.",
         "source_key": "flyspeck:text_formalization/nonlinear/merge_ineq.hl",
         "source_md5": "99065b4fef591cab34175bd2952ef60c",
         "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58"
@@ -26329,8 +26371,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "2424d81f22a463b238ace014647e9be8",
-    "generated_source_sha256": "da8887d16c6c53bbecd478cd753d7be4503644e01ed822e22db18df9312559a9",
+    "generated_source_md5": "87d45dd69ad86aa57b80b428e2870783",
+    "generated_source_sha256": "6c1fd54eba5510e2cdb297f1d0c05d67cc6ca9eafdee4bbca32e490d6f20ccf4",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

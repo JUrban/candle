@@ -343,6 +343,81 @@ let parse_ineq_runtime_ok =
     !Normalized_parse_initializers.macros &&
   !original_parse_output = !normalized_parse_output;;
 
+type optimize_preprocess_datum = {
+  optimize_id : string;
+  optimize_tags : int list;
+  optimize_value : int
+};;
+
+let optimize_fields datum =
+  (datum.optimize_id,datum.optimize_tags,datum.optimize_value);;
+
+let optimize_preprocess triple = triple;;
+
+let original_optimize_split datum split =
+  let name,tags,value = optimize_fields datum in
+  let suffix i n =
+    "prep-" ^ name ^ " split(" ^ string_of_int i ^ "/" ^
+    string_of_int n ^ ")" in
+  if not split then [optimize_preprocess ("prep-" ^ name,tags,value)]
+  else
+    let cases = [value;value + 1] in
+    let count = List.length cases in
+    List.map
+      (fun index ->
+        try optimize_preprocess
+              (suffix index count,tags,List.nth cases index)
+        with Failure message ->
+          failwith (message ^ " case fail: " ^ string_of_int index))
+      [0;1];;
+
+let normalized_optimize_split datum split =
+  let name,tags,value = optimize_fields datum in
+  let suffix i n =
+    "prep-" ^ name ^ " split(" ^ string_of_int i ^ "/" ^
+    string_of_int n ^ ")" in
+  if not split then
+    let prep_name = "prep-" ^ name in
+    [optimize_preprocess (prep_name,tags,value)]
+  else
+    let cases = [value;value + 1] in
+    let count = List.length cases in
+    List.map
+      (fun index ->
+        try
+          let case_name = suffix index count in
+          let case_value = List.nth cases index in
+          optimize_preprocess (case_name,tags,case_value)
+        with Failure message ->
+          failwith (message ^ " case fail: " ^ string_of_int index))
+      [0;1];;
+
+type merge_qualified_record = { merge_qualified_value : int };;
+
+module Merge_qualified_source = struct
+  let datum = {merge_qualified_value = 7};;
+end;;
+
+let original_merge_qualified =
+  Merge_qualified_source.datum.merge_qualified_value;;
+
+let normalized_merge_qualified =
+  let datum = Merge_qualified_source.datum in
+  datum.merge_qualified_value;;
+
+let tuple_and_qualified_record_ok =
+  let datum = {optimize_id = "case"; optimize_tags = [2;3];
+               optimize_value = 11} in
+  original_optimize_split datum false =
+    normalized_optimize_split datum false &&
+  original_optimize_split datum true =
+    normalized_optimize_split datum true &&
+  List.map (fun i -> ("y" ^ string_of_int i,"real")) [1;2;6] =
+    List.map
+      (fun i -> let name = "y" ^ string_of_int i in (name,"real"))
+      [1;2;6] &&
+  original_merge_qualified = normalized_merge_qualified;;
+
 let string_order_ok =
   List.sort (fun left right -> if left < right then -1 else 1) strings =
   List.sort String.compare strings;;
@@ -351,6 +426,6 @@ let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
      string_order_ok && structure_effects_ok && ineqdoc_value_ok &&
      remaining_empty_reference_values_ok && parse_ineq_runtime_ok &&
-     nested_comparator_ok
+     nested_comparator_ok && tuple_and_qualified_record_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

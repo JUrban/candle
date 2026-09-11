@@ -3346,9 +3346,9 @@
       "path": "text_formalization/nonlinear/optimize.hl",
       "source_sha256": "dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b",
       "source_md5": "8a19d244740ff42de82adbe2dcd89413",
-      "normalized_sha256": "2d4608a4842564314df49c48fef6a973c38eda355d3b8ab042b54966c3d40788",
-      "normalized_md5": "6f0ed18ccd925e149715fd836dc9733b",
-      "normalized_bytes": 26311,
+      "normalized_sha256": "0c63edf733755a9e69275182049ffd51dd591f6010377a4991f0359715d815ac",
+      "normalized_md5": "f18f79c743c1324839d655f38a0dcb92",
+      "normalized_bytes": 26462,
       "operations": [
         {
           "id": "PROJECT-OPTIMIZE-S3-PRINTF-001-SPLIT-SUFFIX",
@@ -3363,10 +3363,24 @@
           "line": 76,
           "before": "let mk_x i = mk_var(\"x\"^string_of_int i,real_ty);;\nlet mk_a i = mk_var(\"a\"^string_of_int i,real_ty);;",
           "after": "let mk_x i =\n  let name = \"x\"^string_of_int i in\n    mk_var(name,real_ty);;\nlet mk_a i =\n  let name = \"a\"^string_of_int i in\n    mk_var(name,real_ty);;"
+        },
+        {
+          "id": "PROJECT-OPTIMIZE-S3-PREPROCESS-TUPLE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 675,
+          "before": "    if (ls = []) then [preprocess (\"prep-\"^s,tags,ineq_strip_let)] else",
+          "after": "    if (ls = []) then\n      let prep_name = \"prep-\" ^ s in\n        [preprocess (prep_name,tags,ineq_strip_let)]\n    else"
+        },
+        {
+          "id": "PROJECT-OPTIMIZE-S3-PREPROCESS-SPLIT-TUPLE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 678,
+          "before": "\tmap (fun i ->\n\t    try preprocess (suffix i n,tags,List.nth cases i)\n\t    with Failure s -> failwith (s^ \" case fail: \" ^ (string_of_int i))) ",
+          "after": "\tmap (fun i ->\n\t    try\n              let case_name = suffix i n in\n              let case_ineq = List.nth cases i in\n                preprocess (case_name,tags,case_ineq)\n\t    with Failure s -> failwith (s^ \" case fail: \" ^ (string_of_int i))) "
         }
       ],
-      "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions while avoiding Candle's independently reproduced tuple-constructor inference failure.",
-      "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix in preprocess_split_idq and the two generated-name mk_var calls at lines 76--77. They change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, the existing focused Candle tuple-constructor rejection/acceptance oracle, and cumulative loading are required."
+      "semantic_rule": "The one constant %s/%d/%d format is replaced by the same literal segments and string_of_int conversions in argument order, preserving every generated preprocessing identifier and exception. Binding each pure generated x/a name immediately before the identical mk_var pair preserves the exact name, real type, returned HOL term, list population, effects, and exceptions. The two preprocessing call sites bind their previously inline pure name and selected-case expressions immediately before constructing the same triples, in the same left-to-right order; the split-case bindings remain inside the existing Failure handler, preserving its exception scope.",
+      "scope_limit": "These hash-pinned rewrites are confined to the diagnostic suffix, three tuple-construction sites in preprocess_split_idq, and the two generated-name mk_var calls at lines 76--77. They only avoid independently reproduced Candle tuple-constructor inference failures and change no inequality, preprocessing term, theorem, tactic, hypothesis, proof intent, or axiom. Exact native string/tuple-result equivalence, focused Candle rejection/acceptance oracles, and cumulative loading are required."
     },
     {
       "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001",
@@ -3374,9 +3388,9 @@
       "path": "text_formalization/nonlinear/merge_ineq.hl",
       "source_sha256": "81771a544ca3485abe52e6989db3ce6d4a64b6f25e9893e9043981c83770be58",
       "source_md5": "99065b4fef591cab34175bd2952ef60c",
-      "normalized_sha256": "4508e1dd076129c216742274e11d9ef515f8501535b37711b7b240fe444e1faa",
-      "normalized_md5": "9d1ad95b52cd23514750cabf931ce421",
-      "normalized_bytes": 247572,
+      "normalized_sha256": "9f3891035a1688bb9e6680bdd5b6099640b9317caee6439838576f3f57fe4860",
+      "normalized_md5": "ce848d261f64a112e24eaaf2725a079f",
+      "normalized_bytes": 247648,
       "operations": [
         {
           "id": "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001-OX-ID",
@@ -3412,10 +3426,38 @@
           "line": 523,
           "before": "let partial_merge() = end_itlist CONJ (map fst (List.flatten (combos())));;",
           "after": "let partial_merge() = end_itlist CONJ (map fst (List.concat (combos())));;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-QUALIFIED-RECORD-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 1380,
+          "before": "  let tsk_concl = Ineq.TSKAJXY_DERIVED.ineq in",
+          "after": "  let tsk_record = Ineq.TSKAJXY_DERIVED in\n  let tsk_concl = tsk_record.ineq in"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-TUPLE-CONSTRUCTOR-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 1670,
+          "before": "let mk_y i = mk_var(\"y\"^string_of_int i,real_ty);;",
+          "after": "let mk_y i =\n  let name = \"y\" ^ string_of_int i in\n    mk_var(name,real_ty);;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-CELL3-GOAL-EFFECT-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 3505,
+          "before": "g (mk_imp(cell3_hyp,cell3_from_ineq));;",
+          "after": "let _ = g (mk_imp(cell3_hyp,cell3_from_ineq));;"
+        },
+        {
+          "id": "PROJECT-MERGE-INEQ-S3-QUQYA-GOAL-EFFECT-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 3922,
+          "before": "g g_quqya_goal;;",
+          "after": "let _ = g g_quqya_goal;;"
         }
       ],
-      "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order.",
-      "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, one parser-priority structure spelling, and the one allbounds setify call whose exact nested-term representation is pinned. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator oracles and cumulative source loading are required; this comparator is not authorized for any other representation."
+      "semantic_rule": "The one constant two-integer identifier format is rebuilt from identical literals and conversions. List.concat supplies the exact flatten behavior at all three nested-list sites. Binding the priority call to wildcard preserves its unit effect while satisfying CakeML structure typing. Native unary setify orders and deduplicates each `(term * (term * term))` bound with polymorphic structural comparison. Candle's nested Pair.compare using Term.compare supplies the same lexicographic representation order, and the non-strict `<= 0` relation matches Flyspeck lib.hl's native setify sort boundary, preserving all bound triples, duplicate removal, and order. Binding the exact `Ineq.TSKAJXY_DERIVED` record before selecting its `ineq` field preserves the same record lookup, field value, evaluation order, and exceptions while avoiding CakeML's interpretation of the final field name as a nested module component. Binding the pure generated y name immediately before the same mk_var pair preserves the exact string, type, HOL term, order, effects, and exceptions while avoiding the same independently reproduced tuple-constructor inference failure as optimize.hl.",
+      "scope_limit": "These hash-pinned rewrites change only one generated lookup key, three list aliases, three explicit wildcard structure-effect spellings, the one allbounds setify call whose exact nested-term representation is pinned, one qualified record-field spelling, and one generated-name mk_var call. Each goal-state initializer remains evaluated exactly once in its original position with the same result discarded. They change no merged inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native string/list/effect/comparator/record-field/tuple-result oracles and cumulative source loading are required; this comparator and qualified-field rewrite are not authorized for any other representation."
     },
     {
       "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",

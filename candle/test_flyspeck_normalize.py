@@ -454,8 +454,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
-            "PROJECT-OPTIMIZE-S3-PRINTF-001": 2,
-            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
+            "PROJECT-OPTIMIZE-S3-PRINTF-001": 4,
+            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
         }
         for entry_id, operation_count in nonlinear_boundary_entries.items():
             self.assertEqual(len(entries[entry_id]["operations"]), operation_count)
@@ -577,6 +577,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertEqual(optimize_tuple["line"], 76)
         self.assertIn('let name = "x"^string_of_int i', optimize_tuple["after"])
         self.assertIn('let name = "a"^string_of_int i', optimize_tuple["after"])
+        optimize_preprocess = [
+            operation for operation in entries[
+                "PROJECT-OPTIMIZE-S3-PRINTF-001"
+            ]["operations"]
+            if "PREPROCESS" in operation["id"]
+        ]
+        self.assertEqual(len(optimize_preprocess), 2)
+        self.assertIn("let prep_name", optimize_preprocess[0]["after"])
+        self.assertIn("let case_name", optimize_preprocess[1]["after"])
+        self.assertIn("let case_ineq", optimize_preprocess[1]["after"])
         merge_bounds = next(
             operation for operation in entries[
                 "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001"
@@ -587,6 +597,26 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "Pair.compare Term.compare (Pair.compare Term.compare Term.compare)",
             merge_bounds["after"],
         )
+        merge_operations = entries[
+            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+        ]["operations"]
+        self.assertIn(
+            "let tsk_record = Ineq.TSKAJXY_DERIVED",
+            next(operation for operation in merge_operations
+                 if operation["id"].endswith("QUALIFIED-RECORD-001"))["after"],
+        )
+        self.assertIn(
+            'let name = "y" ^ string_of_int i',
+            next(operation for operation in merge_operations
+                 if operation["id"].endswith("TUPLE-CONSTRUCTOR-001"))["after"],
+        )
+        merge_goal_effects = [
+            operation for operation in merge_operations
+            if operation["id"].endswith("GOAL-EFFECT-001")
+        ]
+        self.assertEqual(len(merge_goal_effects), 2)
+        self.assertTrue(all(operation["after"].startswith("let _ = g ")
+                            for operation in merge_goal_effects))
         structure_effect_lines = {
             "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
             "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
@@ -795,7 +825,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 201)
+        self.assertEqual(len(operation_ids), 207)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

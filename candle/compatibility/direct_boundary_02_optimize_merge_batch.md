@@ -8,17 +8,26 @@ source, report, transcript, or semantic-evidence byte was changed.
 
 ## Actual direct progress
 
-The latest completed exact cumulative run still reached 47 actions and passed
-46: actions `000--045` are green and action 046,
-`text_formalization/nonlinear/parse_ineq.hl`, was the first failure. Boundary
+The latest completed exact cumulative run reached 48 actions and passed 47:
+actions `000--046` are green and action 047,
+`text_formalization/nonlinear/optimize.hl`, failed at the anticipated inline
+generated-name tuple. Boundary
 `00-base-through-029` remains 30/30 green and the cumulative boundary through
 action 037 remains 38/38 green. Boundary
 `02-nonlinear_support-through-049` is open; full direct S2 and nonlinear and
 LP/S3 are open.
 
-An exact run of the committed action-046 repair is in progress independently.
-This batch prepares the already observed action-047 and action-049
-compatibility classes, but does not award either action new exact credit.
+That exact v26 run validates the committed action-046 repair. Its immutable
+development result receipt has SHA-256
+`ff78642bad6b28e72b7ec49810a4389160940cf2d9d2600af28deede30410a34`.
+In the persistent development process containing the exact successful
+actions `000--045`, the final normalized whole-file candidates have now passed
+actions `046--051`, including complete proof execution in `merge_ineq.hl`,
+`vol1.hl`, and `hypermap.hl`. Thus the development probe reached and passed 52
+source actions, and boundary 02 is development-green through action 049. This
+does not award new exact action credit. A manual action-052 probe bypassed the
+runner's action-commit bookkeeping and was rejected while resolving an already
+loaded dependency; that is a probe artifact, not a Flyspeck failure.
 
 ## Historical leads and bounded changes
 
@@ -30,7 +39,7 @@ from the current authorities. Its parent also contained the falsified action-046
 dereference-grouping experiment; that operation and its associated assertion
 were explicitly excluded.
 
-The retained changes are:
+The initial retained changes were:
 
 1. In `text_formalization/nonlinear/optimize.hl`, bind each generated `x`/`a`
    name immediately before the same `mk_var(name,real_ty)` call. This avoids
@@ -47,9 +56,26 @@ The comparator change is confined to this exact hash-pinned bound
 representation. It preserves ordering and duplicate removal and changes no
 inequality, theorem statement, hypothesis, proof, proof intent, or axiom.
 
+Whole-file probing then exposed and closed three further language classes:
+
+1. CakeML gave the same tuple-constructor type error to the two
+   `preprocess` calls whose first triple component was an inline generated
+   string. Binding the pure name, and the selected case within the existing
+   `Failure` handler, preserves left-to-right evaluation and exception scope.
+2. CakeML interpreted `Ineq.TSKAJXY_DERIVED.ineq` as a nested module path.
+   Binding the exact record before selecting the same `ineq` field preserves
+   the lookup, value, order, and exceptions.
+3. `merge_ineq.hl` contained another inline generated-name `mk_var` tuple and
+   exactly two active bare top-level `g` effects. The name is bound before the
+   identical constructor call, and each goal initializer receives an explicit
+   wildcard binding while remaining evaluated once at the same position.
+
 ## Focused validation
 
-- native OCaml nested-comparator equivalence oracle: PASS;
+- native OCaml string, tuple, qualified-record, and nested-comparator
+  equivalence oracle: PASS;
+- focused Candle tuple and qualified-record rejection/acceptance fixtures:
+  PASS;
 - focused Candle nested HOL-term ordering/deduplication fixture: PASS;
 - complete nonlinear boundary compatibility gate: PASS;
 - normalization and manifest unit tests: PASS, 46/46;
@@ -62,19 +88,19 @@ inequality, theorem statement, hypothesis, proof, proof intent, or axiom.
 Current derived authority identities are:
 
 - normalization contract SHA-256:
-  `1a2cac4218669a0e4e30c1f432594a3e26b0dd28827a8986e88fb1ffec141522`;
+  `ba8a251ec5882b5adad2fc31d4eb0b52b9efe88bf5db635d72eb13c8d3947ac2`;
 - manifest SHA-256:
-  `7948def8e017e2349f82998212c859e823329d992e61315c266382a2565eb56b`;
+  `c33be9b418441af9c97ca1eab0eaedf26de22450253b59f536a6b39038740685`;
 - pilot descriptor SHA-256:
-  `72efcb6dc71a29784573fc544dc1dc021400c93d0f112575907d227de1fa4c9a`;
+  `2ed60cd44537f92f38b7c82f295e42836675b2a8442571121857461c41641709`;
 - all-inventory descriptor SHA-256:
-  `ef2e511469acf8d816cc83b3d07c19842bc8a50ae0f3609f1c694beb4c8f9ce4`;
+  `b6409d7e96a68bb93a59d0d18ea42b97e8a59846b393c4d21219d99aaf860450`;
 - ordered effective/prepared SHA-256:
-  `337d371f176393e4d4dda93ce20ef84bccc5a25f585019ca358c63530fdbdb6a`
-  / `d673ff23907902db9db2c191f680769e9ee876eccd209e39ddf2008180cd84f2`;
+  `51e8d2d2afd5c153a5d528138e64a9ea5f65f9fc7b72f9e743a00bd01c69a9e9`
+  / `649bc20c70bb305c7ac041662fb7490db148270b494baf9f436c026d57c67230`;
 - generated source-digest/full-build MD5:
-  `fe3296eff52dcc7556731fa15cb12b5e` /
-  `2424d81f22a463b238ace014647e9be8`.
+  `b69802703c5096d4e9d7a5ccabc4016a` /
+  `87d45dd69ad86aa57b80b428e2870783`.
 
 The next action credit must come from a fresh exact cumulative run through
 action 049 on committed bytes.

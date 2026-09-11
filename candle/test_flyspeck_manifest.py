@@ -634,8 +634,8 @@ class GeneratedManifestTests(unittest.TestCase):
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
-            "PROJECT-OPTIMIZE-S3-PRINTF-001": 2,
-            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
+            "PROJECT-OPTIMIZE-S3-PRINTF-001": 4,
+            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
         }
         for entry_id, operation_count in nonlinear_boundary_counts.items():
             self.assertEqual(entries[entry_id]["operation_count"], operation_count)

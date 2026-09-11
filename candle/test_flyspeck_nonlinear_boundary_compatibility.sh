@@ -50,6 +50,14 @@ run_candle "$fixture_root/nonlinear_autogen_value_restriction_original.ml" \
   "$test_dir/autogen-original.log"
 run_candle "$fixture_root/nonlinear_autogen_value_restriction_normalized.ml" \
   "$test_dir/autogen-normalized.log"
+run_candle "$fixture_root/nonlinear_optimize_preprocess_tuple_original.ml" \
+  "$test_dir/optimize-preprocess-tuple-original.log"
+run_candle "$fixture_root/nonlinear_optimize_preprocess_tuple_normalized.ml" \
+  "$test_dir/optimize-preprocess-tuple-normalized.log"
+run_candle "$fixture_root/nonlinear_merge_qualified_record_original.ml" \
+  "$test_dir/merge-qualified-record-original.log"
+run_candle "$fixture_root/nonlinear_merge_qualified_record_normalized.ml" \
+  "$test_dir/merge-qualified-record-normalized.log"
 run_candle "$fixture_root/parse_ineq_runtime_compatibility_normalized.ml" \
   "$test_dir/parse-ineq-runtime-normalized.log"
 run_candle "$fixture_root/nonlinear_boundary_compatibility_normalized.ml" \
@@ -83,6 +91,16 @@ rg -Fq 'val candle_nonlinear_dart_classes_value_ok = true: bool' \
 rg -Fq 'Value restriction violated' "$test_dir/autogen-original.log"
 rg -Fq 'val candle_nonlinear_autogen_value_ok = true: bool' \
   "$test_dir/autogen-normalized.log"
+rg -Fq \
+  'Type mismatch between string -> string and string * int list * int' \
+  "$test_dir/optimize-preprocess-tuple-original.log"
+rg -Fq 'val candle_optimize_preprocess_tuple_ok = true: bool' \
+  "$test_dir/optimize-preprocess-tuple-normalized.log"
+rg -Fq \
+  'Undefined variable: Candle_merge_qualified_source.TSKAJXY_DERIVED.ineq' \
+  "$test_dir/merge-qualified-record-original.log"
+rg -Fq 'val candle_merge_qualified_record_ok = true: bool' \
+  "$test_dir/merge-qualified-record-normalized.log"
 rg -Fq 'val candle_parse_ineq_runtime_compatibility_ok = true: bool' \
   "$test_dir/parse-ineq-runtime-normalized.log"
 rg -Fq 'val candle_nonlinear_boundary_compatibility_ok = true: bool' \
@@ -93,6 +111,8 @@ rg -Fq 'val candle_merge_ineq_setify_ok = true: bool' \
 for output in nth-normalized.log string-order-normalized.log \
               structure-effect-normalized.log ineqdoc-normalized.log \
               dart-classes-normalized.log autogen-normalized.log \
+              optimize-preprocess-tuple-normalized.log \
+              merge-qualified-record-normalized.log \
               parse-ineq-runtime-normalized.log \
               boundary-normalized.log merge-ineq-setify-normalized.log; do
   if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/$output"; then
