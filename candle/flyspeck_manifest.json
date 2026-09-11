@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "25c0281bb8e7077c168e34333b957b93",
-    "generated_source_sha256": "c5fb6f9e68c86572cb853e8790ee5202487cc9a20395f2364b4338032c676284",
+    "generated_source_md5": "dfdb3a9896e6c60fe23abaa2cbd7f2a2",
+    "generated_source_sha256": "998a882c28d1c09f7379be1a748e6c96e99a23f82258687b2fce125b7f5ba61f",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1e52726e2bbde68b64b5d9c4b487ede9",
+      "md5": "80939e55ec968075273bebc0a843ca0e",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "2dfea1194b75aeafaf9a962474888cbc5cc547c2f04d5e20a22af6f9fa200037"
+      "sha256": "20b76dcf5852a62fde20a4dc1fcf27da91a28ac4484fd1d224e0cb46c80e5285"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f4b1341240bd6b8f1984a46a18e91ad8",
+      "md5": "7def8023b5316358b53b8d969aaec523",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "a1c5d33ed57de241430379828ee158ad4163e9430130fb3e73777972607aa9ea"
+      "sha256": "8d07f8f1767f7198f0a90fca91b193408a718a8897abdab6a472894cab581967"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -19748,10 +19748,10 @@
       "execution_normalization": {
         "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 56399,
-        "normalized_md5": "b875a65eb946735558074e104a32c4b6",
-        "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
-        "operation_count": 2
+        "normalized_bytes": 57136,
+        "normalized_md5": "e8e1e16f6c9c6a6eaaebe5fa7d93dc4e",
+        "normalized_sha256": "063af455abdfb9510d33f2eaf36517749df321709c99326f6c71969da1c3d67d",
+        "operation_count": 3
       },
       "md5": "122ffb889de59b21bcf23c45b6a2cb66",
       "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
@@ -22321,7 +22321,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "46e74079f54268545b4e7f5c6fe951165bd89e988283a62d2ae5316f88be5ba1",
+    "contract_sha256": "24f95d2315d7167a27525e068e50cc57f16eac3be7ebc4e57ecebd5c1ea53c93",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25097,11 +25097,479 @@
       {
         "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 56399,
-        "normalized_md5": "b875a65eb946735558074e104a32c4b6",
-        "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
-        "operation_count": 2,
+        "normalized_bytes": 57136,
+        "normalized_md5": "e8e1e16f6c9c6a6eaaebe5fa7d93dc4e",
+        "normalized_sha256": "063af455abdfb9510d33f2eaf36517749df321709c99326f6c71969da1c3d67d",
+        "operation_count": 3,
         "operations": [
+          {
+            "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-STRUCTURE-EFFECTS-001",
+            "kind": "exact_lines_replace_once",
+            "line": 49,
+            "replacement_count": 92,
+            "replacements": [
+              {
+                "after": "let _ = addtex(Section,\"Main Estimate\",\"Definitions\");;",
+                "before": "addtex(Section,\"Main Estimate\",\"Definitions\");",
+                "line": 49
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 59
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 78
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 98
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 118
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 135
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 153
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 171
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 192
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 212
+              },
+              {
+                "after": "let _ = addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Pent\");;",
+                "before": "addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Pent\");;",
+                "line": 232
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 235
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 267
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 286
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 306
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 328
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 350
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 374
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 395
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 417
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 434
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 459
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 485
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 511
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 537
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 561
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 587
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 616
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 642
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 671
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 700
+              },
+              {
+                "after": "let _ = addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Hex\");;",
+                "before": "addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Hex\");;",
+                "line": 729
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 733
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 753
+              },
+              {
+                "after": "let _ = skip",
+                "before": "skip",
+                "line": 773
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 793
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 816
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 839
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 861
+              },
+              {
+                "after": "let _ = for i1=0 to 4 do",
+                "before": "for i1=0 to 4 do",
+                "line": 959
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 968
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 984
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1000
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1015
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1030
+              },
+              {
+                "after": "let _ = addtex(Section,\"Main Estimate\",\"quadrilaterals\");;",
+                "before": "addtex(Section,\"Main Estimate\",\"quadrilaterals\");;",
+                "line": 1060
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1066
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1082
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1098
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1114
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1130
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1146
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1163
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1179
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1201
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1218
+              },
+              {
+                "after": "let _ = addtex (Section,\"Main Estimate\",\"Ad hoc quadrilaterals\");;",
+                "before": "addtex (Section,\"Main Estimate\",\"Ad hoc quadrilaterals\");;",
+                "line": 1236
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 1238
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 1251
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 1266
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1276
+              },
+              {
+                "after": "let _ = add {",
+                "before": "add {",
+                "line": 1303
+              },
+              {
+                "after": "let _ = add {",
+                "before": "add {",
+                "line": 1319
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1334
+              },
+              {
+                "after": "let _ = skip { ",
+                "before": "skip { ",
+                "line": 1360
+              },
+              {
+                "after": "let _ = add { ",
+                "before": "add { ",
+                "line": 1389
+              },
+              {
+                "after": "let _ = add { ",
+                "before": "add { ",
+                "line": 1422
+              },
+              {
+                "after": "let _ = add { ",
+                "before": "add { ",
+                "line": 1455
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1489
+              },
+              {
+                "after": "let _ = addtex (Section,\"Main Estimate\",\"Quadrilaterals (non ad hoc)\");;",
+                "before": "addtex (Section,\"Main Estimate\",\"Quadrilaterals (non ad hoc)\");;",
+                "line": 1508
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1511
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1529
+              },
+              {
+                "after": "let _ = skip {",
+                "before": "skip {",
+                "line": 1554
+              },
+              {
+                "after": "let _ = skip  { ",
+                "before": "skip  { ",
+                "line": 1584
+              },
+              {
+                "after": "let _ = skip  { ",
+                "before": "skip  { ",
+                "line": 1613
+              },
+              {
+                "after": "let _ = skip  { ",
+                "before": "skip  { ",
+                "line": 1646
+              },
+              {
+                "after": "let _ = skip  { ",
+                "before": "skip  { ",
+                "line": 1679
+              },
+              {
+                "after": "let _ = addtex (Section,\"Main Estimate\",\"Triangles\");;",
+                "before": "addtex (Section,\"Main Estimate\",\"Triangles\");;",
+                "line": 1712
+              },
+              {
+                "after": "let _ = addtex(Comment,\"\",",
+                "before": "addtex(Comment,\"\",",
+                "line": 1716
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1737
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1759
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1782
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1801
+              },
+              {
+                "after": "let _ = addtex(Section,\"Main Estimate\",\"Triangle (non ad hoc)\");;",
+                "before": "addtex(Section,\"Main Estimate\",\"Triangle (non ad hoc)\");;",
+                "line": 1821
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1823
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1841
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1859
+              },
+              {
+                "after": "let _ = add{",
+                "before": "add{",
+                "line": 1877
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1893
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1912
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1930
+              },
+              {
+                "after": "let _ = add",
+                "before": "add",
+                "line": 1947
+              }
+            ]
+          },
           {
             "after": "    idv = \"7550003505 \" ^ string_of_int i234 ^ \" \" ^\n      string_of_int i126 ^ \" \" ^ string_of_int i135;",
             "before": "    idv = Printf.sprintf \"7550003505 %d %d %d\" i234 i126 i135;",
@@ -25118,8 +25586,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
-        "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required.",
-        "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records.",
+        "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 92 hash-pinned anonymous phrases in this one module; every exact source line is recorded and verified, and the Main_estimate_ineq namespace remains intact.",
+        "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records. Every anonymous OCaml structure expression in Main_estimate_ineq is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving registrations, generated data, iteration, order, effects, and exceptions.",
         "source_key": "flyspeck:text_formalization/nonlinear/main_estimate_ineq.hl",
         "source_md5": "122ffb889de59b21bcf23c45b6a2cb66",
         "source_sha256": "ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220"
@@ -25555,8 +26023,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "1e52726e2bbde68b64b5d9c4b487ede9",
-    "generated_source_sha256": "2dfea1194b75aeafaf9a962474888cbc5cc547c2f04d5e20a22af6f9fa200037",
+    "generated_source_md5": "80939e55ec968075273bebc0a843ca0e",
+    "generated_source_sha256": "20b76dcf5852a62fde20a4dc1fcf27da91a28ac4484fd1d224e0cb46c80e5285",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

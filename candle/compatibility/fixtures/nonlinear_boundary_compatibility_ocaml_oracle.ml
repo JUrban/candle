@@ -165,7 +165,7 @@ let original_structure_trace = ref [];;
 let original_structure_emit name =
   original_structure_trace := name::!original_structure_trace;;
 module Original_structure_effects = struct
-  original_structure_emit "first";;
+  original_structure_emit "first";
   original_structure_emit "second";;
   { structure_id = "discarded"; structure_enabled = false };;
 end;;

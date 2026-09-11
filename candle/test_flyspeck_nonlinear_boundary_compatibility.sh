@@ -50,7 +50,7 @@ rg -Fq 'Type mismatch between int list -> int list and string list' \
   "$test_dir/string-order-original.log"
 rg -Fq 'val candle_nonlinear_string_order_ok = true: bool' \
   "$test_dir/string-order-normalized.log"
-rg -Fq 'Type mismatch between unit and (string -> unit)' \
+rg -Fq 'Type mismatch between unit and candle_nonlinear_structure_datum' \
   "$test_dir/structure-effect-original.log"
 rg -Fq 'val candle_nonlinear_structure_effect_ok = true: bool' \
   "$test_dir/structure-effect-normalized.log"

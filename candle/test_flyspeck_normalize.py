@@ -452,7 +452,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         nonlinear_boundary_entries = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 9,
-            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 2,
+            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
@@ -471,6 +471,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "let _ = " in replacement["after"]
             for replacement in ineq_structure["replacements"]
         ))
+        main_estimate_structure = entries[
+            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001"
+        ]["operations"][0]
+        self.assertEqual(
+            main_estimate_structure["kind"], "exact_lines_replace_once",
+        )
+        self.assertEqual(main_estimate_structure["replacement_count"], 92)
+        self.assertEqual(len(main_estimate_structure["replacements"]), 92)
+        self.assertEqual(main_estimate_structure["replacements"][0]["line"], 49)
+        self.assertEqual(main_estimate_structure["replacements"][-1]["line"], 1947)
+        self.assertEqual(
+            main_estimate_structure["replacements"][0]["after"],
+            'let _ = addtex(Section,"Main Estimate","Definitions");;',
+        )
         self.assertEqual(
             entries["PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001"]
             ["operations"][0]["after"],
@@ -669,7 +683,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 183)
+        self.assertEqual(len(operation_ids), 184)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

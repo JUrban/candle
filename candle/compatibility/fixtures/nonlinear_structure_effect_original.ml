@@ -9,7 +9,7 @@ let candle_nonlinear_structure_emit name =
     name::!candle_nonlinear_structure_trace;;
 
 module Candle_nonlinear_structure_effects = struct
-  candle_nonlinear_structure_emit "first";;
+  candle_nonlinear_structure_emit "first";
   candle_nonlinear_structure_emit "second";;
   {
     candle_nonlinear_structure_id = "discarded";

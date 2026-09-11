@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "25c0281bb8e7077c168e34333b957b93" then
+     "dfdb3a9896e6c60fe23abaa2cbd7f2a2" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "1e52726e2bbde68b64b5d9c4b487ede9" then
+     "80939e55ec968075273bebc0a843ca0e" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -316,7 +316,7 @@ let candle_flyspeck_normalized_sources =
       "nonlinear/main_estimate_ineq.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/main_estimate_ineq.hl",
-    "b875a65eb946735558074e104a32c4b6");
+    "e8e1e16f6c9c6a6eaaebe5fa7d93dc4e");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/parse_ineq.hl",
     Filename.concat candle_flyspeck_overlay_root

@@ -2707,10 +2707,478 @@
       "path": "text_formalization/nonlinear/main_estimate_ineq.hl",
       "source_sha256": "ca0b086d9e4f4ae1f371209ecc94aae7b8f29a663d1a2e8026698f594d468220",
       "source_md5": "122ffb889de59b21bcf23c45b6a2cb66",
-      "normalized_sha256": "b006c80a64d14c82b80997e6459424db4dbf0b7bceeab8f524103d86f857cb7d",
-      "normalized_md5": "b875a65eb946735558074e104a32c4b6",
-      "normalized_bytes": 56399,
+      "normalized_sha256": "063af455abdfb9510d33f2eaf36517749df321709c99326f6c71969da1c3d67d",
+      "normalized_md5": "e8e1e16f6c9c6a6eaaebe5fa7d93dc4e",
+      "normalized_bytes": 57136,
       "operations": [
+        {
+          "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-STRUCTURE-EFFECTS-001",
+          "kind": "exact_lines_replace_once",
+          "line": 49,
+          "replacement_count": 92,
+          "replacements": [
+            {
+              "line": 49,
+              "before": "addtex(Section,\"Main Estimate\",\"Definitions\");",
+              "after": "let _ = addtex(Section,\"Main Estimate\",\"Definitions\");;"
+            },
+            {
+              "line": 59,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 78,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 98,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 118,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 135,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 153,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 171,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 192,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 212,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 232,
+              "before": "addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Pent\");;",
+              "after": "let _ = addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Pent\");;"
+            },
+            {
+              "line": 235,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 267,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 286,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 306,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 328,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 350,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 374,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 395,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 417,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 434,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 459,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 485,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 511,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 537,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 561,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 587,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 616,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 642,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 671,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 700,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 729,
+              "before": "addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Hex\");;",
+              "after": "let _ = addtex (Section,\"Main Estimate\",\"Local Fan/Main Estimate/Appendix/Terminal Hex\");;"
+            },
+            {
+              "line": 733,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 753,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 773,
+              "before": "skip",
+              "after": "let _ = skip"
+            },
+            {
+              "line": 793,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 816,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 839,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 861,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 959,
+              "before": "for i1=0 to 4 do",
+              "after": "let _ = for i1=0 to 4 do"
+            },
+            {
+              "line": 968,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 984,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1000,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1015,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1030,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1060,
+              "before": "addtex(Section,\"Main Estimate\",\"quadrilaterals\");;",
+              "after": "let _ = addtex(Section,\"Main Estimate\",\"quadrilaterals\");;"
+            },
+            {
+              "line": 1066,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1082,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1098,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1114,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1130,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1146,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1163,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1179,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1201,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1218,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1236,
+              "before": "addtex (Section,\"Main Estimate\",\"Ad hoc quadrilaterals\");;",
+              "after": "let _ = addtex (Section,\"Main Estimate\",\"Ad hoc quadrilaterals\");;"
+            },
+            {
+              "line": 1238,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 1251,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 1266,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 1276,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1303,
+              "before": "add {",
+              "after": "let _ = add {"
+            },
+            {
+              "line": 1319,
+              "before": "add {",
+              "after": "let _ = add {"
+            },
+            {
+              "line": 1334,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1360,
+              "before": "skip { ",
+              "after": "let _ = skip { "
+            },
+            {
+              "line": 1389,
+              "before": "add { ",
+              "after": "let _ = add { "
+            },
+            {
+              "line": 1422,
+              "before": "add { ",
+              "after": "let _ = add { "
+            },
+            {
+              "line": 1455,
+              "before": "add { ",
+              "after": "let _ = add { "
+            },
+            {
+              "line": 1489,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1508,
+              "before": "addtex (Section,\"Main Estimate\",\"Quadrilaterals (non ad hoc)\");;",
+              "after": "let _ = addtex (Section,\"Main Estimate\",\"Quadrilaterals (non ad hoc)\");;"
+            },
+            {
+              "line": 1511,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1529,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1554,
+              "before": "skip {",
+              "after": "let _ = skip {"
+            },
+            {
+              "line": 1584,
+              "before": "skip  { ",
+              "after": "let _ = skip  { "
+            },
+            {
+              "line": 1613,
+              "before": "skip  { ",
+              "after": "let _ = skip  { "
+            },
+            {
+              "line": 1646,
+              "before": "skip  { ",
+              "after": "let _ = skip  { "
+            },
+            {
+              "line": 1679,
+              "before": "skip  { ",
+              "after": "let _ = skip  { "
+            },
+            {
+              "line": 1712,
+              "before": "addtex (Section,\"Main Estimate\",\"Triangles\");;",
+              "after": "let _ = addtex (Section,\"Main Estimate\",\"Triangles\");;"
+            },
+            {
+              "line": 1716,
+              "before": "addtex(Comment,\"\",",
+              "after": "let _ = addtex(Comment,\"\","
+            },
+            {
+              "line": 1737,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1759,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1782,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1801,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1821,
+              "before": "addtex(Section,\"Main Estimate\",\"Triangle (non ad hoc)\");;",
+              "after": "let _ = addtex(Section,\"Main Estimate\",\"Triangle (non ad hoc)\");;"
+            },
+            {
+              "line": 1823,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1841,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1859,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1877,
+              "before": "add{",
+              "after": "let _ = add{"
+            },
+            {
+              "line": 1893,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1912,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1930,
+              "before": "add",
+              "after": "let _ = add"
+            },
+            {
+              "line": 1947,
+              "before": "add",
+              "after": "let _ = add"
+            }
+          ]
+        },
         {
           "id": "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ID",
           "kind": "exact_bytes_replace_once",
@@ -2726,8 +3194,8 @@
           "after": "do_list\n  (fun i1 ->\n    do_list\n      (fun i2 -> do_list (fun i3 -> add (make_hex_ear i1 i2 i3)) (i2--4))\n      (i1--4))\n  (0--4);;"
         }
       ],
-      "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records.",
-      "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required."
+      "semantic_rule": "The constant three-integer identifier format is spelled with identical literals and string_of_int conversions. The nested ascending loops become do_list traversals over the same inclusive, loop-variable-dependent bounds, producing the same 35 ordered make_hex_ear/add calls and records. Every anonymous OCaml structure expression in Main_estimate_ineq is also given an explicit wildcard binding. Each identical expression is evaluated once at the same module-initialization position and its result is discarded, preserving registrations, generated data, iteration, order, effects, and exceptions.",
+      "scope_limit": "This hash-pinned rewrite is confined to one generated identifier and its one 35-case data-population loop. It changes no inequality body, tag, theorem, hypothesis, proof intent, or axiom. Exact native string/order comparison and cumulative source loading are required. The structure conversion is confined to the mechanically enumerated 92 hash-pinned anonymous phrases in this one module; every exact source line is recorded and verified, and the Main_estimate_ineq namespace remains intact."
     },
     {
       "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001",
