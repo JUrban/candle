@@ -243,6 +243,91 @@ let remaining_empty_reference_values_ok =
     !Normalized_dart_classes.dart_classes &&
   !Original_autogen.autogen = !Normalized_autogen.autogen;;
 
+type parse_tag = Eps of float | Parse_other;;
+
+let rec original_geteps =
+  let getepsf = function Eps value -> value | _ -> 0.0 in
+  function
+  | [] -> 0.0
+  | head::tail -> max (getepsf head) (original_geteps tail);;
+
+let rec normalized_geteps =
+  let getepsf = function Eps value -> value | _ -> 0.0 in
+  function
+  | [] -> 0.0
+  | head::tail ->
+      let current = getepsf head
+      and remaining = normalized_geteps tail in
+      if current > remaining then current else remaining;;
+
+let original_acs values =
+  try
+    let [value] = values in "(acos(" ^ value ^ "))"
+  with Match_failure _ ->
+    let _ = values = [] || failwith "ocaml:acs" in
+    "(acos)";;
+
+let normalized_acs = function
+  | [value] -> "(acos(" ^ value ^ "))"
+  | [] -> "(acos)"
+  | _ -> failwith "ocaml:acs";;
+
+let acs_outcome operation values =
+  try Some (operation values) with Failure message -> Some message;;
+
+let (original_counter,original_counter_reset) =
+  let state = ref 0 in
+  let counter _ = let value = !state in state := value + 1; value in
+  let counter_reset _ = state := 0 in
+  (counter,counter_reset);;
+
+let (normalized_counter,normalized_counter_reset) =
+  let state = ref 0 in
+  let counter () = let value = !state in state := value + 1; value in
+  let counter_reset () = state := 0 in
+  (counter,counter_reset);;
+
+let original_parse_output = ref [];;
+module Original_parse_initializers = struct
+  let autogen = ref [];;
+  autogen := [1;2];;
+  let macros = ref [0];;
+  macros := [3;4];;
+  original_parse_output := "sphere_math"::!original_parse_output;;
+end;;
+
+let normalized_parse_output = ref [];;
+module Normalized_parse_initializers = struct
+  let autogen = ref [];;
+  let _ = autogen := [1;2];;
+  let macros = ref [0];;
+  let _ = macros := [3;4];;
+  let _ = normalized_parse_output :=
+    "sphere_math"::!normalized_parse_output;;
+end;;
+
+let parse_ineq_runtime_ok =
+  let samples =
+    [[]; [Parse_other]; [Eps 0.0]; [Eps 0.5; Parse_other; Eps 9.0];
+     [Eps 9.0; Eps 9.0; Eps 0.5]] in
+  List.for_all
+    (fun values -> original_geteps values = normalized_geteps values)
+    samples &&
+  List.for_all
+    (fun values -> acs_outcome original_acs values =
+                   acs_outcome normalized_acs values)
+    [[]; ["x"]; ["x";"y"]] &&
+  original_counter () = normalized_counter () &&
+  original_counter () = normalized_counter () &&
+  (let _ = original_counter_reset () in
+   let _ = normalized_counter_reset () in
+   original_counter () = normalized_counter ()) &&
+  !Original_parse_initializers.autogen =
+    !Normalized_parse_initializers.autogen &&
+  !Original_parse_initializers.macros =
+    !Normalized_parse_initializers.macros &&
+  !original_parse_output = !normalized_parse_output;;
+
 let string_order_ok =
   List.sort (fun left right -> if left < right then -1 else 1) strings =
   List.sort String.compare strings;;
@@ -250,6 +335,6 @@ let string_order_ok =
 let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
      string_order_ok && structure_effects_ok && ineqdoc_value_ok &&
-     remaining_empty_reference_values_ok
+     remaining_empty_reference_values_ok && parse_ineq_runtime_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;

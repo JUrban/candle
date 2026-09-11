@@ -453,7 +453,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
             "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 10,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 1,
             "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 5,
         }
@@ -513,14 +513,47 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertIn(
             "String.compare left right < 0",
-            entries["PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"]
-            ["operations"][1]["after"],
+            next(
+                operation for operation in entries[
+                    "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+                ]["operations"]
+                if operation["id"].endswith("STRING-ORDER")
+            )["after"],
         )
         autogen = entries[
             "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
         ]["operations"][0]
         self.assertEqual(
             autogen["after"], "let autogen = ref ([]:term list);;",
+        )
+        parse_ineq_operations = entries[
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001"
+        ]["operations"]
+        self.assertEqual(
+            next(operation for operation in parse_ineq_operations
+                 if operation["id"].endswith("DOUBLE-MAXIMUM-001"))["line"],
+            337,
+        )
+        self.assertIn(
+            "Cake.Double.(>)",
+            next(operation for operation in parse_ineq_operations
+                 if operation["id"].endswith("DOUBLE-MAXIMUM-001"))["after"],
+        )
+        self.assertEqual(
+            [operation["line"] for operation in parse_ineq_operations
+             if operation["id"].endswith("STRUCTURE-EFFECT-001")],
+            [166, 214, 679],
+        )
+        self.assertEqual(
+            next(operation for operation in parse_ineq_operations
+                 if operation["id"].endswith("COUNTER-UNIT-001"))["after"],
+            "      let counter () = \n",
+        )
+        self.assertNotIn(
+            "Match_failure",
+            next(operation for operation in parse_ineq_operations
+                 if operation["id"].endswith("EXPLICIT-ACS-ARITY-001"))
+            ["after"],
         )
         parse_ineq_cfsqp = next(
             operation
@@ -743,7 +776,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 194)
+        self.assertEqual(len(operation_ids), 200)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

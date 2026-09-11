@@ -100,7 +100,7 @@
 #flyspeck_needs "nonlinear/nonlinear_lemma.hl";;
 (* 045 selected=flyspeck:text_formalization/nonlinear/functional_equation.hl sha256=cbf99bdf7bb15a14cd302670012468cb2dff24546044ae827f524a240fe090a3 *)
 #flyspeck_needs "nonlinear/functional_equation.hl";;
-(* 046 selected=flyspeck:text_formalization/nonlinear/parse_ineq.hl sha256=14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee normalization=PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=ab9a224653fca378093a366ee93b2c47a923ee92eeb0134a63d5fd38982400d0 *)
+(* 046 selected=flyspeck:text_formalization/nonlinear/parse_ineq.hl sha256=14405601d8c38ef491248a9f76cd666f5b61ca0a50bce4fd7b3d05bf1e3982ee normalization=PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001 normalized_sha256=9513a040c6b25b4361ab212e292e373e3b3189cf6a5e72ef428ce02a3397079a *)
 #flyspeck_needs "nonlinear/parse_ineq.hl";;
 (* 047 selected=flyspeck:text_formalization/nonlinear/optimize.hl sha256=dc2f9864b28be8ad3afde4fd99b3053828f0fe41bd5034e7d7a29997a177970b normalization=PROJECT-OPTIMIZE-S3-PRINTF-001 normalized_sha256=a50849fa616c17d2a2edba6e1317063f9509b1d33707d815d653d743acf8ae40 *)
 #flyspeck_needs "nonlinear/optimize.hl";;

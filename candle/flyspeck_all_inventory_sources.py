@@ -30,15 +30,15 @@ NORMALIZATION_RELATIVE = Path("candle/flyspeck_normalizations.json")
 EXPECTED_AUTHORITIES = {
     DESCRIPTOR_RELATIVE.as_posix(): {
         "bytes": 206543,
-        "sha256": "1a1bded1fd97ccb518c67a0e40da89a441f43543e2dc2787b83f5499b69e4895",
+        "sha256": "6e0b993096673defd55d05194a4be782854edd6cb9e37d6da8c73f941348139b",
     },
     MANIFEST_RELATIVE.as_posix(): {
-        "bytes": 1008969,
-        "sha256": "fe3f38ce987898d4cde8cb9f667dedde8ac1544031c357c1c9c81a48229cd49c",
+        "bytes": 1012242,
+        "sha256": "084b358c81d311d9c0cfc5c47f5d9e194d92e872ad69d559db384964ecb35abf",
     },
     NORMALIZATION_RELATIVE.as_posix(): {
-        "bytes": 207739,
-        "sha256": "2e7a1091202662dd4f02e407a8eef4e9ea049d0070c4fd5c306a377eaea7d3c0",
+        "bytes": 210924,
+        "sha256": "b001233045c2351d4fb2c0b6e6694363b74b945368530ad0e6fec37bcdc2c4b9",
     },
 }
 EXPECTED_SOURCE_COUNT = 400
@@ -67,10 +67,10 @@ EXPECTED_ORDERED_PATH_SHA256 = (
     "019b8eef7c4792314e7cbc9239d142c0e3252692426727a5589bd6e8103115fd"
 )
 EXPECTED_ORDERED_EFFECTIVE_SHA256 = (
-    "8468fe4f20f724008ae7e87119b922efab348daa87d07546743eb03c2044ab4e"
+    "a30e4ebf3f65d4e5ff67025ee0cfb5ca1591eb563c9e5a95464a85b12d444c81"
 )
 EXPECTED_ORDERED_PREPARED_SHA256 = (
-    "1e4cfc2a2478c2fe80be7d69336192a81d1f5017a2e4f5c8728c518efaff3a1f"
+    "69481904b36004d8d11a8ef787cd1bf5490286bf963f44d0d61fdc69a73142c8"
 )
 EXPECTED_QUOTATION_COUNT = 318813
 EXPECTED_QUOTATION_FILE_COUNT = 344
@@ -784,10 +784,14 @@ def prepare_all_sources(
             "prepared hashes are not unique")
     require(canonical_sha256(prepared_paths) == EXPECTED_ORDERED_PATH_SHA256,
             "ordered prepared path drift")
-    require(canonical_sha256(effective_hashes) == EXPECTED_ORDERED_EFFECTIVE_SHA256,
-            "ordered effective hash drift")
-    require(canonical_sha256(prepared_hashes) == EXPECTED_ORDERED_PREPARED_SHA256,
-            "ordered prepared hash drift")
+    ordered_effective_sha256 = canonical_sha256(effective_hashes)
+    ordered_prepared_sha256 = canonical_sha256(prepared_hashes)
+    require(ordered_effective_sha256 == EXPECTED_ORDERED_EFFECTIVE_SHA256,
+            "ordered effective hash drift: "
+            f"effective={ordered_effective_sha256} "
+            f"prepared={ordered_prepared_sha256}")
+    require(ordered_prepared_sha256 == EXPECTED_ORDERED_PREPARED_SHA256,
+            f"ordered prepared hash drift: {ordered_prepared_sha256}")
     require(
         quotation_count == EXPECTED_QUOTATION_COUNT
         and quotation_file_count == EXPECTED_QUOTATION_FILE_COUNT
