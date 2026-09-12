@@ -535,6 +535,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_flyspeck_ssreflect_thenl.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
             contract["gates"],
         )

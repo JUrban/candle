@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "25b36f072964e70f8c6e88e19724752d" then
+     "789b66cff58e848bc19544a06c4a5584" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "ad2bd9931ebb760a6b97f0e155789c1b" then
+     "e398f93bc7b550f3178e7274929086d0" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -272,7 +272,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_root "jHOLLight/caml/ssreflect.hl",
     Filename.concat candle_flyspeck_overlay_root
       "jHOLLight/caml/ssreflect.hl",
-    "2d0f8e0f45731595440fb400ac6956e6");
+    "da2027a209d53cdf0276a178b4f20ed1");
    (Filename.concat candle_flyspeck_root
       "formal_lp/hypermap/main/lp_certificate.hl",
     Filename.concat candle_flyspeck_overlay_root

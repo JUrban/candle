@@ -423,9 +423,9 @@
       "path": "jHOLLight/caml/ssreflect.hl",
       "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9",
       "source_md5": "6f69a400e5f3922f4d572840748b35c7",
-      "normalized_sha256": "43e8a264534ce3974bf73e1d376f1e98eb32518205fe0fbee5319a37cdfb414e",
-      "normalized_md5": "2d0f8e0f45731595440fb400ac6956e6",
-      "normalized_bytes": 33197,
+      "normalized_sha256": "eacedecebf58df95389c07d20f022dbb5819b1b790418b2e24d280cde93f4421",
+      "normalized_md5": "da2027a209d53cdf0276a178b4f20ed1",
+      "normalized_bytes": 33324,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001-FAIL-CLOSED",
@@ -436,10 +436,24 @@
           "end": "\t  Arg_theorem !use_arg_then_result in\n    arg_tac arg g;;\n",
           "span_sha256": "bfad00902444f02b10e2ce81ad0ae03865ee8a1effed82d033ce99c8838f61fc",
           "after": "let test_id_thm (id:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic test_id_thm is disabled by typed theorem arguments: \"^id);;\n\n\n(* The selected compiled route uses use_arg_then2 with an explicit theorem. *)\nlet use_arg_then (id:string) (arg_tac:arg_type->tactic) (g:goal) =\n  failwith (\"Candle Flyspeck: dynamic use_arg_then is disabled by typed theorem arguments: \"^id);;\n"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-INSTANTIATION-PROPAGATION-001-JUSTIFICATIONS",
+          "kind": "exact_bytes_replace_once",
+          "line": 60,
+          "before": "  let compose_justs n just1 just2 i ths =\n    let ths1,ths2 = chop_list n ths in\n    (just1 i ths1)::(just2 i ths2) in",
+          "after": "  let compose_justs n just1 just2 insts2 i ths =\n    let ths1,ths2 = chop_list n ths in\n    (just1 (compose_insts insts2 i) ths1)::(just2 i ths2) in"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-INSTANTIATION-PROPAGATION-001-GOALS",
+          "kind": "exact_bytes_replace_once",
+          "line": 69,
+          "before": "            ((union mvs1 mvs2,compose_insts insts1 insts2),\n             gls1@gls2,compose_justs (length gls1) just1 just2)",
+          "after": "            let combined_goals = (map (inst_goal insts2) gls1)@gls2 in\n            ((union mvs1 mvs2,compose_insts insts1 insts2),\n             combined_goals,\n             compose_justs (length gls1) just1 just2 insts2)"
         }
       ],
-      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged.",
-      "scope_limit": "This is not general ssreflect string lookup or Toploop compatibility. Lexical non-use cannot exclude reflection or external callers; the complete run and final fingerprints remain mandatory, and any call or change in the exact 22-file typed-use inventory reopens the gate."
+      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API.",
+      "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. The two additional hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70. They repair its obsolete tactic-composition protocol without changing which first or last subgoal receives the requested tactic, any theorem statement, hypothesis, proof script, proof intent, definition outside that helper, or axiom. Exact original rejection, normalized theorem construction for both combinators, current-runtime source comparison, a complete run, and final fingerprints remain required."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
