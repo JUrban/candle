@@ -260,10 +260,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             ajripqn["operations"][0]["after"],
             "(MATCH_MP_TAC Pack1.KIUMVTC);",
         )
-        marchal3 = entries["PROJECT-MARCHAL3-S2-OPEN-RESOLUTION-001"]
+        marchal3 = entries[
+            "PROJECT-MARCHAL3-S2-OPEN-AND-SET-SUBSTITUTION-001"
+        ]
         self.assertEqual(
             [operation["line"] for operation in marchal3["operations"]],
-            [40],
+            [40, 3869, 3878, 3887, 3896, 3905, 3914],
         )
         self.assertEqual(
             marchal3["operations"][0]["before"],
@@ -275,9 +277,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "let prove_by_refinement = "
             "Prove_by_refinement.prove_by_refinement;;",
         )
+        self.assertTrue(all(
+            "ONCE_REWRITE_TAC[GSYM (ASSUME" in operation["after"]
+            and "SUBST1_TAC (ASSUME" in operation["after"]
+            and "REWRITE_TAC[INSERT_AC]" in operation["after"]
+            for operation in marchal3["operations"][1:]
+        ))
         self.assertIn("Native OCaml", marchal3["semantic_rule"])
-        self.assertIn("every original theorem term", marchal3["semantic_rule"])
-        self.assertIn("all seven superseded", marchal3["scope_limit"])
+        self.assertIn("identical three-element set goal", marchal3["semantic_rule"])
+        self.assertIn("complete mechanically enumerated", marchal3["scope_limit"])
+        self.assertIn("final inverse-image proof", marchal3["scope_limit"])
         self.assertTrue(all(
             "Pack1.KIUMVTC" in operation["after"]
             for operation in ajripqn["operations"]
@@ -942,7 +951,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 226)
+        self.assertEqual(len(operation_ids), 232)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

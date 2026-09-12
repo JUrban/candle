@@ -539,6 +539,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_flyspeck_marchal3_set_substitution.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_flyspeck_inequalities_goal_effect.sh",
             contract["gates"],
         )
