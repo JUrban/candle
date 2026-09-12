@@ -93,7 +93,7 @@ present, and the v39 replacement is absent.
 - JSON parse, shell syntax, and `git diff --check`: PASS.
 
 The frozen implementation commit is
-`50e66f67733343a5cad7b74ef716f6908dbd652a`. Derived identities are:
+`50e66f65a327c1b94a9caeb92753861dfe77bc6f`. Derived identities are:
 
 - normalization contract SHA-256:
   `7a9085530d9e147e57ac3936e8eea7584464e2af4ed1314653f7040f59299d4e`;
