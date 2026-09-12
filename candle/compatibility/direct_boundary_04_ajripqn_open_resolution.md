@@ -87,8 +87,9 @@ and axioms remain unchanged.
 - exact loader inventory: PASS, 725 sites and unchanged kind counts;
 - JSON parsing and `git diff --check`: PASS.
 
-Committed Candle head is
-`1cfaf234fe179a067841f7dcadca629c7138c717`. The corresponding authority
+The compatibility implementation head is
+`1cfaf234fe179a067841f7dcadca629c7138c717`; the following documentation-only
+commit changes no manifest-selected source. The corresponding authority
 identities are:
 
 - normalization contract SHA-256:
@@ -105,8 +106,11 @@ identities are:
 
 ## Exact cumulative check
 
-The fresh v36 action-zero replay of all 152 boundary-04 actions is running at
-`/project/flyspeck-candle-runs/v36-dev-direct-boundary04-1cfaf23-attempt-001`.
-Its preparation receipt has SHA-256
-`1ec5725f7a0efeeee79b6f641de2f929f52ba0de508e8309ec481c670111df1f`.
-No pass credit is assigned before the exact nonce-bound result is validated.
+The first v36 candidate replay at
+`/project/flyspeck-candle-runs/v36-dev-direct-boundary04-1cfaf23-attempt-001`
+was deliberately terminated before its preflight/action frontier because this
+report was committed after launch and therefore advanced the worktree HEAD.
+No manifest-selected runtime source changed, but that run is conservatively
+excluded from exact evidence. A fresh plan, preparation receipt, and
+action-zero replay must be bound to the clean post-documentation head. No pass
+credit is assigned before that exact nonce-bound result is validated.
