@@ -423,9 +423,9 @@
       "path": "jHOLLight/caml/ssreflect.hl",
       "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9",
       "source_md5": "6f69a400e5f3922f4d572840748b35c7",
-      "normalized_sha256": "eacedecebf58df95389c07d20f022dbb5819b1b790418b2e24d280cde93f4421",
-      "normalized_md5": "da2027a209d53cdf0276a178b4f20ed1",
-      "normalized_bytes": 33324,
+      "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
+      "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
+      "normalized_bytes": 33333,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001-FAIL-CLOSED",
@@ -450,10 +450,17 @@
           "line": 69,
           "before": "            ((union mvs1 mvs2,compose_insts insts1 insts2),\n             gls1@gls2,compose_justs (length gls1) just1 just2)",
           "after": "            let combined_goals = (map (inst_goal insts2) gls1)@gls2 in\n            ((union mvs1 mvs2,compose_insts insts1 insts2),\n             combined_goals,\n             compose_justs (length gls1) just1 just2 insts2)"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-CONTEXT-TERM-SETIFY-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 115,
+          "before": "let f_vars = setify (flat (map frees tms)) in",
+          "after": "let f_vars = setify Term.(<) (flat (map frees tms)) in"
         }
       ],
-      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API.",
-      "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. The two additional hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70. They repair its obsolete tactic-composition protocol without changing which first or last subgoal receives the requested tactic, any theorem statement, hypothesis, proof script, proof intent, definition outside that helper, or axiom. Exact original rejection, normalized theorem construction for both combinators, current-runtime source comparison, a complete run, and final fingerprints remain required."
+      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle.",
+      "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, and the comparator replacement is confined to the unique unary setify over the flattened frees result at source line 115. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, definition outside those helpers, or axiom. Exact original rejection, normalized theorem construction for both combinators, focused term-setify execution, current-runtime source comparison, a complete run, and final fingerprints remain required."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",

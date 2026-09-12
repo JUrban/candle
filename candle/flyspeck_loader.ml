@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "ac5899d0c2c8b6c00a4610252e2d595a" then
+     "1425eb8427785c4fee6dae747daf27a1" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "63bec30fc190c4bef6d7e605b9f74dbd" then
+     "35781ea2f948e82899631cc315f251ff" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -272,7 +272,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_root "jHOLLight/caml/ssreflect.hl",
     Filename.concat candle_flyspeck_overlay_root
       "jHOLLight/caml/ssreflect.hl",
-    "da2027a209d53cdf0276a178b4f20ed1");
+    "c3dd5eb34cd4d139e3af3199cc633b0d");
    (Filename.concat candle_flyspeck_root
       "formal_lp/hypermap/main/lp_certificate.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -377,7 +377,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "local/WRGCVDR.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/WRGCVDR.hl",
-    "e5c7bfc4dba1b13cd610eaf51134eb20");
+    "9dd09663b6f25b2fca262908c6d4002a");
    (Filename.concat candle_flyspeck_text_root "tame/Inequalities.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/Inequalities.hl",

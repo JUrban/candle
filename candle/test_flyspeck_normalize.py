@@ -238,7 +238,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ssreflect = entries["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"]
         self.assertEqual(
             [operation["line"] for operation in ssreflect["operations"]],
-            [721, 60, 69],
+            [721, 60, 69, 115],
         )
         self.assertIn(
             "compose_insts insts2 i",
@@ -247,6 +247,10 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn(
             "map (inst_goal insts2) gls1",
             ssreflect["operations"][2]["after"],
+        )
+        self.assertEqual(
+            ssreflect["operations"][3]["after"],
+            "let f_vars = setify Term.(<) (flat (map frees tms)) in",
         )
         self.assertIn("current HOL Light", ssreflect["semantic_rule"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
@@ -881,7 +885,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 217)
+        self.assertEqual(len(operation_ids), 218)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

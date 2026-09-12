@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "cee9911948e5a43316f5977b53089cb4",
-    "generated_source_sha256": "c33785f8d1aa9ddb12ce39a2932f6ad8d5a17ae377f24903d50e69bde17a319c",
+    "generated_source_md5": "1425eb8427785c4fee6dae747daf27a1",
+    "generated_source_sha256": "7ed53384f1a69a3bf6cf7d0ea7fd40b0957e21f8de08004bf903cb677047e67b",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "354e56467eae5a412718083e901e9075",
+      "md5": "35781ea2f948e82899631cc315f251ff",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "fda7b995b00bb5323f0436ae3170abcf4f30ac4ad6a99cfedfdae6b2d78eb7cc"
+      "sha256": "ff75713e23c1b2e44281152384d760ad3365d14aa6f89d32416df3b583c50b31"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "9b37f4642fa6fbceda7dce97037bd9ba",
+      "md5": "bb15ef9017c88f70f1be8004d71a1d22",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "57680eed64313369028c64ec036159042a7008bc1e4d552971d5902c4b6e1900"
+      "sha256": "395383707d4e57f8ceb4ee79ddb152617a3d52165bf5bfdbb9a0c4366bdf33bd"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17649,10 +17649,10 @@
       "execution_normalization": {
         "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 33324,
-        "normalized_md5": "da2027a209d53cdf0276a178b4f20ed1",
-        "normalized_sha256": "eacedecebf58df95389c07d20f022dbb5819b1b790418b2e24d280cde93f4421",
-        "operation_count": 3
+        "normalized_bytes": 33333,
+        "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
+        "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
+        "operation_count": 4
       },
       "md5": "6f69a400e5f3922f4d572840748b35c7",
       "path": "jHOLLight/caml/ssreflect.hl",
@@ -22401,7 +22401,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "c6f0a91a9ae9dff0d1e7343b85ac361d6db136a1e8b870a7734c40806b86383e",
+    "contract_sha256": "34dff50590d35bb96f0898935086f7bf0b8cf17b39bfbfd88e73c70b91988233",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22839,10 +22839,10 @@
       {
         "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 33324,
-        "normalized_md5": "da2027a209d53cdf0276a178b4f20ed1",
-        "normalized_sha256": "eacedecebf58df95389c07d20f022dbb5819b1b790418b2e24d280cde93f4421",
-        "operation_count": 3,
+        "normalized_bytes": 33333,
+        "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
+        "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
+        "operation_count": 4,
         "operations": [
           {
             "after": "let test_id_thm (id:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic test_id_thm is disabled by typed theorem arguments: \"^id);;\n\n\n(* The selected compiled route uses use_arg_then2 with an explicit theorem. *)\nlet use_arg_then (id:string) (arg_tac:arg_type->tactic) (g:goal) =\n  failwith (\"Candle Flyspeck: dynamic use_arg_then is disabled by typed theorem arguments: \"^id);;\n",
@@ -22867,11 +22867,18 @@
             "id": "PROJECT-SSREFLECT-S2-INSTANTIATION-PROPAGATION-001-GOALS",
             "kind": "exact_bytes_replace_once",
             "line": 69
+          },
+          {
+            "after": "let f_vars = setify Term.(<) (flat (map frees tms)) in",
+            "before": "let f_vars = setify (flat (map frees tms)) in",
+            "id": "PROJECT-SSREFLECT-S2-CONTEXT-TERM-SETIFY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 115
           }
         ],
         "path": "jHOLLight/caml/ssreflect.hl",
-        "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. The two additional hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70. They repair its obsolete tactic-composition protocol without changing which first or last subgoal receives the requested tactic, any theorem statement, hypothesis, proof script, proof intent, definition outside that helper, or axiom. Exact original rejection, normalized theorem construction for both combinators, current-runtime source comparison, a complete run, and final fingerprints remain required.",
-        "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API.",
+        "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, and the comparator replacement is confined to the unique unary setify over the flattened frees result at source line 115. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, definition outside those helpers, or axiom. Exact original rejection, normalized theorem construction for both combinators, focused term-setify execution, current-runtime source comparison, a complete run, and final fingerprints remain required.",
+        "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle.",
         "source_key": "flyspeck:jHOLLight/caml/ssreflect.hl",
         "source_md5": "6f69a400e5f3922f4d572840748b35c7",
         "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9"
@@ -26590,8 +26597,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "354e56467eae5a412718083e901e9075",
-    "generated_source_sha256": "fda7b995b00bb5323f0436ae3170abcf4f30ac4ad6a99cfedfdae6b2d78eb7cc",
+    "generated_source_md5": "35781ea2f948e82899631cc315f251ff",
+    "generated_source_sha256": "ff75713e23c1b2e44281152384d760ad3365d14aa6f89d32416df3b583c50b31",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

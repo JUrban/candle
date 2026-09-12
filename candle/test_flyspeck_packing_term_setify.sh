@@ -29,6 +29,8 @@ trap cleanup EXIT
 rg -Fq 'Type mismatch between' "$test_dir/original.log"
 rg -Fq 'val candle_packing_flat_term_setify_ok = true: bool' \
   "$test_dir/normalized.log"
+rg -Fq 'val candle_ssreflect_context_setify_ok = true: bool' \
+  "$test_dir/normalized.log"
 if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/normalized.log"; then
   tail -n 50 "$test_dir/normalized.log" >&2
   exit 1
