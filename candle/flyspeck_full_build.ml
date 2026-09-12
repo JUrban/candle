@@ -190,7 +190,7 @@
 #flyspeck_needs "packing/QZKSYKG.hl";;
 (* 088 selected=flyspeck:text_formalization/packing/DDZUPHJ.hl sha256=2618445d641ca5348e8101d1c54b2056a9120bd4a3238cf93f997c88da5ac1ac *)
 #flyspeck_needs "packing/DDZUPHJ.hl";;
-(* 089 selected=flyspeck:text_formalization/packing/AJRIPQN.hl sha256=692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c *)
+(* 089 selected=flyspeck:text_formalization/packing/AJRIPQN.hl sha256=692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c normalization=PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001 normalized_sha256=dfd7636c347a07c7fc365dcc9f20cc7e4bd72fdadcc303de27f3595aee071281 *)
 #flyspeck_needs "packing/AJRIPQN.hl";;
 (* 090 selected=flyspeck:text_formalization/packing/QZYZMJC.hl sha256=7c83844660381ca4c4b4adb63736ea7dc320ea33d92625a70989b563158f44aa *)
 #flyspeck_needs "packing/QZYZMJC.hl";;

@@ -3946,6 +3946,41 @@
       "scope_limit": "This hash-pinned replacement is confined to the unique g(DIH_Y_INEQ_concl) module-structure phrase at Inequalities.hl line 657. It changes no term construction, theorem statement, hypothesis, tactic, proof step, proof intent, definition, or axiom. Native effect equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
     },
     {
+      "id": "PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001",
+      "source_key": "flyspeck:text_formalization/packing/AJRIPQN.hl",
+      "path": "text_formalization/packing/AJRIPQN.hl",
+      "source_sha256": "692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c",
+      "source_md5": "70225b9f9242276e9b068e7ecb21b298",
+      "normalized_sha256": "dfd7636c347a07c7fc365dcc9f20cc7e4bd72fdadcc303de27f3595aee071281",
+      "normalized_md5": "803d1bae0841fb4d55d6b14a04934576",
+      "normalized_bytes": 36585,
+      "operations": [
+        {
+          "id": "PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001-PACK1-KIUMVTC",
+          "kind": "exact_bytes_replace_once",
+          "line": 137,
+          "before": "(MATCH_MP_TAC KIUMVTC);",
+          "after": "(MATCH_MP_TAC Pack1.KIUMVTC);"
+        },
+        {
+          "id": "PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001-PACK1-KIUMVTC-RADIUS-5",
+          "kind": "exact_bytes_replace_once",
+          "line": 333,
+          "before": "(ASM_SIMP_TAC[KIUMVTC; REAL_ARITH `&0 <= &5`]);",
+          "after": "(ASM_SIMP_TAC[Pack1.KIUMVTC; REAL_ARITH `&0 <= &5`]);"
+        },
+        {
+          "id": "PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001-PACK1-KIUMVTC-RADIUS-15",
+          "kind": "exact_bytes_replace_once",
+          "line": 626,
+          "before": "(ASM_SIMP_TAC[KIUMVTC; REAL_ARITH `&0 <= &15`]);",
+          "after": "(ASM_SIMP_TAC[Pack1.KIUMVTC; REAL_ARITH `&0 <= &15`]);"
+        }
+      ],
+      "semantic_rule": "Under native OCaml module semantics, an open declaration imports names for lexical use but does not re-export them as members of the enclosing module. AJRIPQN therefore resolves all three unqualified KIUMVTC occurrences to Pack1.KIUMVTC, the last genuinely opened definition in its lexical environment. Candle currently re-exports opened members, allowing a later module's imported no-radius KIUMVTC to shadow it. Explicit qualification selects the exact theorem that native OCaml selects at each site and preserves the original MATCH_MP_TAC and ASM_SIMP_TAC steps, including the nonnegative-radius obligations.",
+      "scope_limit": "These hash-pinned replacements qualify only the complete mechanically enumerated KIUMVTC use set at AJRIPQN.hl lines 137, 333, and 626. They do not whitelist a basename, alter loader identity, change the theorem statement, hypotheses, tactic order, proof intent, definitions, or axioms. Native module-resolution and focused Candle original-reject/normalized-accept oracles plus exact cumulative loading are required."
+    },
+    {
       "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001",
       "source_key": "flyspeck:text_formalization/packing/SLTSTLO.hl",
       "path": "text_formalization/packing/SLTSTLO.hl",
