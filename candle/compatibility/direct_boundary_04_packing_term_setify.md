@@ -1,6 +1,6 @@
 # Direct Flyspeck boundary 04: packing term `setify` batch
 
-Date: 2026-09-11 UTC
+Date: 2026-09-12 UTC
 
 Status: DEVELOPMENT / NON-RELEASE. This report makes no S1, S2, S3,
 qualification, promotion, or release claim. No qualified Great100 runtime,
@@ -8,20 +8,19 @@ source, report, transcript, or semantic-evidence byte was changed.
 
 ## Actual direct progress
 
-The latest completed exact cumulative run reached 60 actions and passed 59.
-Actions 000--058 are exact-green. Action 059,
-`text_formalization/fan/Conforming.hl`, is the first recorded failure and
-action 060 was not reached. Its immutable development result receipt has
-SHA-256
-`eabe2ae9960291248c1e61c459e956f85587469ce0b337f05972463a66c49f1a`.
+The completed v29 exact cumulative run reached 73 actions and passed 72.
+Actions 000--071 are exact-green, including this batch's action-070
+`EMNWUUS.hl` normalization. It emitted exactly one authenticated preflight
+marker and 72 unique nonce-bound success markers equal to the first 72
+instrumented-prefix markers. Its immutable DEVELOPMENT / NON-RELEASE failure
+receipt has SHA-256
+`6634b9ad5fd08c898f8a2b90e5179d1886747f0c2cd6266e45e36ffbbff5a149`.
 
-A fresh v28 cumulative replay through action 060 is in progress on the exact
-committed Conforming normalization. Until that replay finishes, boundary
-`03-analysis-through-060`, full direct S2, and nonlinear/LP S3 remain open.
-
-The prior complete dirty boundary-04 diagnostic identifies the next shared
-compatibility class at actions 070 and 108. It is discovery evidence only and
-does not award exact cumulative action credit.
+Action 072, `text_formalization/packing/SLTSTLO.hl`, is the first genuine
+failure; action 073 was not reached. The separate action-108 `OXLZLEZ2.hl`
+site therefore remains focused/dirty evidence only. Boundary
+`03-analysis-through-060` is closed at 61/61, while cumulative boundary 04,
+full direct S2, and nonlinear/LP S3 remain open.
 
 ## Historical inspection and bounded normalization
 
@@ -93,12 +92,9 @@ The v29 derived authority identities are:
 
 ## Next exact boundary work
 
-Only a fresh cumulative replay from action zero may credit this batch. Once
-the v28 action-060 replay closes boundary 03, the v29 branch should replay
-boundary 04 through action 151. The first anticipated later class is action
-079, `local/WRGCVDR.hl`: a focused probe independently reproduces its logged
-theorem/registration mismatch and accepts explicit wildcard bindings for its
-two unchanged `parse_as_infix` effects. That is a lead for a later isolated
-batch, not part of this change. A first miniature for action 083 did not
-reproduce its context-dependent failure, so no action-083 normalization is
-proposed here.
+Only a fresh cumulative replay from action zero may credit later batches. The
+v29 replay has validated action 070 and exposed action 072. The next isolated
+batch supplies the same already-validated comparator at SLTSTLO's third active
+copy of this exact helper. The previously prepared action-079 and action-083
+batches remain queued after that new predecessor and cannot claim exact action
+credit yet.

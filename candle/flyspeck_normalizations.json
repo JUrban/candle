@@ -3867,6 +3867,27 @@
       ],
       "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
       "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at OXLZLEZ2.hl line 117. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001",
+      "source_key": "flyspeck:text_formalization/packing/SLTSTLO.hl",
+      "path": "text_formalization/packing/SLTSTLO.hl",
+      "source_sha256": "f3d683fb2d3d8b2f49cfea798f7cb66b8d20f23efb530bd1b86519727b70e346",
+      "source_md5": "fe92d9638666ccb6e6b8ec82d8c5bf86",
+      "normalized_sha256": "c2acbede83d2b6d5e8bec9cff266bba4394883be3c3de8ff2545b52c8b4c56f2",
+      "normalized_md5": "78e1641aace383531357719f10fa90cb",
+      "normalized_bytes": 137466,
+      "operations": [
+        {
+          "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001-EXPLICIT-COMPARATOR",
+          "kind": "exact_bytes_replace_once",
+          "line": 27,
+          "before": "let vs = setify (flat vss) in",
+          "after": "let vs = setify Term.(<) (flat vss) in"
+        }
+      ],
+      "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
+      "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at SLTSTLO.hl line 27. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
     }
   ]
 }
