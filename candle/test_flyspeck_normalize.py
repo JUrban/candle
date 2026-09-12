@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 56)
+        self.assertEqual(len(self.contract["entries"]), 57)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -217,16 +217,36 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         wrgcvdr = entries["PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001"]
         self.assertEqual(
             [operation["line"] for operation in wrgcvdr["operations"]],
-            [75, 76, 238],
+            [75, 76, 238, 2496, 2500],
         )
         self.assertTrue(all(
             operation["after"].startswith("let _ = parse_as_infix")
             for operation in wrgcvdr["operations"][:2]
         ))
-        self.assertTrue(
-            wrgcvdr["operations"][2]["after"].startswith("let _ = prove(")
-        )
+        self.assertTrue(wrgcvdr["operations"][2]["after"].startswith(
+            "let _ = prove("
+        ))
+        self.assertTrue(all(
+            operation["after"].startswith("let _ = REWRITE_RULE")
+            for operation in wrgcvdr["operations"][3:]
+        ))
+        self.assertIn("complete mechanically enumerated", wrgcvdr["scope_limit"])
         self.assertIn("original order", wrgcvdr["semantic_rule"])
+        local_lemmas = entries[
+            "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001"
+        ]
+        self.assertEqual(
+            [operation["line"] for operation in local_lemmas["operations"]],
+            [19, 20],
+        )
+        self.assertTrue(all(
+            operation["after"].startswith("let _ = parse_as_infix")
+            for operation in local_lemmas["operations"]
+        ))
+        self.assertIn(
+            "complete mechanically enumerated", local_lemmas["scope_limit"]
+        )
+        self.assertIn("original order", local_lemmas["semantic_rule"])
         ajripqn = entries["PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001"]
         self.assertEqual(
             [operation["line"] for operation in ajripqn["operations"]],
@@ -904,7 +924,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 221)
+        self.assertEqual(len(operation_ids), 225)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

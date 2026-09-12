@@ -3895,9 +3895,9 @@
       "path": "text_formalization/local/WRGCVDR.hl",
       "source_sha256": "9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d",
       "source_md5": "d7b9d317226c36f2cbea68879c67ea74",
-      "normalized_sha256": "d63e3cd9230fd5aadf98930f790a2c3baeea56f73ffa5d20c01e9c76a52fce69",
-      "normalized_md5": "9dd09663b6f25b2fca262908c6d4002a",
-      "normalized_bytes": 95420,
+      "normalized_sha256": "802b712c227d50175b9de7fc3ed18a616151447bf9a112cb448aa7f5e16c2943",
+      "normalized_md5": "2d9b602ef3d5124ce0330406680168bd",
+      "normalized_bytes": 95436,
       "operations": [
         {
           "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001-HAS-ORDERS",
@@ -3919,10 +3919,52 @@
           "line": 238,
           "before": "prove(` UNIONS E SUBSET V /\\ {a, b} IN E ==> a IN V /\\ b IN V `,\r\nREWRITE_TAC[UNIONS_SUBSET;\r\n(GSYM o (TR_SET_RULE[]))` {a,b} SUBSET V <=> a IN V /\\ b IN V `] THEN \r\nMESON_TAC[]);;",
           "after": "let _ = prove(` UNIONS E SUBSET V /\\ {a, b} IN E ==> a IN V /\\ b IN V `,\r\nREWRITE_TAC[UNIONS_SUBSET;\r\n(GSYM o (TR_SET_RULE[]))` {a,b} SUBSET V <=> a IN V /\\ b IN V `] THEN \r\nMESON_TAC[]);;"
+        },
+        {
+          "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001-DISCARDED-LOCAL-FAN-BIJ",
+          "kind": "exact_bytes_replace_once",
+          "line": 2496,
+          "before": "REWRITE_RULE[MESON[]` (! h. a /\\ h = f ==> BIJ h S C ) <=> ( a ==> BIJ f S C ) `]\r\n  (GEN `f: real^3#real^3->real^3#real^3->bool ` LOCAL_FAN_IMP_BIJ_FF_NODES);;",
+          "after": "let _ = REWRITE_RULE[MESON[]` (! h. a /\\ h = f ==> BIJ h S C ) <=> ( a ==> BIJ f S C ) `]\r\n  (GEN `f: real^3#real^3->real^3#real^3->bool ` LOCAL_FAN_IMP_BIJ_FF_NODES);;"
+        },
+        {
+          "id": "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001-DISCARDED-FAN-BIJ",
+          "kind": "exact_bytes_replace_once",
+          "line": 2500,
+          "before": "REWRITE_RULE[MESON[]` (! h. a /\\ h = f ==> BIJ h S C ) <=> ( a ==> BIJ f S C ) `]\r\n  (GEN `f: real^3->real^3#real^3->bool` FAN_IMP_BIJ_V_NODE_OF_HYP);;",
+          "after": "let _ = REWRITE_RULE[MESON[]` (! h. a /\\ h = f ==> BIJ h S C ) <=> ( a ==> BIJ f S C ) `]\r\n  (GEN `f: real^3->real^3#real^3->bool` FAN_IMP_BIJ_V_NODE_OF_HYP);;"
         }
       ],
-      "semantic_rule": "Both parser registrations and the deliberately discarded theorem proof execute exactly once at their original module-initialization positions, in the original order, with identical arguments, effects, results, and exceptions. Explicit wildcard bindings discard the same returned values while giving Candle unambiguous module-structure items.",
-      "scope_limit": "These hash-pinned replacements are confined to WRGCVDR.hl lines 75, 76, and 238. They do not alter the preceding or following definitions, the discarded theorem statement or proof, any retained theorem statement, hypothesis, proof step, proof intent, or axiom. Native effect/order equivalence, focused original-reject/normalized-accept execution for both unit- and theorem-valued effects, and cumulative source loading are required."
+      "semantic_rule": "Both parser registrations and all three deliberately discarded theorem-producing expressions execute exactly once at their original module-initialization positions, in the original order, with identical arguments, effects, results, and exceptions. The two newly explicit REWRITE_RULE bindings construct exactly the same specialized theorems from the same retained LOCAL_FAN_IMP_BIJ_FF_NODES and FAN_IMP_BIJ_V_NODE_OF_HYP theorems. Explicit wildcard bindings discard the same returned values while giving Candle unambiguous module-structure items.",
+      "scope_limit": "These hash-pinned replacements are confined to the complete mechanically enumerated anonymous structure-expression set in WRGCVDR.hl at lines 75, 76, 238, 2496, and 2500. They do not alter the preceding or following definitions, any discarded theorem expression, any retained theorem statement, hypothesis, tactic, proof step, proof intent, or axiom. Native effect/order equivalence, focused original-reject/normalized-accept execution for both unit- and theorem-valued effects, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/local_lemmas.hl",
+      "path": "text_formalization/local/local_lemmas.hl",
+      "source_sha256": "935a70e862fd3783a73df0cc6bc5afca94f90fefeccb1c49696b75870a031990",
+      "source_md5": "4aaa29b2a1125f638ca39419cd2cf008",
+      "normalized_sha256": "b68a839b7e31df60c7a70b5f9f5833aa45a1ec64869e661ee8a80be9f96b7b3b",
+      "normalized_md5": "5ba3d39c65b535e98f4af9dfbce0f82a",
+      "normalized_bytes": 224886,
+      "operations": [
+        {
+          "id": "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001-HAS-ORDERS",
+          "kind": "exact_bytes_replace_once",
+          "line": 19,
+          "before": "parse_as_infix(\"has_orders\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"has_orders\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001-CYCLIC-ON",
+          "kind": "exact_bytes_replace_once",
+          "line": 20,
+          "before": "parse_as_infix(\"cyclic_on\",(13,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"cyclic_on\",(13,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "Both parser registrations execute exactly once at their original module-initialization positions, in the original order, with identical names, precedences, right associativity, returned unit values, and exceptions. Explicit wildcard bindings discard those same unit values while giving Candle unambiguous module-structure items.",
+      "scope_limit": "These hash-pinned replacements are confined to the complete mechanically enumerated anonymous structure-expression set in local_lemmas.hl at lines 19 and 20. They alter no definition, theorem statement, hypothesis, tactic, proof step, proof intent, or axiom. The upstream fix-top100 branch contains no local_lemmas source or patch; native effect/order equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
     },
     {
       "id": "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001",

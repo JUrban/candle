@@ -170,13 +170,13 @@
 #flyspeck_needs "packing/URRPHBZ3.hl";;
 (* 078 selected=flyspeck:text_formalization/packing/RVFXZBU.hl sha256=2181a59b2c3ab112f304b1fa5ad510c506c9c9a69d7a56b98483c0a4e310545f *)
 #flyspeck_needs "packing/RVFXZBU.hl";;
-(* 079 selected=flyspeck:text_formalization/local/WRGCVDR.hl sha256=9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d normalization=PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001 normalized_sha256=d63e3cd9230fd5aadf98930f790a2c3baeea56f73ffa5d20c01e9c76a52fce69 *)
+(* 079 selected=flyspeck:text_formalization/local/WRGCVDR.hl sha256=9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d normalization=PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001 normalized_sha256=802b712c227d50175b9de7fc3ed18a616151447bf9a112cb448aa7f5e16c2943 *)
 #flyspeck_needs "local/WRGCVDR.hl";;
 (* 080 selected=flyspeck:text_formalization/local/LVDUCXU.hl sha256=0f0924d813bcd36df3ce9a0a48227b6076b1467967e02fb8dea1fb42554c6813 *)
 #flyspeck_needs "local/LVDUCXU.hl";;
 (* 081 selected=flyspeck:text_formalization/local/LDURDPN.hl sha256=8ebeec6c24f0f8bdfb1fb142cab4e0d8db17fbe3118b746d316ad057574abd56 *)
 #flyspeck_needs "local/LDURDPN.hl";;
-(* 082 selected=flyspeck:text_formalization/local/local_lemmas.hl sha256=935a70e862fd3783a73df0cc6bc5afca94f90fefeccb1c49696b75870a031990 *)
+(* 082 selected=flyspeck:text_formalization/local/local_lemmas.hl sha256=935a70e862fd3783a73df0cc6bc5afca94f90fefeccb1c49696b75870a031990 normalization=PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001 normalized_sha256=b68a839b7e31df60c7a70b5f9f5833aa45a1ec64869e661ee8a80be9f96b7b3b *)
 #flyspeck_needs "local/local_lemmas.hl";;
 (* 083 selected=flyspeck:text_formalization/tame/Inequalities.hl sha256=cb89eb6e98594a2f3b76dd2f6ea5e26b5b1c948da617470fb462afa771ef58b4 normalization=PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001 normalized_sha256=4ed68544b82ce151111746a78f3457a9bf025e043d339e5ab4c97ee92e795587 *)
 #flyspeck_needs "tame/Inequalities.hl";;
