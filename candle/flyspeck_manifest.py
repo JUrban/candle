@@ -1942,7 +1942,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_packing_term_setify.sh",
                 "candle:candle/test_flyspeck_wrgcvdr_structure_effect.sh",
                 "candle:candle/test_flyspeck_ajripqn_open_resolution.sh",
-                "candle:candle/test_flyspeck_marchal3_set_substitution.sh",
+                "candle:candle/test_flyspeck_marchal3_open_resolution.sh",
                 "candle:candle/test_flyspeck_inequalities_goal_effect.sh",
                 "candle:candle/test_flyspeck_ssreflect_thenl.sh",
                 "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",

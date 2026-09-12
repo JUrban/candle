@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "8fe9a78b735356314017be0aac7af4b2",
-    "generated_source_sha256": "1fe43286b1ca08eb86cb05086ce261c11cff78e24b8ba74ba4212eb3c89b504b",
+    "generated_source_md5": "6f25df5cf05e0c09938395dda8e12d0d",
+    "generated_source_sha256": "cb692bb6f65af075e86474122f956fd20e4ad3fdfd46c54d40d76b32b63250da",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11578,7 +11578,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 61992,
+      "bytes": 61991,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "6ebecb4ab241b30438448b5a4df1f04b",
+      "md5": "0a1b7d74a9d4ee0697672e46a985398e",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "24c29c0140a7c33255ad362005f5fbd231643b8eaa49c728e792bb9352c4f0f6"
+      "sha256": "44f887f532fd240cc94c4370593c424fce0885b2b4c5036150130908d3808c37"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "777a43267df73a49643975ee8048b088",
+      "md5": "a97522c4e267fd75fd359669d0da14d7",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "1c7103085a42ded4c931c55661159741c7a4e2f7a7de96ae9f041f41d25d2dec"
+      "sha256": "356276e7ca4c5b55f7edeb035d3f440c9b7bff1c207c2fb632eeb497714447bb"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -20553,12 +20553,12 @@
       "bytes": 254482,
       "dependencies": [],
       "execution_normalization": {
-        "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001",
+        "id": "PROJECT-MARCHAL3-S2-OPEN-RESOLUTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 254766,
-        "normalized_md5": "5d5478849ff5a78548d457710143537d",
-        "normalized_sha256": "82857d6a9db661dc0cb9a4123c84eb4b51d6686bf17711fe90d2e6433a5a679d",
-        "operation_count": 7
+        "normalized_bytes": 254551,
+        "normalized_md5": "75d4e4000ddf71bc004102b9c28326f1",
+        "normalized_sha256": "0b7c87e5f08bd9dba862ee6b2da624e2530964ae21f22e960e45ea2f6618960a",
+        "operation_count": 1
       },
       "md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
       "path": "text_formalization/packing/marchal3.hl",
@@ -22425,7 +22425,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "f23aefc881a471b9c2daa7f149f185d550d7bd28622a2f66b9f50aede41635f5",
+    "contract_sha256": "7ba583ca2958352304ea670e09e05262c9d8a34ad540c47e18602d302e5f2348",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26560,66 +26560,24 @@
         "source_sha256": "692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c"
       },
       {
-        "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001",
+        "id": "PROJECT-MARCHAL3-S2-OPEN-RESOLUTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 254766,
-        "normalized_md5": "5d5478849ff5a78548d457710143537d",
-        "normalized_sha256": "82857d6a9db661dc0cb9a4123c84eb4b51d6686bf17711fe90d2e6433a5a679d",
-        "operation_count": 7,
+        "normalized_bytes": 254551,
+        "normalized_md5": "75d4e4000ddf71bc004102b9c28326f1",
+        "normalized_sha256": "0b7c87e5f08bd9dba862ee6b2da624e2530964ae21f22e960e45ea2f6618960a",
+        "operation_count": 1,
         "operations": [
           {
-            "after": "(NEW_GOAL `x = y:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = y`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `x = y:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-Y",
+            "after": "open Upfzbzm_support_lemmas;;\n\nlet prove_by_refinement = Prove_by_refinement.prove_by_refinement;;",
+            "before": "open Upfzbzm_support_lemmas;;",
+            "id": "PROJECT-MARCHAL3-S2-OPEN-RESOLUTION-001-STRICTBUILD-BINDING",
             "kind": "exact_bytes_replace_once",
-            "line": 3869
-          },
-          {
-            "after": "(NEW_GOAL `x = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = z`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `x = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-Z",
-            "kind": "exact_bytes_replace_once",
-            "line": 3878
-          },
-          {
-            "after": "(NEW_GOAL `x = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y, z}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = t`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `x = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y, z}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-T",
-            "kind": "exact_bytes_replace_once",
-            "line": 3887
-          },
-          {
-            "after": "(NEW_GOAL `y = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `y:A = z`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `y = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Y-EQ-Z",
-            "kind": "exact_bytes_replace_once",
-            "line": 3896
-          },
-          {
-            "after": "(NEW_GOAL `y = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `y:A = t`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `y = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Y-EQ-T",
-            "kind": "exact_bytes_replace_once",
-            "line": 3905
-          },
-          {
-            "after": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `z:A = t`) THEN REWRITE_TAC[INSERT_AC]);",
-            "before": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Z-EQ-T",
-            "kind": "exact_bytes_replace_once",
-            "line": 3914
-          },
-          {
-            "after": "(REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ\n   (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);",
-            "before": "(UP_ASM_TAC THEN MESON_TAC[PERMUTES_INVERSE_EQ; \n   ASSUME `(p:num->num) i1 = 0 /\\ p i2 = 1 /\\ p i3 = 2 /\\ p i4 = 3`]);",
-            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-INVERSE-REWRITE",
-            "kind": "exact_bytes_replace_once",
-            "line": 4127
+            "line": 40
           }
         ],
         "path": "text_formalization/packing/marchal3.hl",
-        "scope_limit": "These seven hash-pinned replacements are confined to the six complete mechanically enumerated repeated set-equality derivations and the final inverse-image conjunction in LEFT_ACTION_LIST_3_EXISTS at marchal3.hl lines 3869--3921 and 4127--4128. They do not raise a global MESON depth, alter any theorem statement or hypothesis, introduce a lemma or axiom, or change any other refinement step. Focused proof of all six polymorphic subgoals and the inverse rewrite, full normalized source loading, and exact cumulative replay are required.",
-        "semantic_rule": "Each of the first six cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}. The original SET_TAC derives the corresponding three-element set equality by search. Each replacement proves that identical intermediate goal deterministically: rewrite the left set by the symmetric retained set equality, substitute the already proved point equality, and normalize duplicate insertions with the existing INSERT_AC theorem. At the final replacement, the retained assumption p permutes 0..3 instantiates PERMUTES_INVERSE_EQ, whose four rewrites turn the unchanged inverse-image conjunction directly into the four already-proved p-image equalities. The case order, intermediate goals, preceding equality subproofs, following cardinality contradictions, and final theorem are unchanged.",
+        "scope_limit": "This hash-pinned replacement is confined to the unique final open declaration at marchal3.hl line 40 and adds one qualified lexical binding. It does not change any theorem statement, hypothesis, tactic list, proof step, proof intent, definition, or axiom. In particular, it removes all seven superseded compensating edits to LEFT_ACTION_LIST_3_EXISTS and restores that source proof byte-for-byte. A Marchal-specific native/Candle open-resolution oracle, full normalized source loading, and exact cumulative replay are required.",
+        "semantic_rule": "Native OCaml open declarations import names for lexical use but do not re-export names that the opened module merely imported. Marchal3's long open chain therefore leaves Strictbuild's top-level Prove_by_refinement.prove_by_refinement selected for every unqualified proof call. Candle currently re-exports imported module members; the exact action-090 transcript shows the resulting leaked prove_by_refinement members through the late Qzyzmjc module. The explicit qualified binding after the complete open sequence restores the exact function selected by native OCaml while leaving every original theorem term and tactic list byte unchanged.",
         "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
         "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
         "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926"
@@ -26665,7 +26623,7 @@
       "candle:candle/test_flyspeck_packing_term_setify.sh",
       "candle:candle/test_flyspeck_wrgcvdr_structure_effect.sh",
       "candle:candle/test_flyspeck_ajripqn_open_resolution.sh",
-      "candle:candle/test_flyspeck_marchal3_set_substitution.sh",
+      "candle:candle/test_flyspeck_marchal3_open_resolution.sh",
       "candle:candle/test_flyspeck_inequalities_goal_effect.sh",
       "candle:candle/test_flyspeck_ssreflect_thenl.sh",
       "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
@@ -26769,8 +26727,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "6ebecb4ab241b30438448b5a4df1f04b",
-    "generated_source_sha256": "24c29c0140a7c33255ad362005f5fbd231643b8eaa49c728e792bb9352c4f0f6",
+    "generated_source_md5": "0a1b7d74a9d4ee0697672e46a985398e",
+    "generated_source_sha256": "44f887f532fd240cc94c4370593c424fce0885b2b4c5036150130908d3808c37",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
