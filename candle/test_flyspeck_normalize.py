@@ -198,11 +198,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 54)
+        self.assertEqual(len(self.contract["entries"]), 55)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
             ("PROJECT-OXLZLEZ2-S2-TERM-SETIFY-001", 117),
+            ("PROJECT-SLTSTLO-S2-TERM-SETIFY-001", 27),
         ):
             entry = entries[entry_id]
             self.assertEqual(len(entry["operations"]), 1)
@@ -877,7 +878,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 215)
+        self.assertEqual(len(operation_ids), 216)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
