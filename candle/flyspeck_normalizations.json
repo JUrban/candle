@@ -4023,6 +4023,62 @@
       "scope_limit": "These hash-pinned replacements qualify only the complete mechanically enumerated KIUMVTC use set at AJRIPQN.hl lines 137, 333, and 626. They do not whitelist a basename, alter loader identity, change the theorem statement, hypotheses, tactic order, proof intent, definitions, or axioms. Native module-resolution and focused Candle original-reject/normalized-accept oracles plus exact cumulative loading are required."
     },
     {
+      "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001",
+      "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
+      "path": "text_formalization/packing/marchal3.hl",
+      "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926",
+      "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
+      "normalized_sha256": "16a6add24b6bf5d31f18af745c5c95dbc2d32b04eb96f41ab77372c2e25ad26d",
+      "normalized_md5": "3ce51a98ce251632482e277b15662f63",
+      "normalized_bytes": 254788,
+      "operations": [
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-Y",
+          "kind": "exact_bytes_replace_once",
+          "line": 3869,
+          "before": "(NEW_GOAL `x = y:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `x = y:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = y`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-Z",
+          "kind": "exact_bytes_replace_once",
+          "line": 3878,
+          "before": "(NEW_GOAL `x = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `x = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = z`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-X-EQ-T",
+          "kind": "exact_bytes_replace_once",
+          "line": 3887,
+          "before": "(NEW_GOAL `x = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y, z}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `x = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y, z}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = t`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Y-EQ-Z",
+          "kind": "exact_bytes_replace_once",
+          "line": 3896,
+          "before": "(NEW_GOAL `y = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `y = z:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `y:A = z`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Y-EQ-T",
+          "kind": "exact_bytes_replace_once",
+          "line": 3905,
+          "before": "(NEW_GOAL `y = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `y = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `y:A = t`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Z-EQ-T",
+          "kind": "exact_bytes_replace_once",
+          "line": 3914,
+          "before": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
+          "after": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `z:A = t`) THEN REWRITE_TAC[INSERT_AC]);"
+        }
+      ],
+      "semantic_rule": "Each case has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}. The original SET_TAC derives the corresponding three-element set equality by search. Each replacement proves that identical intermediate goal deterministically: rewrite the left set by the symmetric retained set equality, substitute the already proved point equality, and normalize duplicate insertions with the existing INSERT_AC theorem. The six-case order, preceding equality subproofs, following cardinality contradictions, and final theorem are unchanged.",
+      "scope_limit": "These six hash-pinned replacements are confined to the complete mechanically enumerated repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at marchal3.hl lines 3869--3921. They do not raise a global MESON depth, alter any theorem statement or hypothesis, introduce a lemma or axiom, or change any other refinement step. Focused proof of all six polymorphic subgoals, full normalized source loading, and exact cumulative replay are required."
+    },
+    {
       "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001",
       "source_key": "flyspeck:text_formalization/packing/SLTSTLO.hl",
       "path": "text_formalization/packing/SLTSTLO.hl",

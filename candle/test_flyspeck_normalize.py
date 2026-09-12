@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 57)
+        self.assertEqual(len(self.contract["entries"]), 58)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -260,6 +260,19 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             ajripqn["operations"][0]["after"],
             "(MATCH_MP_TAC Pack1.KIUMVTC);",
         )
+        marchal3 = entries["PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001"]
+        self.assertEqual(
+            [operation["line"] for operation in marchal3["operations"]],
+            [3869, 3878, 3887, 3896, 3905, 3914],
+        )
+        self.assertTrue(all(
+            "ONCE_REWRITE_TAC[GSYM (ASSUME" in operation["after"]
+            and "SUBST1_TAC (ASSUME" in operation["after"]
+            and "REWRITE_TAC[INSERT_AC]" in operation["after"]
+            for operation in marchal3["operations"]
+        ))
+        self.assertIn("complete mechanically enumerated", marchal3["scope_limit"])
+        self.assertIn("identical intermediate goal", marchal3["semantic_rule"])
         self.assertTrue(all(
             "Pack1.KIUMVTC" in operation["after"]
             for operation in ajripqn["operations"]
@@ -924,7 +937,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 225)
+        self.assertEqual(len(operation_ids), 231)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
