@@ -263,14 +263,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         marchal3 = entries["PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001"]
         self.assertEqual(
             [operation["line"] for operation in marchal3["operations"]],
-            [3869, 3878, 3887, 3896, 3905, 3914],
+            [3869, 3878, 3887, 3896, 3905, 3914, 4127],
         )
         self.assertTrue(all(
             "ONCE_REWRITE_TAC[GSYM (ASSUME" in operation["after"]
             and "SUBST1_TAC (ASSUME" in operation["after"]
             and "REWRITE_TAC[INSERT_AC]" in operation["after"]
-            for operation in marchal3["operations"]
+            for operation in marchal3["operations"][:6]
         ))
+        self.assertIn(
+            "MATCH_MP PERMUTES_INVERSE_EQ",
+            marchal3["operations"][6]["after"],
+        )
         self.assertIn("complete mechanically enumerated", marchal3["scope_limit"])
         self.assertIn("identical intermediate goal", marchal3["semantic_rule"])
         self.assertTrue(all(
@@ -937,7 +941,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 231)
+        self.assertEqual(len(operation_ids), 232)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

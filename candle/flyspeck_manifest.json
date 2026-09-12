@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "925d4f1ebe26de1f4685037990998bbc",
-    "generated_source_sha256": "608a1b0e3ffe1b6f7a9b6895ea97a3bdc08052a09188332197c1559271c52edf",
+    "generated_source_md5": "8fe9a78b735356314017be0aac7af4b2",
+    "generated_source_sha256": "1fe43286b1ca08eb86cb05086ce261c11cff78e24b8ba74ba4212eb3c89b504b",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "858a53a5e6918cdd84b22b4e54e1a0f3",
+      "md5": "6ebecb4ab241b30438448b5a4df1f04b",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "3fedb6c905a5d9949f0cdabbae9cff329ad3b4c6f7136a91d45bda750bc470bb"
+      "sha256": "24c29c0140a7c33255ad362005f5fbd231643b8eaa49c728e792bb9352c4f0f6"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "0609c6ddcac235240f574c3c4e044120",
+      "md5": "777a43267df73a49643975ee8048b088",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "7a5f32bd856761587f3ef33fb48feb59b054cdada41c6e5033d13e120d76dcf8"
+      "sha256": "1c7103085a42ded4c931c55661159741c7a4e2f7a7de96ae9f041f41d25d2dec"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -20555,10 +20555,10 @@
       "execution_normalization": {
         "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 254788,
-        "normalized_md5": "3ce51a98ce251632482e277b15662f63",
-        "normalized_sha256": "16a6add24b6bf5d31f18af745c5c95dbc2d32b04eb96f41ab77372c2e25ad26d",
-        "operation_count": 6
+        "normalized_bytes": 254766,
+        "normalized_md5": "5d5478849ff5a78548d457710143537d",
+        "normalized_sha256": "82857d6a9db661dc0cb9a4123c84eb4b51d6686bf17711fe90d2e6433a5a679d",
+        "operation_count": 7
       },
       "md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
       "path": "text_formalization/packing/marchal3.hl",
@@ -22425,7 +22425,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "d4e281f741b0d3bcbfc98fa3d4a74dce6f3c8396ab14c9b0bb9e691a127504b4",
+    "contract_sha256": "f23aefc881a471b9c2daa7f149f185d550d7bd28622a2f66b9f50aede41635f5",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26562,10 +26562,10 @@
       {
         "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 254788,
-        "normalized_md5": "3ce51a98ce251632482e277b15662f63",
-        "normalized_sha256": "16a6add24b6bf5d31f18af745c5c95dbc2d32b04eb96f41ab77372c2e25ad26d",
-        "operation_count": 6,
+        "normalized_bytes": 254766,
+        "normalized_md5": "5d5478849ff5a78548d457710143537d",
+        "normalized_sha256": "82857d6a9db661dc0cb9a4123c84eb4b51d6686bf17711fe90d2e6433a5a679d",
+        "operation_count": 7,
         "operations": [
           {
             "after": "(NEW_GOAL `x = y:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, z,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `x:A = y`) THEN REWRITE_TAC[INSERT_AC]);",
@@ -26608,11 +26608,18 @@
             "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-Z-EQ-T",
             "kind": "exact_bytes_replace_once",
             "line": 3914
+          },
+          {
+            "after": "(REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ\n   (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);",
+            "before": "(UP_ASM_TAC THEN MESON_TAC[PERMUTES_INVERSE_EQ; \n   ASSUME `(p:num->num) i1 = 0 /\\ p i2 = 1 /\\ p i3 = 2 /\\ p i4 = 3`]);",
+            "id": "PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001-INVERSE-REWRITE",
+            "kind": "exact_bytes_replace_once",
+            "line": 4127
           }
         ],
         "path": "text_formalization/packing/marchal3.hl",
-        "scope_limit": "These six hash-pinned replacements are confined to the complete mechanically enumerated repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at marchal3.hl lines 3869--3921. They do not raise a global MESON depth, alter any theorem statement or hypothesis, introduce a lemma or axiom, or change any other refinement step. Focused proof of all six polymorphic subgoals, full normalized source loading, and exact cumulative replay are required.",
-        "semantic_rule": "Each case has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}. The original SET_TAC derives the corresponding three-element set equality by search. Each replacement proves that identical intermediate goal deterministically: rewrite the left set by the symmetric retained set equality, substitute the already proved point equality, and normalize duplicate insertions with the existing INSERT_AC theorem. The six-case order, preceding equality subproofs, following cardinality contradictions, and final theorem are unchanged.",
+        "scope_limit": "These seven hash-pinned replacements are confined to the six complete mechanically enumerated repeated set-equality derivations and the final inverse-image conjunction in LEFT_ACTION_LIST_3_EXISTS at marchal3.hl lines 3869--3921 and 4127--4128. They do not raise a global MESON depth, alter any theorem statement or hypothesis, introduce a lemma or axiom, or change any other refinement step. Focused proof of all six polymorphic subgoals and the inverse rewrite, full normalized source loading, and exact cumulative replay are required.",
+        "semantic_rule": "Each of the first six cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}. The original SET_TAC derives the corresponding three-element set equality by search. Each replacement proves that identical intermediate goal deterministically: rewrite the left set by the symmetric retained set equality, substitute the already proved point equality, and normalize duplicate insertions with the existing INSERT_AC theorem. At the final replacement, the retained assumption p permutes 0..3 instantiates PERMUTES_INVERSE_EQ, whose four rewrites turn the unchanged inverse-image conjunction directly into the four already-proved p-image equalities. The case order, intermediate goals, preceding equality subproofs, following cardinality contradictions, and final theorem are unchanged.",
         "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
         "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
         "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926"
@@ -26762,8 +26769,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "858a53a5e6918cdd84b22b4e54e1a0f3",
-    "generated_source_sha256": "3fedb6c905a5d9949f0cdabbae9cff329ad3b4c6f7136a91d45bda750bc470bb",
+    "generated_source_md5": "6ebecb4ab241b30438448b5a4df1f04b",
+    "generated_source_sha256": "24c29c0140a7c33255ad362005f5fbd231643b8eaa49c728e792bb9352c4f0f6",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

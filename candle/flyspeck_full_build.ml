@@ -194,7 +194,7 @@
 #flyspeck_needs "packing/AJRIPQN.hl";;
 (* 090 selected=flyspeck:text_formalization/packing/QZYZMJC.hl sha256=7c83844660381ca4c4b4adb63736ea7dc320ea33d92625a70989b563158f44aa *)
 #flyspeck_needs "packing/QZYZMJC.hl";;
-(* 091 selected=flyspeck:text_formalization/packing/marchal3.hl sha256=191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926 normalization=PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001 normalized_sha256=16a6add24b6bf5d31f18af745c5c95dbc2d32b04eb96f41ab77372c2e25ad26d *)
+(* 091 selected=flyspeck:text_formalization/packing/marchal3.hl sha256=191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926 normalization=PROJECT-MARCHAL3-S2-SET-SUBSTITUTION-001 normalized_sha256=82857d6a9db661dc0cb9a4123c84eb4b51d6686bf17711fe90d2e6433a5a679d *)
 #flyspeck_needs "packing/marchal3.hl";;
 (* 092 selected=flyspeck:text_formalization/packing/GRUTOTI.hl sha256=bd9904546baab73ea85b01fd29237ceb10dd7259ce2aa1018747616ea1d4d875 *)
 #flyspeck_needs "packing/GRUTOTI.hl";;
