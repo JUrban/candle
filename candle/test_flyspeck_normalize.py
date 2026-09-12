@@ -217,12 +217,15 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         wrgcvdr = entries["PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001"]
         self.assertEqual(
             [operation["line"] for operation in wrgcvdr["operations"]],
-            [75, 76],
+            [75, 76, 238],
         )
         self.assertTrue(all(
             operation["after"].startswith("let _ = parse_as_infix")
-            for operation in wrgcvdr["operations"]
+            for operation in wrgcvdr["operations"][:2]
         ))
+        self.assertTrue(
+            wrgcvdr["operations"][2]["after"].startswith("let _ = prove(")
+        )
         self.assertIn("original order", wrgcvdr["semantic_rule"])
         inequalities = entries["PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001"]
         self.assertEqual(len(inequalities["operations"]), 1)
@@ -878,7 +881,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 216)
+        self.assertEqual(len(operation_ids), 217)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

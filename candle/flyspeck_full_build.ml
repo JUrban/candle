@@ -170,7 +170,7 @@
 #flyspeck_needs "packing/URRPHBZ3.hl";;
 (* 078 selected=flyspeck:text_formalization/packing/RVFXZBU.hl sha256=2181a59b2c3ab112f304b1fa5ad510c506c9c9a69d7a56b98483c0a4e310545f *)
 #flyspeck_needs "packing/RVFXZBU.hl";;
-(* 079 selected=flyspeck:text_formalization/local/WRGCVDR.hl sha256=9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d normalization=PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001 normalized_sha256=63ca37dfc173b5170ab660461d7b09ce4037120eec45fb5f8fef030d697bb3c5 *)
+(* 079 selected=flyspeck:text_formalization/local/WRGCVDR.hl sha256=9d1378418c444f1ec9ce63567cb085fd9def0142ef3a4fb203689e34b9bc636d normalization=PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001 normalized_sha256=d63e3cd9230fd5aadf98930f790a2c3baeea56f73ffa5d20c01e9c76a52fce69 *)
 #flyspeck_needs "local/WRGCVDR.hl";;
 (* 080 selected=flyspeck:text_formalization/local/LVDUCXU.hl sha256=0f0924d813bcd36df3ce9a0a48227b6076b1467967e02fb8dea1fb42554c6813 *)
 #flyspeck_needs "local/LVDUCXU.hl";;
