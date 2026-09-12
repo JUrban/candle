@@ -8,19 +8,18 @@ source, report, transcript, or semantic-evidence byte was changed.
 
 ## Actual direct progress
 
-The completed v29 exact cumulative run reached 73 actions and passed 72.
-Actions 000--071 are exact-green, including the action-070 `EMNWUUS.hl`
-normalization. The run emitted one authenticated preflight marker and 72
-unique nonce-bound success markers exactly equal to the first 72 markers in
-its instrumented prefix. Its immutable DEVELOPMENT / NON-RELEASE failure
-receipt has SHA-256
-`6634b9ad5fd08c898f8a2b90e5179d1886747f0c2cd6266e45e36ffbbff5a149`.
+The completed v33 exact cumulative run reached 80 actions and passed 79.
+Actions 000--078 are exact-green, including this batch's action-072
+`SLTSTLO.hl` normalization. The run emitted one authenticated preflight marker
+and 79 unique nonce-bound success-marker bases exactly equal to the first 79
+markers in its instrumented prefix. Its immutable DEVELOPMENT / NON-RELEASE
+failure receipt has SHA-256
+`e0b1507d883e6c088143d6d8d31220bfe407ccd65ee668d5fae40336ad0e52e1`.
 
-Action 072, `text_formalization/packing/SLTSTLO.hl`, is the first genuine
-failure. Candle reports an implicit-`setify` comparator mismatch at the
-`seans_fn` binding; the offending expression is source line 27. Action 073
-was not reached. Cumulative boundary 04, full direct S2, and nonlinear/LP S3
-remain open.
+Action 079, `text_formalization/local/WRGCVDR.hl`, is the first genuine
+failure. Candle reports the independently reproduced bare-structure-effect
+mismatch at diagnostic line 67. Action 080 was not reached. Cumulative
+boundary 04, full direct S2, and nonlinear/LP S3 remain open.
 
 ## Complete shared-class review and bounded normalization
 
@@ -71,6 +70,7 @@ The exact source/output identities are:
 - normalization contract check: PASS, 53 unique-path entries;
 - manifest fixed point: PASS, 297 roots, 400 source nodes, 43 generated
   inputs;
+- exact cumulative replay: PASS at action 072 and through action 078;
 - JSON parsing and `git diff --check`: PASS.
 
 The v33 derived authority identities are:
@@ -94,8 +94,8 @@ The v33 derived authority identities are:
 
 ## Next exact boundary work
 
-Only a fresh cumulative replay from action zero may credit v33. Its next
-boundary-04 run must independently confirm action 072 before the already
-prepared action-079, action-083, and action-126 batches are integrated. The
-expected next independent failure is action 079, but that expectation awards
-no credit and does not replace the exact replay.
+The exact replay validates v33 and independently exposes action 079. The
+action-079, action-083, and action-126 repairs are integrated with this batch
+on committed v34 head
+`8b8095c58929887c550108d785a6aa9f3776d3a9`. A fresh cumulative v34 replay
+is now running from action zero; it alone can credit those later repairs.
