@@ -4023,14 +4023,14 @@
       "scope_limit": "These hash-pinned replacements qualify only the complete mechanically enumerated KIUMVTC use set at AJRIPQN.hl lines 137, 333, and 626. They do not whitelist a basename, alter loader identity, change the theorem statement, hypotheses, tactic order, proof intent, definitions, or axioms. Native module-resolution and focused Candle original-reject/normalized-accept oracles plus exact cumulative loading are required."
     },
     {
-      "id": "PROJECT-MARCHAL3-S2-OPEN-AND-SET-SUBSTITUTION-001",
+      "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-001",
       "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
       "path": "text_formalization/packing/marchal3.hl",
       "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926",
       "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
-      "normalized_sha256": "2905495ab3463933a8d88f44bcc406cfd1fa51192a9f578e8ac85f77679f9397",
-      "normalized_md5": "343bf227429455b5a0150624094c145c",
-      "normalized_bytes": 254857,
+      "normalized_sha256": "a3c523ac09ac587fdc335a89a50b711edb7b83051d5bb0b3ba36ffa7b74a9b23",
+      "normalized_md5": "29073443eaf8e958b05cb238f3f3aacc",
+      "normalized_bytes": 254835,
       "operations": [
         {
           "id": "PROJECT-MARCHAL3-S2-OPEN-AND-SET-SUBSTITUTION-001-STRICTBUILD-BINDING",
@@ -4080,10 +4080,17 @@
           "line": 3914,
           "before": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (UNDISCH_TAC `{x, y, z, t:A} = {u0, u1, u2, u3}` THEN UP_ASM_TAC \n   THEN SET_TAC[]);",
           "after": "(NEW_GOAL `z = t:A`);\n (ASM_MESON_TAC[]);\n (NEW_GOAL `{u0,u1,u2,u3:A} = {x, y,t}`);\n (ONCE_REWRITE_TAC[GSYM (ASSUME `{x, y, z, t:A} = {u0, u1, u2, u3}`)] THEN\n   SUBST1_TAC (ASSUME `z:A = t`) THEN REWRITE_TAC[INSERT_AC]);"
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-INVERSE-REWRITE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 4127,
+          "before": "(UP_ASM_TAC THEN MESON_TAC[PERMUTES_INVERSE_EQ; \n   ASSUME `(p:num->num) i1 = 0 /\\ p i2 = 1 /\\ p i3 = 2 /\\ p i4 = 3`]);",
+          "after": "(REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ\n   (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);"
         }
       ],
-      "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay then independently reproduces the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}. Each deterministic replacement proves the identical three-element set goal by rewriting with the symmetric retained set equality, substituting the already-proved point equality, and normalizing duplicate insertions with INSERT_AC. The case order, intermediate goals, following cardinality contradictions, and final theorem are unchanged.",
-      "scope_limit": "These seven hash-pinned replacements are confined to the unique final open declaration at marchal3.hl line 40 and the complete mechanically enumerated six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921. They do not alter any theorem statement or hypothesis, introduce a lemma or axiom, change proof intent, raise a global search limit, or modify the final inverse-image proof at lines 4127--4128. Native/Candle open-resolution, all-six-subgoal, full normalized source, and fresh exact cumulative replay checks are required."
+      "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay independently reproduced the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}; rewriting with that equality, substituting the proved point equality, and normalizing duplicate insertions with INSERT_AC proves the identical three-element set goal deterministically. The exact v41 replay cleared all six cases and independently reproduced the unchanged final PERMUTES_INVERSE_EQ MESON runaway through 4,544,914 search nodes. At that final intermediate goal, MATCH_MP instantiates PERMUTES_INVERSE_EQ from the retained p permutes 0..3 assumption, and ASM_REWRITE_TAC closes the same four inverse equalities from the already-proved image equalities. The theorem, case order, intermediate goals, and proof intent are unchanged.",
+      "scope_limit": "These eight hash-pinned replacements are confined to the unique final open declaration at marchal3.hl line 40, the complete mechanically enumerated six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921, and its unique final inverse-image proof at lines 4127--4128. They do not alter any theorem statement or hypothesis, introduce a lemma or axiom, change proof intent, or raise a global search limit. Native/Candle open-resolution, all-six-subgoal and inverse-rewrite focused oracles, full normalized source loading, and fresh exact cumulative replay are required."
     },
     {
       "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001",
