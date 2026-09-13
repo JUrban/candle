@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "a6649f88136371c4550d0c8daabaff57",
-    "generated_source_sha256": "16ca6d6b584ee0899f7116e7754495258050b960f1c4bfd96a7a55c9b5701866",
+    "generated_source_md5": "2216a0be607a0bcc6df4c5a1d58ad6ca",
+    "generated_source_sha256": "d64a252c4ec1e0c62295e720ae13bda8d609306e3404571bb7ae16dba7c7fda8",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f3e43ceb001b2f33c4220b5637b1598f",
+      "md5": "2dab7870267ccec31794b67103fc8317",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "eca0e470afcab6742349c5f2f34cdbd21264dc6608ae0d5aa6ea96ae0e83405b"
+      "sha256": "fd743ac0b1786fa9c72819929ffff0d9433678248f0c94b5bff59373d5dbbfc3"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "475a90080b0b5b74a9cd3cc2495d8dcb",
+      "md5": "f68a79bf56aba48db7dd061e7bfb133f",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "e8922ccecc4402670bac020f1a3a46f506182fcf66663ebe202f27afec570f8e"
+      "sha256": "eb6229e74adee26e3b5670cf71c114740e14785066eff9146a2b38771645b7e9"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -20553,12 +20553,12 @@
       "bytes": 254482,
       "dependencies": [],
       "execution_normalization": {
-        "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-003",
+        "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-004",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 255344,
-        "normalized_md5": "6c588724246e6408e96cb9a96d5bed3e",
-        "normalized_sha256": "a2a0b8ca3aca281923fce521596299088bfd8c97e2975a77c0e557645fa49932",
-        "operation_count": 11
+        "normalized_bytes": 255426,
+        "normalized_md5": "be8cba1fe893b5bcff75e3a6a4424219",
+        "normalized_sha256": "fcba24dc44bd3ca3aa581bd30ca3c1aa56cf38c621a8a2df50673d70c5732814",
+        "operation_count": 12
       },
       "md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
       "path": "text_formalization/packing/marchal3.hl",
@@ -22425,7 +22425,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "a22733ef7be0ec3fc99c42b12ca411716c751bd7e45dfa4ddaa62e326a547d8e",
+    "contract_sha256": "c2b2fe4a42cffe71ade60b1392cf4722a84c724c45510b81a1dd1c14337f3239",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26560,12 +26560,12 @@
         "source_sha256": "692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c"
       },
       {
-        "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-003",
+        "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-004",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 255344,
-        "normalized_md5": "6c588724246e6408e96cb9a96d5bed3e",
-        "normalized_sha256": "a2a0b8ca3aca281923fce521596299088bfd8c97e2975a77c0e557645fa49932",
-        "operation_count": 11,
+        "normalized_bytes": 255426,
+        "normalized_md5": "be8cba1fe893b5bcff75e3a6a4424219",
+        "normalized_sha256": "fcba24dc44bd3ca3aa581bd30ca3c1aa56cf38c621a8a2df50673d70c5732814",
+        "operation_count": 12,
         "operations": [
           {
             "id": "PROJECT-MARCHAL3-S2-CARD-PERMUTATION-002",
@@ -26610,6 +26610,24 @@
                 "after": "",
                 "before": "   UP_ASM_TAC THEN SET_TAC[]);",
                 "line": 5423
+              }
+            ]
+          },
+          {
+            "id": "PROJECT-MARCHAL3-S2-CONTEXT-FREE-SET-SWAPS-001",
+            "kind": "exact_lines_replace_once",
+            "line": 5325,
+            "replacement_count": 2,
+            "replacements": [
+              {
+                "after": " (REWRITE_TAC[SET_RULE `{u,v,a:real^3} = {v,u,a}`]);",
+                "before": " (SET_TAC[]);",
+                "line": 5325
+              },
+              {
+                "after": " (REWRITE_TAC[SET_RULE `{u,v,a,b:real^3} = {v,u,a,b}`]);",
+                "before": " (SET_TAC[]);",
+                "line": 5426
               }
             ]
           },
@@ -26678,8 +26696,8 @@
           }
         ],
         "path": "text_formalization/packing/marchal3.hl",
-        "scope_limit": "The eleven hash-pinned normalization operations are confined to fifteen mechanically enumerated source-line changes: the unique final open declaration at marchal3.hl line 40, one local finite-set helper after line 43, six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921, its four-index inverse discharge at lines 4127--4128, two identical cardinality set-permutation steps at lines 5085 and 5308, and the four source lines making up two paired four-selected-member exhaustion steps at lines 5196--5197 and 5422--5423. They do not alter any theorem statement or hypothesis, introduce an axiom, change proof intent, raise a global search limit, modify the earlier three-index inverse proof at lines 3824--3825, or normalize the distinct three-member and non-emptiness obligations. Native/Candle open resolution, all-six substitution, inverse rewrite, both cardinality-permutation sites, the helper and both applications, full normalized-source, and fresh exact cumulative replay checks are required.",
-        "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay independently reproduced the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}; rewriting with that equality, substituting the proved point equality, and normalizing duplicate insertions with INSERT_AC proves the identical three-element set goal deterministically. The v41 cumulative replay then stopped in the four-index inverse discharge; MATCH_MP instantiates PERMUTES_INVERSE_EQ from the retained p permutes 0..3 assumption, and ASM_REWRITE_TAC proves the same four inverse equalities from the already-proved image equalities. The v42 full trace confirmed that direct rewrite completes LEFT_ACTION_LIST_3_EXISTS and separated its formerly indistinguishable search counters from a distinct later runaway at DIHX_SYM refinement step 109. At that later step, AP_TERM_TAC exposes the context-free equality {w0,w1,w2,w3} = {w3,w0,w1,w2}, but broad SET_TAC also consumes DIHX_SYM's large ambient assumption set. Both mechanically identical sites prove that set permutation independently with SET_RULE and rewrite the unchanged CARD equality. The exact v44 trace showed that the reconstructed three-selected-member step 122 passes in the real predecessor context and localized the first post-v43 runaway to DIHX_SYM step 192 at upstream lines 5196--5197. That step selects two distinct members u and v, a third member w outside their pair, and a fourth member m outside the first three from the literal set {w0,w1,w2,w3}; the broad SET_TAC search grew monotonically past 3005878 nodes. FOUR_SELECTED_MEMBERS_EXHAUST proves the identical finite exhaustion by explicitly splitting only those bounded membership cases, and both mechanically paired sites apply it to their existing assumptions. The theorem statements, hypotheses, case order, intermediate goals, and proof intent are unchanged.",
+        "scope_limit": "The twelve hash-pinned normalization operations are confined to seventeen mechanically enumerated source-line changes: the unique final open declaration at marchal3.hl line 40, one local finite-set helper after line 43, six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921, its four-index inverse discharge at lines 4127--4128, two identical cardinality set-permutation steps at lines 5085 and 5308, the four source lines making up two paired four-selected-member exhaustion steps at lines 5196--5197 and 5422--5423, and the two context-free set swaps at lines 5325 and 5426. They do not alter any theorem statement or hypothesis, introduce an axiom, change proof intent, raise a global search limit, modify the earlier three-index inverse proof at lines 3824--3825, or normalize the distinct three-member and non-emptiness obligations. Native/Candle open resolution, all-six substitution, inverse rewrite, both cardinality-permutation sites, the helper and both applications, both context-free set swaps, full normalized-source, and fresh exact cumulative replay checks are required.",
+        "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay independently reproduced the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}; rewriting with that equality, substituting the proved point equality, and normalizing duplicate insertions with INSERT_AC proves the identical three-element set goal deterministically. The v41 cumulative replay then stopped in the four-index inverse discharge; MATCH_MP instantiates PERMUTES_INVERSE_EQ from the retained p permutes 0..3 assumption, and ASM_REWRITE_TAC proves the same four inverse equalities from the already-proved image equalities. The v42 full trace confirmed that direct rewrite completes LEFT_ACTION_LIST_3_EXISTS and separated its formerly indistinguishable search counters from a distinct later runaway at DIHX_SYM refinement step 109. At that later step, AP_TERM_TAC exposes the context-free equality {w0,w1,w2,w3} = {w3,w0,w1,w2}, but broad SET_TAC also consumes DIHX_SYM's large ambient assumption set. Both mechanically identical sites prove that set permutation independently with SET_RULE and rewrite the unchanged CARD equality. The exact v44 trace showed that the reconstructed three-selected-member step 122 passes in the real predecessor context and localized the first post-v43 runaway to DIHX_SYM step 192 at upstream lines 5196--5197. That step selects two distinct members u and v, a third member w outside their pair, and a fourth member m outside the first three from the literal set {w0,w1,w2,w3}; the broad SET_TAC search grew monotonically past 3005878 nodes. FOUR_SELECTED_MEMBERS_EXHAUST proves the identical finite exhaustion by explicitly splitting only those bounded membership cases, and both mechanically paired sites apply it to their existing assumptions. A fresh clean-restored v44 trace passed step 192 and localized the next runaway to DIHX_SYM step 286 at upstream line 5325, where broad SET_TAC consumed the large ambient context while proving only the literal permutation {u,v,a} = {v,u,a}, growing monotonically through 9643978 nodes. The mechanically paired four-element permutation at line 5426 has the same context-independent obligation. SET_RULE proves each exact set identity without importing the ambient assumptions. The theorem statements, hypotheses, case order, intermediate goals, and proof intent are unchanged.",
         "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
         "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
         "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926"
@@ -26830,8 +26848,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "f3e43ceb001b2f33c4220b5637b1598f",
-    "generated_source_sha256": "eca0e470afcab6742349c5f2f34cdbd21264dc6608ae0d5aa6ea96ae0e83405b",
+    "generated_source_md5": "2dab7870267ccec31794b67103fc8317",
+    "generated_source_sha256": "fd743ac0b1786fa9c72819929ffff0d9433678248f0c94b5bff59373d5dbbfc3",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
