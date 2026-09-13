@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 58)
+        self.assertEqual(len(self.contract["entries"]), 59)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -247,6 +247,24 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "complete mechanically enumerated", local_lemmas["scope_limit"]
         )
         self.assertIn("original order", local_lemmas["semantic_rule"])
+        grutoti = entries[
+            "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001"
+        ]
+        self.assertEqual(len(grutoti["operations"]), 1)
+        self.assertEqual(grutoti["operations"][0]["line"], 2713)
+        self.assertEqual(
+            grutoti["operations"][0]["before"],
+            " (UP_ASM_TAC THEN SET_TAC[RCONE_GT_SUBSET_RCONE_GE]);",
+        )
+        self.assertEqual(
+            grutoti["operations"][0]["after"],
+            " (UP_ASM_TAC THEN MATCH_ACCEPT_TAC\n"
+            "   (REWRITE_RULE[SUBSET]\n"
+            "     Marchal_cells_2_new.RCONE_GT_SUBSET_RCONE_GE));",
+        )
+        self.assertIn("steps 0 through 2122", grutoti["semantic_rule"])
+        self.assertIn("unique broad set search", grutoti["scope_limit"])
+        self.assertIn("not-yet-reached REUHADY", grutoti["scope_limit"])
         ajripqn = entries["PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001"]
         self.assertEqual(
             [operation["line"] for operation in ajripqn["operations"]],
@@ -1022,7 +1040,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 237)
+        self.assertEqual(len(operation_ids), 238)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

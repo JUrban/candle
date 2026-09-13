@@ -4023,6 +4023,27 @@
       "scope_limit": "These hash-pinned replacements qualify only the complete mechanically enumerated KIUMVTC use set at AJRIPQN.hl lines 137, 333, and 626. They do not whitelist a basename, alter loader identity, change the theorem statement, hypotheses, tactic order, proof intent, definitions, or axioms. Native module-resolution and focused Candle original-reject/normalized-accept oracles plus exact cumulative loading are required."
     },
     {
+      "id": "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001",
+      "source_key": "flyspeck:text_formalization/packing/GRUTOTI.hl",
+      "path": "text_formalization/packing/GRUTOTI.hl",
+      "source_sha256": "bd9904546baab73ea85b01fd29237ceb10dd7259ce2aa1018747616ea1d4d875",
+      "source_md5": "0b25afae6108060320acf6637df0d3e2",
+      "normalized_sha256": "e502fd38e727863f1c3653881778e3720c4d574a9b43622c60467e148f04961d",
+      "normalized_md5": "e99e4426ae07737bafa75ab4bf98df25",
+      "normalized_bytes": 297872,
+      "operations": [
+        {
+          "id": "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001-STEP-2123",
+          "kind": "exact_bytes_replace_once",
+          "line": 2713,
+          "before": " (UP_ASM_TAC THEN SET_TAC[RCONE_GT_SUBSET_RCONE_GE]);",
+          "after": " (UP_ASM_TAC THEN MATCH_ACCEPT_TAC\n   (REWRITE_RULE[SUBSET]\n     Marchal_cells_2_new.RCONE_GT_SUBSET_RCONE_GE));"
+        }
+      ],
+      "semantic_rule": "The exact clean post-Marchal trace passed GRUTOTI refinement steps 0 through 2122 and reproduced the cumulative-run search fingerprint at step 2123. The preceding proof establishes x IN rcone_gt u0 u1 a' and leaves the corresponding rcone_ge membership obligation. UP_ASM_TAC retains the original assumption selection; REWRITE_RULE[SUBSET] converts the already-used defining-module inclusion theorem into precisely that membership implication, and MATCH_ACCEPT_TAC applies it directly without importing the large ambient context into set search. Explicit qualification names the theorem selected from its authoritative defining module. The theorem statement, hypotheses, intermediate goal, refinement order, and proof intent are unchanged.",
+      "scope_limit": "This hash-pinned replacement is confined to the unique broad set search at GRUTOTI.hl line 2713. It does not change the distinct deterministic RCONE_GT_SUBSET_RCONE_GE use at line 7840, the identical but not-yet-reached REUHADY source site, any theorem statement or hypothesis, a definition, axiom, global search bound, loader rule, or runtime behavior. A focused real-runtime implication proof, complete GRUTOTI replay from a fresh clean post-Marchal state, exact action replay, and fresh cumulative action-zero replay are required."
+    },
+    {
       "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-004",
       "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
       "path": "text_formalization/packing/marchal3.hl",
