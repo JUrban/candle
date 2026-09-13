@@ -261,18 +261,32 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "(MATCH_MP_TAC Pack1.KIUMVTC);",
         )
         marchal3 = entries[
-            "PROJECT-MARCHAL3-S2-OPEN-AND-SET-SUBSTITUTION-001"
+            "PROJECT-MARCHAL3-S2-COMPATIBILITY-002"
         ]
         self.assertEqual(
             [operation["line"] for operation in marchal3["operations"]],
-            [40, 3869, 3878, 3887, 3896, 3905, 3914],
+            [5085, 40, 3869, 3878, 3887, 3896, 3905, 3914, 4127],
         )
+        card_permutation = marchal3["operations"][0]
+        self.assertEqual(card_permutation["kind"], "exact_lines_replace_once")
+        self.assertEqual(card_permutation["replacement_count"], 2)
         self.assertEqual(
-            marchal3["operations"][0]["before"],
+            [replacement["line"] for replacement in card_permutation["replacements"]],
+            [5085, 5308],
+        )
+        self.assertTrue(all(
+            replacement["before"] == " (AP_TERM_TAC THEN SET_TAC[]);"
+            and replacement["after"] ==
+            " (REWRITE_TAC[SET_RULE `{w0,w1,w2,w3:real^3} = "
+            "{w3,w0,w1,w2}`]);"
+            for replacement in card_permutation["replacements"]
+        ))
+        self.assertEqual(
+            marchal3["operations"][1]["before"],
             "open Upfzbzm_support_lemmas;;",
         )
         self.assertEqual(
-            marchal3["operations"][0]["after"],
+            marchal3["operations"][1]["after"],
             "open Upfzbzm_support_lemmas;;\n\n"
             "let prove_by_refinement = "
             "Prove_by_refinement.prove_by_refinement;;",
@@ -281,12 +295,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "ONCE_REWRITE_TAC[GSYM (ASSUME" in operation["after"]
             and "SUBST1_TAC (ASSUME" in operation["after"]
             and "REWRITE_TAC[INSERT_AC]" in operation["after"]
-            for operation in marchal3["operations"][1:]
+            for operation in marchal3["operations"][2:8]
         ))
+        self.assertEqual(
+            marchal3["operations"][-1]["after"],
+            "(REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ\n"
+            "   (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);",
+        )
         self.assertIn("Native OCaml", marchal3["semantic_rule"])
         self.assertIn("identical three-element set goal", marchal3["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", marchal3["scope_limit"])
-        self.assertIn("final inverse-image proof", marchal3["scope_limit"])
+        self.assertIn("ten mechanically enumerated", marchal3["scope_limit"])
+        self.assertIn("two identical cardinality", marchal3["scope_limit"])
+        self.assertIn("earlier three-index inverse proof", marchal3["scope_limit"])
         self.assertTrue(all(
             "Pack1.KIUMVTC" in operation["after"]
             for operation in ajripqn["operations"]
@@ -951,7 +971,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 232)
+        self.assertEqual(len(operation_ids), 234)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
