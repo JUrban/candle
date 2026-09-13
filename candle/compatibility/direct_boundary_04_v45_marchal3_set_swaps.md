@@ -48,10 +48,24 @@ Its v45 output is 255,426 bytes with SHA-256
 `fcba24dc44bd3ca3aa581bd30ca3c1aa56cf38c621a8a2df50673d70c5732814`
 and MD5 `be8cba1fe893b5bcff75e3a6a4424219`.
 
-## Acceptance sequence
+## Acceptance sequence and result
 
-The committed deterministic fixture proves both exact identities in the real
-development Cake runtime. Candidate Marchal must next pass the complete action
-091 from a new authenticated pre-Marchal image copy. If it does, acceptance
-still requires a fresh exact cumulative boundary replay from action zero; the
-focused checkpoint result alone cannot raise the direct-action metric.
+The committed deterministic fixture proved both exact identities in the real
+development Cake runtime. The complete candidate action 091 then passed from a
+new authenticated pre-Marchal image copy. The focused 637,796-byte log has
+SHA-256
+`b4715fdf16a4e565ba67a75eab1a624ad1ea0a2f277d3a0ba03bbb6ee5cc1bef`
+and contains exactly one expected action marker, the 92-event clean post-state
+marker, and no exception or error token. The failed copy was not resumed.
+
+A fresh exact cumulative replay from action zero independently confirmed that
+result on committed v45 head
+`45acc8a86e194276d0cc8873d04225b601095a8b`. It completed exactly the ordered
+actions 000--091, including Marchal, then reached the next real source action,
+092 `packing/GRUTOTI.hl`. GRUTOTI entered a distinct monotonically growing
+proof search and did not complete. The cumulative log has SHA-256
+`af4c165eea3f5da71390f0422f00c949c7273713b452bc75b726d27d577a10fe`.
+
+The resulting direct DEVELOPMENT frontier is therefore 93 actual actions
+reached / 92 passed. Marchal is green; GRUTOTI is the first remaining genuine
+compatibility blocker in boundary `04-geometry-through-151`.
