@@ -4023,14 +4023,14 @@
       "scope_limit": "These hash-pinned replacements qualify only the complete mechanically enumerated KIUMVTC use set at AJRIPQN.hl lines 137, 333, and 626. They do not whitelist a basename, alter loader identity, change the theorem statement, hypotheses, tactic order, proof intent, definitions, or axioms. Native module-resolution and focused Candle original-reject/normalized-accept oracles plus exact cumulative loading are required."
     },
     {
-      "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-003",
+      "id": "PROJECT-MARCHAL3-S2-COMPATIBILITY-004",
       "source_key": "flyspeck:text_formalization/packing/marchal3.hl",
       "path": "text_formalization/packing/marchal3.hl",
       "source_sha256": "191528d2c1dc3542751507d2b44880f3b4f07efe00ea9267b66bc10e28d21926",
       "source_md5": "ad1052eeb7d9979e8fd3069d2eb4a35c",
-      "normalized_sha256": "a2a0b8ca3aca281923fce521596299088bfd8c97e2975a77c0e557645fa49932",
-      "normalized_md5": "6c588724246e6408e96cb9a96d5bed3e",
-      "normalized_bytes": 255344,
+      "normalized_sha256": "fcba24dc44bd3ca3aa581bd30ca3c1aa56cf38c621a8a2df50673d70c5732814",
+      "normalized_md5": "be8cba1fe893b5bcff75e3a6a4424219",
+      "normalized_bytes": 255426,
       "operations": [
         {
           "id": "PROJECT-MARCHAL3-S2-CARD-PERMUTATION-002",
@@ -4075,6 +4075,24 @@
               "line": 5423,
               "before": "   UP_ASM_TAC THEN SET_TAC[]);",
               "after": ""
+            }
+          ]
+        },
+        {
+          "id": "PROJECT-MARCHAL3-S2-CONTEXT-FREE-SET-SWAPS-001",
+          "kind": "exact_lines_replace_once",
+          "line": 5325,
+          "replacement_count": 2,
+          "replacements": [
+            {
+              "line": 5325,
+              "before": " (SET_TAC[]);",
+              "after": " (REWRITE_TAC[SET_RULE `{u,v,a:real^3} = {v,u,a}`]);"
+            },
+            {
+              "line": 5426,
+              "before": " (SET_TAC[]);",
+              "after": " (REWRITE_TAC[SET_RULE `{u,v,a,b:real^3} = {v,u,a,b}`]);"
             }
           ]
         },
@@ -4142,8 +4160,8 @@
           "after": "(REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ\n   (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);"
         }
       ],
-      "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay independently reproduced the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}; rewriting with that equality, substituting the proved point equality, and normalizing duplicate insertions with INSERT_AC proves the identical three-element set goal deterministically. The v41 cumulative replay then stopped in the four-index inverse discharge; MATCH_MP instantiates PERMUTES_INVERSE_EQ from the retained p permutes 0..3 assumption, and ASM_REWRITE_TAC proves the same four inverse equalities from the already-proved image equalities. The v42 full trace confirmed that direct rewrite completes LEFT_ACTION_LIST_3_EXISTS and separated its formerly indistinguishable search counters from a distinct later runaway at DIHX_SYM refinement step 109. At that later step, AP_TERM_TAC exposes the context-free equality {w0,w1,w2,w3} = {w3,w0,w1,w2}, but broad SET_TAC also consumes DIHX_SYM's large ambient assumption set. Both mechanically identical sites prove that set permutation independently with SET_RULE and rewrite the unchanged CARD equality. The exact v44 trace showed that the reconstructed three-selected-member step 122 passes in the real predecessor context and localized the first post-v43 runaway to DIHX_SYM step 192 at upstream lines 5196--5197. That step selects two distinct members u and v, a third member w outside their pair, and a fourth member m outside the first three from the literal set {w0,w1,w2,w3}; the broad SET_TAC search grew monotonically past 3005878 nodes. FOUR_SELECTED_MEMBERS_EXHAUST proves the identical finite exhaustion by explicitly splitting only those bounded membership cases, and both mechanically paired sites apply it to their existing assumptions. The theorem statements, hypotheses, case order, intermediate goals, and proof intent are unchanged.",
-      "scope_limit": "The eleven hash-pinned normalization operations are confined to fifteen mechanically enumerated source-line changes: the unique final open declaration at marchal3.hl line 40, one local finite-set helper after line 43, six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921, its four-index inverse discharge at lines 4127--4128, two identical cardinality set-permutation steps at lines 5085 and 5308, and the four source lines making up two paired four-selected-member exhaustion steps at lines 5196--5197 and 5422--5423. They do not alter any theorem statement or hypothesis, introduce an axiom, change proof intent, raise a global search limit, modify the earlier three-index inverse proof at lines 3824--3825, or normalize the distinct three-member and non-emptiness obligations. Native/Candle open resolution, all-six substitution, inverse rewrite, both cardinality-permutation sites, the helper and both applications, full normalized-source, and fresh exact cumulative replay checks are required."
+      "semantic_rule": "Native OCaml open declarations do not re-export names merely imported by open, so the qualified line-40 binding restores Strictbuild's top-level Prove_by_refinement.prove_by_refinement after Candle's transitive-open leak. The exact v40 strictbuild-path replay independently reproduced the preserved LEFT_ACTION_LIST_3_EXISTS step-23 SET_TAC depth failure. Each of its six mechanically identical cases has already proved one equality among x, y, z, and t and retains the exact set equality {x,y,z,t} = {u0,u1,u2,u3}; rewriting with that equality, substituting the proved point equality, and normalizing duplicate insertions with INSERT_AC proves the identical three-element set goal deterministically. The v41 cumulative replay then stopped in the four-index inverse discharge; MATCH_MP instantiates PERMUTES_INVERSE_EQ from the retained p permutes 0..3 assumption, and ASM_REWRITE_TAC proves the same four inverse equalities from the already-proved image equalities. The v42 full trace confirmed that direct rewrite completes LEFT_ACTION_LIST_3_EXISTS and separated its formerly indistinguishable search counters from a distinct later runaway at DIHX_SYM refinement step 109. At that later step, AP_TERM_TAC exposes the context-free equality {w0,w1,w2,w3} = {w3,w0,w1,w2}, but broad SET_TAC also consumes DIHX_SYM's large ambient assumption set. Both mechanically identical sites prove that set permutation independently with SET_RULE and rewrite the unchanged CARD equality. The exact v44 trace showed that the reconstructed three-selected-member step 122 passes in the real predecessor context and localized the first post-v43 runaway to DIHX_SYM step 192 at upstream lines 5196--5197. That step selects two distinct members u and v, a third member w outside their pair, and a fourth member m outside the first three from the literal set {w0,w1,w2,w3}; the broad SET_TAC search grew monotonically past 3005878 nodes. FOUR_SELECTED_MEMBERS_EXHAUST proves the identical finite exhaustion by explicitly splitting only those bounded membership cases, and both mechanically paired sites apply it to their existing assumptions. A fresh clean-restored v44 trace passed step 192 and localized the next runaway to DIHX_SYM step 286 at upstream line 5325, where broad SET_TAC consumed the large ambient context while proving only the literal permutation {u,v,a} = {v,u,a}, growing monotonically through 9643978 nodes. The mechanically paired four-element permutation at line 5426 has the same context-independent obligation. SET_RULE proves each exact set identity without importing the ambient assumptions. The theorem statements, hypotheses, case order, intermediate goals, and proof intent are unchanged.",
+      "scope_limit": "The twelve hash-pinned normalization operations are confined to seventeen mechanically enumerated source-line changes: the unique final open declaration at marchal3.hl line 40, one local finite-set helper after line 43, six repeated set-equality derivations in LEFT_ACTION_LIST_3_EXISTS at lines 3869--3921, its four-index inverse discharge at lines 4127--4128, two identical cardinality set-permutation steps at lines 5085 and 5308, the four source lines making up two paired four-selected-member exhaustion steps at lines 5196--5197 and 5422--5423, and the two context-free set swaps at lines 5325 and 5426. They do not alter any theorem statement or hypothesis, introduce an axiom, change proof intent, raise a global search limit, modify the earlier three-index inverse proof at lines 3824--3825, or normalize the distinct three-member and non-emptiness obligations. Native/Candle open resolution, all-six substitution, inverse rewrite, both cardinality-permutation sites, the helper and both applications, both context-free set swaps, full normalized-source, and fresh exact cumulative replay checks are required."
     },
     {
       "id": "PROJECT-SLTSTLO-S2-TERM-SETIFY-001",

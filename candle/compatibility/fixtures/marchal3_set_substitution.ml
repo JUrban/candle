@@ -88,7 +88,18 @@ let candle_marchal3_four_selected_application = prove
   MATCH_MP_TAC candle_marchal3_four_selected_members_exhaust THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_marchal3_three_swap = prove
+ (`!u v a:real^3. {u,v,a} = {v,u,a}`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[SET_RULE `{u,v,a:real^3} = {v,u,a}`]);;
+
+let candle_marchal3_four_swap = prove
+ (`!u v a b:real^3. {u,v,a,b} = {v,u,a,b}`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[SET_RULE `{u,v,a,b:real^3} = {v,u,a,b}`]);;
+
 print_endline "MARCHAL3_SET_SUBSTITUTION_OK";;
 print_endline "MARCHAL3_CARD_PERMUTATION_OK";;
 print_endline "MARCHAL3_INVERSE_REWRITE_OK";;
 print_endline "MARCHAL3_FOUR_SELECTED_MEMBERS_OK";;
+print_endline "MARCHAL3_CONTEXT_FREE_SET_SWAPS_OK";;
