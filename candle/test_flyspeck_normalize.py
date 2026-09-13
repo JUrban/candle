@@ -261,11 +261,11 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "(MATCH_MP_TAC Pack1.KIUMVTC);",
         )
         marchal3 = entries[
-            "PROJECT-MARCHAL3-S2-COMPATIBILITY-002"
+            "PROJECT-MARCHAL3-S2-COMPATIBILITY-003"
         ]
         self.assertEqual(
             [operation["line"] for operation in marchal3["operations"]],
-            [5085, 40, 3869, 3878, 3887, 3896, 3905, 3914, 4127],
+            [5085, 5196, 40, 43, 3869, 3878, 3887, 3896, 3905, 3914, 4127],
         )
         card_permutation = marchal3["operations"][0]
         self.assertEqual(card_permutation["kind"], "exact_lines_replace_once")
@@ -281,21 +281,50 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "{w3,w0,w1,w2}`]);"
             for replacement in card_permutation["replacements"]
         ))
+        selected_members = marchal3["operations"][1]
+        self.assertEqual(selected_members["kind"], "exact_lines_replace_once")
+        self.assertEqual(selected_members["replacement_count"], 4)
         self.assertEqual(
-            marchal3["operations"][1]["before"],
+            [replacement["line"] for replacement in selected_members["replacements"]],
+            [5196, 5197, 5422, 5423],
+        )
+        self.assertTrue(all(
+            selected_members["replacements"][index]["before"] ==
+            " (UP_ASM_TAC THEN UP_ASM_TAC THEN UP_ASM_TAC THEN "
+            "UP_ASM_TAC THEN "
+            and selected_members["replacements"][index]["after"] ==
+            " (MATCH_MP_TAC FOUR_SELECTED_MEMBERS_EXHAUST THEN "
+            "ASM_REWRITE_TAC[]);"
+            for index in (0, 2)
+        ))
+        self.assertTrue(all(
+            selected_members["replacements"][index]["before"] ==
+            "   UP_ASM_TAC THEN SET_TAC[]);"
+            and selected_members["replacements"][index]["after"] == ""
+            for index in (1, 3)
+        ))
+        self.assertEqual(
+            marchal3["operations"][2]["before"],
             "open Upfzbzm_support_lemmas;;",
         )
         self.assertEqual(
-            marchal3["operations"][1]["after"],
+            marchal3["operations"][2]["after"],
             "open Upfzbzm_support_lemmas;;\n\n"
             "let prove_by_refinement = "
             "Prove_by_refinement.prove_by_refinement;;",
         )
+        selected_helper = marchal3["operations"][3]
+        self.assertEqual(
+            selected_helper["before"],
+            "let TAKE_TAC = UP_ASM_TAC THEN REPEAT STRIP_TAC;;",
+        )
+        self.assertIn("let FOUR_SELECTED_MEMBERS_EXHAUST = prove", selected_helper["after"])
+        self.assertIn("REPEAT(FIRST_X_ASSUM DISJ_CASES_TAC)", selected_helper["after"])
         self.assertTrue(all(
             "ONCE_REWRITE_TAC[GSYM (ASSUME" in operation["after"]
             and "SUBST1_TAC (ASSUME" in operation["after"]
             and "REWRITE_TAC[INSERT_AC]" in operation["after"]
-            for operation in marchal3["operations"][2:8]
+            for operation in marchal3["operations"][4:10]
         ))
         self.assertEqual(
             marchal3["operations"][-1]["after"],
@@ -304,8 +333,10 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertIn("Native OCaml", marchal3["semantic_rule"])
         self.assertIn("identical three-element set goal", marchal3["semantic_rule"])
-        self.assertIn("ten mechanically enumerated", marchal3["scope_limit"])
+        self.assertIn("FOUR_SELECTED_MEMBERS_EXHAUST", marchal3["semantic_rule"])
+        self.assertIn("fifteen mechanically enumerated", marchal3["scope_limit"])
         self.assertIn("two identical cardinality", marchal3["scope_limit"])
+        self.assertIn("two paired four-selected-member", marchal3["scope_limit"])
         self.assertIn("earlier three-index inverse proof", marchal3["scope_limit"])
         self.assertTrue(all(
             "Pack1.KIUMVTC" in operation["after"]
@@ -971,7 +1002,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 234)
+        self.assertEqual(len(operation_ids), 236)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

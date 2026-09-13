@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "274776131cb95585e784752211a63611" then
+     "a6649f88136371c4550d0c8daabaff57" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "9a54c31711c02e3e59f08718c3249050" then
+     "f3e43ceb001b2f33c4220b5637b1598f" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all fifty-seven outputs in a separate tree;
-   this process registers only the fifty-six selected by the direct source graph.
+(* The host-side normalizer materializes all fifty-eight outputs in a separate tree;
+   this process registers only the fifty-seven selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -373,7 +373,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "packing/marchal3.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/marchal3.hl",
-    "eabad795902f49dd173171a0611bc459");
+    "6c588724246e6408e96cb9a96d5bed3e");
    (Filename.concat candle_flyspeck_text_root "packing/SLTSTLO.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/SLTSTLO.hl",

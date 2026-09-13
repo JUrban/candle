@@ -66,6 +66,29 @@ let candle_marchal3_inverse_rewrite = prove
   REWRITE_TAC[MATCH_MP PERMUTES_INVERSE_EQ
     (ASSUME `p permutes 0..3`)] THEN ASM_REWRITE_TAC[]);;
 
+let candle_marchal3_four_selected_members_exhaust = prove
+ (`!u v w m w0 w1 w2 w3:real^3.
+     u IN {w0,w1,w2,w3} /\ v IN {w0,w1,w2,w3} /\ ~(u = v) /\
+     w IN {w0,w1,w2,w3} DIFF {u,v} /\
+     m IN {w0,w1,w2,w3} DIFF {u,v,w}
+     ==> {u,v,w,m} = {w0,w1,w2,w3}`,
+  REPEAT STRIP_TAC THEN
+  RULE_ASSUM_TAC(REWRITE_RULE[IN_DIFF; IN_INSERT; NOT_IN_EMPTY]) THEN
+  REPEAT(FIRST_X_ASSUM(CONJUNCTS_THEN ASSUME_TAC)) THEN
+  REPEAT(FIRST_X_ASSUM DISJ_CASES_TAC) THEN
+  ASM_REWRITE_TAC[INSERT_AC] THEN ASM_MESON_TAC[]);;
+
+let candle_marchal3_four_selected_application = prove
+ (`!u v w m w0 w1 w2 w3:real^3.
+     u IN {w0,w1,w2,w3} /\ v IN {w0,w1,w2,w3} /\ ~(u = v) /\
+     w IN {w0,w1,w2,w3} DIFF {u,v} /\
+     m IN {w0,w1,w2,w3} DIFF {u,v,w}
+     ==> {u,v,w,m} = {w0,w1,w2,w3}`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_marchal3_four_selected_members_exhaust THEN
+  ASM_REWRITE_TAC[]);;
+
 print_endline "MARCHAL3_SET_SUBSTITUTION_OK";;
 print_endline "MARCHAL3_CARD_PERMUTATION_OK";;
 print_endline "MARCHAL3_INVERSE_REWRITE_OK";;
+print_endline "MARCHAL3_FOUR_SELECTED_MEMBERS_OK";;
