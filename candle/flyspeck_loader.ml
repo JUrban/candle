@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "1a3606cec2fd724e0f77e7fc5f5c4b04" then
+     "a110502b4ee75bd5e25c89d2a2065a4d" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "06445890be435cb296444106e927f7ea" then
+     "54372fa0d233ac5a92c6b705c4da0075" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all sixty outputs in a separate tree;
-   this process registers only the fifty-nine selected by the direct source graph.
+(* The host-side normalizer materializes all sixty-one outputs in a separate tree;
+   this process registers only the sixty selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -398,6 +398,10 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/local_lemmas1.hl",
     "baaf863132dda96fa3ee962cbadb968f");
+   (Filename.concat candle_flyspeck_text_root "local/NKEZBFC.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/local/NKEZBFC.hl",
+    "1afcc4ab35e1b2a752f3c7890429c489");
    (Filename.concat candle_flyspeck_text_root "tame/Inequalities.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/Inequalities.hl",
@@ -416,7 +420,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 59 then
+if List.length candle_flyspeck_normalized_sources <> 60 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =
