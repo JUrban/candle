@@ -4626,6 +4626,27 @@
       ],
       "semantic_rule": "The infix-registration effect executes exactly once at its original Oxlzlez module-initialization position on the identical operator name, precedence, and right associativity, after the same module opens and immediately before the same dist3 binding and definitions. The explicit wildcard binding discards the same unit result while preserving the parser-table mutation, evaluation order, result, and exceptions. The complete normalized module establishes the unchanged Oxlzlez.PACKING_CHAPTER_MAIN_CONCLUSION theorem.",
       "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in OXLZLEZ3.hl: the unique parse_as_infix phrase at line 18. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, parser registration, SET_TAC or MESON implementation, search order, or axiom. The upstream fix-top100 branch contains no OXLZLEZ3 patch; focused original-reject/normalized-accept loading, complete-source theorem lookup, and fresh cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/dih2k.hl",
+      "path": "text_formalization/local/dih2k.hl",
+      "source_sha256": "ee6792a1d6817555dea8a802e11eda883aa25f0532b574649c652747fdf488a4",
+      "source_md5": "c12fddbd205b630e35551742ca407848",
+      "normalized_sha256": "a17c62cef5ca0c1ebf87f24ab58dab2426edbe803343b9f9b35ffad68d479f08",
+      "normalized_md5": "d3b1aaa89eecb9b36cc11653fa3c3e6d",
+      "normalized_bytes": 153921,
+      "operations": [
+        {
+          "id": "PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001-EXPLICIT-INFIX-BINDING",
+          "kind": "exact_bytes_replace_once",
+          "line": 40,
+          "before": "parse_as_infix(\"has_orders\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"has_orders\",(12,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "The infix-registration effect executes exactly once at its original Dih2k_hypermap module-initialization position on the identical has_orders name, precedence, and right associativity, after the same module opens and immediately before the same cstab binding and definitions. The explicit wildcard binding discards the same unit result while preserving the parser-table mutation, evaluation order, result, and exceptions. This is the same already-validated compatibility form used for the identical has_orders registration in WRGCVDR.hl and local_lemmas.hl.",
+      "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in dih2k.hl: the unique parse_as_infix phrase at line 40. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, parser registration, SET_TAC or MESON implementation, search order, or axiom. No fix-top100 version of dih2k.hl is present; focused original-reject/normalized-accept loading, complete-source Dih2k_hypermap.DIH2K_FAN_HYP_SY lookup, and fresh cumulative source loading are required."
     }
   ]
 }

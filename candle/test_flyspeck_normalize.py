@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 63)
+        self.assertEqual(len(self.contract["entries"]), 64)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -356,6 +356,27 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("identical operator name", oxlzlez3["semantic_rule"])
         self.assertIn(
             "complete mechanically enumerated", oxlzlez3["scope_limit"]
+        )
+        dih2k = entries["PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001"]
+        self.assertEqual(len(dih2k["operations"]), 1)
+        self.assertEqual(
+            dih2k["operations"][0],
+            {
+                "id": (
+                    "PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001-"
+                    "EXPLICIT-INFIX-BINDING"
+                ),
+                "kind": "exact_bytes_replace_once",
+                "line": 40,
+                "before": 'parse_as_infix("has_orders",(12,"right"));;',
+                "after": (
+                    'let _ = parse_as_infix("has_orders",(12,"right"));;'
+                ),
+            },
+        )
+        self.assertIn("identical has_orders name", dih2k["semantic_rule"])
+        self.assertIn(
+            "complete mechanically enumerated", dih2k["scope_limit"]
         )
         grutoti = entries[
             "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001"
@@ -1159,7 +1180,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 243)
+        self.assertEqual(len(operation_ids), 244)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
