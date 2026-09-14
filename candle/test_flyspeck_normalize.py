@@ -254,10 +254,36 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         local_lemmas1_theorems = local_lemmas1["operations"][0]
         self.assertEqual(local_lemmas1_theorems["kind"],
                          "exact_lines_replace_once")
-        self.assertEqual(local_lemmas1_theorems["replacement_count"], 4)
+        self.assertEqual(local_lemmas1_theorems["replacement_count"], 66)
         self.assertEqual(
             [replacement["line"]
-             for replacement in local_lemmas1_theorems["replacements"]],
+             for replacement in local_lemmas1_theorems["replacements"][:6]],
+            [843, 844, 845, 846, 854, 867],
+        )
+        self.assertEqual(
+            [replacement["line"]
+             for replacement in local_lemmas1_theorems["replacements"][-4:]],
+            [934, 935, 936, 937],
+        )
+        self.assertEqual(
+            sum(replacement["before"].startswith("Local_lemmas.") or
+                replacement["before"].startswith("Wrgcvdr_cizmrrh.")
+                for replacement in local_lemmas1_theorems["replacements"]),
+            4,
+        )
+        self.assertEqual(
+            sum(replacement["before"].startswith("g `")
+                for replacement in local_lemmas1_theorems["replacements"]),
+            2,
+        )
+        self.assertEqual(
+            sum(replacement["before"].startswith("e ")
+                for replacement in local_lemmas1_theorems["replacements"]),
+            60,
+        )
+        self.assertEqual(
+            [replacement["line"]
+             for replacement in local_lemmas1_theorems["replacements"][:4]],
             [843, 844, 845, 846],
         )
         self.assertTrue(all(

@@ -3296,7 +3296,7 @@
           "kind": "exact_bytes_replace_once",
           "line": 337,
           "before": "let rec geteps = \n  let getepsf = function\n    Eps t -> t\n    | _ -> 0.0\n  in function\n      [] -> 0.0\n  | b::bs -> max(getepsf b) (geteps bs);;",
-      "after": "let rec geteps =\n  let getepsf = function\n    Eps t -> t\n    | _ -> 0.0 in\n  function\n    [] -> 0.0\n  | b::bs ->\n      let current = getepsf b\n      and remaining = geteps bs in\n      if Cake.Double.(>) current remaining\n      then current else remaining;;"
+          "after": "let rec geteps =\n  let getepsf = function\n    Eps t -> t\n    | _ -> 0.0 in\n  function\n    [] -> 0.0\n  | b::bs ->\n      let current = getepsf b\n      and remaining = geteps bs in\n      if Cake.Double.(>) current remaining\n      then current else remaining;;"
         },
         {
           "id": "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001-DISABLE-CFSQP-CODE",
@@ -3972,15 +3972,15 @@
       "path": "text_formalization/local/local_lemmas1.hl",
       "source_sha256": "7d9c55f3c978ea1f87ee27c8ac4b31275b6455bf261f59331cdf2c58d72c0c59",
       "source_md5": "18891f04a6653926eb31b61feebfa1eb",
-      "normalized_sha256": "31c3d11e61e67c4e8ca0d4409a0945fa5c4e1ef67ffd9eb33002d135fea68bff",
-      "normalized_md5": "32b78cf4bb5248e81f0c8b7b5fbe488e",
-      "normalized_bytes": 191335,
+      "normalized_sha256": "1ecd334b743330296e0824c1bf1bbc24b7de4ff722086914defb36e354db420f",
+      "normalized_md5": "baaf863132dda96fa3ee962cbadb968f",
+      "normalized_bytes": 191831,
       "operations": [
         {
-          "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001-WILDCARD-THEOREMS",
+          "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001-ALL-ANONYMOUS-PHRASES",
           "kind": "exact_lines_replace_once",
           "line": 843,
-          "replacement_count": 4,
+          "replacement_count": 66,
           "replacements": [
             {
               "line": 843,
@@ -4001,12 +4001,322 @@
               "line": 846,
               "before": "Local_lemmas.HKIRPEP;;",
               "after": "let _ = Local_lemmas.HKIRPEP;;"
+            },
+            {
+              "line": 854,
+              "before": "g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+              "after": "let _ = g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\"
+            },
+            {
+              "line": 867,
+              "before": "g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+              "after": "let _ = g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\"
+            },
+            {
+              "line": 872,
+              "before": "e (REWRITE_TAC[convex_local_fan]);;",
+              "after": "let _ = e (REWRITE_TAC[convex_local_fan]);;"
+            },
+            {
+              "line": 873,
+              "before": "e (NHANH Local_lemmas.LOCAL_FAN_ORBIT_MAP_V);;",
+              "after": "let _ = e (NHANH Local_lemmas.LOCAL_FAN_ORBIT_MAP_V);;"
+            },
+            {
+              "line": 874,
+              "before": "e (REWRITE_TAC[local_fan; FAN]);;",
+              "after": "let _ = e (REWRITE_TAC[local_fan; FAN]);;"
+            },
+            {
+              "line": 875,
+              "before": "e (LET_TAC);;",
+              "after": "let _ = e (LET_TAC);;"
+            },
+            {
+              "line": 876,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 877,
+              "before": "e (CONJ_TAC);;",
+              "after": "let _ = e (CONJ_TAC);;"
+            },
+            {
+              "line": 878,
+              "before": "e (UNDISCH_TAC` UNIONS E SUBSET (V:real^3 -> bool) `);;",
+              "after": "let _ = e (UNDISCH_TAC` UNIONS E SUBSET (V:real^3 -> bool) `);;"
+            },
+            {
+              "line": 879,
+              "before": "e (REWRITE_TAC[GSYM IMAGE_UNIONS]);;",
+              "after": "let _ = e (REWRITE_TAC[GSYM IMAGE_UNIONS]);;"
+            },
+            {
+              "line": 880,
+              "before": "e (SET_TAC[]);;",
+              "after": "let _ = e (SET_TAC[]);;"
+            },
+            {
+              "line": 882,
+              "before": "e (CONJ_TAC);;",
+              "after": "let _ = e (CONJ_TAC);;"
+            },
+            {
+              "line": 883,
+              "before": "e (MATCH_MP_TAC GRAPH_IMAGE_IMAGE);;",
+              "after": "let _ = e (MATCH_MP_TAC GRAPH_IMAGE_IMAGE);;"
+            },
+            {
+              "line": 884,
+              "before": "e (ASM_REWRITE_TAC[]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[]);;"
+            },
+            {
+              "line": 885,
+              "before": "e (EXPAND_TAC \"f\");;",
+              "after": "let _ = e (EXPAND_TAC \"f\");;"
+            },
+            {
+              "line": 886,
+              "before": "e (MATCH_MP_TAC LUNAR_DEFORM_INJ);;",
+              "after": "let _ = e (MATCH_MP_TAC LUNAR_DEFORM_INJ);;"
+            },
+            {
+              "line": 887,
+              "before": "e (ASM_REWRITE_TAC[]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[]);;"
+            },
+            {
+              "line": 889,
+              "before": "e (REWRITE_TAC[fan1; fan2; fan6; fan7]);;",
+              "after": "let _ = e (REWRITE_TAC[fan1; fan2; fan6; fan7]);;"
+            },
+            {
+              "line": 890,
+              "before": "e (CONJ_TAC);;",
+              "after": "let _ = e (CONJ_TAC);;"
+            },
+            {
+              "line": 892,
+              "before": "e (UNDISCH_TAC` fan1 ((vec 0:real^3),(V:real^3 -> bool),(E:(real^3 -> bool) -> bool))`);;",
+              "after": "let _ = e (UNDISCH_TAC` fan1 ((vec 0:real^3),(V:real^3 -> bool),(E:(real^3 -> bool) -> bool))`);;"
+            },
+            {
+              "line": 893,
+              "before": "e (REWRITE_TAC[fan1]);;",
+              "after": "let _ = e (REWRITE_TAC[fan1]);;"
+            },
+            {
+              "line": 894,
+              "before": "e (SIMP_TAC[FINITE_IMAGE]);;",
+              "after": "let _ = e (SIMP_TAC[FINITE_IMAGE]);;"
+            },
+            {
+              "line": 895,
+              "before": "e (SET_TAC[]);;",
+              "after": "let _ = e (SET_TAC[]);;"
+            },
+            {
+              "line": 896,
+              "before": "e (ASSUME_TAC2 LUNAR_DEFORM_INJ);;",
+              "after": "let _ = e (ASSUME_TAC2 LUNAR_DEFORM_INJ);;"
+            },
+            {
+              "line": 898,
+              "before": "e (CONJ_TAC);;",
+              "after": "let _ = e (CONJ_TAC);;"
+            },
+            {
+              "line": 899,
+              "before": "e (UNDISCH_TAC` fan2 (vec 0,V: real^3 -> bool,(E:(real^3 -> bool) -> bool)) `);;",
+              "after": "let _ = e (UNDISCH_TAC` fan2 (vec 0,V: real^3 -> bool,(E:(real^3 -> bool) -> bool)) `);;"
+            },
+            {
+              "line": 900,
+              "before": "e (REWRITE_TAC[fan2]);;",
+              "after": "let _ = e (REWRITE_TAC[fan2]);;"
+            },
+            {
+              "line": 901,
+              "before": "e (DOWN);;",
+              "after": "let _ = e (DOWN);;"
+            },
+            {
+              "line": 902,
+              "before": "e (MP_TAC LUNAR_DEFORM_ORIGIN);;",
+              "after": "let _ = e (MP_TAC LUNAR_DEFORM_ORIGIN);;"
+            },
+            {
+              "line": 903,
+              "before": "e (ASM_REWRITE_TAC[IN_IMAGE]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[IN_IMAGE]);;"
+            },
+            {
+              "line": 904,
+              "before": "e (MESON_TAC[]);;",
+              "after": "let _ = e (MESON_TAC[]);;"
+            },
+            {
+              "line": 906,
+              "before": "e (CONJ_TAC);;",
+              "after": "let _ = e (CONJ_TAC);;"
+            },
+            {
+              "line": 907,
+              "before": "e (GEN_TAC);;",
+              "after": "let _ = e (GEN_TAC);;"
+            },
+            {
+              "line": 908,
+              "before": "e (UNDISCH_TAC` fan6 (vec 0,V:real^3 -> bool,E:(real^3 -> bool) -> bool ) `);;",
+              "after": "let _ = e (UNDISCH_TAC` fan6 (vec 0,V:real^3 -> bool,E:(real^3 -> bool) -> bool ) `);;"
+            },
+            {
+              "line": 909,
+              "before": "e (REWRITE_TAC[IN_IMAGE; IMAGE; fan6]);;",
+              "after": "let _ = e (REWRITE_TAC[IN_IMAGE; IMAGE; fan6]);;"
+            },
+            {
+              "line": 910,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 911,
+              "before": "e (FIRST_ASSUM NHANH);;",
+              "after": "let _ = e (FIRST_ASSUM NHANH);;"
+            },
+            {
+              "line": 912,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 913,
+              "before": "e (MP_TAC Local_lemmas.HKIRPEP);;",
+              "after": "let _ = e (MP_TAC Local_lemmas.HKIRPEP);;"
+            },
+            {
+              "line": 914,
+              "before": "e (ANTS_TAC);;",
+              "after": "let _ = e (ANTS_TAC);;"
+            },
+            {
+              "line": 915,
+              "before": "e (ASM_REWRITE_TAC[convex_local_fan; local_fan]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[convex_local_fan; local_fan]);;"
+            },
+            {
+              "line": 916,
+              "before": "e (CONV_TAC (ONCE_DEPTH_CONV let_CONV));;",
+              "after": "let _ = e (CONV_TAC (ONCE_DEPTH_CONV let_CONV));;"
+            },
+            {
+              "line": 917,
+              "before": "e (SWITCH_TAC ` FF = face H (x:real^3 # real^3 )`);;",
+              "after": "let _ = e (SWITCH_TAC ` FF = face H (x:real^3 # real^3 )`);;"
+            },
+            {
+              "line": 918,
+              "before": "e (ASM_REWRITE_TAC[FAN; fan6]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[FAN; fan6]);;"
+            },
+            {
+              "line": 919,
+              "before": "e (EXISTS_TAC `x:(real^3 #real^3)`);;",
+              "after": "let _ = e (EXISTS_TAC `x:(real^3 #real^3)`);;"
+            },
+            {
+              "line": 920,
+              "before": "e (ASM_REWRITE_TAC[]);;",
+              "after": "let _ = e (ASM_REWRITE_TAC[]);;"
+            },
+            {
+              "line": 921,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 922,
+              "before": "e (UNDISCH_TAC` graph (E: (real^3 -> bool) -> bool) `);;",
+              "after": "let _ = e (UNDISCH_TAC` graph (E: (real^3 -> bool) -> bool) `);;"
+            },
+            {
+              "line": 923,
+              "before": "e (REWRITE_TAC[graph]);;",
+              "after": "let _ = e (REWRITE_TAC[graph]);;"
+            },
+            {
+              "line": 924,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 925,
+              "before": "e (UNDISCH_TAC`(x': real^3 -> bool) IN E `);;",
+              "after": "let _ = e (UNDISCH_TAC`(x': real^3 -> bool) IN E `);;"
+            },
+            {
+              "line": 926,
+              "before": "e (REWRITE_TAC[IN]);;",
+              "after": "let _ = e (REWRITE_TAC[IN]);;"
+            },
+            {
+              "line": 927,
+              "before": "e (FIRST_ASSUM NHANH);;",
+              "after": "let _ = e (FIRST_ASSUM NHANH);;"
+            },
+            {
+              "line": 928,
+              "before": "e (REWRITE_TAC[HAS_SIZE]);;",
+              "after": "let _ = e (REWRITE_TAC[HAS_SIZE]);;"
+            },
+            {
+              "line": 929,
+              "before": "e (NHANH Rogers.CARD_2_IMP_DOUBLE);;",
+              "after": "let _ = e (NHANH Rogers.CARD_2_IMP_DOUBLE);;"
+            },
+            {
+              "line": 930,
+              "before": "e (STRIP_TAC);;",
+              "after": "let _ = e (STRIP_TAC);;"
+            },
+            {
+              "line": 932,
+              "before": "e (UNDISCH_TAC` v = ITER j (rho_node1 FF) w`);;",
+              "after": "let _ = e (UNDISCH_TAC` v = ITER j (rho_node1 FF) w`);;"
+            },
+            {
+              "line": 933,
+              "before": "e (USE_FIRST `w = ITER i (rho_node1 FF) v` (fun x -> REWRITE_TAC[x; ITER_ADD]));;",
+              "after": "let _ = e (USE_FIRST `w = ITER i (rho_node1 FF) v` (fun x -> REWRITE_TAC[x; ITER_ADD]));;"
+            },
+            {
+              "line": 934,
+              "before": "e (ASSUME_TAC2 (ARITH_RULE` ~(j = 0) ==> 0 < j + i `));;",
+              "after": "let _ = e (ASSUME_TAC2 (ARITH_RULE` ~(j = 0) ==> 0 < j + i `));;"
+            },
+            {
+              "line": 935,
+              "before": "e (DOWN THEN PHA);;",
+              "after": "let _ = e (DOWN THEN PHA);;"
+            },
+            {
+              "line": 936,
+              "before": "e (ONCE_REWRITE_TAC[EQ_SYM_EQ]);;",
+              "after": "let _ = e (ONCE_REWRITE_TAC[EQ_SYM_EQ]);;"
+            },
+            {
+              "line": 937,
+              "before": "e (NHANH Lvducxu.ITER_CYCLIC_ORBIT);;",
+              "after": "let _ = e (NHANH Lvducxu.ITER_CYCLIC_ORBIT);;"
             }
           ]
         }
       ],
-      "semantic_rule": "All four theorem values are evaluated exactly once at their original module-initialization positions, in the original order, with identical values and exceptions. Explicit wildcard bindings discard the same results while giving Candle unambiguous module-structure items; no theorem is reproved or substituted.",
-      "scope_limit": "This hash-pinned rewrite is confined to the complete mechanically enumerated run of four anonymous theorem-valued structure phrases in local_lemmas1.hl at lines 843 through 846. It changes no definition, theorem statement, hypothesis, tactic, proof step, proof intent, source order, or axiom. The upstream fix-top100 branch contains no local_lemmas1 source or patch; focused original-reject/normalized-accept execution from a clean action-097 predecessor and fresh cumulative loading remain required."
+      "semantic_rule": "All four theorem values, both goal-setting calls, and all sixty tactic applications are evaluated exactly once at their original module-initialization positions, in their original order, with identical arguments, goal-stack effects, results, and exceptions. Explicit wildcard bindings discard the same returned values while giving Candle unambiguous module-structure items; no theorem is reproved or substituted.",
+      "scope_limit": "This hash-pinned rewrite is confined to the complete mechanically enumerated anonymous structure-phrase set in local_lemmas1.hl: four theorem references at lines 843--846, two g calls at lines 854 and 867, and sixty e calls at lines 872--937. It changes only the explicit discard spelling, not any definition, theorem statement, hypothesis, tactic, proof step, proof intent, argument, source order, goal-stack transition, or axiom. The upstream fix-top100 branch contains no local_lemmas1 source or patch; focused execution from a clean action-097 predecessor and fresh cumulative loading remain required."
     },
     {
       "id": "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001",
