@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "d75bea858d3f878747b0702d9a4bd569" then
+     "9efd91e6c39dab4dce9a283220f7bf20" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "0ecb3c2e6ad623c51dd40274033da562" then
+     "76d90a5555e646abd5ff80cb38e175d7" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -377,7 +377,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "packing/GRUTOTI.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/GRUTOTI.hl",
-    "e99e4426ae07737bafa75ab4bf98df25");
+    "89f7d30f49d505a21d27a5eec9904b37");
    (Filename.concat candle_flyspeck_text_root "packing/SLTSTLO.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/SLTSTLO.hl",

@@ -248,23 +248,32 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertIn("original order", local_lemmas["semantic_rule"])
         grutoti = entries[
-            "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001"
+            "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001"
         ]
-        self.assertEqual(len(grutoti["operations"]), 1)
-        self.assertEqual(grutoti["operations"][0]["line"], 2713)
+        self.assertEqual(len(grutoti["operations"]), 2)
+        self.assertEqual(
+            [operation["line"] for operation in grutoti["operations"]],
+            [15, 46],
+        )
         self.assertEqual(
             grutoti["operations"][0]["before"],
-            " (UP_ASM_TAC THEN SET_TAC[RCONE_GT_SUBSET_RCONE_GE]);",
+            "module Grutoti = struct\n\n",
         )
         self.assertEqual(
             grutoti["operations"][0]["after"],
-            " (UP_ASM_TAC THEN MATCH_ACCEPT_TAC\n"
-            "   (REWRITE_RULE[SUBSET]\n"
-            "     Marchal_cells_2_new.RCONE_GT_SUBSET_RCONE_GE));",
+            "module Grutoti = struct\n\n\n"
+            "let candle_grutoti_native_set_tac = SET_TAC;;\n"
+            "let candle_grutoti_native_set_rule = SET_RULE;;\n\n",
         )
-        self.assertIn("steps 0 through 2122", grutoti["semantic_rule"])
-        self.assertIn("unique broad set search", grutoti["scope_limit"])
-        self.assertIn("not-yet-reached REUHADY", grutoti["scope_limit"])
+        self.assertEqual(
+            grutoti["operations"][1]["after"],
+            "  open Marchal_cells_3;;\n\n\n"
+            "let SET_TAC = candle_grutoti_native_set_tac;;\n"
+            "let SET_RULE = candle_grutoti_native_set_rule;;\n\n",
+        )
+        self.assertIn("2,364 native MESON", grutoti["semantic_rule"])
+        self.assertIn("previous line-2713", grutoti["scope_limit"])
+        self.assertNotIn("MATCH_ACCEPT_TAC", json.dumps(grutoti))
         ajripqn = entries["PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001"]
         self.assertEqual(
             [operation["line"] for operation in ajripqn["operations"]],
@@ -1040,7 +1049,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 238)
+        self.assertEqual(len(operation_ids), 239)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

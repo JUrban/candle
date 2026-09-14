@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "d75bea858d3f878747b0702d9a4bd569",
-    "generated_source_sha256": "20342274159e94acde704bb63f54eb7dc95643d4e33f706981924406192d86c6",
+    "generated_source_md5": "9efd91e6c39dab4dce9a283220f7bf20",
+    "generated_source_sha256": "950d37f55be98372bb095c4b2a704b2976d89962c29f9050704ce140807d086c",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11578,7 +11578,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 62133,
+      "bytes": 62126,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "0ecb3c2e6ad623c51dd40274033da562",
+      "md5": "76d90a5555e646abd5ff80cb38e175d7",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "9d85553fe4c6f9772533e374d549c58a044eff9ad9944ba69b5dc2bb962d4f0d"
+      "sha256": "d14e2e374f29fbf2b4434734a4d5836b1eb0005a19ad41ea16570aca32f96639"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "08e034cd19df8c61d78e4202e4104d07",
+      "md5": "afb886b2456d5a0a8ceedbd7ead93684",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "87bf257aa7816c1aa2e91a3be7fd10244381072a1858cd631f235f03de9bf4c3"
+      "sha256": "b7452bd2a2210d0cf120e9715cddc6535782d32e2b31c0ef227243b507f03bb6"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -20026,12 +20026,12 @@
       "bytes": 297813,
       "dependencies": [],
       "execution_normalization": {
-        "id": "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001",
+        "id": "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 297872,
-        "normalized_md5": "e99e4426ae07737bafa75ab4bf98df25",
-        "normalized_sha256": "e502fd38e727863f1c3653881778e3720c4d574a9b43622c60467e148f04961d",
-        "operation_count": 1
+        "normalized_bytes": 298005,
+        "normalized_md5": "89f7d30f49d505a21d27a5eec9904b37",
+        "normalized_sha256": "65aeef691f1a5015488489e5df1e8b0b18e7d4bff3767bdfb212be5c4aba079b",
+        "operation_count": 2
       },
       "md5": "0b25afae6108060320acf6637df0d3e2",
       "path": "text_formalization/packing/GRUTOTI.hl",
@@ -22433,7 +22433,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "4ee60236b81b7e4873a76e453b1e9807b4dd2ab5a9abd7db01105225fd2cb4bd",
+    "contract_sha256": "68e149570214a7d3520cdca84b1070ba9016d99f2925770220dfcb346b1fd77b",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26568,24 +26568,31 @@
         "source_sha256": "692cab21cb7ce13343b4fcdfc8223dbfdc38aa556a958a903274aad93adfc56c"
       },
       {
-        "id": "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001",
+        "id": "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 297872,
-        "normalized_md5": "e99e4426ae07737bafa75ab4bf98df25",
-        "normalized_sha256": "e502fd38e727863f1c3653881778e3720c4d574a9b43622c60467e148f04961d",
-        "operation_count": 1,
+        "normalized_bytes": 298005,
+        "normalized_md5": "89f7d30f49d505a21d27a5eec9904b37",
+        "normalized_sha256": "65aeef691f1a5015488489e5df1e8b0b18e7d4bff3767bdfb212be5c4aba079b",
+        "operation_count": 2,
         "operations": [
           {
-            "after": " (UP_ASM_TAC THEN MATCH_ACCEPT_TAC\n   (REWRITE_RULE[SUBSET]\n     Marchal_cells_2_new.RCONE_GT_SUBSET_RCONE_GE));",
-            "before": " (UP_ASM_TAC THEN SET_TAC[RCONE_GT_SUBSET_RCONE_GE]);",
-            "id": "PROJECT-GRUTOTI-S2-DIRECT-RCONE-MEMBERSHIP-001-STEP-2123",
+            "after": "module Grutoti = struct\n\n\nlet candle_grutoti_native_set_tac = SET_TAC;;\nlet candle_grutoti_native_set_rule = SET_RULE;;\n\n",
+            "before": "module Grutoti = struct\n\n",
+            "id": "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001-CAPTURE",
             "kind": "exact_bytes_replace_once",
-            "line": 2713
+            "line": 15
+          },
+          {
+            "after": "  open Marchal_cells_3;;\n\n\nlet SET_TAC = candle_grutoti_native_set_tac;;\nlet SET_RULE = candle_grutoti_native_set_rule;;\n\n",
+            "before": "  open Marchal_cells_3;;\n\n",
+            "id": "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001-RESTORE",
+            "kind": "exact_bytes_replace_once",
+            "line": 46
           }
         ],
         "path": "text_formalization/packing/GRUTOTI.hl",
-        "scope_limit": "This hash-pinned replacement is confined to the unique broad set search at GRUTOTI.hl line 2713. It does not change the distinct deterministic RCONE_GT_SUBSET_RCONE_GE use at line 7840, the identical but not-yet-reached REUHADY source site, any theorem statement or hypothesis, a definition, axiom, global search bound, loader rule, or runtime behavior. A focused real-runtime implication proof, complete GRUTOTI replay from a fresh clean post-Marchal state, exact action replay, and fresh cumulative action-zero replay are required.",
-        "semantic_rule": "The exact clean post-Marchal trace passed GRUTOTI refinement steps 0 through 2122 and reproduced the cumulative-run search fingerprint at step 2123. The preceding proof establishes x IN rcone_gt u0 u1 a' and leaves the corresponding rcone_ge membership obligation. UP_ASM_TAC retains the original assumption selection; REWRITE_RULE[SUBSET] converts the already-used defining-module inclusion theorem into precisely that membership implication, and MATCH_ACCEPT_TAC applies it directly without importing the large ambient context into set search. Explicit qualification names the theorem selected from its authoritative defining module. The theorem statement, hypotheses, intermediate goal, refinement order, and proof intent are unchanged.",
+        "scope_limit": "This hash-pinned normalization is confined to lexical SET_TAC and SET_RULE resolution inside the single GRUTOTI module. It does not change ASM_SET_TAC, a SET_TAC or SET_RULE implementation, any individual proof call, another module, the loader, the runtime, search bounds, theorem content, definitions, or axioms. The previous line-2713 direct proof rewrite is removed rather than accumulated. Source drift, a new conflicting local binding, failure of the exact 2,364-record native search projection, whole-source theorem mismatch, action replay failure, or cumulative action-zero replay failure blocks acceptance.",
+        "semantic_rule": "Native OCaml open declarations affect lexical lookup but do not re-export names imported inside an opened module. GRUTOTI therefore intends the outer HOL Light SET_TAC and SET_RULE even after opening Euler_main_theorem and its transitive dependencies. Candle currently exposes a custom Flyspeck set tactic transitively; that tactic preprocesses before adding supplied theorems, leaving their SUBSET structure opaque and changing both eager SET_RULE and refinement SET_TAC searches. The two local bindings capture the native outer values before any module open and restore them after the complete original open sequence. Every original theorem statement, hypothesis, proof tactic occurrence, tactic order, and allowed axiom is unchanged. From a fresh clean post-Marchal state the exact original source plus only these bindings completed GRUTOTI, produced the exact theorem conclusion, and emitted all 2,364 native MESON progress records byte-for-byte in native order.",
         "source_key": "flyspeck:text_formalization/packing/GRUTOTI.hl",
         "source_md5": "0b25afae6108060320acf6637df0d3e2",
         "source_sha256": "bd9904546baab73ea85b01fd29237ceb10dd7259ce2aa1018747616ea1d4d875"
@@ -26879,8 +26886,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "0ecb3c2e6ad623c51dd40274033da562",
-    "generated_source_sha256": "9d85553fe4c6f9772533e374d549c58a044eff9ad9944ba69b5dc2bb962d4f0d",
+    "generated_source_md5": "76d90a5555e646abd5ff80cb38e175d7",
+    "generated_source_sha256": "d14e2e374f29fbf2b4434734a4d5836b1eb0005a19ad41ea16570aca32f96639",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

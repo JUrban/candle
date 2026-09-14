@@ -1,6 +1,13 @@
 # Direct boundary 04: GRUTOTI rcone membership
 
-Status: DEVELOPMENT / NON-RELEASE compatibility batch. This document does not
+Status: SUPERSEDED DEVELOPMENT / NON-RELEASE experiment. The line-2713 proof
+rewrite described below is not part of v47. Complete GRUTOTI replay exposed a
+second runaway, and the subsequent scope audit found one common native-module
+resolution defect. The replacement v47 normalization preserves the original
+line-2713 proof and restores native `SET_TAC`/`SET_RULE` lookup for the whole
+module; see `direct_boundary_04_v47_grutoti_native_set_scope.md`.
+
+This document does not
 claim S1, S2, S3, qualification, promotion, or release evidence. The exact
 cumulative frontier remains 93 actual actions reached / 92 passed until a
 fresh action-zero replay completes action 092.
