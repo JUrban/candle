@@ -224,7 +224,7 @@
 #flyspeck_needs "packing/REUHADY.hl";;
 (* 105 selected=flyspeck:text_formalization/packing/TSKAJXY1.hl sha256=2abbd44a13253fa20320df5e187e1d1be49e1846b517def8b2986aa04942d20f *)
 #flyspeck_needs "packing/TSKAJXY1.hl";;
-(* 106 selected=flyspeck:text_formalization/packing/TSKAJXY2.hl sha256=0f3c806418f5b4f6abcce0c0d1ed2d615d5877d5fac32d255d506bc8dff84181 *)
+(* 106 selected=flyspeck:text_formalization/packing/TSKAJXY2.hl sha256=0f3c806418f5b4f6abcce0c0d1ed2d615d5877d5fac32d255d506bc8dff84181 normalization=PROJECT-TSKAJXY2-S2-GOAL-EFFECT-001 normalized_sha256=dc53ac307571673a6e698e72ccc329cb28001d8c87348308917a6739393d09da *)
 #flyspeck_needs "packing/TSKAJXY2.hl";;
 (* 107 selected=flyspeck:text_formalization/packing/OXLZLEZ1.hl sha256=ced59cac0778459b6852a47676eeaea53ddda932ca080af34aae0be92959df7e *)
 #flyspeck_needs "packing/OXLZLEZ1.hl";;
