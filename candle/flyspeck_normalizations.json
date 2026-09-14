@@ -4563,6 +4563,27 @@
       ],
       "semantic_rule": "The list flattened from map frees contains HOL terms. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The independently checked native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor, so the returned dest_var list is preserved.",
       "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at SLTSTLO.hl line 27. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-NKEZBFC-S2-GOAL-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/NKEZBFC.hl",
+      "path": "text_formalization/local/NKEZBFC.hl",
+      "source_sha256": "e8aebe835b91ad0b4f1ad3955588b9e0254e8ef847bf28b03114590713ac8396",
+      "source_md5": "106fa51b8876084dd069006053e3d79a",
+      "normalized_sha256": "b831405aa37284744c549aabfda51a764f6fd467b7d5275996f922bd3c3efc96",
+      "normalized_md5": "1afcc4ab35e1b2a752f3c7890429c489",
+      "normalized_bytes": 113969,
+      "operations": [
+        {
+          "id": "PROJECT-NKEZBFC-S2-GOAL-EFFECT-001-EXPLICIT-BINDING",
+          "kind": "exact_bytes_replace_once",
+          "line": 1716,
+          "before": "g(NKEZBFC_concl2);;",
+          "after": "let _ = g(NKEZBFC_concl2);;"
+        }
+      ],
+      "semantic_rule": "The goal-setting effect executes exactly once at its original module-initialization position on the identical NKEZBFC_concl2 term, after the two local SET_TAC tautologies and before NKEZBFC_PREP. The explicit wildcard binding discards the same returned goal-stack value while preserving the goal-stack mutation, evaluation order, result, and exceptions. The complete normalized module establishes the unchanged NKEZBFC_PREP theorem.",
+      "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in NKEZBFC.hl: the unique g(NKEZBFC_concl2) phrase at line 1716. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, SET_TAC implementation, search order, or axiom. The upstream fix-top100 branch contains no NKEZBFC source or patch; exact-open SET_TAC minimizers, focused original-reject/normalized-accept execution, complete-source theorem lookup, and fresh cumulative source loading are required."
     }
   ]
 }
