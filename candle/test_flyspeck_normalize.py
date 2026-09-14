@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 59)
+        self.assertEqual(len(self.contract["entries"]), 60)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -247,6 +247,27 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "complete mechanically enumerated", local_lemmas["scope_limit"]
         )
         self.assertIn("original order", local_lemmas["semantic_rule"])
+        local_lemmas1 = entries[
+            "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001"
+        ]
+        self.assertEqual(len(local_lemmas1["operations"]), 1)
+        local_lemmas1_theorems = local_lemmas1["operations"][0]
+        self.assertEqual(local_lemmas1_theorems["kind"],
+                         "exact_lines_replace_once")
+        self.assertEqual(local_lemmas1_theorems["replacement_count"], 4)
+        self.assertEqual(
+            [replacement["line"]
+             for replacement in local_lemmas1_theorems["replacements"]],
+            [843, 844, 845, 846],
+        )
+        self.assertTrue(all(
+            replacement["after"].startswith("let _ = ")
+            for replacement in local_lemmas1_theorems["replacements"]
+        ))
+        self.assertIn(
+            "complete mechanically enumerated", local_lemmas1["scope_limit"]
+        )
+        self.assertIn("original order", local_lemmas1["semantic_rule"])
         grutoti = entries[
             "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001"
         ]
@@ -1049,7 +1070,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 239)
+        self.assertEqual(len(operation_ids), 240)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

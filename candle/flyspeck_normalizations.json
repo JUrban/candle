@@ -3967,6 +3967,48 @@
       "scope_limit": "These hash-pinned replacements are confined to the complete mechanically enumerated anonymous structure-expression set in local_lemmas.hl at lines 19 and 20. They alter no definition, theorem statement, hypothesis, tactic, proof step, proof intent, or axiom. The upstream fix-top100 branch contains no local_lemmas source or patch; native effect/order equivalence, focused original-reject/normalized-accept execution, and cumulative source loading are required."
     },
     {
+      "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/local_lemmas1.hl",
+      "path": "text_formalization/local/local_lemmas1.hl",
+      "source_sha256": "7d9c55f3c978ea1f87ee27c8ac4b31275b6455bf261f59331cdf2c58d72c0c59",
+      "source_md5": "18891f04a6653926eb31b61feebfa1eb",
+      "normalized_sha256": "31c3d11e61e67c4e8ca0d4409a0945fa5c4e1ef67ffd9eb33002d135fea68bff",
+      "normalized_md5": "32b78cf4bb5248e81f0c8b7b5fbe488e",
+      "normalized_bytes": 191335,
+      "operations": [
+        {
+          "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001-WILDCARD-THEOREMS",
+          "kind": "exact_lines_replace_once",
+          "line": 843,
+          "replacement_count": 4,
+          "replacements": [
+            {
+              "line": 843,
+              "before": "Local_lemmas.LUNAR_IMP_INTERIOR_ANGLE1_EQ_PI;;",
+              "after": "let _ = Local_lemmas.LUNAR_IMP_INTERIOR_ANGLE1_EQ_PI;;"
+            },
+            {
+              "line": 844,
+              "before": "Local_lemmas.interior_angle1;;",
+              "after": "let _ = Local_lemmas.interior_angle1;;"
+            },
+            {
+              "line": 845,
+              "before": "Wrgcvdr_cizmrrh.lunar;;",
+              "after": "let _ = Wrgcvdr_cizmrrh.lunar;;"
+            },
+            {
+              "line": 846,
+              "before": "Local_lemmas.HKIRPEP;;",
+              "after": "let _ = Local_lemmas.HKIRPEP;;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "All four theorem values are evaluated exactly once at their original module-initialization positions, in the original order, with identical values and exceptions. Explicit wildcard bindings discard the same results while giving Candle unambiguous module-structure items; no theorem is reproved or substituted.",
+      "scope_limit": "This hash-pinned rewrite is confined to the complete mechanically enumerated run of four anonymous theorem-valued structure phrases in local_lemmas1.hl at lines 843 through 846. It changes no definition, theorem statement, hypothesis, tactic, proof step, proof intent, source order, or axiom. The upstream fix-top100 branch contains no local_lemmas1 source or patch; focused original-reject/normalized-accept execution from a clean action-097 predecessor and fresh cumulative loading remain required."
+    },
+    {
       "id": "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001",
       "source_key": "flyspeck:text_formalization/tame/Inequalities.hl",
       "path": "text_formalization/tame/Inequalities.hl",
