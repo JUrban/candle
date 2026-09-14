@@ -236,7 +236,7 @@
 #flyspeck_needs "packing/TSKAJXY3.hl";;
 (* 111 selected=flyspeck:text_formalization/packing/OXLZLEZ3.hl sha256=57059269427de64128483e63dde33b9023a022fb90165bb28b1bc7a5c3f7cd82 normalization=PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001 normalized_sha256=ac92aa96be8a6520d5fad163b539faa3d78c177d63ae804244d4d5b45324429a *)
 #flyspeck_needs "packing/OXLZLEZ3.hl";;
-(* 112 selected=flyspeck:text_formalization/local/dih2k.hl sha256=ee6792a1d6817555dea8a802e11eda883aa25f0532b574649c652747fdf488a4 *)
+(* 112 selected=flyspeck:text_formalization/local/dih2k.hl sha256=ee6792a1d6817555dea8a802e11eda883aa25f0532b574649c652747fdf488a4 normalization=PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001 normalized_sha256=a17c62cef5ca0c1ebf87f24ab58dab2426edbe803343b9f9b35ffad68d479f08 *)
 #flyspeck_needs "local/dih2k.hl";;
 (* 113 selected=flyspeck:text_formalization/local/WJSCPRO.hl sha256=79a084c0e8d5cc1e0f639ec790066fb0b2a2403892a78304a627b23dc12fcb33 *)
 #flyspeck_needs "local/WJSCPRO.hl";;
