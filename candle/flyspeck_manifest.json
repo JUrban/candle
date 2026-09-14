@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "b2a4aa6695cd7a767932b8c3db85dd95",
+      "md5": "476bd4df00368d786ae5b38a22ff6f1b",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0d4a0c60503100a29e6c9b7922a6bb911eff1524c31c4a2249eb6e7069180527"
+      "sha256": "20e0679ad408e040f9b9cabcbab09cbb7275616dfe8648fe06ed9118e179a0e5"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
