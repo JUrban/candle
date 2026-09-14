@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "7c9988341a00e316d4e3316c5a788aa4" then
+     "1a3606cec2fd724e0f77e7fc5f5c4b04" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "713baee76c881191382e8c2a6396e44b" then
+     "06445890be435cb296444106e927f7ea" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -397,7 +397,7 @@ let candle_flyspeck_normalized_sources =
    (Filename.concat candle_flyspeck_text_root "local/local_lemmas1.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/local_lemmas1.hl",
-    "32b78cf4bb5248e81f0c8b7b5fbe488e");
+    "baaf863132dda96fa3ee962cbadb968f");
    (Filename.concat candle_flyspeck_text_root "tame/Inequalities.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/Inequalities.hl",

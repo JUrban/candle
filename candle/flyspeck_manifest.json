@@ -8833,8 +8833,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "7c9988341a00e316d4e3316c5a788aa4",
-    "generated_source_sha256": "b35cae0193e1ef4a69ff549d6dcd6588c2458bb7608b6bbb84f47fc42049e9ef",
+    "generated_source_md5": "1a3606cec2fd724e0f77e7fc5f5c4b04",
+    "generated_source_sha256": "36cd9daf1fb62941b2ed55455817d90b99eeb68f1b09bef9bb7c39f4353c96ce",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14848,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "713baee76c881191382e8c2a6396e44b",
+      "md5": "06445890be435cb296444106e927f7ea",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "240ac754a5bddea9c9c0f117025818102d6c2b24bf8301c53af17154ae3d6af1"
+      "sha256": "b8a5cccd318c55052ed5c81cd8f21b0617ac5e5726c8f16ae6192d043e232f3e"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -19575,9 +19575,9 @@
       "execution_normalization": {
         "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 191335,
-        "normalized_md5": "32b78cf4bb5248e81f0c8b7b5fbe488e",
-        "normalized_sha256": "31c3d11e61e67c4e8ca0d4409a0945fa5c4e1ef67ffd9eb33002d135fea68bff",
+        "normalized_bytes": 191831,
+        "normalized_md5": "baaf863132dda96fa3ee962cbadb968f",
+        "normalized_sha256": "1ecd334b743330296e0824c1bf1bbc24b7de4ff722086914defb36e354db420f",
         "operation_count": 1
       },
       "md5": "18891f04a6653926eb31b61feebfa1eb",
@@ -22441,7 +22441,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "f979458fbff38f10cecca4310a1a5e4eb27a95505eedf0b3d142a1088e92a7ff",
+    "contract_sha256": "964a8086291d08a8d5fe8ddeefbd5bb91ef0f9039994959b681635fefb557b24",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26518,16 +26518,16 @@
       {
         "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 191335,
-        "normalized_md5": "32b78cf4bb5248e81f0c8b7b5fbe488e",
-        "normalized_sha256": "31c3d11e61e67c4e8ca0d4409a0945fa5c4e1ef67ffd9eb33002d135fea68bff",
+        "normalized_bytes": 191831,
+        "normalized_md5": "baaf863132dda96fa3ee962cbadb968f",
+        "normalized_sha256": "1ecd334b743330296e0824c1bf1bbc24b7de4ff722086914defb36e354db420f",
         "operation_count": 1,
         "operations": [
           {
-            "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001-WILDCARD-THEOREMS",
+            "id": "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001-ALL-ANONYMOUS-PHRASES",
             "kind": "exact_lines_replace_once",
             "line": 843,
-            "replacement_count": 4,
+            "replacement_count": 66,
             "replacements": [
               {
                 "after": "let _ = Local_lemmas.LUNAR_IMP_INTERIOR_ANGLE1_EQ_PI;;",
@@ -26548,13 +26548,323 @@
                 "after": "let _ = Local_lemmas.HKIRPEP;;",
                 "before": "Local_lemmas.HKIRPEP;;",
                 "line": 846
+              },
+              {
+                "after": "let _ = g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+                "before": "g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+                "line": 854
+              },
+              {
+                "after": "let _ = g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+                "before": "g ` convex_local_fan (V,E,FF) /\\ lunar (v,w) V E /\\",
+                "line": 867
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[convex_local_fan]);;",
+                "before": "e (REWRITE_TAC[convex_local_fan]);;",
+                "line": 872
+              },
+              {
+                "after": "let _ = e (NHANH Local_lemmas.LOCAL_FAN_ORBIT_MAP_V);;",
+                "before": "e (NHANH Local_lemmas.LOCAL_FAN_ORBIT_MAP_V);;",
+                "line": 873
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[local_fan; FAN]);;",
+                "before": "e (REWRITE_TAC[local_fan; FAN]);;",
+                "line": 874
+              },
+              {
+                "after": "let _ = e (LET_TAC);;",
+                "before": "e (LET_TAC);;",
+                "line": 875
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 876
+              },
+              {
+                "after": "let _ = e (CONJ_TAC);;",
+                "before": "e (CONJ_TAC);;",
+                "line": 877
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` UNIONS E SUBSET (V:real^3 -> bool) `);;",
+                "before": "e (UNDISCH_TAC` UNIONS E SUBSET (V:real^3 -> bool) `);;",
+                "line": 878
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[GSYM IMAGE_UNIONS]);;",
+                "before": "e (REWRITE_TAC[GSYM IMAGE_UNIONS]);;",
+                "line": 879
+              },
+              {
+                "after": "let _ = e (SET_TAC[]);;",
+                "before": "e (SET_TAC[]);;",
+                "line": 880
+              },
+              {
+                "after": "let _ = e (CONJ_TAC);;",
+                "before": "e (CONJ_TAC);;",
+                "line": 882
+              },
+              {
+                "after": "let _ = e (MATCH_MP_TAC GRAPH_IMAGE_IMAGE);;",
+                "before": "e (MATCH_MP_TAC GRAPH_IMAGE_IMAGE);;",
+                "line": 883
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[]);;",
+                "before": "e (ASM_REWRITE_TAC[]);;",
+                "line": 884
+              },
+              {
+                "after": "let _ = e (EXPAND_TAC \"f\");;",
+                "before": "e (EXPAND_TAC \"f\");;",
+                "line": 885
+              },
+              {
+                "after": "let _ = e (MATCH_MP_TAC LUNAR_DEFORM_INJ);;",
+                "before": "e (MATCH_MP_TAC LUNAR_DEFORM_INJ);;",
+                "line": 886
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[]);;",
+                "before": "e (ASM_REWRITE_TAC[]);;",
+                "line": 887
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[fan1; fan2; fan6; fan7]);;",
+                "before": "e (REWRITE_TAC[fan1; fan2; fan6; fan7]);;",
+                "line": 889
+              },
+              {
+                "after": "let _ = e (CONJ_TAC);;",
+                "before": "e (CONJ_TAC);;",
+                "line": 890
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` fan1 ((vec 0:real^3),(V:real^3 -> bool),(E:(real^3 -> bool) -> bool))`);;",
+                "before": "e (UNDISCH_TAC` fan1 ((vec 0:real^3),(V:real^3 -> bool),(E:(real^3 -> bool) -> bool))`);;",
+                "line": 892
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[fan1]);;",
+                "before": "e (REWRITE_TAC[fan1]);;",
+                "line": 893
+              },
+              {
+                "after": "let _ = e (SIMP_TAC[FINITE_IMAGE]);;",
+                "before": "e (SIMP_TAC[FINITE_IMAGE]);;",
+                "line": 894
+              },
+              {
+                "after": "let _ = e (SET_TAC[]);;",
+                "before": "e (SET_TAC[]);;",
+                "line": 895
+              },
+              {
+                "after": "let _ = e (ASSUME_TAC2 LUNAR_DEFORM_INJ);;",
+                "before": "e (ASSUME_TAC2 LUNAR_DEFORM_INJ);;",
+                "line": 896
+              },
+              {
+                "after": "let _ = e (CONJ_TAC);;",
+                "before": "e (CONJ_TAC);;",
+                "line": 898
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` fan2 (vec 0,V: real^3 -> bool,(E:(real^3 -> bool) -> bool)) `);;",
+                "before": "e (UNDISCH_TAC` fan2 (vec 0,V: real^3 -> bool,(E:(real^3 -> bool) -> bool)) `);;",
+                "line": 899
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[fan2]);;",
+                "before": "e (REWRITE_TAC[fan2]);;",
+                "line": 900
+              },
+              {
+                "after": "let _ = e (DOWN);;",
+                "before": "e (DOWN);;",
+                "line": 901
+              },
+              {
+                "after": "let _ = e (MP_TAC LUNAR_DEFORM_ORIGIN);;",
+                "before": "e (MP_TAC LUNAR_DEFORM_ORIGIN);;",
+                "line": 902
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[IN_IMAGE]);;",
+                "before": "e (ASM_REWRITE_TAC[IN_IMAGE]);;",
+                "line": 903
+              },
+              {
+                "after": "let _ = e (MESON_TAC[]);;",
+                "before": "e (MESON_TAC[]);;",
+                "line": 904
+              },
+              {
+                "after": "let _ = e (CONJ_TAC);;",
+                "before": "e (CONJ_TAC);;",
+                "line": 906
+              },
+              {
+                "after": "let _ = e (GEN_TAC);;",
+                "before": "e (GEN_TAC);;",
+                "line": 907
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` fan6 (vec 0,V:real^3 -> bool,E:(real^3 -> bool) -> bool ) `);;",
+                "before": "e (UNDISCH_TAC` fan6 (vec 0,V:real^3 -> bool,E:(real^3 -> bool) -> bool ) `);;",
+                "line": 908
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[IN_IMAGE; IMAGE; fan6]);;",
+                "before": "e (REWRITE_TAC[IN_IMAGE; IMAGE; fan6]);;",
+                "line": 909
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 910
+              },
+              {
+                "after": "let _ = e (FIRST_ASSUM NHANH);;",
+                "before": "e (FIRST_ASSUM NHANH);;",
+                "line": 911
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 912
+              },
+              {
+                "after": "let _ = e (MP_TAC Local_lemmas.HKIRPEP);;",
+                "before": "e (MP_TAC Local_lemmas.HKIRPEP);;",
+                "line": 913
+              },
+              {
+                "after": "let _ = e (ANTS_TAC);;",
+                "before": "e (ANTS_TAC);;",
+                "line": 914
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[convex_local_fan; local_fan]);;",
+                "before": "e (ASM_REWRITE_TAC[convex_local_fan; local_fan]);;",
+                "line": 915
+              },
+              {
+                "after": "let _ = e (CONV_TAC (ONCE_DEPTH_CONV let_CONV));;",
+                "before": "e (CONV_TAC (ONCE_DEPTH_CONV let_CONV));;",
+                "line": 916
+              },
+              {
+                "after": "let _ = e (SWITCH_TAC ` FF = face H (x:real^3 # real^3 )`);;",
+                "before": "e (SWITCH_TAC ` FF = face H (x:real^3 # real^3 )`);;",
+                "line": 917
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[FAN; fan6]);;",
+                "before": "e (ASM_REWRITE_TAC[FAN; fan6]);;",
+                "line": 918
+              },
+              {
+                "after": "let _ = e (EXISTS_TAC `x:(real^3 #real^3)`);;",
+                "before": "e (EXISTS_TAC `x:(real^3 #real^3)`);;",
+                "line": 919
+              },
+              {
+                "after": "let _ = e (ASM_REWRITE_TAC[]);;",
+                "before": "e (ASM_REWRITE_TAC[]);;",
+                "line": 920
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 921
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` graph (E: (real^3 -> bool) -> bool) `);;",
+                "before": "e (UNDISCH_TAC` graph (E: (real^3 -> bool) -> bool) `);;",
+                "line": 922
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[graph]);;",
+                "before": "e (REWRITE_TAC[graph]);;",
+                "line": 923
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 924
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC`(x': real^3 -> bool) IN E `);;",
+                "before": "e (UNDISCH_TAC`(x': real^3 -> bool) IN E `);;",
+                "line": 925
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[IN]);;",
+                "before": "e (REWRITE_TAC[IN]);;",
+                "line": 926
+              },
+              {
+                "after": "let _ = e (FIRST_ASSUM NHANH);;",
+                "before": "e (FIRST_ASSUM NHANH);;",
+                "line": 927
+              },
+              {
+                "after": "let _ = e (REWRITE_TAC[HAS_SIZE]);;",
+                "before": "e (REWRITE_TAC[HAS_SIZE]);;",
+                "line": 928
+              },
+              {
+                "after": "let _ = e (NHANH Rogers.CARD_2_IMP_DOUBLE);;",
+                "before": "e (NHANH Rogers.CARD_2_IMP_DOUBLE);;",
+                "line": 929
+              },
+              {
+                "after": "let _ = e (STRIP_TAC);;",
+                "before": "e (STRIP_TAC);;",
+                "line": 930
+              },
+              {
+                "after": "let _ = e (UNDISCH_TAC` v = ITER j (rho_node1 FF) w`);;",
+                "before": "e (UNDISCH_TAC` v = ITER j (rho_node1 FF) w`);;",
+                "line": 932
+              },
+              {
+                "after": "let _ = e (USE_FIRST `w = ITER i (rho_node1 FF) v` (fun x -> REWRITE_TAC[x; ITER_ADD]));;",
+                "before": "e (USE_FIRST `w = ITER i (rho_node1 FF) v` (fun x -> REWRITE_TAC[x; ITER_ADD]));;",
+                "line": 933
+              },
+              {
+                "after": "let _ = e (ASSUME_TAC2 (ARITH_RULE` ~(j = 0) ==> 0 < j + i `));;",
+                "before": "e (ASSUME_TAC2 (ARITH_RULE` ~(j = 0) ==> 0 < j + i `));;",
+                "line": 934
+              },
+              {
+                "after": "let _ = e (DOWN THEN PHA);;",
+                "before": "e (DOWN THEN PHA);;",
+                "line": 935
+              },
+              {
+                "after": "let _ = e (ONCE_REWRITE_TAC[EQ_SYM_EQ]);;",
+                "before": "e (ONCE_REWRITE_TAC[EQ_SYM_EQ]);;",
+                "line": 936
+              },
+              {
+                "after": "let _ = e (NHANH Lvducxu.ITER_CYCLIC_ORBIT);;",
+                "before": "e (NHANH Lvducxu.ITER_CYCLIC_ORBIT);;",
+                "line": 937
               }
             ]
           }
         ],
         "path": "text_formalization/local/local_lemmas1.hl",
-        "scope_limit": "This hash-pinned rewrite is confined to the complete mechanically enumerated run of four anonymous theorem-valued structure phrases in local_lemmas1.hl at lines 843 through 846. It changes no definition, theorem statement, hypothesis, tactic, proof step, proof intent, source order, or axiom. The upstream fix-top100 branch contains no local_lemmas1 source or patch; focused original-reject/normalized-accept execution from a clean action-097 predecessor and fresh cumulative loading remain required.",
-        "semantic_rule": "All four theorem values are evaluated exactly once at their original module-initialization positions, in the original order, with identical values and exceptions. Explicit wildcard bindings discard the same results while giving Candle unambiguous module-structure items; no theorem is reproved or substituted.",
+        "scope_limit": "This hash-pinned rewrite is confined to the complete mechanically enumerated anonymous structure-phrase set in local_lemmas1.hl: four theorem references at lines 843--846, two g calls at lines 854 and 867, and sixty e calls at lines 872--937. It changes only the explicit discard spelling, not any definition, theorem statement, hypothesis, tactic, proof step, proof intent, argument, source order, goal-stack transition, or axiom. The upstream fix-top100 branch contains no local_lemmas1 source or patch; focused execution from a clean action-097 predecessor and fresh cumulative loading remain required.",
+        "semantic_rule": "All four theorem values, both goal-setting calls, and all sixty tactic applications are evaluated exactly once at their original module-initialization positions, in their original order, with identical arguments, goal-stack effects, results, and exceptions. Explicit wildcard bindings discard the same returned values while giving Candle unambiguous module-structure items; no theorem is reproved or substituted.",
         "source_key": "flyspeck:text_formalization/local/local_lemmas1.hl",
         "source_md5": "18891f04a6653926eb31b61feebfa1eb",
         "source_sha256": "7d9c55f3c978ea1f87ee27c8ac4b31275b6455bf261f59331cdf2c58d72c0c59"
@@ -26938,8 +27248,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "713baee76c881191382e8c2a6396e44b",
-    "generated_source_sha256": "240ac754a5bddea9c9c0f117025818102d6c2b24bf8301c53af17154ae3d6af1",
+    "generated_source_md5": "06445890be435cb296444106e927f7ea",
+    "generated_source_sha256": "b8a5cccd318c55052ed5c81cd8f21b0617ac5e5726c8f16ae6192d043e232f3e",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
