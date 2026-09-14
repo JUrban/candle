@@ -4647,6 +4647,34 @@
       ],
       "semantic_rule": "The infix-registration effect executes exactly once at its original Dih2k_hypermap module-initialization position on the identical has_orders name, precedence, and right associativity, after the same module opens and immediately before the same cstab binding and definitions. The explicit wildcard binding discards the same unit result while preserving the parser-table mutation, evaluation order, result, and exceptions. This is the same already-validated compatibility form used for the identical has_orders registration in WRGCVDR.hl and local_lemmas.hl.",
       "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in dih2k.hl: the unique parse_as_infix phrase at line 40. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, parser registration, SET_TAC or MESON implementation, search order, or axiom. No fix-top100 version of dih2k.hl is present; focused original-reject/normalized-accept loading, complete-source Dih2k_hypermap.DIH2K_FAN_HYP_SY lookup, and fresh cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/local/localization.hl",
+      "path": "text_formalization/local/localization.hl",
+      "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3",
+      "source_md5": "32a0a99a94e8c63f9cf9d6fb523c3cb8",
+      "normalized_sha256": "f23d58b950ee97ad238badd754ed8646c45d5720011946dfaf27116b1fbc4b64",
+      "normalized_md5": "f3c87da1da2a4612bf5c7f32161f7645",
+      "normalized_bytes": 60002,
+      "operations": [
+        {
+          "id": "PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001-HAS-ORDERS",
+          "kind": "exact_bytes_replace_once",
+          "line": 17,
+          "before": "parse_as_infix(\"has_orders\",(12,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"has_orders\",(12,\"right\"));;"
+        },
+        {
+          "id": "PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001-CYCLIC-ON",
+          "kind": "exact_bytes_replace_once",
+          "line": 18,
+          "before": "parse_as_infix(\"cyclic_on\",(13,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"cyclic_on\",(13,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "Each infix-registration effect executes exactly once in original order at its original Localization module-initialization position on the identical operator name, precedence, and right associativity, after the same Hales_tactic open and immediately before the same has_orders and cyclic_on definitions. The explicit wildcard bindings discard the same unit results while preserving both parser-table mutations, evaluation order, results, and exceptions. These are the same already-validated compatibility forms used for the identical registrations in WRGCVDR.hl and local_lemmas.hl.",
+      "scope_limit": "These two hash-pinned replacements are confined to the complete mechanically enumerated anonymous structure-expression set in localization.hl: the adjacent parse_as_infix phrases at lines 17--18. They change no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, parser registration, SET_TAC or MESON implementation, search order, or axiom. No fix-top100 version of localization.hl is present; focused original-reject/normalized-accept loading, complete-source Localization.tauVEF_tau_fun lookup, and fresh cumulative source loading are required."
     }
   ]
 }
