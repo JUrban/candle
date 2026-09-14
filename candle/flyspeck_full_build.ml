@@ -246,7 +246,7 @@
 #flyspeck_needs "local/VPWSHTO.hl";;
 (* 116 selected=flyspeck:text_formalization/local/LFJCIXP.hl sha256=0e60ed13184ee28a33be03bbe46418c2e5d466e510a0a377fed1e7aef5be95ec *)
 #flyspeck_needs "local/LFJCIXP.hl";;
-(* 117 selected=flyspeck:text_formalization/local/localization.hl sha256=d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3 *)
+(* 117 selected=flyspeck:text_formalization/local/localization.hl sha256=d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3 normalization=PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001 normalized_sha256=f23d58b950ee97ad238badd754ed8646c45d5720011946dfaf27116b1fbc4b64 *)
 #flyspeck_needs "local/localization.hl";;
 (* 118 selected=flyspeck:text_formalization/local/polar_fan.hl sha256=f56f25e9080cc7c06ce221ac469894d439cae04872d470113aea235951e29ac5 *)
 #flyspeck_needs "local/polar_fan.hl";;

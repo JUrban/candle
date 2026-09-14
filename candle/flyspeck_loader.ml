@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "23fab53bec3b774a0f0a7081853e83ea" then
+     "17e6141aaf5f16080084420d94f6e22f" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "54479937726ae36f39e5c77a61476a8b" then
+     "510ae6ec30a52ae1303216ee7084d586" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all sixty-four outputs in a separate tree;
-   this process registers only the sixty-three selected by the direct source graph.
+(* The host-side normalizer materializes all sixty-five outputs in a separate tree;
+   this process registers only the sixty-four selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -398,6 +398,10 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/dih2k.hl",
     "d3b1aaa89eecb9b36cc11653fa3c3e6d");
+   (Filename.concat candle_flyspeck_text_root "local/localization.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/local/localization.hl",
+    "f3c87da1da2a4612bf5c7f32161f7645");
    (Filename.concat candle_flyspeck_text_root "local/WRGCVDR.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/WRGCVDR.hl",
@@ -432,7 +436,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3")];;
 
-if List.length candle_flyspeck_normalized_sources <> 63 then
+if List.length candle_flyspeck_normalized_sources <> 64 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =
