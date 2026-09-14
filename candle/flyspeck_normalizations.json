@@ -4605,6 +4605,27 @@
       ],
       "semantic_rule": "The goal-setting effect executes exactly once at its original module-initialization position on the identical implication term, after defining TSKAJXY_statement_special_case and immediately before constructing TSKAJXY_034. The explicit wildcard binding discards the same returned goal-stack value while preserving the goal-stack mutation, evaluation order, result, and exceptions.",
       "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in TSKAJXY2.hl: the unique g phrase at line 90. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, SET_TAC or MESON implementation, search order, or axiom. The upstream fix-top100 branch contains no TSKAJXY2 patch; focused original-reject/normalized-accept minimizers, complete-source TSKAJXY_034 lookup, and fresh cumulative source loading are required."
+    },
+    {
+      "id": "PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001",
+      "source_key": "flyspeck:text_formalization/packing/OXLZLEZ3.hl",
+      "path": "text_formalization/packing/OXLZLEZ3.hl",
+      "source_sha256": "57059269427de64128483e63dde33b9023a022fb90165bb28b1bc7a5c3f7cd82",
+      "source_md5": "43548da54d7f81bd04b6dd259cdc39f1",
+      "normalized_sha256": "ac92aa96be8a6520d5fad163b539faa3d78c177d63ae804244d4d5b45324429a",
+      "normalized_md5": "654b067f9840e22797233b86735a65ed",
+      "normalized_bytes": 328109,
+      "operations": [
+        {
+          "id": "PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001-EXPLICIT-INFIX-BINDING",
+          "kind": "exact_bytes_replace_once",
+          "line": 18,
+          "before": "parse_as_infix(\"<<\",(18,\"right\"));;",
+          "after": "let _ = parse_as_infix(\"<<\",(18,\"right\"));;"
+        }
+      ],
+      "semantic_rule": "The infix-registration effect executes exactly once at its original Oxlzlez module-initialization position on the identical operator name, precedence, and right associativity, after the same module opens and immediately before the same dist3 binding and definitions. The explicit wildcard binding discards the same unit result while preserving the parser-table mutation, evaluation order, result, and exceptions. The complete normalized module establishes the unchanged Oxlzlez.PACKING_CHAPTER_MAIN_CONCLUSION theorem.",
+      "scope_limit": "This hash-pinned replacement is confined to the complete mechanically enumerated anonymous structure-expression set in OXLZLEZ3.hl: the unique parse_as_infix phrase at line 18. It changes no theorem statement, hypothesis, tactic, proof step, proof intent, definition, module open, parser registration, SET_TAC or MESON implementation, search order, or axiom. The upstream fix-top100 branch contains no OXLZLEZ3 patch; focused original-reject/normalized-accept loading, complete-source theorem lookup, and fresh cumulative source loading are required."
     }
   ]
 }
