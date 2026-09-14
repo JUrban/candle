@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 421,
+        "line": 425,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 421,
+        "line": 425,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5172,13 +5172,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 421,
+        "line": 425,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 421,
+        "line": 425,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -14862,7 +14862,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 20531,
+      "bytes": 20738,
       "dependencies": [
         {
           "kind": "#use",
@@ -14900,7 +14900,7 @@
         },
         {
           "kind": "needs",
-          "line": 443,
+          "line": 447,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14911,7 +14911,7 @@
         },
         {
           "kind": "needs",
-          "line": 449,
+          "line": 453,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14922,7 +14922,7 @@
         },
         {
           "kind": "needs",
-          "line": 451,
+          "line": 455,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14932,10 +14932,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "afb886b2456d5a0a8ceedbd7ead93684",
+      "md5": "b2a4aa6695cd7a767932b8c3db85dd95",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "b7452bd2a2210d0cf120e9715cddc6535782d32e2b31c0ef227243b507f03bb6"
+      "sha256": "0d4a0c60503100a29e6c9b7922a6bb911eff1524c31c4a2249eb6e7069180527"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
