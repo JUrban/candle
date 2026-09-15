@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 65)
+        self.assertEqual(len(self.contract["entries"]), 66)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -584,6 +584,26 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("native OCaml grouping", ssreflect["semantic_rule"])
         self.assertIn("top-level value restriction", ssreflect["semantic_rule"])
         self.assertIn("current HOL Light", ssreflect["semantic_rule"])
+        ssrfun = entries["PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001"]
+        self.assertEqual(len(ssrfun["operations"]), 1)
+        ssrfun_effects = ssrfun["operations"][0]
+        self.assertEqual(ssrfun_effects["kind"], "exact_lines_replace_once")
+        self.assertEqual(ssrfun_effects["replacement_count"], 31)
+        self.assertEqual(
+            [replacement["line"] for replacement in ssrfun_effects["replacements"]],
+            [
+                73, 74, 123, 133, 134, 135, 205, 208, 209, 211, 241,
+                244, 245, 246, 279, 282, 283, 285, 304, 307, 310, 317,
+                320, 333, 336, 349, 352, 357, 360, 365, 368,
+            ],
+        )
+        self.assertTrue(all(
+            replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in ssrfun_effects["replacements"]
+        ))
+        self.assertIn("same 32 Sections registration calls", ssrfun["semantic_rule"])
+        self.assertIn("complete mechanically enumerated", ssrfun["scope_limit"])
+        self.assertIn("first-effect minimizer", ssrfun["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1216,7 +1236,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 249)
+        self.assertEqual(len(operation_ids), 250)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
