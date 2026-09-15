@@ -555,7 +555,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ssreflect = entries["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"]
         self.assertEqual(
             [operation["line"] for operation in ssreflect["operations"]],
-            [721, 60, 69, 115],
+            [721, 60, 69, 115, 622, 889, 904],
         )
         self.assertIn(
             "compose_insts insts2 i",
@@ -569,6 +569,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             ssreflect["operations"][3]["after"],
             "let f_vars = setify Term.(<) (flat (map frees tms)) in",
         )
+        self.assertEqual(
+            ssreflect["operations"][4]["after"],
+            "\t\t   ((head1 @ tail), th0)",
+        )
+        self.assertEqual(
+            ssreflect["operations"][5]["after"],
+            "let cases_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;",
+        )
+        self.assertEqual(
+            ssreflect["operations"][6]["after"],
+            "let elim_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;",
+        )
+        self.assertIn("native OCaml grouping", ssreflect["semantic_rule"])
+        self.assertIn("top-level value restriction", ssreflect["semantic_rule"])
         self.assertIn("current HOL Light", ssreflect["semantic_rule"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -1202,7 +1216,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 246)
+        self.assertEqual(len(operation_ids), 249)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

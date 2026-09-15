@@ -423,9 +423,9 @@
       "path": "jHOLLight/caml/ssreflect.hl",
       "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9",
       "source_md5": "6f69a400e5f3922f4d572840748b35c7",
-      "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
-      "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
-      "normalized_bytes": 33333,
+      "normalized_sha256": "c17436d7db382916371a31535853acb51ccd62efb72c56ce461b436c7fb5be37",
+      "normalized_md5": "620d9c7687482fd95245e71aae89a553",
+      "normalized_bytes": 33389,
       "operations": [
         {
           "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001-FAIL-CLOSED",
@@ -457,10 +457,31 @@
           "line": 115,
           "before": "let f_vars = setify (flat (map frees tms)) in",
           "after": "let f_vars = setify Term.(<) (flat (map frees tms)) in"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-SPEC-COMMAND-PAIR-GROUPING-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 622,
+          "before": "\t\t   head1 @ tail, th0",
+          "after": "\t\t   ((head1 @ tail), th0)"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-CASES-TABLE-TYPE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 889,
+          "before": "let cases_table = Hashtbl.create 10;;",
+          "after": "let cases_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;"
+        },
+        {
+          "id": "PROJECT-SSREFLECT-S2-ELIM-TABLE-TYPE-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 904,
+          "before": "let elim_table = Hashtbl.create 10;;",
+          "after": "let elim_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;"
         }
       ],
-      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle.",
-      "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, and the comparator replacement is confined to the unique unary setify over the flattened frees result at source line 115. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, definition outside those helpers, or axiom. Exact original rejection, normalized theorem construction for both combinators, focused term-setify execution, current-runtime source comparison, a complete run, and final fingerprints remain required."
+      "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle. Parenthesizing the appended command list inside the returned pair restores native OCaml grouping without changing either component or evaluation order. Explicit `(string, thm) Hashtbl.t` annotations give the two mutable tables the exact key/value types established by their immediately following insertions, avoiding CakeML's top-level value restriction without changing table contents or lookup behavior.",
+      "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, the comparator replacement to the unique unary setify over the flattened frees result at source line 115, the grouping replacement to the unique `head1 @ tail, th0` result at source line 622, and the annotations to the two top-level theorem tables at source lines 889 and 904. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, table entry, definition outside those helpers, or axiom. Exact old-normalization rejection, normalized full-source loading, focused downstream use, a complete cumulative run, and final fingerprints remain required."
     },
     {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
