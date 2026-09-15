@@ -537,6 +537,38 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous Sections structure-expression set in ssrfun-compiled.hl: begin_section, end_section, add_section_var, and add_section_hyp expressions at source lines 73--368. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The first-effect minimizer advances the failure to the next anonymous expression; focused raw-reject/all-effects-accept execution, complete-source theorem lookup, and fresh cumulative source loading are required."
     },
     {
+      "id": "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl",
+      "path": "jHOLLight/Examples/ssrbool-compiled.hl",
+      "source_sha256": "24cd8ef9e253145b031b13e0d68250217ade43e583c21ee6574136aa0a120c97",
+      "source_md5": "fd2e0f4fee2f6ccce2652d7d67f07547",
+      "normalized_sha256": "578d7fe281800b5fc5874ab6fa9cd499162034458be5ae75f5b3cf391023a99a",
+      "normalized_md5": "ed5d8717c212edc3cfb7999131c8ecf7",
+      "normalized_bytes": 26971,
+      "operations": [
+        {
+          "id": "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 8,
+          "replacement_count": 10,
+          "replacements": [
+            {"line": 8, "before": "Sections.begin_section \"ApplyIff\";;", "after": "let _ = Sections.begin_section \"ApplyIff\";;"},
+            {"line": 9, "before": "(Sections.add_section_var (mk_var (\"P\", (`:bool`))); Sections.add_section_var (mk_var (\"Q\", (`:bool`))));;", "after": "let _ = (Sections.add_section_var (mk_var (\"P\", (`:bool`))); Sections.add_section_var (mk_var (\"Q\", (`:bool`))));;"},
+            {"line": 10, "before": "(Sections.add_section_hyp \"eqPQ\" (`P <=> Q`));;", "after": "let _ = (Sections.add_section_hyp \"eqPQ\" (`P <=> Q`));;"},
+            {"line": 45, "before": "Sections.end_section \"ApplyIff\";;", "after": "let _ = Sections.end_section \"ApplyIff\";;"},
+            {"line": 209, "before": "Sections.begin_section \"BoolIf\";;", "after": "let _ = Sections.begin_section \"BoolIf\";;"},
+            {"line": 210, "before": "(Sections.add_section_var (mk_var (\"vT\", (`:A`))); Sections.add_section_var (mk_var (\"vF\", (`:A`))));;", "after": "let _ = (Sections.add_section_var (mk_var (\"vT\", (`:A`))); Sections.add_section_var (mk_var (\"vF\", (`:A`))));;"},
+            {"line": 211, "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;", "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;"},
+            {"line": 212, "before": "(Sections.add_section_var (mk_var (\"b\", (`:bool`))));;", "after": "let _ = (Sections.add_section_var (mk_var (\"b\", (`:bool`))));;"},
+            {"line": 247, "before": "Sections.end_section \"BoolIf\";;", "after": "let _ = Sections.end_section \"BoolIf\";;"},
+            {"line": 620, "before": "overload_interface(\"+\", `XOR`);;", "after": "let _ = overload_interface(\"+\", `XOR`);;"}
+          ]
+        }
+      ],
+      "semantic_rule": "The ten anonymous module structure expressions execute the same eleven Sections calls and one overload_interface registration exactly once, in their original positions and order. Explicit wildcard bindings discard the same unit results while preserving section nesting, section variables and hypothesis, mutations, overload target, evaluation order, results, and exceptions. The complete normalized module establishes the unchanged Ssrbool.subrelUr theorem.",
+      "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in ssrbool-compiled.hl: nine begin_section, end_section, add_section_var, and add_section_hyp expressions at source lines 8--247, plus the unique overload_interface expression at source line 620. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. A one-binding minimizer remains ill-typed at the inferred structure group while the complete ten-expression batch passes from a fresh cumulative post-action-128 state and establishes the terminal theorem; exact raw rejection, normalized action loading, and a fresh cumulative replay remain required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",
