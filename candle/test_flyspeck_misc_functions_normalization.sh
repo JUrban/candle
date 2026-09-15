@@ -17,10 +17,10 @@ python3 "$candle_root/candle/flyspeck_normalize.py" \
 normalized="$test_dir/overlay/formal_ineqs/misc/misc_functions.hl"
 test -f "$normalized"
 rg -Fq 'Misc_functions.error_fmt formatting is unavailable' "$normalized"
-rg -Fq 'let rec repeat i =' "$normalized"
+rg -Fq 'for i = 1 to n - 1 do' "$normalized"
 if rg -Fq 'sprintf str fmt' "$normalized" ||
-   rg -Fq 'for i = 1 to n - 1 do' "$normalized"; then
-  echo 'normalized misc_functions retained an unsupported construct' >&2
+   rg -Fq 'let rec repeat i =' "$normalized"; then
+  echo 'misc_functions normalization contract drifted' >&2
   exit 1
 fi
 
@@ -29,4 +29,4 @@ ocaml -noinit -noprompt \
   >"$test_dir/ocaml.log" 2>&1
 rg -Fq 'MISC_FUNCTIONS_TEST_LOOP_OCAML_ORACLE_OK' "$test_dir/ocaml.log"
 
-printf 'PASS: misc_functions formatting/loop normalization oracles\n'
+printf 'PASS: misc_functions formatting normalization and native loop oracle\n'

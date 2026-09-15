@@ -15400,10 +15400,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "acd3b71a8a5ab723d37afc019363e81e",
+      "md5": "aeb94af2b406e211845b60f1ecbaf509",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "d5199c4e43908b075d6afb27bef2750d686acd70cabe1c413bf67be039a08ae5"
+      "sha256": "492b95b4dc66cca89a3fa683b37b1961a6f53ab8498eb63035315db4b32b2fa3"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -16969,10 +16969,10 @@
       "execution_normalization": {
         "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 2519,
-        "normalized_md5": "c376b7a74a2cdd62a2b79f52a940ae6b",
-        "normalized_sha256": "b5f9c7797157d1d852732b1c36c782a5e7b50e2a7f213ded51cb231e3f2b781d",
-        "operation_count": 2
+        "normalized_bytes": 2405,
+        "normalized_md5": "c55a512aed20092ef945ae23aae90536",
+        "normalized_sha256": "285eb0c4504066df7ab1a335eba76bdba23606c1a2ce2d6f85163907ee594bee",
+        "operation_count": 1
       },
       "md5": "a84948477d7b296691135c2c6d3b9caa",
       "path": "formal_ineqs/misc/misc_functions.hl",
@@ -23069,7 +23069,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "8e35902c2c43bfa4d4f5a2ec5bbb2e7b0fe8cc84e7eebbb233d6534a56f1475d",
+    "contract_sha256": "4c0c93a97149d2e947688eebf28bbc47e4dbae7e2f332b2da925bf72eec7b0da",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25856,10 +25856,10 @@
       {
         "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 2519,
-        "normalized_md5": "c376b7a74a2cdd62a2b79f52a940ae6b",
-        "normalized_sha256": "b5f9c7797157d1d852732b1c36c782a5e7b50e2a7f213ded51cb231e3f2b781d",
-        "operation_count": 2,
+        "normalized_bytes": 2405,
+        "normalized_md5": "c55a512aed20092ef945ae23aae90536",
+        "normalized_sha256": "285eb0c4504066df7ab1a335eba76bdba23606c1a2ce2d6f85163907ee594bee",
+        "operation_count": 1,
         "operations": [
           {
             "after": "let error_fmt str fmt =\r\n  let _ = str in\r\n  let _ = fmt in\r\n    error_msg \"Candle Flyspeck: Misc_functions.error_fmt formatting is unavailable\";;",
@@ -25867,18 +25867,11 @@
             "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-ERROR-FMT-UNUSED-FAIL-CLOSED",
             "kind": "exact_bytes_replace_once",
             "line": 17
-          },
-          {
-            "after": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n  let last = n - 1 in\r\n  let rec repeat i =\r\n    if i > last then ()\r\n    else\r\n      let _ = f arg in\r\n        if i = last then () else repeat (i + 1) in\r\n  let _ = repeat 1 in\r\n    result, Unix.gettimeofday() -. start;;",
-            "before": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n    for i = 1 to n - 1 do\r\n      let _ = f arg in ()\r\n    done;\r\n    result, Unix.gettimeofday() -. start;;",
-            "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-TEST-FOR-LOOP",
-            "kind": "exact_bytes_replace_once",
-            "line": 42
           }
         ],
         "path": "formal_ineqs/misc/misc_functions.hl",
-        "scope_limit": "This is selected-graph dead-definition handling plus one exact loop spelling, not sprintf, general formatting, or general for-loop support. It is confined to the hash-pinned error_fmt and test definitions in misc_functions.hl. A complete quotation-aware search finds no error_fmt caller in the authenticated Flyspeck inventory; later selected action 180 does call test, so exact benchmark-call semantics are retained. Neither fix-top100 nor Candle history contains a relevant repair. Any error_fmt call, source drift, changed test call count/order/result/exception, or requirement for error_fmt's native formatted diagnostic invalidates this normalization. Native loop oracles, focused loading through Arith_nat.NUM_ADD_HASH_CONV, action-180 consumption, and fresh cumulative replay are required.",
-        "semantic_rule": "The complete authenticated 400-source direct graph contains the error_fmt definition but no qualified or unqualified call to it. Candle has no Printf module or general sprintf implementation, so the unreachable definition is made an explicit fail-closed Error path while retaining its two-argument calling shape and the module's Error exception. The benchmark helper's ascending for loop evaluates the upper bound n - 1 once after the first f call; the tail-recursive replacement captures the same bound once and calls f on arg in the same order and count, including zero extra iterations when the bound is below one and a final iteration without overflowing the loop index when the bound is max_int. It returns the same first result and elapsed-time subtraction and propagates the same f exception at the same call. All arithmetic definitions, conversions, theorem statements, proofs, effects, and successful results remain unchanged.",
+        "scope_limit": "This is selected-graph dead-definition handling only, not sprintf, general formatting, or a file-specific for-loop rewrite. It is confined to the hash-pinned error_fmt definition in misc_functions.hl. A complete quotation-aware search finds no error_fmt caller in the authenticated Flyspeck inventory; later selected action 180 does call the unchanged test helper, so the compiled central for-loop gate, action-180 consumption, and fresh cumulative replay remain required. Neither fix-top100 nor Candle history contains a relevant formatting repair. Any error_fmt call, source drift, or requirement for error_fmt's native formatted diagnostic invalidates this normalization.",
+        "semantic_rule": "The complete authenticated 400-source direct graph contains the error_fmt definition but no qualified or unqualified call to it. Candle has no Printf module or general sprintf implementation, so the unreachable definition is made an explicit fail-closed Error path while retaining its two-argument calling shape and the module's Error exception. The benchmark helper and its native ascending for loop are now left byte-for-byte unchanged for the verified central CakeML frontend lowering. All arithmetic definitions, conversions, theorem statements, proofs, effects, and successful results remain unchanged.",
         "source_key": "flyspeck:formal_ineqs/misc/misc_functions.hl",
         "source_md5": "a84948477d7b296691135c2c6d3b9caa",
         "source_sha256": "6646eaae7a1ae5e37f5aacd1c53c15ece066ff3bbdf5a2a0ff8323df3e28d3d5"

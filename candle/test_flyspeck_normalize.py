@@ -940,7 +940,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         misc_functions = entries[
             "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001"
         ]
-        self.assertEqual(len(misc_functions["operations"]), 2)
+        self.assertEqual(len(misc_functions["operations"]), 1)
         error_fmt = misc_functions["operations"][0]
         self.assertEqual(error_fmt["line"], 17)
         self.assertEqual(error_fmt["kind"], "exact_bytes_replace_once")
@@ -950,13 +950,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("explicit fail-closed Error", misc_functions["semantic_rule"])
         self.assertIn("no error_fmt caller", misc_functions["scope_limit"])
         self.assertIn("fix-top100", misc_functions["scope_limit"])
-        test_loop = misc_functions["operations"][1]
-        self.assertEqual(test_loop["line"], 42)
-        self.assertIn("for i = 1 to n - 1 do", test_loop["before"])
-        self.assertNotIn("for i", test_loop["after"])
-        self.assertIn("let rec repeat i", test_loop["after"])
-        self.assertIn("if i = last then ()", test_loop["after"])
-        self.assertIn("selected action 180 does call test", misc_functions["scope_limit"])
+        self.assertIn("unchanged test helper", misc_functions["scope_limit"])
+        self.assertIn("central for-loop gate", misc_functions["scope_limit"])
         arith_num = entries["PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001"]
         self.assertEqual(len(arith_num["operations"]), 1)
         arith_tables = arith_num["operations"][0]
@@ -1643,7 +1638,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 272)
+        self.assertEqual(len(operation_ids), 271)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

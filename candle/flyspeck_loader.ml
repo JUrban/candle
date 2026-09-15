@@ -497,7 +497,7 @@ let candle_flyspeck_normalized_sources =
       "formal_ineqs/misc/misc_functions.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_ineqs/misc/misc_functions.hl",
-    "c376b7a74a2cdd62a2b79f52a940ae6b");
+    "c55a512aed20092ef945ae23aae90536");
    (Filename.concat candle_flyspeck_root
       "formal_ineqs/arith/arith_num.hl",
     Filename.concat candle_flyspeck_overlay_root
