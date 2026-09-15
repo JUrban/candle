@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 68)
+        self.assertEqual(len(self.contract["entries"]), 69)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -639,6 +639,37 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("complete mechanically enumerated", ssrnat["scope_limit"])
         self.assertIn("consecutive anonymous group", ssrnat["scope_limit"])
         self.assertIn("binding only one", ssrnat["scope_limit"])
+        hypermap_iso = entries[
+            "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001"
+        ]
+        self.assertEqual(len(hypermap_iso["operations"]), 1)
+        hypermap_iso_effects = hypermap_iso["operations"][0]
+        self.assertEqual(
+            hypermap_iso_effects["kind"], "exact_lines_replace_once",
+        )
+        self.assertEqual(hypermap_iso_effects["replacement_count"], 46)
+        self.assertEqual(
+            [
+                replacement["line"]
+                for replacement in hypermap_iso_effects["replacements"]
+            ],
+            [
+                20, 70, 71, 72, 73, 74, 75, 84, 109, 139, 140, 141, 142,
+                190, 193, 194, 195, 263, 264, 265, 302, 305, 318, 319, 320,
+                321, 322, 354, 425, 428, 467, 468, 469, 470, 499, 844, 845,
+                846, 925, 928, 1042, 1043, 1044, 1045, 1151, 1171,
+            ],
+        )
+        self.assertTrue(all(
+            replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in hypermap_iso_effects["replacements"]
+        ))
+        self.assertIn("same 46 section calls", hypermap_iso["semantic_rule"])
+        self.assertIn("same iso parser registration", hypermap_iso["semantic_rule"])
+        self.assertIn(
+            "complete mechanically enumerated", hypermap_iso["scope_limit"],
+        )
+        self.assertIn("No relevant fix-top100", hypermap_iso["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1271,7 +1302,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 252)
+        self.assertEqual(len(operation_ids), 253)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
