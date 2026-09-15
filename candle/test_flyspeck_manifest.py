@@ -992,7 +992,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 67", source,
+            "List.length candle_flyspeck_normalized_sources <> 68", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -1002,7 +1002,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 67)
+        self.assertEqual(len(selected_normalizations), 68)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)

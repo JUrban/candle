@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 460,
+        "line": 465,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 460,
+        "line": 465,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5184,13 +5184,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 460,
+        "line": 465,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 460,
+        "line": 465,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "f12737251706ad1b3793594f22270258",
-    "generated_source_sha256": "2823226ead08a99c23125147dfe949a4b13f006b9ef2652a64e3cecf0f89090c",
+    "generated_source_md5": "83fd39235d809133f653537700fd1155",
+    "generated_source_sha256": "0bfc36cff5cd36ba84f61a5b278935f3a2d7b72c81d547eec258ca3d6cab79dc",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 63361,
+      "bytes": 63504,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "94fc6b0a80d32e0e0bd677b80a23f208",
+      "md5": "ad2ea00e0184de8a84fefc74f6c063cf",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "ad86774c82710c737c16df7db83a79b25c2f41bb0a196e71d60cc98b30e32ff1"
+      "sha256": "e1be9a90b1ef3408f0d31b1a216ca6bfb1b735c35f4b3b0b1f4ab1e17ae48abb"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +14886,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 22448,
+      "bytes": 22678,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +14924,7 @@
         },
         {
           "kind": "needs",
-          "line": 482,
+          "line": 487,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +14935,7 @@
         },
         {
           "kind": "needs",
-          "line": 488,
+          "line": 493,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +14946,7 @@
         },
         {
           "kind": "needs",
-          "line": 490,
+          "line": 495,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +14956,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "57cf760d2f198631d1ebd7586200f435",
+      "md5": "a03aa5b740134fd48c4b6b75ae29eec8",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "6e1af16f17363e5407246ed758243ef04b42c67b9a737e853295f950f3e04491"
+      "sha256": "eda8b8abd990610d90b9901736f38d7781413e8dc57d999727883ca9f3c66b76"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -18144,6 +18144,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 138448,
+        "normalized_md5": "e8e2545fe119f5c727f6a67dbfb0c04e",
+        "normalized_sha256": "391c52e4d6ea15a8d1e540b1f3d1b170578adc768dc985c4777f74f9ae0e3bcc",
+        "operation_count": 1
+      },
       "md5": "81706738bb565ae12b56b765f6b21e66",
       "path": "text_formalization/fan/hypermap_iso-compiled.hl",
       "repository": "flyspeck",
@@ -22529,7 +22537,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "1ac8207a07c0fdb35b66a426f6fa4fe1696570d622b1991ee687ad9bf93348ac",
+    "contract_sha256": "fa221630bf8e47f8efd041a3e20961e5c2d5afca53b32dbcb97245d0c3b01c63",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23348,6 +23356,260 @@
         "source_key": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl",
         "source_md5": "7640ffbcb69db54453c7d4edba3c3c10",
         "source_sha256": "66e533d777177cb4149e7f958af68cfa8e28e0be117537b8b3f81ba50071c188"
+      },
+      {
+        "id": "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 138448,
+        "normalized_md5": "e8e2545fe119f5c727f6a67dbfb0c04e",
+        "normalized_sha256": "391c52e4d6ea15a8d1e540b1f3d1b170578adc768dc985c4777f74f9ae0e3bcc",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 20,
+            "replacement_count": 46,
+            "replacements": [
+              {
+                "after": "let _ = parse_as_infix(\"iso\",(24,\"right\"));;",
+                "before": "parse_as_infix(\"iso\",(24,\"right\"));;",
+                "line": 20
+              },
+              {
+                "after": "let _ = Sections.begin_section \"PowerOrbit\";;",
+                "before": "Sections.begin_section \"PowerOrbit\";;",
+                "line": 70
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "line": 71
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"g1\", (`:A -> A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"g1\", (`:A -> A`))));;",
+                "line": 72
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"g2\", (`:B -> B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"g2\", (`:B -> B`))));;",
+                "line": 73
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"s\", (`:A -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"s\", (`:A -> bool`))));;",
+                "line": 74
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"g1s\" (`!x. x IN s ==> g1 x IN s`));;",
+                "before": "(Sections.add_section_hyp \"g1s\" (`!x. x IN s ==> g1 x IN s`));;",
+                "line": 75
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fg\" (`!x. x IN s ==> f (g1 x) = g2 (f x)`));;",
+                "before": "(Sections.add_section_hyp \"fg\" (`!x. x IN s ==> f (g1 x) = g2 (f x)`));;",
+                "line": 84
+              },
+              {
+                "after": "let _ = Sections.end_section \"PowerOrbit\";;",
+                "before": "Sections.end_section \"PowerOrbit\";;",
+                "line": 109
+              },
+              {
+                "after": "let _ = Sections.begin_section \"InjProps\";;",
+                "before": "Sections.begin_section \"InjProps\";;",
+                "line": 139
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"u\", (`:A -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"u\", (`:A -> bool`))));;",
+                "line": 140
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "line": 141
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"inj\" (`!x y. x IN u /\\ y IN u /\\ f x = f y ==> x = y`));;",
+                "before": "(Sections.add_section_hyp \"inj\" (`!x y. x IN u /\\ y IN u /\\ f x = f y ==> x = y`));;",
+                "line": 142
+              },
+              {
+                "after": "let _ = Sections.end_section \"InjProps\";;",
+                "before": "Sections.end_section \"InjProps\";;",
+                "line": 190
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FiniteBijections\";;",
+                "before": "Sections.begin_section \"FiniteBijections\";;",
+                "line": 193
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"s\", (`:A->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"s\", (`:A->bool`))));;",
+                "line": 194
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"t\", (`:B->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"t\", (`:B->bool`))));;",
+                "line": 195
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fin_s\" (`FINITE s`));;",
+                "before": "(Sections.add_section_hyp \"fin_s\" (`FINITE s`));;",
+                "line": 263
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fin_t\" (`FINITE t`));;",
+                "before": "(Sections.add_section_hyp \"fin_t\" (`FINITE t`));;",
+                "line": 264
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"card_eq\" (`CARD s = CARD t`));;",
+                "before": "(Sections.add_section_hyp \"card_eq\" (`CARD s = CARD t`));;",
+                "line": 265
+              },
+              {
+                "after": "let _ = Sections.end_section \"FiniteBijections\";;",
+                "before": "Sections.end_section \"FiniteBijections\";;",
+                "line": 302
+              },
+              {
+                "after": "let _ = Sections.begin_section \"ResInverse\";;",
+                "before": "Sections.begin_section \"ResInverse\";;",
+                "line": 305
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Ext\";;",
+                "before": "Sections.begin_section \"Ext\";;",
+                "line": 318
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A->B`))); Sections.add_section_var (mk_var (\"g\", (`:A->B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A->B`))); Sections.add_section_var (mk_var (\"g\", (`:A->B`))));;",
+                "line": 319
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"s\", (`:A->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"s\", (`:A->bool`))));;",
+                "line": 320
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"t\", (`:B->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"t\", (`:B->bool`))));;",
+                "line": 321
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"ext\" (`!x. x IN s ==> f x = g x`));;",
+                "before": "(Sections.add_section_hyp \"ext\" (`!x. x IN s ==> f x = g x`));;",
+                "line": 322
+              },
+              {
+                "after": "let _ = Sections.end_section \"Ext\";;",
+                "before": "Sections.end_section \"Ext\";;",
+                "line": 354
+              },
+              {
+                "after": "let _ = Sections.end_section \"ResInverse\";;",
+                "before": "Sections.end_section \"ResInverse\";;",
+                "line": 425
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Iso\";;",
+                "before": "Sections.begin_section \"Iso\";;",
+                "line": 428
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Iso1\";;",
+                "before": "Sections.begin_section \"Iso1\";;",
+                "line": 467
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"H\", (`:(A)hypermap`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"H\", (`:(A)hypermap`))));;",
+                "line": 468
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"G\", (`:(B)hypermap`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"G\", (`:(B)hypermap`))));;",
+                "line": 469
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A->B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A->B`))));;",
+                "line": 470
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"isoHG\" (`hyp_iso f (H, G)`));;",
+                "before": "(Sections.add_section_hyp \"isoHG\" (`hyp_iso f (H, G)`));;",
+                "line": 499
+              },
+              {
+                "after": "let _ = Sections.end_section \"Iso1\";;",
+                "before": "Sections.end_section \"Iso1\";;",
+                "line": 844
+              },
+              {
+                "after": "let _ = (Sections.add_section_type (mk_var (\"H\", (`:(C)hypermap`))));;",
+                "before": "(Sections.add_section_type (mk_var (\"H\", (`:(C)hypermap`))));;",
+                "line": 845
+              },
+              {
+                "after": "let _ = (Sections.add_section_type (mk_var (\"G\", (`:(D)hypermap`))));;",
+                "before": "(Sections.add_section_type (mk_var (\"G\", (`:(D)hypermap`))));;",
+                "line": 846
+              },
+              {
+                "after": "let _ = Sections.end_section \"Iso\";;",
+                "before": "Sections.end_section \"Iso\";;",
+                "line": 925
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FanHypermapsIso\";;",
+                "before": "Sections.begin_section \"FanHypermapsIso\";;",
+                "line": 928
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Iso\";;",
+                "before": "Sections.begin_section \"Iso\";;",
+                "line": 1042
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 1043
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "line": 1044
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fan\" (`FAN (vec 0,V,E)`));;",
+                "before": "(Sections.add_section_hyp \"fan\" (`FAN (vec 0,V,E)`));;",
+                "line": 1045
+              },
+              {
+                "after": "let _ = Sections.end_section \"Iso\";;",
+                "before": "Sections.end_section \"Iso\";;",
+                "line": 1151
+              },
+              {
+                "after": "let _ = Sections.end_section \"FanHypermapsIso\";;",
+                "before": "Sections.end_section \"FanHypermapsIso\";;",
+                "line": 1171
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/fan/hypermap_iso-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated 46-expression anonymous module-structure set in hypermap_iso-compiled.hl: parse_as_infix at source line 20 plus 45 begin_section, end_section, add_section_var, add_section_type, and add_section_hyp expressions at lines 70--1171. The compound expression at line 319 contains two of the 46 unchanged Sections calls. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module only after its corrected action-130 dependency passes; the complete batch loads from a fresh post-action-129 state and establishes the terminal theorem. No relevant fix-top100 or historical Candle patch exists. Exact raw rejection, normalized action loading, and a fresh cumulative replay remain required.",
+        "semantic_rule": "The 45 anonymous Sections expressions execute the same 46 section calls exactly once, and the remaining anonymous parse_as_infix expression performs the same iso parser registration exactly once, all in their original positions and order. Explicit wildcard bindings discard the same results while preserving nested section names, variables, types and hypotheses, parser mutation, evaluation order, results, and exceptions. The complete normalized module establishes the unchanged Hypermap_iso.fan_hypermaps_iso2 theorem.",
+        "source_key": "flyspeck:text_formalization/fan/hypermap_iso-compiled.hl",
+        "source_md5": "81706738bb565ae12b56b765f6b21e66",
+        "source_sha256": "2da3701d76d46ae96406b71a5934611bb66b12d1bc0ac511e15ace0806523755"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -27674,7 +27936,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 68,
+    "entry_count": 69,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -27796,8 +28058,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "94fc6b0a80d32e0e0bd677b80a23f208",
-    "generated_source_sha256": "ad86774c82710c737c16df7db83a79b25c2f41bb0a196e71d60cc98b30e32ff1",
+    "generated_source_md5": "ad2ea00e0184de8a84fefc74f6c063cf",
+    "generated_source_sha256": "e1be9a90b1ef3408f0d31b1a216ca6bfb1b735c35f4b3b0b1f4ab1e17ae48abb",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
