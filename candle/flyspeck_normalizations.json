@@ -1284,6 +1284,238 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in seq-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module at line 7 only after actions 130--140 pass. The complete batch loads from a fresh post-action-129 state through the manifest loader, emits the action-141 success marker, and establishes terminal theorem Seq.allpairs_catr. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
     },
     {
+      "id": "PROJECT-SEQ2-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl",
+      "path": "text_formalization/tame/ssreflect/seq2-compiled.hl",
+      "source_sha256": "0a98ab2cb9847c23e0a78b4165d3ee7d911eb19a1392235c0263b6c7ac961bc6",
+      "source_md5": "f00a156079d48de69eeb5019895450ac",
+      "normalized_sha256": "ecff65c2b053efb5a584bf42acf371544ec17ddfd29e069ea2ef591ee1a93de3",
+      "normalized_md5": "5426c7e61a82a58b36fdf8f1b4ce31de",
+      "normalized_bytes": 249677,
+      "operations": [
+        {
+          "id": "PROJECT-SEQ2-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 10,
+          "replacement_count": 42,
+          "replacements": [
+            {
+              "line": 10,
+              "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+              "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;"
+            },
+            {
+              "line": 11,
+              "before": "override_interface (\"::\", `CONS`);;",
+              "after": "let _ = override_interface (\"::\", `CONS`);;"
+            },
+            {
+              "line": 12,
+              "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+              "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;"
+            },
+            {
+              "line": 13,
+              "before": "overload_interface (\"++\", `cat`);;",
+              "after": "let _ = overload_interface (\"++\", `cat`);;"
+            },
+            {
+              "line": 14,
+              "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+              "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;"
+            },
+            {
+              "line": 15,
+              "before": "override_interface(\"<-\", `MEM`);;",
+              "after": "let _ = override_interface(\"<-\", `MEM`);;"
+            },
+            {
+              "line": 52,
+              "before": "Sections.begin_section \"SeqList\";;",
+              "after": "let _ = Sections.begin_section \"SeqList\";;"
+            },
+            {
+              "line": 145,
+              "before": "Sections.end_section \"SeqList\";;",
+              "after": "let _ = Sections.end_section \"SeqList\";;"
+            },
+            {
+              "line": 148,
+              "before": "Sections.begin_section \"Misc\";;",
+              "after": "let _ = Sections.begin_section \"Misc\";;"
+            },
+            {
+              "line": 286,
+              "before": "Sections.end_section \"Misc\";;",
+              "after": "let _ = Sections.end_section \"Misc\";;"
+            },
+            {
+              "line": 289,
+              "before": "Sections.begin_section \"MoreZip\";;",
+              "after": "let _ = Sections.begin_section \"MoreZip\";;"
+            },
+            {
+              "line": 352,
+              "before": "Sections.end_section \"MoreZip\";;",
+              "after": "let _ = Sections.end_section \"MoreZip\";;"
+            },
+            {
+              "line": 355,
+              "before": "Sections.begin_section \"MoreUniq\";;",
+              "after": "let _ = Sections.begin_section \"MoreUniq\";;"
+            },
+            {
+              "line": 417,
+              "before": "Sections.end_section \"MoreUniq\";;",
+              "after": "let _ = Sections.end_section \"MoreUniq\";;"
+            },
+            {
+              "line": 420,
+              "before": "Sections.begin_section \"MoreIndex\";;",
+              "after": "let _ = Sections.begin_section \"MoreIndex\";;"
+            },
+            {
+              "line": 495,
+              "before": "Sections.end_section \"MoreIndex\";;",
+              "after": "let _ = Sections.end_section \"MoreIndex\";;"
+            },
+            {
+              "line": 498,
+              "before": "Sections.begin_section \"MorePermEq\";;",
+              "after": "let _ = Sections.begin_section \"MorePermEq\";;"
+            },
+            {
+              "line": 580,
+              "before": "Sections.end_section \"MorePermEq\";;",
+              "after": "let _ = Sections.end_section \"MorePermEq\";;"
+            },
+            {
+              "line": 583,
+              "before": "Sections.begin_section \"MoreSubseq\";;",
+              "after": "let _ = Sections.begin_section \"MoreSubseq\";;"
+            },
+            {
+              "line": 603,
+              "before": "Sections.end_section \"MoreSubseq\";;",
+              "after": "let _ = Sections.end_section \"MoreSubseq\";;"
+            },
+            {
+              "line": 606,
+              "before": "Sections.begin_section \"Delete\";;",
+              "after": "let _ = Sections.begin_section \"Delete\";;"
+            },
+            {
+              "line": 607,
+              "before": "(Sections.add_section_type (mk_var (\"x\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"x\", (`:A`))));;"
+            },
+            {
+              "line": 608,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s2\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s2\", (`:(A)list`))));;"
+            },
+            {
+              "line": 609,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 850,
+              "before": "Sections.end_section \"Delete\";;",
+              "after": "let _ = Sections.end_section \"Delete\";;"
+            },
+            {
+              "line": 853,
+              "before": "Sections.begin_section \"ListsAndSets\";;",
+              "after": "let _ = Sections.begin_section \"ListsAndSets\";;"
+            },
+            {
+              "line": 1006,
+              "before": "Sections.end_section \"ListsAndSets\";;",
+              "after": "let _ = Sections.end_section \"ListsAndSets\";;"
+            },
+            {
+              "line": 1009,
+              "before": "Sections.begin_section \"ListSum\";;",
+              "after": "let _ = Sections.begin_section \"ListSum\";;"
+            },
+            {
+              "line": 1010,
+              "before": "(Sections.add_section_type (mk_var (\"f\", (`:A->real`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"f\", (`:A->real`))));;"
+            },
+            {
+              "line": 1274,
+              "before": "Sections.end_section \"ListSum\";;",
+              "after": "let _ = Sections.end_section \"ListSum\";;"
+            },
+            {
+              "line": 1277,
+              "before": "Sections.begin_section \"ListSumn\";;",
+              "after": "let _ = Sections.begin_section \"ListSumn\";;"
+            },
+            {
+              "line": 1278,
+              "before": "(Sections.add_section_type (mk_var (\"f\", (`:A->num`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"f\", (`:A->num`))));;"
+            },
+            {
+              "line": 1326,
+              "before": "Sections.end_section \"ListSumn\";;",
+              "after": "let _ = Sections.end_section \"ListSumn\";;"
+            },
+            {
+              "line": 1329,
+              "before": "Sections.begin_section \"PermEqPermutes\";;",
+              "after": "let _ = Sections.begin_section \"PermEqPermutes\";;"
+            },
+            {
+              "line": 1330,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 1444,
+              "before": "Sections.end_section \"PermEqPermutes\";;",
+              "after": "let _ = Sections.end_section \"PermEqPermutes\";;"
+            },
+            {
+              "line": 1447,
+              "before": "Sections.begin_section \"BelastButlast\";;",
+              "after": "let _ = Sections.begin_section \"BelastButlast\";;"
+            },
+            {
+              "line": 1537,
+              "before": "Sections.end_section \"BelastButlast\";;",
+              "after": "let _ = Sections.end_section \"BelastButlast\";;"
+            },
+            {
+              "line": 1540,
+              "before": "Sections.begin_section \"MoreRot\";;",
+              "after": "let _ = Sections.begin_section \"MoreRot\";;"
+            },
+            {
+              "line": 1679,
+              "before": "Sections.end_section \"MoreRot\";;",
+              "after": "let _ = Sections.end_section \"MoreRot\";;"
+            },
+            {
+              "line": 1682,
+              "before": "Sections.begin_section \"NextPrev\";;",
+              "after": "let _ = Sections.begin_section \"NextPrev\";;"
+            },
+            {
+              "line": 2043,
+              "before": "Sections.end_section \"NextPrev\";;",
+              "after": "let _ = Sections.end_section \"NextPrev\";;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "Bind the complete 42 anonymous module structure expressions to explicit discarded values while preserving the same 36 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, arguments, effects, exceptions, evaluation order, and theorem/proof text.",
+      "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in seq2-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module at reported line 4 only after actions 131--141 pass from the clean post-action-130 state. The complete batch loads from a separate fresh state through the manifest loader, emits the action-142 success marker, and establishes terminal theorem Seq2.prev_el_hd. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",
