@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 73)
+        self.assertEqual(len(self.contract["entries"]), 74)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -839,6 +839,44 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same REALLIM_ADD theorem", fnjlbxs["semantic_rule"])
         self.assertIn("same named definitions", fnjlbxs["semantic_rule"])
         self.assertIn("three independently minimized", fnjlbxs["scope_limit"])
+        add_triangle = entries[
+            "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001"
+        ]
+        self.assertEqual(len(add_triangle["operations"]), 1)
+        add_triangle_effects = add_triangle["operations"][0]
+        self.assertEqual(
+            add_triangle_effects["kind"], "exact_lines_replace_once",
+        )
+        self.assertEqual(add_triangle_effects["replacement_count"], 20)
+        add_triangle_replacements = add_triangle_effects["replacements"]
+        add_triangle_lines = [
+            replacement["line"]
+            for replacement in add_triangle_replacements
+        ]
+        self.assertEqual(
+            add_triangle_lines,
+            [
+                7, 8, 9, 10, 37, 38, 39, 128, 293, 412,
+                482, 502, 547, 557, 558, 559, 560, 631, 634, 1486,
+            ],
+        )
+        self.assertTrue(all(
+            replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in add_triangle_replacements
+        ))
+        self.assertEqual(sum(
+            "Sections." in replacement["before"]
+            for replacement in add_triangle_replacements
+        ), 16)
+        self.assertEqual(sum(
+            "add_section_lemma" in replacement["before"]
+            for replacement in add_triangle_replacements
+        ), 1)
+        self.assertIn("complete 20 anonymous", add_triangle["semantic_rule"])
+        self.assertIn(
+            "complete mechanically enumerated", add_triangle["scope_limit"],
+        )
+        self.assertIn("No relevant fix-top100", add_triangle["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1471,7 +1509,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 260)
+        self.assertEqual(len(operation_ids), 261)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

@@ -1994,6 +1994,128 @@
       "scope_limit": "This hash-pinned batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Fnjlbxs and three independently minimized strict-rewrite compatibility sites at source lines 52, 93, and 117. It changes no theorem statement, hypothesis term, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--143 pass from a clean post-action-130 state and the raw top-level prioritize_overload call succeeds, the exact raw module reports a unit versus function structure-group type mismatch at line 7; the structure-only candidate then reaches list_sum_continuous and exposes the strict rewrite mismatches. Each proof correction was validated through its named theorem from a separate fresh post-action-143 state, and the complete batch emits the action-144 success marker and establishes terminal theorem Fnjlbxs.FCDJDOT. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
     },
     {
+      "id": "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+      "path": "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+      "source_sha256": "27fc827bef7c9cb76c01e0219a8126b7b56a6468dd61a66b95aba84c7ad6e847",
+      "source_md5": "741a530d6bbecade212ef90f2b49d4c3",
+      "normalized_sha256": "5af185a4f4a4079d1680b572ab08a0e6fd21406bb5c66232fd73e9402f5048d4",
+      "normalized_md5": "5c871d026ea381564bdbefea4092ddcd",
+      "normalized_bytes": 248339,
+      "operations": [
+        {
+          "id": "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 7,
+          "replacement_count": 20,
+          "replacements": [
+            {
+              "line": 7,
+              "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+              "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;"
+            },
+            {
+              "line": 8,
+              "before": "override_interface (\"::\", `CONS`);;",
+              "after": "let _ = override_interface (\"::\", `CONS`);;"
+            },
+            {
+              "line": 9,
+              "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+              "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;"
+            },
+            {
+              "line": 10,
+              "before": "overload_interface (\"++\", `cat`);;",
+              "after": "let _ = overload_interface (\"++\", `cat`);;"
+            },
+            {
+              "line": 37,
+              "before": "Sections.begin_section \"FanMisc\";;",
+              "after": "let _ = Sections.begin_section \"FanMisc\";;"
+            },
+            {
+              "line": 38,
+              "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;"
+            },
+            {
+              "line": 39,
+              "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;"
+            },
+            {
+              "line": 128,
+              "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;"
+            },
+            {
+              "line": 293,
+              "before": "Sections.begin_section \"Hypermap1\";;",
+              "after": "let _ = Sections.begin_section \"Hypermap1\";;"
+            },
+            {
+              "line": 412,
+              "before": "Sections.begin_section \"Dart1\";;",
+              "after": "let _ = Sections.begin_section \"Dart1\";;"
+            },
+            {
+              "line": 482,
+              "before": "Sections.end_section \"Dart1\";;",
+              "after": "let _ = Sections.end_section \"Dart1\";;"
+            },
+            {
+              "line": 502,
+              "before": "Sections.end_section \"Hypermap1\";;",
+              "after": "let _ = Sections.end_section \"Hypermap1\";;"
+            },
+            {
+              "line": 547,
+              "before": "Sections.end_section \"FanMisc\";;",
+              "after": "let _ = Sections.end_section \"FanMisc\";;"
+            },
+            {
+              "line": 557,
+              "before": "Sections.begin_section \"AddTriangle\";;",
+              "after": "let _ = Sections.begin_section \"AddTriangle\";;"
+            },
+            {
+              "line": 558,
+              "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;"
+            },
+            {
+              "line": 559,
+              "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;"
+            },
+            {
+              "line": 560,
+              "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;"
+            },
+            {
+              "line": 631,
+              "before": "(Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;"
+            },
+            {
+              "line": 634,
+              "before": "Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+              "after": "let _ = Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []"
+            },
+            {
+              "line": 1486,
+              "before": "Sections.end_section \"AddTriangle\";;",
+              "after": "let _ = Sections.end_section \"AddTriangle\";;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "Bind the complete 20 anonymous Add_triangle module structure expressions to explicit discarded values while preserving the same four interface registrations and 16 Sections expressions, including the identical multiline dart1_eq section-lemma registration. Each original expression is evaluated once at the same position, with the same arguments, effects, exceptions, and order; all theorem definitions and proof text remain unchanged.",
+      "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Add_triangle. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After accepted action 144 passes from a fresh post-action-143 state, the exact raw source reports a unit versus section-function structure-group type mismatch at its first registration block and emits no action-145 marker. The complete batch loads from a separate fresh state, emits the action-145 success marker, and establishes terminal theorem Add_triangle.tau_split_fan_face_add with no diagnostic. No relevant fix-top100 or historical Candle patch exists; the upstream 2017 long-application refactorings are already present byte-for-byte. Fresh cumulative replay remains required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",
