@@ -300,7 +300,7 @@
 #flyspeck_needs "tame/ssreflect/seq2-compiled.hl";;
 (* 143 selected=flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl sha256=4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93 normalization=PROJECT-SORT-S2-STRUCTURE-EFFECTS-001 normalized_sha256=83207abe4b8b58219a51f230f51c59ec70983367d296280a01320eea98ea6cc9 *)
 #flyspeck_needs "tame/ssreflect/sort-compiled.hl";;
-(* 144 selected=flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl sha256=4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8 *)
+(* 144 selected=flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl sha256=4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8 normalization=PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001 normalized_sha256=b857172b0d1d823820cdec5daf9cbc1a5d8359001d1fb16b80644bd909087f4d *)
 #flyspeck_needs "tame/ssreflect/FNJLBXS-compiled.hl";;
 (* 145 selected=flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl sha256=27fc827bef7c9cb76c01e0219a8126b7b56a6468dd61a66b95aba84c7ad6e847 *)
 #flyspeck_needs "../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl";;

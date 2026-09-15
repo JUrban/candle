@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 480,
+        "line": 485,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 480,
+        "line": 485,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5184,13 +5184,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 480,
+        "line": 485,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 480,
+        "line": 485,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "c6cfc98dbbb34b3552502833ca75ef85",
-    "generated_source_sha256": "cdece353a147c2571e144649605f11f03aab1bea5c01494937ed9a465d0ab626",
+    "generated_source_md5": "3af6515e84e9ab4f40b3d30c75e6f247",
+    "generated_source_sha256": "a042290b2b1a97d796e5bee814995fcb98e77ac60b95e702a3953996673ffe1b",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 63908,
+      "bytes": 64046,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "bbc612424880c72521a8dbbd9f4a9dba",
+      "md5": "909c06d38040613bf1da864dc41f5fd7",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "2aa3725ade5aff187acb2e384a8273e86dd3d2bca8ea3c809821df20d2809705"
+      "sha256": "7552fd69a0e940dfd2e4846bc02129cbed7ecf3259d0809ca8fcf08996d93eb0"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +14886,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 23372,
+      "bytes": 23617,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +14924,7 @@
         },
         {
           "kind": "needs",
-          "line": 502,
+          "line": 507,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +14935,7 @@
         },
         {
           "kind": "needs",
-          "line": 508,
+          "line": 513,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +14946,7 @@
         },
         {
           "kind": "needs",
-          "line": 510,
+          "line": 515,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +14956,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "d7664a24fba16d27f785907f219974c8",
+      "md5": "1c617875cb75b78be29329880ac738da",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "29531ee2b57bd0681f1611a89115d0abe51aabef79c4cd889a8a44894a2f68e6"
+      "sha256": "9ed166bffa5f681b04666f4071af858460079789a307c929eafe52ffaa03dcde"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -21797,6 +21797,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 393279,
+        "normalized_md5": "fa98c359beced8d3044ed8682e4eca11",
+        "normalized_sha256": "b857172b0d1d823820cdec5daf9cbc1a5d8359001d1fb16b80644bd909087f4d",
+        "operation_count": 4
+      },
       "md5": "74e5cdfb818f96e3f57020139a60384e",
       "path": "text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
       "repository": "flyspeck",
@@ -22561,7 +22569,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "2c81530268fa1c1ca64c505887a106fdf9bb7fa310ac831ef7b4a46f7095562f",
+    "contract_sha256": "8da47ff4d97fc6c93cd80e94ec754d8a63806e7da32fc81d0b1a9975e9566a78",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -24686,6 +24694,289 @@
         "source_key": "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl",
         "source_md5": "edbad154c9e983ede3fd670b3a3b5c4a",
         "source_sha256": "4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93"
+      },
+      {
+        "id": "PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 393279,
+        "normalized_md5": "fa98c359beced8d3044ed8682e4eca11",
+        "normalized_sha256": "b857172b0d1d823820cdec5daf9cbc1a5d8359001d1fb16b80644bd909087f4d",
+        "operation_count": 4,
+        "operations": [
+          {
+            "id": "PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 7,
+            "replacement_count": 44,
+            "replacements": [
+              {
+                "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;",
+                "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+                "line": 7
+              },
+              {
+                "after": "let _ = override_interface (\"::\", `CONS`);;",
+                "before": "override_interface (\"::\", `CONS`);;",
+                "line": 8
+              },
+              {
+                "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;",
+                "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+                "line": 9
+              },
+              {
+                "after": "let _ = overload_interface (\"++\", `cat`);;",
+                "before": "overload_interface (\"++\", `cat`);;",
+                "line": 10
+              },
+              {
+                "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;",
+                "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+                "line": 11
+              },
+              {
+                "after": "let _ = override_interface(\"<-\", `MEM`);;",
+                "before": "override_interface(\"<-\", `MEM`);;",
+                "line": 12
+              },
+              {
+                "after": "let _ = Sections.begin_section \"MoreList\";;",
+                "before": "Sections.begin_section \"MoreList\";;",
+                "line": 31
+              },
+              {
+                "after": "let _ = Sections.end_section \"MoreList\";;",
+                "before": "Sections.end_section \"MoreList\";;",
+                "line": 78
+              },
+              {
+                "after": "let _ = Sections.begin_section \"MoreMinK\";;",
+                "before": "Sections.begin_section \"MoreMinK\";;",
+                "line": 81
+              },
+              {
+                "after": "let _ = Sections.end_section \"MoreMinK\";;",
+                "before": "Sections.end_section \"MoreMinK\";;",
+                "line": 320
+              },
+              {
+                "after": "let _ = Sections.begin_section \"MoreSortedReal\";;",
+                "before": "Sections.begin_section \"MoreSortedReal\";;",
+                "line": 323
+              },
+              {
+                "after": "let _ = Sections.end_section \"MoreSortedReal\";;",
+                "before": "Sections.end_section \"MoreSortedReal\";;",
+                "line": 456
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SomeResults\";;",
+                "before": "Sections.begin_section \"SomeResults\";;",
+                "line": 459
+              },
+              {
+                "after": "let _ = Sections.end_section \"SomeResults\";;",
+                "before": "Sections.end_section \"SomeResults\";;",
+                "line": 841
+              },
+              {
+                "after": "let _ = Sections.begin_section \"VectorOfList\";;",
+                "before": "Sections.begin_section \"VectorOfList\";;",
+                "line": 844
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"d\", (`:num`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"d\", (`:num`))));;",
+                "line": 874
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"list\", (`:(real^N)list`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"list\", (`:(real^N)list`))));;",
+                "line": 875
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"d_eq\" (`dimindex (:N) = d`));;",
+                "before": "(Sections.add_section_hyp \"d_eq\" (`dimindex (:N) = d`));;",
+                "line": 876
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"dim_ge\" (`d * LENGTH list <= dimindex (:M)`));;",
+                "before": "(Sections.add_section_hyp \"dim_ge\" (`d * LENGTH list <= dimindex (:M)`));;",
+                "line": 877
+              },
+              {
+                "after": "let _ = Sections.end_section \"VectorOfList\";;",
+                "before": "Sections.end_section \"VectorOfList\";;",
+                "line": 971
+              },
+              {
+                "after": "let _ = Sections.begin_section \"VectorOfList_Sets\";;",
+                "before": "Sections.begin_section \"VectorOfList_Sets\";;",
+                "line": 1007
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"k\", (`:num`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"k\", (`:num`))));;",
+                "line": 1008
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"dim_ge\" (`3 * k <= dimindex (:M)`));;",
+                "before": "(Sections.add_section_hyp \"dim_ge\" (`3 * k <= dimindex (:M)`));;",
+                "line": 1009
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Lim_inS\";;",
+                "before": "Sections.begin_section \"Lim_inS\";;",
+                "line": 1012
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "line": 1013
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"inS_imp\" (`!l. l IN S ==> LENGTH l <= k`));;",
+                "before": "(Sections.add_section_hyp \"inS_imp\" (`!l. l IN S ==> LENGTH l <= k`));;",
+                "line": 1037
+              },
+              {
+                "after": "let _ = Sections.end_section \"Lim_inS\";;",
+                "before": "Sections.end_section \"Lim_inS\";;",
+                "line": 1072
+              },
+              {
+                "after": "let _ = Sections.begin_section \"ContinuousOnCompact\";;",
+                "before": "Sections.begin_section \"ContinuousOnCompact\";;",
+                "line": 1075
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "line": 1076
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S ==> LENGTH l = k`));;",
+                "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S ==> LENGTH l = k`));;",
+                "line": 1077
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"compactS\" (`compact (IMAGE (vector_of_list 3) S:real^M->bool)`));;",
+                "before": "(Sections.add_section_hyp \"compactS\" (`compact (IMAGE (vector_of_list 3) S:real^M->bool)`));;",
+                "line": 1078
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"n_S_empty\" (`~(S = {})`));;",
+                "before": "(Sections.add_section_hyp \"n_S_empty\" (`~(S = {})`));;",
+                "line": 1079
+              },
+              {
+                "after": "let _ = Sections.end_section \"ContinuousOnCompact\";;",
+                "before": "Sections.end_section \"ContinuousOnCompact\";;",
+                "line": 1098
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+                "line": 1099
+              },
+              {
+                "after": "let _ = Sections.begin_section \"NormSet\";;",
+                "before": "Sections.begin_section \"NormSet\";;",
+                "line": 1102
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"g\", (`:num -> real`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"g\", (`:num -> real`))));;",
+                "line": 1103
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S <=> LENGTH l = k /\\ (!i. i < k ==> norm (EL i l) = g i)`));;",
+                "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S <=> LENGTH l = k /\\ (!i. i < k ==> norm (EL i l) = g i)`));;",
+                "line": 1104
+              },
+              {
+                "after": "let _ = Sections.end_section \"NormSet\";;",
+                "before": "Sections.end_section \"NormSet\";;",
+                "line": 1128
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S <=> set_of_list l SUBSET ball_annulus /\\",
+                "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S <=> set_of_list l SUBSET ball_annulus /\\",
+                "line": 1129
+              },
+              {
+                "after": "let _ = Sections.end_section \"VectorOfList_Sets\";;",
+                "before": "Sections.end_section \"VectorOfList_Sets\";;",
+                "line": 1259
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FNJLBXS\";;",
+                "before": "Sections.begin_section \"FNJLBXS\";;",
+                "line": 1262
+              },
+              {
+                "after": "let _ = Sections.end_section \"FNJLBXS\";;",
+                "before": "Sections.end_section \"FNJLBXS\";;",
+                "line": 1541
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FCDJDOT\";;",
+                "before": "Sections.begin_section \"FCDJDOT\";;",
+                "line": 1544
+              },
+              {
+                "after": "let _ = Sections.end_section \"FCDJDOT\";;",
+                "before": "Sections.end_section \"FCDJDOT\";;",
+                "line": 1806
+              }
+            ]
+          },
+          {
+            "id": "PROJECT-FNJLBXS-S2-REALLIM-ADD-APPLY-001",
+            "kind": "exact_lines_replace_once",
+            "line": 52,
+            "replacement_count": 1,
+            "replacements": [
+              {
+                "after": "   ((THENL_ROT (-1)) (((((use_arg_then2 (\"s'_eq\", []))(thm_tac (new_rewrite [] [])))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"list_sum_cons\", [list_sum_cons]))(thm_tac (new_rewrite [] []))))) THEN ((use_arg_then2 (\"REALLIM_ADD\", [REALLIM_ADD])) (thm_tac apply_tac)) THEN (split_tac))));",
+                "before": "   ((THENL_ROT (-1)) (((((use_arg_then2 (\"s'_eq\", []))(thm_tac (new_rewrite [] [])))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"list_sum_cons\", [list_sum_cons]))(thm_tac (new_rewrite [] []))))) THEN (((use_arg_then2 (\"REALLIM_ADD\", [REALLIM_ADD]))(thm_tac (new_rewrite [] []))))) THEN (split_tac)));",
+                "line": 52
+              }
+            ]
+          },
+          {
+            "id": "PROJECT-FNJLBXS-S2-MIN-K-CONTINUOUS-REWRITE-001",
+            "kind": "exact_lines_replace_once",
+            "line": 93,
+            "replacement_count": 1,
+            "replacements": [
+              {
+                "after": "   (REWRITE_TAC[real_continuous; tendsto_real; min_k] THEN (simp_tac));",
+                "before": "   ((repeat_tactic 1 9 (((use_arg_then2 (\"real_continuous\", [real_continuous]))(thm_tac (new_rewrite [] []))))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"tendsto_real\", [tendsto_real]))(thm_tac (new_rewrite [] []))))) THEN (((use_arg_then2 (\"min_k\", [min_k]))(thm_tac (new_rewrite [] [])))) THEN (simp_tac));",
+                "line": 93
+              }
+            ]
+          },
+          {
+            "id": "PROJECT-FNJLBXS-S2-MIN-K-LIMIT-REWRITE-001",
+            "kind": "exact_lines_replace_once",
+            "line": 117,
+            "replacement_count": 1,
+            "replacements": [
+              {
+                "after": "   ((((use_arg_then2 (\"s'_to\", [])) (disch_tac [])) THEN (clear_assumption \"s'_to\") THEN BETA_TAC) THEN (((REWRITE_TAC[tendsto_real]) THEN (simp_tac)) THEN (move [\"el_cont\"]) THEN (move [\"e\"]) THEN (move [\"e_gt0\"])));",
+                "before": "   ((((use_arg_then2 (\"s'_to\", [])) (disch_tac [])) THEN (clear_assumption \"s'_to\") THEN BETA_TAC) THEN (((repeat_tactic 1 9 (((use_arg_then2 (\"tendsto_real\", [tendsto_real]))(thm_tac (new_rewrite [] []))))) THEN (simp_tac)) THEN (move [\"el_cont\"]) THEN (move [\"e\"]) THEN (move [\"e_gt0\"])));",
+                "line": 117
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
+        "scope_limit": "This hash-pinned batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Fnjlbxs and three independently minimized strict-rewrite compatibility sites at source lines 52, 93, and 117. It changes no theorem statement, hypothesis term, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--143 pass from a clean post-action-130 state and the raw top-level prioritize_overload call succeeds, the exact raw module reports a unit versus function structure-group type mismatch at line 7; the structure-only candidate then reaches list_sum_continuous and exposes the strict rewrite mismatches. Each proof correction was validated through its named theorem from a separate fresh post-action-143 state, and the complete batch emits the action-144 success marker and establishes terminal theorem Fnjlbxs.FCDJDOT. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required.",
+        "semantic_rule": "Bind the complete 44 anonymous Fnjlbxs module structure expressions to explicit discarded values while preserving the same 38 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, arguments, effects, exceptions, and evaluation order; the separate top-level prioritize_overload call remains unchanged. In list_sum_continuous, apply the same REALLIM_ADD theorem directly to the already rewritten goal and preserve the same two subgoals and following proof branches. In min_k_continuous and min_k_limit, expand the same named definitions with HOL Light's standard REWRITE_TAC instead of ssreflect's strict new_rewrite matcher, preserving the resulting goals and every following tactic.",
+        "source_key": "flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
+        "source_md5": "74e5cdfb818f96e3f57020139a60384e",
+        "source_sha256": "4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -29012,7 +29303,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 72,
+    "entry_count": 73,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -29134,8 +29425,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "bbc612424880c72521a8dbbd9f4a9dba",
-    "generated_source_sha256": "2aa3725ade5aff187acb2e384a8273e86dd3d2bca8ea3c809821df20d2809705",
+    "generated_source_md5": "909c06d38040613bf1da864dc41f5fd7",
+    "generated_source_sha256": "7552fd69a0e940dfd2e4846bc02129cbed7ecf3259d0809ca8fcf08996d93eb0",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
