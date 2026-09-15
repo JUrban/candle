@@ -2176,6 +2176,41 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Tame_lemmas. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON binding or implementation, search order, or axiom. After accepted action 145 passes, the exact raw source reports enclosing-module parser recovery at module Tame_lemmas and emits no action-146 marker. From a separately created clean post-action-145 snapshot, the complete batch emits the action-146 success marker and establishes terminal theorem Tame_lemmas.non_triangular_face_azim_dart_bound with no diagnostic. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
     },
     {
+      "id": "PROJECT-PENT-HEX-S2-PRINTF-001",
+      "source_key": "flyspeck:text_formalization/local/pent_hex.hl",
+      "path": "text_formalization/local/pent_hex.hl",
+      "source_sha256": "3be0e2e05a0f759c4ae6c3f7e04d72130353452a63519fc42793343590830488",
+      "source_md5": "fe348aa40e3fc16092c6144d4b6f1af9",
+      "normalized_sha256": "a478ca1130a61ead96183eb4d026e2cd9a3eb78b886b8e7c683011b31b949eef",
+      "normalized_md5": "57de064a23be1517bbf5bb54e3950282",
+      "normalized_bytes": 122630,
+      "operations": [
+        {
+          "id": "PROJECT-PENT-HEX-S2-PRINTF-001-INEQUALITY-ID",
+          "kind": "exact_bytes_replace_once",
+          "line": 2697,
+          "before": "let get_ineq (a,b,c) = \n  clean_ineq  (Terminal.get_main_nonlinear (Printf.sprintf \"7550003505 %d %d %d\" a b c));;",
+          "after": "let get_ineq (a,b,c) = \n  clean_ineq  (Terminal.get_main_nonlinear\n    (\"7550003505 \" ^ string_of_int a ^ \" \" ^ string_of_int b ^ \" \" ^\n      string_of_int c));;"
+        },
+        {
+          "id": "PROJECT-PENT-HEX-S2-PRINTF-001-GET3-ERROR",
+          "kind": "exact_bytes_replace_once",
+          "line": 2875,
+          "before": "  let _ = (i <= j && i <= k) || failwith (Printf.sprintf \"get3 out of range %d %d %d\" i j k) in",
+          "after": "  let _ = (i <= j && i <= k) || failwith\n    (\"get3 out of range \" ^ string_of_int i ^ \" \" ^ string_of_int j ^ \" \" ^\n      string_of_int k) in"
+        },
+        {
+          "id": "PROJECT-PENT-HEX-S2-PRINTF-001-GET4-ERROR",
+          "kind": "exact_bytes_replace_once",
+          "line": 2908,
+          "before": "  let _ = (not(thm = TRUTH)) || failwith (Printf.sprintf \"get4 out of range %d %d %d\" i j k) in",
+          "after": "  let _ = (not(thm = TRUTH)) || failwith\n    (\"get4 out of range \" ^ string_of_int i ^ \" \" ^ string_of_int j ^ \" \" ^\n      string_of_int k) in"
+        }
+      ],
+      "semantic_rule": "Each fixed integer-only Printf.sprintf call is replaced by the same literal fragments and string_of_int conversions in the same argument order. Native OCaml's %d rendering is exactly string_of_int for all ints, including negatives and min_int, as established by the existing nonlinear-boundary oracle. The inequality identifier and both exceptional diagnostic messages are therefore unchanged, and each surrounding lookup, guard, failure, theorem construction, and proof is evaluated in the same order.",
+      "scope_limit": "These three hash-pinned replacements cover the complete mechanically enumerated Printf.sprintf use set in pent_hex.hl: the generated inequality identifier at line 2697 and the get_ineq3/get_ineq4 guard messages at lines 2875 and 2908. They do not implement general Printf, change any inequality identifier, theorem statement, hypothesis, proof step, tactic, proof intent, module binding, search behavior, or axiom. The upstream fix-top100 branch contains no pent_hex source or patch. The native formatting oracle, focused exact-original rejection, focused complete normalized-source acceptance through Pent_hex.terminal_hex_taum and action 150, and fresh cumulative loading are required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",

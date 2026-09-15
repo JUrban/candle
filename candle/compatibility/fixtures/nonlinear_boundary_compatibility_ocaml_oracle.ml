@@ -24,6 +24,12 @@ let simple_formats_ok =
           Printf.sprintf "7550003505 %d %d %d" first second min_int =
             "7550003505 " ^ string_of_int first ^ " " ^
               string_of_int second ^ " " ^ string_of_int min_int &&
+          Printf.sprintf "get3 out of range %d %d %d" first second min_int =
+            "get3 out of range " ^ string_of_int first ^ " " ^
+              string_of_int second ^ " " ^ string_of_int min_int &&
+          Printf.sprintf "get4 out of range %d %d %d" first second min_int =
+            "get4 out of range " ^ string_of_int first ^ " " ^
+              string_of_int second ^ " " ^ string_of_int min_int &&
           Printf.sprintf "prep-%s split(%d/%d)" "S" first second =
             "prep-S split(" ^ string_of_int first ^ "/" ^
               string_of_int second ^ ")")

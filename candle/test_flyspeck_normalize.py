@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 75)
+        self.assertEqual(len(self.contract["entries"]), 76)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -917,6 +917,26 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "complete mechanically enumerated", tame_lemmas["scope_limit"],
         )
         self.assertIn("No relevant fix-top100", tame_lemmas["scope_limit"])
+        pent_hex = entries["PROJECT-PENT-HEX-S2-PRINTF-001"]
+        self.assertEqual(
+            [operation["line"] for operation in pent_hex["operations"]],
+            [2697, 2875, 2908],
+        )
+        self.assertEqual(
+            [operation["kind"] for operation in pent_hex["operations"]],
+            ["exact_bytes_replace_once"] * 3,
+        )
+        self.assertEqual(sum(
+            "Printf.sprintf" in operation["before"]
+            for operation in pent_hex["operations"]
+        ), 3)
+        self.assertTrue(all(
+            "Printf.sprintf" not in operation["after"]
+            and operation["after"].count("string_of_int") == 3
+            for operation in pent_hex["operations"]
+        ))
+        self.assertIn("complete mechanically enumerated", pent_hex["scope_limit"])
+        self.assertIn("no pent_hex source or patch", pent_hex["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1549,7 +1569,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 262)
+        self.assertEqual(len(operation_ids), 265)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
