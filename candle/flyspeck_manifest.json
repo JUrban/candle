@@ -4471,6 +4471,12 @@
         "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
       },
       {
+        "line": 865,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
         "line": 866,
         "member": "add",
         "module": "Hashtbl",
@@ -4503,6 +4509,12 @@
       {
         "line": 880,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 880,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
       },
@@ -6558,6 +6570,12 @@
         "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
       },
       {
+        "line": 865,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
         "line": 866,
         "member": "add",
         "module": "Hashtbl",
@@ -6590,6 +6608,12 @@
       {
         "line": 880,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
+      },
+      {
+        "line": 880,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:jHOLLight/caml/ssreflect.hl"
       },
@@ -8833,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "17e6141aaf5f16080084420d94f6e22f",
-    "generated_source_sha256": "32ffa855c62f041f152c73fb3ece6b02b5c82e90ac43501023db232ac57fd572",
+    "generated_source_md5": "08fe8405d916f31e31115f2d32e8a289",
+    "generated_source_sha256": "2e33f9e75811b2ba5592fb50f3172b75b55cb8050d9964c0489751943b65f543",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -14848,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "510ae6ec30a52ae1303216ee7084d586",
+      "md5": "b357b52bf472ddb45a034bac009be5db",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "e66088be366dba98239152f8fcc57504a1a7abda53b9cce2ff9d6d09d88519db"
+      "sha256": "f837f7f57282f0ed8355caf984c8090130f4537a6c0c819b03164e46fc63a845"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -17649,10 +17673,10 @@
       "execution_normalization": {
         "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 33333,
-        "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
-        "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
-        "operation_count": 4
+        "normalized_bytes": 33389,
+        "normalized_md5": "620d9c7687482fd95245e71aae89a553",
+        "normalized_sha256": "c17436d7db382916371a31535853acb51ccd62efb72c56ce461b436c7fb5be37",
+        "operation_count": 7
       },
       "md5": "6f69a400e5f3922f4d572840748b35c7",
       "path": "jHOLLight/caml/ssreflect.hl",
@@ -22481,7 +22505,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "d68868041ae9ef31fb5c45ebd375aea0e1fa38bf4a57d555ae63497a2adda047",
+    "contract_sha256": "b0e44ad96148f5cb7979de178032bd64afe8e507540d8f98fc62e0fdff0c8e3a",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -22919,10 +22943,10 @@
       {
         "id": "PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 33333,
-        "normalized_md5": "c3dd5eb34cd4d139e3af3199cc633b0d",
-        "normalized_sha256": "be790d5251d3b6b4f29259be1aff09cb73877476f92c5c93370f6c54e009a048",
-        "operation_count": 4,
+        "normalized_bytes": 33389,
+        "normalized_md5": "620d9c7687482fd95245e71aae89a553",
+        "normalized_sha256": "c17436d7db382916371a31535853acb51ccd62efb72c56ce461b436c7fb5be37",
+        "operation_count": 7,
         "operations": [
           {
             "after": "let test_id_thm (id:string) : bool =\n  failwith (\"Candle Flyspeck: dynamic test_id_thm is disabled by typed theorem arguments: \"^id);;\n\n\n(* The selected compiled route uses use_arg_then2 with an explicit theorem. *)\nlet use_arg_then (id:string) (arg_tac:arg_type->tactic) (g:goal) =\n  failwith (\"Candle Flyspeck: dynamic use_arg_then is disabled by typed theorem arguments: \"^id);;\n",
@@ -22954,11 +22978,32 @@
             "id": "PROJECT-SSREFLECT-S2-CONTEXT-TERM-SETIFY-001",
             "kind": "exact_bytes_replace_once",
             "line": 115
+          },
+          {
+            "after": "\t\t   ((head1 @ tail), th0)",
+            "before": "\t\t   head1 @ tail, th0",
+            "id": "PROJECT-SSREFLECT-S2-SPEC-COMMAND-PAIR-GROUPING-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 622
+          },
+          {
+            "after": "let cases_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;",
+            "before": "let cases_table = Hashtbl.create 10;;",
+            "id": "PROJECT-SSREFLECT-S2-CASES-TABLE-TYPE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 889
+          },
+          {
+            "after": "let elim_table : (string, thm) Hashtbl.t = Hashtbl.create 10;;",
+            "before": "let elim_table = Hashtbl.create 10;;",
+            "id": "PROJECT-SSREFLECT-S2-ELIM-TABLE-TYPE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 904
           }
         ],
         "path": "jHOLLight/caml/ssreflect.hl",
-        "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, and the comparator replacement is confined to the unique unary setify over the flattened frees result at source line 115. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, definition outside those helpers, or axiom. Exact original rejection, normalized theorem construction for both combinators, focused term-setify execution, current-runtime source comparison, a complete run, and final fingerprints remain required.",
-        "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle.",
+        "scope_limit": "The lookup replacement is not general ssreflect string lookup or Toploop compatibility: any call, labelled argument, reflection, external input, or change in the exact 22-file typed-use inventory reopens that gate. Two hash-pinned replacements are confined to the copied seqapply helper at ssreflect.hl lines 60--70, the comparator replacement to the unique unary setify over the flattened frees result at source line 115, the grouping replacement to the unique `head1 @ tail, th0` result at source line 622, and the annotations to the two top-level theorem tables at source lines 889 and 904. They change no selected subgoal, theorem statement, hypothesis, proof script, proof intent, table entry, definition outside those helpers, or axiom. Exact old-normalization rejection, normalized full-source loading, focused downstream use, a complete cumulative run, and final fingerprints remain required.",
+        "semantic_rule": "No selected identifier call targets test_id_thm or use_arg_then. All 23,810 selected compiled theorem lookups use use_arg_then2, which first resolves assumptions and context variables and otherwise receives an explicit typed theorem fallback without Toploop. The two obsolete dynamic identifier functions therefore fail closed while use_arg_then2 remains byte-for-byte unchanged. Separately, the second local tactic sequence's instantiation is propagated into the first sequence's pending goals and justification before the two sequences are combined. These are the same linked propagation steps used by this Candle head's current HOL Light tactics.ml implementation, preserving THENL_FIRST and THENL_LAST proof reconstruction under the current tactic API. The flattened `frees` result at get_context_vars is a term list; supplying Candle's canonical Term.(<) comparator gives setify the same term ordering and duplicate removal established by the native/Candle term-order oracle. Parenthesizing the appended command list inside the returned pair restores native OCaml grouping without changing either component or evaluation order. Explicit `(string, thm) Hashtbl.t` annotations give the two mutable tables the exact key/value types established by their immediately following insertions, avoiding CakeML's top-level value restriction without changing table contents or lookup behavior.",
         "source_key": "flyspeck:jHOLLight/caml/ssreflect.hl",
         "source_md5": "6f69a400e5f3922f4d572840748b35c7",
         "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9"
@@ -27410,8 +27455,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "510ae6ec30a52ae1303216ee7084d586",
-    "generated_source_sha256": "e66088be366dba98239152f8fcc57504a1a7abda53b9cce2ff9d6d09d88519db",
+    "generated_source_md5": "b357b52bf472ddb45a034bac009be5db",
+    "generated_source_sha256": "f837f7f57282f0ed8355caf984c8090130f4537a6c0c819b03164e46fc63a845",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
