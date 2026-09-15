@@ -1,9 +1,9 @@
 # Direct boundary 04: GRUTOTI native set-tactic scope
 
-Status: DEVELOPMENT / NON-RELEASE whole-source candidate pass. This document
-does not claim action-092 or cumulative-boundary acceptance. The direct metric
-remains 93 actual actions reached / 92 passed until authenticated action replay
-and a fresh cumulative action-zero replay both pass.
+Status: DEVELOPMENT / NON-RELEASE accepted compatibility repair. The focused
+whole-source candidate, authenticated action replay, and subsequent fresh
+cumulative action-zero replay have all passed. This is functional evidence,
+not an S1 archival artifact or an S2/S3 release claim.
 
 ## Root cause
 
@@ -83,14 +83,19 @@ The candidate emitted 2,364 MESON progress records. They match the retained
 native PFT GRUTOTI records byte-for-byte and in the same order; both streams
 have SHA-256
 `72cc25686891885bada232cb66ec8f9ff0c1a88952257807dea0c273c43d9448`.
-This rules out a remaining rule-order or early-search-choice difference for
-the repaired source. Candle's residual approximately 2.3x time difference may
-still reflect physical-sharing costs, but it is not a functional blocker.
+This is strong output-level evidence against a remaining rule-order or early-
+search-choice difference for the repaired source, although it is not an
+independent trace of every internal MESON decision. No comparator-ordering or
+pointer-equality diagnosis is inferred for this incident: the demonstrated
+cause is the transitive-open binding mismatch, and the residual timing
+difference is not a functional blocker.
 
-## Remaining acceptance
+## Cumulative confirmation
 
-The contract and generated manifest must reach a fixed point. Then the exact
-action 092 must pass through the authenticated direct loader from a fresh
-clean predecessor. Only after that pass will a newly generated v47 cumulative
-plan be launched from action zero. The obsolete prepared v46 cumulative plan
-must remain unlaunched.
+The normalized GRUTOTI source subsequently passed authenticated action 092
+from a fresh clean predecessor. It also passed as part of the fresh action-zero
+cumulative replay through action 151 documented in
+`direct_boundary_04_v48_cumulative_000_151.md`. That run completed all 152
+actions without diagnostics, so this source-scoped binding repair is accepted
+for the direct functional lane. The obsolete prepared v46 cumulative plan was
+not used.

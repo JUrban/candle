@@ -2211,6 +2211,217 @@
       "scope_limit": "These three hash-pinned replacements cover the complete mechanically enumerated Printf.sprintf use set in pent_hex.hl: the generated inequality identifier at line 2697 and the get_ineq3/get_ineq4 guard messages at lines 2875 and 2908. They do not implement general Printf, change any inequality identifier, theorem statement, hypothesis, proof step, tactic, proof intent, module binding, search behavior, or axiom. The upstream fix-top100 branch contains no pent_hex source or patch. The native formatting oracle, focused exact-original rejection, focused complete normalized-source acceptance through Pent_hex.terminal_hex_taum and action 150, and fresh cumulative loading are required."
     },
     {
+      "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001",
+      "source_key": "flyspeck:formal_ineqs/misc/misc_functions.hl",
+      "path": "formal_ineqs/misc/misc_functions.hl",
+      "source_sha256": "6646eaae7a1ae5e37f5aacd1c53c15ece066ff3bbdf5a2a0ff8323df3e28d3d5",
+      "source_md5": "a84948477d7b296691135c2c6d3b9caa",
+      "normalized_sha256": "b5f9c7797157d1d852732b1c36c782a5e7b50e2a7f213ded51cb231e3f2b781d",
+      "normalized_md5": "c376b7a74a2cdd62a2b79f52a940ae6b",
+      "normalized_bytes": 2519,
+      "operations": [
+        {
+          "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-ERROR-FMT-UNUSED-FAIL-CLOSED",
+          "kind": "exact_bytes_replace_once",
+          "line": 17,
+          "before": "let error_fmt str fmt =\r\n  let msg = sprintf str fmt in\r\n    error_msg msg;;",
+          "after": "let error_fmt str fmt =\r\n  let _ = str in\r\n  let _ = fmt in\r\n    error_msg \"Candle Flyspeck: Misc_functions.error_fmt formatting is unavailable\";;"
+        },
+        {
+          "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-TEST-FOR-LOOP",
+          "kind": "exact_bytes_replace_once",
+          "line": 42,
+          "before": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n    for i = 1 to n - 1 do\r\n      let _ = f arg in ()\r\n    done;\r\n    result, Unix.gettimeofday() -. start;;",
+          "after": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n  let last = n - 1 in\r\n  let rec repeat i =\r\n    if i > last then ()\r\n    else\r\n      let _ = f arg in\r\n        if i = last then () else repeat (i + 1) in\r\n  let _ = repeat 1 in\r\n    result, Unix.gettimeofday() -. start;;"
+        }
+      ],
+      "semantic_rule": "The complete authenticated 400-source direct graph contains the error_fmt definition but no qualified or unqualified call to it. Candle has no Printf module or general sprintf implementation, so the unreachable definition is made an explicit fail-closed Error path while retaining its two-argument calling shape and the module's Error exception. The benchmark helper's ascending for loop evaluates the upper bound n - 1 once after the first f call; the tail-recursive replacement captures the same bound once and calls f on arg in the same order and count, including zero extra iterations when the bound is below one and a final iteration without overflowing the loop index when the bound is max_int. It returns the same first result and elapsed-time subtraction and propagates the same f exception at the same call. All arithmetic definitions, conversions, theorem statements, proofs, effects, and successful results remain unchanged.",
+      "scope_limit": "This is selected-graph dead-definition handling plus one exact loop spelling, not sprintf, general formatting, or general for-loop support. It is confined to the hash-pinned error_fmt and test definitions in misc_functions.hl. A complete quotation-aware search finds no error_fmt caller in the authenticated Flyspeck inventory; later selected action 180 does call test, so exact benchmark-call semantics are retained. Neither fix-top100 nor Candle history contains a relevant repair. Any error_fmt call, source drift, changed test call count/order/result/exception, or requirement for error_fmt's native formatted diagnostic invalidates this normalization. Native loop oracles, focused loading through Arith_nat.NUM_ADD_HASH_CONV, action-180 consumption, and fresh cumulative replay are required."
+    },
+    {
+      "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001",
+      "source_key": "flyspeck:formal_ineqs/arith/arith_num.hl",
+      "path": "formal_ineqs/arith/arith_num.hl",
+      "source_sha256": "ee34d8c035988e8443da01c8725fa72118f856a1f3fcf78cd106b893bc80b2d8",
+      "source_md5": "ef7d86273cbd40c834ed4ba562406c97",
+      "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
+      "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
+      "normalized_bytes": 55921,
+      "operations": [
+        {
+          "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
+          "kind": "exact_lines_replace_once",
+          "line": 111,
+          "replacement_count": 21,
+          "replacements": [
+            {
+              "line": 111,
+              "before": "let def_table = Hashtbl.create maximum;;",
+              "after": "let def_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 112,
+              "before": "let def_basic_table = Hashtbl.create maximum;;",
+              "after": "let def_basic_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 167,
+              "before": "let mk_table = Hashtbl.create maximum;;",
+              "after": "let mk_table : (num, term) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 209,
+              "before": "let dest_table_num = Hashtbl.create maximum;;",
+              "after": "let dest_table_num : (string, num) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 323,
+              "before": "let th_suc_table = Hashtbl.create maximum;;",
+              "after": "let th_suc_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 375,
+              "before": "let th_eq0_table = Hashtbl.create maximum;;",
+              "after": "let th_eq0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 440,
+              "before": "let th_pre_table = Hashtbl.create maximum;;",
+              "after": "let th_pre_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 489,
+              "before": "let gt0_table = Hashtbl.create maximum;;",
+              "after": "let gt0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 574,
+              "before": "let th_eq_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let th_eq_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 670,
+              "before": "let th_lt0_table = Hashtbl.create maximum;;",
+              "after": "let th_lt0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 701,
+              "before": "let th_lt_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let th_lt_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 744,
+              "before": "let th_le0_table = Hashtbl.create maximum;;",
+              "after": "let th_le0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 775,
+              "before": "let th_le_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let th_le_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 961,
+              "before": "let th_add_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let th_add_table : (string, thm * bool) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 972,
+              "before": "let th_cadd_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let th_cadd_table : (string, thm * bool) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 1136,
+              "before": "let mul_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let mul_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 1201,
+              "before": "let gen_mul_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let gen_mul_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 1250,
+              "before": "let mul1_right_th_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let mul1_right_th_table : (string, bool * thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 1251,
+              "before": "let mul1_left_th_table = Hashtbl.create (maximum * maximum);;",
+              "after": "let mul1_left_th_table : (string, bool * thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;"
+            },
+            {
+              "line": 1483,
+              "before": "let even_thm_table = Hashtbl.create maximum;;",
+              "after": "let even_thm_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            },
+            {
+              "line": 1492,
+              "before": "let odd_thm_table = Hashtbl.create maximum;;",
+              "after": "let odd_thm_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction.",
+      "scope_limit": "This one mechanically enumerated, hash-pinned line operation is confined to all 21 and only the top-level Arith_num Hashtbl.create bindings. It does not change any table operation, definition, conversion, theorem statement, hypothesis, proof, or loop. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
+    },
+    {
+      "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001",
+      "source_key": "flyspeck:formal_ineqs/arith/arith_cache.hl",
+      "path": "formal_ineqs/arith/arith_cache.hl",
+      "source_sha256": "825abaefad9a020711adcc02a2de5253bc9baebef9b8da4811f492c16be41978",
+      "source_md5": "8c3b8e939f223e79a2baec71b8da943b",
+      "normalized_sha256": "9e6a8c01261db246f15798476f8912e3cbfc9e34c1db91814e25308f60a95dbe",
+      "normalized_md5": "4435dbc49c013c948975b7132906172c",
+      "normalized_bytes": 6653,
+      "operations": [
+        {
+          "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
+          "kind": "exact_bytes_replace_once",
+          "line": 25,
+          "before": "let le_table = Hashtbl.create cache_size and\n    add_table = Hashtbl.create cache_size and\n    sub_table = Hashtbl.create cache_size and\n    sub_le_table = Hashtbl.create cache_size and\n    mul_table = Hashtbl.create cache_size and\n    div_table = Hashtbl.create cache_size;;",
+          "after": "let le_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    add_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    sub_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    sub_le_table : (string, thm * thm) Hashtbl.t = Hashtbl.create cache_size and\n    mul_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    div_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size;;"
+        },
+        {
+          "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-DIRECT-CLEAR-CALLS",
+          "kind": "exact_bytes_replace_once",
+          "line": 49,
+          "before": "let reset_cache () =\n  let clear = Hashtbl.clear in\n    clear le_table;\n    clear add_table;\n    clear sub_table;\n    clear sub_le_table;\n    clear mul_table;\n    clear div_table;;",
+          "after": "let reset_cache () =\n  Hashtbl.clear le_table;\n  Hashtbl.clear add_table;\n  Hashtbl.clear sub_table;\n  Hashtbl.clear sub_le_table;\n  Hashtbl.clear mul_table;\n  Hashtbl.clear div_table;;"
+        },
+        {
+          "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-PRINT-STAT",
+          "kind": "exact_bytes_replace_once",
+          "line": 76,
+          "before": "let print_stat () =\n  let len = Hashtbl.length in\n  let suc_pre_str = sprintf \"suc = %d\\npre = %d\\n\" !suc_counter !pre_counter in\n  let cmp0_str = sprintf \"eq0 = %d\\ngt0 = %d\\n\" !eq0_counter !gt0_counter in\n  let lt_str = sprintf \"lt = %d\\n\" !lt_counter in\n  let even_odd_str = sprintf \"even = %d\\nodd = %d\\n\" !even_counter !odd_counter in\n  let le_str = sprintf \"le = %d (le_hash = %d)\\n\" !le_counter (len le_table) in\n  let add_str = sprintf \"add = %d (add_hash = %d)\\n\" !add_counter (len add_table) in\n  let sub_str = sprintf \"sub = %d (sub_hash = %d)\\n\" !sub_counter (len sub_table) in\n  let sub_le_str = sprintf \"sub_le = %d (sub_le_hash = %d)\\n\" !sub_le_counter (len sub_le_table) in\n  let mul_str = sprintf \"mul = %d (mul_hash = %d)\\n\" !mul_counter (len mul_table) in\n  let div_str = sprintf \"div = %d (div_hash = %d)\\n\" !div_counter (len div_table) in\n    print_string (suc_pre_str ^ cmp0_str ^ lt_str ^ even_odd_str ^\n\t\t    le_str ^ add_str ^ sub_str ^ sub_le_str ^ mul_str ^ div_str);;",
+          "after": "let print_stat () =\n  let suc_pre_str = \"suc = \" ^ string_of_int !suc_counter ^\n    \"\\npre = \" ^ string_of_int !pre_counter ^ \"\\n\" in\n  let cmp0_str = \"eq0 = \" ^ string_of_int !eq0_counter ^\n    \"\\ngt0 = \" ^ string_of_int !gt0_counter ^ \"\\n\" in\n  let lt_str = \"lt = \" ^ string_of_int !lt_counter ^ \"\\n\" in\n  let even_odd_str = \"even = \" ^ string_of_int !even_counter ^\n    \"\\nodd = \" ^ string_of_int !odd_counter ^ \"\\n\" in\n  let le_str = \"le = \" ^ string_of_int !le_counter ^\n    \" (le_hash = \" ^ string_of_int (Hashtbl.length le_table) ^ \")\\n\" in\n  let add_str = \"add = \" ^ string_of_int !add_counter ^\n    \" (add_hash = \" ^ string_of_int (Hashtbl.length add_table) ^ \")\\n\" in\n  let sub_str = \"sub = \" ^ string_of_int !sub_counter ^\n    \" (sub_hash = \" ^ string_of_int (Hashtbl.length sub_table) ^ \")\\n\" in\n  let sub_le_str = \"sub_le = \" ^ string_of_int !sub_le_counter ^\n    \" (sub_le_hash = \" ^ string_of_int (Hashtbl.length sub_le_table) ^ \")\\n\" in\n  let mul_str = \"mul = \" ^ string_of_int !mul_counter ^\n    \" (mul_hash = \" ^ string_of_int (Hashtbl.length mul_table) ^ \")\\n\" in\n  let div_str = \"div = \" ^ string_of_int !div_counter ^\n    \" (div_hash = \" ^ string_of_int (Hashtbl.length div_table) ^ \")\\n\" in\n    print_string (suc_pre_str ^ cmp0_str ^ lt_str ^ even_odd_str ^\n\t\t    le_str ^ add_str ^ sub_str ^ sub_le_str ^ mul_str ^ div_str);;"
+        }
+      ],
+      "semantic_rule": "The complete simultaneous group of six top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding my_add and Hashtbl.find uses: every key is a string; five values are thm and sub_le_table values are the exact thm * thm pair returned by raw_sub_and_le_hash_conv. OCaml type annotations are erased, so each table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The local polymorphic alias of Hashtbl.clear is expanded to the same six direct calls in the same order, retaining identical table mutations, unit result, and exceptions while avoiding monomorphizing that alias at the first cache type. The ten integer-only sprintf calls in print_stat are replaced by string_of_int and concatenation, and the polymorphic Hashtbl.length alias is expanded at its six call sites, retaining every label, space, parenthesis, newline, counter and cache-length observation, construction order, printed bytes, unit result, and exception propagation.",
+      "scope_limit": "These three hash-pinned exact-span operations are confined to all six and only the top-level Arith_cache Hashtbl.create bindings, the complete six-call reset_cache body, and the complete integer-only print_stat definition. They do not change any cache allocation, table operation, cache policy, statistic, definition, conversion, theorem statement, hypothesis, proof, or loop, and they do not implement general formatting. fix-top100 and repository history retain the unannotated group, polymorphic clear/length aliases, and sprintf calls and provide no compatibility repair. Native annotation/type-use/reset/format validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
+    },
+    {
+      "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001",
+      "source_key": "flyspeck:formal_lp/glpk/glpk_link.ml",
+      "path": "formal_lp/glpk/glpk_link.ml",
+      "source_sha256": "cfef91db36d9c20e070ac467e981cd593c0ef623b68840de3e4f8d21811add66",
+      "source_md5": "08194fd9e7b59cd0d4e7855951b7b4ba",
+      "normalized_sha256": "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45",
+      "normalized_md5": "7034cd37bfda474171f5135efaf73a62",
+      "normalized_bytes": 8077,
+      "operations": [
+        {
+          "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001-BINDING",
+          "kind": "exact_bytes_replace_once",
+          "line": 33,
+          "before": "let sprintf = Printf.sprintf;;",
+          "after": "let sprintf _ =\n  failwith \"Candle Flyspeck: non-verification GLPK formatter is disabled\";;"
+        }
+      ],
+      "semantic_rule": "The selected direct verifier loads Glpk_link and Lpproc for their pure archive representation and parsing helpers, but the manifest-frozen GLPK generator/process route has no executed caller. Replacing the unavailable Printf.sprintf alias with a top-level function of the same exported name gives each differently typed deferred use a fresh polymorphic instantiation while making any invocation fail immediately and deterministically. No accepted direct execution observes a formatted value, process launch, generator output, theorem, proof, or state change from this binding.",
+      "scope_limit": "This exact replacement is confined to the single top-level Glpk_link sprintf alias. It is fail-closed non-use handling, not Printf or formatting support, and it does not rewrite or authorize any call site. The generated route audit must continue to prove that all Glpk_link/Lpproc formatter uses remain inside the selected non-verification generator/process lane and that no external selected caller reaches that lane. A call, new caller, source drift, or need for native formatted output invalidates the normalization. fix-top100 has no Flyspeck source change, and inspected Flyspeck develop/native history retains this alias. Compiled loading of the complete normalized Glpk_link module, its pure convert_to_list result, the subsequent Lpproc module, and fresh cumulative replay are required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",

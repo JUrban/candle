@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 76)
+        self.assertEqual(len(self.contract["entries"]), 80)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -937,6 +937,80 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ))
         self.assertIn("complete mechanically enumerated", pent_hex["scope_limit"])
         self.assertIn("no pent_hex source or patch", pent_hex["scope_limit"])
+        misc_functions = entries[
+            "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001"
+        ]
+        self.assertEqual(len(misc_functions["operations"]), 2)
+        error_fmt = misc_functions["operations"][0]
+        self.assertEqual(error_fmt["line"], 17)
+        self.assertEqual(error_fmt["kind"], "exact_bytes_replace_once")
+        self.assertIn("sprintf str fmt", error_fmt["before"])
+        self.assertNotIn("sprintf", error_fmt["after"])
+        self.assertIn("error_msg", error_fmt["after"])
+        self.assertIn("explicit fail-closed Error", misc_functions["semantic_rule"])
+        self.assertIn("no error_fmt caller", misc_functions["scope_limit"])
+        self.assertIn("fix-top100", misc_functions["scope_limit"])
+        test_loop = misc_functions["operations"][1]
+        self.assertEqual(test_loop["line"], 42)
+        self.assertIn("for i = 1 to n - 1 do", test_loop["before"])
+        self.assertNotIn("for i", test_loop["after"])
+        self.assertIn("let rec repeat i", test_loop["after"])
+        self.assertIn("if i = last then ()", test_loop["after"])
+        self.assertIn("selected action 180 does call test", misc_functions["scope_limit"])
+        arith_num = entries["PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001"]
+        self.assertEqual(len(arith_num["operations"]), 1)
+        arith_tables = arith_num["operations"][0]
+        self.assertEqual(arith_tables["kind"], "exact_lines_replace_once")
+        self.assertEqual(arith_tables["replacement_count"], 21)
+        self.assertEqual(
+            [replacement["line"] for replacement in arith_tables["replacements"]],
+            [111, 112, 167, 209, 323, 375, 440, 489, 574, 670, 701,
+             744, 775, 961, 972, 1136, 1201, 1250, 1251, 1483, 1492],
+        )
+        self.assertTrue(all(
+            "Hashtbl.create" in replacement["before"]
+            and " Hashtbl.t = Hashtbl.create" in replacement["after"]
+            for replacement in arith_tables["replacements"]
+        ))
+        self.assertIn("complete static set of 21", arith_num["semantic_rule"])
+        self.assertIn("all 21 and only", arith_num["scope_limit"])
+        self.assertIn("fix-top100", arith_num["scope_limit"])
+        arith_cache = entries[
+            "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001"
+        ]
+        self.assertEqual(len(arith_cache["operations"]), 3)
+        cache_tables, cache_clear, cache_print = arith_cache["operations"]
+        self.assertEqual(cache_tables["kind"], "exact_bytes_replace_once")
+        self.assertEqual(cache_tables["line"], 25)
+        self.assertEqual(cache_tables["before"].count("Hashtbl.create"), 6)
+        self.assertEqual(cache_tables["after"].count("Hashtbl.t ="), 6)
+        self.assertIn("(string, thm * thm) Hashtbl.t", cache_tables["after"])
+        self.assertEqual(cache_clear["line"], 49)
+        self.assertIn("let clear = Hashtbl.clear", cache_clear["before"])
+        self.assertNotIn("let clear", cache_clear["after"])
+        self.assertEqual(cache_clear["after"].count("Hashtbl.clear"), 6)
+        self.assertEqual(cache_print["line"], 76)
+        self.assertEqual(cache_print["before"].count("sprintf"), 10)
+        self.assertNotIn("sprintf", cache_print["after"])
+        self.assertEqual(cache_print["after"].count("string_of_int"), 19)
+        self.assertNotIn("let len = Hashtbl.length", cache_print["after"])
+        self.assertEqual(cache_print["after"].count("Hashtbl.length"), 6)
+        self.assertIn("complete simultaneous group of six", arith_cache["semantic_rule"])
+        self.assertIn("all six and only", arith_cache["scope_limit"])
+        self.assertIn("fix-top100", arith_cache["scope_limit"])
+        glpk_link = entries[
+            "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001"
+        ]
+        self.assertEqual(len(glpk_link["operations"]), 1)
+        glpk_sprintf = glpk_link["operations"][0]
+        self.assertEqual(glpk_sprintf["kind"], "exact_bytes_replace_once")
+        self.assertEqual(glpk_sprintf["line"], 33)
+        self.assertEqual(glpk_sprintf["before"], "let sprintf = Printf.sprintf;;")
+        self.assertIn("let sprintf _ =", glpk_sprintf["after"])
+        self.assertIn("non-verification GLPK formatter", glpk_sprintf["after"])
+        self.assertIn("fresh polymorphic instantiation", glpk_link["semantic_rule"])
+        self.assertIn("not Printf or formatting support", glpk_link["scope_limit"])
+        self.assertIn("fix-top100", glpk_link["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1569,7 +1643,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 265)
+        self.assertEqual(len(operation_ids), 272)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

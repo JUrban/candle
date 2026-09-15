@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 499,
+        "line": 518,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 499,
+        "line": 518,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3469,8 +3469,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 25,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 26,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 26,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -3481,8 +3493,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 27,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 28,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 28,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -3493,8 +3517,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 29,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 30,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 30,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -3505,43 +3541,103 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 77,
+        "line": 51,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 52,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 53,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 54,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 55,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 84,
         "member": "length",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 143,
+        "line": 86,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 88,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 90,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 92,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 94,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 150,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 154,
+        "line": 161,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 165,
+        "line": 172,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 175,
+        "line": 182,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 186,
+        "line": 193,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 197,
+        "line": 204,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
@@ -3571,8 +3667,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 111,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 112,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 112,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3607,6 +3715,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 167,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 170,
         "member": "add",
         "module": "Hashtbl",
@@ -3621,6 +3735,12 @@
       {
         "line": 209,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 209,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3661,6 +3781,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 323,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 326,
         "member": "add",
         "module": "Hashtbl",
@@ -3681,6 +3807,12 @@
       {
         "line": 375,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 375,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3709,6 +3841,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 440,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 443,
         "member": "add",
         "module": "Hashtbl",
@@ -3727,6 +3865,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 489,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 504,
         "member": "add",
         "module": "Hashtbl",
@@ -3741,6 +3885,12 @@
       {
         "line": 574,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 574,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3781,6 +3931,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 670,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 674,
         "member": "add",
         "module": "Hashtbl",
@@ -3789,6 +3945,12 @@
       {
         "line": 701,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 701,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3823,6 +3985,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 744,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 748,
         "member": "add",
         "module": "Hashtbl",
@@ -3831,6 +3999,12 @@
       {
         "line": 775,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 775,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3919,6 +4093,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 961,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 968,
         "member": "add",
         "module": "Hashtbl",
@@ -3927,6 +4107,12 @@
       {
         "line": 972,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 972,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -3967,6 +4153,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1136,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1139,
         "member": "add",
         "module": "Hashtbl",
@@ -3991,6 +4183,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1201,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1206,
         "member": "add",
         "module": "Hashtbl",
@@ -4009,8 +4207,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1250,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1251,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1251,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -4069,6 +4279,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1483,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1485,
         "member": "add",
         "module": "Hashtbl",
@@ -4089,6 +4305,12 @@
       {
         "line": 1492,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1492,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -4123,7 +4345,7 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
-        "line": 136,
+        "line": 137,
         "member": "output_string",
         "module": "Stdlib",
         "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
@@ -5184,13 +5406,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 499,
+        "line": 518,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 499,
+        "line": 518,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5568,8 +5790,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 25,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 26,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 26,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -5580,8 +5814,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 27,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 28,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 28,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -5592,8 +5838,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
+        "line": 29,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
         "line": 30,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 30,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
@@ -5604,43 +5862,103 @@
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 77,
+        "line": 51,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 52,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 53,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 54,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 55,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 84,
         "member": "length",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 143,
+        "line": 86,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 88,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 90,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 92,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 94,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 150,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 154,
+        "line": 161,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 165,
+        "line": 172,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 175,
+        "line": 182,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 186,
+        "line": 193,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
       },
       {
-        "line": 197,
+        "line": 204,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
@@ -5670,8 +5988,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 111,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 112,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 112,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -5706,6 +6036,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 167,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 170,
         "member": "add",
         "module": "Hashtbl",
@@ -5720,6 +6056,12 @@
       {
         "line": 209,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 209,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -5760,6 +6102,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 323,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 326,
         "member": "add",
         "module": "Hashtbl",
@@ -5780,6 +6128,12 @@
       {
         "line": 375,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 375,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -5808,6 +6162,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 440,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 443,
         "member": "add",
         "module": "Hashtbl",
@@ -5826,6 +6186,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 489,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 504,
         "member": "add",
         "module": "Hashtbl",
@@ -5840,6 +6206,12 @@
       {
         "line": 574,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 574,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -5880,6 +6252,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 670,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 674,
         "member": "add",
         "module": "Hashtbl",
@@ -5888,6 +6266,12 @@
       {
         "line": 701,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 701,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -5922,6 +6306,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 744,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 748,
         "member": "add",
         "module": "Hashtbl",
@@ -5930,6 +6320,12 @@
       {
         "line": 775,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 775,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -6018,6 +6414,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 961,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 968,
         "member": "add",
         "module": "Hashtbl",
@@ -6026,6 +6428,12 @@
       {
         "line": 972,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 972,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -6066,6 +6474,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1136,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1139,
         "member": "add",
         "module": "Hashtbl",
@@ -6090,6 +6504,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1201,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1206,
         "member": "add",
         "module": "Hashtbl",
@@ -6108,8 +6528,20 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1250,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1251,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1251,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -6168,6 +6600,12 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1483,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1485,
         "member": "add",
         "module": "Hashtbl",
@@ -6188,6 +6626,12 @@
       {
         "line": 1492,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1492,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
@@ -6222,7 +6666,7 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
-        "line": 136,
+        "line": 137,
         "member": "output_string",
         "module": "Stdlib",
         "source": "flyspeck:formal_lp/glpk/glpk_link.ml"
@@ -8857,8 +9301,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "9daec0579cd0c1f08fc632b26be58446",
-    "generated_source_sha256": "b1f9f77f34ad6c7325ffe06da901fbc81d687329cbd27265ca97c92cd82cf40e",
+    "generated_source_md5": "660c219c8e4455992d0f9f6004986e1d",
+    "generated_source_sha256": "951f553169c55db2615a0a1ed676e3fa53065e439dda52fbae3b99e19390c92f",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +12046,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 64459,
+      "bytes": 64600,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +15316,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "7813eb7536b2e8cf0791361d50c1c050",
+      "md5": "b0dfc85bb7175dd19780729f6a9b9721",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "0d4e531f4e59012032ca491d2d16af27d089751d7bc91242fb0cc6bdd5fe924c"
+      "sha256": "b2da938adf8e438f6642398e0d87bcabf7ddac33756fbf7bf5413f31675a78a2"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +15330,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 24327,
+      "bytes": 25172,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +15368,7 @@
         },
         {
           "kind": "needs",
-          "line": 521,
+          "line": 540,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +15379,7 @@
         },
         {
           "kind": "needs",
-          "line": 527,
+          "line": 546,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +15390,7 @@
         },
         {
           "kind": "needs",
-          "line": 529,
+          "line": 548,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +15400,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "9fc715385c885f5b2067861d6c2ea0db",
+      "md5": "acd3b71a8a5ab723d37afc019363e81e",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0a92066f5decaf2e44116cfd547d10fcfd2d7ed5a2973d6ae6ca09224f0a3019"
+      "sha256": "d5199c4e43908b075d6afb27bef2750d686acd70cabe1c413bf67be039a08ae5"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -16409,6 +16853,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 6653,
+        "normalized_md5": "4435dbc49c013c948975b7132906172c",
+        "normalized_sha256": "9e6a8c01261db246f15798476f8912e3cbfc9e34c1db91814e25308f60a95dbe",
+        "operation_count": 3
+      },
       "md5": "8c3b8e939f223e79a2baec71b8da943b",
       "path": "formal_ineqs/arith/arith_cache.hl",
       "repository": "flyspeck",
@@ -16482,6 +16934,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 55921,
+        "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
+        "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
+        "operation_count": 1
+      },
       "md5": "ef7d86273cbd40c834ed4ba562406c97",
       "path": "formal_ineqs/arith/arith_num.hl",
       "repository": "flyspeck",
@@ -16506,6 +16966,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 2519,
+        "normalized_md5": "c376b7a74a2cdd62a2b79f52a940ae6b",
+        "normalized_sha256": "b5f9c7797157d1d852732b1c36c782a5e7b50e2a7f213ded51cb231e3f2b781d",
+        "operation_count": 2
+      },
       "md5": "a84948477d7b296691135c2c6d3b9caa",
       "path": "formal_ineqs/misc/misc_functions.hl",
       "repository": "flyspeck",
@@ -16522,6 +16990,14 @@
     "flyspeck:formal_lp/glpk/glpk_link.ml": {
       "bytes": 8016,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 8077,
+        "normalized_md5": "7034cd37bfda474171f5135efaf73a62",
+        "normalized_sha256": "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45",
+        "operation_count": 1
+      },
       "md5": "08194fd9e7b59cd0d4e7855951b7b4ba",
       "path": "formal_lp/glpk/glpk_link.ml",
       "repository": "flyspeck",
@@ -22593,7 +23069,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "c91d570956ff28662153baddd9ea330db8ca3e033ba4c983324fb793c4cbe506",
+    "contract_sha256": "8e35902c2c43bfa4d4f5a2ec5bbb2e7b0fe8cc84e7eebbb233d6534a56f1475d",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25376,6 +25852,225 @@
         "source_key": "flyspeck:text_formalization/local/pent_hex.hl",
         "source_md5": "fe348aa40e3fc16092c6144d4b6f1af9",
         "source_sha256": "3be0e2e05a0f759c4ae6c3f7e04d72130353452a63519fc42793343590830488"
+      },
+      {
+        "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 2519,
+        "normalized_md5": "c376b7a74a2cdd62a2b79f52a940ae6b",
+        "normalized_sha256": "b5f9c7797157d1d852732b1c36c782a5e7b50e2a7f213ded51cb231e3f2b781d",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "let error_fmt str fmt =\r\n  let _ = str in\r\n  let _ = fmt in\r\n    error_msg \"Candle Flyspeck: Misc_functions.error_fmt formatting is unavailable\";;",
+            "before": "let error_fmt str fmt =\r\n  let msg = sprintf str fmt in\r\n    error_msg msg;;",
+            "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-ERROR-FMT-UNUSED-FAIL-CLOSED",
+            "kind": "exact_bytes_replace_once",
+            "line": 17
+          },
+          {
+            "after": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n  let last = n - 1 in\r\n  let rec repeat i =\r\n    if i > last then ()\r\n    else\r\n      let _ = f arg in\r\n        if i = last then () else repeat (i + 1) in\r\n  let _ = repeat 1 in\r\n    result, Unix.gettimeofday() -. start;;",
+            "before": "let test n f arg =\r\n  let start = Unix.gettimeofday() in\r\n  let result = f arg in\r\n    for i = 1 to n - 1 do\r\n      let _ = f arg in ()\r\n    done;\r\n    result, Unix.gettimeofday() -. start;;",
+            "id": "PROJECT-MISC-FUNCTIONS-S2-COMPATIBILITY-001-TEST-FOR-LOOP",
+            "kind": "exact_bytes_replace_once",
+            "line": 42
+          }
+        ],
+        "path": "formal_ineqs/misc/misc_functions.hl",
+        "scope_limit": "This is selected-graph dead-definition handling plus one exact loop spelling, not sprintf, general formatting, or general for-loop support. It is confined to the hash-pinned error_fmt and test definitions in misc_functions.hl. A complete quotation-aware search finds no error_fmt caller in the authenticated Flyspeck inventory; later selected action 180 does call test, so exact benchmark-call semantics are retained. Neither fix-top100 nor Candle history contains a relevant repair. Any error_fmt call, source drift, changed test call count/order/result/exception, or requirement for error_fmt's native formatted diagnostic invalidates this normalization. Native loop oracles, focused loading through Arith_nat.NUM_ADD_HASH_CONV, action-180 consumption, and fresh cumulative replay are required.",
+        "semantic_rule": "The complete authenticated 400-source direct graph contains the error_fmt definition but no qualified or unqualified call to it. Candle has no Printf module or general sprintf implementation, so the unreachable definition is made an explicit fail-closed Error path while retaining its two-argument calling shape and the module's Error exception. The benchmark helper's ascending for loop evaluates the upper bound n - 1 once after the first f call; the tail-recursive replacement captures the same bound once and calls f on arg in the same order and count, including zero extra iterations when the bound is below one and a final iteration without overflowing the loop index when the bound is max_int. It returns the same first result and elapsed-time subtraction and propagates the same f exception at the same call. All arithmetic definitions, conversions, theorem statements, proofs, effects, and successful results remain unchanged.",
+        "source_key": "flyspeck:formal_ineqs/misc/misc_functions.hl",
+        "source_md5": "a84948477d7b296691135c2c6d3b9caa",
+        "source_sha256": "6646eaae7a1ae5e37f5aacd1c53c15ece066ff3bbdf5a2a0ff8323df3e28d3d5"
+      },
+      {
+        "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 55921,
+        "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
+        "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
+            "kind": "exact_lines_replace_once",
+            "line": 111,
+            "replacement_count": 21,
+            "replacements": [
+              {
+                "after": "let def_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let def_table = Hashtbl.create maximum;;",
+                "line": 111
+              },
+              {
+                "after": "let def_basic_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let def_basic_table = Hashtbl.create maximum;;",
+                "line": 112
+              },
+              {
+                "after": "let mk_table : (num, term) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let mk_table = Hashtbl.create maximum;;",
+                "line": 167
+              },
+              {
+                "after": "let dest_table_num : (string, num) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let dest_table_num = Hashtbl.create maximum;;",
+                "line": 209
+              },
+              {
+                "after": "let th_suc_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let th_suc_table = Hashtbl.create maximum;;",
+                "line": 323
+              },
+              {
+                "after": "let th_eq0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let th_eq0_table = Hashtbl.create maximum;;",
+                "line": 375
+              },
+              {
+                "after": "let th_pre_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let th_pre_table = Hashtbl.create maximum;;",
+                "line": 440
+              },
+              {
+                "after": "let gt0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let gt0_table = Hashtbl.create maximum;;",
+                "line": 489
+              },
+              {
+                "after": "let th_eq_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let th_eq_table = Hashtbl.create (maximum * maximum);;",
+                "line": 574
+              },
+              {
+                "after": "let th_lt0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let th_lt0_table = Hashtbl.create maximum;;",
+                "line": 670
+              },
+              {
+                "after": "let th_lt_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let th_lt_table = Hashtbl.create (maximum * maximum);;",
+                "line": 701
+              },
+              {
+                "after": "let th_le0_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let th_le0_table = Hashtbl.create maximum;;",
+                "line": 744
+              },
+              {
+                "after": "let th_le_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let th_le_table = Hashtbl.create (maximum * maximum);;",
+                "line": 775
+              },
+              {
+                "after": "let th_add_table : (string, thm * bool) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let th_add_table = Hashtbl.create (maximum * maximum);;",
+                "line": 961
+              },
+              {
+                "after": "let th_cadd_table : (string, thm * bool) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let th_cadd_table = Hashtbl.create (maximum * maximum);;",
+                "line": 972
+              },
+              {
+                "after": "let mul_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let mul_table = Hashtbl.create (maximum * maximum);;",
+                "line": 1136
+              },
+              {
+                "after": "let gen_mul_table : (string, thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let gen_mul_table = Hashtbl.create (maximum * maximum);;",
+                "line": 1201
+              },
+              {
+                "after": "let mul1_right_th_table : (string, bool * thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let mul1_right_th_table = Hashtbl.create (maximum * maximum);;",
+                "line": 1250
+              },
+              {
+                "after": "let mul1_left_th_table : (string, bool * thm) Hashtbl.t = Hashtbl.create (maximum * maximum);;",
+                "before": "let mul1_left_th_table = Hashtbl.create (maximum * maximum);;",
+                "line": 1251
+              },
+              {
+                "after": "let even_thm_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let even_thm_table = Hashtbl.create maximum;;",
+                "line": 1483
+              },
+              {
+                "after": "let odd_thm_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;",
+                "before": "let odd_thm_table = Hashtbl.create maximum;;",
+                "line": 1492
+              }
+            ]
+          }
+        ],
+        "path": "formal_ineqs/arith/arith_num.hl",
+        "scope_limit": "This one mechanically enumerated, hash-pinned line operation is confined to all 21 and only the top-level Arith_num Hashtbl.create bindings. It does not change any table operation, definition, conversion, theorem statement, hypothesis, proof, or loop. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required.",
+        "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction.",
+        "source_key": "flyspeck:formal_ineqs/arith/arith_num.hl",
+        "source_md5": "ef7d86273cbd40c834ed4ba562406c97",
+        "source_sha256": "ee34d8c035988e8443da01c8725fa72118f856a1f3fcf78cd106b893bc80b2d8"
+      },
+      {
+        "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 6653,
+        "normalized_md5": "4435dbc49c013c948975b7132906172c",
+        "normalized_sha256": "9e6a8c01261db246f15798476f8912e3cbfc9e34c1db91814e25308f60a95dbe",
+        "operation_count": 3,
+        "operations": [
+          {
+            "after": "let le_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    add_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    sub_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    sub_le_table : (string, thm * thm) Hashtbl.t = Hashtbl.create cache_size and\n    mul_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\n    div_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size;;",
+            "before": "let le_table = Hashtbl.create cache_size and\n    add_table = Hashtbl.create cache_size and\n    sub_table = Hashtbl.create cache_size and\n    sub_le_table = Hashtbl.create cache_size and\n    mul_table = Hashtbl.create cache_size and\n    div_table = Hashtbl.create cache_size;;",
+            "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
+            "kind": "exact_bytes_replace_once",
+            "line": 25
+          },
+          {
+            "after": "let reset_cache () =\n  Hashtbl.clear le_table;\n  Hashtbl.clear add_table;\n  Hashtbl.clear sub_table;\n  Hashtbl.clear sub_le_table;\n  Hashtbl.clear mul_table;\n  Hashtbl.clear div_table;;",
+            "before": "let reset_cache () =\n  let clear = Hashtbl.clear in\n    clear le_table;\n    clear add_table;\n    clear sub_table;\n    clear sub_le_table;\n    clear mul_table;\n    clear div_table;;",
+            "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-DIRECT-CLEAR-CALLS",
+            "kind": "exact_bytes_replace_once",
+            "line": 49
+          },
+          {
+            "after": "let print_stat () =\n  let suc_pre_str = \"suc = \" ^ string_of_int !suc_counter ^\n    \"\\npre = \" ^ string_of_int !pre_counter ^ \"\\n\" in\n  let cmp0_str = \"eq0 = \" ^ string_of_int !eq0_counter ^\n    \"\\ngt0 = \" ^ string_of_int !gt0_counter ^ \"\\n\" in\n  let lt_str = \"lt = \" ^ string_of_int !lt_counter ^ \"\\n\" in\n  let even_odd_str = \"even = \" ^ string_of_int !even_counter ^\n    \"\\nodd = \" ^ string_of_int !odd_counter ^ \"\\n\" in\n  let le_str = \"le = \" ^ string_of_int !le_counter ^\n    \" (le_hash = \" ^ string_of_int (Hashtbl.length le_table) ^ \")\\n\" in\n  let add_str = \"add = \" ^ string_of_int !add_counter ^\n    \" (add_hash = \" ^ string_of_int (Hashtbl.length add_table) ^ \")\\n\" in\n  let sub_str = \"sub = \" ^ string_of_int !sub_counter ^\n    \" (sub_hash = \" ^ string_of_int (Hashtbl.length sub_table) ^ \")\\n\" in\n  let sub_le_str = \"sub_le = \" ^ string_of_int !sub_le_counter ^\n    \" (sub_le_hash = \" ^ string_of_int (Hashtbl.length sub_le_table) ^ \")\\n\" in\n  let mul_str = \"mul = \" ^ string_of_int !mul_counter ^\n    \" (mul_hash = \" ^ string_of_int (Hashtbl.length mul_table) ^ \")\\n\" in\n  let div_str = \"div = \" ^ string_of_int !div_counter ^\n    \" (div_hash = \" ^ string_of_int (Hashtbl.length div_table) ^ \")\\n\" in\n    print_string (suc_pre_str ^ cmp0_str ^ lt_str ^ even_odd_str ^\n\t\t    le_str ^ add_str ^ sub_str ^ sub_le_str ^ mul_str ^ div_str);;",
+            "before": "let print_stat () =\n  let len = Hashtbl.length in\n  let suc_pre_str = sprintf \"suc = %d\\npre = %d\\n\" !suc_counter !pre_counter in\n  let cmp0_str = sprintf \"eq0 = %d\\ngt0 = %d\\n\" !eq0_counter !gt0_counter in\n  let lt_str = sprintf \"lt = %d\\n\" !lt_counter in\n  let even_odd_str = sprintf \"even = %d\\nodd = %d\\n\" !even_counter !odd_counter in\n  let le_str = sprintf \"le = %d (le_hash = %d)\\n\" !le_counter (len le_table) in\n  let add_str = sprintf \"add = %d (add_hash = %d)\\n\" !add_counter (len add_table) in\n  let sub_str = sprintf \"sub = %d (sub_hash = %d)\\n\" !sub_counter (len sub_table) in\n  let sub_le_str = sprintf \"sub_le = %d (sub_le_hash = %d)\\n\" !sub_le_counter (len sub_le_table) in\n  let mul_str = sprintf \"mul = %d (mul_hash = %d)\\n\" !mul_counter (len mul_table) in\n  let div_str = sprintf \"div = %d (div_hash = %d)\\n\" !div_counter (len div_table) in\n    print_string (suc_pre_str ^ cmp0_str ^ lt_str ^ even_odd_str ^\n\t\t    le_str ^ add_str ^ sub_str ^ sub_le_str ^ mul_str ^ div_str);;",
+            "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001-PRINT-STAT",
+            "kind": "exact_bytes_replace_once",
+            "line": 76
+          }
+        ],
+        "path": "formal_ineqs/arith/arith_cache.hl",
+        "scope_limit": "These three hash-pinned exact-span operations are confined to all six and only the top-level Arith_cache Hashtbl.create bindings, the complete six-call reset_cache body, and the complete integer-only print_stat definition. They do not change any cache allocation, table operation, cache policy, statistic, definition, conversion, theorem statement, hypothesis, proof, or loop, and they do not implement general formatting. fix-top100 and repository history retain the unannotated group, polymorphic clear/length aliases, and sprintf calls and provide no compatibility repair. Native annotation/type-use/reset/format validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required.",
+        "semantic_rule": "The complete simultaneous group of six top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding my_add and Hashtbl.find uses: every key is a string; five values are thm and sub_le_table values are the exact thm * thm pair returned by raw_sub_and_le_hash_conv. OCaml type annotations are erased, so each table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The local polymorphic alias of Hashtbl.clear is expanded to the same six direct calls in the same order, retaining identical table mutations, unit result, and exceptions while avoiding monomorphizing that alias at the first cache type. The ten integer-only sprintf calls in print_stat are replaced by string_of_int and concatenation, and the polymorphic Hashtbl.length alias is expanded at its six call sites, retaining every label, space, parenthesis, newline, counter and cache-length observation, construction order, printed bytes, unit result, and exception propagation.",
+        "source_key": "flyspeck:formal_ineqs/arith/arith_cache.hl",
+        "source_md5": "8c3b8e939f223e79a2baec71b8da943b",
+        "source_sha256": "825abaefad9a020711adcc02a2de5253bc9baebef9b8da4811f492c16be41978"
+      },
+      {
+        "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 8077,
+        "normalized_md5": "7034cd37bfda474171f5135efaf73a62",
+        "normalized_sha256": "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "let sprintf _ =\n  failwith \"Candle Flyspeck: non-verification GLPK formatter is disabled\";;",
+            "before": "let sprintf = Printf.sprintf;;",
+            "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001-BINDING",
+            "kind": "exact_bytes_replace_once",
+            "line": 33
+          }
+        ],
+        "path": "formal_lp/glpk/glpk_link.ml",
+        "scope_limit": "This exact replacement is confined to the single top-level Glpk_link sprintf alias. It is fail-closed non-use handling, not Printf or formatting support, and it does not rewrite or authorize any call site. The generated route audit must continue to prove that all Glpk_link/Lpproc formatter uses remain inside the selected non-verification generator/process lane and that no external selected caller reaches that lane. A call, new caller, source drift, or need for native formatted output invalidates the normalization. fix-top100 has no Flyspeck source change, and inspected Flyspeck develop/native history retains this alias. Compiled loading of the complete normalized Glpk_link module, its pure convert_to_list result, the subsequent Lpproc module, and fresh cumulative replay are required.",
+        "semantic_rule": "The selected direct verifier loads Glpk_link and Lpproc for their pure archive representation and parsing helpers, but the manifest-frozen GLPK generator/process route has no executed caller. Replacing the unavailable Printf.sprintf alias with a top-level function of the same exported name gives each differently typed deferred use a fresh polymorphic instantiation while making any invocation fail immediately and deterministically. No accepted direct execution observes a formatted value, process launch, generator output, theorem, proof, or state change from this binding.",
+        "source_key": "flyspeck:formal_lp/glpk/glpk_link.ml",
+        "source_md5": "08194fd9e7b59cd0d4e7855951b7b4ba",
+        "source_sha256": "cfef91db36d9c20e070ac467e981cd593c0ef623b68840de3e4f8d21811add66"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -29702,7 +30397,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 76,
+    "entry_count": 80,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -29725,6 +30420,12 @@
       "candle:candle/test_flyspeck_ssreflect_thenl.sh",
       "candle:candle/test_flyspeck_analysis_boundary_compatibility.sh",
       "candle:candle/test_flyspeck_nonlinear_boundary_compatibility.sh",
+      "candle:candle/test_flyspeck_misc_functions_normalization.sh",
+      "candle:candle/test_flyspeck_arith_num_normalization.sh",
+      "candle:candle/test_flyspeck_arith_cache_normalization.sh",
+      "candle:candle/test_flyspeck_glpk_link_normalization.sh",
+      "candle:candle/test_ocaml_for_structure_effects.sh",
+      "candle:candle/test_ocaml_array_assignment.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
       "candle:candle/test_flyspeck_print_types_normalization.sh",
       "candle:candle/test_flyspeck_hol_pervasives_normalization.sh",
@@ -29824,8 +30525,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "7813eb7536b2e8cf0791361d50c1c050",
-    "generated_source_sha256": "0d4e531f4e59012032ca491d2d16af27d089751d7bc91242fb0cc6bdd5fe924c",
+    "generated_source_md5": "b0dfc85bb7175dd19780729f6a9b9721",
+    "generated_source_sha256": "b2da938adf8e438f6642398e0d87bcabf7ddac33756fbf7bf5413f31675a78a2",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
