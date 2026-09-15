@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 74)
+        self.assertEqual(len(self.contract["entries"]), 75)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -877,6 +877,46 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "complete mechanically enumerated", add_triangle["scope_limit"],
         )
         self.assertIn("No relevant fix-top100", add_triangle["scope_limit"])
+        tame_lemmas = entries[
+            "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001"
+        ]
+        self.assertEqual(len(tame_lemmas["operations"]), 1)
+        tame_lemmas_effects = tame_lemmas["operations"][0]
+        self.assertEqual(
+            tame_lemmas_effects["kind"], "exact_lines_replace_once",
+        )
+        self.assertEqual(tame_lemmas_effects["replacement_count"], 38)
+        tame_lemmas_replacements = tame_lemmas_effects["replacements"]
+        tame_lemmas_lines = [
+            replacement["line"] for replacement in tame_lemmas_replacements
+        ]
+        self.assertEqual(
+            tame_lemmas_lines,
+            [
+                58, 64, 188, 191, 192, 283, 286, 287, 288, 289, 290,
+                293, 300, 307, 563, 564, 567, 623, 642, 645, 659, 660,
+                661, 662, 665, 672, 773, 827, 830, 831, 832, 835, 842,
+                849, 892, 893, 914, 919,
+            ],
+        )
+        self.assertEqual(tame_lemmas_lines, sorted(set(tame_lemmas_lines)))
+        self.assertTrue(all(
+            replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in tame_lemmas_replacements
+        ))
+        self.assertEqual(sum(
+            "Sections." in replacement["before"]
+            for replacement in tame_lemmas_replacements
+        ), 38)
+        self.assertEqual(sum(
+            "add_section_lemma" in replacement["before"]
+            for replacement in tame_lemmas_replacements
+        ), 9)
+        self.assertIn("complete 38 anonymous", tame_lemmas["semantic_rule"])
+        self.assertIn(
+            "complete mechanically enumerated", tame_lemmas["scope_limit"],
+        )
+        self.assertIn("No relevant fix-top100", tame_lemmas["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1509,7 +1549,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 261)
+        self.assertEqual(len(operation_ids), 262)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
