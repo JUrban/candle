@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 69)
+        self.assertEqual(len(self.contract["entries"]), 70)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -670,6 +670,41 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "complete mechanically enumerated", hypermap_iso["scope_limit"],
         )
         self.assertIn("No relevant fix-top100", hypermap_iso["scope_limit"])
+        seq = entries["PROJECT-SEQ-S2-STRUCTURE-EFFECTS-001"]
+        self.assertEqual(len(seq["operations"]), 1)
+        seq_effects = seq["operations"][0]
+        self.assertEqual(seq_effects["kind"], "exact_lines_replace_once")
+        self.assertEqual(seq_effects["replacement_count"], 119)
+        seq_replacements = seq_effects["replacements"]
+        seq_lines = [replacement["line"] for replacement in seq_replacements]
+        self.assertEqual(len(seq_lines), 119)
+        self.assertEqual(seq_lines, sorted(set(seq_lines)))
+        self.assertEqual(seq_lines[:7], [9, 12, 13, 14, 15, 16, 17])
+        self.assertEqual(seq_lines[-4:], [3776, 3777, 3778, 3818])
+        self.assertTrue(all(
+            replacement["after"] ==
+            replacement["before"][:
+                len(replacement["before"]) -
+                len(replacement["before"].lstrip())
+            ] + "let _ = " + replacement["before"].lstrip()
+            for replacement in seq_replacements
+        ))
+        self.assertEqual(sum(
+            "Sections." in replacement["before"]
+            for replacement in seq_replacements
+        ), 112)
+        for effect, expected_count in (
+            ("parse_as_", 2), ("override_interface", 2),
+            ("overload_interface", 1), ("make_overloadable", 1),
+            ("prioritize_num", 1),
+        ):
+            self.assertEqual(sum(
+                replacement["before"].lstrip().startswith(effect)
+                for replacement in seq_replacements
+            ), expected_count)
+        self.assertIn("complete 119 anonymous", seq["semantic_rule"])
+        self.assertIn("complete mechanically enumerated", seq["scope_limit"])
+        self.assertIn("No relevant fix-top100", seq["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1302,7 +1337,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 253)
+        self.assertEqual(len(operation_ids), 254)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

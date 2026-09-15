@@ -667,6 +667,623 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated 46-expression anonymous module-structure set in hypermap_iso-compiled.hl: parse_as_infix at source line 20 plus 45 begin_section, end_section, add_section_var, add_section_type, and add_section_hyp expressions at lines 70--1171. The compound expression at line 319 contains two of the 46 unchanged Sections calls. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module only after its corrected action-130 dependency passes; the complete batch loads from a fresh post-action-129 state and establishes the terminal theorem. No relevant fix-top100 or historical Candle patch exists. Exact raw rejection, normalized action loading, and a fresh cumulative replay remain required."
     },
     {
+      "id": "PROJECT-SEQ-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:jHOLLight/Examples/seq-compiled.hl",
+      "path": "jHOLLight/Examples/seq-compiled.hl",
+      "source_sha256": "ce054aa95c0bf0cb492ef11eb5291d085f7564eee98624564b75add785288b6a",
+      "source_md5": "d1a7050f8094a198ec34f5f598098013",
+      "normalized_sha256": "471600c15ac7fe30ae24a888e8690570639dcba136af9f95fc1388c65a3facdb",
+      "normalized_md5": "5bf90fc3f85e809c838cf9d9d03037dd",
+      "normalized_bytes": 384583,
+      "operations": [
+        {
+          "id": "PROJECT-SEQ-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 9,
+          "replacement_count": 119,
+          "replacements": [
+            {
+              "line": 9,
+              "before": "prioritize_num();;",
+              "after": "let _ = prioritize_num();;"
+            },
+            {
+              "line": 12,
+              "before": "Sections.begin_section \"Sequences\";;",
+              "after": "let _ = Sections.begin_section \"Sequences\";;"
+            },
+            {
+              "line": 13,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 14,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 15,
+              "before": "(Sections.add_section_type (mk_var (\"x\", (`:A`))); Sections.add_section_type (mk_var (\"y\", (`:A`))); Sections.add_section_type (mk_var (\"z\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"x\", (`:A`))); Sections.add_section_type (mk_var (\"y\", (`:A`))); Sections.add_section_type (mk_var (\"z\", (`:A`))));;"
+            },
+            {
+              "line": 16,
+              "before": "(Sections.add_section_type (mk_var (\"m\", (`:num`))); Sections.add_section_type (mk_var (\"n\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"m\", (`:num`))); Sections.add_section_type (mk_var (\"n\", (`:num`))));;"
+            },
+            {
+              "line": 17,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 74,
+              "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+              "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;"
+            },
+            {
+              "line": 75,
+              "before": "override_interface (\"::\", `CONS`);;",
+              "after": "let _ = override_interface (\"::\", `CONS`);;"
+            },
+            {
+              "line": 76,
+              "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+              "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;"
+            },
+            {
+              "line": 78,
+              "before": "overload_interface (\"++\", `cat`);;",
+              "after": "let _ = overload_interface (\"++\", `cat`);;"
+            },
+            {
+              "line": 401,
+              "before": "Sections.begin_section \"SeqFind\";;",
+              "after": "let _ = Sections.begin_section \"SeqFind\";;"
+            },
+            {
+              "line": 402,
+              "before": "(Sections.add_section_var (mk_var (\"a\", (`:A -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"a\", (`:A -> bool`))));;"
+            },
+            {
+              "line": 707,
+              "before": "Sections.end_section \"SeqFind\";;",
+              "after": "let _ = Sections.end_section \"SeqFind\";;"
+            },
+            {
+              "line": 1315,
+              "before": "Sections.end_section \"Sequences\";;",
+              "after": "let _ = Sections.end_section \"Sequences\";;"
+            },
+            {
+              "line": 1320,
+              "before": "Sections.begin_section \"Rev\";;",
+              "after": "let _ = Sections.begin_section \"Rev\";;"
+            },
+            {
+              "line": 1321,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"t\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"t\", (`:(A)list`))));;"
+            },
+            {
+              "line": 1405,
+              "before": "Sections.end_section \"Rev\";;",
+              "after": "let _ = Sections.end_section \"Rev\";;"
+            },
+            {
+              "line": 1408,
+              "before": "Sections.begin_section \"EqSeq\";;",
+              "after": "let _ = Sections.begin_section \"EqSeq\";;"
+            },
+            {
+              "line": 1409,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 1410,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 1411,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 1412,
+              "before": "(Sections.add_section_type (mk_var (\"x\", (`:A`))); Sections.add_section_type (mk_var (\"y\", (`:A`))); Sections.add_section_type (mk_var (\"z\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"x\", (`:A`))); Sections.add_section_type (mk_var (\"y\", (`:A`))); Sections.add_section_type (mk_var (\"z\", (`:A`))));;"
+            },
+            {
+              "line": 1455,
+              "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+              "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;"
+            },
+            {
+              "line": 1456,
+              "before": "override_interface(\"<-\", `MEM`);;",
+              "after": "let _ = override_interface(\"<-\", `MEM`);;"
+            },
+            {
+              "line": 1575,
+              "before": "Sections.begin_section \"Filters\";;",
+              "after": "let _ = Sections.begin_section \"Filters\";;"
+            },
+            {
+              "line": 1576,
+              "before": "(Sections.add_section_var (mk_var (\"a\", (`:A -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"a\", (`:A -> bool`))));;"
+            },
+            {
+              "line": 1643,
+              "before": "Sections.end_section \"Filters\";;",
+              "after": "let _ = Sections.end_section \"Filters\";;"
+            },
+            {
+              "line": 2014,
+              "before": "Sections.end_section \"EqSeq\";;",
+              "after": "let _ = Sections.end_section \"EqSeq\";;"
+            },
+            {
+              "line": 2017,
+              "before": "Sections.begin_section \"NseqthTheory\";;",
+              "after": "let _ = Sections.begin_section \"NseqthTheory\";;"
+            },
+            {
+              "line": 2018,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2058,
+              "before": "Sections.end_section \"NseqthTheory\";;",
+              "after": "let _ = Sections.end_section \"NseqthTheory\";;"
+            },
+            {
+              "line": 2104,
+              "before": "Sections.begin_section \"PermSeq\";;",
+              "after": "let _ = Sections.begin_section \"PermSeq\";;"
+            },
+            {
+              "line": 2105,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2382,
+              "before": "Sections.end_section \"PermSeq\";;",
+              "after": "let _ = Sections.end_section \"PermSeq\";;"
+            },
+            {
+              "line": 2385,
+              "before": "Sections.begin_section \"RotrLemmas\";;",
+              "after": "let _ = Sections.begin_section \"RotrLemmas\";;"
+            },
+            {
+              "line": 2386,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 2387,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2482,
+              "before": "Sections.end_section \"RotrLemmas\";;",
+              "after": "let _ = Sections.end_section \"RotrLemmas\";;"
+            },
+            {
+              "line": 2485,
+              "before": "Sections.begin_section \"RotCompLemmas\";;",
+              "after": "let _ = Sections.begin_section \"RotCompLemmas\";;"
+            },
+            {
+              "line": 2486,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2546,
+              "before": "Sections.end_section \"RotCompLemmas\";;",
+              "after": "let _ = Sections.end_section \"RotCompLemmas\";;"
+            },
+            {
+              "line": 2549,
+              "before": "Sections.begin_section \"Mask\";;",
+              "after": "let _ = Sections.begin_section \"Mask\";;"
+            },
+            {
+              "line": 2550,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 2551,
+              "before": "(Sections.add_section_type (mk_var (\"m\", (`:(bool)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"m\", (`:(bool)list`))));;"
+            },
+            {
+              "line": 2552,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2639,
+              "before": "Sections.end_section \"Mask\";;",
+              "after": "let _ = Sections.end_section \"Mask\";;"
+            },
+            {
+              "line": 2642,
+              "before": "Sections.begin_section \"EqMask\";;",
+              "after": "let _ = Sections.begin_section \"EqMask\";;"
+            },
+            {
+              "line": 2643,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 2644,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2645,
+              "before": "(Sections.add_section_type (mk_var (\"m\", (`:(bool)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"m\", (`:(bool)list`))));;"
+            },
+            {
+              "line": 2685,
+              "before": "Sections.end_section \"EqMask\";;",
+              "after": "let _ = Sections.end_section \"EqMask\";;"
+            },
+            {
+              "line": 2688,
+              "before": "Sections.begin_section \"Subseq\";;",
+              "after": "let _ = Sections.begin_section \"Subseq\";;"
+            },
+            {
+              "line": 2689,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;"
+            },
+            {
+              "line": 2846,
+              "before": "Sections.end_section \"Subseq\";;",
+              "after": "let _ = Sections.end_section \"Subseq\";;"
+            },
+            {
+              "line": 2849,
+              "before": "Sections.begin_section \"Map\";;",
+              "after": "let _ = Sections.begin_section \"Map\";;"
+            },
+            {
+              "line": 2850,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 2851,
+              "before": "(Sections.add_section_var (mk_var (\"x1\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x1\", (`:A`))));;"
+            },
+            {
+              "line": 2852,
+              "before": "(Sections.add_section_var (mk_var (\"x2\", (`:B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x2\", (`:B`))));;"
+            },
+            {
+              "line": 2853,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;"
+            },
+            {
+              "line": 3046,
+              "before": "Sections.end_section \"Map\";;",
+              "after": "let _ = Sections.end_section \"Map\";;"
+            },
+            {
+              "line": 3057,
+              "before": "Sections.begin_section \"FilterSubseq\";;",
+              "after": "let _ = Sections.begin_section \"FilterSubseq\";;"
+            },
+            {
+              "line": 3058,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))); Sections.add_section_type (mk_var (\"s1\", (`:(A)list`))));;"
+            },
+            {
+              "line": 3059,
+              "before": "(Sections.add_section_type (mk_var (\"a\", (`:A -> bool`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"a\", (`:A -> bool`))));;"
+            },
+            {
+              "line": 3093,
+              "before": "Sections.end_section \"FilterSubseq\";;",
+              "after": "let _ = Sections.end_section \"FilterSubseq\";;"
+            },
+            {
+              "line": 3096,
+              "before": "Sections.begin_section \"EqMap\";;",
+              "after": "let _ = Sections.begin_section \"EqMap\";;"
+            },
+            {
+              "line": 3097,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 3098,
+              "before": "(Sections.add_section_var (mk_var (\"x1\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x1\", (`:A`))));;"
+            },
+            {
+              "line": 3099,
+              "before": "(Sections.add_section_var (mk_var (\"x2\", (`:B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x2\", (`:B`))));;"
+            },
+            {
+              "line": 3100,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;"
+            },
+            {
+              "line": 3101,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 3168,
+              "before": "Sections.end_section \"EqMap\";;",
+              "after": "let _ = Sections.end_section \"EqMap\";;"
+            },
+            {
+              "line": 3171,
+              "before": "Sections.begin_section \"EqMap2\";;",
+              "after": "let _ = Sections.begin_section \"EqMap2\";;"
+            },
+            {
+              "line": 3172,
+              "before": "(Sections.add_section_var (mk_var (\"n0\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"n0\", (`:num`))));;"
+            },
+            {
+              "line": 3173,
+              "before": "(Sections.add_section_var (mk_var (\"x1\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x1\", (`:A`))));;"
+            },
+            {
+              "line": 3174,
+              "before": "(Sections.add_section_var (mk_var (\"x2\", (`:B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x2\", (`:B`))));;"
+            },
+            {
+              "line": 3175,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;"
+            },
+            {
+              "line": 3176,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 3177,
+              "before": "(Sections.add_section_hyp \"Hf\" (`!x y. f x = f y ==> x = y`));;",
+              "after": "let _ = (Sections.add_section_hyp \"Hf\" (`!x y. f x = f y ==> x = y`));;"
+            },
+            {
+              "line": 3213,
+              "before": "Sections.end_section \"EqMap2\";;",
+              "after": "let _ = Sections.end_section \"EqMap2\";;"
+            },
+            {
+              "line": 3216,
+              "before": "Sections.begin_section \"MapComp\";;",
+              "after": "let _ = Sections.begin_section \"MapComp\";;"
+            },
+            {
+              "line": 3252,
+              "before": "Sections.end_section \"MapComp\";;",
+              "after": "let _ = Sections.end_section \"MapComp\";;"
+            },
+            {
+              "line": 3326,
+              "before": "Sections.begin_section \"MakeSeq\";;",
+              "after": "let _ = Sections.begin_section \"MakeSeq\";;"
+            },
+            {
+              "line": 3327,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 3365,
+              "before": "Sections.end_section \"MakeSeq\";;",
+              "after": "let _ = Sections.end_section \"MakeSeq\";;"
+            },
+            {
+              "line": 3376,
+              "before": "Sections.begin_section \"FoldRight\";;",
+              "after": "let _ = Sections.begin_section \"FoldRight\";;"
+            },
+            {
+              "line": 3377,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B -> B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B -> B`))));;"
+            },
+            {
+              "line": 3378,
+              "before": "(Sections.add_section_var (mk_var (\"z0\", (`:B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"z0\", (`:B`))));;"
+            },
+            {
+              "line": 3382,
+              "before": "Sections.end_section \"FoldRight\";;",
+              "after": "let _ = Sections.end_section \"FoldRight\";;"
+            },
+            {
+              "line": 3385,
+              "before": "Sections.begin_section \"FoldRightComp\";;",
+              "after": "let _ = Sections.begin_section \"FoldRightComp\";;"
+            },
+            {
+              "line": 3386,
+              "before": "(Sections.add_section_var (mk_var (\"h\", (`:A->B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"h\", (`:A->B`))));;"
+            },
+            {
+              "line": 3387,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:B->R->R`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:B->R->R`))));;"
+            },
+            {
+              "line": 3388,
+              "before": "(Sections.add_section_var (mk_var (\"z0\", (`:R`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"z0\", (`:R`))));;"
+            },
+            {
+              "line": 3407,
+              "before": "Sections.end_section \"FoldRightComp\";;",
+              "after": "let _ = Sections.end_section \"FoldRightComp\";;"
+            },
+            {
+              "line": 3443,
+              "before": "Sections.begin_section \"FoldLeft\";;",
+              "after": "let _ = Sections.begin_section \"FoldLeft\";;"
+            },
+            {
+              "line": 3444,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:R->A->R`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:R->A->R`))));;"
+            },
+            {
+              "line": 3467,
+              "before": "Sections.end_section \"FoldLeft\";;",
+              "after": "let _ = Sections.end_section \"FoldLeft\";;"
+            },
+            {
+              "line": 3470,
+              "before": "Sections.begin_section \"Scan\";;",
+              "after": "let _ = Sections.begin_section \"Scan\";;"
+            },
+            {
+              "line": 3471,
+              "before": "(Sections.add_section_var (mk_var (\"x1\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x1\", (`:A`))));;"
+            },
+            {
+              "line": 3472,
+              "before": "(Sections.add_section_var (mk_var (\"x2\", (`:B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x2\", (`:B`))));;"
+            },
+            {
+              "line": 3473,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> A -> B`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> A -> B`))));;"
+            },
+            {
+              "line": 3474,
+              "before": "(Sections.add_section_var (mk_var (\"g\", (`:A -> B -> A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"g\", (`:A -> B -> A`))));;"
+            },
+            {
+              "line": 3552,
+              "before": "Sections.end_section \"Scan\";;",
+              "after": "let _ = Sections.end_section \"Scan\";;"
+            },
+            {
+              "line": 3555,
+              "before": "Sections.begin_section \"Zip\";;",
+              "after": "let _ = Sections.begin_section \"Zip\";;"
+            },
+            {
+              "line": 3664,
+              "before": "Sections.end_section \"Zip\";;",
+              "after": "let _ = Sections.end_section \"Zip\";;"
+            },
+            {
+              "line": 3667,
+              "before": "Sections.begin_section \"Flatten\";;",
+              "after": "let _ = Sections.begin_section \"Flatten\";;"
+            },
+            {
+              "line": 3668,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(A)list`))));;"
+            },
+            {
+              "line": 3669,
+              "before": "(Sections.add_section_type (mk_var (\"ss\", (`:((A)list)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"ss\", (`:((A)list)list`))));;"
+            },
+            {
+              "line": 3744,
+              "before": "Sections.end_section \"Flatten\";;",
+              "after": "let _ = Sections.end_section \"Flatten\";;"
+            },
+            {
+              "line": 3747,
+              "before": "Sections.begin_section \"AllPairs\";;",
+              "after": "let _ = Sections.begin_section \"AllPairs\";;"
+            },
+            {
+              "line": 3748,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:S->T->R`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:S->T->R`))));;"
+            },
+            {
+              "line": 3749,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(S)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(S)list`))));;"
+            },
+            {
+              "line": 3750,
+              "before": "(Sections.add_section_type (mk_var (\"t\", (`:(T)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"t\", (`:(T)list`))));;"
+            },
+            {
+              "line": 3772,
+              "before": "Sections.end_section \"AllPairs\";;",
+              "after": "let _ = Sections.end_section \"AllPairs\";;"
+            },
+            {
+              "line": 3775,
+              "before": "Sections.begin_section \"EqAllPairs\";;",
+              "after": "let _ = Sections.begin_section \"EqAllPairs\";;"
+            },
+            {
+              "line": 3776,
+              "before": "(Sections.add_section_var (mk_var (\"f\", (`:S->T->R`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:S->T->R`))));;"
+            },
+            {
+              "line": 3777,
+              "before": "(Sections.add_section_type (mk_var (\"s\", (`:(S)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"s\", (`:(S)list`))));;"
+            },
+            {
+              "line": 3778,
+              "before": "(Sections.add_section_type (mk_var (\"t\", (`:(T)list`))));;",
+              "after": "let _ = (Sections.add_section_type (mk_var (\"t\", (`:(T)list`))));;"
+            },
+            {
+              "line": 3818,
+              "before": "Sections.end_section \"EqAllPairs\";;",
+              "after": "let _ = Sections.end_section \"EqAllPairs\";;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "Bind the complete 119 anonymous module structure expressions to explicit discarded values while preserving the same 112 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, prioritize_num call, arguments, effects, exceptions, evaluation order, and theorem/proof text.",
+      "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in seq-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module at line 7 only after actions 130--140 pass. The complete batch loads from a fresh post-action-129 state through the manifest loader, emits the action-141 success marker, and establishes terminal theorem Seq.allpairs_catr. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",
