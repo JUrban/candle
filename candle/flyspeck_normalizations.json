@@ -1516,6 +1516,203 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in seq2-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The exact raw source is rejected at the enclosing module at reported line 4 only after actions 131--141 pass from the clean post-action-130 state. The complete batch loads from a separate fresh state through the manifest loader, emits the action-142 success marker, and establishes terminal theorem Seq2.prev_el_hd. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
     },
     {
+      "id": "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl",
+      "path": "text_formalization/tame/ssreflect/sort-compiled.hl",
+      "source_sha256": "4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93",
+      "source_md5": "edbad154c9e983ede3fd670b3a3b5c4a",
+      "normalized_sha256": "83207abe4b8b58219a51f230f51c59ec70983367d296280a01320eea98ea6cc9",
+      "normalized_md5": "f2108691e64e667c9308b1ebdf3f8282",
+      "normalized_bytes": 98985,
+      "operations": [
+        {
+          "id": "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 6,
+          "replacement_count": 35,
+          "replacements": [
+            {
+              "line": 6,
+              "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+              "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;"
+            },
+            {
+              "line": 7,
+              "before": "override_interface (\"::\", `CONS`);;",
+              "after": "let _ = override_interface (\"::\", `CONS`);;"
+            },
+            {
+              "line": 8,
+              "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+              "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;"
+            },
+            {
+              "line": 9,
+              "before": "overload_interface (\"++\", `cat`);;",
+              "after": "let _ = overload_interface (\"++\", `cat`);;"
+            },
+            {
+              "line": 10,
+              "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+              "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;"
+            },
+            {
+              "line": 11,
+              "before": "override_interface(\"<-\", `MEM`);;",
+              "after": "let _ = override_interface(\"<-\", `MEM`);;"
+            },
+            {
+              "line": 47,
+              "before": "Sections.begin_section \"Merge\";;",
+              "after": "let _ = Sections.begin_section \"Merge\";;"
+            },
+            {
+              "line": 69,
+              "before": "Sections.end_section \"Merge\";;",
+              "after": "let _ = Sections.end_section \"Merge\";;"
+            },
+            {
+              "line": 72,
+              "before": "Sections.begin_section \"Ordered\";;",
+              "after": "let _ = Sections.begin_section \"Ordered\";;"
+            },
+            {
+              "line": 73,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 74,
+              "before": "(Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;"
+            },
+            {
+              "line": 149,
+              "before": "Sections.begin_section \"OrderedMergeGeneral\";;",
+              "after": "let _ = Sections.begin_section \"OrderedMergeGeneral\";;"
+            },
+            {
+              "line": 150,
+              "before": "(Sections.add_section_var (mk_var (\"S\", (`:A -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:A -> bool`))));;"
+            },
+            {
+              "line": 151,
+              "before": "(Sections.add_section_hyp \"R_trans\" (`!x y z. x IN S /\\ y IN S /\\ z IN S ==> R x y /\\ R y z ==> R x z`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_trans\" (`!x y z. x IN S /\\ y IN S /\\ z IN S ==> R x y /\\ R y z ==> R x z`));;"
+            },
+            {
+              "line": 152,
+              "before": "(Sections.add_section_hyp \"R_total\" (`!x y. x IN S /\\ y IN S ==> R x y \\/ R y x`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_total\" (`!x y. x IN S /\\ y IN S ==> R x y \\/ R y x`));;"
+            },
+            {
+              "line": 177,
+              "before": "Sections.end_section \"OrderedMergeGeneral\";;",
+              "after": "let _ = Sections.end_section \"OrderedMergeGeneral\";;"
+            },
+            {
+              "line": 178,
+              "before": "(Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;"
+            },
+            {
+              "line": 242,
+              "before": "Sections.end_section \"Ordered\";;",
+              "after": "let _ = Sections.end_section \"Ordered\";;"
+            },
+            {
+              "line": 245,
+              "before": "Sections.begin_section \"Sorted\";;",
+              "after": "let _ = Sections.begin_section \"Sorted\";;"
+            },
+            {
+              "line": 246,
+              "before": "(Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;"
+            },
+            {
+              "line": 247,
+              "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;"
+            },
+            {
+              "line": 322,
+              "before": "Sections.begin_section \"SortedEq\";;",
+              "after": "let _ = Sections.begin_section \"SortedEq\";;"
+            },
+            {
+              "line": 323,
+              "before": "(Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;"
+            },
+            {
+              "line": 335,
+              "before": "Sections.end_section \"SortedEq\";;",
+              "after": "let _ = Sections.end_section \"SortedEq\";;"
+            },
+            {
+              "line": 338,
+              "before": "Sections.begin_section \"SortedNth0\";;",
+              "after": "let _ = Sections.begin_section \"SortedNth0\";;"
+            },
+            {
+              "line": 350,
+              "before": "(Sections.add_section_hyp \"R_anti\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_anti\" (`!x y. R x y /\\ R y x ==> x = y`));;"
+            },
+            {
+              "line": 369,
+              "before": "Sections.end_section \"SortedNth0\";;",
+              "after": "let _ = Sections.end_section \"SortedNth0\";;"
+            },
+            {
+              "line": 370,
+              "before": "(Sections.add_section_hyp \"R_trans\" (`!x y z. R x y /\\ R y z ==> R x z`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_trans\" (`!x y z. R x y /\\ R y z ==> R x z`));;"
+            },
+            {
+              "line": 414,
+              "before": "(Sections.add_section_hyp \"R_total\" (`!x y. R x y \\/ R y x`));;",
+              "after": "let _ = (Sections.add_section_hyp \"R_total\" (`!x y. R x y \\/ R y x`));;"
+            },
+            {
+              "line": 457,
+              "before": "Sections.end_section \"Sorted\";;",
+              "after": "let _ = Sections.end_section \"Sorted\";;"
+            },
+            {
+              "line": 460,
+              "before": "Sections.begin_section \"SortedReal\";;",
+              "after": "let _ = Sections.begin_section \"SortedReal\";;"
+            },
+            {
+              "line": 461,
+              "before": "prioritize_real();;",
+              "after": "let _ = prioritize_real();;"
+            },
+            {
+              "line": 610,
+              "before": "Sections.end_section \"SortedReal\";;",
+              "after": "let _ = Sections.end_section \"SortedReal\";;"
+            },
+            {
+              "line": 613,
+              "before": "Sections.begin_section \"MinK\";;",
+              "after": "let _ = Sections.begin_section \"MinK\";;"
+            },
+            {
+              "line": 649,
+              "before": "Sections.end_section \"MinK\";;",
+              "after": "let _ = Sections.end_section \"MinK\";;"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "Bind the complete 35 anonymous module structure expressions to explicit discarded values while preserving the same 28 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, one prioritize_real call, arguments, effects, exceptions, evaluation order, and theorem/proof text.",
+      "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in sort-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--142 pass from a clean post-action-130 state, the exact raw source reports a unit versus function structure-group type mismatch at line 9 and emits no action marker. The complete batch loads from a separate fresh state through the manifest loader, emits the action-143 success marker, and establishes terminal theorem Sort.min_k0_le_EL. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",
