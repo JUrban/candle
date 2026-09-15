@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 455,
+        "line": 460,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 455,
+        "line": 460,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5184,13 +5184,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 455,
+        "line": 460,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 455,
+        "line": 460,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "ee6564689eccce9e55a424763836db22",
-    "generated_source_sha256": "7774c2ba05cc8dc8015d699ab8ddac5f4741a57b282ce681a68533de083f5a15",
+    "generated_source_md5": "f12737251706ad1b3793594f22270258",
+    "generated_source_sha256": "2823226ead08a99c23125147dfe949a4b13f006b9ef2652a64e3cecf0f89090c",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 63224,
+      "bytes": 63361,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "eef520e60636aa3220bd5c05a823fafc",
+      "md5": "94fc6b0a80d32e0e0bd677b80a23f208",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "d5f38c754a37507c7e3a5be9dad4c787e2305b4076ab79c2fcbe246cc32698ee"
+      "sha256": "ad86774c82710c737c16df7db83a79b25c2f41bb0a196e71d60cc98b30e32ff1"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +14886,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 22221,
+      "bytes": 22448,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +14924,7 @@
         },
         {
           "kind": "needs",
-          "line": 477,
+          "line": 482,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +14935,7 @@
         },
         {
           "kind": "needs",
-          "line": 483,
+          "line": 488,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +14946,7 @@
         },
         {
           "kind": "needs",
-          "line": 485,
+          "line": 490,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +14956,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "cd0f3eb1f5c331fc28955cd34a8e6a39",
+      "md5": "57cf760d2f198631d1ebd7586200f435",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "2e1a1dc8c6bfaec9c0a6bf19be0db43084dba82777863b83464280043712cabb"
+      "sha256": "6e1af16f17363e5407246ed758243ef04b42c67b9a737e853295f950f3e04491"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17662,6 +17662,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 148147,
+        "normalized_md5": "c50d0c69de3d905f10cfd2ba420ba9ce",
+        "normalized_sha256": "acc6cbbfcf7ae49803cf236371c05332303b0bb49bb8a44cfb67d79295357d70",
+        "operation_count": 1
+      },
       "md5": "7640ffbcb69db54453c7d4edba3c3c10",
       "path": "jHOLLight/Examples/ssrnat-compiled.hl",
       "repository": "flyspeck",
@@ -22521,7 +22529,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "6c5e65799005f4aebef672ed73c55ce34ec25e5c60e75a47c3a45fcbfb1ef9c3",
+    "contract_sha256": "1ac8207a07c0fdb35b66a426f6fa4fe1696570d622b1991ee687ad9bf93348ac",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23276,6 +23284,70 @@
         "source_key": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl",
         "source_md5": "fd2e0f4fee2f6ccce2652d7d67f07547",
         "source_sha256": "24cd8ef9e253145b031b13e0d68250217ade43e583c21ee6574136aa0a120c97"
+      },
+      {
+        "id": "PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 148147,
+        "normalized_md5": "c50d0c69de3d905f10cfd2ba420ba9ce",
+        "normalized_sha256": "acc6cbbfcf7ae49803cf236371c05332303b0bb49bb8a44cfb67d79295357d70",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 7,
+            "replacement_count": 8,
+            "replacements": [
+              {
+                "after": "let _ = overload_interface(\"+\", `XOR`);;",
+                "before": "overload_interface(\"+\", `XOR`);;",
+                "line": 7
+              },
+              {
+                "after": "let _ = prioritize_num();;",
+                "before": "prioritize_num();;",
+                "line": 8
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Iteration\";;",
+                "before": "Sections.begin_section \"Iteration\";;",
+                "line": 1056
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"m\", (`:num`))); Sections.add_section_var (mk_var (\"n\", (`:num`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"m\", (`:num`))); Sections.add_section_var (mk_var (\"n\", (`:num`))));;",
+                "line": 1057
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"x\", (`:A`))); Sections.add_section_var (mk_var (\"y\", (`:A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"x\", (`:A`))); Sections.add_section_var (mk_var (\"y\", (`:A`))));;",
+                "line": 1058
+              },
+              {
+                "after": "let _ = Sections.end_section \"Iteration\";;",
+                "before": "Sections.end_section \"Iteration\";;",
+                "line": 1095
+              },
+              {
+                "after": "let _ = parse_as_infix(\"^\", (24, \"left\"));;",
+                "before": "parse_as_infix(\"^\", (24, \"left\"));;",
+                "line": 1402
+              },
+              {
+                "after": "let _ = override_interface(\"^\", `EXP`);;",
+                "before": "override_interface(\"^\", `EXP`);;",
+                "line": 1403
+              }
+            ]
+          }
+        ],
+        "path": "jHOLLight/Examples/ssrnat-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in ssrnat-compiled.hl: overload_interface and prioritize_num at source lines 7--8, four begin_section, end_section, and add_section_var expressions at lines 1056--1095, and parse_as_infix plus override_interface at lines 1402--1403. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. Fresh post-action-129 probes show the module name, open declaration, succnK theorem, and each initial effect parse independently while their consecutive anonymous group is rejected at the enclosing module; binding only one either retains the parser rejection or exposes the known module-group type mismatch, while binding both passes. The complete eight-expression batch passes the full source and establishes the terminal theorem. Exact raw rejection, normalized action loading, and a fresh cumulative replay remain required.",
+        "semantic_rule": "The eight anonymous module structure expressions execute the same six Sections calls, overload_interface registration, prioritize_num call, parse_as_infix registration, and override_interface registration exactly once, in their original positions and order. Explicit wildcard bindings discard the same unit results while preserving section nesting and variables, parser and interface mutations, evaluation order, results, and exceptions. The complete normalized module establishes the unchanged Ssrnat.sqrn_distn theorem.",
+        "source_key": "flyspeck:jHOLLight/Examples/ssrnat-compiled.hl",
+        "source_md5": "7640ffbcb69db54453c7d4edba3c3c10",
+        "source_sha256": "66e533d777177cb4149e7f958af68cfa8e28e0be117537b8b3f81ba50071c188"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -27602,7 +27674,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 67,
+    "entry_count": 68,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -27724,8 +27796,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "eef520e60636aa3220bd5c05a823fafc",
-    "generated_source_sha256": "d5f38c754a37507c7e3a5be9dad4c787e2305b4076ab79c2fcbe246cc32698ee",
+    "generated_source_md5": "94fc6b0a80d32e0e0bd677b80a23f208",
+    "generated_source_sha256": "ad86774c82710c737c16df7db83a79b25c2f41bb0a196e71d60cc98b30e32ff1",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

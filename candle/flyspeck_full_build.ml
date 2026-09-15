@@ -272,7 +272,7 @@
 #flyspeck_needs "../jHOLLight/Examples/ssrfun-compiled.hl";;
 (* 129 selected=flyspeck:jHOLLight/Examples/ssrbool-compiled.hl sha256=24cd8ef9e253145b031b13e0d68250217ade43e583c21ee6574136aa0a120c97 normalization=PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001 normalized_sha256=578d7fe281800b5fc5874ab6fa9cd499162034458be5ae75f5b3cf391023a99a *)
 #flyspeck_needs "../jHOLLight/Examples/ssrbool-compiled.hl";;
-(* 130 selected=flyspeck:jHOLLight/Examples/ssrnat-compiled.hl sha256=66e533d777177cb4149e7f958af68cfa8e28e0be117537b8b3f81ba50071c188 *)
+(* 130 selected=flyspeck:jHOLLight/Examples/ssrnat-compiled.hl sha256=66e533d777177cb4149e7f958af68cfa8e28e0be117537b8b3f81ba50071c188 normalization=PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001 normalized_sha256=acc6cbbfcf7ae49803cf236371c05332303b0bb49bb8a44cfb67d79295357d70 *)
 #flyspeck_needs "../jHOLLight/Examples/ssrnat-compiled.hl";;
 (* 131 selected=flyspeck:text_formalization/fan/hypermap_iso-compiled.hl sha256=2da3701d76d46ae96406b71a5934611bb66b12d1bc0ac511e15ace0806523755 *)
 #flyspeck_needs "fan/hypermap_iso-compiled.hl";;
