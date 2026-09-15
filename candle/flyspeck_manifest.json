@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "08fe8405d916f31e31115f2d32e8a289",
-    "generated_source_sha256": "2e33f9e75811b2ba5592fb50f3172b75b55cb8050d9964c0489751943b65f543",
+    "generated_source_md5": "07f55f277d311dd3974c118de227792a",
+    "generated_source_sha256": "cf9d6a3c2adfe7b718061e87d303b9c9b9da2fbf5a139d67ed3adc0723706d67",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 62949,
+      "bytes": 63086,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "b357b52bf472ddb45a034bac009be5db",
+      "md5": "3a6113627f70ca8d17e975b830c0ee33",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "f837f7f57282f0ed8355caf984c8090130f4537a6c0c819b03164e46fc63a845"
+      "sha256": "ac70948834b61aecc75a9199a18ce0cc919c3813d62345b820a6bd2a8d9b21e0"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -17626,6 +17626,14 @@
     "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl": {
       "bytes": 21508,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 21756,
+        "normalized_md5": "a8e5c90f3740bd1ab08645a1577bbf80",
+        "normalized_sha256": "c885eaaba8f2687edd27c363156832c659fb3ea3c3da8699a43597fab87b8556",
+        "operation_count": 1
+      },
       "md5": "05960dc2054c64f8fdd74ef38340a128",
       "path": "jHOLLight/Examples/ssrfun-compiled.hl",
       "repository": "flyspeck",
@@ -22505,7 +22513,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "b0e44ad96148f5cb7979de178032bd64afe8e507540d8f98fc62e0fdff0c8e3a",
+    "contract_sha256": "eb2280e0480c777d44c50ab8d9fb185643b2c7285fcdc202588acd0dcbeae49e",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23007,6 +23015,185 @@
         "source_key": "flyspeck:jHOLLight/caml/ssreflect.hl",
         "source_md5": "6f69a400e5f3922f4d572840748b35c7",
         "source_sha256": "9fefd64395673d3813762b90f0c99e86942a29fd2b80d0725dab3ba15aba9ed9"
+      },
+      {
+        "id": "PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 21756,
+        "normalized_md5": "a8e5c90f3740bd1ab08645a1577bbf80",
+        "normalized_sha256": "c885eaaba8f2687edd27c363156832c659fb3ea3c3da8699a43597fab87b8556",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 73,
+            "replacement_count": 31,
+            "replacements": [
+              {
+                "after": "let _ = Sections.begin_section \"Injections\";;",
+                "before": "Sections.begin_section \"Injections\";;",
+                "line": 73
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> R`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> R`))));;",
+                "line": 74
+              },
+              {
+                "after": "let _ = Sections.end_section \"Injections\";;",
+                "before": "Sections.end_section \"Injections\";;",
+                "line": 123
+              },
+              {
+                "after": "let _ = Sections.begin_section \"InjectionsTheory\";;",
+                "before": "Sections.begin_section \"InjectionsTheory\";;",
+                "line": 133
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:B -> A`))); Sections.add_section_var (mk_var (\"g\", (`:B -> A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:B -> A`))); Sections.add_section_var (mk_var (\"g\", (`:B -> A`))));;",
+                "line": 134
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"h\", (`:C -> B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"h\", (`:C -> B`))));;",
+                "line": 135
+              },
+              {
+                "after": "let _ = Sections.end_section \"InjectionsTheory\";;",
+                "before": "Sections.end_section \"InjectionsTheory\";;",
+                "line": 205
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Bijections\";;",
+                "before": "Sections.begin_section \"Bijections\";;",
+                "line": 208
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:B -> A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:B -> A`))));;",
+                "line": 209
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"bijf\" (`bijective f`));;",
+                "before": "(Sections.add_section_hyp \"bijf\" (`bijective f`));;",
+                "line": 211
+              },
+              {
+                "after": "let _ = Sections.end_section \"Bijections\";;",
+                "before": "Sections.end_section \"Bijections\";;",
+                "line": 241
+              },
+              {
+                "after": "let _ = Sections.begin_section \"BijectionsTheory\";;",
+                "before": "Sections.begin_section \"BijectionsTheory\";;",
+                "line": 244
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:BB -> AA`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:BB -> AA`))));;",
+                "line": 245
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"h\", (`:CC -> BB`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"h\", (`:CC -> BB`))));;",
+                "line": 246
+              },
+              {
+                "after": "let _ = Sections.end_section \"BijectionsTheory\";;",
+                "before": "Sections.end_section \"BijectionsTheory\";;",
+                "line": 279
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Involutions\";;",
+                "before": "Sections.begin_section \"Involutions\";;",
+                "line": 282
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> A`))));;",
+                "line": 283
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"Hf\" (`involutive f`));;",
+                "before": "(Sections.add_section_hyp \"Hf\" (`involutive f`));;",
+                "line": 285
+              },
+              {
+                "after": "let _ = Sections.end_section \"Involutions\";;",
+                "before": "Sections.end_section \"Involutions\";;",
+                "line": 304
+              },
+              {
+                "after": "let _ = Sections.begin_section \"OperationProperties\";;",
+                "before": "Sections.begin_section \"OperationProperties\";;",
+                "line": 307
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SopTisR\";;",
+                "before": "Sections.begin_section \"SopTisR\";;",
+                "line": 310
+              },
+              {
+                "after": "let _ = Sections.end_section \"SopTisR\";;",
+                "before": "Sections.end_section \"SopTisR\";;",
+                "line": 317
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SopTisS\";;",
+                "before": "Sections.begin_section \"SopTisS\";;",
+                "line": 320
+              },
+              {
+                "after": "let _ = Sections.end_section \"SopTisS\";;",
+                "before": "Sections.end_section \"SopTisS\";;",
+                "line": 333
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SopTisT\";;",
+                "before": "Sections.begin_section \"SopTisT\";;",
+                "line": 336
+              },
+              {
+                "after": "let _ = Sections.end_section \"SopTisT\";;",
+                "before": "Sections.end_section \"SopTisT\";;",
+                "line": 349
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SopSisT\";;",
+                "before": "Sections.begin_section \"SopSisT\";;",
+                "line": 352
+              },
+              {
+                "after": "let _ = Sections.end_section \"SopSisT\";;",
+                "before": "Sections.end_section \"SopSisT\";;",
+                "line": 357
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SopSisS\";;",
+                "before": "Sections.begin_section \"SopSisS\";;",
+                "line": 360
+              },
+              {
+                "after": "let _ = Sections.end_section \"SopSisS\";;",
+                "before": "Sections.end_section \"SopSisS\";;",
+                "line": 365
+              },
+              {
+                "after": "let _ = Sections.end_section \"OperationProperties\";;",
+                "before": "Sections.end_section \"OperationProperties\";;",
+                "line": 368
+              }
+            ]
+          }
+        ],
+        "path": "jHOLLight/Examples/ssrfun-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous Sections structure-expression set in ssrfun-compiled.hl: begin_section, end_section, add_section_var, and add_section_hyp expressions at source lines 73--368. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. The first-effect minimizer advances the failure to the next anonymous expression; focused raw-reject/all-effects-accept execution, complete-source theorem lookup, and fresh cumulative source loading are required.",
+        "semantic_rule": "The 31 anonymous module structure expressions execute the same 32 Sections registration calls exactly once, in their original positions and order. Explicit wildcard bindings discard the same unit results while preserving section nesting, section variables and hypotheses, mutations, evaluation order, results, and exceptions. The complete normalized module establishes the unchanged Ssrfun.associative theorem.",
+        "source_key": "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl",
+        "source_md5": "05960dc2054c64f8fdd74ef38340a128",
+        "source_sha256": "da8ee55c6fe95fb738429292b5dbcdf9bad6151d630148acf9f605f8ca604512"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -27333,7 +27520,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 65,
+    "entry_count": 66,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -27455,8 +27642,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "b357b52bf472ddb45a034bac009be5db",
-    "generated_source_sha256": "f837f7f57282f0ed8355caf984c8090130f4537a6c0c819b03164e46fc63a845",
+    "generated_source_md5": "3a6113627f70ca8d17e975b830c0ee33",
+    "generated_source_sha256": "ac70948834b61aecc75a9199a18ce0cc919c3813d62345b820a6bd2a8d9b21e0",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
