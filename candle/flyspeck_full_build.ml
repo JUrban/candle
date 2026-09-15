@@ -298,7 +298,7 @@
 #flyspeck_needs "../jHOLLight/Examples/seq-compiled.hl";;
 (* 142 selected=flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl sha256=0a98ab2cb9847c23e0a78b4165d3ee7d911eb19a1392235c0263b6c7ac961bc6 normalization=PROJECT-SEQ2-S2-STRUCTURE-EFFECTS-001 normalized_sha256=ecff65c2b053efb5a584bf42acf371544ec17ddfd29e069ea2ef591ee1a93de3 *)
 #flyspeck_needs "tame/ssreflect/seq2-compiled.hl";;
-(* 143 selected=flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl sha256=4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93 *)
+(* 143 selected=flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl sha256=4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93 normalization=PROJECT-SORT-S2-STRUCTURE-EFFECTS-001 normalized_sha256=83207abe4b8b58219a51f230f51c59ec70983367d296280a01320eea98ea6cc9 *)
 #flyspeck_needs "tame/ssreflect/sort-compiled.hl";;
 (* 144 selected=flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl sha256=4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8 *)
 #flyspeck_needs "tame/ssreflect/FNJLBXS-compiled.hl";;

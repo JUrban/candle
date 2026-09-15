@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 475,
+        "line": 480,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 475,
+        "line": 480,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5184,13 +5184,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 475,
+        "line": 480,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 475,
+        "line": 480,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "745f16faf58986816e80630ed447927b",
-    "generated_source_sha256": "a1dd6614ba953886fa03b3dafedd1388709de50c4a45711e055eb3606d23361a",
+    "generated_source_md5": "c6cfc98dbbb34b3552502833ca75ef85",
+    "generated_source_sha256": "cdece353a147c2571e144649605f11f03aab1bea5c01494937ed9a465d0ab626",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 63773,
+      "bytes": 63908,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "792a818ad26fddfb0c619162bdfd28d3",
+      "md5": "bbc612424880c72521a8dbbd9f4a9dba",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "3a0c47ce7488ed9829bf754673d80418f67c57be026bdc501eb2d5826ab5b1f9"
+      "sha256": "2aa3725ade5aff187acb2e384a8273e86dd3d2bca8ea3c809821df20d2809705"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +14886,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 23131,
+      "bytes": 23372,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +14924,7 @@
         },
         {
           "kind": "needs",
-          "line": 497,
+          "line": 502,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +14935,7 @@
         },
         {
           "kind": "needs",
-          "line": 503,
+          "line": 508,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +14946,7 @@
         },
         {
           "kind": "needs",
-          "line": 505,
+          "line": 510,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +14956,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "f6df8c762f071ef3f0a0a4f279fa2781",
+      "md5": "d7664a24fba16d27f785907f219974c8",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "1b943d05cd46bd85bfa7dfec9f1b5828af7b9c9e9fc7f02d258641c24ac5b166"
+      "sha256": "29531ee2b57bd0681f1611a89115d0abe51aabef79c4cd889a8a44894a2f68e6"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -21962,6 +21962,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 98985,
+        "normalized_md5": "f2108691e64e667c9308b1ebdf3f8282",
+        "normalized_sha256": "83207abe4b8b58219a51f230f51c59ec70983367d296280a01320eea98ea6cc9",
+        "operation_count": 1
+      },
       "md5": "edbad154c9e983ede3fd670b3a3b5c4a",
       "path": "text_formalization/tame/ssreflect/sort-compiled.hl",
       "repository": "flyspeck",
@@ -22553,7 +22561,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "c2267f5399036e522c08a2535c24e26ea0fdbd4f6d4ccc5e3545472869624c11",
+    "contract_sha256": "2c81530268fa1c1ca64c505887a106fdf9bb7fa310ac831ef7b4a46f7095562f",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -24479,6 +24487,205 @@
         "source_key": "flyspeck:text_formalization/tame/ssreflect/seq2-compiled.hl",
         "source_md5": "f00a156079d48de69eeb5019895450ac",
         "source_sha256": "0a98ab2cb9847c23e0a78b4165d3ee7d911eb19a1392235c0263b6c7ac961bc6"
+      },
+      {
+        "id": "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 98985,
+        "normalized_md5": "f2108691e64e667c9308b1ebdf3f8282",
+        "normalized_sha256": "83207abe4b8b58219a51f230f51c59ec70983367d296280a01320eea98ea6cc9",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 6,
+            "replacement_count": 35,
+            "replacements": [
+              {
+                "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;",
+                "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+                "line": 6
+              },
+              {
+                "after": "let _ = override_interface (\"::\", `CONS`);;",
+                "before": "override_interface (\"::\", `CONS`);;",
+                "line": 7
+              },
+              {
+                "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;",
+                "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+                "line": 8
+              },
+              {
+                "after": "let _ = overload_interface (\"++\", `cat`);;",
+                "before": "overload_interface (\"++\", `cat`);;",
+                "line": 9
+              },
+              {
+                "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;",
+                "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+                "line": 10
+              },
+              {
+                "after": "let _ = override_interface(\"<-\", `MEM`);;",
+                "before": "override_interface(\"<-\", `MEM`);;",
+                "line": 11
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Merge\";;",
+                "before": "Sections.begin_section \"Merge\";;",
+                "line": 47
+              },
+              {
+                "after": "let _ = Sections.end_section \"Merge\";;",
+                "before": "Sections.end_section \"Merge\";;",
+                "line": 69
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Ordered\";;",
+                "before": "Sections.begin_section \"Ordered\";;",
+                "line": 72
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+                "line": 73
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+                "line": 74
+              },
+              {
+                "after": "let _ = Sections.begin_section \"OrderedMergeGeneral\";;",
+                "before": "Sections.begin_section \"OrderedMergeGeneral\";;",
+                "line": 149
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:A -> bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"S\", (`:A -> bool`))));;",
+                "line": 150
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_trans\" (`!x y z. x IN S /\\ y IN S /\\ z IN S ==> R x y /\\ R y z ==> R x z`));;",
+                "before": "(Sections.add_section_hyp \"R_trans\" (`!x y z. x IN S /\\ y IN S /\\ z IN S ==> R x y /\\ R y z ==> R x z`));;",
+                "line": 151
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_total\" (`!x y. x IN S /\\ y IN S ==> R x y \\/ R y x`));;",
+                "before": "(Sections.add_section_hyp \"R_total\" (`!x y. x IN S /\\ y IN S ==> R x y \\/ R y x`));;",
+                "line": 152
+              },
+              {
+                "after": "let _ = Sections.end_section \"OrderedMergeGeneral\";;",
+                "before": "Sections.end_section \"OrderedMergeGeneral\";;",
+                "line": 177
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "before": "(Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "line": 178
+              },
+              {
+                "after": "let _ = Sections.end_section \"Ordered\";;",
+                "before": "Sections.end_section \"Ordered\";;",
+                "line": 242
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Sorted\";;",
+                "before": "Sections.begin_section \"Sorted\";;",
+                "line": 245
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"R\", (`:A->A->bool`))));;",
+                "line": 246
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"x0\", (`:A`))));;",
+                "line": 247
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SortedEq\";;",
+                "before": "Sections.begin_section \"SortedEq\";;",
+                "line": 322
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "before": "(Sections.add_section_hyp \"R_asym\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "line": 323
+              },
+              {
+                "after": "let _ = Sections.end_section \"SortedEq\";;",
+                "before": "Sections.end_section \"SortedEq\";;",
+                "line": 335
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SortedNth0\";;",
+                "before": "Sections.begin_section \"SortedNth0\";;",
+                "line": 338
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_anti\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "before": "(Sections.add_section_hyp \"R_anti\" (`!x y. R x y /\\ R y x ==> x = y`));;",
+                "line": 350
+              },
+              {
+                "after": "let _ = Sections.end_section \"SortedNth0\";;",
+                "before": "Sections.end_section \"SortedNth0\";;",
+                "line": 369
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_trans\" (`!x y z. R x y /\\ R y z ==> R x z`));;",
+                "before": "(Sections.add_section_hyp \"R_trans\" (`!x y z. R x y /\\ R y z ==> R x z`));;",
+                "line": 370
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"R_total\" (`!x y. R x y \\/ R y x`));;",
+                "before": "(Sections.add_section_hyp \"R_total\" (`!x y. R x y \\/ R y x`));;",
+                "line": 414
+              },
+              {
+                "after": "let _ = Sections.end_section \"Sorted\";;",
+                "before": "Sections.end_section \"Sorted\";;",
+                "line": 457
+              },
+              {
+                "after": "let _ = Sections.begin_section \"SortedReal\";;",
+                "before": "Sections.begin_section \"SortedReal\";;",
+                "line": 460
+              },
+              {
+                "after": "let _ = prioritize_real();;",
+                "before": "prioritize_real();;",
+                "line": 461
+              },
+              {
+                "after": "let _ = Sections.end_section \"SortedReal\";;",
+                "before": "Sections.end_section \"SortedReal\";;",
+                "line": 610
+              },
+              {
+                "after": "let _ = Sections.begin_section \"MinK\";;",
+                "before": "Sections.begin_section \"MinK\";;",
+                "line": 613
+              },
+              {
+                "after": "let _ = Sections.end_section \"MinK\";;",
+                "before": "Sections.end_section \"MinK\";;",
+                "line": 649
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/tame/ssreflect/sort-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in sort-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--142 pass from a clean post-action-130 state, the exact raw source reports a unit versus function structure-group type mismatch at line 9 and emits no action marker. The complete batch loads from a separate fresh state through the manifest loader, emits the action-143 success marker, and establishes terminal theorem Sort.min_k0_le_EL. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required.",
+        "semantic_rule": "Bind the complete 35 anonymous module structure expressions to explicit discarded values while preserving the same 28 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, one prioritize_real call, arguments, effects, exceptions, evaluation order, and theorem/proof text.",
+        "source_key": "flyspeck:text_formalization/tame/ssreflect/sort-compiled.hl",
+        "source_md5": "edbad154c9e983ede3fd670b3a3b5c4a",
+        "source_sha256": "4276b638ad55dc99e9e61d729ae47fd8353d6867e589d5bfd52d6dd62d8ded93"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -28805,7 +29012,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 71,
+    "entry_count": 72,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -28927,8 +29134,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "792a818ad26fddfb0c619162bdfd28d3",
-    "generated_source_sha256": "3a0c47ce7488ed9829bf754673d80418f67c57be026bdc501eb2d5826ab5b1f9",
+    "generated_source_md5": "bbc612424880c72521a8dbbd9f4a9dba",
+    "generated_source_sha256": "2aa3725ade5aff187acb2e384a8273e86dd3d2bca8ea3c809821df20d2809705",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
