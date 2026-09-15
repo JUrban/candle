@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 485,
+        "line": 499,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 485,
+        "line": 499,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5184,13 +5184,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 485,
+        "line": 499,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 485,
+        "line": 499,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "3af6515e84e9ab4f40b3d30c75e6f247",
-    "generated_source_sha256": "a042290b2b1a97d796e5bee814995fcb98e77ac60b95e702a3953996673ffe1b",
+    "generated_source_md5": "9daec0579cd0c1f08fc632b26be58446",
+    "generated_source_sha256": "b1f9f77f34ad6c7325ffe06da901fbc81d687329cbd27265ca97c92cd82cf40e",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 64046,
+      "bytes": 64459,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "909c06d38040613bf1da864dc41f5fd7",
+      "md5": "7813eb7536b2e8cf0791361d50c1c050",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "7552fd69a0e940dfd2e4846bc02129cbed7ecf3259d0809ca8fcf08996d93eb0"
+      "sha256": "0d4e531f4e59012032ca491d2d16af27d089751d7bc91242fb0cc6bdd5fe924c"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -14886,7 +14886,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 23617,
+      "bytes": 24327,
       "dependencies": [
         {
           "kind": "#use",
@@ -14924,7 +14924,7 @@
         },
         {
           "kind": "needs",
-          "line": 507,
+          "line": 521,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -14935,7 +14935,7 @@
         },
         {
           "kind": "needs",
-          "line": 513,
+          "line": 527,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -14946,7 +14946,7 @@
         },
         {
           "kind": "needs",
-          "line": 515,
+          "line": 529,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -14956,10 +14956,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "1c617875cb75b78be29329880ac738da",
+      "md5": "9fc715385c885f5b2067861d6c2ea0db",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "9ed166bffa5f681b04666f4071af858460079789a307c929eafe52ffaa03dcde"
+      "sha256": "0a92066f5decaf2e44116cfd547d10fcfd2d7ed5a2973d6ae6ca09224f0a3019"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17323,6 +17323,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 248339,
+        "normalized_md5": "5c871d026ea381564bdbefea4092ddcd",
+        "normalized_sha256": "5af185a4f4a4079d1680b572ab08a0e6fd21406bb5c66232fd73e9402f5048d4",
+        "operation_count": 1
+      },
       "md5": "741a530d6bbecade212ef90f2b49d4c3",
       "path": "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
       "repository": "flyspeck",
@@ -19700,6 +19708,14 @@
     "flyspeck:text_formalization/local/pent_hex.hl": {
       "bytes": 122489,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-PENT-HEX-S2-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 122630,
+        "normalized_md5": "57de064a23be1517bbf5bb54e3950282",
+        "normalized_sha256": "a478ca1130a61ead96183eb4d026e2cd9a3eb78b886b8e7c683011b31b949eef",
+        "operation_count": 3
+      },
       "md5": "fe348aa40e3fc16092c6144d4b6f1af9",
       "path": "text_formalization/local/pent_hex.hl",
       "repository": "flyspeck",
@@ -21998,6 +22014,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 126742,
+        "normalized_md5": "256fd48d4ab7fb63a11ea9420eb6efbd",
+        "normalized_sha256": "4fa99b55272e86f18ae07dc3de54480488973a18e239113fd551187021105563",
+        "operation_count": 1
+      },
       "md5": "c7c363d83b5f13577416f18f2eae1004",
       "path": "text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
       "repository": "flyspeck",
@@ -22569,7 +22593,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "8da47ff4d97fc6c93cd80e94ec754d8a63806e7da32fc81d0b1a9975e9566a78",
+    "contract_sha256": "c91d570956ff28662153baddd9ea330db8ca3e033ba4c983324fb793c4cbe506",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -24977,6 +25001,381 @@
         "source_key": "flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
         "source_md5": "74e5cdfb818f96e3f57020139a60384e",
         "source_sha256": "4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8"
+      },
+      {
+        "id": "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 248339,
+        "normalized_md5": "5c871d026ea381564bdbefea4092ddcd",
+        "normalized_sha256": "5af185a4f4a4079d1680b572ab08a0e6fd21406bb5c66232fd73e9402f5048d4",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 7,
+            "replacement_count": 20,
+            "replacements": [
+              {
+                "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;",
+                "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+                "line": 7
+              },
+              {
+                "after": "let _ = override_interface (\"::\", `CONS`);;",
+                "before": "override_interface (\"::\", `CONS`);;",
+                "line": 8
+              },
+              {
+                "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;",
+                "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+                "line": 9
+              },
+              {
+                "after": "let _ = overload_interface (\"++\", `cat`);;",
+                "before": "overload_interface (\"++\", `cat`);;",
+                "line": 10
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FanMisc\";;",
+                "before": "Sections.begin_section \"FanMisc\";;",
+                "line": 37
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 38
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "line": 39
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+                "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+                "line": 128
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Hypermap1\";;",
+                "before": "Sections.begin_section \"Hypermap1\";;",
+                "line": 293
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Dart1\";;",
+                "before": "Sections.begin_section \"Dart1\";;",
+                "line": 412
+              },
+              {
+                "after": "let _ = Sections.end_section \"Dart1\";;",
+                "before": "Sections.end_section \"Dart1\";;",
+                "line": 482
+              },
+              {
+                "after": "let _ = Sections.end_section \"Hypermap1\";;",
+                "before": "Sections.end_section \"Hypermap1\";;",
+                "line": 502
+              },
+              {
+                "after": "let _ = Sections.end_section \"FanMisc\";;",
+                "before": "Sections.end_section \"FanMisc\";;",
+                "line": 547
+              },
+              {
+                "after": "let _ = Sections.begin_section \"AddTriangle\";;",
+                "before": "Sections.begin_section \"AddTriangle\";;",
+                "line": 557
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 558
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "line": 559
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+                "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0, V, E)`));;",
+                "line": 560
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "before": "(Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "line": 631
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "line": 634
+              },
+              {
+                "after": "let _ = Sections.end_section \"AddTriangle\";;",
+                "before": "Sections.end_section \"AddTriangle\";;",
+                "line": 1486
+              }
+            ]
+          }
+        ],
+        "path": "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Add_triangle. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After accepted action 144 passes from a fresh post-action-143 state, the exact raw source reports a unit versus section-function structure-group type mismatch at its first registration block and emits no action-145 marker. The complete batch loads from a separate fresh state, emits the action-145 success marker, and establishes terminal theorem Add_triangle.tau_split_fan_face_add with no diagnostic. No relevant fix-top100 or historical Candle patch exists; the upstream 2017 long-application refactorings are already present byte-for-byte. Fresh cumulative replay remains required.",
+        "semantic_rule": "Bind the complete 20 anonymous Add_triangle module structure expressions to explicit discarded values while preserving the same four interface registrations and 16 Sections expressions, including the identical multiline dart1_eq section-lemma registration. Each original expression is evaluated once at the same position, with the same arguments, effects, exceptions, and order; all theorem definitions and proof text remain unchanged.",
+        "source_key": "flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
+        "source_md5": "741a530d6bbecade212ef90f2b49d4c3",
+        "source_sha256": "27fc827bef7c9cb76c01e0219a8126b7b56a6468dd61a66b95aba84c7ad6e847"
+      },
+      {
+        "id": "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 126742,
+        "normalized_md5": "256fd48d4ab7fb63a11ea9420eb6efbd",
+        "normalized_sha256": "4fa99b55272e86f18ae07dc3de54480488973a18e239113fd551187021105563",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 58,
+            "replacement_count": 38,
+            "replacements": [
+              {
+                "after": "let _ = Sections.begin_section \"Reflection\";;",
+                "before": "Sections.begin_section \"Reflection\";;",
+                "line": 58
+              },
+              {
+                "after": "let _ = (Sections.add_section_type (mk_var (\"x\", (`:real^N`))); Sections.add_section_type (mk_var (\"y\", (`:real^N`))); Sections.add_section_type (mk_var (\"d\", (`:real^N`))));;",
+                "before": "(Sections.add_section_type (mk_var (\"x\", (`:real^N`))); Sections.add_section_type (mk_var (\"y\", (`:real^N`))); Sections.add_section_type (mk_var (\"d\", (`:real^N`))));;",
+                "line": 64
+              },
+              {
+                "after": "let _ = Sections.end_section \"Reflection\";;",
+                "before": "Sections.end_section \"Reflection\";;",
+                "line": 188
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Misc\";;",
+                "before": "Sections.begin_section \"Misc\";;",
+                "line": 191
+              },
+              {
+                "after": "let _ = (Sections.add_section_type (mk_var (\"v\", (`:real^3`))));;",
+                "before": "(Sections.add_section_type (mk_var (\"v\", (`:real^3`))));;",
+                "line": 192
+              },
+              {
+                "after": "let _ = Sections.end_section \"Misc\";;",
+                "before": "Sections.end_section \"Misc\";;",
+                "line": 283
+              },
+              {
+                "after": "let _ = Sections.begin_section \"FullySurrounded\";;",
+                "before": "Sections.begin_section \"FullySurrounded\";;",
+                "line": 286
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 287
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "line": 288
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0,V,E)`));;",
+                "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0,V,E)`));;",
+                "line": 289
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "before": "(Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "line": 290
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "line": 293
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"confV\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"confV\" (Sections.section_proof []",
+                "line": 300
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dartH\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dartH\" (Sections.section_proof []",
+                "line": 307
+              },
+              {
+                "after": "let _ = Sections.begin_section \"BallAnnulus\";;",
+                "before": "Sections.begin_section \"BallAnnulus\";;",
+                "line": 563
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"subV\" (`V SUBSET ball_annulus`));;",
+                "before": "(Sections.add_section_hyp \"subV\" (`V SUBSET ball_annulus`));;",
+                "line": 564
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"v_norm\" (Sections.section_proof [\"v\"]",
+                "before": "Sections.add_section_lemma \"v_norm\" (Sections.section_proof [\"v\"]",
+                "line": 567
+              },
+              {
+                "after": "let _ = Sections.end_section \"BallAnnulus\";;",
+                "before": "Sections.end_section \"BallAnnulus\";;",
+                "line": 623
+              },
+              {
+                "after": "let _ = Sections.end_section \"FullySurrounded\";;",
+                "before": "Sections.end_section \"FullySurrounded\";;",
+                "line": 642
+              },
+              {
+                "after": "let _ = Sections.begin_section \"EnclosedTauq\";;",
+                "before": "Sections.begin_section \"EnclosedTauq\";;",
+                "line": 645
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 659
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"E\", (`:(real^3->bool)->bool`))));;",
+                "line": 660
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"fanV\" (`FAN (vec 0,V,E)`));;",
+                "before": "(Sections.add_section_hyp \"fanV\" (`FAN (vec 0,V,E)`));;",
+                "line": 661
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "before": "(Sections.add_section_hyp \"f_surr\" (`fully_surrounded (V,E)`));;",
+                "line": 662
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "line": 665
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dartH\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dartH\" (Sections.section_proof []",
+                "line": 672
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"subV\" (`V SUBSET ball_annulus`));;",
+                "before": "(Sections.add_section_hyp \"subV\" (`V SUBSET ball_annulus`));;",
+                "line": 773
+              },
+              {
+                "after": "let _ = Sections.end_section \"EnclosedTauq\";;",
+                "before": "Sections.end_section \"EnclosedTauq\";;",
+                "line": 827
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Contravening\";;",
+                "before": "Sections.begin_section \"Contravening\";;",
+                "line": 830
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"V\", (`:real^3->bool`))));;",
+                "line": 831
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"contrV\" (`contravening V`));;",
+                "before": "(Sections.add_section_hyp \"contrV\" (`contravening V`));;",
+                "line": 832
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"fanV\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"fanV\" (Sections.section_proof []",
+                "line": 835
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"f_surr\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"f_surr\" (Sections.section_proof []",
+                "line": 842
+              },
+              {
+                "after": "let _ = Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "before": "Sections.add_section_lemma \"dart1_eq\" (Sections.section_proof []",
+                "line": 849
+              },
+              {
+                "after": "let _ = Sections.begin_section \"Ineqs\";;",
+                "before": "Sections.begin_section \"Ineqs\";;",
+                "line": 892
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"ineqs\" (`kcblrqc_ineq_def`));;",
+                "before": "(Sections.add_section_hyp \"ineqs\" (`kcblrqc_ineq_def`));;",
+                "line": 893
+              },
+              {
+                "after": "let _ = Sections.end_section \"Ineqs\";;",
+                "before": "Sections.end_section \"Ineqs\";;",
+                "line": 914
+              },
+              {
+                "after": "let _ = Sections.end_section \"Contravening\";;",
+                "before": "Sections.end_section \"Contravening\";;",
+                "line": 919
+              }
+            ]
+          }
+        ],
+        "path": "text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Tame_lemmas. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON binding or implementation, search order, or axiom. After accepted action 145 passes, the exact raw source reports enclosing-module parser recovery at module Tame_lemmas and emits no action-146 marker. From a separately created clean post-action-145 snapshot, the complete batch emits the action-146 success marker and establishes terminal theorem Tame_lemmas.non_triangular_face_azim_dart_bound with no diagnostic. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required.",
+        "semantic_rule": "Bind the complete 38 anonymous Tame_lemmas module structure expressions to explicit discarded values while preserving the same 29 section begin/end/variable/type/hypothesis effects and nine multiline section-lemma registrations. Each original expression is evaluated once at the same position, with the same arguments, effects, exceptions, and order; all theorem definitions and proof text remain unchanged.",
+        "source_key": "flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
+        "source_md5": "c7c363d83b5f13577416f18f2eae1004",
+        "source_sha256": "0bb81eb6efc0b7ddb380f3fe5c240b894e83bd0672960de54af5fc9072426ebb"
+      },
+      {
+        "id": "PROJECT-PENT-HEX-S2-PRINTF-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 122630,
+        "normalized_md5": "57de064a23be1517bbf5bb54e3950282",
+        "normalized_sha256": "a478ca1130a61ead96183eb4d026e2cd9a3eb78b886b8e7c683011b31b949eef",
+        "operation_count": 3,
+        "operations": [
+          {
+            "after": "let get_ineq (a,b,c) = \n  clean_ineq  (Terminal.get_main_nonlinear\n    (\"7550003505 \" ^ string_of_int a ^ \" \" ^ string_of_int b ^ \" \" ^\n      string_of_int c));;",
+            "before": "let get_ineq (a,b,c) = \n  clean_ineq  (Terminal.get_main_nonlinear (Printf.sprintf \"7550003505 %d %d %d\" a b c));;",
+            "id": "PROJECT-PENT-HEX-S2-PRINTF-001-INEQUALITY-ID",
+            "kind": "exact_bytes_replace_once",
+            "line": 2697
+          },
+          {
+            "after": "  let _ = (i <= j && i <= k) || failwith\n    (\"get3 out of range \" ^ string_of_int i ^ \" \" ^ string_of_int j ^ \" \" ^\n      string_of_int k) in",
+            "before": "  let _ = (i <= j && i <= k) || failwith (Printf.sprintf \"get3 out of range %d %d %d\" i j k) in",
+            "id": "PROJECT-PENT-HEX-S2-PRINTF-001-GET3-ERROR",
+            "kind": "exact_bytes_replace_once",
+            "line": 2875
+          },
+          {
+            "after": "  let _ = (not(thm = TRUTH)) || failwith\n    (\"get4 out of range \" ^ string_of_int i ^ \" \" ^ string_of_int j ^ \" \" ^\n      string_of_int k) in",
+            "before": "  let _ = (not(thm = TRUTH)) || failwith (Printf.sprintf \"get4 out of range %d %d %d\" i j k) in",
+            "id": "PROJECT-PENT-HEX-S2-PRINTF-001-GET4-ERROR",
+            "kind": "exact_bytes_replace_once",
+            "line": 2908
+          }
+        ],
+        "path": "text_formalization/local/pent_hex.hl",
+        "scope_limit": "These three hash-pinned replacements cover the complete mechanically enumerated Printf.sprintf use set in pent_hex.hl: the generated inequality identifier at line 2697 and the get_ineq3/get_ineq4 guard messages at lines 2875 and 2908. They do not implement general Printf, change any inequality identifier, theorem statement, hypothesis, proof step, tactic, proof intent, module binding, search behavior, or axiom. The upstream fix-top100 branch contains no pent_hex source or patch. The native formatting oracle, focused exact-original rejection, focused complete normalized-source acceptance through Pent_hex.terminal_hex_taum and action 150, and fresh cumulative loading are required.",
+        "semantic_rule": "Each fixed integer-only Printf.sprintf call is replaced by the same literal fragments and string_of_int conversions in the same argument order. Native OCaml's %d rendering is exactly string_of_int for all ints, including negatives and min_int, as established by the existing nonlinear-boundary oracle. The inequality identifier and both exceptional diagnostic messages are therefore unchanged, and each surrounding lookup, guard, failure, theorem construction, and proof is evaluated in the same order.",
+        "source_key": "flyspeck:text_formalization/local/pent_hex.hl",
+        "source_md5": "fe348aa40e3fc16092c6144d4b6f1af9",
+        "source_sha256": "3be0e2e05a0f759c4ae6c3f7e04d72130353452a63519fc42793343590830488"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -29303,7 +29702,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 73,
+    "entry_count": 76,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -29425,8 +29824,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "909c06d38040613bf1da864dc41f5fd7",
-    "generated_source_sha256": "7552fd69a0e940dfd2e4846bc02129cbed7ecf3259d0809ca8fcf08996d93eb0",
+    "generated_source_md5": "7813eb7536b2e8cf0791361d50c1c050",
+    "generated_source_sha256": "0d4e531f4e59012032ca491d2d16af27d089751d7bc91242fb0cc6bdd5fe924c",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

@@ -302,9 +302,9 @@
 #flyspeck_needs "tame/ssreflect/sort-compiled.hl";;
 (* 144 selected=flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl sha256=4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8 normalization=PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001 normalized_sha256=b857172b0d1d823820cdec5daf9cbc1a5d8359001d1fb16b80644bd909087f4d *)
 #flyspeck_needs "tame/ssreflect/FNJLBXS-compiled.hl";;
-(* 145 selected=flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl sha256=27fc827bef7c9cb76c01e0219a8126b7b56a6468dd61a66b95aba84c7ad6e847 *)
+(* 145 selected=flyspeck:formal_lp/hypermap/ssreflect/add_triangle-compiled.hl sha256=27fc827bef7c9cb76c01e0219a8126b7b56a6468dd61a66b95aba84c7ad6e847 normalization=PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001 normalized_sha256=5af185a4f4a4079d1680b572ab08a0e6fd21406bb5c66232fd73e9402f5048d4 *)
 #flyspeck_needs "../formal_lp/hypermap/ssreflect/add_triangle-compiled.hl";;
-(* 146 selected=flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl sha256=0bb81eb6efc0b7ddb380f3fe5c240b894e83bd0672960de54af5fc9072426ebb *)
+(* 146 selected=flyspeck:text_formalization/tame/ssreflect/tame_lemmas-compiled.hl sha256=0bb81eb6efc0b7ddb380f3fe5c240b894e83bd0672960de54af5fc9072426ebb normalization=PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001 normalized_sha256=4fa99b55272e86f18ae07dc3de54480488973a18e239113fd551187021105563 *)
 #flyspeck_needs "tame/ssreflect/tame_lemmas-compiled.hl";;
 (* 147 selected=flyspeck:text_formalization/tame/CDTETAT.hl sha256=7dc7ed63c36000faf6ef6e263f638caab8647a6f6fb8c0a5309f081f37008ff7 *)
 #flyspeck_needs "tame/CDTETAT.hl";;
@@ -312,7 +312,7 @@
 #flyspeck_needs "local/appendix.hl";;
 (* 149 selected=flyspeck:text_formalization/local/terminal.hl sha256=6d314b2c93d46a99bb3d77bd4ba0158fb00c77fd3f1ef97c423de8239800fb4f *)
 #flyspeck_needs "local/terminal.hl";;
-(* 150 selected=flyspeck:text_formalization/local/pent_hex.hl sha256=3be0e2e05a0f759c4ae6c3f7e04d72130353452a63519fc42793343590830488 *)
+(* 150 selected=flyspeck:text_formalization/local/pent_hex.hl sha256=3be0e2e05a0f759c4ae6c3f7e04d72130353452a63519fc42793343590830488 normalization=PROJECT-PENT-HEX-S2-PRINTF-001 normalized_sha256=a478ca1130a61ead96183eb4d026e2cd9a3eb78b886b8e7c683011b31b949eef *)
 #flyspeck_needs "local/pent_hex.hl";;
 (* 151 selected=flyspeck:text_formalization/local/lp_details.hl sha256=c2807eec8238ba324f7570dfd3dd03cc61f88f10b2d9bcb3309104cc805e000d *)
 #flyspeck_needs "local/lp_details.hl";;
