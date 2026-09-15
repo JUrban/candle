@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 67)
+        self.assertEqual(len(self.contract["entries"]), 68)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -621,6 +621,24 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("one overload_interface registration", ssrbool["semantic_rule"])
         self.assertIn("complete mechanically enumerated", ssrbool["scope_limit"])
         self.assertIn("one-binding minimizer", ssrbool["scope_limit"])
+        ssrnat = entries["PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001"]
+        self.assertEqual(len(ssrnat["operations"]), 1)
+        ssrnat_effects = ssrnat["operations"][0]
+        self.assertEqual(ssrnat_effects["kind"], "exact_lines_replace_once")
+        self.assertEqual(ssrnat_effects["replacement_count"], 8)
+        self.assertEqual(
+            [replacement["line"] for replacement in ssrnat_effects["replacements"]],
+            [7, 8, 1056, 1057, 1058, 1095, 1402, 1403],
+        )
+        self.assertTrue(all(
+            replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in ssrnat_effects["replacements"]
+        ))
+        self.assertIn("same six Sections calls", ssrnat["semantic_rule"])
+        self.assertIn("prioritize_num call", ssrnat["semantic_rule"])
+        self.assertIn("complete mechanically enumerated", ssrnat["scope_limit"])
+        self.assertIn("consecutive anonymous group", ssrnat["scope_limit"])
+        self.assertIn("binding only one", ssrnat["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1253,7 +1271,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 251)
+        self.assertEqual(len(operation_ids), 252)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
