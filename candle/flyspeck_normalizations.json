@@ -1713,6 +1713,287 @@
       "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in sort-compiled.hl. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--142 pass from a clean post-action-130 state, the exact raw source reports a unit versus function structure-group type mismatch at line 9 and emits no action marker. The complete batch loads from a separate fresh state through the manifest loader, emits the action-143 success marker, and establishes terminal theorem Sort.min_k0_le_EL. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
     },
     {
+      "id": "PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001",
+      "source_key": "flyspeck:text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
+      "path": "text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
+      "source_sha256": "4074682366ef6f8fe0bca059801fca0414607a020a7a0d7b32ffca2931c80ef8",
+      "source_md5": "74e5cdfb818f96e3f57020139a60384e",
+      "normalized_sha256": "b857172b0d1d823820cdec5daf9cbc1a5d8359001d1fb16b80644bd909087f4d",
+      "normalized_md5": "fa98c359beced8d3044ed8682e4eca11",
+      "normalized_bytes": 393279,
+      "operations": [
+        {
+          "id": "PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+          "kind": "exact_lines_replace_once",
+          "line": 7,
+          "replacement_count": 44,
+          "replacements": [
+            {
+              "line": 7,
+              "before": "parse_as_infix (\"::\", (12, \"right\"));;",
+              "after": "let _ = parse_as_infix (\"::\", (12, \"right\"));;"
+            },
+            {
+              "line": 8,
+              "before": "override_interface (\"::\", `CONS`);;",
+              "after": "let _ = override_interface (\"::\", `CONS`);;"
+            },
+            {
+              "line": 9,
+              "before": "make_overloadable \"++\" `:A -> A -> A`;;",
+              "after": "let _ = make_overloadable \"++\" `:A -> A -> A`;;"
+            },
+            {
+              "line": 10,
+              "before": "overload_interface (\"++\", `cat`);;",
+              "after": "let _ = overload_interface (\"++\", `cat`);;"
+            },
+            {
+              "line": 11,
+              "before": "parse_as_infix(\"<-\", (11, \"right\"));;",
+              "after": "let _ = parse_as_infix(\"<-\", (11, \"right\"));;"
+            },
+            {
+              "line": 12,
+              "before": "override_interface(\"<-\", `MEM`);;",
+              "after": "let _ = override_interface(\"<-\", `MEM`);;"
+            },
+            {
+              "line": 31,
+              "before": "Sections.begin_section \"MoreList\";;",
+              "after": "let _ = Sections.begin_section \"MoreList\";;"
+            },
+            {
+              "line": 78,
+              "before": "Sections.end_section \"MoreList\";;",
+              "after": "let _ = Sections.end_section \"MoreList\";;"
+            },
+            {
+              "line": 81,
+              "before": "Sections.begin_section \"MoreMinK\";;",
+              "after": "let _ = Sections.begin_section \"MoreMinK\";;"
+            },
+            {
+              "line": 320,
+              "before": "Sections.end_section \"MoreMinK\";;",
+              "after": "let _ = Sections.end_section \"MoreMinK\";;"
+            },
+            {
+              "line": 323,
+              "before": "Sections.begin_section \"MoreSortedReal\";;",
+              "after": "let _ = Sections.begin_section \"MoreSortedReal\";;"
+            },
+            {
+              "line": 456,
+              "before": "Sections.end_section \"MoreSortedReal\";;",
+              "after": "let _ = Sections.end_section \"MoreSortedReal\";;"
+            },
+            {
+              "line": 459,
+              "before": "Sections.begin_section \"SomeResults\";;",
+              "after": "let _ = Sections.begin_section \"SomeResults\";;"
+            },
+            {
+              "line": 841,
+              "before": "Sections.end_section \"SomeResults\";;",
+              "after": "let _ = Sections.end_section \"SomeResults\";;"
+            },
+            {
+              "line": 844,
+              "before": "Sections.begin_section \"VectorOfList\";;",
+              "after": "let _ = Sections.begin_section \"VectorOfList\";;"
+            },
+            {
+              "line": 874,
+              "before": "(Sections.add_section_var (mk_var (\"d\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"d\", (`:num`))));;"
+            },
+            {
+              "line": 875,
+              "before": "(Sections.add_section_var (mk_var (\"list\", (`:(real^N)list`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"list\", (`:(real^N)list`))));;"
+            },
+            {
+              "line": 876,
+              "before": "(Sections.add_section_hyp \"d_eq\" (`dimindex (:N) = d`));;",
+              "after": "let _ = (Sections.add_section_hyp \"d_eq\" (`dimindex (:N) = d`));;"
+            },
+            {
+              "line": 877,
+              "before": "(Sections.add_section_hyp \"dim_ge\" (`d * LENGTH list <= dimindex (:M)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"dim_ge\" (`d * LENGTH list <= dimindex (:M)`));;"
+            },
+            {
+              "line": 971,
+              "before": "Sections.end_section \"VectorOfList\";;",
+              "after": "let _ = Sections.end_section \"VectorOfList\";;"
+            },
+            {
+              "line": 1007,
+              "before": "Sections.begin_section \"VectorOfList_Sets\";;",
+              "after": "let _ = Sections.begin_section \"VectorOfList_Sets\";;"
+            },
+            {
+              "line": 1008,
+              "before": "(Sections.add_section_var (mk_var (\"k\", (`:num`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"k\", (`:num`))));;"
+            },
+            {
+              "line": 1009,
+              "before": "(Sections.add_section_hyp \"dim_ge\" (`3 * k <= dimindex (:M)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"dim_ge\" (`3 * k <= dimindex (:M)`));;"
+            },
+            {
+              "line": 1012,
+              "before": "Sections.begin_section \"Lim_inS\";;",
+              "after": "let _ = Sections.begin_section \"Lim_inS\";;"
+            },
+            {
+              "line": 1013,
+              "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;"
+            },
+            {
+              "line": 1037,
+              "before": "(Sections.add_section_hyp \"inS_imp\" (`!l. l IN S ==> LENGTH l <= k`));;",
+              "after": "let _ = (Sections.add_section_hyp \"inS_imp\" (`!l. l IN S ==> LENGTH l <= k`));;"
+            },
+            {
+              "line": 1072,
+              "before": "Sections.end_section \"Lim_inS\";;",
+              "after": "let _ = Sections.end_section \"Lim_inS\";;"
+            },
+            {
+              "line": 1075,
+              "before": "Sections.begin_section \"ContinuousOnCompact\";;",
+              "after": "let _ = Sections.begin_section \"ContinuousOnCompact\";;"
+            },
+            {
+              "line": 1076,
+              "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;"
+            },
+            {
+              "line": 1077,
+              "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S ==> LENGTH l = k`));;",
+              "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S ==> LENGTH l = k`));;"
+            },
+            {
+              "line": 1078,
+              "before": "(Sections.add_section_hyp \"compactS\" (`compact (IMAGE (vector_of_list 3) S:real^M->bool)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"compactS\" (`compact (IMAGE (vector_of_list 3) S:real^M->bool)`));;"
+            },
+            {
+              "line": 1079,
+              "before": "(Sections.add_section_hyp \"n_S_empty\" (`~(S = {})`));;",
+              "after": "let _ = (Sections.add_section_hyp \"n_S_empty\" (`~(S = {})`));;"
+            },
+            {
+              "line": 1098,
+              "before": "Sections.end_section \"ContinuousOnCompact\";;",
+              "after": "let _ = Sections.end_section \"ContinuousOnCompact\";;"
+            },
+            {
+              "line": 1099,
+              "before": "(Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"S\", (`:(real^3)list -> bool`))));;"
+            },
+            {
+              "line": 1102,
+              "before": "Sections.begin_section \"NormSet\";;",
+              "after": "let _ = Sections.begin_section \"NormSet\";;"
+            },
+            {
+              "line": 1103,
+              "before": "(Sections.add_section_var (mk_var (\"g\", (`:num -> real`))));;",
+              "after": "let _ = (Sections.add_section_var (mk_var (\"g\", (`:num -> real`))));;"
+            },
+            {
+              "line": 1104,
+              "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S <=> LENGTH l = k /\\ (!i. i < k ==> norm (EL i l) = g i)`));;",
+              "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S <=> LENGTH l = k /\\ (!i. i < k ==> norm (EL i l) = g i)`));;"
+            },
+            {
+              "line": 1128,
+              "before": "Sections.end_section \"NormSet\";;",
+              "after": "let _ = Sections.end_section \"NormSet\";;"
+            },
+            {
+              "line": 1129,
+              "before": "(Sections.add_section_hyp \"inS\" (`!l. l IN S <=> set_of_list l SUBSET ball_annulus /\\",
+              "after": "let _ = (Sections.add_section_hyp \"inS\" (`!l. l IN S <=> set_of_list l SUBSET ball_annulus /\\"
+            },
+            {
+              "line": 1259,
+              "before": "Sections.end_section \"VectorOfList_Sets\";;",
+              "after": "let _ = Sections.end_section \"VectorOfList_Sets\";;"
+            },
+            {
+              "line": 1262,
+              "before": "Sections.begin_section \"FNJLBXS\";;",
+              "after": "let _ = Sections.begin_section \"FNJLBXS\";;"
+            },
+            {
+              "line": 1541,
+              "before": "Sections.end_section \"FNJLBXS\";;",
+              "after": "let _ = Sections.end_section \"FNJLBXS\";;"
+            },
+            {
+              "line": 1544,
+              "before": "Sections.begin_section \"FCDJDOT\";;",
+              "after": "let _ = Sections.begin_section \"FCDJDOT\";;"
+            },
+            {
+              "line": 1806,
+              "before": "Sections.end_section \"FCDJDOT\";;",
+              "after": "let _ = Sections.end_section \"FCDJDOT\";;"
+            }
+          ]
+        },
+        {
+          "id": "PROJECT-FNJLBXS-S2-REALLIM-ADD-APPLY-001",
+          "kind": "exact_lines_replace_once",
+          "line": 52,
+          "replacement_count": 1,
+          "replacements": [
+            {
+              "line": 52,
+              "before": "   ((THENL_ROT (-1)) (((((use_arg_then2 (\"s'_eq\", []))(thm_tac (new_rewrite [] [])))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"list_sum_cons\", [list_sum_cons]))(thm_tac (new_rewrite [] []))))) THEN (((use_arg_then2 (\"REALLIM_ADD\", [REALLIM_ADD]))(thm_tac (new_rewrite [] []))))) THEN (split_tac)));",
+              "after": "   ((THENL_ROT (-1)) (((((use_arg_then2 (\"s'_eq\", []))(thm_tac (new_rewrite [] [])))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"list_sum_cons\", [list_sum_cons]))(thm_tac (new_rewrite [] []))))) THEN ((use_arg_then2 (\"REALLIM_ADD\", [REALLIM_ADD])) (thm_tac apply_tac)) THEN (split_tac))));"
+            }
+          ]
+        },
+        {
+          "id": "PROJECT-FNJLBXS-S2-MIN-K-CONTINUOUS-REWRITE-001",
+          "kind": "exact_lines_replace_once",
+          "line": 93,
+          "replacement_count": 1,
+          "replacements": [
+            {
+              "line": 93,
+              "before": "   ((repeat_tactic 1 9 (((use_arg_then2 (\"real_continuous\", [real_continuous]))(thm_tac (new_rewrite [] []))))) THEN (repeat_tactic 1 9 (((use_arg_then2 (\"tendsto_real\", [tendsto_real]))(thm_tac (new_rewrite [] []))))) THEN (((use_arg_then2 (\"min_k\", [min_k]))(thm_tac (new_rewrite [] [])))) THEN (simp_tac));",
+              "after": "   (REWRITE_TAC[real_continuous; tendsto_real; min_k] THEN (simp_tac));"
+            }
+          ]
+        },
+        {
+          "id": "PROJECT-FNJLBXS-S2-MIN-K-LIMIT-REWRITE-001",
+          "kind": "exact_lines_replace_once",
+          "line": 117,
+          "replacement_count": 1,
+          "replacements": [
+            {
+              "line": 117,
+              "before": "   ((((use_arg_then2 (\"s'_to\", [])) (disch_tac [])) THEN (clear_assumption \"s'_to\") THEN BETA_TAC) THEN (((repeat_tactic 1 9 (((use_arg_then2 (\"tendsto_real\", [tendsto_real]))(thm_tac (new_rewrite [] []))))) THEN (simp_tac)) THEN (move [\"el_cont\"]) THEN (move [\"e\"]) THEN (move [\"e_gt0\"])));",
+              "after": "   ((((use_arg_then2 (\"s'_to\", [])) (disch_tac [])) THEN (clear_assumption \"s'_to\") THEN BETA_TAC) THEN (((REWRITE_TAC[tendsto_real]) THEN (simp_tac)) THEN (move [\"el_cont\"]) THEN (move [\"e\"]) THEN (move [\"e_gt0\"])));"
+            }
+          ]
+        }
+      ],
+      "semantic_rule": "Bind the complete 44 anonymous Fnjlbxs module structure expressions to explicit discarded values while preserving the same 38 Sections expressions, two parser registrations, two interface overrides, one overloadable declaration, one overload registration, arguments, effects, exceptions, and evaluation order; the separate top-level prioritize_overload call remains unchanged. In list_sum_continuous, apply the same REALLIM_ADD theorem directly to the already rewritten goal and preserve the same two subgoals and following proof branches. In min_k_continuous and min_k_limit, expand the same named definitions with HOL Light's standard REWRITE_TAC instead of ssreflect's strict new_rewrite matcher, preserving the resulting goals and every following tactic.",
+      "scope_limit": "This hash-pinned batch is confined to the complete mechanically enumerated anonymous structure-expression set inside module Fnjlbxs and three independently minimized strict-rewrite compatibility sites at source lines 52, 93, and 117. It changes no theorem statement, hypothesis term, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. After actions 131--143 pass from a clean post-action-130 state and the raw top-level prioritize_overload call succeeds, the exact raw module reports a unit versus function structure-group type mismatch at line 7; the structure-only candidate then reaches list_sum_continuous and exposes the strict rewrite mismatches. Each proof correction was validated through its named theorem from a separate fresh post-action-143 state, and the complete batch emits the action-144 success marker and establishes terminal theorem Fnjlbxs.FCDJDOT. No relevant fix-top100 or historical Candle patch exists. Fresh cumulative replay remains required."
+    },
+    {
       "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
       "source_key": "flyspeck:text_formalization/build/strictbuild.hl",
       "path": "text_formalization/build/strictbuild.hl",

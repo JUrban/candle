@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 72)
+        self.assertEqual(len(self.contract["entries"]), 73)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
@@ -774,6 +774,71 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("complete 35 anonymous", sort["semantic_rule"])
         self.assertIn("complete mechanically enumerated", sort["scope_limit"])
         self.assertIn("No relevant fix-top100", sort["scope_limit"])
+        fnjlbxs = entries["PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001"]
+        self.assertEqual(len(fnjlbxs["operations"]), 4)
+        fnjlbxs_effects = fnjlbxs["operations"][0]
+        self.assertEqual(
+            fnjlbxs_effects["kind"], "exact_lines_replace_once",
+        )
+        self.assertEqual(fnjlbxs_effects["replacement_count"], 44)
+        fnjlbxs_replacements = fnjlbxs_effects["replacements"]
+        fnjlbxs_lines = [
+            replacement["line"] for replacement in fnjlbxs_replacements
+        ]
+        self.assertEqual(len(fnjlbxs_lines), 44)
+        self.assertEqual(fnjlbxs_lines, sorted(set(fnjlbxs_lines)))
+        self.assertEqual(fnjlbxs_lines[:7], [7, 8, 9, 10, 11, 12, 31])
+        self.assertEqual(
+            fnjlbxs_lines[-7:], [1128, 1129, 1259, 1262, 1541, 1544, 1806],
+        )
+        self.assertTrue(all(
+            replacement["after"] ==
+            replacement["before"][:
+                len(replacement["before"]) -
+                len(replacement["before"].lstrip())
+            ] + "let _ = " + replacement["before"].lstrip()
+            for replacement in fnjlbxs_replacements
+        ))
+        self.assertEqual(sum(
+            "Sections." in replacement["before"]
+            for replacement in fnjlbxs_replacements
+        ), 38)
+        for effect, expected_count in (
+            ("parse_as_", 2), ("override_interface", 2),
+            ("overload_interface", 1), ("make_overloadable", 1),
+        ):
+            self.assertEqual(sum(
+                replacement["before"].lstrip().startswith(effect)
+                for replacement in fnjlbxs_replacements
+            ), expected_count)
+        self.assertFalse(any(
+            replacement["line"] == 1 for replacement in fnjlbxs_replacements
+        ))
+        self.assertIn("top-level prioritize_overload", fnjlbxs["semantic_rule"])
+        self.assertIn("complete mechanically enumerated", fnjlbxs["scope_limit"])
+        self.assertIn("No relevant fix-top100", fnjlbxs["scope_limit"])
+        fnjlbxs_proofs = fnjlbxs["operations"][1:]
+        self.assertEqual(
+            [operation["id"] for operation in fnjlbxs_proofs],
+            [
+                "PROJECT-FNJLBXS-S2-REALLIM-ADD-APPLY-001",
+                "PROJECT-FNJLBXS-S2-MIN-K-CONTINUOUS-REWRITE-001",
+                "PROJECT-FNJLBXS-S2-MIN-K-LIMIT-REWRITE-001",
+            ],
+        )
+        self.assertEqual(
+            [operation["line"] for operation in fnjlbxs_proofs],
+            [52, 93, 117],
+        )
+        self.assertTrue(all(
+            operation["kind"] == "exact_lines_replace_once" and
+            operation["replacement_count"] == 1 and
+            len(operation["replacements"]) == 1
+            for operation in fnjlbxs_proofs
+        ))
+        self.assertIn("same REALLIM_ADD theorem", fnjlbxs["semantic_rule"])
+        self.assertIn("same named definitions", fnjlbxs["semantic_rule"])
+        self.assertIn("three independently minimized", fnjlbxs["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1406,7 +1471,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 256)
+        self.assertEqual(len(operation_ids), 260)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
