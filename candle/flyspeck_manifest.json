@@ -8857,8 +8857,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "07f55f277d311dd3974c118de227792a",
-    "generated_source_sha256": "cf9d6a3c2adfe7b718061e87d303b9c9b9da2fbf5a139d67ed3adc0723706d67",
+    "generated_source_md5": "ee6564689eccce9e55a424763836db22",
+    "generated_source_sha256": "7774c2ba05cc8dc8015d699ab8ddac5f4741a57b282ce681a68533de083f5a15",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -11602,7 +11602,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 63086,
+      "bytes": 63224,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -14872,10 +14872,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "3a6113627f70ca8d17e975b830c0ee33",
+      "md5": "eef520e60636aa3220bd5c05a823fafc",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "ac70948834b61aecc75a9199a18ce0cc919c3813d62345b820a6bd2a8d9b21e0"
+      "sha256": "d5f38c754a37507c7e3a5be9dad4c787e2305b4076ab79c2fcbe246cc32698ee"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -17618,6 +17618,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 26971,
+        "normalized_md5": "ed5d8717c212edc3cfb7999131c8ecf7",
+        "normalized_sha256": "578d7fe281800b5fc5874ab6fa9cd499162034458be5ae75f5b3cf391023a99a",
+        "operation_count": 1
+      },
       "md5": "fd2e0f4fee2f6ccce2652d7d67f07547",
       "path": "jHOLLight/Examples/ssrbool-compiled.hl",
       "repository": "flyspeck",
@@ -22513,7 +22521,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "eb2280e0480c777d44c50ab8d9fb185643b2c7285fcdc202588acd0dcbeae49e",
+    "contract_sha256": "6c5e65799005f4aebef672ed73c55ce34ec25e5c60e75a47c3a45fcbfb1ef9c3",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -23194,6 +23202,80 @@
         "source_key": "flyspeck:jHOLLight/Examples/ssrfun-compiled.hl",
         "source_md5": "05960dc2054c64f8fdd74ef38340a128",
         "source_sha256": "da8ee55c6fe95fb738429292b5dbcdf9bad6151d630148acf9f605f8ca604512"
+      },
+      {
+        "id": "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 26971,
+        "normalized_md5": "ed5d8717c212edc3cfb7999131c8ecf7",
+        "normalized_sha256": "578d7fe281800b5fc5874ab6fa9cd499162034458be5ae75f5b3cf391023a99a",
+        "operation_count": 1,
+        "operations": [
+          {
+            "id": "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001-EXPLICIT-BINDINGS",
+            "kind": "exact_lines_replace_once",
+            "line": 8,
+            "replacement_count": 10,
+            "replacements": [
+              {
+                "after": "let _ = Sections.begin_section \"ApplyIff\";;",
+                "before": "Sections.begin_section \"ApplyIff\";;",
+                "line": 8
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"P\", (`:bool`))); Sections.add_section_var (mk_var (\"Q\", (`:bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"P\", (`:bool`))); Sections.add_section_var (mk_var (\"Q\", (`:bool`))));;",
+                "line": 9
+              },
+              {
+                "after": "let _ = (Sections.add_section_hyp \"eqPQ\" (`P <=> Q`));;",
+                "before": "(Sections.add_section_hyp \"eqPQ\" (`P <=> Q`));;",
+                "line": 10
+              },
+              {
+                "after": "let _ = Sections.end_section \"ApplyIff\";;",
+                "before": "Sections.end_section \"ApplyIff\";;",
+                "line": 45
+              },
+              {
+                "after": "let _ = Sections.begin_section \"BoolIf\";;",
+                "before": "Sections.begin_section \"BoolIf\";;",
+                "line": 209
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"vT\", (`:A`))); Sections.add_section_var (mk_var (\"vF\", (`:A`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"vT\", (`:A`))); Sections.add_section_var (mk_var (\"vF\", (`:A`))));;",
+                "line": 210
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"f\", (`:A -> B`))));;",
+                "line": 211
+              },
+              {
+                "after": "let _ = (Sections.add_section_var (mk_var (\"b\", (`:bool`))));;",
+                "before": "(Sections.add_section_var (mk_var (\"b\", (`:bool`))));;",
+                "line": 212
+              },
+              {
+                "after": "let _ = Sections.end_section \"BoolIf\";;",
+                "before": "Sections.end_section \"BoolIf\";;",
+                "line": 247
+              },
+              {
+                "after": "let _ = overload_interface(\"+\", `XOR`);;",
+                "before": "overload_interface(\"+\", `XOR`);;",
+                "line": 620
+              }
+            ]
+          }
+        ],
+        "path": "jHOLLight/Examples/ssrbool-compiled.hl",
+        "scope_limit": "This hash-pinned exact-line batch is confined to the complete mechanically enumerated anonymous module structure-expression set in ssrbool-compiled.hl: nine begin_section, end_section, add_section_var, and add_section_hyp expressions at source lines 8--247, plus the unique overload_interface expression at source line 620. It changes no theorem statement, hypothesis term, tactic, proof step, proof intent, definition, section name, registration call, SET_TAC or MESON implementation, search order, or axiom. A one-binding minimizer remains ill-typed at the inferred structure group while the complete ten-expression batch passes from a fresh cumulative post-action-128 state and establishes the terminal theorem; exact raw rejection, normalized action loading, and a fresh cumulative replay remain required.",
+        "semantic_rule": "The ten anonymous module structure expressions execute the same eleven Sections calls and one overload_interface registration exactly once, in their original positions and order. Explicit wildcard bindings discard the same unit results while preserving section nesting, section variables and hypothesis, mutations, overload target, evaluation order, results, and exceptions. The complete normalized module establishes the unchanged Ssrbool.subrelUr theorem.",
+        "source_key": "flyspeck:jHOLLight/Examples/ssrbool-compiled.hl",
+        "source_md5": "fd2e0f4fee2f6ccce2652d7d67f07547",
+        "source_sha256": "24cd8ef9e253145b031b13e0d68250217ade43e583c21ee6574136aa0a120c97"
       },
       {
         "id": "PROJECT-TOPLOOP-S3-USE-FILE-B-001",
@@ -27520,7 +27602,7 @@
         "source_sha256": "d8c4377622d39658b1340583c37b33650adf51c9839d05e3ac3dc9aabf7ab0c3"
       }
     ],
-    "entry_count": 66,
+    "entry_count": 67,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -27642,8 +27724,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "3a6113627f70ca8d17e975b830c0ee33",
-    "generated_source_sha256": "ac70948834b61aecc75a9199a18ce0cc919c3813d62345b820a6bd2a8d9b21e0",
+    "generated_source_md5": "eef520e60636aa3220bd5c05a823fafc",
+    "generated_source_sha256": "d5f38c754a37507c7e3a5be9dad4c787e2305b4076ab79c2fcbe246cc32698ee",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
