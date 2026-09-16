@@ -953,8 +953,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("unchanged test helper", misc_functions["scope_limit"])
         self.assertIn("central for-loop gate", misc_functions["scope_limit"])
         arith_num = entries["PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001"]
-        self.assertEqual(len(arith_num["operations"]), 1)
-        arith_tables = arith_num["operations"][0]
+        self.assertEqual(len(arith_num["operations"]), 2)
+        arith_tables, arith_seeds = arith_num["operations"]
         self.assertEqual(arith_tables["kind"], "exact_lines_replace_once")
         self.assertEqual(arith_tables["replacement_count"], 21)
         self.assertEqual(
@@ -967,8 +967,20 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             and " Hashtbl.t = Hashtbl.create" in replacement["after"]
             for replacement in arith_tables["replacements"]
         ))
+        self.assertEqual(arith_seeds["kind"], "exact_lines_replace_once")
+        self.assertEqual(arith_seeds["replacement_count"], 2)
+        self.assertEqual(
+            [replacement["line"] for replacement in arith_seeds["replacements"]],
+            [1485, 1493],
+        )
+        self.assertTrue(all(
+            replacement["before"].startswith("Hashtbl.add ")
+            and replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in arith_seeds["replacements"]
+        ))
         self.assertIn("complete static set of 21", arith_num["semantic_rule"])
-        self.assertIn("all 21 and only", arith_num["scope_limit"])
+        self.assertIn("complete two-expression set", arith_num["scope_limit"])
+        self.assertIn("known defective anonymous", arith_num["scope_limit"])
         self.assertIn("fix-top100", arith_num["scope_limit"])
         arith_cache = entries[
             "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001"
@@ -1646,7 +1658,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 272)
+        self.assertEqual(len(operation_ids), 273)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

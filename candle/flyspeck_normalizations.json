@@ -2237,9 +2237,9 @@
       "path": "formal_ineqs/arith/arith_num.hl",
       "source_sha256": "ee34d8c035988e8443da01c8725fa72118f856a1f3fcf78cd106b893bc80b2d8",
       "source_md5": "ef7d86273cbd40c834ed4ba562406c97",
-      "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
-      "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
-      "normalized_bytes": 55921,
+      "normalized_sha256": "2c05e8d13878e1de6f253dbab610e1758365e877fb8551c53105d4c729b40f12",
+      "normalized_md5": "d762b035245535922c850badfab719a8",
+      "normalized_bytes": 55937,
       "operations": [
         {
           "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
@@ -2353,10 +2353,28 @@
               "after": "let odd_thm_table : (string, thm) Hashtbl.t = Hashtbl.create maximum;;"
             }
           ]
+        },
+        {
+          "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-EXPLICIT-TABLE-SEEDS",
+          "kind": "exact_lines_replace_once",
+          "line": 1485,
+          "replacement_count": 2,
+          "replacements": [
+            {
+              "line": 1485,
+              "before": "Hashtbl.add even_thm_table names_array.(0) EVEN_B0;;",
+              "after": "let _ = Hashtbl.add even_thm_table names_array.(0) EVEN_B0;;"
+            },
+            {
+              "line": 1493,
+              "before": "Hashtbl.add odd_thm_table names_array.(0) ODD_B0;;",
+              "after": "let _ = Hashtbl.add odd_thm_table names_array.(0) ODD_B0;;"
+            }
+          ]
         }
       ],
-      "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction.",
-      "scope_limit": "This one mechanically enumerated, hash-pinned line operation is confined to all 21 and only the top-level Arith_num Hashtbl.create bindings. It does not change any table operation, definition, conversion, theorem statement, hypothesis, proof, or loop. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
+      "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The two standalone initial seed insertions for the even and odd theorem tables receive explicit discarded-result bindings. Each original Hashtbl.add call, argument, mutation, unit result, exception behavior, and source order is unchanged.",
+      "scope_limit": "These two mechanically enumerated, hash-pinned line operations are confined to all 21 and only the top-level Arith_num Hashtbl.create bindings and the complete two-expression set of standalone theorem-table seed insertions. They do not change any table allocation or operation, definition, conversion, theorem statement, hypothesis, proof, or loop. The two explicit discarded-result bindings avoid the rebuilt frontend's known defective anonymous structure-expression lowering; the centrally lowered loops and indexed assignments remain byte-for-byte unchanged. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use/effect validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
     },
     {
       "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001",

@@ -15400,10 +15400,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "c824f269d5e1e6dd639818716625964f",
+      "md5": "77e5919bcf027045d101bf40baf18a27",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "c65bed47a55bee8731769d6289fc12a699bba6564db4af80dc63dc065483d1fb"
+      "sha256": "5cba7a55ed640eb4dab3e9d046f03b26af145e689131295bf30135d35b4f7fe3"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -16937,10 +16937,10 @@
       "execution_normalization": {
         "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 55921,
-        "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
-        "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
-        "operation_count": 1
+        "normalized_bytes": 55937,
+        "normalized_md5": "d762b035245535922c850badfab719a8",
+        "normalized_sha256": "2c05e8d13878e1de6f253dbab610e1758365e877fb8551c53105d4c729b40f12",
+        "operation_count": 2
       },
       "md5": "ef7d86273cbd40c834ed4ba562406c97",
       "path": "formal_ineqs/arith/arith_num.hl",
@@ -23069,7 +23069,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "cf4ac5348a3f6550824cf218c20a4f92f46aa75ab7d868ccd168d893b8b41e57",
+    "contract_sha256": "915fc455ed4b2985628920468918af34f70480de385b76a9091f0055a02245e7",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -25879,10 +25879,10 @@
       {
         "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 55921,
-        "normalized_md5": "d23f7c80b428cbb942fc11f81e083282",
-        "normalized_sha256": "3221cf46181adf629992359bb18c980bde39b38ab34b573ff464eeb2928d3770",
-        "operation_count": 1,
+        "normalized_bytes": 55937,
+        "normalized_md5": "d762b035245535922c850badfab719a8",
+        "normalized_sha256": "2c05e8d13878e1de6f253dbab610e1758365e877fb8551c53105d4c729b40f12",
+        "operation_count": 2,
         "operations": [
           {
             "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
@@ -25996,11 +25996,29 @@
                 "line": 1492
               }
             ]
+          },
+          {
+            "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-EXPLICIT-TABLE-SEEDS",
+            "kind": "exact_lines_replace_once",
+            "line": 1485,
+            "replacement_count": 2,
+            "replacements": [
+              {
+                "after": "let _ = Hashtbl.add even_thm_table names_array.(0) EVEN_B0;;",
+                "before": "Hashtbl.add even_thm_table names_array.(0) EVEN_B0;;",
+                "line": 1485
+              },
+              {
+                "after": "let _ = Hashtbl.add odd_thm_table names_array.(0) ODD_B0;;",
+                "before": "Hashtbl.add odd_thm_table names_array.(0) ODD_B0;;",
+                "line": 1493
+              }
+            ]
           }
         ],
         "path": "formal_ineqs/arith/arith_num.hl",
-        "scope_limit": "This one mechanically enumerated, hash-pinned line operation is confined to all 21 and only the top-level Arith_num Hashtbl.create bindings. It does not change any table operation, definition, conversion, theorem statement, hypothesis, proof, or loop. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required.",
-        "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction.",
+        "scope_limit": "These two mechanically enumerated, hash-pinned line operations are confined to all 21 and only the top-level Arith_num Hashtbl.create bindings and the complete two-expression set of standalone theorem-table seed insertions. They do not change any table allocation or operation, definition, conversion, theorem statement, hypothesis, proof, or loop. The two explicit discarded-result bindings avoid the rebuilt frontend's known defective anonymous structure-expression lowering; the centrally lowered loops and indexed assignments remain byte-for-byte unchanged. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use/effect validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required.",
+        "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The two standalone initial seed insertions for the even and odd theorem tables receive explicit discarded-result bindings. Each original Hashtbl.add call, argument, mutation, unit result, exception behavior, and source order is unchanged.",
         "source_key": "flyspeck:formal_ineqs/arith/arith_num.hl",
         "source_md5": "ef7d86273cbd40c834ed4ba562406c97",
         "source_sha256": "ee34d8c035988e8443da01c8725fa72118f856a1f3fcf78cd106b893bc80b2d8"
