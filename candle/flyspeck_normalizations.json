@@ -2237,9 +2237,9 @@
       "path": "formal_ineqs/arith/arith_num.hl",
       "source_sha256": "ee34d8c035988e8443da01c8725fa72118f856a1f3fcf78cd106b893bc80b2d8",
       "source_md5": "ef7d86273cbd40c834ed4ba562406c97",
-      "normalized_sha256": "2c05e8d13878e1de6f253dbab610e1758365e877fb8551c53105d4c729b40f12",
-      "normalized_md5": "d762b035245535922c850badfab719a8",
-      "normalized_bytes": 55937,
+      "normalized_sha256": "0d16e338cf878a600758e194464a450ad393523b57666ae75c984b8544afd855",
+      "normalized_md5": "f25a3edd6ec52d04c0086bc6bb2a9879",
+      "normalized_bytes": 56129,
       "operations": [
         {
           "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-THEOREM-TABLES",
@@ -2371,10 +2371,138 @@
               "after": "let _ = Hashtbl.add odd_thm_table names_array.(0) ODD_B0;;"
             }
           ]
+        },
+        {
+          "id": "PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001-EXPLICIT-OUTER-LOOPS",
+          "kind": "exact_lines_replace_once",
+          "line": 114,
+          "replacement_count": 24,
+          "replacements": [
+            {
+              "line": 114,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 169,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 211,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 325,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 377,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 442,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 503,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 577,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 671,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 703,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 718,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 745,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 777,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 792,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 929,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 955,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 963,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 974,
+              "before": "for i = 0 to maximum - 1 do",
+              "after": "let _ = for i = 0 to maximum - 1 do"
+            },
+            {
+              "line": 1127,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 1137,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 1203,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 1253,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 1487,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            },
+            {
+              "line": 1495,
+              "before": "for i = 1 to maximum - 1 do",
+              "after": "let _ = for i = 1 to maximum - 1 do"
+            }
+          ]
         }
       ],
-      "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The two standalone initial seed insertions for the even and odd theorem tables receive explicit discarded-result bindings. Each original Hashtbl.add call, argument, mutation, unit result, exception behavior, and source order is unchanged.",
-      "scope_limit": "These two mechanically enumerated, hash-pinned line operations are confined to all 21 and only the top-level Arith_num Hashtbl.create bindings and the complete two-expression set of standalone theorem-table seed insertions. They do not change any table allocation or operation, definition, conversion, theorem statement, hypothesis, proof, or loop. The two explicit discarded-result bindings avoid the rebuilt frontend's known defective anonymous structure-expression lowering; the centrally lowered loops and indexed assignments remain byte-for-byte unchanged. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use/effect validation, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
+      "semantic_rule": "The complete static set of 21 top-level Hashtbl.create bindings receives explicit annotations stating the unique key and value types already forced by the corresponding Hashtbl.add and Hashtbl.find uses: keys are strings except mk_table's num keys; values are thm, num, term, or the exact theorem/boolean pair shape used at each table. OCaml type annotations are erased, so every table retains the same allocation, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding CakeML's immediate module-level value restriction. The two standalone initial seed insertions and all 24 outermost module-structure for loops receive explicit discarded-result bindings. Every loop keyword, bound, direction, body, nested loop, mutation, unit result, exception behavior, and source order is otherwise unchanged.",
+      "scope_limit": "These three mechanically enumerated, hash-pinned line operations are confined to all 21 and only the top-level Arith_num Hashtbl.create bindings, the complete two-expression set of standalone theorem-table seed insertions, and all 24 and only the outermost module-structure for loops. They do not change any table allocation or operation, definition, conversion, theorem statement, hypothesis, proof, loop body, nested loop, or indexed assignment. The explicit discarded-result bindings avoid the rebuilt frontend's known defective anonymous nested-module structure-expression lowering while retaining the verified central lowering for every for expression and indexed assignment. fix-top100 and the relevant historical arithmetic branch retain the unannotated source and provide no repair. Native annotation/type-use/effect validation, the nested-module bare-loop failure and wrapped-loop compiled control, complete normalized module loading through Arith_nat.NUM_ADD_HASH_CONV, and fresh cumulative replay are required."
     },
     {
       "id": "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001",

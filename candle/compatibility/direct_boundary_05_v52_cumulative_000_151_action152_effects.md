@@ -3,6 +3,14 @@
 Status: DEVELOPMENT / NON-RELEASE. This is direct functional evidence only;
 it makes no S1, S2, S3, qualification, promotion, or release claim.
 
+> **Superseded diagnosis (2026-09-16).** The complete fixed-head v116
+> cumulative replay applied the two seed bindings proposed below and failed at
+> the same action-152 parse location.  It therefore falsifies the seed-only
+> hypothesis and candidate in this report.  The retained report is historical
+> evidence, not current authority; see
+> `direct_boundary_05_v53_action152_nested_for_structure.md` for the minimized
+> nested-module bare-loop reproducer and replacement candidate.
+
 ## Headline Flyspeck progress
 
 - Fresh cumulative action-zero execution: **153 actions reached / 152 passed**.

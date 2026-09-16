@@ -502,7 +502,7 @@ let candle_flyspeck_normalized_sources =
       "formal_ineqs/arith/arith_num.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_ineqs/arith/arith_num.hl",
-    "d762b035245535922c850badfab719a8");
+    "f25a3edd6ec52d04c0086bc6bb2a9879");
    (Filename.concat candle_flyspeck_root
       "formal_ineqs/arith/arith_cache.hl",
     Filename.concat candle_flyspeck_overlay_root

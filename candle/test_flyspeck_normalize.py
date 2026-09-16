@@ -953,8 +953,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("unchanged test helper", misc_functions["scope_limit"])
         self.assertIn("central for-loop gate", misc_functions["scope_limit"])
         arith_num = entries["PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001"]
-        self.assertEqual(len(arith_num["operations"]), 2)
-        arith_tables, arith_seeds = arith_num["operations"]
+        self.assertEqual(len(arith_num["operations"]), 3)
+        arith_tables, arith_seeds, arith_loops = arith_num["operations"]
         self.assertEqual(arith_tables["kind"], "exact_lines_replace_once")
         self.assertEqual(arith_tables["replacement_count"], 21)
         self.assertEqual(
@@ -978,9 +978,24 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             and replacement["after"] == "let _ = " + replacement["before"]
             for replacement in arith_seeds["replacements"]
         ))
+        self.assertEqual(arith_loops["kind"], "exact_lines_replace_once")
+        self.assertEqual(arith_loops["replacement_count"], 24)
+        self.assertEqual(
+            [replacement["line"] for replacement in arith_loops["replacements"]],
+            [114, 169, 211, 325, 377, 442, 503, 577, 671, 703, 718,
+             745, 777, 792, 929, 955, 963, 974, 1127, 1137, 1203, 1253,
+             1487, 1495],
+        )
+        self.assertTrue(all(
+            replacement["before"].startswith("for i = ")
+            and replacement["after"] == "let _ = " + replacement["before"]
+            for replacement in arith_loops["replacements"]
+        ))
         self.assertIn("complete static set of 21", arith_num["semantic_rule"])
+        self.assertIn("all 24 outermost", arith_num["semantic_rule"])
         self.assertIn("complete two-expression set", arith_num["scope_limit"])
         self.assertIn("known defective anonymous", arith_num["scope_limit"])
+        self.assertIn("nested-module bare-loop failure", arith_num["scope_limit"])
         self.assertIn("fix-top100", arith_num["scope_limit"])
         arith_cache = entries[
             "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001"
@@ -1658,7 +1673,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 273)
+        self.assertEqual(len(operation_ids), 274)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
