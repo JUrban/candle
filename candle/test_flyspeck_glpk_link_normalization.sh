@@ -54,7 +54,8 @@ rg -Fq 'val candle_glpk_list_flatten_ok : bool = true' \
 
 (
   cd "$candle_runtime_cwd"
-  printf '#use "%s";;\n#use "%s";;\n' "$candle_root/hol.ml" "$fixture" |
+  printf 'Cakeml.loadPath := ["%s"; Filename.currentDir];;\n#use "hol.ml";;\n#use "%s";;\n' \
+      "$candle_root" "$fixture" |
     timeout 300 "$candle_binary" --candle \
       >"$test_dir/candle.log" 2>&1
 )
