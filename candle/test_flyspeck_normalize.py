@@ -198,7 +198,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 47)
+        self.assertEqual(len(self.contract["entries"]), 50)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -531,7 +531,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
-            [329, 342, 1050],
+            [329, 342, 1050, 299, 852, 1059],
         )
         self.assertIn("Term.compare", immediate["operations"][0]["after"])
         self.assertEqual(immediate["operations"][2]["before"].count("=="), 1)
@@ -992,10 +992,31 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             static_inventory["operations"][2]["after"],
         )
         self.assertIn("successful return", static_inventory["scope_limit"])
+        self.assertEqual(
+            [operation["line"] for operation in static_inventory["operations"][3:]],
+            [48, 70],
+        )
+        self.assertIn(
+            "string_of_int !remaining_files",
+            static_inventory["operations"][3]["after"],
+        )
         section_compare = entries["PROJECT-COMPARE-S3-SECTION-NAME-001"]
         self.assertIn("String.compare", section_compare["operations"][0]["after"])
         lp_compare = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
         self.assertIn("Int.compare", lp_compare["operations"][0]["after"])
+        self.assertEqual(lp_compare["operations"][1]["after"], (
+            "    output_string outs j;;  "
+        ))
+        fixed_format_entries = {
+            "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001": 98,
+            "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001": 308,
+            "PROJECT-LP-S3-FIXED-FORMAT-BODY-001": 233,
+        }
+        for entry_id, line in fixed_format_entries.items():
+            self.assertEqual(entries[entry_id]["operations"][0]["line"], line)
+            self.assertIn("string_of_int", (
+                entries[entry_id]["operations"][0]["after"]
+            ))
         exact_lp = entries["PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001"]
         self.assertEqual(exact_lp["operations"][0]["line"], 46)
         exact_lp_after = exact_lp["operations"][0]["after"]
@@ -1004,6 +1025,15 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("duplicate LP result id", exact_lp_after)
         self.assertIn("length ths <> length archive_const_ids", exact_lp_after)
         self.assertNotIn("map (fun (id, th) -> Hashtbl.add", exact_lp_after)
+        self.assertEqual(
+            [operation["line"] for operation in exact_lp["operations"][1:]],
+            [45, 58],
+        )
+        prove_lp = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
+        self.assertEqual(
+            [operation["line"] for operation in prove_lp["operations"][-3:]],
+            [299, 852, 1059],
+        )
         nonlinear_coverage = entries[
             "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001"
         ]
@@ -1054,7 +1084,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 167)
+        self.assertEqual(len(operation_ids), 178)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

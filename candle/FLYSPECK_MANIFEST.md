@@ -64,9 +64,9 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 47
-site-specific, hash-bound source overlays, 46 of which are selected by the
-direct source graph.  The selected overlays contain 167 exact operations.
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 50
+site-specific, hash-bound source overlays, 49 of which are selected by the
+direct source graph.  The selected overlays contain 178 exact operations.
 `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -82,6 +82,11 @@ lexicographic `Pair.compare String.compare Type.compare` ordering required by
 Candle's `setify` at the four hash-pinned `(string * hol_type)` sites, without
 shadowing the numeric comparison used later in the file, and spells OCaml's
 `List.flatten` alias as Candle's available `List.concat`.
+The LP fixed-format batch replaces only the pinned constant `%s` and `%d`
+progress/output sites with byte-equivalent concatenation and `string_of_int`;
+the in-process `%f` timing notice is delegated explicitly to the authenticated
+outer runner.  It does not provide a general `Printf` implementation or
+activate the fail-closed GLPK process route.
 `PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
 fingerprints must still validate its selected calls.
@@ -215,7 +220,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates all
-47 exact normalization outputs, registers the 46 selected by the
+50 exact normalization outputs, registers the 49 selected by the
 direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does

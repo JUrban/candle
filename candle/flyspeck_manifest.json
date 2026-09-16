@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 404,
+        "line": 419,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 404,
+        "line": 419,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -4639,13 +4639,13 @@
         "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
       },
       {
-        "line": 38,
+        "line": 39,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
-        "line": 58,
+        "line": 59,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
@@ -5191,56 +5191,50 @@
         "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
       },
       {
-        "line": 48,
+        "line": 49,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 50,
+        "line": 51,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 52,
+        "line": 53,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 54,
+        "line": 55,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 56,
+        "line": 57,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 58,
+        "line": 59,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 60,
+        "line": 61,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 75,
+        "line": 76,
         "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
-      },
-      {
-        "line": 86,
-        "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
@@ -5252,6 +5246,12 @@
       },
       {
         "line": 88,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 89,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
@@ -5406,13 +5406,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 404,
+        "line": 419,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 404,
+        "line": 419,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -6960,13 +6960,13 @@
         "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
       },
       {
-        "line": 38,
+        "line": 39,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
-        "line": 58,
+        "line": 59,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
@@ -7512,56 +7512,50 @@
         "source": "flyspeck:text_formalization/tame/good_list_archive.hl"
       },
       {
-        "line": 48,
+        "line": 49,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 50,
+        "line": 51,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 52,
+        "line": 53,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 54,
+        "line": 55,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 56,
+        "line": 57,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 58,
+        "line": 59,
         "member": "mem",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 60,
+        "line": 61,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
       {
-        "line": 75,
+        "line": 76,
         "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
-      },
-      {
-        "line": 86,
-        "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
       },
@@ -7573,6 +7567,12 @@
       },
       {
         "line": 88,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
+      },
+      {
+        "line": 89,
         "member": "compact",
         "module": "Gc",
         "source": "flyspeck:text_formalization/tame/linear_programming_results.hl"
@@ -9301,8 +9301,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "4e9a1d700c56c3e49d40df55eebeab00",
-    "generated_source_sha256": "ed29684d947845c1c56f70f2decd23c390f0e86ddcee2a4a81f6f7375b6fa988",
+    "generated_source_md5": "975400020e17c32392ec766151c01bde",
+    "generated_source_sha256": "2ff3304024e0a67647bf41ad85e22decd64c15d39cf77c875f6e4613e85157d9",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -12046,7 +12046,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 60049,
+      "bytes": 60454,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -15316,10 +15316,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "584ff5861fd233f33d1a48367523f21b",
+      "md5": "a0d2edb45b0fc1214e688376bcff0a3d",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "cf8337a8f06d5390569fcbdee5d19d182adf962210919ad009daef5b8dd39c49"
+      "sha256": "09c0da0baa50c3e482ea615df2be9d6ef1235f65850e0e780c7889e41474e0d8"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -15330,7 +15330,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 18262,
+      "bytes": 18938,
       "dependencies": [
         {
           "kind": "#use",
@@ -15368,7 +15368,7 @@
         },
         {
           "kind": "needs",
-          "line": 426,
+          "line": 441,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -15379,7 +15379,7 @@
         },
         {
           "kind": "needs",
-          "line": 432,
+          "line": 447,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -15390,7 +15390,7 @@
         },
         {
           "kind": "needs",
-          "line": 434,
+          "line": 449,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -15400,10 +15400,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "b16ea2b4b0bcfa3dc18742b09c87b522",
+      "md5": "bfdc9eebc73059b2db76e87f062e0a8a",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "31873e0b2492e424b51a522cfefc2c1b41bbb1b3f4b40fd5c3ac03f3d690b077"
+      "sha256": "0b8e3f56569d2564356c999acaeb023693af222644605a91b4d9152dcee683be"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17045,10 +17045,10 @@
       "execution_normalization": {
         "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16194,
-        "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
-        "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
-        "operation_count": 1
+        "normalized_bytes": 16188,
+        "normalized_md5": "4a69be7282fb3218391c67608f743993",
+        "normalized_sha256": "299672d818bce3764e7ba0fbffebc823868ce567b05efdccfbbf8c9958488e3c",
+        "operation_count": 2
       },
       "md5": "8e2eea27fffde333d431fc757fbe918e",
       "path": "formal_lp/glpk/lpproc.ml",
@@ -17306,6 +17306,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-BODY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 7939,
+        "normalized_md5": "cfd6585a2c79a24401482c0881d490d7",
+        "normalized_sha256": "34371472bd4910bfa1bc4af9cf73b07eb420eb94b7028d35464ba953debd7aaf",
+        "operation_count": 1
+      },
       "md5": "13fdb278d512e1a91a9da3b68b4d3ce8",
       "path": "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
       "repository": "flyspeck",
@@ -17471,6 +17479,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 12002,
+        "normalized_md5": "01e6a821807c8580ea525b4d79dab727",
+        "normalized_sha256": "5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12",
+        "operation_count": 1
+      },
       "md5": "15e00378926ac9ab62fb69a449447290",
       "path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
       "repository": "flyspeck",
@@ -17763,10 +17779,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45259,
-        "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
-        "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
-        "operation_count": 3
+        "normalized_bytes": 45278,
+        "normalized_md5": "fdb160aa1a800b6a2112146302bde1c9",
+        "normalized_sha256": "3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd",
+        "operation_count": 6
       },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
@@ -17906,10 +17922,10 @@
       "execution_normalization": {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3700,
-        "normalized_md5": "c1282e344707f2a8af85c258b9cf0e22",
-        "normalized_sha256": "823a006b10cc9fcd507570e1b68f5c315a9b6147d228fca2843d3c13c8dde73e",
-        "operation_count": 3
+        "normalized_bytes": 3742,
+        "normalized_md5": "906fdf1b660695eb8833a1ada975d273",
+        "normalized_sha256": "49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed",
+        "operation_count": 5
       },
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
       "path": "formal_lp/hypermap/verify_all.hl",
@@ -21852,6 +21868,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3608,
+        "normalized_md5": "d990658b47fac768c34c3a4754e8511e",
+        "normalized_sha256": "5b6de7d78ec8a8aef2fc86976e5d61c6f21097a37b41cd48101b86b554a46f8d",
+        "operation_count": 1
+      },
       "md5": "addad4737eae64fe6109ed9ffc8f66ee",
       "path": "text_formalization/tame/good_list_archive.hl",
       "repository": "flyspeck",
@@ -21894,10 +21918,10 @@
       "execution_normalization": {
         "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3544,
-        "normalized_md5": "873d319b17157a5f244f40d18450eacd",
-        "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
-        "operation_count": 1
+        "normalized_bytes": 3606,
+        "normalized_md5": "0174bf73a4deb6fe0f10a0d24c872b24",
+        "normalized_sha256": "a2d009759d2fa9bd555922cca3f78cf98366e912311cdb7a778487aafa2086ec",
+        "operation_count": 3
       },
       "md5": "75fb7f0449759cd3592569426d4e66b4",
       "path": "text_formalization/tame/linear_programming_results.hl",
@@ -22805,16 +22829,16 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "396e82a76d740b6ac86945870e472103e80ad6cdd7d92e67920695d68d044213",
+    "contract_sha256": "e8a2a41fe294c0476fec6fbb203d190771b4839ea1266ce1207ff58708505cec",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45259,
-        "normalized_md5": "15b9dada3bf16bc851bd825605ad19f8",
-        "normalized_sha256": "7651a3e7c47c5afb74d1e803d6c09da69892e353c4a1ea5e311df6ccb7028eba",
-        "operation_count": 3,
+        "normalized_bytes": 45278,
+        "normalized_md5": "fdb160aa1a800b6a2112146302bde1c9",
+        "normalized_sha256": "3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd",
+        "operation_count": 6,
         "operations": [
           {
             "after": "Term.compare var1 var2",
@@ -22836,11 +22860,38 @@
             "id": "PROJECT-POINTER-S3-IMMEDIATE-001-REPLACE",
             "kind": "exact_bytes_replace_once",
             "line": 1050
+          },
+          {
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-PROBLEM",
+            "kind": "exact_lines_replace_once",
+            "line": 299,
+            "replacement_count": 1,
+            "replacements": [
+              {
+                "after": "      | Failure str -> failwith (\"Problem: \" ^ name ^ \" (\" ^ str ^ \")\")",
+                "before": "      | Failure str -> failwith (sprintf \"Problem: %s (%s)\" name str)",
+                "line": 299
+              }
+            ]
+          },
+          {
+            "after": "Format.print_string (string_of_int !t ^ \" \")",
+            "before": "Format.print_string (sprintf \"%d \" !t)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-TERMINAL-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 852
+          },
+          {
+            "after": "Format.print_string (\"terminals = \" ^ string_of_int n ^ \": \")",
+            "before": "Format.print_string (sprintf \"terminals = %d: \" n)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-TERMINAL-COUNT",
+            "kind": "exact_bytes_replace_once",
+            "line": 1059
           }
         ],
         "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists; compiled ordering and terminal theorem fingerprints remain required.",
-        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison.",
+        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. Compiled ordering, exception diagnostics, progress bytes, and terminal theorem fingerprints remain required.",
+        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text.",
         "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
         "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
@@ -24057,10 +24108,10 @@
       {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3700,
-        "normalized_md5": "c1282e344707f2a8af85c258b9cf0e22",
-        "normalized_sha256": "823a006b10cc9fcd507570e1b68f5c315a9b6147d228fca2843d3c13c8dde73e",
-        "operation_count": 3,
+        "normalized_bytes": 3742,
+        "normalized_md5": "906fdf1b660695eb8833a1ada975d273",
+        "normalized_sha256": "49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed",
+        "operation_count": 5,
         "operations": [
           {
             "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n",
@@ -24082,11 +24133,25 @@
             "id": "PROJECT-DIRECT-S3-LP-CONSUMPTION-001",
             "kind": "exact_bytes_replace_once",
             "line": 57
+          },
+          {
+            "after": "report (\"(\" ^ string_of_int !remaining_files ^ \") \" ^\n      string_of_int !counter ^ \"/\" ^ string_of_int !total)",
+            "before": "report (sprintf \"(%d) %d/%d\" !remaining_files !counter !total)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-VERIFY-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 48
+          },
+          {
+            "after": "report (\"Verifying \" ^ file)",
+            "before": "report (sprintf \"Verifying %s\" file)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-VERIFY-FILE",
+            "kind": "exact_bytes_replace_once",
+            "line": 70
           }
         ],
         "path": "formal_lp/hypermap/verify_all.hl",
-        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims.",
-        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS.",
+        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims. The two formatting replacements do not implement general formatting; exact progress bytes and full verification remain gates.",
+        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS. The two remaining executable fixed formats contain only %d and %s conversions; literal concatenation and string_of_int preserve their bytes and argument order.",
         "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
         "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
         "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
@@ -24094,10 +24159,10 @@
       {
         "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3544,
-        "normalized_md5": "873d319b17157a5f244f40d18450eacd",
-        "normalized_sha256": "f79c81e9e2e3559d23db5bbcd522f900d15ad1f7dae46a9fca1f2bd78d8a89c6",
-        "operation_count": 1,
+        "normalized_bytes": 3606,
+        "normalized_md5": "0174bf73a4deb6fe0f10a0d24c872b24",
+        "normalized_sha256": "a2d009759d2fa9bd555922cca3f78cf98366e912311cdb7a778487aafa2086ec",
+        "operation_count": 3,
         "operations": [
           {
             "after": "  let ths = List.flatten (map fst result) in\n  let result = [] in\n  let expected_table = Hashtbl.create (length archive_const_ids) in\n  let add_expected id =\n    if Hashtbl.mem expected_table id then\n      failwith (\"duplicate Flyspeck archive id: \"^id)\n    else Hashtbl.add expected_table id () in\n  let _ = map add_expected archive_const_ids in\n  let result_table = Hashtbl.create (length ths) in\n  let add_result (id, th) =\n    if not (Hashtbl.mem expected_table id) then\n      failwith (\"unexpected LP result id: \"^id)\n    else if Hashtbl.mem result_table id then\n      failwith (\"duplicate LP result id: \"^id)\n    else Hashtbl.add result_table id th in\n  let _ = map add_result ths in\n  let _ =\n    if length ths <> length archive_const_ids then\n      failwith \"LP result/archive id count mismatch\"\n    else () in\n",
@@ -24105,11 +24170,25 @@
             "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001-FAIL-CLOSED",
             "kind": "exact_bytes_replace_once",
             "line": 46
+          },
+          {
+            "after": "  let _ = total in\n  let _ = report \"Candle S3: total verification time is recorded by the outer runner\\n\" in",
+            "before": "  let _ = report (sprintf \"Total verification time: %f\\n\" total) in",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-TOTAL-TIME",
+            "kind": "exact_bytes_replace_once",
+            "line": 45
+          },
+          {
+            "after": "report (string_of_int !i ^ \" / \" ^ string_of_int n)",
+            "before": "report (sprintf \"%d / %d\" !i n)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-FINAL-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 58
           }
         ],
         "path": "text_formalization/tame/linear_programming_results.hl",
-        "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. It is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility.",
-        "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification.",
+        "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. The fixed-format replacements do not implement general formatting, and the timing notice cannot justify a performance claim. This is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility.",
+        "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification. The integer progress format is replaced by byte-identical string_of_int concatenation. The in-process floating-point wall-time rendering affects only telemetry and is replaced by a deterministic notice while the authenticated outer runner records wall time.",
         "source_key": "flyspeck:text_formalization/tame/linear_programming_results.hl",
         "source_md5": "75fb7f0449759cd3592569426d4e66b4",
         "source_sha256": "0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4"
@@ -24632,10 +24711,10 @@
       {
         "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16194,
-        "normalized_md5": "0399bf375d48d4bb4de408e428b84ec3",
-        "normalized_sha256": "3e8491b45b6b548537a8922c8fe2ffd86add5194c87d19500f3de1ef0073a71a",
-        "operation_count": 1,
+        "normalized_bytes": 16188,
+        "normalized_md5": "4a69be7282fb3218391c67608f743993",
+        "normalized_sha256": "299672d818bce3764e7ba0fbffebc823868ce567b05efdccfbbf8c9958488e3c",
+        "operation_count": 2,
         "operations": [
           {
             "after": "Int.compare (mc b) (mc a)",
@@ -24643,14 +24722,90 @@
             "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001-INT",
             "kind": "exact_bytes_replace_once",
             "line": 95
+          },
+          {
+            "after": "    output_string outs j;;  ",
+            "before": "    Printf.fprintf outs \"%s\" j;;  ",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-LPPROC-OUTPUT",
+            "kind": "exact_bytes_replace_once",
+            "line": 342
           }
         ],
         "path": "formal_lp/glpk/lpproc.ml",
-        "scope_limit": "This rewrite is confined to the typed LP preprocessing count comparator. It does not implement polymorphic comparison; compiled list ordering and final theorem fingerprints remain gates.",
-        "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison.",
+        "scope_limit": "The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates.",
+        "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
         "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
         "source_md5": "8e2eea27fffde333d431fc757fbe918e",
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
+      },
+      {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 3608,
+        "normalized_md5": "d990658b47fac768c34c3a4754e8511e",
+        "normalized_sha256": "5b6de7d78ec8a8aef2fc86976e5d61c6f21097a37b41cd48101b86b554a46f8d",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "report (string_of_int !i ^ \" / \" ^ string_of_int n)",
+            "before": "report (sprintf \"%d / %d\" !i n)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-GOOD-LIST-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 98
+          }
+        ],
+        "path": "text_formalization/tame/good_list_archive.hl",
+        "scope_limit": "This hash-pinned replacement covers only the action-170 good-list progress message. It does not implement general formatting or change archive entries, conversions, theorems, hypotheses, proof steps, or axioms. Exact native formatting, complete source loading, archive traversal, and cumulative replay remain gates.",
+        "semantic_rule": "The sole format has two %d conversions separated by fixed literal bytes. OCaml's %d rendering is string_of_int for every int, so concatenation preserves the exact progress text, argument order, effects, exceptions, and proof computation.",
+        "source_key": "flyspeck:text_formalization/tame/good_list_archive.hl",
+        "source_md5": "addad4737eae64fe6109ed9ffc8f66ee",
+        "source_sha256": "21125bc287b4fc28897ecf66df3f939718d1ecf1d086b25bed4cac6fc1a6493f"
+      },
+      {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 12002,
+        "normalized_md5": "01e6a821807c8580ea525b4d79dab727",
+        "normalized_sha256": "5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "report (\"Processing: \" ^ ineq.name ^ \" (\" ^\n      string_of_int !counter ^ \" / \" ^ string_of_int !total ^ \")\")",
+            "before": "report (sprintf \"Processing: %s (%d / %d)\" ineq.name !counter !total)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-INEQ-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 308
+          }
+        ],
+        "path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "scope_limit": "This hash-pinned replacement covers only the action-173 inequality progress message. It does not implement general formatting or change an inequality, theorem, hypothesis, proof step, or axiom. Exact native formatting, complete source loading, generated-inequality behavior, and cumulative replay remain gates.",
+        "semantic_rule": "The sole format contains one string and two integer conversions surrounded by fixed literal bytes. Concatenation and string_of_int preserve the exact progress text and left-to-right argument observations while leaving inequality generation unchanged.",
+        "source_key": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
+        "source_md5": "15e00378926ac9ab62fb69a449447290",
+        "source_sha256": "3fb369d89d13c1dd04cb1710424d9b2f1943bc8b04a1f83128f716975ea09a1e"
+      },
+      {
+        "id": "PROJECT-LP-S3-FIXED-FORMAT-BODY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 7939,
+        "normalized_md5": "cfd6585a2c79a24401482c0881d490d7",
+        "normalized_sha256": "34371472bd4910bfa1bc4af9cf73b07eb420eb94b7028d35464ba953debd7aaf",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "report (\"Adding \" ^ lp_name ^ \" (\" ^ string_of_int !counter ^\n      \" / \" ^ string_of_int total ^ \")\")",
+            "before": "report (sprintf \"Adding %s (%d / %d)\" lp_name !counter total)",
+            "id": "PROJECT-LP-S3-FIXED-FORMAT-001-BODY-PROGRESS",
+            "kind": "exact_bytes_replace_once",
+            "line": 233
+          }
+        ],
+        "path": "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "scope_limit": "This hash-pinned replacement covers only the action-176 body-inequality progress message. It does not implement general formatting or change an inequality, theorem, hypothesis, proof step, or axiom. Exact native formatting, complete source loading, generated-inequality behavior, and cumulative replay remain gates.",
+        "semantic_rule": "The sole format contains one string and two integer conversions surrounded by fixed literal bytes. Concatenation and string_of_int preserve the exact progress text and left-to-right argument observations while leaving body-inequality generation unchanged.",
+        "source_key": "flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+        "source_md5": "13fdb278d512e1a91a9da3b68b4d3ce8",
+        "source_sha256": "d0783e75e9e3cc2d0a2009a50f4b7efcc9f6b783116ff6fee04167426e5a39a9"
       },
       {
         "id": "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001",
@@ -24925,7 +25080,7 @@
         "source_sha256": "f3d683fb2d3d8b2f49cfea798f7cb66b8d20f23efb530bd1b86519727b70e346"
       }
     ],
-    "entry_count": 47,
+    "entry_count": 50,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -24952,6 +25107,7 @@
       "candle:candle/test_flyspeck_arith_num_normalization.sh",
       "candle:candle/test_flyspeck_arith_cache_normalization.sh",
       "candle:candle/test_flyspeck_glpk_link_normalization.sh",
+      "candle:candle/test_flyspeck_lp_fixed_format_normalization.sh",
       "candle:candle/test_ocaml_for_structure_effects.sh",
       "candle:candle/test_ocaml_array_assignment.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
@@ -25053,8 +25209,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "584ff5861fd233f33d1a48367523f21b",
-    "generated_source_sha256": "cf8337a8f06d5390569fcbdee5d19d182adf962210919ad009daef5b8dd39c49",
+    "generated_source_md5": "a0d2edb45b0fc1214e688376bcff0a3d",
+    "generated_source_sha256": "09c0da0baa50c3e482ea615df2be9d6ef1235f65850e0e780c7889e41474e0d8",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

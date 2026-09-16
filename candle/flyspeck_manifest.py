@@ -1952,6 +1952,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                 "candle:candle/test_flyspeck_arith_num_normalization.sh",
                 "candle:candle/test_flyspeck_arith_cache_normalization.sh",
                 "candle:candle/test_flyspeck_glpk_link_normalization.sh",
+                "candle:candle/test_flyspeck_lp_fixed_format_normalization.sh",
                 "candle:candle/test_ocaml_for_structure_effects.sh",
                 "candle:candle/test_ocaml_array_assignment.sh",
                 "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",

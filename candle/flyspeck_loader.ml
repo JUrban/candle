@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "4e9a1d700c56c3e49d40df55eebeab00" then
+     "975400020e17c32392ec766151c01bde" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "584ff5861fd233f33d1a48367523f21b" then
+     "a0d2edb45b0fc1214e688376bcff0a3d" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all forty-seven outputs in a separate tree;
-   this process registers only the forty-six selected by the direct source graph.
+(* The host-side normalizer materializes all fifty outputs in a separate tree;
+   this process registers only the forty-nine selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -168,7 +168,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-    "15b9dada3bf16bc851bd825605ad19f8");
+    "fdb160aa1a800b6a2112146302bde1c9");
    (Filename.concat candle_flyspeck_text_root
       "general/lib.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -298,12 +298,12 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/hypermap/verify_all.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/verify_all.hl",
-    "c1282e344707f2a8af85c258b9cf0e22");
+    "906fdf1b660695eb8833a1ada975d273");
    (Filename.concat candle_flyspeck_text_root
       "tame/linear_programming_results.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/linear_programming_results.hl",
-    "873d319b17157a5f244f40d18450eacd");
+    "0174bf73a4deb6fe0f10a0d24c872b24");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/calc_derivative.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -363,7 +363,22 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/glpk/lpproc.ml",
-    "0399bf375d48d4bb4de408e428b84ec3");
+    "4a69be7282fb3218391c67608f743993");
+   (Filename.concat candle_flyspeck_text_root
+      "tame/good_list_archive.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/tame/good_list_archive.hl",
+    "d990658b47fac768c34c3a4754e8511e");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/ineqs/lp_ineqs.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/ineqs/lp_ineqs.hl",
+    "01e6a821807c8580ea525b4d79dab727");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/ineqs/lp_body_ineqs.hl",
+    "cfd6585a2c79a24401482c0881d490d7");
    (Filename.concat candle_flyspeck_text_root
       "fan/Conforming.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -395,7 +410,7 @@ let candle_flyspeck_normalized_sources =
       "text_formalization/packing/SLTSTLO.hl",
     "78e1641aace383531357719f10fa90cb")];;
 
-if List.length candle_flyspeck_normalized_sources <> 46 then
+if List.length candle_flyspeck_normalized_sources <> 49 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

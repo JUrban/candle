@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 47)
+        self.assertEqual(contract["entry_count"], 50)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -618,7 +618,7 @@ class GeneratedManifestTests(unittest.TestCase):
         ))
         self.assertEqual(
             [operation["line"] for operation in entry["operations"]],
-            [329, 342, 1050],
+            [329, 342, 1050, 299, 852, 1059],
         )
         node = self.payload["source_nodes"][entry["source_key"]]
         self.assertEqual(node["sha256"], entry["source_sha256"])
@@ -719,9 +719,18 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(misc_defs["operation_count"], 2)
         self.assertIn("t = x+|y'", misc_defs["operations"][0]["after"])
         self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][1]["after"])
-        self.assertEqual(entry["operation_count"], 3)
+        self.assertEqual(entry["operation_count"], 6)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
+        for entry_id in (
+            "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",
+            "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
+            "PROJECT-LP-S3-FIXED-FORMAT-BODY-001",
+        ):
+            self.assertEqual(entries[entry_id]["operation_count"], 1)
+            self.assertIn("string_of_int", (
+                entries[entry_id]["operations"][0]["after"]
+            ))
         print_types = entries["PROJECT-PRINT-TYPES-S3-COMPATIBILITY-001"]
         self.assertEqual(
             print_types["source_key"],
@@ -958,7 +967,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 46", source,
+            "List.length candle_flyspeck_normalized_sources <> 49", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -968,7 +977,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 46)
+        self.assertEqual(len(selected_normalizations), 49)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)
