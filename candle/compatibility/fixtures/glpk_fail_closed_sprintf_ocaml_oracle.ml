@@ -27,8 +27,14 @@ module Candle_glpk_list_find_all = struct
     find_all
       (fun value -> visits := !visits @ [value]; value mod 2 = 0)
       [1;2;3;4];;
+
+  let flattened = flatten [[1;2];[];[3;4]];;
 end;;
 
 let candle_glpk_list_find_all_ok =
   Candle_glpk_list_find_all.values = [2;4] &&
   !(Candle_glpk_list_find_all.visits) = [1;2;3;4];;
+
+let candle_glpk_list_flatten_ok =
+  Candle_glpk_list_find_all.flattened = [1;2;3;4] &&
+  List.flatten [[1];[2;3];[];[4]] = List.concat [[1];[2;3];[];[4]];;

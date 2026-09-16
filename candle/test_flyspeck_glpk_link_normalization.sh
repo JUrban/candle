@@ -42,11 +42,14 @@ rg -Fq \
   "$normalized"
 rg -Fq 'let (ic,oc) = Unix.open_process(com) in' "$normalized"
 rg -Fq 'let find_all f l = filter f l' "$candle_root/candle/ocaml.ml"
+rg -Fq 'let flatten xss = concat xss' "$candle_root/candle/ocaml.ml"
 
 ocaml -noinit -noprompt <"$fixture" >"$test_dir/ocaml.log" 2>&1
 rg -Fq 'val candle_glpk_fail_closed_sprintf_ok : bool = true' \
   "$test_dir/ocaml.log"
 rg -Fq 'val candle_glpk_list_find_all_ok : bool = true' \
+  "$test_dir/ocaml.log"
+rg -Fq 'val candle_glpk_list_flatten_ok : bool = true' \
   "$test_dir/ocaml.log"
 
 (
@@ -59,9 +62,11 @@ rg -Fq 'val candle_glpk_fail_closed_sprintf_ok = true: bool' \
   "$test_dir/candle.log"
 rg -Fq 'val candle_glpk_list_find_all_ok = true: bool' \
   "$test_dir/candle.log"
+rg -Fq 'val candle_glpk_list_flatten_ok = true: bool' \
+  "$test_dir/candle.log"
 if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' "$test_dir/candle.log"; then
   tail -n 100 "$test_dir/candle.log" >&2
   exit 1
 fi
 
-printf 'PASS: glpk_link fail-closed Printf and List.find_all compatibility\n'
+printf 'PASS: glpk_link fail-closed Printf and List.find_all/List.flatten compatibility\n'

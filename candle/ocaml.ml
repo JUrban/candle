@@ -231,6 +231,7 @@ module List = struct
   let mem a set = Cake.List.member a set
   let rev xs = Cake.List.rev xs
   let concat xss = Cake.List.concat xss
+  let flatten xss = concat xss
   let rev_append l1 l2 =
     let rec aux acc l =
       match l with

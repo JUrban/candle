@@ -99,7 +99,7 @@ fi
 [[ $(rg -Fc 'List.concat' "$hales") -eq 2 ]]
 [[ $(rg -Fc 'List.concat' "$truong") -eq 2 ]]
 if rg -Fq 'List.flatten' "$hales" "$truong"; then
-  echo 'normalized tactic source retained unavailable List.flatten' >&2
+  echo 'normalized tactic source did not apply its pinned List.flatten rewrite' >&2
   exit 1
 fi
 [[ $(rg -Fc 'setify Term.(<)' "$hales") -eq 3 ]]
@@ -200,9 +200,10 @@ fi
 
 rg -Fq 'Type mismatch between int list -> int list and term list' \
   "$test_dir/candle.log"
-rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: Printf.fprintf' "$test_dir/candle.log"
 rg -Fq 'Value restriction violated' "$test_dir/candle.log"
+rg -Fq 'val candle_flyspeck_original_flatten_frees = <fun>: term list -> term list' \
+  "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $fixture_root/base_prefix_api_original_rebind_structure.ml" \
   "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $fixture_root/base_prefix_api_original_meson_structure.ml" \
@@ -232,7 +233,7 @@ rg -Fq -- "- Finished loading $parse_ext" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $goal_printer" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $prove_refinement" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $tactics" "$test_dir/candle.log"
-if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 4 ]]; then
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 3 ]]; then
   tail -n 80 "$test_dir/candle.log" >&2
   exit 1
 fi
