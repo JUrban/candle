@@ -38,20 +38,19 @@ if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' "$test_dir/candle.log"; then
   exit 1
 fi
 
-# This exact bare nested-module case is the retained reproducer for the
-# frontend defect.  Treat accidental acceptance without the expected value as
-# a failure as well as disappearance or mutation of the diagnosed failure.
+# A nested-module `;;` is a module-item separator, not a top-level REPL phrase
+# boundary.  The bare expression and explicit discarded-result binding must
+# therefore preserve the same preceding structure bindings and final value.
 (
   cd "$candle_runtime_cwd"
   timeout 300 "$candle_binary" --candle <"$nested_bare_fixture" \
     >"$test_dir/candle-nested-bare.log" 2>&1
 )
-rg -Fq 'Expected to be at EOF' "$test_dir/candle-nested-bare.log"
-rg -Fq 'module Candle_for_nested_structure_effect' \
+rg -Fq 'val candle_for_nested_structure_effect_expected = true: bool' \
   "$test_dir/candle-nested-bare.log"
-if rg -Fq 'candle_for_nested_structure_effect_expected = true: bool' \
+if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' \
     "$test_dir/candle-nested-bare.log"; then
-  echo 'deferred nested-module bare-loop defect unexpectedly passed' >&2
+  tail -n 100 "$test_dir/candle-nested-bare.log" >&2
   exit 1
 fi
 
@@ -68,4 +67,4 @@ if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' \
   exit 1
 fi
 
-printf 'PASS: OCaml for loops, retained nested-module defect, and wrapped control\n'
+printf 'PASS: OCaml for loops and bare/wrapped nested-module effects\n'
