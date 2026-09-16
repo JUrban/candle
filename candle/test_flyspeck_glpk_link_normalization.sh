@@ -54,7 +54,7 @@ rg -Fq 'val candle_glpk_list_flatten_ok : bool = true' \
 
 (
   cd "$candle_runtime_cwd"
-  printf '#use "hol.ml";;\n#use "%s";;\n' "$fixture" |
+  printf '#use "%s";;\n#use "%s";;\n' "$candle_root/hol.ml" "$fixture" |
     timeout 300 "$candle_binary" --candle \
       >"$test_dir/candle.log" 2>&1
 )
