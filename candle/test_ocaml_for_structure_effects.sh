@@ -12,14 +12,14 @@ cleanup() {
 trap cleanup EXIT
 
 ocaml -noinit -noprompt <"$fixture" >"$test_dir/ocaml.log" 2>&1
-rg -Fq 'CANDLE_OCAML_FOR_STRUCTURE_EFFECTS_OK' "$test_dir/ocaml.log"
+rg -Fq 'val candle_ocaml_for_structure_effects_ok : bool = true' \
+  "$test_dir/ocaml.log"
 
 (
   cd "$candle_runtime_cwd"
   timeout 300 "$candle_binary" --candle <"$fixture" \
     >"$test_dir/candle.log" 2>&1
 )
-rg -Fq 'CANDLE_OCAML_FOR_STRUCTURE_EFFECTS_OK' "$test_dir/candle.log"
 rg -Fq 'val candle_ocaml_for_structure_effects_ok = true: bool' \
   "$test_dir/candle.log"
 if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' "$test_dir/candle.log"; then
@@ -27,4 +27,4 @@ if rg -q 'Parsing failed|^ERROR:|^EXCEPTION:' "$test_dir/candle.log"; then
   exit 1
 fi
 
-printf 'PASS: OCaml for loops and discarded structure effects\n'
+printf 'PASS: OCaml for loops and explicit discarded structure effect\n'

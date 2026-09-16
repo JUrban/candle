@@ -1,11 +1,11 @@
 # Direct boundary 05: action 153 GLPK-link compatibility
 
 Status: DEVELOPMENT / NON-RELEASE candidate. The first genuine action-153
-failure is reproduced and the narrow formatting contract has passed its
-native/Candle oracle, but the complete normalized source has not yet passed on
-the rebuilt frontend. The cumulative metric therefore remains 152/152 actions,
-indices 000--151; neither action 152 nor action 153 receives cumulative credit
-from this work.
+failure is reproduced, the narrow normalization gates pass on the rebuilt
+frontend, and the verified compiler build is complete. The complete normalized
+source has not yet passed a fresh cumulative action-zero replay. The cumulative
+metric therefore remains 152/152 actions, indices 000--151; neither action 152
+nor action 153 receives cumulative credit from this work.
 
 ## First failure
 
@@ -36,8 +36,8 @@ The checkpoint copy has the unchanged focused-image identity
 
 The Candle `fix-top100` branch has no Flyspeck source repair for this file.
 Inspected Flyspeck develop/native history retains `Printf.sprintf`; unrelated
-historical changes do not supply a compatibility solution. The candidate is
-therefore one exact hash-pinned replacement of the alias:
+historical changes do not supply a compatibility solution. The candidate
+begins with one exact hash-pinned replacement of the alias:
 
 ```ocaml
 let sprintf _ =
@@ -54,29 +54,42 @@ a basename alias, or authorization for process execution.
 The manifest route audit records these calls as belonging to the unused
 non-verification GLPK generator/process lane. Any selected caller, any need for
 formatted output, or any source drift invalidates this normalization. The
-normalized file is 8,077 bytes, SHA-256
-`6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45`,
-and MD5 `7034cd37bfda474171f5135efaf73a62`.
+rebuilt frontend correctly accepts this source's native ascending `for` loop,
+but its anonymous standalone module-expression lowering does not retain prior
+module bindings. The one affected pure example is therefore made explicit in
+the exact source contract:
+
+```ocaml
+let _ = wheremod [[0;1;2];[3;4;5];[7;8;9]] [8;9;7];;  (* 2 *)
+```
+
+This is OCaml's equivalent discarded-result binding: it evaluates the same
+pure call and discards the same result. It is not a general anonymous-expression
+workaround or evidence that the central lowering works. The two-operation
+normalized file is 8,085 bytes, SHA-256
+`c09fc08aba4b758b7b46250d783414b88828c53b40fefb187f92b675d0ba96b9`,
+and MD5 `eac0c846a4608adb32137e0a61029f55`.
 
 The fail-closed oracle exercises integer, string, float, and mixed-arity call
-shapes under native OCaml and the current compiled Candle. It confirms the
+shapes under native OCaml and the rebuilt compiled Candle. It confirms the
 polymorphic binding and the exact deterministic failure at every call. The
-normalization contract and complete manifest have reached a fixed point at 80
-entries (79 selected overlays), contract SHA-256
-`8e35902c2c43bfa4d4f5a2ec5bbb2e7b0fe8cc84e7eebbb233d6534a56f1475d`,
+normalization gate also checks the exact explicit discarded-result expression.
+The normalization contract and complete manifest have reached a fixed point at
+80 entries (79 selected overlays), contract SHA-256
+`cf4ac5348a3f6550824cf218c20a4f92f46aa75ab7d868ccd168d893b8b41e57`,
 297 roots, 400 source nodes, and 43 generated inputs.
 
 ## Remaining acceptance
 
-The unchanged source also contains an ascending `for` loop and a standalone
-module-structure expression. Those constructs are covered centrally by the
-isolated CakeML frontend commits `8dc5e5d9618d78a4cdc6afb8346f8c583862b485`
-and `73945eca14ee1866bfa6f96de09bf5744dce485d`, rather than by additional
-file-specific normalizations. Their parser-theory unit suite is green; the full
-verified compiler build is still running.
+The exact CakeML commit
+`73945eca14ee1866bfa6f96de09bf5744dce485d` completed a serial verified build
+through `x64Bootstrap`. Its compiled native/Candle gates pass for native `for`
+loops, one- and two-level indexed assignments, and this fail-closed formatter
+contract. Anonymous standalone module expressions remain a separate central
+frontend defect, which is why the exact pure example wrapper above remains in
+the source contract.
 
-Once that exact build yields a compiled runtime, acceptance requires a fresh
-complete normalized `Glpk_link` load from a clean predecessor, evaluation of
-the pure `convert_to_list pentstring` result, and a regenerated action-zero
-cumulative replay. Until those checks pass, this document records a candidate
-and the real first failure only.
+Acceptance still requires a fresh complete normalized `Glpk_link` load in the
+regenerated cumulative plan, evaluation of the pure `convert_to_list pentstring`
+result, and its authenticated action marker. Until that action-zero replay
+passes, this document records a candidate and the real first failure only.

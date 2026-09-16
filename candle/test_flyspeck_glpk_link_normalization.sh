@@ -19,7 +19,7 @@ python3 "$candle_root/candle/flyspeck_normalize.py" \
 normalized="$test_dir/overlay/formal_lp/glpk/glpk_link.ml"
 test -f "$normalized"
 test "$(sha256sum -- "$normalized" | cut -d' ' -f1)" = \
-  "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45"
+  "c09fc08aba4b758b7b46250d783414b88828c53b40fefb187f92b675d0ba96b9"
 if rg -Fq 'Printf.sprintf' "$normalized"; then
   echo 'normalized glpk_link retained unsupported Printf.sprintf' >&2
   exit 1
@@ -32,6 +32,9 @@ if [[ $(rg -o 'sprintf' "$normalized" | wc -l) -ne 10 ]]; then
 fi
 rg -Fq 'let convert_to_list3  =' "$normalized"
 rg -Fq 'let convert_to_list = (fun (h,_,ls) -> (h,ls)) o convert_to_list3;;' \
+  "$normalized"
+rg -Fq \
+  'let _ = wheremod [[0;1;2];[3;4;5];[7;8;9]] [8;9;7];;  (* 2 *)' \
   "$normalized"
 rg -Fq 'let (ic,oc) = Unix.open_process(com) in' "$normalized"
 

@@ -996,7 +996,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         glpk_link = entries[
             "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001"
         ]
-        self.assertEqual(len(glpk_link["operations"]), 1)
+        self.assertEqual(len(glpk_link["operations"]), 2)
         glpk_sprintf = glpk_link["operations"][0]
         self.assertEqual(glpk_sprintf["kind"], "exact_bytes_replace_once")
         self.assertEqual(glpk_sprintf["line"], 33)
@@ -1006,6 +1006,14 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("fresh polymorphic instantiation", glpk_link["semantic_rule"])
         self.assertIn("not Printf or formatting support", glpk_link["scope_limit"])
         self.assertIn("fix-top100", glpk_link["scope_limit"])
+        glpk_example = glpk_link["operations"][1]
+        self.assertEqual(glpk_example["line"], 106)
+        self.assertTrue(glpk_example["before"].startswith("wheremod "))
+        self.assertEqual(
+            glpk_example["after"], "let _ = " + glpk_example["before"]
+        )
+        self.assertIn("anonymous module-expression", glpk_link["semantic_rule"])
+        self.assertIn("not evidence", glpk_link["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1638,7 +1646,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 271)
+        self.assertEqual(len(operation_ids), 272)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

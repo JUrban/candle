@@ -88,7 +88,8 @@ search-choice difference for the repaired source, although it is not an
 independent trace of every internal MESON decision. No comparator-ordering or
 pointer-equality diagnosis is inferred for this incident: the demonstrated
 cause is the transitive-open binding mismatch, and the residual timing
-difference is not a functional blocker.
+difference is not a functional blocker. The earlier comparator-ordering and
+generic "too much ambient context" hypotheses are retired for GRUTOTI.
 
 ## Cumulative confirmation
 

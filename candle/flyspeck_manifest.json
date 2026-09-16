@@ -9301,8 +9301,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "660c219c8e4455992d0f9f6004986e1d",
-    "generated_source_sha256": "951f553169c55db2615a0a1ed676e3fa53065e439dda52fbae3b99e19390c92f",
+    "generated_source_md5": "2c3dfc1d7426a2862daaba764450cad5",
+    "generated_source_sha256": "50835b1d722f95246af36b19df88f40525733f7b9eb4c4f3e6ae095a5e4be9c0",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -15316,10 +15316,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "b0dfc85bb7175dd19780729f6a9b9721",
+      "md5": "e2928f4981abbcb8c60ba547a055792d",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "b2da938adf8e438f6642398e0d87bcabf7ddac33756fbf7bf5413f31675a78a2"
+      "sha256": "a2309874a80a500565597f1bf6c1cd9116eb0b868423cdb53125f48376655f31"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -15400,10 +15400,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "aeb94af2b406e211845b60f1ecbaf509",
+      "md5": "c824f269d5e1e6dd639818716625964f",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "492b95b4dc66cca89a3fa683b37b1961a6f53ab8498eb63035315db4b32b2fa3"
+      "sha256": "c65bed47a55bee8731769d6289fc12a699bba6564db4af80dc63dc065483d1fb"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -16993,10 +16993,10 @@
       "execution_normalization": {
         "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 8077,
-        "normalized_md5": "7034cd37bfda474171f5135efaf73a62",
-        "normalized_sha256": "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45",
-        "operation_count": 1
+        "normalized_bytes": 8085,
+        "normalized_md5": "eac0c846a4608adb32137e0a61029f55",
+        "normalized_sha256": "c09fc08aba4b758b7b46250d783414b88828c53b40fefb187f92b675d0ba96b9",
+        "operation_count": 2
       },
       "md5": "08194fd9e7b59cd0d4e7855951b7b4ba",
       "path": "formal_lp/glpk/glpk_link.ml",
@@ -23069,7 +23069,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "4c0c93a97149d2e947688eebf28bbc47e4dbae7e2f332b2da925bf72eec7b0da",
+    "contract_sha256": "cf4ac5348a3f6550824cf218c20a4f92f46aa75ab7d868ccd168d893b8b41e57",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26045,10 +26045,10 @@
       {
         "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 8077,
-        "normalized_md5": "7034cd37bfda474171f5135efaf73a62",
-        "normalized_sha256": "6ffd1be47aa9039f41758794869d77484fe7ee85d4e304a9b944af3d3e3a2d45",
-        "operation_count": 1,
+        "normalized_bytes": 8085,
+        "normalized_md5": "eac0c846a4608adb32137e0a61029f55",
+        "normalized_sha256": "c09fc08aba4b758b7b46250d783414b88828c53b40fefb187f92b675d0ba96b9",
+        "operation_count": 2,
         "operations": [
           {
             "after": "let sprintf _ =\n  failwith \"Candle Flyspeck: non-verification GLPK formatter is disabled\";;",
@@ -26056,11 +26056,18 @@
             "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001-BINDING",
             "kind": "exact_bytes_replace_once",
             "line": 33
+          },
+          {
+            "after": "let _ = wheremod [[0;1;2];[3;4;5];[7;8;9]] [8;9;7];;  (* 2 *)",
+            "before": "wheremod [[0;1;2];[3;4;5];[7;8;9]] [8;9;7];;  (* 2 *)",
+            "id": "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001-EXAMPLE-EFFECT",
+            "kind": "exact_bytes_replace_once",
+            "line": 106
           }
         ],
         "path": "formal_lp/glpk/glpk_link.ml",
-        "scope_limit": "This exact replacement is confined to the single top-level Glpk_link sprintf alias. It is fail-closed non-use handling, not Printf or formatting support, and it does not rewrite or authorize any call site. The generated route audit must continue to prove that all Glpk_link/Lpproc formatter uses remain inside the selected non-verification generator/process lane and that no external selected caller reaches that lane. A call, new caller, source drift, or need for native formatted output invalidates the normalization. fix-top100 has no Flyspeck source change, and inspected Flyspeck develop/native history retains this alias. Compiled loading of the complete normalized Glpk_link module, its pure convert_to_list result, the subsequent Lpproc module, and fresh cumulative replay are required.",
-        "semantic_rule": "The selected direct verifier loads Glpk_link and Lpproc for their pure archive representation and parsing helpers, but the manifest-frozen GLPK generator/process route has no executed caller. Replacing the unavailable Printf.sprintf alias with a top-level function of the same exported name gives each differently typed deferred use a fresh polymorphic instantiation while making any invocation fail immediately and deterministically. No accepted direct execution observes a formatted value, process launch, generator output, theorem, proof, or state change from this binding.",
+        "scope_limit": "These exact replacements are confined to the single top-level Glpk_link sprintf alias and the single pure wheremod example expression. The first is fail-closed non-use handling, not Printf or formatting support, and it does not rewrite or authorize any call site. The second preserves evaluation and discards the same result; it is not evidence that anonymous module expressions work centrally. The generated route audit must continue to prove that all Glpk_link/Lpproc formatter uses remain inside the selected non-verification generator/process lane and that no external selected caller reaches that lane. A call, new caller, source drift, or need for native formatted output invalidates the normalization. fix-top100 has no Flyspeck source change, and inspected Flyspeck develop/native history retains this alias. Compiled loading of the complete normalized Glpk_link module, its pure convert_to_list result, the subsequent Lpproc module, and fresh cumulative replay are required.",
+        "semantic_rule": "The selected direct verifier loads Glpk_link and Lpproc for their pure archive representation and parsing helpers, but the manifest-frozen GLPK generator/process route has no executed caller. Replacing the unavailable Printf.sprintf alias with a top-level function of the same exported name gives each differently typed deferred use a fresh polymorphic instantiation while making any invocation fail immediately and deterministically. The separate example expression is changed only to OCaml's equivalent explicit discarded-result binding because the rebuilt frontend's anonymous module-expression lowering does not retain prior module bindings. No accepted direct execution observes a formatted value, process launch, generator output, theorem, proof, or state change from these changes.",
         "source_key": "flyspeck:formal_lp/glpk/glpk_link.ml",
         "source_md5": "08194fd9e7b59cd0d4e7855951b7b4ba",
         "source_sha256": "cfef91db36d9c20e070ac467e981cd593c0ef623b68840de3e4f8d21811add66"
@@ -30518,8 +30525,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "b0dfc85bb7175dd19780729f6a9b9721",
-    "generated_source_sha256": "b2da938adf8e438f6642398e0d87bcabf7ddac33756fbf7bf5413f31675a78a2",
+    "generated_source_md5": "e2928f4981abbcb8c60ba547a055792d",
+    "generated_source_sha256": "a2309874a80a500565597f1bf6c1cd9116eb0b868423cdb53125f48376655f31",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

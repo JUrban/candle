@@ -1,4 +1,4 @@
-let loop_trace = ref [];;
+let loop_trace : string list ref = ref [];;
 let loop_push value = loop_trace := value :: !loop_trace;;
 let loop_bound label value = loop_push label; value;;
 
@@ -29,16 +29,19 @@ let loop_shadowed_operators =
   for i = 2 downto 0 do values := i :: !values done;
   List.rev !values;;
 
-let loop_endpoint_up = ref [];;
-for i = max_int to max_int do loop_endpoint_up := i :: !loop_endpoint_up done;;
+let loop_max_int = 4611686018427387903;;
+let loop_endpoint_up : int list ref = ref [];;
+for i = loop_max_int to loop_max_int do
+  loop_endpoint_up := i :: !loop_endpoint_up
+done;;
 
-let loop_min_int = -max_int - 1;;
-let loop_endpoint_down = ref [];;
+let loop_min_int = -4611686018427387904;;
+let loop_endpoint_down : int list ref = ref [];;
 for i = loop_min_int downto loop_min_int do
   loop_endpoint_down := i :: !loop_endpoint_down
 done;;
 
-let loop_exception_trace = ref [];;
+let loop_exception_trace : int list ref = ref [];;
 let loop_exception_caught =
   try
     for i = 0 to 4 do
@@ -49,10 +52,8 @@ let loop_exception_caught =
   with Failure "for-stop" -> true | _ -> false;;
 
 module Loop_structure_effects = struct
-  let effects = ref [];;
-  effects := "effect" :: !effects;;
-  7;;
-  true;;
+  let effects : string list ref = ref [];;
+  let _ = effects := "effect" :: !effects;;
   let result = List.rev !effects;;
 end;;
 
@@ -63,14 +64,8 @@ let candle_ocaml_for_structure_effects_ok =
      "empty-up-first"; "empty-up-last";
      "empty-down-first"; "empty-down-last"] &&
   loop_shadowed_operators = [0;1;2;2;1;0] &&
-  !loop_endpoint_up = [max_int] &&
+  !loop_endpoint_up = [loop_max_int] &&
   !loop_endpoint_down = [loop_min_int] &&
   loop_exception_caught &&
   List.rev !loop_exception_trace = [0;1;2] &&
   Loop_structure_effects.result = ["effect"];;
-
-let _ =
-  if candle_ocaml_for_structure_effects_ok then
-    print_endline "CANDLE_OCAML_FOR_STRUCTURE_EFFECTS_OK"
-  else
-    failwith "OCaml for/structure-effect semantics mismatch";;

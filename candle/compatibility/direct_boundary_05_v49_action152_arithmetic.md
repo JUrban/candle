@@ -62,9 +62,10 @@ all cache resets, signed integer formatting, all 19 printed integer fields,
 and all six cache-length observations. At the arithmetic-focused pass the
 contract contained 79 entries and had SHA-256
 `7f726d738426e80816afa20eb1c7a465852dbeb4c513896c353f3dde43a99a1d`.
-The subsequent action-153 candidate adds one independent GLPK entry, bringing
-the current fixed-point contract to 80 entries and SHA-256
-`8e35902c2c43bfa4d4f5a2ec5bbb2e7b0fe8cc84e7eebbb233d6534a56f1475d`;
+The subsequent action-153 batch adds one independent GLPK entry and a second
+exact operation within that entry, bringing the current fixed-point contract
+to 80 entries and SHA-256
+`cf4ac5348a3f6550824cf218c20a4f92f46aa75ab7d868ccd168d893b8b41e57`;
 it does not change any arithmetic source or normalized arithmetic identity.
 
 ## Why the first terminal probe was not credited
@@ -85,12 +86,22 @@ On the isolated CakeML branch, commit `8dc5e5d9618d78a4cdc6afb8346f8c583862b485`
 lowers OCaml `for` loops and standalone structure expressions, and commit
 `73945eca14ee1866bfa6f96de09bf5744dce485d` lowers the one- and two-level
 indexed assignments present in the authenticated Flyspeck graph. The complete
-OCaml parser-theory suite passed in 13m42s with 3,524,488 KiB maximum RSS. A
-full compiler build and compiled-runtime gates are still required before the
-transient loop/array rewrites can be removed.
+OCaml parser-theory suite passed in 13m42s with 3,524,488 KiB maximum RSS. The
+subsequent serial verified compiler build completed all 20 stages in 9h24m48s,
+and compiled native/Candle gates now pass for the arithmetic source's native
+`for` loops and one- and two-level indexed assignments. The cumulative replay
+can therefore use those constructs unchanged rather than the transient direct
+equivalents used by the focused probe.
 
-The immediate functional frontier is action 153, `formal_lp/glpk/glpk_link.ml`,
-which is being probed from fresh copies of the clean focused checkpoint. After
-the frontend runtime and a coherent action-153 batch are ready, the regenerated
-plan must replay from action zero and authenticate action 152 before the
-cumulative metric advances.
+The same compiled check did not validate anonymous standalone module
+expressions generally: a minimized structure containing a prior binding and a
+bare effect expression lost that binding. This is recorded as a deferred
+frontend defect, not as acceptance of that part of commit
+`8dc5e5d9618d78a4cdc6afb8346f8c583862b485`. The current frontier needs only
+one exact OCaml-equivalent `let _ =` wrapper, so functional development does
+not wait for another full compiler build.
+
+The immediate functional frontier is action 153, `formal_lp/glpk/glpk_link.ml`.
+Its coherent compatibility batch and the rebuilt frontend gates are ready; a
+regenerated plan must now replay from action zero and authenticate action 152
+before the cumulative metric advances.

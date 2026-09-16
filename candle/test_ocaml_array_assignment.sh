@@ -16,8 +16,14 @@ rg -Fq 'CANDLE_OCAML_ARRAY_ASSIGNMENT_OK' "$test_dir/ocaml.log"
 
 (
   cd "$candle_runtime_cwd"
-  timeout 300 "$candle_binary" --candle <"$fixture" \
-    >"$test_dir/candle.log" 2>&1
+  {
+    printf '#use "%s";;\n' "$candle_runtime_cwd/insulate.ml"
+    printf '#use "%s";;\n' "$candle_root/candle/nums.ml"
+    printf '#use "%s";;\n' "$candle_root/candle/pretty.ml"
+    printf '#use "%s";;\n' "$candle_root/candle/ocaml.ml"
+    sed -n '1,$p' "$fixture"
+  } | timeout 300 "$candle_binary" --candle \
+      >"$test_dir/candle.log" 2>&1
 )
 rg -Fq 'CANDLE_OCAML_ARRAY_ASSIGNMENT_OK' "$test_dir/candle.log"
 rg -Fq 'val candle_ocaml_array_assignment_ok = true: bool' \
