@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "2c3dfc1d7426a2862daaba764450cad5" then
+     "c8c6058b55d040d796789015a80b77a1" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "e2928f4981abbcb8c60ba547a055792d" then
+     "584ff5861fd233f33d1a48367523f21b" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,111 +156,41 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all eighty outputs in a separate tree;
-   this process registers only the seventy-nine selected by the direct source graph.
+(* The host-side normalizer materializes all forty-seven outputs in a separate tree;
+   this process registers only the forty-six selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
    a pinned source; the unselected OCaml-3.10 output cannot enter the loader. *)
 let candle_flyspeck_normalized_sources =
-  [(Filename.concat candle_flyspeck_text_root "build/strictbuild.hl",
+  [
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/build/strictbuild.hl",
-    "74e99f344b84daae4e890dd5b8126812");
-   (Filename.concat candle_flyspeck_text_root "general/flyspeck_eval_4.14.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/flyspeck_eval_4.14.hl",
-    "7ca870cd84b14e56da55eefa51a3828e");
-   (Filename.concat candle_flyspeck_text_root "general/lib.hl",
+      "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
+    "15b9dada3bf16bc851bd825605ad19f8");
+   (Filename.concat candle_flyspeck_text_root
+      "general/lib.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/lib.hl",
     "9c119e851799375ea9e0b65080eafa0f");
-   (Filename.concat candle_flyspeck_text_root "general/flyspeck_lib.hl",
+   (Filename.concat candle_flyspeck_text_root
+      "general/flyspeck_lib.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/flyspeck_lib.hl",
     "bd55c20647b6d66f47dd1b119c8a51d1");
-   (Filename.concat candle_flyspeck_text_root "general/print_types.hl",
+   (Filename.concat candle_flyspeck_text_root
+      "general/print_types.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/print_types.hl",
     "937774e3558ecfe48afda2f7f54dc5b9");
-   (Filename.concat candle_flyspeck_text_root "general/hol_pervasives.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/hol_pervasives.hl",
-    "fe90a871fbd8e40750f5445480af2e40");
-   (Filename.concat candle_flyspeck_text_root "general/sphere.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/sphere.hl",
-    "5aeef4c9b86a5f829c0ad3edb07e21ce");
-   (Filename.concat candle_flyspeck_text_root "general/hales_tactic.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/hales_tactic.hl",
-    "d172f2eac8581aba7a1f322717856d0d");
-   (Filename.concat candle_flyspeck_text_root "general/truong_tactic.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/truong_tactic.hl",
-    "9137be956d3b3b8bd451663cda82f264");
-   (Filename.concat candle_flyspeck_text_root "leg/collect_geom.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/leg/collect_geom.hl",
-    "dc8885bd34830d81ed0ff10e0f26aad8");
-   (Filename.concat candle_flyspeck_text_root "leg/collect_geom2.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/leg/collect_geom2.hl",
-    "5bfaffa957b66c2d23b19813a1417e29");
-   (Filename.concat candle_flyspeck_text_root "trigonometry/trig1.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/trigonometry/trig1.hl",
-    "216925b86d65702faaebc2c7fc314b8c");
-   (Filename.concat candle_flyspeck_text_root "trigonometry/trig2.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/trigonometry/trig2.hl",
-    "9d2d35ac6e4e76d3abca6c6454ad023e");
-   (Filename.concat candle_flyspeck_text_root "jordan/refinement.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/refinement.hl",
-    "04199a9023c0a5eed04a6e9332ab2ec5");
-   (Filename.concat candle_flyspeck_text_root "jordan/hash_term.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/hash_term.hl",
-    "4eb74e9553aae99fe76f8cc30472678b");
-   (Filename.concat candle_flyspeck_text_root "jordan/goal_printer.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/goal_printer.hl",
-    "1034846f67a46c37f0dce2e43b5bf948");
-   (Filename.concat candle_flyspeck_text_root "jordan/real_ext.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/real_ext.hl",
-    "070a72758b0459a034b13490dba2320e");
-   (Filename.concat candle_flyspeck_text_root "jordan/num_ext_nabs.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/num_ext_nabs.hl",
-    "3347ed48a4102a18a798dc9d683aadc9");
-   (Filename.concat candle_flyspeck_text_root "jordan/taylor_atn.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/taylor_atn.hl",
-    "2430d7c87631a16adb78d3783d70fb04");
-   (Filename.concat candle_flyspeck_text_root "jordan/float.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/float.hl",
-    "3946ca21321186485d20c3016311910c");
    (Filename.concat candle_flyspeck_text_root
-      "jordan/misc_defs_and_lemmas.hl",
+      "jordan/tactics_jordan.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/misc_defs_and_lemmas.hl",
-    "411a71cc887ebd8c5c8fbf8ce87d3da4");
-   (Filename.concat candle_flyspeck_text_root "general/tactics.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/tactics.hl",
-    "8c425e4138bb5c24c98fe61a1c304b37");
-   (Filename.concat candle_flyspeck_text_root "general/parser_verbose.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/parser_verbose.hl",
-    "3209a4491e57ae1c43afd673be59d7e3");
-   (Filename.concat candle_flyspeck_text_root "general/debug.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/general/debug.hl",
-    "318079c3dbff839fb4a778aff20a8204");
-   (Filename.concat candle_flyspeck_text_root "general/serialization.hl",
+      "text_formalization/jordan/tactics_jordan.hl",
+    "eb149bb1ba9ab79c598f1e8467b0de45");
+   (Filename.concat candle_flyspeck_text_root
+      "general/serialization.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/serialization.hl",
     "1d7f8887a5f880ffebd96526d23e7a36");
@@ -269,64 +199,96 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/general/update_database_400.ml",
     "85ffaa8772cbaf66897720a5bf6215bd");
-   (Filename.concat candle_flyspeck_root "jHOLLight/caml/ssreflect.hl",
-     Filename.concat candle_flyspeck_overlay_root
-       "jHOLLight/caml/ssreflect.hl",
-     "620d9c7687482fd95245e71aae89a553");
-   (Filename.concat candle_flyspeck_root
-      "jHOLLight/Examples/ssrfun-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "jHOLLight/Examples/ssrfun-compiled.hl",
-    "a8e5c90f3740bd1ab08645a1577bbf80");
-   (Filename.concat candle_flyspeck_root
-      "jHOLLight/Examples/ssrbool-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "jHOLLight/Examples/ssrbool-compiled.hl",
-    "ed5d8717c212edc3cfb7999131c8ecf7");
-   (Filename.concat candle_flyspeck_root
-      "jHOLLight/Examples/ssrnat-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "jHOLLight/Examples/ssrnat-compiled.hl",
-    "c50d0c69de3d905f10cfd2ba420ba9ce");
    (Filename.concat candle_flyspeck_text_root
-      "fan/hypermap_iso-compiled.hl",
+      "general/flyspeck_eval_4.14.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/fan/hypermap_iso-compiled.hl",
-    "e8e2545fe119f5c727f6a67dbfb0c04e");
+      "text_formalization/general/flyspeck_eval_4.14.hl",
+    "7ca870cd84b14e56da55eefa51a3828e");
    (Filename.concat candle_flyspeck_root
-      "jHOLLight/Examples/seq-compiled.hl",
+      "jHOLLight/caml/ssreflect.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "jHOLLight/Examples/seq-compiled.hl",
-    "5bf90fc3f85e809c838cf9d9d03037dd");
-   (Filename.concat candle_flyspeck_text_root
-      "tame/ssreflect/seq2-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/tame/ssreflect/seq2-compiled.hl",
-    "5426c7e61a82a58b36fdf8f1b4ce31de");
-   (Filename.concat candle_flyspeck_text_root
-      "tame/ssreflect/sort-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/tame/ssreflect/sort-compiled.hl",
-    "f2108691e64e667c9308b1ebdf3f8282");
+      "jHOLLight/caml/ssreflect.hl",
+    "620d9c7687482fd95245e71aae89a553");
    (Filename.concat candle_flyspeck_text_root
       "tame/ssreflect/FNJLBXS-compiled.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/ssreflect/FNJLBXS-compiled.hl",
-    "fa98c359beced8d3044ed8682e4eca11");
-   (Filename.concat candle_flyspeck_root
-      "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "formal_lp/hypermap/ssreflect/add_triangle-compiled.hl",
-    "5c871d026ea381564bdbefea4092ddcd");
+    "349edbfdd14163c7c827b1b84b9fb66e");
    (Filename.concat candle_flyspeck_text_root
-      "tame/ssreflect/tame_lemmas-compiled.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/tame/ssreflect/tame_lemmas-compiled.hl",
-    "256fd48d4ab7fb63a11ea9420eb6efbd");
-   (Filename.concat candle_flyspeck_text_root "local/pent_hex.hl",
+      "local/pent_hex.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/local/pent_hex.hl",
     "57de064a23be1517bbf5bb54e3950282");
+   (Filename.concat candle_flyspeck_root
+      "formal_ineqs/misc/misc_functions.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_ineqs/misc/misc_functions.hl",
+    "c55a512aed20092ef945ae23aae90536");
+   (Filename.concat candle_flyspeck_root
+      "formal_ineqs/arith/arith_num.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_ineqs/arith/arith_num.hl",
+    "d23f7c80b428cbb942fc11f81e083282");
+   (Filename.concat candle_flyspeck_root
+      "formal_ineqs/arith/arith_cache.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_ineqs/arith/arith_cache.hl",
+    "4435dbc49c013c948975b7132906172c");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/glpk/glpk_link.ml",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/glpk/glpk_link.ml",
+    "7034cd37bfda474171f5135efaf73a62");
+   (Filename.concat candle_flyspeck_text_root
+      "build/strictbuild.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/build/strictbuild.hl",
+    "74e99f344b84daae4e890dd5b8126812");
+   (Filename.concat candle_flyspeck_text_root
+      "general/sphere.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/sphere.hl",
+    "1e134647152103f755a0884313b3ad72");
+   (Filename.concat candle_flyspeck_text_root
+      "general/hales_tactic.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/hales_tactic.hl",
+    "3945b87bbbcf00c8d4414542725feff9");
+   (Filename.concat candle_flyspeck_text_root
+      "general/truong_tactic.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/truong_tactic.hl",
+    "1c9fd2e8252945b87d5a982d3ca4b446");
+   (Filename.concat candle_flyspeck_text_root
+      "jordan/hash_term.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/hash_term.hl",
+    "4eb74e9553aae99fe76f8cc30472678b");
+   (Filename.concat candle_flyspeck_text_root
+      "jordan/float.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/float.hl",
+    "05be687afff4d25745cd9496907cfb58");
+   (Filename.concat candle_flyspeck_text_root
+      "jordan/misc_defs_and_lemmas.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/jordan/misc_defs_and_lemmas.hl",
+    "aaf5311e880df99921ae000a743256b4");
+   (Filename.concat candle_flyspeck_text_root
+      "general/parser_verbose.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/parser_verbose.hl",
+    "3209a4491e57ae1c43afd673be59d7e3");
+   (Filename.concat candle_flyspeck_text_root
+      "general/debug.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/debug.hl",
+    "318079c3dbff839fb4a778aff20a8204");
+   (Filename.concat candle_flyspeck_text_root
+      "general/hol_pervasives.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/general/hol_pervasives.hl",
+    "fe90a871fbd8e40750f5445480af2e40");
    (Filename.concat candle_flyspeck_root
       "formal_lp/hypermap/main/lp_certificate.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -337,15 +299,6 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/verify_all.hl",
     "c1282e344707f2a8af85c258b9cf0e22");
-   (Filename.concat candle_flyspeck_text_root "jordan/tactics_jordan.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/jordan/tactics_jordan.hl",
-    "86769e441b60b6579b0fc07b856785d6");
-   (Filename.concat candle_flyspeck_text_root
-      "../formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-    "15b9dada3bf16bc851bd825605ad19f8");
    (Filename.concat candle_flyspeck_text_root
       "tame/linear_programming_results.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -365,17 +318,17 @@ let candle_flyspeck_normalized_sources =
       "nonlinear/ineq.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/ineq.hl",
-    "5b359b87557684fe9fa91cbd938e26fb");
+    "0a9d7a8267181e033f096727ca46375f");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/main_estimate_ineq.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/main_estimate_ineq.hl",
-    "e8e1e16f6c9c6a6eaaebe5fa7d93dc4e");
+    "458d53a166b06a0c02586f196fb1fdbc");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/parse_ineq.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/parse_ineq.hl",
-    "e6aa2a5c0439c5efac7ee73b586959de");
+    "9308eb7403651593ba93be7ebdc9e1de");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/optimize.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -385,7 +338,7 @@ let candle_flyspeck_normalized_sources =
       "nonlinear/merge_ineq.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/merge_ineq.hl",
-    "ce848d261f64a112e24eaaf2725a079f");
+    "c3dd4e6d2518fdfd0c92947380393965");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/break_case_exec.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -396,120 +349,53 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/nonlinear/mk_all_ineq.hl",
     "44f7f8842ee7bf2d2aeca90d5a1d2d94");
-   (Filename.concat candle_flyspeck_text_root "volume/vol1.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/volume/vol1.hl",
-    "87c6a807ce5541aed6f22c57d2414d5d");
-   (Filename.concat candle_flyspeck_text_root "hypermap/hypermap.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/hypermap/hypermap.hl",
-    "67d22fd92fcd246b84999a2f92cf5f31");
-   (Filename.concat candle_flyspeck_text_root "fan/fan.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/fan/fan.hl",
-    "9ab517a0974274018596807b6b6ffa28");
-   (Filename.concat candle_flyspeck_text_root "fan/Conforming.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/fan/Conforming.hl",
-    "5a243f132756bcfdc6fcdc324fc760ec");
-   (Filename.concat candle_flyspeck_text_root "fan/polyhedron.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/fan/polyhedron.hl",
-    "fdba28fd5b1c687b7c66c68a19a94ad1");
-   (Filename.concat candle_flyspeck_text_root "packing/EMNWUUS.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/EMNWUUS.hl",
-    "49847a2b33348b673321c1daca202ea3");
-   (Filename.concat candle_flyspeck_text_root "packing/AJRIPQN.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/AJRIPQN.hl",
-    "803d1bae0841fb4d55d6b14a04934576");
-   (Filename.concat candle_flyspeck_text_root "packing/marchal3.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/marchal3.hl",
-    "be8cba1fe893b5bcff75e3a6a4424219");
-   (Filename.concat candle_flyspeck_text_root "packing/GRUTOTI.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/GRUTOTI.hl",
-    "89f7d30f49d505a21d27a5eec9904b37");
-   (Filename.concat candle_flyspeck_text_root "packing/SLTSTLO.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/SLTSTLO.hl",
-    "78e1641aace383531357719f10fa90cb");
-   (Filename.concat candle_flyspeck_text_root "packing/OXLZLEZ2.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/OXLZLEZ2.hl",
-    "1e9d210b32fedae512af4154ca1abdc9");
-   (Filename.concat candle_flyspeck_text_root "packing/TSKAJXY2.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/TSKAJXY2.hl",
-    "b887c4ff2e668fa2234047c6436d9fdb");
-   (Filename.concat candle_flyspeck_text_root "packing/OXLZLEZ3.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/packing/OXLZLEZ3.hl",
-    "654b067f9840e22797233b86735a65ed");
-   (Filename.concat candle_flyspeck_text_root "local/dih2k.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/dih2k.hl",
-    "d3b1aaa89eecb9b36cc11653fa3c3e6d");
-   (Filename.concat candle_flyspeck_text_root "local/localization.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/localization.hl",
-    "f3c87da1da2a4612bf5c7f32161f7645");
-   (Filename.concat candle_flyspeck_text_root "local/WRGCVDR.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/WRGCVDR.hl",
-    "2d9b602ef3d5124ce0330406680168bd");
-   (Filename.concat candle_flyspeck_text_root "local/local_lemmas.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/local_lemmas.hl",
-    "5ba3d39c65b535e98f4af9dfbce0f82a");
-   (Filename.concat candle_flyspeck_text_root "local/local_lemmas1.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/local_lemmas1.hl",
-    "baaf863132dda96fa3ee962cbadb968f");
-   (Filename.concat candle_flyspeck_text_root "local/NKEZBFC.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/local/NKEZBFC.hl",
-    "1afcc4ab35e1b2a752f3c7890429c489");
-   (Filename.concat candle_flyspeck_text_root "tame/Inequalities.hl",
-    Filename.concat candle_flyspeck_overlay_root
-      "text_formalization/tame/Inequalities.hl",
-    "6bd3fcbea3dafde94e05f8d4ae7cf95f");
    (Filename.concat candle_flyspeck_root
       "formal_graph/archive/archive_all.ml",
     Filename.concat candle_flyspeck_overlay_root
       "formal_graph/archive/archive_all.ml",
     "787e8244a0350c237a406f7e91fb97b7");
-   (Filename.concat candle_flyspeck_root "jHOLLight/caml/sections.hl",
+   (Filename.concat candle_flyspeck_root
+      "jHOLLight/caml/sections.hl",
     Filename.concat candle_flyspeck_overlay_root
       "jHOLLight/caml/sections.hl",
     "f7f829fcc3465c1336bdd80f74ab148c");
-   (Filename.concat candle_flyspeck_root "formal_lp/glpk/glpk_link.ml",
-    Filename.concat candle_flyspeck_overlay_root
-      "formal_lp/glpk/glpk_link.ml",
-    "eac0c846a4608adb32137e0a61029f55");
-   (Filename.concat candle_flyspeck_root "formal_lp/glpk/lpproc.ml",
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/glpk/lpproc.ml",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/glpk/lpproc.ml",
     "0399bf375d48d4bb4de408e428b84ec3");
-   (Filename.concat candle_flyspeck_root
-      "formal_ineqs/misc/misc_functions.hl",
+   (Filename.concat candle_flyspeck_text_root
+      "fan/Conforming.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "formal_ineqs/misc/misc_functions.hl",
-    "c55a512aed20092ef945ae23aae90536");
-   (Filename.concat candle_flyspeck_root
-      "formal_ineqs/arith/arith_num.hl",
+      "text_formalization/fan/Conforming.hl",
+    "5a243f132756bcfdc6fcdc324fc760ec");
+   (Filename.concat candle_flyspeck_text_root
+      "packing/EMNWUUS.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "formal_ineqs/arith/arith_num.hl",
-    "f25a3edd6ec52d04c0086bc6bb2a9879");
-   (Filename.concat candle_flyspeck_root
-      "formal_ineqs/arith/arith_cache.hl",
+      "text_formalization/packing/EMNWUUS.hl",
+    "49847a2b33348b673321c1daca202ea3");
+   (Filename.concat candle_flyspeck_text_root
+      "packing/OXLZLEZ2.hl",
     Filename.concat candle_flyspeck_overlay_root
-      "formal_ineqs/arith/arith_cache.hl",
-    "4435dbc49c013c948975b7132906172c")];;
+      "text_formalization/packing/OXLZLEZ2.hl",
+    "1e9d210b32fedae512af4154ca1abdc9");
+   (Filename.concat candle_flyspeck_text_root
+      "packing/AJRIPQN.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/packing/AJRIPQN.hl",
+    "803d1bae0841fb4d55d6b14a04934576");
+   (Filename.concat candle_flyspeck_text_root
+      "packing/marchal3.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/packing/marchal3.hl",
+    "be8cba1fe893b5bcff75e3a6a4424219");
+   (Filename.concat candle_flyspeck_text_root
+      "packing/SLTSTLO.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/packing/SLTSTLO.hl",
+    "78e1641aace383531357719f10fa90cb")];;
 
-if List.length candle_flyspeck_normalized_sources <> 79 then
+if List.length candle_flyspeck_normalized_sources <> 46 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

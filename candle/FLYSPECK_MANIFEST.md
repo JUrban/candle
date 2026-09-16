@@ -64,8 +64,10 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement twenty-one
-site-specific, hash-bound source overlays.  `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 47
+site-specific, hash-bound source overlays, 46 of which are selected by the
+direct source graph.  The selected overlays contain 167 exact operations.
+`PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
 the ten physical-sharing tests in `general/lib.hl`: explicit change flags
@@ -83,6 +85,21 @@ shadowing the numeric comparison used later in the file, and spells OCaml's
 `PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
 fingerprints must still validate its selected calls.
+
+The corrected frontend now preserves nested-module `;;` as a structure-item
+separator and lowers the selected OCaml `for` forms centrally.  Consequently
+the overlay contract no longer carries 896 mechanically enumerated
+discarded-result bindings or the four source-level loop rewrites formerly used
+for refinement and nonlinear compatibility.  Raw and explicitly bound nested
+module expressions share a compiled differential gate in
+`test_ocaml_for_structure_effects.sh`; the raw selected sources remain subject
+to the cumulative direct replay.  The former GRUTOTI source-scope shim is also
+absent.  That incident is classified as transitive-`open` name resolution:
+the unintended `Trigonometry2.SET_TAC`/`SET_RULE` binding left `SUBSET`
+unprocessed, while restoring the intended standard bindings completed the
+file with all 2,364 MESON progress records byte-identical to native output.
+It is not evidence of a comparator-order or generic MESON search defect.
+
 `PROJECT-TOPLOOP-S3-USE-FILE-B-001` replaces strictbuild's dynamic
 `Toploop.use_file`, `needs`, and `reneeds` helper bindings with explicit
 failures and converts its three standalone `loadt` phrases to exact
@@ -148,7 +165,7 @@ the normalized branch is accepted and selects the expected cases.  The
 allocation refinements retain compiled, performance, and final-fingerprint
 gates.  Runtime application is wired
 through the authenticated static source action: the manifest and compiled boot
-select the exact seven-file overlay, but the complete-run status remains
+select the exact 46-file overlay, but the complete-run status remains
 `exact-overlay-selection-active-pending-full-run`; this work alone advances no
 S milestone.
 
@@ -198,7 +215,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates all
-twenty-one exact normalization outputs, registers the twenty selected by the
+47 exact normalization outputs, registers the 46 selected by the
 direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does
@@ -241,6 +258,13 @@ standalone `#load "unix.cma";;` and `#load "str.cma";;` phrases and selects the
 corresponding fixed static module.  Every other library and every embedded or
 malformed use fails closed.  This exact selection is not full member
 compatibility; the per-member evidence and failures below remain authoritative.
+
+The ordinary OCaml compatibility `List` also exposes `find_all` as an
+eta-expanded call to its existing `filter`, matching OCaml's historical alias.
+This is required by the unqualified `find_all` after `open List` in
+`formal_lp/glpk/glpk_link.ml`.  The focused GLPK gate compares the result and
+left-to-right predicate visitation order with native OCaml before the direct
+cumulative action is rerun.
 
 `ocaml.ml` now provides the five selected `Str` members as pure Candle source,
 so `str.cma` does not imply host dynamic loading or an FFI.  The compiled

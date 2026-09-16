@@ -4,6 +4,7 @@ set -euo pipefail
 candle_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 candle_binary=${CANDLE_BINARY:-"$candle_root/candle/build/cake"}
 candle_runtime_cwd=${CANDLE_RUNTIME_CWD:-"$candle_root"}
+candle_timeout_seconds=${CANDLE_TIMEOUT_SECONDS:-300}
 flyspeck_root=${FLYSPECK_ROOT:-${1:-}}
 if [[ -z "$flyspeck_root" || ! -d "$flyspeck_root" ]]; then
   echo "usage: FLYSPECK_ROOT=/exact/source/root $0" >&2
@@ -34,23 +35,23 @@ flyspeck_eval="$overlay/text_formalization/general/flyspeck_eval_4.14.hl"
 sphere="$overlay/text_formalization/general/sphere.hl"
 hales="$overlay/text_formalization/general/hales_tactic.hl"
 truong="$overlay/text_formalization/general/truong_tactic.hl"
-collect_geom="$overlay/text_formalization/leg/collect_geom.hl"
-collect_geom2="$overlay/text_formalization/leg/collect_geom2.hl"
-refinement="$overlay/text_formalization/jordan/refinement.hl"
+collect_geom="$flyspeck_root/text_formalization/leg/collect_geom.hl"
+collect_geom2="$flyspeck_root/text_formalization/leg/collect_geom2.hl"
+refinement="$flyspeck_root/text_formalization/jordan/refinement.hl"
 lib_ext="$flyspeck_root/text_formalization/jordan/lib_ext.hl"
 hash_term="$overlay/text_formalization/jordan/hash_term.hl"
-goal_printer="$overlay/text_formalization/jordan/goal_printer.hl"
+goal_printer="$flyspeck_root/text_formalization/jordan/goal_printer.hl"
 parse_ext="$flyspeck_root/text_formalization/jordan/parse_ext_override_interface.hl"
 prove_refinement="$flyspeck_root/text_formalization/general/prove_by_refinement.hl"
-tactics="$overlay/text_formalization/general/tactics.hl"
-real_ext="$overlay/text_formalization/jordan/real_ext.hl"
+tactics="$flyspeck_root/text_formalization/general/tactics.hl"
+real_ext="$flyspeck_root/text_formalization/jordan/real_ext.hl"
 tactics_jordan="$overlay/text_formalization/jordan/tactics_jordan.hl"
-num_ext="$overlay/text_formalization/jordan/num_ext_nabs.hl"
-taylor_atn="$overlay/text_formalization/jordan/taylor_atn.hl"
+num_ext="$flyspeck_root/text_formalization/jordan/num_ext_nabs.hl"
+taylor_atn="$flyspeck_root/text_formalization/jordan/taylor_atn.hl"
 float_source="$overlay/text_formalization/jordan/float.hl"
 misc_defs="$overlay/text_formalization/jordan/misc_defs_and_lemmas.hl"
-trig1="$overlay/text_formalization/trigonometry/trig1.hl"
-trig2="$overlay/text_formalization/trigonometry/trig2.hl"
+trig1="$flyspeck_root/text_formalization/trigonometry/trig1.hl"
+trig2="$flyspeck_root/text_formalization/trigonometry/trig2.hl"
 
 rg -Fq 'dynamic strictbuild build_and_report is disabled by the static manifest' \
   "$strictbuild"
@@ -91,22 +92,8 @@ if rg -Fq 'Printf.fprintf outs "%s" a' "$flyspeck_lib"; then
   exit 1
 fi
 [[ $(rg -Fc 'sort Term.(<) (frees bod)' "$sphere") -eq 1 ]]
-rg -Fq 'let _ = prioritize_real();;' "$sphere"
 if rg -Fq 'sort (<) (frees bod)' "$sphere"; then
   echo 'normalized sphere retained implicit term comparison' >&2
-  exit 1
-fi
-rg -Fq 'let _ = prioritize_real();;' "$collect_geom"
-rg -Fq 'let _ = MESON[]` (!x y z.' "$collect_geom"
-if rg '^MESON' "$collect_geom" | rg -Fq 'MESON[]` (!x y z.'; then
-  echo 'normalized collect_geom retained anonymous MESON example' >&2
-  exit 1
-fi
-rg -Fq 'let _ = MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE)' "$collect_geom2"
-rg -Fq 'let _ = MESON[POW_2_SQRT; DIST_POS_LE]' "$collect_geom2"
-if rg -q '^MATCH_MP (SPEC_ALL AFFINE_HULL_FINITE)|^MESON\[POW_2_SQRT' \
-    "$collect_geom2"; then
-  echo 'normalized collect_geom2 retained an anonymous theorem example' >&2
   exit 1
 fi
 [[ $(rg -Fc 'List.concat' "$hales") -eq 2 ]]
@@ -119,81 +106,32 @@ fi
 [[ $(rg -Fc 'setify Term.(<)' "$truong") -eq 3 ]]
 [[ $(rg -Fc 'Pair.compare String.compare Term.compare' "$hales") -eq 1 ]]
 [[ $(rg -Fc 'Pair.compare String.compare Term.compare' "$truong") -eq 1 ]]
-rg -Fq 'let rec update_all i =' "$refinement"
-if rg -Fq 'for i=0 to ((length asl)-1)' "$refinement"; then
-  echo 'normalized refinement retained unsupported for loop' >&2
-  exit 1
-fi
 rg -Fq 'Char.code (String.get h 0)' "$hash_term"
 rg -Fq 'let name = "??_"^(string_of_int n) in' "$hash_term"
 if rg -Fq 'int_of_char' "$hash_term"; then
   echo 'normalized hash_term retained unavailable int_of_char' >&2
   exit 1
 fi
-rg -Fq 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
-  "$goal_printer"
-rg -Fq 'let _ = Parse_ext_override_interface.prioritize_real();;' \
-  "$goal_printer"
 [[ $(rg -c '^open (Refinement|Hash_term|Lib_ext);;$' "$goal_printer") -eq 3 ]]
-rg -Fq 'let _ = select_thm' "$tactics"
-[[ $(rg -Fc 'let _ = REBIND_CONV' "$hales") -eq 1 ]]
-[[ $(rg -Fc 'let _ = REBIND_RULE' "$hales") -eq 1 ]]
-[[ $(rg -Fc 'let _ = REBIND_CONV' "$truong") -eq 1 ]]
-[[ $(rg -Fc 'let _ = REBIND_RULE' "$truong") -eq 1 ]]
-if rg -q '^select_thm$' "$tactics"; then
-  echo 'normalized general tactics retained anonymous select example' >&2
-  exit 1
-fi
-[[ $(rg -Fc 'let _ = unambiguous_interface();;' "$real_ext") -eq 1 ]]
-[[ $(rg -Fc 'let _ = prioritize_num();;' "$real_ext") -eq 1 ]]
-[[ $(rg -Fc 'let _ = pop_priority();;' "$real_ext") -eq 1 ]]
-[[ $(rg -Fc 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
-  "$tactics_jordan") -eq 1 ]]
-rg -Fq 'let _ = select_thm' "$tactics_jordan"
 rg -Fq 'let absname = "mk_"^s in' "$tactics_jordan"
 rg -Fq 'let repname = "dest_"^s in' "$tactics_jordan"
 rg -Fq '(absname,repname)' "$tactics_jordan"
-[[ $(rg -Fc 'let _ = dropq_conv' "$tactics_jordan") -eq 3 ]]
 if rg -Fq '("mk_"^s,"dest_"^s)' "$tactics_jordan"; then
   echo 'normalized tactics_jordan retained the inferred string tuple' >&2
   exit 1
 fi
-[[ $(rg -Fc 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
-  "$num_ext") -eq 1 ]]
-rg -Fq 'let _ = prioritize_complex();;' "$taylor_atn"
-rg -Fq 'let _ = prioritize_real();;' "$taylor_atn"
-rg -Fq 'let _ = Parse_ext_override_interface.unambiguous_interface();;' \
-  "$float_source"
-rg -Fq 'let _ = Parse_ext_override_interface.prioritize_real();;' \
-  "$float_source"
-rg -Fq 'let _ = test();;' "$float_source"
-[[ $(rg -Fc 'let _ = add_test' "$float_source") -eq 24 ]]
-rg -Fq '(*test*) let _ = let f (u,v)' "$float_source"
 [[ $(rg -Fc 'Assert_failure' "$float_source") -eq 4 ]]
 [[ $(rg -Fc 'let b = float_fabs f in' "$float_source") -eq 2 ]]
 [[ $(rg -Fc 'if Cake.Double.(>=) f 0.0 then I else minus_num' \
   "$float_source") -eq 2 ]]
-if rg -q '^add_test' "$float_source"; then
-  echo 'normalized float retained an anonymous test call' >&2
-  exit 1
-fi
 if rg -q '\bassert\s*\(' "$float_source"; then
   echo 'normalized float retained an unsupported assert expression' >&2
   exit 1
 fi
-rg -Fq 'let _ = unambiguous_interface();;' "$misc_defs"
-rg -Fq 'let _ = pop_priority();;' "$misc_defs"
 rg -Fq "SUBGOAL_MP_TAC \`?t. t = x+|y'\`;" "$misc_defs"
 rg -Fq 'SPEC_TAC (`x:num`,`a:num`);' "$misc_defs"
 if rg -Fq "SUBGOAL_MP_TAC \`?t. t = x'+|y'\`;" "$misc_defs"; then
   echo 'normalized misc_defs retained the unrelated renamed coordinate' >&2
-  exit 1
-fi
-rg -Fq 'let _ = prioritize_real();;' "$trig1"
-[[ $(rg -Fc 'let _ = parse_as_infix' "$trig2") -eq 4 ]]
-if rg -q '^prioritize_real();;$' "$trig1" ||
-   rg -q '^parse_as_infix' "$trig2"; then
-  echo 'normalized trigonometry retained an anonymous structure effect' >&2
   exit 1
 fi
 [[ $(rg -Fc "Digest.to_hex (Digest.file s')" "$strictbuild") -eq 3 ]]
@@ -256,7 +194,7 @@ fi
       "$goal_printer" \
       "$prove_refinement" \
       "$tactics" |
-    timeout 300 "$candle_binary" --candle \
+    timeout "$candle_timeout_seconds" "$candle_binary" --candle \
       >"$test_dir/candle.log" 2>&1
 )
 
@@ -265,8 +203,9 @@ rg -Fq 'Type mismatch between int list -> int list and term list' \
 rg -Fq 'Undefined variable: List.flatten' "$test_dir/candle.log"
 rg -Fq 'Undefined variable: Printf.fprintf' "$test_dir/candle.log"
 rg -Fq 'Value restriction violated' "$test_dir/candle.log"
-rg -Fq 'Undefined variable: REBIND_CONV' "$test_dir/candle.log"
-rg -Fq 'Type mismatch between thm and (thm list -> term -> thm)' \
+rg -Fq -- "- Finished loading $fixture_root/base_prefix_api_original_rebind_structure.ml" \
+  "$test_dir/candle.log"
+rg -Fq -- "- Finished loading $fixture_root/base_prefix_api_original_meson_structure.ml" \
   "$test_dir/candle.log"
 rg -Fq 'val candle_flyspeck_normalized_all_forall = <fun>: term -> term' \
   "$test_dir/candle.log"
@@ -293,7 +232,7 @@ rg -Fq -- "- Finished loading $parse_ext" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $goal_printer" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $prove_refinement" "$test_dir/candle.log"
 rg -Fq -- "- Finished loading $tactics" "$test_dir/candle.log"
-if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 6 ]]; then
+if [[ $(rg -c '^ERROR:' "$test_dir/candle.log") -ne 4 ]]; then
   tail -n 80 "$test_dir/candle.log" >&2
   exit 1
 fi

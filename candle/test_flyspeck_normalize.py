@@ -198,8 +198,60 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 80)
+        self.assertEqual(len(self.contract["entries"]), 47)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
+        retired_frontend_entries = {
+            "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001",
+            "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001",
+            "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-NKEZBFC-S2-GOAL-EFFECT-001",
+            "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-REFINEMENT-S3-FOR-LOOP-001",
+            "PROJECT-SEQ-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-SEQ2-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-SORT-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001",
+            "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001",
+            "PROJECT-TSKAJXY2-S2-GOAL-EFFECT-001",
+            "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001",
+            "PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001",
+        }
+        self.assertTrue(retired_frontend_entries.isdisjoint(entries))
+        operation_ids = {
+            operation["id"]
+            for entry in entries.values()
+            for operation in entry["operations"]
+        }
+        self.assertFalse(any(
+            "STRUCTURE-EFFECT" in operation_id
+            or "GOAL-EFFECT" in operation_id
+            for operation_id in operation_ids
+        ))
+        self.assertTrue({
+            "PROJECT-REFINEMENT-S3-FOR-LOOP-001-LABEL-ALL",
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-F4-ITERATION",
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001-QITNPEA1-ITERATION",
+            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001-HEX-ITERATION",
+        }.isdisjoint(operation_ids))
         for entry_id, expected_line in (
             ("PROJECT-EMNWUUS-S2-TERM-SETIFY-001", 50),
             ("PROJECT-OXLZLEZ2-S2-TERM-SETIFY-001", 117),
@@ -214,219 +266,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             )
             self.assertIn("flattened from map frees", entry["semantic_rule"])
             self.assertIn("unique unary setify", entry["scope_limit"])
-        wrgcvdr = entries["PROJECT-WRGCVDR-S2-STRUCTURE-EFFECT-001"]
-        self.assertEqual(
-            [operation["line"] for operation in wrgcvdr["operations"]],
-            [75, 76, 238, 2496, 2500],
-        )
-        self.assertTrue(all(
-            operation["after"].startswith("let _ = parse_as_infix")
-            for operation in wrgcvdr["operations"][:2]
-        ))
-        self.assertTrue(wrgcvdr["operations"][2]["after"].startswith(
-            "let _ = prove("
-        ))
-        self.assertTrue(all(
-            operation["after"].startswith("let _ = REWRITE_RULE")
-            for operation in wrgcvdr["operations"][3:]
-        ))
-        self.assertIn("complete mechanically enumerated", wrgcvdr["scope_limit"])
-        self.assertIn("original order", wrgcvdr["semantic_rule"])
-        local_lemmas = entries[
-            "PROJECT-LOCAL-LEMMAS-S2-STRUCTURE-EFFECT-001"
-        ]
-        self.assertEqual(
-            [operation["line"] for operation in local_lemmas["operations"]],
-            [19, 20],
-        )
-        self.assertTrue(all(
-            operation["after"].startswith("let _ = parse_as_infix")
-            for operation in local_lemmas["operations"]
-        ))
-        self.assertIn(
-            "complete mechanically enumerated", local_lemmas["scope_limit"]
-        )
-        self.assertIn("original order", local_lemmas["semantic_rule"])
-        local_lemmas1 = entries[
-            "PROJECT-LOCAL-LEMMAS1-S2-STRUCTURE-EFFECT-001"
-        ]
-        self.assertEqual(len(local_lemmas1["operations"]), 1)
-        local_lemmas1_theorems = local_lemmas1["operations"][0]
-        self.assertEqual(local_lemmas1_theorems["kind"],
-                         "exact_lines_replace_once")
-        self.assertEqual(local_lemmas1_theorems["replacement_count"], 66)
-        self.assertEqual(
-            [replacement["line"]
-             for replacement in local_lemmas1_theorems["replacements"][:6]],
-            [843, 844, 845, 846, 854, 867],
-        )
-        self.assertEqual(
-            [replacement["line"]
-             for replacement in local_lemmas1_theorems["replacements"][-4:]],
-            [934, 935, 936, 937],
-        )
-        self.assertEqual(
-            sum(replacement["before"].startswith("Local_lemmas.") or
-                replacement["before"].startswith("Wrgcvdr_cizmrrh.")
-                for replacement in local_lemmas1_theorems["replacements"]),
-            4,
-        )
-        self.assertEqual(
-            sum(replacement["before"].startswith("g `")
-                for replacement in local_lemmas1_theorems["replacements"]),
-            2,
-        )
-        self.assertEqual(
-            sum(replacement["before"].startswith("e ")
-                for replacement in local_lemmas1_theorems["replacements"]),
-            60,
-        )
-        self.assertEqual(
-            [replacement["line"]
-             for replacement in local_lemmas1_theorems["replacements"][:4]],
-            [843, 844, 845, 846],
-        )
-        self.assertTrue(all(
-            replacement["after"].startswith("let _ = ")
-            for replacement in local_lemmas1_theorems["replacements"]
-        ))
-        self.assertIn(
-            "complete mechanically enumerated", local_lemmas1["scope_limit"]
-        )
-        self.assertIn("original order", local_lemmas1["semantic_rule"])
-        nkezbfc = entries["PROJECT-NKEZBFC-S2-GOAL-EFFECT-001"]
-        self.assertEqual(len(nkezbfc["operations"]), 1)
-        self.assertEqual(
-            nkezbfc["operations"][0],
-            {
-                "id": (
-                    "PROJECT-NKEZBFC-S2-GOAL-EFFECT-001-"
-                    "EXPLICIT-BINDING"
-                ),
-                "kind": "exact_bytes_replace_once",
-                "line": 1716,
-                "before": "g(NKEZBFC_concl2);;",
-                "after": "let _ = g(NKEZBFC_concl2);;",
-            },
-        )
-        self.assertIn(
-            "complete mechanically enumerated", nkezbfc["scope_limit"]
-        )
-        self.assertIn("identical NKEZBFC_concl2", nkezbfc["semantic_rule"])
-        tskajxy2 = entries["PROJECT-TSKAJXY2-S2-GOAL-EFFECT-001"]
-        self.assertEqual(len(tskajxy2["operations"]), 1)
-        self.assertEqual(
-            tskajxy2["operations"][0],
-            {
-                "id": (
-                    "PROJECT-TSKAJXY2-S2-GOAL-EFFECT-001-"
-                    "EXPLICIT-BINDING"
-                ),
-                "kind": "exact_bytes_replace_once",
-                "line": 90,
-                "before": (
-                    "g (mk_imp(tsk_hyp_new,"
-                    "`TSKAJXY_statement_special_case`));;"
-                ),
-                "after": (
-                    "let _ = g (mk_imp(tsk_hyp_new,"
-                    "`TSKAJXY_statement_special_case`));;"
-                ),
-            },
-        )
-        self.assertIn("identical implication term", tskajxy2["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", tskajxy2["scope_limit"]
-        )
-        oxlzlez3 = entries["PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001"]
-        self.assertEqual(len(oxlzlez3["operations"]), 1)
-        self.assertEqual(
-            oxlzlez3["operations"][0],
-            {
-                "id": (
-                    "PROJECT-OXLZLEZ3-S2-STRUCTURE-EFFECT-001-"
-                    "EXPLICIT-INFIX-BINDING"
-                ),
-                "kind": "exact_bytes_replace_once",
-                "line": 18,
-                "before": 'parse_as_infix("<<",(18,"right"));;',
-                "after": 'let _ = parse_as_infix("<<",(18,"right"));;',
-            },
-        )
-        self.assertIn("identical operator name", oxlzlez3["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", oxlzlez3["scope_limit"]
-        )
-        dih2k = entries["PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001"]
-        self.assertEqual(len(dih2k["operations"]), 1)
-        self.assertEqual(
-            dih2k["operations"][0],
-            {
-                "id": (
-                    "PROJECT-DIH2K-S2-STRUCTURE-EFFECT-001-"
-                    "EXPLICIT-INFIX-BINDING"
-                ),
-                "kind": "exact_bytes_replace_once",
-                "line": 40,
-                "before": 'parse_as_infix("has_orders",(12,"right"));;',
-                "after": (
-                    'let _ = parse_as_infix("has_orders",(12,"right"));;'
-                ),
-            },
-        )
-        self.assertIn("identical has_orders name", dih2k["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", dih2k["scope_limit"]
-        )
-        localization = entries[
-            "PROJECT-LOCALIZATION-S2-STRUCTURE-EFFECT-001"
-        ]
-        self.assertEqual(
-            [operation["line"] for operation in localization["operations"]],
-            [17, 18],
-        )
-        self.assertEqual(
-            [operation["before"] for operation in localization["operations"]],
-            [
-                'parse_as_infix("has_orders",(12,"right"));;',
-                'parse_as_infix("cyclic_on",(13,"right"));;',
-            ],
-        )
-        self.assertTrue(all(
-            operation["after"].startswith("let _ = parse_as_infix")
-            for operation in localization["operations"]
-        ))
-        self.assertIn("original order", localization["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", localization["scope_limit"]
-        )
-        grutoti = entries[
-            "PROJECT-GRUTOTI-S2-NATIVE-SET-SCOPE-001"
-        ]
-        self.assertEqual(len(grutoti["operations"]), 2)
-        self.assertEqual(
-            [operation["line"] for operation in grutoti["operations"]],
-            [15, 46],
-        )
-        self.assertEqual(
-            grutoti["operations"][0]["before"],
-            "module Grutoti = struct\n\n",
-        )
-        self.assertEqual(
-            grutoti["operations"][0]["after"],
-            "module Grutoti = struct\n\n\n"
-            "let candle_grutoti_native_set_tac = SET_TAC;;\n"
-            "let candle_grutoti_native_set_rule = SET_RULE;;\n\n",
-        )
-        self.assertEqual(
-            grutoti["operations"][1]["after"],
-            "  open Marchal_cells_3;;\n\n\n"
-            "let SET_TAC = candle_grutoti_native_set_tac;;\n"
-            "let SET_RULE = candle_grutoti_native_set_rule;;\n\n",
-        )
-        self.assertIn("2,364 native MESON", grutoti["semantic_rule"])
-        self.assertIn("previous line-2713", grutoti["scope_limit"])
-        self.assertNotIn("MATCH_ACCEPT_TAC", json.dumps(grutoti))
         ajripqn = entries["PROJECT-AJRIPQN-S2-OPEN-RESOLUTION-001"]
         self.assertEqual(
             [operation["line"] for operation in ajripqn["operations"]],
@@ -544,14 +383,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ))
         self.assertIn("native OCaml", ajripqn["semantic_rule"])
         self.assertIn("do not whitelist a basename", ajripqn["scope_limit"])
-        inequalities = entries["PROJECT-INEQUALITIES-S2-GOAL-EFFECT-001"]
-        self.assertEqual(len(inequalities["operations"]), 1)
-        self.assertEqual(inequalities["operations"][0]["line"], 657)
-        self.assertEqual(
-            inequalities["operations"][0]["after"],
-            "let _ = g(DIH_Y_INEQ_concl);;",
-        )
-        self.assertIn("identical DIH_Y_INEQ_concl", inequalities["semantic_rule"])
         ssreflect = entries["PROJECT-TOPLOOP-S3-SSREFLECT-LOOKUP-001"]
         self.assertEqual(
             [operation["line"] for operation in ssreflect["operations"]],
@@ -584,240 +415,9 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("native OCaml grouping", ssreflect["semantic_rule"])
         self.assertIn("top-level value restriction", ssreflect["semantic_rule"])
         self.assertIn("current HOL Light", ssreflect["semantic_rule"])
-        ssrfun = entries["PROJECT-SSRFUN-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(ssrfun["operations"]), 1)
-        ssrfun_effects = ssrfun["operations"][0]
-        self.assertEqual(ssrfun_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(ssrfun_effects["replacement_count"], 31)
-        self.assertEqual(
-            [replacement["line"] for replacement in ssrfun_effects["replacements"]],
-            [
-                73, 74, 123, 133, 134, 135, 205, 208, 209, 211, 241,
-                244, 245, 246, 279, 282, 283, 285, 304, 307, 310, 317,
-                320, 333, 336, 349, 352, 357, 360, 365, 368,
-            ],
-        )
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in ssrfun_effects["replacements"]
-        ))
-        self.assertIn("same 32 Sections registration calls", ssrfun["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", ssrfun["scope_limit"])
-        self.assertIn("first-effect minimizer", ssrfun["scope_limit"])
-        ssrbool = entries["PROJECT-SSRBOOL-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(ssrbool["operations"]), 1)
-        ssrbool_effects = ssrbool["operations"][0]
-        self.assertEqual(ssrbool_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(ssrbool_effects["replacement_count"], 10)
-        self.assertEqual(
-            [replacement["line"] for replacement in ssrbool_effects["replacements"]],
-            [8, 9, 10, 45, 209, 210, 211, 212, 247, 620],
-        )
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in ssrbool_effects["replacements"]
-        ))
-        self.assertIn("same eleven Sections calls", ssrbool["semantic_rule"])
-        self.assertIn("one overload_interface registration", ssrbool["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", ssrbool["scope_limit"])
-        self.assertIn("one-binding minimizer", ssrbool["scope_limit"])
-        ssrnat = entries["PROJECT-SSRNAT-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(ssrnat["operations"]), 1)
-        ssrnat_effects = ssrnat["operations"][0]
-        self.assertEqual(ssrnat_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(ssrnat_effects["replacement_count"], 8)
-        self.assertEqual(
-            [replacement["line"] for replacement in ssrnat_effects["replacements"]],
-            [7, 8, 1056, 1057, 1058, 1095, 1402, 1403],
-        )
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in ssrnat_effects["replacements"]
-        ))
-        self.assertIn("same six Sections calls", ssrnat["semantic_rule"])
-        self.assertIn("prioritize_num call", ssrnat["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", ssrnat["scope_limit"])
-        self.assertIn("consecutive anonymous group", ssrnat["scope_limit"])
-        self.assertIn("binding only one", ssrnat["scope_limit"])
-        hypermap_iso = entries[
-            "PROJECT-HYPERMAP-ISO-S2-STRUCTURE-EFFECTS-001"
-        ]
-        self.assertEqual(len(hypermap_iso["operations"]), 1)
-        hypermap_iso_effects = hypermap_iso["operations"][0]
-        self.assertEqual(
-            hypermap_iso_effects["kind"], "exact_lines_replace_once",
-        )
-        self.assertEqual(hypermap_iso_effects["replacement_count"], 46)
-        self.assertEqual(
-            [
-                replacement["line"]
-                for replacement in hypermap_iso_effects["replacements"]
-            ],
-            [
-                20, 70, 71, 72, 73, 74, 75, 84, 109, 139, 140, 141, 142,
-                190, 193, 194, 195, 263, 264, 265, 302, 305, 318, 319, 320,
-                321, 322, 354, 425, 428, 467, 468, 469, 470, 499, 844, 845,
-                846, 925, 928, 1042, 1043, 1044, 1045, 1151, 1171,
-            ],
-        )
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in hypermap_iso_effects["replacements"]
-        ))
-        self.assertIn("same 46 section calls", hypermap_iso["semantic_rule"])
-        self.assertIn("same iso parser registration", hypermap_iso["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", hypermap_iso["scope_limit"],
-        )
-        self.assertIn("No relevant fix-top100", hypermap_iso["scope_limit"])
-        seq = entries["PROJECT-SEQ-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(seq["operations"]), 1)
-        seq_effects = seq["operations"][0]
-        self.assertEqual(seq_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(seq_effects["replacement_count"], 119)
-        seq_replacements = seq_effects["replacements"]
-        seq_lines = [replacement["line"] for replacement in seq_replacements]
-        self.assertEqual(len(seq_lines), 119)
-        self.assertEqual(seq_lines, sorted(set(seq_lines)))
-        self.assertEqual(seq_lines[:7], [9, 12, 13, 14, 15, 16, 17])
-        self.assertEqual(seq_lines[-4:], [3776, 3777, 3778, 3818])
-        self.assertTrue(all(
-            replacement["after"] ==
-            replacement["before"][:
-                len(replacement["before"]) -
-                len(replacement["before"].lstrip())
-            ] + "let _ = " + replacement["before"].lstrip()
-            for replacement in seq_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in seq_replacements
-        ), 112)
-        for effect, expected_count in (
-            ("parse_as_", 2), ("override_interface", 2),
-            ("overload_interface", 1), ("make_overloadable", 1),
-            ("prioritize_num", 1),
-        ):
-            self.assertEqual(sum(
-                replacement["before"].lstrip().startswith(effect)
-                for replacement in seq_replacements
-            ), expected_count)
-        self.assertIn("complete 119 anonymous", seq["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", seq["scope_limit"])
-        self.assertIn("No relevant fix-top100", seq["scope_limit"])
-        seq2 = entries["PROJECT-SEQ2-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(seq2["operations"]), 1)
-        seq2_effects = seq2["operations"][0]
-        self.assertEqual(seq2_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(seq2_effects["replacement_count"], 42)
-        seq2_replacements = seq2_effects["replacements"]
-        seq2_lines = [replacement["line"] for replacement in seq2_replacements]
-        self.assertEqual(len(seq2_lines), 42)
-        self.assertEqual(seq2_lines, sorted(set(seq2_lines)))
-        self.assertEqual(seq2_lines[:6], [10, 11, 12, 13, 14, 15])
-        self.assertEqual(seq2_lines[-4:], [1540, 1679, 1682, 2043])
-        self.assertTrue(all(
-            replacement["after"] ==
-            replacement["before"][:
-                len(replacement["before"]) -
-                len(replacement["before"].lstrip())
-            ] + "let _ = " + replacement["before"].lstrip()
-            for replacement in seq2_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in seq2_replacements
-        ), 36)
-        for effect, expected_count in (
-            ("parse_as_", 2), ("override_interface", 2),
-            ("overload_interface", 1), ("make_overloadable", 1),
-        ):
-            self.assertEqual(sum(
-                replacement["before"].lstrip().startswith(effect)
-                for replacement in seq2_replacements
-            ), expected_count)
-        self.assertIn("complete 42 anonymous", seq2["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", seq2["scope_limit"])
-        self.assertIn("No relevant fix-top100", seq2["scope_limit"])
-        sort = entries["PROJECT-SORT-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(sort["operations"]), 1)
-        sort_effects = sort["operations"][0]
-        self.assertEqual(sort_effects["kind"], "exact_lines_replace_once")
-        self.assertEqual(sort_effects["replacement_count"], 35)
-        sort_replacements = sort_effects["replacements"]
-        sort_lines = [replacement["line"] for replacement in sort_replacements]
-        self.assertEqual(len(sort_lines), 35)
-        self.assertEqual(sort_lines, sorted(set(sort_lines)))
-        self.assertEqual(sort_lines[:7], [6, 7, 8, 9, 10, 11, 47])
-        self.assertEqual(sort_lines[-7:], [414, 457, 460, 461, 610, 613, 649])
-        self.assertTrue(all(
-            replacement["after"] ==
-            replacement["before"][:
-                len(replacement["before"]) -
-                len(replacement["before"].lstrip())
-            ] + "let _ = " + replacement["before"].lstrip()
-            for replacement in sort_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in sort_replacements
-        ), 28)
-        for effect, expected_count in (
-            ("parse_as_", 2), ("override_interface", 2),
-            ("overload_interface", 1), ("make_overloadable", 1),
-            ("prioritize_real", 1),
-        ):
-            self.assertEqual(sum(
-                replacement["before"].lstrip().startswith(effect)
-                for replacement in sort_replacements
-            ), expected_count)
-        self.assertIn("complete 35 anonymous", sort["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", sort["scope_limit"])
-        self.assertIn("No relevant fix-top100", sort["scope_limit"])
         fnjlbxs = entries["PROJECT-FNJLBXS-S2-STRUCTURE-EFFECTS-001"]
-        self.assertEqual(len(fnjlbxs["operations"]), 4)
-        fnjlbxs_effects = fnjlbxs["operations"][0]
-        self.assertEqual(
-            fnjlbxs_effects["kind"], "exact_lines_replace_once",
-        )
-        self.assertEqual(fnjlbxs_effects["replacement_count"], 44)
-        fnjlbxs_replacements = fnjlbxs_effects["replacements"]
-        fnjlbxs_lines = [
-            replacement["line"] for replacement in fnjlbxs_replacements
-        ]
-        self.assertEqual(len(fnjlbxs_lines), 44)
-        self.assertEqual(fnjlbxs_lines, sorted(set(fnjlbxs_lines)))
-        self.assertEqual(fnjlbxs_lines[:7], [7, 8, 9, 10, 11, 12, 31])
-        self.assertEqual(
-            fnjlbxs_lines[-7:], [1128, 1129, 1259, 1262, 1541, 1544, 1806],
-        )
-        self.assertTrue(all(
-            replacement["after"] ==
-            replacement["before"][:
-                len(replacement["before"]) -
-                len(replacement["before"].lstrip())
-            ] + "let _ = " + replacement["before"].lstrip()
-            for replacement in fnjlbxs_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in fnjlbxs_replacements
-        ), 38)
-        for effect, expected_count in (
-            ("parse_as_", 2), ("override_interface", 2),
-            ("overload_interface", 1), ("make_overloadable", 1),
-        ):
-            self.assertEqual(sum(
-                replacement["before"].lstrip().startswith(effect)
-                for replacement in fnjlbxs_replacements
-            ), expected_count)
-        self.assertFalse(any(
-            replacement["line"] == 1 for replacement in fnjlbxs_replacements
-        ))
-        self.assertIn("top-level prioritize_overload", fnjlbxs["semantic_rule"])
-        self.assertIn("complete mechanically enumerated", fnjlbxs["scope_limit"])
-        self.assertIn("No relevant fix-top100", fnjlbxs["scope_limit"])
-        fnjlbxs_proofs = fnjlbxs["operations"][1:]
+        self.assertEqual(len(fnjlbxs["operations"]), 3)
+        fnjlbxs_proofs = fnjlbxs["operations"]
         self.assertEqual(
             [operation["id"] for operation in fnjlbxs_proofs],
             [
@@ -839,84 +439,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same REALLIM_ADD theorem", fnjlbxs["semantic_rule"])
         self.assertIn("same named definitions", fnjlbxs["semantic_rule"])
         self.assertIn("three independently minimized", fnjlbxs["scope_limit"])
-        add_triangle = entries[
-            "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001"
-        ]
-        self.assertEqual(len(add_triangle["operations"]), 1)
-        add_triangle_effects = add_triangle["operations"][0]
-        self.assertEqual(
-            add_triangle_effects["kind"], "exact_lines_replace_once",
-        )
-        self.assertEqual(add_triangle_effects["replacement_count"], 20)
-        add_triangle_replacements = add_triangle_effects["replacements"]
-        add_triangle_lines = [
-            replacement["line"]
-            for replacement in add_triangle_replacements
-        ]
-        self.assertEqual(
-            add_triangle_lines,
-            [
-                7, 8, 9, 10, 37, 38, 39, 128, 293, 412,
-                482, 502, 547, 557, 558, 559, 560, 631, 634, 1486,
-            ],
-        )
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in add_triangle_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in add_triangle_replacements
-        ), 16)
-        self.assertEqual(sum(
-            "add_section_lemma" in replacement["before"]
-            for replacement in add_triangle_replacements
-        ), 1)
-        self.assertIn("complete 20 anonymous", add_triangle["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", add_triangle["scope_limit"],
-        )
-        self.assertIn("No relevant fix-top100", add_triangle["scope_limit"])
-        tame_lemmas = entries[
-            "PROJECT-TAME-LEMMAS-S2-STRUCTURE-EFFECTS-001"
-        ]
-        self.assertEqual(len(tame_lemmas["operations"]), 1)
-        tame_lemmas_effects = tame_lemmas["operations"][0]
-        self.assertEqual(
-            tame_lemmas_effects["kind"], "exact_lines_replace_once",
-        )
-        self.assertEqual(tame_lemmas_effects["replacement_count"], 38)
-        tame_lemmas_replacements = tame_lemmas_effects["replacements"]
-        tame_lemmas_lines = [
-            replacement["line"] for replacement in tame_lemmas_replacements
-        ]
-        self.assertEqual(
-            tame_lemmas_lines,
-            [
-                58, 64, 188, 191, 192, 283, 286, 287, 288, 289, 290,
-                293, 300, 307, 563, 564, 567, 623, 642, 645, 659, 660,
-                661, 662, 665, 672, 773, 827, 830, 831, 832, 835, 842,
-                849, 892, 893, 914, 919,
-            ],
-        )
-        self.assertEqual(tame_lemmas_lines, sorted(set(tame_lemmas_lines)))
-        self.assertTrue(all(
-            replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in tame_lemmas_replacements
-        ))
-        self.assertEqual(sum(
-            "Sections." in replacement["before"]
-            for replacement in tame_lemmas_replacements
-        ), 38)
-        self.assertEqual(sum(
-            "add_section_lemma" in replacement["before"]
-            for replacement in tame_lemmas_replacements
-        ), 9)
-        self.assertIn("complete 38 anonymous", tame_lemmas["semantic_rule"])
-        self.assertIn(
-            "complete mechanically enumerated", tame_lemmas["scope_limit"],
-        )
-        self.assertIn("No relevant fix-top100", tame_lemmas["scope_limit"])
         pent_hex = entries["PROJECT-PENT-HEX-S2-PRINTF-001"]
         self.assertEqual(
             [operation["line"] for operation in pent_hex["operations"]],
@@ -953,8 +475,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("unchanged test helper", misc_functions["scope_limit"])
         self.assertIn("central for-loop gate", misc_functions["scope_limit"])
         arith_num = entries["PROJECT-ARITH-NUM-S2-VALUE-RESTRICTION-001"]
-        self.assertEqual(len(arith_num["operations"]), 3)
-        arith_tables, arith_seeds, arith_loops = arith_num["operations"]
+        self.assertEqual(len(arith_num["operations"]), 1)
+        arith_tables = arith_num["operations"][0]
         self.assertEqual(arith_tables["kind"], "exact_lines_replace_once")
         self.assertEqual(arith_tables["replacement_count"], 21)
         self.assertEqual(
@@ -967,36 +489,9 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             and " Hashtbl.t = Hashtbl.create" in replacement["after"]
             for replacement in arith_tables["replacements"]
         ))
-        self.assertEqual(arith_seeds["kind"], "exact_lines_replace_once")
-        self.assertEqual(arith_seeds["replacement_count"], 2)
-        self.assertEqual(
-            [replacement["line"] for replacement in arith_seeds["replacements"]],
-            [1485, 1493],
-        )
-        self.assertTrue(all(
-            replacement["before"].startswith("Hashtbl.add ")
-            and replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in arith_seeds["replacements"]
-        ))
-        self.assertEqual(arith_loops["kind"], "exact_lines_replace_once")
-        self.assertEqual(arith_loops["replacement_count"], 24)
-        self.assertEqual(
-            [replacement["line"] for replacement in arith_loops["replacements"]],
-            [114, 169, 211, 325, 377, 442, 503, 577, 671, 703, 718,
-             745, 777, 792, 929, 955, 963, 974, 1127, 1137, 1203, 1253,
-             1487, 1495],
-        )
-        self.assertTrue(all(
-            replacement["before"].startswith("for i = ")
-            and replacement["after"] == "let _ = " + replacement["before"]
-            for replacement in arith_loops["replacements"]
-        ))
         self.assertIn("complete static set of 21", arith_num["semantic_rule"])
-        self.assertIn("all 24 outermost", arith_num["semantic_rule"])
-        self.assertIn("complete two-expression set", arith_num["scope_limit"])
-        self.assertIn("known defective anonymous", arith_num["scope_limit"])
-        self.assertIn("nested-module bare-loop failure", arith_num["scope_limit"])
-        self.assertIn("fix-top100", arith_num["scope_limit"])
+        self.assertIn("all 21 and only", arith_num["scope_limit"])
+        self.assertIn("fresh cumulative replay", arith_num["scope_limit"])
         arith_cache = entries[
             "PROJECT-ARITH-CACHE-S2-VALUE-RESTRICTION-001"
         ]
@@ -1023,7 +518,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         glpk_link = entries[
             "PROJECT-GLPK-LINK-S3-FAIL-CLOSED-PRINTF-001"
         ]
-        self.assertEqual(len(glpk_link["operations"]), 2)
+        self.assertEqual(len(glpk_link["operations"]), 1)
         glpk_sprintf = glpk_link["operations"][0]
         self.assertEqual(glpk_sprintf["kind"], "exact_bytes_replace_once")
         self.assertEqual(glpk_sprintf["line"], 33)
@@ -1032,15 +527,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("non-verification GLPK formatter", glpk_sprintf["after"])
         self.assertIn("fresh polymorphic instantiation", glpk_link["semantic_rule"])
         self.assertIn("not Printf or formatting support", glpk_link["scope_limit"])
-        self.assertIn("fix-top100", glpk_link["scope_limit"])
-        glpk_example = glpk_link["operations"][1]
-        self.assertEqual(glpk_example["line"], 106)
-        self.assertTrue(glpk_example["before"].startswith("wheremod "))
-        self.assertEqual(
-            glpk_example["after"], "let _ = " + glpk_example["before"]
-        )
-        self.assertIn("anonymous module-expression", glpk_link["semantic_rule"])
-        self.assertIn("not evidence", glpk_link["scope_limit"])
+        self.assertIn("fresh cumulative replay", glpk_link["scope_limit"])
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
@@ -1153,16 +640,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         relabel = entries["PROJECT-POINTER-S3-RELABEL-001"]
         self.assertEqual(
             [operation["line"] for operation in relabel["operations"]],
-            [21, 182, 303, 1122, 1123, 1125, 256, 529],
+            [182, 256, 529],
         )
-        self.assertIn("let absname", relabel["operations"][1]["after"])
-        self.assertIn("(absname,repname)", relabel["operations"][1]["after"])
-        self.assertTrue(all(
-            operation["after"].startswith("let _ = dropq_conv")
-            for operation in relabel["operations"][3:6]
-        ))
-        self.assertIn("not (y = x)", relabel["operations"][6]["after"])
-        self.assertIn("Hash_term.hash_of_term", relabel["operations"][7]["after"])
+        self.assertIn("let absname", relabel["operations"][0]["after"])
+        self.assertIn("(absname,repname)", relabel["operations"][0]["after"])
+        self.assertIn("not (y = x)", relabel["operations"][1]["after"])
+        self.assertIn("Hash_term.hash_of_term", relabel["operations"][2]["after"])
         set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
         self.assertEqual(set_make["operations"][0]["line"], 34)
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
@@ -1232,16 +715,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         sphere = entries["PROJECT-SPHERE-S3-TERM-ORDER-001"]
         self.assertEqual(
             [operation["line"] for operation in sphere["operations"]],
-            [16, 33],
+            [33],
         )
         self.assertIn("sort Term.(<) (frees bod)", (
-            sphere["operations"][1]["after"]
+            sphere["operations"][0]["after"]
         ))
         for entry_id, lines in (
             ("PROJECT-HALES-TACTIC-S3-LIST-CONCAT-001",
-             [103, 142, 125, 133, 143, 485, 489]),
+             [103, 142, 125, 133, 143]),
             ("PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
-             [89, 133, 105, 113, 134, 432, 436]),
+             [89, 133, 105, 113, 134]),
         ):
             tactic = entries[entry_id]
             self.assertEqual(
@@ -1262,16 +745,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 "Pair.compare String.compare Term.compare",
                 tactic["operations"][4]["after"],
             )
-            self.assertTrue(all(
-                operation["after"].startswith("let _ = REBIND_")
-                for operation in tactic["operations"][5:]
-            ))
-        refinement = entries["PROJECT-REFINEMENT-S3-FOR-LOOP-001"]
-        self.assertEqual(refinement["operations"][0]["line"], 40)
-        self.assertIn("let rec update_all i", (
-            refinement["operations"][0]["after"]
-        ))
-        self.assertNotIn("for i", refinement["operations"][0]["after"])
         hash_term = entries["PROJECT-HASH-TERM-S3-CHAR-CODE-001"]
         self.assertEqual(hash_term["operations"][0]["line"], 20)
         self.assertEqual(
@@ -1292,30 +765,17 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         nonlinear_boundary_entries = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
-            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 8,
+            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 1,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 13,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 4,
-            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
+            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 6,
         }
         for entry_id, operation_count in nonlinear_boundary_entries.items():
             self.assertEqual(len(entries[entry_id]["operations"]), operation_count)
         ineq_operations = entries[
             "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001"
         ]["operations"]
-        ineq_structure = next(
-            operation for operation in ineq_operations
-            if operation["id"] == "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001"
-        )
-        self.assertEqual(ineq_structure["kind"], "exact_lines_replace_once")
-        self.assertEqual(ineq_structure["replacement_count"], 218)
-        self.assertEqual(len(ineq_structure["replacements"]), 218)
-        self.assertEqual(ineq_structure["replacements"][0]["line"], 83)
-        self.assertEqual(ineq_structure["replacements"][-1]["line"], 3995)
-        self.assertTrue(all(
-            "let _ = " in replacement["after"]
-            for replacement in ineq_structure["replacements"]
-        ))
         ineqdoc = next(
             operation for operation in ineq_operations
             if operation["id"] == "PROJECT-INEQ-S3-INEQDOC-VALUE-RESTRICTION-001"
@@ -1332,20 +792,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(
             dart_classes["after"], "let dart_classes = ref ([]:thm list);;",
-        )
-        main_estimate_structure = entries[
-            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001"
-        ]["operations"][0]
-        self.assertEqual(
-            main_estimate_structure["kind"], "exact_lines_replace_once",
-        )
-        self.assertEqual(main_estimate_structure["replacement_count"], 92)
-        self.assertEqual(len(main_estimate_structure["replacements"]), 92)
-        self.assertEqual(main_estimate_structure["replacements"][0]["line"], 49)
-        self.assertEqual(main_estimate_structure["replacements"][-1]["line"], 1947)
-        self.assertEqual(
-            main_estimate_structure["replacements"][0]["after"],
-            'let _ = addtex(Section,"Main Estimate","Definitions");;',
         )
         self.assertEqual(
             entries["PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001"]
@@ -1379,11 +825,6 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "Cake.Double.(>)",
             next(operation for operation in parse_ineq_operations
                  if operation["id"].endswith("DOUBLE-MAXIMUM-001"))["after"],
-        )
-        self.assertEqual(
-            [operation["line"] for operation in parse_ineq_operations
-             if operation["id"].endswith("STRUCTURE-EFFECT-001")],
-            [166, 214, 679],
         )
         self.assertEqual(
             next(operation for operation in parse_ineq_operations
@@ -1451,42 +892,10 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             next(operation for operation in merge_operations
                  if operation["id"].endswith("TUPLE-CONSTRUCTOR-001"))["after"],
         )
-        merge_goal_effects = [
-            operation for operation in merge_operations
-            if operation["id"].endswith("GOAL-EFFECT-001")
-        ]
-        self.assertEqual(len(merge_goal_effects), 2)
-        self.assertTrue(all(operation["after"].startswith("let _ = g ")
-                            for operation in merge_goal_effects))
-        structure_effect_lines = {
-            "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": [21, 22],
-            "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": [44],
-            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": [52, 720],
-            "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001": [870, 1328],
-            "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001": [24],
-            "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001": [2916, 2931, 2937, 4236],
-            "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": [26, 27, 304],
-            "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": [18],
-            "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": [252, 821],
-        }
-        for entry_id, lines in structure_effect_lines.items():
-            operations = entries[entry_id]["operations"]
-            self.assertEqual(
-                [operation["line"] for operation in operations], lines,
-            )
-            self.assertTrue(all(
-                operation["after"].startswith("let _ = ")
-                for operation in operations
-            ))
         float_entry = entries["PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001"]
         self.assertEqual(
             [operation["line"] for operation in float_entry["operations"]],
-            [
-                37, 38, 75, 112, 120, 137, 149, 152, 167, 171, 176,
-                184, 191, 198, 212, 227, 229, 625, 1073, 1099, 1144,
-                1155, 1175, 1192, 1380, 1398, 1418, 1425, 1458, 1538,
-                1550, 1555, 1681,
-            ],
+            [184, 191, 1144, 1155, 1538, 1681],
         )
         self.assertEqual(
             sum("Assert_failure" in operation["after"]
@@ -1499,19 +908,17 @@ class FlyspeckNormalizationTests(unittest.TestCase):
                 for operation in float_entry["operations"]),
             2,
         )
-        self.assertIn("let _ = let f", float_entry["operations"][19]["after"])
-        self.assertIn("let _ = add_test", float_entry["operations"][23]["after"])
         misc_entry = entries["PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001"]
         self.assertEqual(
             [operation["line"] for operation in misc_entry["operations"]],
-            [31, 365, 367, 737],
+            [365, 367],
         )
         self.assertEqual(
-            misc_entry["operations"][1]["after"],
+            misc_entry["operations"][0]["after"],
             "SUBGOAL_MP_TAC `?t. t = x+|y'`;",
         )
         self.assertEqual(
-            misc_entry["operations"][2]["after"],
+            misc_entry["operations"][1]["after"],
             "SPEC_TAC (`x:num`,`a:num`);",
         )
         parser_orpattern = entries["PROJECT-PARSER-S3-LET-OR-PATTERN-001"]
@@ -1629,38 +1036,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
         ))
-        analysis_structure_counts = {
-            "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001": 4,
-            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001": 1,
-            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001": 1,
-        }
-        for entry_id, operation_count in analysis_structure_counts.items():
-            self.assertEqual(
-                len(entries[entry_id]["operations"]), operation_count,
-            )
-        fan_structure = entries[
-            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001"
-        ]["operations"][0]
-        polyhedron_structure = entries[
-            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001"
-        ]["operations"][0]
-        self.assertEqual(fan_structure["replacement_count"], 9)
-        self.assertEqual(polyhedron_structure["replacement_count"], 8)
         conforming_sequence = entries[
             "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001"
         ]["operations"][0]
         self.assertEqual(conforming_sequence["line"], 1424)
         self.assertIn("; THEN", conforming_sequence["before"])
         self.assertNotIn("; THEN", conforming_sequence["after"])
-        self.assertTrue(all(
-            replacement["after"].startswith("let _ = ")
-            for operation in (
-                fan_structure, polyhedron_structure,
-            )
-            for replacement in operation["replacements"]
-        ))
         operation_ids = [
             operation["id"]
             for entry in entries.values()
@@ -1673,7 +1054,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 274)
+        self.assertEqual(len(operation_ids), 167)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

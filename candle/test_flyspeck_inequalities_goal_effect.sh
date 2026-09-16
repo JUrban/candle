@@ -31,12 +31,17 @@ rg -Fq 'INEQUALITIES_GOAL_EFFECT_OCAML_ORACLE_OK' "$test_dir/native.log"
       >"$test_dir/normalized.log" 2>&1
 )
 
-rg -Fq 'Type mismatch between term and (term ->' "$test_dir/original.log"
+rg -Fq 'val candle_inequalities_goal_original_ok = true: bool' \
+  "$test_dir/original.log"
 rg -Fq 'val candle_inequalities_goal_effect_ok = true: bool' \
   "$test_dir/normalized.log"
+if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/original.log"; then
+  tail -n 50 "$test_dir/original.log" >&2
+  exit 1
+fi
 if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/normalized.log"; then
   tail -n 50 "$test_dir/normalized.log" >&2
   exit 1
 fi
 
-printf 'PASS: Flyspeck Inequalities goal structure-effect normalization\n'
+printf 'PASS: Flyspeck Inequalities raw/wrapped goal structure effects\n'

@@ -218,6 +218,7 @@ module List = struct
     | [] -> false
     | (k, _) :: rest -> k = key || mem_assoc key rest
   let filter f l = Cake.List.filter f l
+  let find_all f l = filter f l
   let partition f l = Cake.List.partition f l
   let sort cmp xs = Cake.List.sort (fun x y -> cmp x y < 0) xs
   let length xs = Cake.List.length xs

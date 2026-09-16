@@ -40,12 +40,12 @@ let candle_flyspeck_source_digests = [
   ("candle","calc_int.ml","0b5301c4b14547be874bbaffbc5538d5");
   ("candle","calc_num.ml","9f415aa0a5149a2407ac7e0d6edfc5ae");
   ("candle","calc_rat.ml","d0f2c98da9cae7368370438c479de848");
-  ("candle","candle/flyspeck_full_build.ml","e2928f4981abbcb8c60ba547a055792d");
+  ("candle","candle/flyspeck_full_build.ml","584ff5861fd233f33d1a48367523f21b");
   ("candle","candle/flyspeck_l2_target.ml","aa726b6da79aae93e638b8a8233bf48b");
   ("candle","candle/flyspeck_source_integrity.ml","54b69b40c435b4b184a6ea88586f45b6");
   ("candle","candle/kernel.ml","fa2e94287ca00e9153e937b606b3c7ea");
   ("candle","candle/nums.ml","f5c1c95b0c225751f6de28aba908dc9c");
-  ("candle","candle/ocaml.ml","f583350824a82f9fc5aef0fd98b2691d");
+  ("candle","candle/ocaml.ml","e74559b2f7cedff72776bf7de156d458");
   ("candle","candle/pretty.ml","08098e03af2e6ef0df226482d168288c");
   ("candle","canon.ml","9d6436c2e35b90c8834c698a181301f7");
   ("candle","cart.ml","881b868ae13b2d2a76123514cc446726");

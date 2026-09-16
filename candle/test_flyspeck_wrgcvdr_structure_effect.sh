@@ -45,8 +45,10 @@ rg -Fq 'WRGCVDR_STRUCTURE_EFFECT_OCAML_ORACLE_OK' "$test_dir/native.log"
       >"$test_dir/normalized.log" 2>&1
 )
 
-rg -Fq 'Type mismatch between thm and' "$test_dir/original.log"
-rg -Fq 'Type mismatch between thm and' "$test_dir/theorem-original.log"
+rg -Fq 'val candle_wrgcvdr_structure_original_ok = true: bool' \
+  "$test_dir/original.log"
+rg -Fq 'val candle_wrgcvdr_theorem_original_ok = true: bool' \
+  "$test_dir/theorem-original.log"
 rg -Fq 'val candle_wrgcvdr_structure_effect_ok = true: bool' \
   "$test_dir/normalized.log"
 rg -Fq 'val candle_wrgcvdr_theorem_effect_ok = true: bool' \
@@ -55,9 +57,17 @@ if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/normalized.log"; then
   tail -n 50 "$test_dir/normalized.log" >&2
   exit 1
 fi
+if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/original.log"; then
+  tail -n 50 "$test_dir/original.log" >&2
+  exit 1
+fi
+if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/theorem-original.log"; then
+  tail -n 50 "$test_dir/theorem-original.log" >&2
+  exit 1
+fi
 if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$test_dir/theorem-normalized.log"; then
   tail -n 50 "$test_dir/theorem-normalized.log" >&2
   exit 1
 fi
 
-printf 'PASS: Flyspeck WRGCVDR structure-effect normalization\n'
+printf 'PASS: Flyspeck WRGCVDR raw/wrapped structure effects\n'

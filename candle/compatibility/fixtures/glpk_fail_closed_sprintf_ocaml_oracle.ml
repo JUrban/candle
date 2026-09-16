@@ -18,3 +18,17 @@ let candle_glpk_fail_closed_sprintf_ok =
   glpk_expect_failure glpk_format_strings &&
   glpk_expect_failure glpk_format_float &&
   glpk_expect_failure glpk_format_mixed;;
+
+module Candle_glpk_list_find_all = struct
+  open List;;
+
+  let visits : int list ref = ref [];;
+  let values =
+    find_all
+      (fun value -> visits := !visits @ [value]; value mod 2 = 0)
+      [1;2;3;4];;
+end;;
+
+let candle_glpk_list_find_all_ok =
+  Candle_glpk_list_find_all.values = [2;4] &&
+  !(Candle_glpk_list_find_all.visits) = [1;2;3;4];;

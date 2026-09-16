@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 80)
+        self.assertEqual(contract["entry_count"], 47)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -665,16 +665,12 @@ class GeneratedManifestTests(unittest.TestCase):
             "PROJECT-TRUONG-TACTIC-S3-LIST-CONCAT-001",
         ):
             tactic = entries[entry_id]
-            self.assertEqual(tactic["operation_count"], 7)
+            self.assertEqual(tactic["operation_count"], 5)
             self.assertEqual(
                 sum("setify Term.(<)" in operation["after"]
                     for operation in tactic["operations"]),
                 3,
             )
-        self.assertEqual(
-            entries["PROJECT-REFINEMENT-S3-FOR-LOOP-001"]["operation_count"],
-            1,
-        )
         self.assertEqual(
             entries["PROJECT-HASH-TERM-S3-CHAR-CODE-001"]["operation_count"],
             2,
@@ -687,82 +683,28 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         nonlinear_boundary_counts = {
             "PROJECT-INEQDATA3Q1H-S3-POLYMORPHIC-NTH-001": 5,
-            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 11,
-            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 3,
-            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 16,
+            "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001": 8,
+            "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001": 1,
+            "PROJECT-PARSE-INEQ-S3-CANDLE-COMPATIBILITY-001": 13,
             "PROJECT-OPTIMIZE-S3-PRINTF-001": 4,
-            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 9,
+            "PROJECT-MERGE-INEQ-S3-CANDLE-COMPATIBILITY-001": 6,
         }
         for entry_id, operation_count in nonlinear_boundary_counts.items():
             self.assertEqual(entries[entry_id]["operation_count"], operation_count)
-        analysis_structure_counts = {
-            "PROJECT-VOL1-S2-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-HYPERMAP-S2-STRUCTURE-EFFECT-001": 4,
-            "PROJECT-FAN-S2-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001": 1,
-            "PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001": 1,
-        }
-        for entry_id, operation_count in analysis_structure_counts.items():
-            self.assertEqual(entries[entry_id]["operation_count"], operation_count)
-        self.assertEqual(
-            entries["PROJECT-FAN-S2-STRUCTURE-EFFECT-001"]
-            ["operations"][0]["replacement_count"],
-            9,
-        )
-        self.assertEqual(
-            entries["PROJECT-POLYHEDRON-S2-STRUCTURE-EFFECT-001"]
-            ["operations"][0]["replacement_count"],
-            8,
-        )
         conforming_sequence = entries[
             "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001"
         ]["operations"][0]
         self.assertEqual(conforming_sequence["line"], 1424)
         self.assertIn("; THEN", conforming_sequence["before"])
         self.assertNotIn("; THEN", conforming_sequence["after"])
-        ineq_structure = next(
-            operation
-            for operation in entries[
-                "PROJECT-INEQ-S3-PRINTF-FLATTEN-LOOPS-001"
-            ]["operations"]
-            if operation["id"] == "PROJECT-INEQ-S3-STRUCTURE-EFFECTS-001"
-        )
-        self.assertEqual(ineq_structure["replacement_count"], 218)
-        main_estimate_structure = next(
-            operation
-            for operation in entries[
-                "PROJECT-MAIN-ESTIMATE-INEQ-S3-PRINTF-LOOP-001"
-            ]["operations"]
-            if operation["id"] == (
-                "PROJECT-MAIN-ESTIMATE-INEQ-S3-STRUCTURE-EFFECTS-001"
-            )
-        )
-        self.assertEqual(main_estimate_structure["replacement_count"], 92)
-        structure_effect_counts = {
-            "PROJECT-GOAL-PRINTER-S3-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-TACTICS-S3-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-COLLECT-GEOM-S3-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-COLLECT-GEOM2-S3-STRUCTURE-EFFECT-001": 2,
-            "PROJECT-TRIG1-S3-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-TRIG2-S3-STRUCTURE-EFFECT-001": 4,
-            "PROJECT-REAL-EXT-S3-STRUCTURE-EFFECT-001": 3,
-            "PROJECT-NUM-EXT-NABS-S3-STRUCTURE-EFFECT-001": 1,
-            "PROJECT-TAYLOR-ATN-S3-STRUCTURE-EFFECT-001": 2,
-        }
-        for entry_id, operation_count in structure_effect_counts.items():
-            self.assertEqual(entries[entry_id]["operation_count"], operation_count)
-            self.assertTrue(all(
-                operation["after"].startswith("let _ = ")
-                for operation in entries[entry_id]["operations"]
-            ))
         tactics_jordan = entries["PROJECT-POINTER-S3-RELABEL-001"]
-        self.assertEqual(tactics_jordan["operation_count"], 8)
+        self.assertEqual(tactics_jordan["operation_count"], 3)
         self.assertEqual(
             [operation["line"] for operation in tactics_jordan["operations"]],
-            [21, 182, 303, 1122, 1123, 1125, 256, 529],
+            [182, 256, 529],
         )
         float_entry = entries["PROJECT-FLOAT-S3-STRUCTURE-EFFECT-001"]
-        self.assertEqual(float_entry["operation_count"], 33)
+        self.assertEqual(float_entry["operation_count"], 6)
         self.assertEqual(
             sum("Assert_failure" in operation["after"]
                 for operation in float_entry["operations"]),
@@ -774,9 +716,9 @@ class GeneratedManifestTests(unittest.TestCase):
             2,
         )
         misc_defs = entries["PROJECT-MISC-DEFS-S3-STRUCTURE-EFFECT-001"]
-        self.assertEqual(misc_defs["operation_count"], 4)
-        self.assertIn("t = x+|y'", misc_defs["operations"][1]["after"])
-        self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][2]["after"])
+        self.assertEqual(misc_defs["operation_count"], 2)
+        self.assertIn("t = x+|y'", misc_defs["operations"][0]["after"])
+        self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][1]["after"])
         self.assertEqual(entry["operation_count"], 3)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
@@ -1016,7 +958,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 79", source,
+            "List.length candle_flyspeck_normalized_sources <> 46", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -1026,7 +968,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 79)
+        self.assertEqual(len(selected_normalizations), 46)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)
