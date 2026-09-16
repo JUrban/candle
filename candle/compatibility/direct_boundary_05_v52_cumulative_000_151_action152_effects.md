@@ -118,7 +118,10 @@ Focused authority checks are green:
 - 10 stratum-plan tests;
 - `git diff --check`.
 
-The all-inventory authority test is intentionally deferred until the coherent
-commit because it fail-closes when generated authority bytes differ from
-`HEAD`. Complete current-runtime action-152 loading and a fresh cumulative
-replay are still required; this report does not credit action 152.
+The separate all-inventory source-only test retains pre-existing stale
+hard-coded authority identities and remains fail-closed before preparing any
+source. Its pinned manifest/normalization SHA-256 values are `908c630f...` and
+`2a6c0ff4...`; the untouched parent `e68a9eb` already contains `f4eb770e...`
+and `cf4ac534...`. This functional batch does not refresh that unrelated
+assurance subsystem. Complete current-runtime action-152 loading and a fresh
+cumulative replay are still required; this report does not credit action 152.
