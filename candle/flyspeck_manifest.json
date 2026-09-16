@@ -9301,8 +9301,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "c8c6058b55d040d796789015a80b77a1",
-    "generated_source_sha256": "374189af0694b9dcfb9161f57afb19642fad3544f728507a194c8682181a438c",
+    "generated_source_md5": "4e9a1d700c56c3e49d40df55eebeab00",
+    "generated_source_sha256": "ed29684d947845c1c56f70f2decd23c390f0e86ddcee2a4a81f6f7375b6fa988",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -15430,12 +15430,12 @@
       "sha256": "3b79dc8197ce23ff90c9e6b1653d99aaae6601899a02aa07d4acd3c227b2f868"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 38419,
+      "bytes": 38450,
       "dependencies": [],
-      "md5": "e74559b2f7cedff72776bf7de156d458",
+      "md5": "c37404435faf5156e45182c36ee53a44",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "92d5ddd9be53cabf82b089514f05104bcf6adea7f0e226546721678fdd11d9c9"
+      "sha256": "a3b3f142212ce5f9694b6c02d9b9e0adea1a78bffd2722b4654443417b5bb70d"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -26391,19 +26391,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 724,
+        "line": 725,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 725,
+        "line": 726,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 726,
+        "line": 727,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
