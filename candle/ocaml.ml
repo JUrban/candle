@@ -223,6 +223,11 @@ module List = struct
   let sort cmp xs = Cake.List.sort (fun x y -> cmp x y < 0) xs
   let length xs = Cake.List.length xs
   let map f xs = Cake.List.map f xs
+  let rec split = function
+    | [] -> ([], [])
+    | (x, y) :: rest ->
+       let xs, ys = split rest in
+       (x :: xs, y :: ys)
   let rec map2 f xs ys =
     match xs, ys with
     | [], [] -> []
