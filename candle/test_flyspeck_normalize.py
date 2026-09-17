@@ -29,7 +29,11 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         source = b"prefix\n    if n == 1 then [] else\nsuffix\n"
         normalized = b"prefix\n    if n = 1 then [] else\nsuffix\n"
         entry = copy.deepcopy(self.contract["entries"][0])
-        entry["operations"] = [copy.deepcopy(entry["operations"][2])]
+        pointer_operation = next(
+            operation for operation in entry["operations"]
+            if operation["id"] == "PROJECT-POINTER-S3-IMMEDIATE-001-REPLACE"
+        )
+        entry["operations"] = [copy.deepcopy(pointer_operation)]
         entry["operations"][0]["line"] = 2
         entry["source_sha256"], entry["source_md5"] = digests(source)
         entry["normalized_sha256"], entry["normalized_md5"] = digests(normalized)
@@ -198,7 +202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 50)
+        self.assertEqual(len(self.contract["entries"]), 51)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -531,11 +535,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
-            [329, 342, 1050, 299, 852, 1059],
+            [284, 329, 342, 1050, 299, 852, 1059],
         )
-        self.assertIn("Term.compare", immediate["operations"][0]["after"])
-        self.assertEqual(immediate["operations"][2]["before"].count("=="), 1)
-        self.assertNotIn("==", immediate["operations"][2]["after"])
+        self.assertEqual(
+            immediate["operations"][0]["after"],
+            "let var_table : (term, thm) Hashtbl.t = Hashtbl.create 1000;;",
+        )
+        self.assertTrue(all(
+            "Term.compare" in operation["after"]
+            for operation in immediate["operations"][1:3]
+        ))
+        self.assertEqual(immediate["operations"][3]["before"].count("=="), 1)
+        self.assertNotIn("==", immediate["operations"][3]["after"])
         self.assertIn("does not apply to allocated values", immediate["scope_limit"])
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
         self.assertEqual(
@@ -1007,6 +1018,17 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertEqual(lp_compare["operations"][1]["after"], (
             "    output_string outs j;;  "
         ))
+        interval_table = entries[
+            "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS"
+        ]
+        self.assertEqual(len(interval_table["operations"]), 1)
+        self.assertEqual(interval_table["operations"][0]["line"], 498)
+        self.assertEqual(
+            interval_table["operations"][0]["after"],
+            "let interval_table : (term, thm) Hashtbl.t = Hashtbl.create 10;;",
+        )
+        self.assertIn("exact type already forced", interval_table["semantic_rule"])
+        self.assertIn("action-159", interval_table["scope_limit"])
         fixed_format_entries = {
             "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001": 98,
             "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001": 308,
@@ -1084,7 +1106,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 178)
+        self.assertEqual(len(operation_ids), 180)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

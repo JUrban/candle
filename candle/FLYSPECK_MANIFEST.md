@@ -17,7 +17,7 @@ python3 candle/flyspeck_manifest.py \
 ```
 
 The current pinned inventory contains 297 ordered build entries (287 unique),
-400 recursively reached source nodes, 706 selected dependency edges, and 42
+400 recursively reached source nodes, 706 selected dependency edges, and 43
 hashed LP/archive/nonlinear inputs.  There are no unresolved build roots,
 unreviewed dynamic loads, missing ordinary sources, path escapes, ambiguous
 loads, or detected cycles.  Fourteen non-literal call sites have explicit
@@ -64,9 +64,9 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 50
-site-specific, hash-bound source overlays, 49 of which are selected by the
-direct source graph.  The selected overlays contain 178 exact operations.
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 51
+site-specific, hash-bound source overlays, 50 selected by the direct source
+graph.  The selected overlays contain 180 exact operations.
 `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -159,6 +159,7 @@ CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
 candle/test_flyspeck_parser_orpattern_normalization.sh ./candle.sh
 CANDLE_BINARY=/path/to/candle.sh FLYSPECK_ROOT=/path/to/pinned/flyspeck \
   candle/test_flyspeck_print_types_normalization.sh
+candle/test_lp_hashtbl_value_restriction.sh /path/to/compiled/cake
 ```
 
 For the immediate-integer entry, pinned OCaml 4.14.1 binds `==` through `%eq` directly to
@@ -170,7 +171,7 @@ the normalized branch is accepted and selects the expected cases.  The
 allocation refinements retain compiled, performance, and final-fingerprint
 gates.  Runtime application is wired
 through the authenticated static source action: the manifest and compiled boot
-select the exact 46-file overlay, but the complete-run status remains
+select the exact 50-file overlay, but the complete-run status remains
 `exact-overlay-selection-active-pending-full-run`; this work alone advances no
 S milestone.
 
@@ -220,7 +221,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates all
-50 exact normalization outputs, registers the 49 selected by the
+51 exact normalization outputs, registers the 50 selected by the
 direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does

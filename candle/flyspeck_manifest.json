@@ -3085,13 +3085,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 419,
+        "line": 424,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 419,
+        "line": 424,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -4597,6 +4597,12 @@
         "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
       },
       {
+        "line": 284,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
         "line": 302,
         "member": "clear",
         "module": "Hashtbl",
@@ -4665,6 +4671,12 @@
       {
         "line": 498,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 498,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
       },
@@ -5406,13 +5418,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 419,
+        "line": 424,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 419,
+        "line": 424,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -6918,6 +6930,12 @@
         "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
       },
       {
+        "line": 284,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl"
+      },
+      {
         "line": 302,
         "member": "clear",
         "module": "Hashtbl",
@@ -6986,6 +7004,12 @@
       {
         "line": 498,
         "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 498,
+        "member": "t",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
       },
@@ -9301,8 +9325,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "975400020e17c32392ec766151c01bde",
-    "generated_source_sha256": "2ff3304024e0a67647bf41ad85e22decd64c15d39cf77c875f6e4613e85157d9",
+    "generated_source_md5": "e8ab551a1a7bfad4e8cae4e173e2305b",
+    "generated_source_sha256": "839dd7a452cd1b473e2bccea19dc21f378793412ee5a7188e6d859959fa1ae96",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -12046,7 +12070,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 60454,
+      "bytes": 60758,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -15316,10 +15340,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a0d2edb45b0fc1214e688376bcff0a3d",
+      "md5": "cab5c89581fb5c812d567f6f78c7ceb0",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "09c0da0baa50c3e482ea615df2be9d6ef1235f65850e0e780c7889e41474e0d8"
+      "sha256": "5e172bef8ffda767cfb56195ddf5259317315a24dc0bf49dc299fb3be471faea"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -15330,7 +15354,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 18938,
+      "bytes": 19158,
       "dependencies": [
         {
           "kind": "#use",
@@ -15368,7 +15392,7 @@
         },
         {
           "kind": "needs",
-          "line": 441,
+          "line": 446,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -15379,7 +15403,7 @@
         },
         {
           "kind": "needs",
-          "line": 447,
+          "line": 452,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -15390,7 +15414,7 @@
         },
         {
           "kind": "needs",
-          "line": 449,
+          "line": 454,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -15400,10 +15424,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "bfdc9eebc73059b2db76e87f062e0a8a",
+      "md5": "a6605c2813de0c6ed7a88ee258f3c72b",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "0b8e3f56569d2564356c999acaeb023693af222644605a91b4d9152dcee683be"
+      "sha256": "c14a9e17d850a32cd841ef4f7075930b07a895f3db01e67ae3ae254951c5fd24"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17779,10 +17803,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45278,
-        "normalized_md5": "fdb160aa1a800b6a2112146302bde1c9",
-        "normalized_sha256": "3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd",
-        "operation_count": 6
+        "normalized_bytes": 45302,
+        "normalized_md5": "5f8f1f79a5076c3fa97477de09b1a4c6",
+        "normalized_sha256": "f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e",
+        "operation_count": 7
       },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
@@ -17958,6 +17982,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 18104,
+        "normalized_md5": "bef049628dd0aa5906b74553c86a5655",
+        "normalized_sha256": "ec9c726148e9fe81cd671ee4830f09f8116cd80c661de316197ab4583054cb5f",
+        "operation_count": 1
+      },
       "md5": "41f269bf1a08067e9ed7894e347ad13e",
       "path": "formal_lp/ineqs/constants_approx.hl",
       "repository": "flyspeck",
@@ -22829,17 +22861,24 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "e8a2a41fe294c0476fec6fbb203d190771b4839ea1266ce1207ff58708505cec",
+    "contract_sha256": "0c532ac220c0a58c81aa440a7a5bfde031c9fcd051cd5ad13fe4a82d79b91c49",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45278,
-        "normalized_md5": "fdb160aa1a800b6a2112146302bde1c9",
-        "normalized_sha256": "3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd",
-        "operation_count": 6,
+        "normalized_bytes": 45302,
+        "normalized_md5": "5f8f1f79a5076c3fa97477de09b1a4c6",
+        "normalized_sha256": "f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e",
+        "operation_count": 7,
         "operations": [
+          {
+            "after": "let var_table : (term, thm) Hashtbl.t = Hashtbl.create 1000;;",
+            "before": "let var_table = Hashtbl.create 1000;;",
+            "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-VARIABLE-TABLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 284
+          },
           {
             "after": "Term.compare var1 var2",
             "before": "Stdlib.compare var1 var2",
@@ -22890,8 +22929,8 @@
           }
         ],
         "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. Compiled ordering, exception diagnostics, progress bytes, and terminal theorem fingerprints remain required.",
-        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text.",
+        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. The table annotation is confined to var_table and changes no allocation, key, value, mutation, lookup, or iteration. Compiled ordering, exception diagnostics, progress bytes, table behavior, and terminal theorem fingerprints remain required.",
+        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text. The var_table key/value types are forced to term and thm by its only insertions and reads; stating that exact type at allocation preserves the same table while avoiding Candle's declaration-boundary value restriction.",
         "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
         "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
@@ -24739,6 +24778,29 @@
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
       },
       {
+        "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 18104,
+        "normalized_md5": "bef049628dd0aa5906b74553c86a5655",
+        "normalized_sha256": "ec9c726148e9fe81cd671ee4830f09f8116cd80c661de316197ab4583054cb5f",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "let interval_table : (term, thm) Hashtbl.t = Hashtbl.create 10;;",
+            "before": "let interval_table = Hashtbl.create 10;;",
+            "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-INTERVAL-TABLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 498
+          }
+        ],
+        "path": "formal_lp/ineqs/constants_approx.hl",
+        "scope_limit": "This hash-pinned replacement annotates only the action-159 interval_table allocation. It does not alter a theorem statement, hypothesis, proof step, interval bound, table operation, proof intent, or axiom. Native annotation equivalence, exact-runtime value-restriction rejection/acceptance, complete source loading, and cumulative replay remain gates.",
+        "semantic_rule": "Every interval_table insertion uses a HOL term key and theorem value, and every lookup returns that theorem. The explicit (term, thm) Hashtbl.t annotation therefore states the exact type already forced by all uses without changing allocation, contents, equality, mutation, lookup, exceptions, or theorem construction.",
+        "source_key": "flyspeck:formal_lp/ineqs/constants_approx.hl",
+        "source_md5": "41f269bf1a08067e9ed7894e347ad13e",
+        "source_sha256": "1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb"
+      },
+      {
         "id": "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",
         "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 3608,
@@ -25080,7 +25142,7 @@
         "source_sha256": "f3d683fb2d3d8b2f49cfea798f7cb66b8d20f23efb530bd1b86519727b70e346"
       }
     ],
-    "entry_count": 50,
+    "entry_count": 51,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -25108,6 +25170,7 @@
       "candle:candle/test_flyspeck_arith_cache_normalization.sh",
       "candle:candle/test_flyspeck_glpk_link_normalization.sh",
       "candle:candle/test_flyspeck_lp_fixed_format_normalization.sh",
+      "candle:candle/test_lp_hashtbl_value_restriction.sh",
       "candle:candle/test_ocaml_for_structure_effects.sh",
       "candle:candle/test_ocaml_array_assignment.sh",
       "candle:candle/test_flyspeck_debug_compatibility_normalization.sh",
@@ -25209,8 +25272,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "a0d2edb45b0fc1214e688376bcff0a3d",
-    "generated_source_sha256": "09c0da0baa50c3e482ea615df2be9d6ef1235f65850e0e780c7889e41474e0d8",
+    "generated_source_md5": "cab5c89581fb5c812d567f6f78c7ceb0",
+    "generated_source_sha256": "5e172bef8ffda767cfb56195ddf5259317315a24dc0bf49dc299fb3be471faea",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

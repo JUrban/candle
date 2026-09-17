@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 50)
+        self.assertEqual(contract["entry_count"], 51)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -532,6 +532,10 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertIn(
             "candle:candle/test_flyspeck_glpk_link_normalization.sh",
+            contract["gates"],
+        )
+        self.assertIn(
+            "candle:candle/test_lp_hashtbl_value_restriction.sh",
             contract["gates"],
         )
         self.assertIn(
@@ -618,7 +622,11 @@ class GeneratedManifestTests(unittest.TestCase):
         ))
         self.assertEqual(
             [operation["line"] for operation in entry["operations"]],
-            [329, 342, 1050, 299, 852, 1059],
+            [284, 329, 342, 1050, 299, 852, 1059],
+        )
+        self.assertEqual(
+            entry["operations"][0]["after"],
+            "let var_table : (term, thm) Hashtbl.t = Hashtbl.create 1000;;",
         )
         node = self.payload["source_nodes"][entry["source_key"]]
         self.assertEqual(node["sha256"], entry["source_sha256"])
@@ -638,6 +646,14 @@ class GeneratedManifestTests(unittest.TestCase):
             entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]["operation_count"],
             13,
         )
+        interval_table = entries[
+            "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS"
+        ]
+        self.assertEqual(
+            interval_table["source_key"],
+            "flyspeck:formal_lp/ineqs/constants_approx.hl",
+        )
+        self.assertEqual(interval_table["operation_count"], 1)
         flyspeck_lib = entries[
             "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002"
         ]
@@ -719,7 +735,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(misc_defs["operation_count"], 2)
         self.assertIn("t = x+|y'", misc_defs["operations"][0]["after"])
         self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][1]["after"])
-        self.assertEqual(entry["operation_count"], 6)
+        self.assertEqual(entry["operation_count"], 7)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
         for entry_id in (
@@ -967,7 +983,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 49", source,
+            "List.length candle_flyspeck_normalized_sources <> 50", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -977,7 +993,7 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 49)
+        self.assertEqual(len(selected_normalizations), 50)
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)

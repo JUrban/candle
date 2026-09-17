@@ -9,10 +9,17 @@
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
       "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f",
       "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
-      "normalized_sha256": "3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd",
-      "normalized_md5": "fdb160aa1a800b6a2112146302bde1c9",
-      "normalized_bytes": 45278,
+      "normalized_sha256": "f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e",
+      "normalized_md5": "5f8f1f79a5076c3fa97477de09b1a4c6",
+      "normalized_bytes": 45302,
       "operations": [
+        {
+          "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-VARIABLE-TABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 284,
+          "before": "let var_table = Hashtbl.create 1000;;",
+          "after": "let var_table : (term, thm) Hashtbl.t = Hashtbl.create 1000;;"
+        },
         {
           "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-FIRST-VARIABLE",
           "kind": "exact_bytes_replace_once",
@@ -62,8 +69,8 @@
           "after": "Format.print_string (\"terminals = \" ^ string_of_int n ^ \": \")"
         }
       ],
-      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text.",
-      "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. Compiled ordering, exception diagnostics, progress bytes, and terminal theorem fingerprints remain required."
+      "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text. The var_table key/value types are forced to term and thm by its only insertions and reads; stating that exact type at allocation preserves the same table while avoiding Candle's declaration-boundary value restriction.",
+      "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. The table annotation is confined to var_table and changes no allocation, key, value, mutation, lookup, or iteration. Compiled ordering, exception diagnostics, progress bytes, table behavior, and terminal theorem fingerprints remain required."
     },
     {
       "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
@@ -1826,6 +1833,27 @@
       ],
       "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
       "scope_limit": "The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates."
+    },
+    {
+      "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",
+      "source_key": "flyspeck:formal_lp/ineqs/constants_approx.hl",
+      "path": "formal_lp/ineqs/constants_approx.hl",
+      "source_sha256": "1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb",
+      "source_md5": "41f269bf1a08067e9ed7894e347ad13e",
+      "normalized_sha256": "ec9c726148e9fe81cd671ee4830f09f8116cd80c661de316197ab4583054cb5f",
+      "normalized_md5": "bef049628dd0aa5906b74553c86a5655",
+      "normalized_bytes": 18104,
+      "operations": [
+        {
+          "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-INTERVAL-TABLE",
+          "kind": "exact_bytes_replace_once",
+          "line": 498,
+          "before": "let interval_table = Hashtbl.create 10;;",
+          "after": "let interval_table : (term, thm) Hashtbl.t = Hashtbl.create 10;;"
+        }
+      ],
+      "semantic_rule": "Every interval_table insertion uses a HOL term key and theorem value, and every lookup returns that theorem. The explicit (term, thm) Hashtbl.t annotation therefore states the exact type already forced by all uses without changing allocation, contents, equality, mutation, lookup, exceptions, or theorem construction.",
+      "scope_limit": "This hash-pinned replacement annotates only the action-159 interval_table allocation. It does not alter a theorem statement, hypothesis, proof step, interval bound, table operation, proof intent, or axiom. Native annotation equivalence, exact-runtime value-restriction rejection/acceptance, complete source loading, and cumulative replay remain gates."
     },
     {
       "id": "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",

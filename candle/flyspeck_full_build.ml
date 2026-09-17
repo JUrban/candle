@@ -332,7 +332,7 @@
 #flyspeck_needs "../formal_lp/hypermap/ssreflect/list_hypermap_iso-compiled.hl";;
 (* 158 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl sha256=1013104c8691fc94b3b4202d554cc518ae934c0e4a3b2579f66adce6f0432b6f *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl";;
-(* 159 selected=flyspeck:formal_lp/ineqs/constants_approx.hl sha256=1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb *)
+(* 159 selected=flyspeck:formal_lp/ineqs/constants_approx.hl sha256=1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb normalization=PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS normalized_sha256=ec9c726148e9fe81cd671ee4830f09f8116cd80c661de316197ab4583054cb5f *)
 #flyspeck_needs "../formal_lp/ineqs/constants_approx.hl";;
 (* 160 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl sha256=660fd87e5ef3ffbcc623c438a5d719456b558f9e51c198197ca6496c514fae4c *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl";;
@@ -378,7 +378,7 @@
 #flyspeck_needs "../formal_lp/more_arith/arith_int.hl";;
 (* 181 selected=flyspeck:formal_lp/more_arith/prove_lp.hl sha256=e43b85cb2e403458dd8715376d80862cd5ffa3a7007586521907c8f230d69c75 *)
 #flyspeck_needs "../formal_lp/more_arith/prove_lp.hl";;
-(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=3a26b572d47ca86727796bcfa0b559aec5d6584a30b84fa1e1763a4c84e325bd *)
+(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e *)
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
 (* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;
@@ -584,7 +584,7 @@
 #flyspeck_needs "tame/reduction5.hl";;
 (* 283 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_defs.hl sha256=1013104c8691fc94b3b4202d554cc518ae934c0e4a3b2579f66adce6f0432b6f *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_defs.hl";;
-(* 284 selected=flyspeck:formal_lp/ineqs/constants_approx.hl sha256=1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb *)
+(* 284 selected=flyspeck:formal_lp/ineqs/constants_approx.hl sha256=1a4271b07f67034781400fc06abc374b94cbc9c85433fb78ba2a32c89283dccb normalization=PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS normalized_sha256=ec9c726148e9fe81cd671ee4830f09f8116cd80c661de316197ab4583054cb5f *)
 #flyspeck_needs "../formal_lp/ineqs/constants_approx.hl";;
 (* 285 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl sha256=660fd87e5ef3ffbcc623c438a5d719456b558f9e51c198197ca6496c514fae4c *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl";;
