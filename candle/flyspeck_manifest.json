@@ -9325,8 +9325,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "e8ab551a1a7bfad4e8cae4e173e2305b",
-    "generated_source_sha256": "839dd7a452cd1b473e2bccea19dc21f378793412ee5a7188e6d859959fa1ae96",
+    "generated_source_md5": "57eb422cc9aacd0a455552e8f9fc67a5",
+    "generated_source_sha256": "b58300417c539909a067359b61ca82cb6af23ae24c5ad38b4c2140ab491cddbc",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -15340,10 +15340,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "cab5c89581fb5c812d567f6f78c7ceb0",
+      "md5": "5c6e7bde9629de29b4b998ff61bee3b3",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "5e172bef8ffda767cfb56195ddf5259317315a24dc0bf49dc299fb3be471faea"
+      "sha256": "d81da8dd608106bbac25e495326b3efa65a15ed9d6c31e45f0410c7db7b10f10"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -15424,10 +15424,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a6605c2813de0c6ed7a88ee258f3c72b",
+      "md5": "5e4d67598985010b417ea440f14a8c4d",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "c14a9e17d850a32cd841ef4f7075930b07a895f3db01e67ae3ae254951c5fd24"
+      "sha256": "80d1c6a01300a72eb6ce0a0f649892c3ca6b86b3f5fd8d1b0cfa921ab7d4b770"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -17069,10 +17069,10 @@
       "execution_normalization": {
         "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16188,
-        "normalized_md5": "4a69be7282fb3218391c67608f743993",
-        "normalized_sha256": "299672d818bce3764e7ba0fbffebc823868ce567b05efdccfbbf8c9958488e3c",
-        "operation_count": 2
+        "normalized_bytes": 16147,
+        "normalized_md5": "0f8a4cb2b293238e4df2d3447588e6c9",
+        "normalized_sha256": "e520d885811bf32bcfeeff876ec182163505df7703393de59d3b7c7878354166",
+        "operation_count": 4
       },
       "md5": "8e2eea27fffde333d431fc757fbe918e",
       "path": "formal_lp/glpk/lpproc.ml",
@@ -22861,7 +22861,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "0c532ac220c0a58c81aa440a7a5bfde031c9fcd051cd5ad13fe4a82d79b91c49",
+    "contract_sha256": "f963a6365ddd58c62430a315be24e00763ff097eea68c851434bb84b4e764129",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -24750,11 +24750,25 @@
       {
         "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 16188,
-        "normalized_md5": "4a69be7282fb3218391c67608f743993",
-        "normalized_sha256": "299672d818bce3764e7ba0fbffebc823868ce567b05efdccfbbf8c9958488e3c",
-        "operation_count": 2,
+        "normalized_bytes": 16147,
+        "normalized_md5": "0f8a4cb2b293238e4df2d3447588e6c9",
+        "normalized_sha256": "e520d885811bf32bcfeeff876ec182163505df7703393de59d3b7c7878354166",
+        "operation_count": 4,
         "operations": [
+          {
+            "after": "needs \"../formal_lp/glpk/glpk_link.ml\";;",
+            "before": "needs (Filename.concat glpk_dir \"glpk_link.ml\");;",
+            "id": "PROJECT-LP-S3-LITERAL-GLPK-DEPENDENCY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 53
+          },
+          {
+            "after": "needs \"../formal_graph/archive/archive_all.ml\";;",
+            "before": "needs (Filename.concat project_root_dir \"formal_graph/archive/archive_all.ml\");;",
+            "id": "PROJECT-LP-S3-LITERAL-ARCHIVE-DEPENDENCY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 54
+          },
           {
             "after": "Int.compare (mc b) (mc a)",
             "before": "Stdlib.compare (mc b) (mc a)",
@@ -24771,8 +24785,8 @@
           }
         ],
         "path": "formal_lp/glpk/lpproc.ml",
-        "scope_limit": "The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates.",
-        "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
+        "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates.",
+        "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
         "source_key": "flyspeck:formal_lp/glpk/lpproc.ml",
         "source_md5": "8e2eea27fffde333d431fc757fbe918e",
         "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8"
@@ -25272,8 +25286,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "cab5c89581fb5c812d567f6f78c7ceb0",
-    "generated_source_sha256": "5e172bef8ffda767cfb56195ddf5259317315a24dc0bf49dc299fb3be471faea",
+    "generated_source_md5": "5c6e7bde9629de29b4b998ff61bee3b3",
+    "generated_source_sha256": "d81da8dd608106bbac25e495326b3efa65a15ed9d6c31e45f0410c7db7b10f10",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

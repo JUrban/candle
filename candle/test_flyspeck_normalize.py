@@ -1014,8 +1014,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         section_compare = entries["PROJECT-COMPARE-S3-SECTION-NAME-001"]
         self.assertIn("String.compare", section_compare["operations"][0]["after"])
         lp_compare = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
-        self.assertIn("Int.compare", lp_compare["operations"][0]["after"])
-        self.assertEqual(lp_compare["operations"][1]["after"], (
+        self.assertIn("Int.compare", lp_compare["operations"][2]["after"])
+        self.assertEqual(lp_compare["operations"][3]["after"], (
             "    output_string outs j;;  "
         ))
         interval_table = entries[
@@ -1106,7 +1106,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 180)
+        lpproc = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
+        self.assertEqual(
+            [operation["after"] for operation in lpproc["operations"][:2]],
+            [
+                'needs "../formal_lp/glpk/glpk_link.ml";;',
+                'needs "../formal_graph/archive/archive_all.ml";;',
+            ],
+        )
+        self.assertIn("same logical relative-path literals", (
+            lpproc["semantic_rule"]
+        ))
+        self.assertEqual(len(operation_ids), 182)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

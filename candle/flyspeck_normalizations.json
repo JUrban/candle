@@ -1812,10 +1812,24 @@
       "path": "formal_lp/glpk/lpproc.ml",
       "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8",
       "source_md5": "8e2eea27fffde333d431fc757fbe918e",
-      "normalized_sha256": "299672d818bce3764e7ba0fbffebc823868ce567b05efdccfbbf8c9958488e3c",
-      "normalized_md5": "4a69be7282fb3218391c67608f743993",
-      "normalized_bytes": 16188,
+      "normalized_sha256": "e520d885811bf32bcfeeff876ec182163505df7703393de59d3b7c7878354166",
+      "normalized_md5": "0f8a4cb2b293238e4df2d3447588e6c9",
+      "normalized_bytes": 16147,
       "operations": [
+        {
+          "id": "PROJECT-LP-S3-LITERAL-GLPK-DEPENDENCY-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 53,
+          "before": "needs (Filename.concat glpk_dir \"glpk_link.ml\");;",
+          "after": "needs \"../formal_lp/glpk/glpk_link.ml\";;"
+        },
+        {
+          "id": "PROJECT-LP-S3-LITERAL-ARCHIVE-DEPENDENCY-001",
+          "kind": "exact_bytes_replace_once",
+          "line": 54,
+          "before": "needs (Filename.concat project_root_dir \"formal_graph/archive/archive_all.ml\");;",
+          "after": "needs \"../formal_graph/archive/archive_all.ml\";;"
+        },
         {
           "id": "PROJECT-COMPARE-S3-LP-COUNT-ORDER-001-INT",
           "kind": "exact_bytes_replace_once",
@@ -1831,8 +1845,8 @@
           "after": "    output_string outs j;;  "
         }
       ],
-      "semantic_rule": "mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
-      "scope_limit": "The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates."
+      "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
+      "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates."
     },
     {
       "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",

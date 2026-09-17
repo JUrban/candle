@@ -654,6 +654,15 @@ class GeneratedManifestTests(unittest.TestCase):
             "flyspeck:formal_lp/ineqs/constants_approx.hl",
         )
         self.assertEqual(interval_table["operation_count"], 1)
+        lpproc = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
+        self.assertEqual(lpproc["operation_count"], 4)
+        self.assertEqual(
+            [operation["after"] for operation in lpproc["operations"][:2]],
+            [
+                'needs "../formal_lp/glpk/glpk_link.ml";;',
+                'needs "../formal_graph/archive/archive_all.ml";;',
+            ],
+        )
         flyspeck_lib = entries[
             "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002"
         ]

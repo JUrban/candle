@@ -73,6 +73,18 @@ rg -Fq 'FLYSPECK_NEEDS_ACCEPTED_OK' "$test_dir/accepted.log"
 [[ $(rg -c -- '- Flyspeck source action complete:' "$test_dir/accepted.log") == 1 ]]
 rg -Fq -- '- Already loaded:' "$test_dir/accepted.log"
 
+# Candle intentionally accepts only literal dependency requests at the parser
+# boundary.  Dynamic source expressions must be resolved by the authenticated
+# manifest and normalized to their exact logical paths before evaluation.
+run_candle dynamic-needs-rejected <<EOF
+Cakeml.loadPath := ["$candle_root"; Filename.currentDir];;
+#use "hol_loader.ml";;
+#use "$fixture_prefix/dynamic_needs_expression.ml";;
+EOF
+rg -Fq 'need should be followed by a' \
+  "$test_dir/dynamic-needs-rejected.log"
+rg -Fq 'double semicolon [;;]' "$test_dir/dynamic-needs-rejected.log"
+
 # Reproduce the direct-boundary setup transition: authenticated ordinary
 # [needs] loads (including a nested one) must populate the same logical ledger
 # later inspected by a cache-skipped #flyspeck_needs action.  Neither ordinary

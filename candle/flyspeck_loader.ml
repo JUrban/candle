@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "e8ab551a1a7bfad4e8cae4e173e2305b" then
+     "57eb422cc9aacd0a455552e8f9fc67a5" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "cab5c89581fb5c812d567f6f78c7ceb0" then
+     "5c6e7bde9629de29b4b998ff61bee3b3" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -363,7 +363,7 @@ let candle_flyspeck_normalized_sources =
       "formal_lp/glpk/lpproc.ml",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/glpk/lpproc.ml",
-    "4a69be7282fb3218391c67608f743993");
+    "0f8a4cb2b293238e4df2d3447588e6c9");
    (Filename.concat candle_flyspeck_root
       "formal_lp/ineqs/constants_approx.hl",
     Filename.concat candle_flyspeck_overlay_root
