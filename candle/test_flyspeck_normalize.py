@@ -1022,7 +1022,14 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             lp_compare["operations"][4]["after"].count("= addv "),
             4,
         )
-        self.assertEqual(lp_compare["operations"][5]["after"], (
+        self.assertIn("let p_int = sprintf", (
+            lp_compare["operations"][5]["after"]
+        ))
+        self.assertEqual(
+            lp_compare["operations"][5]["after"].count("p_int\""),
+            2,
+        )
+        self.assertEqual(lp_compare["operations"][6]["after"], (
             "    output_string outs j;;  "
         ))
         interval_table = entries[
@@ -1124,7 +1131,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 184)
+        self.assertEqual(len(operation_ids), 185)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
