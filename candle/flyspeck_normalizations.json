@@ -1812,9 +1812,9 @@
       "path": "formal_lp/glpk/lpproc.ml",
       "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8",
       "source_md5": "8e2eea27fffde333d431fc757fbe918e",
-      "normalized_sha256": "e520d885811bf32bcfeeff876ec182163505df7703393de59d3b7c7878354166",
-      "normalized_md5": "0f8a4cb2b293238e4df2d3447588e6c9",
-      "normalized_bytes": 16147,
+      "normalized_sha256": "eb9ffc3b7fbbe4414c8482c1f341ecd4d38c4a1c6ad469471ae456f24aa13e92",
+      "normalized_md5": "85f033b99fc15b85284c8f0fd3c5b6cd",
+      "normalized_bytes": 16207,
       "operations": [
         {
           "id": "PROJECT-LP-S3-LITERAL-GLPK-DEPENDENCY-001",
@@ -1838,6 +1838,20 @@
           "after": "Int.compare (mc b) (mc a)"
         },
         {
+          "id": "PROJECT-LP-S3-LOCAL-POLYMORPHISM-001-HELPER",
+          "kind": "exact_bytes_replace_once",
+          "line": 220,
+          "before": "  let add key xs t = nub ((get_values key xs) @ t)  in\n",
+          "after": "  let add key xs t = nub ((get_values key xs) @ t)  in\n  let addv key xs t = nub ((get_values key xs) @ t)  in\n"
+        },
+        {
+          "id": "PROJECT-LP-S3-LOCAL-POLYMORPHISM-001-NODE-USES",
+          "kind": "exact_bytes_replace_once",
+          "line": 249,
+          "before": "node_218_252 = add \"218_252\" vfields bb.node_218_252;\nnode_236_252 = add \"236_252\" vfields bb.node_236_252;\nnode_218_236 = add \"218_236\" vfields bb.node_218_236;\nnode_200_218 = add \"200_218\" vfields bb.node_200_218;",
+          "after": "node_218_252 = addv \"218_252\" vfields bb.node_218_252;\nnode_236_252 = addv \"236_252\" vfields bb.node_236_252;\nnode_218_236 = addv \"218_236\" vfields bb.node_218_236;\nnode_200_218 = addv \"200_218\" vfields bb.node_200_218;"
+        },
+        {
           "id": "PROJECT-LP-S3-FIXED-FORMAT-001-LPPROC-OUTPUT",
           "kind": "exact_bytes_replace_once",
           "line": 342,
@@ -1845,8 +1859,8 @@
           "after": "    output_string outs j;;  "
         }
       ],
-      "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
-      "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Compiled loading, list ordering, and final theorem fingerprints remain gates."
+      "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. The duplicated local addv helper is textually the same pure get_values/append/nub expression as add; using it only for the four int-list node fields makes explicit the second concrete type that native OCaml obtains by local let-generalization, without changing values, order, or effects. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
+      "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The local-polymorphism rewrite duplicates one pure helper and redirects exactly four node-field uses; all face-field uses retain the original helper, and no branchnbound field, theorem, proof, or process route changes. The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Native equivalence, compiled loading, list ordering, and final theorem fingerprints remain gates."
     },
     {
       "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",

@@ -539,6 +539,10 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["gates"],
         )
         self.assertIn(
+            "candle:candle/test_lpproc_local_polymorphism.sh",
+            contract["gates"],
+        )
+        self.assertIn(
             "candle:candle/test_ocaml_for_structure_effects.sh",
             contract["gates"],
         )
@@ -655,7 +659,7 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertEqual(interval_table["operation_count"], 1)
         lpproc = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
-        self.assertEqual(lpproc["operation_count"], 4)
+        self.assertEqual(lpproc["operation_count"], 6)
         self.assertEqual(
             [operation["after"] for operation in lpproc["operations"][:2]],
             [
