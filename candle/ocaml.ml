@@ -86,7 +86,7 @@ module Float = struct
     else if Cake.Double.(>) x y then 1
     else 0
   let of_string s = match Cake.Double.fromString s with
-    | None -> failwith "Float.of_string"
+    | None -> failwith "float_of_string"
     | Some x -> x
 
   (* OCaml [frexp] is exactly a decomposition of the IEEE-754 encoding.  Use
@@ -178,6 +178,7 @@ let ldexp value scale =
 ;;
 
 type float = Float.float;;
+let float_of_string = Float.of_string;;
 
 (* Selected Flyspeck sources qualify the ordinary OCaml I/O and square-root
    operations through [Stdlib].  Deliberately omit polymorphic [compare]: each
