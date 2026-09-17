@@ -74,6 +74,20 @@ module Int = struct
   let to_string x = Cake.Int.toString x
 end;;
 
+(* OCaml's [Int64] is represented by a machine word, including signed
+   rendering and modulo-2^64 shifts/bit operations.  Keep that representation
+   here rather than silently widening values to CakeML's unbounded [int]. *)
+module Int64 = struct
+  let of_int x =
+    if x < 0 then
+      Cake.Word64.(-) (Cake.Word64.fromInt 0) (Cake.Word64.fromInt (0 - x))
+    else Cake.Word64.fromInt x
+  let of_float x = of_int (Cake.Double.toInt x)
+  let to_string x = Cake.Int.toString (Cake.Word64.toIntSigned x)
+  let shift_left x n = Cake.Word64.(<<) x n
+  let logor x y = Cake.Word64.orb x y
+end;;
+
 module Float = struct
   type float = double
   let zero = Cake.Double.fromInt 0

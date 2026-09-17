@@ -58,6 +58,7 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
         "add", "clear", "create", "create_ordered", "find", "fold", "hash",
         "length", "mem", "remove", "replace", "t",
     },
+    "Int64": {"logor", "of_float", "of_int", "shift_left", "to_string"},
     "Stdlib": {
         "Float", "close_in", "close_out", "compare", "input_line", "open_in",
         "open_out", "output_string", "sqrt",

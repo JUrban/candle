@@ -4675,6 +4675,18 @@
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
       },
       {
+        "line": 242,
+        "member": "of_float",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 242,
+        "member": "to_string",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
         "line": 498,
         "member": "create",
         "module": "Hashtbl",
@@ -4703,6 +4715,12 @@
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 73,
+        "member": "to_string",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
       },
       {
         "line": 865,
@@ -7014,6 +7032,18 @@
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
       },
       {
+        "line": 242,
+        "member": "of_float",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 242,
+        "member": "to_string",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
         "line": 498,
         "member": "create",
         "module": "Hashtbl",
@@ -7042,6 +7072,12 @@
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
+        "line": 73,
+        "member": "to_string",
+        "module": "Int64",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
       },
       {
         "line": 865,
@@ -7648,6 +7684,10 @@
         "replace",
         "t"
       ],
+      "Int64": [
+        "of_float",
+        "to_string"
+      ],
       "Stdlib": [
         "Float",
         "close_in",
@@ -7693,6 +7733,13 @@
         "remove",
         "replace",
         "t"
+      ],
+      "Int64": [
+        "logor",
+        "of_float",
+        "of_int",
+        "shift_left",
+        "to_string"
       ],
       "Stdlib": [
         "Float",
@@ -9339,8 +9386,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "5dd359ca1bbf566c1da5406876977f23",
-    "generated_source_sha256": "bbad2e372b272349037b7dc6ef8468dc41c28ae0e908955261f9db0a836a8fc7",
+    "generated_source_md5": "9991586c6385840e4dac35d8f2f38a54",
+    "generated_source_sha256": "d64a05d220b12ef5bf9e9b3696a01653c2460ef32063da1a6298b7cc33f9e0e0",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -15438,10 +15485,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "7283b48d50eafc1e66b366a4fe352718",
+      "md5": "e590434b8bbcf95fc19cc576cf381728",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "d9456029b7cded90d0890d1b71d989a82a6d3c8fec54378064c0dbd945193062"
+      "sha256": "e64296fd38d10b5f73c2ef2cb35a1daaf167c219427a34c7a3a6e7fa84dbe0c1"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -15468,12 +15515,12 @@
       "sha256": "3b79dc8197ce23ff90c9e6b1653d99aaae6601899a02aa07d4acd3c227b2f868"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 38684,
+      "bytes": 39276,
       "dependencies": [],
-      "md5": "0ee1c872b47b599daccfa2146130a534",
+      "md5": "2b0aa30314b08018e2d4806eb9694994",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "b4b4aaf4dca42762ba2b8e77e6235dbf29bfd3455a4b28b676d51249537f535b"
+      "sha256": "85ccdd99ab56f738d511b9fb2c39073544ea23357e7ae3aec74a10683be020cc"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -26667,19 +26714,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 734,
+        "line": 748,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 735,
+        "line": 749,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 736,
+        "line": 750,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
