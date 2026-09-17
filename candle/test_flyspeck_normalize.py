@@ -1048,8 +1048,22 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertIn("exact type already forced", interval_table["semantic_rule"])
         self.assertIn("action-159", interval_table["scope_limit"])
+        good_list = entries["PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001"]
+        self.assertEqual(
+            [operation["line"] for operation in good_list["operations"]],
+            [42, 97, 98],
+        )
+        self.assertEqual(
+            good_list["operations"][0]["id"],
+            "PROJECT-LP-S3-VALUE-RESTRICTION-001-GOOD-LIST-PRINTER",
+        )
+        self.assertTrue(
+            good_list["operations"][0]["after"].startswith(
+                "let print_long_list form tm =\n"
+            )
+        )
+        self.assertIn("eta-expands", good_list["semantic_rule"])
         fixed_format_entries = {
-            "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001": 98,
             "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001": 308,
             "PROJECT-LP-S3-FIXED-FORMAT-BODY-001": 233,
         }
@@ -1058,6 +1072,12 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             self.assertIn("string_of_int", (
                 entries[entry_id]["operations"][0]["after"]
             ))
+        self.assertEqual(
+            good_list["operations"][1]["after"],
+            "    let _ = i := !i + 1 in",
+        )
+        self.assertEqual(good_list["operations"][2]["line"], 98)
+        self.assertIn("string_of_int", good_list["operations"][2]["after"])
         exact_lp = entries["PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001"]
         self.assertEqual(exact_lp["operations"][0]["line"], 46)
         exact_lp_after = exact_lp["operations"][0]["after"]
@@ -1068,7 +1088,11 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertNotIn("map (fun (id, th) -> Hashtbl.add", exact_lp_after)
         self.assertEqual(
             [operation["line"] for operation in exact_lp["operations"][1:]],
-            [45, 58],
+            [45, 57, 58],
+        )
+        self.assertEqual(
+            exact_lp["operations"][2]["after"],
+            "    let _ = i := !i + 1 in",
         )
         prove_lp = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
@@ -1178,7 +1202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 187)
+        self.assertEqual(len(operation_ids), 190)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

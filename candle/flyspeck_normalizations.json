@@ -1284,9 +1284,9 @@
       "path": "text_formalization/tame/linear_programming_results.hl",
       "source_sha256": "0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4",
       "source_md5": "75fb7f0449759cd3592569426d4e66b4",
-      "normalized_sha256": "a2d009759d2fa9bd555922cca3f78cf98366e912311cdb7a778487aafa2086ec",
-      "normalized_md5": "0174bf73a4deb6fe0f10a0d24c872b24",
-      "normalized_bytes": 3606,
+      "normalized_sha256": "61c184e771174233eb0791c15354d35038fd873b153cdc4bc00655b46080fead",
+      "normalized_md5": "513f24367b716db938ffd02fe55641fd",
+      "normalized_bytes": 3611,
       "operations": [
         {
           "id": "PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001-FAIL-CLOSED",
@@ -1303,6 +1303,13 @@
           "after": "  let _ = total in\n  let _ = report \"Candle S3: total verification time is recorded by the outer runner\\n\" in"
         },
         {
+          "id": "PROJECT-LP-S3-INCR-001-FINAL-RESULT-COUNTER",
+          "kind": "exact_bytes_replace_once",
+          "line": 57,
+          "before": "    let _ = incr i in",
+          "after": "    let _ = i := !i + 1 in"
+        },
+        {
           "id": "PROJECT-LP-S3-FIXED-FORMAT-001-FINAL-PROGRESS",
           "kind": "exact_bytes_replace_once",
           "line": 58,
@@ -1310,8 +1317,8 @@
           "after": "report (string_of_int !i ^ \" / \" ^ string_of_int n)"
         }
       ],
-      "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification. The integer progress format is replaced by byte-identical string_of_int concatenation. The in-process floating-point wall-time rendering affects only telemetry and is replaced by a deterministic notice while the authenticated outer runner records wall time.",
-      "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. The fixed-format replacements do not implement general formatting, and the timing notice cannot justify a performance claim. This is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
+      "semantic_rule": "Before final theorem construction, the normalized route requires unique archive IDs, rejects every verified-result ID outside that archive, rejects duplicate verified-result IDs, and requires equal result/archive counts. These checks establish exact identifier-set coverage before the existing per-archive theorem lookup and proof conversion; they do not weaken or bypass LP certificate verification. OCaml incr on the private integer counter is exactly the same dereference, integer increment, and assignment expressed by i := !i + 1. The integer progress format is replaced by byte-identical string_of_int concatenation. The in-process floating-point wall-time rendering affects only telemetry and is replaced by a deterministic notice while the authenticated outer runner records wall time.",
+      "scope_limit": "This fail-closed strengthening is confined to the pinned full-result assembly. The incr expansion changes only the private progress counter and is shared with the action-170 archive loop; it does not change conversion or proof behavior. The fixed-format replacements do not implement general formatting, and the timing notice cannot justify a performance claim. This is not evidence that any certificate was verified or that the final theorem was constructed; those facts still require the compiled direct run, exact source/input provenance, terminal theorem fingerprints, and two-run reproducibility."
     },
     {
       "id": "PROJECT-CALC-DERIVATIVE-S3-TUPLE-CONSTRUCTOR-001",
@@ -1903,10 +1910,24 @@
       "path": "text_formalization/tame/good_list_archive.hl",
       "source_sha256": "21125bc287b4fc28897ecf66df3f939718d1ecf1d086b25bed4cac6fc1a6493f",
       "source_md5": "addad4737eae64fe6109ed9ffc8f66ee",
-      "normalized_sha256": "5b6de7d78ec8a8aef2fc86976e5d61c6f21097a37b41cd48101b86b554a46f8d",
-      "normalized_md5": "d990658b47fac768c34c3a4754e8511e",
-      "normalized_bytes": 3608,
+      "normalized_sha256": "fd24b6e5fa9ec5c9a4cff376b7d6c1e142d20c5ca63e497d11d87fb461c8b51b",
+      "normalized_md5": "0dbf7b9572f1d6a5f5a2a70c8a7ea7b5",
+      "normalized_bytes": 3589,
       "operations": [
+        {
+          "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-GOOD-LIST-PRINTER",
+          "kind": "exact_bytes_replace_once",
+          "line": 42,
+          "before": "let print_long_list =\n  let rec print_term_sequence sep = function\n    | [] -> ()\n    | h :: ts ->\n\tlet _ = print_term h in\n\t  if ts = [] then ()\n\t  else print_string sep; print_term_sequence sep ts in\n    fun form tm ->\n      let tms, flag = dest_long_list tm in\n      let _ = print_string \"[\" in\n      let _ = print_term_sequence \";\" tms in\n      let _ = if flag then print_string \" ...\" else () in\n\tprint_string \"]\";;",
+          "after": "let print_long_list form tm =\n  let rec print_term_sequence sep = function\n    | [] -> ()\n    | h :: ts ->\n\tlet _ = print_term h in\n\t  if ts = [] then ()\n\t  else print_string sep; print_term_sequence sep ts in\n  let tms, flag = dest_long_list tm in\n  let _ = print_string \"[\" in\n  let _ = print_term_sequence \";\" tms in\n  let _ = if flag then print_string \" ...\" else () in\n    print_string \"]\";;"
+        },
+        {
+          "id": "PROJECT-LP-S3-INCR-001-GOOD-LIST-COUNTER",
+          "kind": "exact_bytes_replace_once",
+          "line": 97,
+          "before": "    let _ = incr i in",
+          "after": "    let _ = i := !i + 1 in"
+        },
         {
           "id": "PROJECT-LP-S3-FIXED-FORMAT-001-GOOD-LIST-PROGRESS",
           "kind": "exact_bytes_replace_once",
@@ -1915,8 +1936,8 @@
           "after": "report (string_of_int !i ^ \" / \" ^ string_of_int n)"
         }
       ],
-      "semantic_rule": "The sole format has two %d conversions separated by fixed literal bytes. OCaml's %d rendering is string_of_int for every int, so concatenation preserves the exact progress text, argument order, effects, exceptions, and proof computation.",
-      "scope_limit": "This hash-pinned replacement covers only the action-170 good-list progress message. It does not implement general formatting or change archive entries, conversions, theorems, hypotheses, proof steps, or axioms. Exact native formatting, complete source loading, archive traversal, and cumulative replay remain gates."
+      "semantic_rule": "The print_long_list rewrite eta-expands the same function: it moves the existing form and tm binders to the declaration boundary while retaining the same private recursive printer, evaluation order, calls, effects, exceptions, output bytes, and polymorphic unused form argument. OCaml incr on the private integer counter is exactly the same dereference, integer increment, and assignment expressed by i := !i + 1. The sole format has two %d conversions separated by fixed literal bytes. OCaml's %d rendering is string_of_int for every int, so concatenation preserves the exact progress text, argument order, effects, exceptions, and proof computation.",
+      "scope_limit": "These hash-pinned replacements cover only the action-170 custom-printer declaration shape, private progress-counter spelling, and good-list progress message. The eta expansion follows the already validated Flyspeck value-restriction compatibility rule and changes no printer behavior; the incr expansion changes no counter behavior. This entry does not implement general formatting or change archive entries, conversions, theorems, hypotheses, proof steps, or axioms. Exact native printer observations and formatting, complete source loading, archive traversal, and cumulative replay remain gates."
     },
     {
       "id": "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",

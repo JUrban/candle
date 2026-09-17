@@ -771,8 +771,12 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(entry["operation_count"], 7)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
+        good_list = entries[
+            "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001"
+        ]
+        self.assertEqual(good_list["operation_count"], 3)
+        self.assertIn("string_of_int", good_list["operations"][2]["after"])
         for entry_id in (
-            "PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001",
             "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
             "PROJECT-LP-S3-FIXED-FORMAT-BODY-001",
         ):
@@ -1029,7 +1033,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(len(selected_normalizations), 51)
         self.assertEqual(
             sum(entry["operation_count"] for entry in selected_normalizations),
-            185,
+            188,
         )
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)

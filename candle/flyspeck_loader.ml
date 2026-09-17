@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "e2bb3acfb4718814afc3b04e924fb955" then
+     "4bc72f8d1fa27b60fa40c7430aa2e722" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "9bd72e0f0e1f9b2b99229b2b6b52cab1" then
+     "12dae7346bc177bd16f35e866e94c6b1" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -303,7 +303,7 @@ let candle_flyspeck_normalized_sources =
       "tame/linear_programming_results.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/linear_programming_results.hl",
-    "0174bf73a4deb6fe0f10a0d24c872b24");
+    "513f24367b716db938ffd02fe55641fd");
    (Filename.concat candle_flyspeck_text_root
       "nonlinear/calc_derivative.hl",
     Filename.concat candle_flyspeck_overlay_root
@@ -373,7 +373,7 @@ let candle_flyspeck_normalized_sources =
       "tame/good_list_archive.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/tame/good_list_archive.hl",
-    "d990658b47fac768c34c3a4754e8511e");
+    "0dbf7b9572f1d6a5f5a2a70c8a7ea7b5");
    (Filename.concat candle_flyspeck_root
       "formal_lp/hypermap/ineqs/lp_ineqs.hl",
     Filename.concat candle_flyspeck_overlay_root

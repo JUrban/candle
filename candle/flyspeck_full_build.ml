@@ -354,7 +354,7 @@
 #flyspeck_needs "../formal_lp/hypermap/computations/list_conversions2.hl";;
 (* 169 selected=flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl sha256=7be57bd195a33d815b6f9298a88c0acb7cf8e5b06460b3c5b3e25b5866308d83 *)
 #flyspeck_needs "../formal_lp/hypermap/computations/list_hypermap_computations.hl";;
-(* 170 selected=flyspeck:text_formalization/tame/good_list_archive.hl sha256=21125bc287b4fc28897ecf66df3f939718d1ecf1d086b25bed4cac6fc1a6493f normalization=PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001 normalized_sha256=5b6de7d78ec8a8aef2fc86976e5d61c6f21097a37b41cd48101b86b554a46f8d *)
+(* 170 selected=flyspeck:text_formalization/tame/good_list_archive.hl sha256=21125bc287b4fc28897ecf66df3f939718d1ecf1d086b25bed4cac6fc1a6493f normalization=PROJECT-LP-S3-FIXED-FORMAT-GOOD-LIST-001 normalized_sha256=fd24b6e5fa9ec5c9a4cff376b7d6c1e142d20c5ca63e497d11d87fb461c8b51b *)
 #flyspeck_needs "tame/good_list_archive.hl";;
 (* 171 selected=flyspeck:formal_lp/hypermap/ineqs/lp_gen_ineqs.hl sha256=4f577e5ac7df1b409e5257d66d192b5dbbb577992bfc8834c7bc6df3c56c0f7d *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl";;
@@ -382,7 +382,7 @@
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
 (* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;
-(* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 normalization=PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001 normalized_sha256=a2d009759d2fa9bd555922cca3f78cf98366e912311cdb7a778487aafa2086ec *)
+(* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 normalization=PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001 normalized_sha256=61c184e771174233eb0791c15354d35038fd873b153cdc4bc00655b46080fead *)
 #flyspeck_needs "tame/linear_programming_results.hl";;
 
 (* stratum: text_formalization *)
