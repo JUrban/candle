@@ -1812,9 +1812,9 @@
       "path": "formal_lp/glpk/lpproc.ml",
       "source_sha256": "b57ad6177c5c53ed7c35fdde5c11e1859445438325885ea235f97d5e910d73c8",
       "source_md5": "8e2eea27fffde333d431fc757fbe918e",
-      "normalized_sha256": "39901f7f86f19796b2121751b14c8d02eac30f8fd6c8f628914a53d7b49a5e20",
-      "normalized_md5": "91bb51e357b6bfabf89a0564bf2d0b73",
-      "normalized_bytes": 16240,
+      "normalized_sha256": "b4e22ceeda1cb64cf6f4c3afcf48e3197a652804a061d3d5202ecea46d1b2919",
+      "normalized_md5": "f5ac089e3708ca15e8f678a5aafaf466",
+      "normalized_bytes": 16263,
       "operations": [
         {
           "id": "PROJECT-LP-S3-LITERAL-GLPK-DEPENDENCY-001",
@@ -1859,6 +1859,13 @@
           "after": "  let p_int = sprintf in\n  let p = sprintf in\n  let j = String.concat \"\\n\" [\n    p_int\"param card_node := %d;\" (card_node bb) ;\n    p\"param hypermap_id := %s;\" bb.hypermap_id ; \n    p_int\"param card_face := %d;\\n\" (card_face bb);"
         },
         {
+          "id": "PROJECT-LP-S3-FLOAT-COMPARE-001-FEASIBILITY",
+          "kind": "exact_bytes_replace_once",
+          "line": 370,
+          "before": "  let feasible r = (r > 11.9999) in (* relax a bit from 12.0 *)",
+          "after": "  let feasible r = (Stdlib.Float.compare r 11.9999 = 1) in (* relax a bit from 12.0 *)"
+        },
+        {
           "id": "PROJECT-LP-S3-FIXED-FORMAT-001-LPPROC-OUTPUT",
           "kind": "exact_bytes_replace_once",
           "line": 342,
@@ -1866,8 +1873,8 @@
           "after": "    output_string outs j;;  "
         }
       ],
-      "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. The duplicated local addv helper is textually the same pure get_values/append/nub expression as add; using it only for the four int-list node fields makes explicit the second concrete type that native OCaml obtains by local let-generalization, without changing values, order, or effects. The added p_int alias denotes the same sprintf binding as p and is used only by the two integer-format calls; native OCaml generalizes the original local alias independently at those integer and string uses, while the two aliases make those same concrete types explicit without changing formats, arguments, list order, output, or failure behavior. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
-      "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The local-polymorphism rewrites duplicate only the pure add helper and the existing sprintf alias at their second concrete types: four node-field uses select addv, and exactly two integer-format calls select p_int while every string-format call retains p. No branchnbound field, format string, argument, theorem, proof, or process route changes. The comparator rewrite is confined to the typed LP preprocessing count comparator and does not implement polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Native equivalence, compiled loading, list ordering, and final theorem fingerprints remain gates."
+      "semantic_rule": "The manifest resolves the two exact source expressions to ../formal_lp/glpk/glpk_link.ml and ../formal_graph/archive/archive_all.ml under the pinned Flyspeck root. Replacing them with those same logical relative-path literals preserves the selected dependencies while satisfying Candle's literal-only needs directive and retaining authenticated loader/search-path resolution. The duplicated local addv helper is textually the same pure get_values/append/nub expression as add; using it only for the four int-list node fields makes explicit the second concrete type that native OCaml obtains by local let-generalization, without changing values, order, or effects. The added p_int alias denotes the same sprintf binding as p and is used only by the two integer-format calls; native OCaml generalizes the original local alias independently at those integer and string uses, while the two aliases make those same concrete types explicit without changing formats, arguments, list order, output, or failure behavior. mc returns an integer occurrence count. Int.compare preserves the descending count order passed to the existing sort without requiring polymorphic comparison. For the feasibility threshold's fixed finite right operand, Stdlib.Float.compare r 11.9999 = 1 has the same truth value as r > 11.9999, including false for a NaN left operand, while selecting the intended floating comparator explicitly. For the exact constant %s format and one string argument, OCaml Printf.fprintf writes precisely that string to the supplied output channel; output_string preserves the bytes, channel, order, result, and exceptions.",
+      "scope_limit": "The dependency rewrites are confined to these two manifest-reviewed standalone phrases and authorize only their exact logical nodes; they do not whitelist basenames, absolute paths, alternate roots, or arbitrary dynamic loads. The local-polymorphism rewrites duplicate only the pure add helper and the existing sprintf alias at their second concrete types: four node-field uses select addv, and exactly two integer-format calls select p_int while every string-format call retains p. No branchnbound field, format string, argument, theorem, proof, or process route changes. The comparator rewrites are confined to the typed LP preprocessing count comparator and the single finite feasibility-threshold comparison; they do not implement general polymorphic comparison. The output rewrite covers one constant-format call in the deferred generator definition and does not implement general formatting or activate the frozen process route. Native equivalence, compiled loading, list ordering, and final theorem fingerprints remain gates."
     },
     {
       "id": "PROJECT-LP-S3-VALUE-RESTRICTION-001-CONSTANT-INTERVALS",

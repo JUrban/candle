@@ -659,7 +659,7 @@ class GeneratedManifestTests(unittest.TestCase):
         )
         self.assertEqual(interval_table["operation_count"], 1)
         lpproc = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
-        self.assertEqual(lpproc["operation_count"], 7)
+        self.assertEqual(lpproc["operation_count"], 8)
         self.assertEqual(
             [operation["after"] for operation in lpproc["operations"][:2]],
             [

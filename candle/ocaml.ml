@@ -195,6 +195,9 @@ module Stdlib = struct
   let close_out = close_out
   let output_string = output_string
   let sqrt = Float.sqrt
+  module Float = struct
+    let compare = Float.compare
+  end
 end;;
 
 module List = struct

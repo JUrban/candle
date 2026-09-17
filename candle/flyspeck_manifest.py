@@ -59,7 +59,7 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
         "length", "mem", "remove", "replace", "t",
     },
     "Stdlib": {
-        "close_in", "close_out", "compare", "input_line", "open_in",
+        "Float", "close_in", "close_out", "compare", "input_line", "open_in",
         "open_out", "output_string", "sqrt",
     },
 }

@@ -17,7 +17,7 @@ python3 "$candle_root/candle/flyspeck_normalize.py" \
   --flyspeck-root "$flyspeck_root" --write "$test_dir/overlay"
 
 declare -A expected_sha256=(
-  [formal_lp/glpk/lpproc.ml]=39901f7f86f19796b2121751b14c8d02eac30f8fd6c8f628914a53d7b49a5e20
+  [formal_lp/glpk/lpproc.ml]=b4e22ceeda1cb64cf6f4c3afcf48e3197a652804a061d3d5202ecea46d1b2919
   [text_formalization/tame/good_list_archive.hl]=5b6de7d78ec8a8aef2fc86976e5d61c6f21097a37b41cd48101b86b554a46f8d
   [formal_lp/hypermap/ineqs/lp_ineqs.hl]=5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12
   [formal_lp/hypermap/ineqs/lp_body_ineqs.hl]=34371472bd4910bfa1bc4af9cf73b07eb420eb94b7028d35464ba953debd7aaf
@@ -44,6 +44,7 @@ results="$test_dir/overlay/text_formalization/tame/linear_programming_results.hl
 rg -Fq 'output_string outs j' "$lpproc"
 rg -Fq 'let addv key xs t = nub ((get_values key xs) @ t)  in' "$lpproc"
 rg -Fq 'let p_int = sprintf in' "$lpproc"
+rg -Fq 'Stdlib.Float.compare r 11.9999 = 1' "$lpproc"
 test "$(rg -o 'p_int"' "$lpproc" | wc -l)" -eq 2
 test "$(rg -c '^node_.* = addv ' "$lpproc")" -eq 4
 if rg -q '^node_.* = add ' "$lpproc"; then
