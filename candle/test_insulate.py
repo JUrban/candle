@@ -7,6 +7,19 @@ import insulate
 
 
 class InsulateTests(unittest.TestCase):
+    def test_word64_type_survives_insulation(self):
+        bindings = {
+            "Double": [{"func_name": "fromString", "param_count": 1}],
+            "Option": [{"func_name": "valOf", "param_count": 1}],
+            "Word64": [{"func_name": "fromInt", "param_count": 1}],
+        }
+
+        output = insulate.generate_ocaml_bindings(bindings)
+        cake, stubs = output.split("(* Module stubs", 1)
+
+        self.assertIn("type word = Word64.word", cake)
+        self.assertIn("type word = Cake.Word64.word", stubs)
+
     def test_only_decimal_parser_runtime_functions_survive_stubbing(self):
         bindings = {
             "Double": [

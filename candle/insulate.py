@@ -41,7 +41,11 @@ INFIX_NAMES = {
 MODULE_TYPES = {
     'Rat': [([], 'rat')],
     'Double': [([], 'double')],
-    'Hashtable': [(['a', 'b'], 'hashtable')]
+    'Hashtable': [(['a', 'b'], 'hashtable')],
+    # OCaml exposes [int64] as a type as well as the [Int64] operations.
+    # Preserve CakeML's exact machine-word representation through insulation
+    # so the compatibility layer can bind that ordinary OCaml type name.
+    'Word64': [([], 'word')],
 }
 
 # The OCaml parser lowers every decimal float literal to
