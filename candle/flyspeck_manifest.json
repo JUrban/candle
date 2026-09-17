@@ -2897,6 +2897,13 @@
         "source": "candle:candle/ocaml.ml",
         "status": "pure-source-compiled-gate"
       },
+      "Big_int": {
+        "assurance_limit": "the selected bridge accepts only canonical signed-decimal strings produced by Int64.to_string and maps them to CakeML's arbitrary-precision integer without truncation",
+        "gate": "candle:candle/test_big_int_num_compat.sh",
+        "oracle": "OCaml 4.14.1 nums.cma",
+        "source": "candle:candle/nums.ml",
+        "status": "pure-source-differential-gate"
+      },
       "Digest": {
         "assurance_limit": "differentially tested but not yet formally linked to CakeML's existing verified md5Theory/md5Prog",
         "gate": "candle:candle/test_digest_compat.sh",
@@ -2915,6 +2922,13 @@
         "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
         "source": "candle:candle/ocaml.ml",
         "status": "pure-source-compiled-gate"
+      },
+      "Num": {
+        "assurance_limit": "num_of_big_int is representation-preserving because CakeML integers are arbitrary precision; the new differential gate covers the selected Big_int decimal conversion bridge",
+        "gate": "candle:candle/test_big_int_num_compat.sh",
+        "oracle": "OCaml 4.14.1 nums.cma",
+        "source": "candle:candle/nums.ml",
+        "status": "pure-source-differential-gate"
       },
       "Stdlib": {
         "assurance_limit": "I/O and sqrt delegate to existing typed bindings; polymorphic compare recognizes equality but fails closed on unequal values, while every selected active ordering site uses an exact type-specific comparator",
@@ -2940,6 +2954,36 @@
       }
     },
     "capability_uses": [
+      {
+        "line": 402,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:basics.ml"
+      },
+      {
+        "line": 403,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:basics.ml"
+      },
+      {
+        "line": 9,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
+      {
+        "line": 24,
+        "member": "denominator",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
+      {
+        "line": 24,
+        "member": "numerator",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
       {
         "line": 385,
         "member": "of_list",
@@ -3109,6 +3153,180 @@
         "source": "candle:candle/flyspeck_source_integrity.ml"
       },
       {
+        "line": 377,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 378,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 379,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 380,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 381,
+        "member": "denominator",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 382,
+        "member": "numerator",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 383,
+        "member": "minus_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 384,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 385,
+        "member": "floor_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 386,
+        "member": "round_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 387,
+        "member": "ceiling_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 394,
+        "member": "add_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 395,
+        "member": "sub_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 396,
+        "member": "mul_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 397,
+        "member": "div_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 401,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 402,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 411,
+        "member": "lt_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 412,
+        "member": "le_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 413,
+        "member": "gt_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 414,
+        "member": "ge_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 415,
+        "member": "eq_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 417,
+        "member": "min_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 418,
+        "member": "max_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 419,
+        "member": "compare",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 420,
+        "member": "gcd_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 423,
+        "member": "power_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 425,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 427,
+        "member": "succ_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
         "line": 338,
         "member": "t",
         "module": "Hashtbl",
@@ -3169,6 +3387,12 @@
         "source": "candle:compute.ml"
       },
       {
+        "line": 422,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:lib.ml"
+      },
+      {
         "line": 915,
         "member": "map",
         "module": "Array",
@@ -3209,6 +3433,30 @@
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
+      },
+      {
+        "line": 220,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:nums.ml"
+      },
+      {
+        "line": 240,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:nums.ml"
+      },
+      {
+        "line": 190,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:parser.ml"
+      },
+      {
+        "line": 191,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:parser.ml"
       },
       {
         "line": 28,
@@ -3727,9 +3975,27 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 170,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 174,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 182,
         "member": "find",
         "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 192,
+        "member": "int_of_num",
+        "module": "Num",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
@@ -3748,6 +4014,18 @@
         "line": 212,
         "member": "add",
         "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 217,
+        "member": "num_of_int",
+        "module": "Num",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
@@ -4135,6 +4413,18 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1053,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1071,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1122,
         "member": "find",
         "module": "Hashtbl",
@@ -4273,6 +4563,18 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1406,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1407,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1483,
         "member": "create",
         "module": "Hashtbl",
@@ -4385,6 +4687,12 @@
         "member": "Float",
         "module": "Stdlib",
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 172,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
       },
       {
         "line": 630,
@@ -4663,6 +4971,12 @@
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
+        "line": 178,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
         "line": 240,
         "member": "sqrt",
         "module": "Stdlib",
@@ -4718,8 +5032,20 @@
       },
       {
         "line": 73,
+        "member": "big_int_of_string",
+        "module": "Big_int",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+      },
+      {
+        "line": 73,
         "member": "to_string",
         "module": "Int64",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+      },
+      {
+        "line": 74,
+        "member": "num_of_big_int",
+        "module": "Num",
         "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
       },
       {
@@ -5035,6 +5361,18 @@
         "source": "flyspeck:text_formalization/general/lib.hl"
       },
       {
+        "line": 32,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/general/parser_verbose.hl"
+      },
+      {
+        "line": 33,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/general/parser_verbose.hl"
+      },
+      {
         "line": 270,
         "member": "string",
         "module": "Digest",
@@ -5161,6 +5499,222 @@
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
+        "line": 91,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 104,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 106,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 107,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 134,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 134,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 144,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 157,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 163,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 181,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 194,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 208,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 210,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 211,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 222,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1096,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1096,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1122,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1126,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1126,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1130,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1138,
+        "member": "ceiling_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1144,
+        "member": "floor_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1146,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1157,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1539,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1661,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1826,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
         "line": 1827,
         "member": "sqrt",
         "module": "Stdlib",
@@ -5207,6 +5761,24 @@
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 139,
+        "member": "minus_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
+      },
+      {
+        "line": 143,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
+      },
+      {
+        "line": 145,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
       },
       {
         "line": 92,
@@ -5298,6 +5870,36 @@
     "opened_use_attribution": "conservative lexical candidates after a source open; exact sites require review and are not compiler name-resolution proof",
     "qualified_uses": [
       {
+        "line": 402,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:basics.ml"
+      },
+      {
+        "line": 403,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:basics.ml"
+      },
+      {
+        "line": 9,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
+      {
+        "line": 24,
+        "member": "denominator",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
+      {
+        "line": 24,
+        "member": "numerator",
+        "module": "Num",
+        "source": "candle:bignum_num.ml"
+      },
+      {
         "line": 385,
         "member": "of_list",
         "module": "Array",
@@ -5466,6 +6068,180 @@
         "source": "candle:candle/flyspeck_source_integrity.ml"
       },
       {
+        "line": 377,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 378,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 379,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 380,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 381,
+        "member": "denominator",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 382,
+        "member": "numerator",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 383,
+        "member": "minus_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 384,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 385,
+        "member": "floor_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 386,
+        "member": "round_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 387,
+        "member": "ceiling_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 394,
+        "member": "add_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 395,
+        "member": "sub_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 396,
+        "member": "mul_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 397,
+        "member": "div_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 401,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 402,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 411,
+        "member": "lt_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 412,
+        "member": "le_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 413,
+        "member": "gt_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 414,
+        "member": "ge_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 415,
+        "member": "eq_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 417,
+        "member": "min_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 418,
+        "member": "max_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 419,
+        "member": "compare",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 420,
+        "member": "gcd_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 423,
+        "member": "power_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 425,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 427,
+        "member": "succ_num",
+        "module": "Num",
+        "source": "candle:candle/nums.ml"
+      },
+      {
         "line": 338,
         "member": "t",
         "module": "Hashtbl",
@@ -5526,6 +6302,12 @@
         "source": "candle:compute.ml"
       },
       {
+        "line": 422,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:lib.ml"
+      },
+      {
         "line": 915,
         "member": "map",
         "module": "Array",
@@ -5566,6 +6348,30 @@
         "member": "set",
         "module": "Array",
         "source": "candle:metis.ml"
+      },
+      {
+        "line": 220,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:nums.ml"
+      },
+      {
+        "line": 240,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "candle:nums.ml"
+      },
+      {
+        "line": 190,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "candle:parser.ml"
+      },
+      {
+        "line": 191,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "candle:parser.ml"
       },
       {
         "line": 28,
@@ -6084,9 +6890,27 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 170,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 174,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 182,
         "member": "find",
         "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 192,
+        "member": "int_of_num",
+        "module": "Num",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
@@ -6105,6 +6929,18 @@
         "line": 212,
         "member": "add",
         "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 217,
+        "member": "num_of_int",
+        "module": "Num",
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
@@ -6492,6 +7328,18 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1053,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1071,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1122,
         "member": "find",
         "module": "Hashtbl",
@@ -6630,6 +7478,18 @@
         "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
       },
       {
+        "line": 1406,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1407,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
         "line": 1483,
         "member": "create",
         "module": "Hashtbl",
@@ -6742,6 +7602,12 @@
         "member": "Float",
         "module": "Stdlib",
         "source": "flyspeck:formal_lp/glpk/lpproc.ml"
+      },
+      {
+        "line": 172,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_lp/hypermap/computations/list_hypermap_computations.hl"
       },
       {
         "line": 630,
@@ -7020,6 +7886,12 @@
         "source": "flyspeck:formal_lp/hypermap/verify_all.hl"
       },
       {
+        "line": 178,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_lp/ineqs/constants_approx.hl"
+      },
+      {
         "line": 240,
         "member": "sqrt",
         "module": "Stdlib",
@@ -7075,8 +7947,20 @@
       },
       {
         "line": 73,
+        "member": "big_int_of_string",
+        "module": "Big_int",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+      },
+      {
+        "line": 73,
         "member": "to_string",
         "module": "Int64",
+        "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
+      },
+      {
+        "line": 74,
+        "member": "num_of_big_int",
+        "module": "Num",
         "source": "flyspeck:formal_lp/more_arith/prove_lp.hl"
       },
       {
@@ -7392,6 +8276,18 @@
         "source": "flyspeck:text_formalization/general/lib.hl"
       },
       {
+        "line": 32,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/general/parser_verbose.hl"
+      },
+      {
+        "line": 33,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/general/parser_verbose.hl"
+      },
+      {
         "line": 270,
         "member": "string",
         "module": "Digest",
@@ -7518,6 +8414,222 @@
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
+        "line": 91,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 104,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 106,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 107,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 127,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 134,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 134,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 144,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 157,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 163,
+        "member": "is_integer_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 181,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 194,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 208,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 210,
+        "member": "sign_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 211,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 222,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1096,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1096,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1118,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1122,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1126,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1126,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1130,
+        "member": "max_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1138,
+        "member": "ceiling_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1144,
+        "member": "floor_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1146,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1157,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1539,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1661,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
+        "line": 1826,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/jordan/float.hl"
+      },
+      {
         "line": 1827,
         "member": "sqrt",
         "module": "Stdlib",
@@ -7564,6 +8676,24 @@
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/jordan/hash_term.hl"
+      },
+      {
+        "line": 139,
+        "member": "minus_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
+      },
+      {
+        "line": 143,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
+      },
+      {
+        "line": 145,
+        "member": "float_of_num",
+        "module": "Num",
+        "source": "flyspeck:text_formalization/nonlinear/ineqdata3q1h.hl"
       },
       {
         "line": 92,
@@ -7661,6 +8791,9 @@
         "of_list",
         "set"
       ],
+      "Big_int": [
+        "big_int_of_string"
+      ],
       "Digest": [
         "file",
         "string",
@@ -7688,6 +8821,40 @@
         "of_float",
         "to_string"
       ],
+      "Num": [
+        "abs_num",
+        "add_num",
+        "ceiling_num",
+        "compare",
+        "denominator",
+        "div_num",
+        "eq_num",
+        "float_of_num",
+        "floor_num",
+        "gcd_num",
+        "ge_num",
+        "gt_num",
+        "int_of_num",
+        "is_integer_num",
+        "le_num",
+        "lt_num",
+        "max_num",
+        "min_num",
+        "minus_num",
+        "mod_num",
+        "mul_num",
+        "num",
+        "num_of_big_int",
+        "num_of_int",
+        "numerator",
+        "power_num",
+        "quo_num",
+        "round_num",
+        "sign_num",
+        "string_of_num",
+        "sub_num",
+        "succ_num"
+      ],
       "Stdlib": [
         "Float",
         "close_in",
@@ -7709,6 +8876,9 @@
         "map",
         "of_list",
         "set"
+      ],
+      "Big_int": [
+        "big_int_of_string"
       ],
       "Digest": [
         "compare",
@@ -7740,6 +8910,41 @@
         "of_int",
         "shift_left",
         "to_string"
+      ],
+      "Num": [
+        "abs_num",
+        "add_num",
+        "ceiling_num",
+        "compare",
+        "denominator",
+        "div_num",
+        "eq_num",
+        "float_of_num",
+        "floor_num",
+        "gcd_num",
+        "ge_num",
+        "gt_num",
+        "int_of_num",
+        "is_integer_num",
+        "le_num",
+        "lt_num",
+        "max_num",
+        "min_num",
+        "minus_num",
+        "mod_num",
+        "mul_num",
+        "num",
+        "num_of_big_int",
+        "num_of_int",
+        "num_of_string",
+        "numerator",
+        "power_num",
+        "quo_num",
+        "round_num",
+        "sign_num",
+        "string_of_num",
+        "sub_num",
+        "succ_num"
       ],
       "Stdlib": [
         "Float",
@@ -9386,8 +10591,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "9991586c6385840e4dac35d8f2f38a54",
-    "generated_source_sha256": "d64a05d220b12ef5bf9e9b3696a01653c2460ef32063da1a6298b7cc33f9e0e0",
+    "generated_source_md5": "6e74075cdfb23f5c9fb584b45d0d6402",
+    "generated_source_sha256": "2b57103deb6ce660ffad63f686d54501264f7317f148e9356c2bc453cca2240e",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -15485,10 +16690,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "e590434b8bbcf95fc19cc576cf381728",
+      "md5": "68fe03e1a357113f4dd4da303bbd8fc3",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "e64296fd38d10b5f73c2ef2cb35a1daaf167c219427a34c7a3a6e7fa84dbe0c1"
+      "sha256": "6b72cd02f65e47ac9124cec25c6ac78696dd44a2decd74fd414c1d9b405e3be7"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -15507,12 +16712,12 @@
       "sha256": "bd79eef975e9e5258d6ad9c10fc144fe02f7e551faeced05c6e09ce5ecb0dbf6"
     },
     "candle:candle/nums.ml": {
-      "bytes": 11339,
+      "bytes": 11751,
       "dependencies": [],
-      "md5": "f5c1c95b0c225751f6de28aba908dc9c",
+      "md5": "1dfeba48a53db41c34ca599963fefa6c",
       "path": "candle/nums.ml",
       "repository": "candle",
-      "sha256": "3b79dc8197ce23ff90c9e6b1653d99aaae6601899a02aa07d4acd3c227b2f868"
+      "sha256": "7cabf002e6aac6908c813c1424095658d3a6a01ec2ebd900303828a154cfe8f1"
     },
     "candle:candle/ocaml.ml": {
       "bytes": 39276,

@@ -59,6 +59,16 @@ module type NUM = sig
 
 end;;
 
+(* OCaml's legacy [Big_int.big_int] is an arbitrary-precision integer.  CakeML
+   integers already have that representation, so the selected decimal bridge
+   needs no truncating machine-word conversion or FFI. *)
+module Big_int = struct
+  let big_int_of_string s =
+    match Cake.Int.fromString s with
+    | None -> failwith "Big_int.big_int_of_string"
+    | Some i -> i
+end;;
+
 type num =
   | Int of int
   | Rat of Cake.Rat.rat
@@ -116,6 +126,9 @@ let norm n = num_fix n
 ;;
 
 let num_of_int i = Int i
+;;
+
+let num_of_big_int i = Int i
 ;;
 
 (* The Num compatibility operation accepts integer strings.  CakeML integers

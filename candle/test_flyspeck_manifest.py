@@ -1276,6 +1276,65 @@ class GeneratedManifestTests(unittest.TestCase):
             if member != "t":
                 self.assertRegex(source, rf"\blet(?:\s+rec)?\s+{member}\b")
 
+    def test_big_int_num_bridge_is_exact_and_source_backed(self):
+        contract = self.payload["ocaml_compatibility_contract"]
+        self.assertEqual(
+            contract["supported_members"]["Big_int"],
+            ["big_int_of_string"],
+        )
+        self.assertEqual(
+            contract["selected_members"]["Big_int"],
+            ["big_int_of_string"],
+        )
+        expected_num_members = {
+            "abs_num", "add_num", "ceiling_num", "compare", "denominator",
+            "div_num", "eq_num", "float_of_num", "floor_num", "gcd_num",
+            "ge_num", "gt_num", "int_of_num", "is_integer_num", "le_num",
+            "lt_num", "max_num", "min_num", "minus_num", "mod_num", "mul_num",
+            "num", "num_of_big_int", "num_of_int", "num_of_string", "numerator",
+            "power_num", "quo_num", "round_num", "sign_num", "string_of_num",
+            "sub_num", "succ_num",
+        }
+        self.assertEqual(
+            set(contract["supported_members"]["Num"]), expected_num_members,
+        )
+        self.assertEqual(
+            set(contract["selected_members"]["Num"]),
+            expected_num_members - {"num_of_string"},
+        )
+        uses = contract["qualified_uses"]
+        self.assertEqual(
+            [
+                (use["source"], use["line"])
+                for use in uses
+                if use["module"] == "Big_int"
+                and use["member"] == "big_int_of_string"
+            ],
+            [("flyspeck:formal_lp/more_arith/prove_lp.hl", 73)],
+        )
+        self.assertEqual(
+            [
+                (use["source"], use["line"])
+                for use in uses
+                if use["module"] == "Num"
+                and use["member"] == "num_of_big_int"
+            ],
+            [("flyspeck:formal_lp/more_arith/prove_lp.hl", 74)],
+        )
+        evidence = contract["binding_evidence"]
+        self.assertEqual(
+            evidence["Big_int"]["gate"],
+            "candle:candle/test_big_int_num_compat.sh",
+        )
+        self.assertEqual(
+            evidence["Num"]["gate"],
+            "candle:candle/test_big_int_num_compat.sh",
+        )
+        source = Path(__file__).with_name("nums.ml").read_text(encoding="utf-8")
+        self.assertIn("module Big_int = struct", source)
+        self.assertRegex(source, r"\blet\s+big_int_of_string\b")
+        self.assertRegex(source, r"\blet\s+num_of_big_int\b")
+
     def test_toplevel_interface_contract_is_exact_and_fail_closed(self):
         contract = self.payload["toplevel_interface_contract"]
         self.assertEqual(

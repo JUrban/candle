@@ -44,7 +44,7 @@ let candle_flyspeck_source_digests = [
   ("candle","candle/flyspeck_l2_target.ml","aa726b6da79aae93e638b8a8233bf48b");
   ("candle","candle/flyspeck_source_integrity.ml","54b69b40c435b4b184a6ea88586f45b6");
   ("candle","candle/kernel.ml","fa2e94287ca00e9153e937b606b3c7ea");
-  ("candle","candle/nums.ml","f5c1c95b0c225751f6de28aba908dc9c");
+  ("candle","candle/nums.ml","1dfeba48a53db41c34ca599963fefa6c");
   ("candle","candle/ocaml.ml","2b0aa30314b08018e2d4806eb9694994");
   ("candle","candle/pretty.ml","08098e03af2e6ef0df226482d168288c");
   ("candle","canon.ml","9d6436c2e35b90c8834c698a181301f7");

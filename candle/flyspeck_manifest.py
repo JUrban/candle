@@ -52,6 +52,7 @@ STATIC_RUNTIME_MEMBERS = {
 }
 OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
     "Array": {"fold_left", "get", "init", "length", "make", "map", "of_list", "set"},
+    "Big_int": {"big_int_of_string"},
     "Digest": {"compare", "file", "string", "t", "to_hex"},
     "Gc": {"compact"},
     "Hashtbl": {
@@ -59,6 +60,15 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
         "length", "mem", "remove", "replace", "t",
     },
     "Int64": {"logor", "of_float", "of_int", "shift_left", "to_string"},
+    "Num": {
+        "abs_num", "add_num", "ceiling_num", "compare", "denominator",
+        "div_num", "eq_num", "float_of_num", "floor_num", "gcd_num",
+        "ge_num", "gt_num", "int_of_num", "is_integer_num", "le_num",
+        "lt_num", "max_num", "min_num", "minus_num", "mod_num", "mul_num",
+        "num", "num_of_big_int", "num_of_int", "num_of_string", "numerator",
+        "power_num", "quo_num", "round_num", "sign_num", "string_of_num",
+        "sub_num", "succ_num",
+    },
     "Stdlib": {
         "Float", "close_in", "close_out", "compare", "input_line", "open_in",
         "open_out", "output_string", "sqrt",
@@ -2179,6 +2189,17 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         "direct Flyspeck adds only Array.init after normalization"
                     ),
                 },
+                "Big_int": {
+                    "status": "pure-source-differential-gate",
+                    "source": "candle:candle/nums.ml",
+                    "oracle": "OCaml 4.14.1 nums.cma",
+                    "gate": "candle:candle/test_big_int_num_compat.sh",
+                    "assurance_limit": (
+                        "the selected bridge accepts only canonical signed-decimal "
+                        "strings produced by Int64.to_string and maps them to CakeML's "
+                        "arbitrary-precision integer without truncation"
+                    ),
+                },
                 "Digest": {
                     "status": "pure-source-differential-gate",
                     "source": "candle:candle/ocaml.ml",
@@ -2208,6 +2229,17 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         "with equality-backed linear storage; polymorphic hash "
                         "fails closed; explicit ordered tables are an internal "
                         "performance path and do not retain duplicate bindings"
+                    ),
+                },
+                "Num": {
+                    "status": "pure-source-differential-gate",
+                    "source": "candle:candle/nums.ml",
+                    "oracle": "OCaml 4.14.1 nums.cma",
+                    "gate": "candle:candle/test_big_int_num_compat.sh",
+                    "assurance_limit": (
+                        "num_of_big_int is representation-preserving because CakeML "
+                        "integers are arbitrary precision; the new differential gate "
+                        "covers the selected Big_int decimal conversion bridge"
                     ),
                 },
                 "Stdlib": {
