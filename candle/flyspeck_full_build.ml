@@ -360,7 +360,7 @@
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_gen_ineqs.hl";;
 (* 172 selected=flyspeck:formal_lp/hypermap/ineqs/lp_approx_ineqs.hl sha256=7e95f3e742debc13a86d913067d3ed9de20066d538ce4e353b1d35c63a697265 *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_approx_ineqs.hl";;
-(* 173 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl sha256=3fb369d89d13c1dd04cb1710424d9b2f1943bc8b04a1f83128f716975ea09a1e normalization=PROJECT-LP-S3-FIXED-FORMAT-INEQS-001 normalized_sha256=5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12 *)
+(* 173 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl sha256=3fb369d89d13c1dd04cb1710424d9b2f1943bc8b04a1f83128f716975ea09a1e normalization=PROJECT-LP-S3-FIXED-FORMAT-INEQS-001 normalized_sha256=7a303cebc05ddb7d4bba12814cb4a0d690f3204ca8099ecdc63301df4a64922f *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs.hl";;
 (* 174 selected=flyspeck:formal_lp/hypermap/ineqs/lp_head_ineqs.hl sha256=24441a19dfdec9d14f4f4048e7d93cdefd4ed2b29f028c0282f4a00f1b8044ba *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_head_ineqs.hl";;
@@ -368,7 +368,7 @@
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_body_ineqs_data.hl";;
 (* 176 selected=flyspeck:formal_lp/hypermap/ineqs/lp_body_ineqs.hl sha256=d0783e75e9e3cc2d0a2009a50f4b7efcc9f6b783116ff6fee04167426e5a39a9 normalization=PROJECT-LP-S3-FIXED-FORMAT-BODY-001 normalized_sha256=34371472bd4910bfa1bc4af9cf73b07eb420eb94b7028d35464ba953debd7aaf *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_body_ineqs.hl";;
-(* 177 selected=flyspeck:formal_lp/hypermap/main/lp_certificate.hl sha256=256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709 normalization=PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001 normalized_sha256=79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c *)
+(* 177 selected=flyspeck:formal_lp/hypermap/main/lp_certificate.hl sha256=256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709 normalization=PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001 normalized_sha256=56091f8b4fad4966d589a31642dda713eac6080266fd8654d119e3d885d248de *)
 #flyspeck_needs "../formal_lp/hypermap/main/lp_certificate.hl";;
 (* 178 selected=flyspeck:formal_lp/hypermap/computations/informal_computations.hl sha256=fcf3cb31c7d15b5886ae40babb49672328181dcbbc9d47f081246faeadf0ed5a *)
 #flyspeck_needs "../formal_lp/hypermap/computations/informal_computations.hl";;
@@ -376,11 +376,11 @@
 #flyspeck_needs "../formal_lp/more_arith/lin_f.hl";;
 (* 180 selected=flyspeck:formal_lp/more_arith/arith_int.hl sha256=6c9581a71f046ba90b6398a281e2a4e2cebc8b739be60d6ddb3e68da4ce5dc89 *)
 #flyspeck_needs "../formal_lp/more_arith/arith_int.hl";;
-(* 181 selected=flyspeck:formal_lp/more_arith/prove_lp.hl sha256=e43b85cb2e403458dd8715376d80862cd5ffa3a7007586521907c8f230d69c75 *)
+(* 181 selected=flyspeck:formal_lp/more_arith/prove_lp.hl sha256=e43b85cb2e403458dd8715376d80862cd5ffa3a7007586521907c8f230d69c75 normalization=PROJECT-LP-S3-PROVE-TERM-ORDER-001 normalized_sha256=b5dfd560289091ae6b38a47b6dbffd4bd657b25efb84462636852f3e6836e2a7 *)
 #flyspeck_needs "../formal_lp/more_arith/prove_lp.hl";;
-(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e *)
+(* 182 selected=flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl sha256=8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f normalization=PROJECT-POINTER-S3-IMMEDIATE-001 normalized_sha256=552440a25ea043ab73776775213cb231865e34b46b57e0eea4fb5a33c3363b39 *)
 #flyspeck_needs "../formal_lp/hypermap/main/prove_flyspeck_lp.hl";;
-(* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed *)
+(* 183 selected=flyspeck:formal_lp/hypermap/verify_all.hl sha256=c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95 normalization=PROJECT-FFI-S3-LP-STATIC-INVENTORY-001 normalized_sha256=5704e371145974bb82315059c16a0bef1898288ac91c3209928dd60a73621b47 *)
 #flyspeck_needs "../formal_lp/hypermap/verify_all.hl";;
 (* 184 selected=flyspeck:text_formalization/tame/linear_programming_results.hl sha256=0588a0006de8a863de1ad3f855104296233147b9805c87eaa82a6fa8f5b5c4d4 normalization=PROJECT-S3-LP-EXACT-RESULT-COVERAGE-001 normalized_sha256=61c184e771174233eb0791c15354d35038fd873b153cdc4bc00655b46080fead *)
 #flyspeck_needs "tame/linear_programming_results.hl";;

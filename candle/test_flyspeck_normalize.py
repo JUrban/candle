@@ -202,7 +202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 52)
+        self.assertEqual(len(self.contract["entries"]), 53)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -535,7 +535,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         immediate = entries["PROJECT-POINTER-S3-IMMEDIATE-001"]
         self.assertEqual(
             [operation["line"] for operation in immediate["operations"]],
-            [284, 329, 342, 1050, 299, 852, 1059],
+            [284, 329, 342, 433, 1050, 299, 852, 1059],
         )
         self.assertEqual(
             immediate["operations"][0]["after"],
@@ -545,8 +545,18 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "Term.compare" in operation["after"]
             for operation in immediate["operations"][1:3]
         ))
-        self.assertEqual(immediate["operations"][3]["before"].count("=="), 1)
-        self.assertNotIn("==", immediate["operations"][3]["after"])
+        grouping = immediate["operations"][3]
+        self.assertEqual(grouping["id"], (
+            "PROJECT-LP-S3-MK-VAR-TUPLE-GROUPING-001"
+        ))
+        self.assertEqual(grouping["replacement_count"], 2)
+        self.assertTrue(all(
+            'mk_var (("' in replacement["after"]
+            for replacement in grouping["replacements"]
+        ))
+        self.assertEqual(immediate["operations"][4]["before"].count("=="), 1)
+        self.assertNotIn("==", immediate["operations"][4]["after"])
+        self.assertIn("two mk_var tuple arguments", immediate["scope_limit"])
         self.assertIn("does not apply to allocated values", immediate["scope_limit"])
         allocated = entries["PROJECT-POINTER-S3-ALLOCATED-LIB-001"]
         self.assertEqual(
@@ -981,36 +991,52 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         shell_free = entries["PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001"]
         self.assertEqual(
             [operation["line"] for operation in shell_free["operations"]],
-            [88, 124],
+            [88, 111, 124],
         )
         self.assertNotIn("Sys.command", "".join(
             operation["after"] for operation in shell_free["operations"]
         ))
+        self.assertIn(
+            "Candle_marshal.decode_channel",
+            shell_free["operations"][1]["after"],
+        )
         self.assertIn("fails closed", shell_free["scope_limit"])
         static_inventory = entries["PROJECT-FFI-S3-LP-STATIC-INVENTORY-001"]
-        self.assertEqual(static_inventory["operations"][0]["line"], 10)
+        decr_counters = static_inventory["operations"][0]
+        self.assertEqual(decr_counters["line"], 98)
+        self.assertEqual(decr_counters["replacement_count"], 2)
+        self.assertTrue(all(
+            "k := !k - 1" in replacement["after"]
+            for replacement in decr_counters["replacements"]
+        ))
+        self.assertEqual(static_inventory["operations"][1]["line"], 10)
         self.assertIn("candle_flyspeck_lp_certificate_files", (
-            static_inventory["operations"][0]["after"]
+            static_inventory["operations"][1]["after"]
         ))
         self.assertNotIn("Sys.readdir", (
-            static_inventory["operations"][0]["after"]
+            static_inventory["operations"][1]["after"]
         ))
-        self.assertNotIn("Gc.stat", static_inventory["operations"][1]["after"])
-        self.assertIn("outer runner", static_inventory["operations"][1]["after"])
-        self.assertEqual(static_inventory["operations"][2]["line"], 57)
+        self.assertNotIn("Gc.stat", static_inventory["operations"][2]["after"])
+        self.assertIn("outer runner", static_inventory["operations"][2]["after"])
+        self.assertEqual(static_inventory["operations"][3]["line"], 57)
         self.assertIn(
             "candle_flyspeck_record_lp_certificate_consumption file",
-            static_inventory["operations"][2]["after"],
+            static_inventory["operations"][3]["after"],
         )
         self.assertIn("successful return", static_inventory["scope_limit"])
         self.assertEqual(
-            [operation["line"] for operation in static_inventory["operations"][3:]],
-            [48, 70],
+            [operation["line"] for operation in static_inventory["operations"][4:]],
+            [48, 70, 125],
         )
         self.assertIn(
             "string_of_int !remaining_files",
-            static_inventory["operations"][3]["after"],
+            static_inventory["operations"][4]["after"],
         )
+        self.assertIn(
+            "setify Term.(<)",
+            static_inventory["operations"][6]["after"],
+        )
+        self.assertIn("theorem conclusions", static_inventory["scope_limit"])
         section_compare = entries["PROJECT-COMPARE-S3-SECTION-NAME-001"]
         self.assertIn("String.compare", section_compare["operations"][0]["after"])
         lp_compare = entries["PROJECT-COMPARE-S3-LP-COUNT-ORDER-001"]
@@ -1072,6 +1098,17 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             self.assertIn("string_of_int", (
                 entries[entry_id]["operations"][0]["after"]
             ))
+        lp_ineqs = entries["PROJECT-LP-S3-FIXED-FORMAT-INEQS-001"]
+        self.assertEqual(
+            [operation["line"] for operation in lp_ineqs["operations"]],
+            [308, 50],
+        )
+        self.assertEqual(
+            lp_ineqs["operations"][1]["after"],
+            "  let lp_tms = setify Term.(<) "
+            "(map (fun t -> t.ineq) lp_ineqs) in",
+        )
+        self.assertIn("canonical strict HOL-term order", lp_ineqs["semantic_rule"])
         self.assertEqual(
             good_list["operations"][1]["after"],
             "    let _ = i := !i + 1 in",
@@ -1202,7 +1239,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 190)
+        self.assertEqual(len(operation_ids), 196)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

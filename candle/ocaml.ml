@@ -710,6 +710,142 @@ module Array = struct
     Cake.Array.tabulate (Cake.Array.length a) (fun i -> f (Cake.Array.sub a i))
 end;;
 
+(* The checked-in Flyspeck LP certificates use OCaml's compact Marshal wire
+   format.  A general polymorphic Marshal implementation would require access
+   to OCaml runtime representations, which CakeML deliberately does not expose.
+   This parser instead returns an explicit syntax tree for the exact portable
+   wire subset measured across all 39 authenticated certificate shards:
+
+     - small integers, strings, and blocks;
+     - signed eight-bit integers;
+     - 8/16/32-bit references to earlier objects;
+     - eight-bit-length strings; and
+     - legacy [_j] custom blocks containing one signed 64-bit word.
+
+   Source-specific code must still validate that tree against its expected
+   algebraic datatype.  Unsupported codes, malformed lengths, forward/cyclic
+   references, and trailing data all fail closed. *)
+module Candle_marshal = struct
+  type value =
+    | Marshal_int of int
+    | Marshal_string of string
+    | Marshal_int64 of int64
+    | Marshal_block of int * value list
+
+  let decode_string source =
+    let source_length = String.length source in
+    let position = ref 0 in
+    let read_byte () =
+      if !position >= source_length then
+        failwith "Candle_marshal: truncated input"
+      else
+        let result = Char.code (String.get source !position) in
+        let _ = position := !position + 1 in
+        result in
+    let read_unsigned count =
+      let rec loop remaining result =
+        if remaining = 0 then result
+        else loop (remaining - 1) (result * 256 + read_byte ()) in
+      loop count 0 in
+    let read_bytes count =
+      if count < 0 || !position + count > source_length then
+        failwith "Candle_marshal: truncated string"
+      else
+        let result = String.sub source !position count in
+        let _ = position := !position + count in
+        result in
+    let magic = read_unsigned 4 in
+    if magic <> 0x8495a6be then
+      failwith "Candle_marshal: unsupported header";
+    let data_length = read_unsigned 4 in
+    let declared_objects = read_unsigned 4 in
+    let _ = read_unsigned 4 in
+    let _ = read_unsigned 4 in
+    if data_length <> source_length - 20 then
+      failwith "Candle_marshal: data length mismatch";
+    let objects = Array.make declared_objects (None : value option) in
+    let next_object = ref 0 in
+    let reserve_object () =
+      let index = !next_object in
+      if index >= declared_objects then
+        failwith "Candle_marshal: object count overflow";
+      let _ = next_object := index + 1 in
+      index in
+    let finish_object index result =
+      Array.set objects index (Some result);
+      result in
+    let shared_object distance =
+      let index = !next_object - distance in
+      if distance <= 0 || index < 0 then
+        failwith "Candle_marshal: invalid shared reference"
+      else
+        match Array.get objects index with
+        | None -> failwith "Candle_marshal: cyclic or forward reference"
+        | Some result -> result in
+    let read_signed_byte () =
+      let result = read_byte () in
+      if result >= 128 then result - 256 else result in
+    let read_word64 () =
+      let rec loop remaining result =
+        if remaining = 0 then result
+        else
+          loop (remaining - 1)
+            (Int64.logor (Int64.shift_left result 8)
+               (Int64.of_int (read_byte ()))) in
+      loop 8 (Int64.of_int 0) in
+    let read_identifier () =
+      let rec loop result =
+        let code = read_byte () in
+        if code = 0 then String.concat "" (List.rev result)
+        else loop (String.make 1 (Char.chr code) :: result) in
+      loop [] in
+    let rec read_values count =
+      if count = 0 then []
+      else
+        let first = read_value () in
+        first :: read_values (count - 1)
+    and read_block tag size =
+      if size = 0 then Marshal_block (tag, [])
+      else
+        let index = reserve_object () in
+        finish_object index (Marshal_block (tag, read_values size))
+    and read_string count =
+      let index = reserve_object () in
+      finish_object index (Marshal_string (read_bytes count))
+    and read_int64 () =
+      let identifier = read_identifier () in
+      if identifier <> "_j" then
+        failwith "Candle_marshal: unsupported custom block";
+      let index = reserve_object () in
+      finish_object index (Marshal_int64 (read_word64 ()))
+    and read_value () =
+      let code = read_byte () in
+      if code >= 0x80 then
+        read_block (code land 0x0f) ((code lsr 4) land 0x07)
+      else if code >= 0x40 then
+        Marshal_int (code land 0x3f)
+      else if code >= 0x20 then
+        read_string (code land 0x1f)
+      else
+        match code with
+        | 0x00 -> Marshal_int (read_signed_byte ())
+        | 0x04 -> shared_object (read_unsigned 1)
+        | 0x05 -> shared_object (read_unsigned 2)
+        | 0x06 -> shared_object (read_unsigned 4)
+        | 0x09 -> read_string (read_unsigned 1)
+        | 0x12 -> read_int64 ()
+        | _ -> failwith "Candle_marshal: unsupported wire code" in
+    let result = read_value () in
+    if !position <> source_length then
+      failwith "Candle_marshal: trailing data";
+    if !next_object <> declared_objects then
+      failwith "Candle_marshal: object count mismatch";
+    result
+
+  let decode_channel channel =
+    decode_string (Text_io.inputAll channel)
+end;;
+
 module Printexc = struct
   let to_string (e: exn) = "TODO stub (Printexc.to_string)"
 end;;

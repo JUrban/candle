@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 52)
+        self.assertEqual(contract["entry_count"], 53)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -626,7 +626,7 @@ class GeneratedManifestTests(unittest.TestCase):
         ))
         self.assertEqual(
             [operation["line"] for operation in entry["operations"]],
-            [284, 329, 342, 1050, 299, 852, 1059],
+            [284, 329, 342, 433, 1050, 299, 852, 1059],
         )
         self.assertEqual(
             entry["operations"][0]["after"],
@@ -768,7 +768,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertEqual(misc_defs["operation_count"], 2)
         self.assertIn("t = x+|y'", misc_defs["operations"][0]["after"])
         self.assertIn("(`x:num`,`a:num`)", misc_defs["operations"][1]["after"])
-        self.assertEqual(entry["operation_count"], 7)
+        self.assertEqual(entry["operation_count"], 8)
         self.assertIn("PROJECT-COMPARE-S3-SECTION-NAME-001", entries)
         self.assertIn("PROJECT-COMPARE-S3-LP-COUNT-ORDER-001", entries)
         good_list = entries[
@@ -776,10 +776,30 @@ class GeneratedManifestTests(unittest.TestCase):
         ]
         self.assertEqual(good_list["operation_count"], 3)
         self.assertIn("string_of_int", good_list["operations"][2]["after"])
-        for entry_id in (
-            "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
-            "PROJECT-LP-S3-FIXED-FORMAT-BODY-001",
-        ):
+        lp_ineqs = entries["PROJECT-LP-S3-FIXED-FORMAT-INEQS-001"]
+        self.assertEqual(lp_ineqs["operation_count"], 2)
+        self.assertIn("string_of_int", lp_ineqs["operations"][0]["after"])
+        self.assertIn("setify Term.(<)", lp_ineqs["operations"][1]["after"])
+        verify_all = entries["PROJECT-FFI-S3-LP-STATIC-INVENTORY-001"]
+        self.assertEqual(verify_all["operation_count"], 7)
+        self.assertIn(
+            "k := !k - 1",
+            verify_all["operations"][0]["replacements"][0]["after"],
+        )
+        self.assertIn("setify Term.(<)", verify_all["operations"][6]["after"])
+        lp_certificate = entries["PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001"]
+        self.assertEqual(lp_certificate["operation_count"], 3)
+        self.assertIn(
+            "Candle_marshal.decode_channel",
+            lp_certificate["operations"][1]["after"],
+        )
+        prove_lp = entries["PROJECT-LP-S3-PROVE-TERM-ORDER-001"]
+        self.assertEqual(prove_lp["operation_count"], 1)
+        self.assertEqual(
+            prove_lp["operations"][0]["after"],
+            "if Term.(<) v1 v2 then",
+        )
+        for entry_id in ("PROJECT-LP-S3-FIXED-FORMAT-BODY-001",):
             self.assertEqual(entries[entry_id]["operation_count"], 1)
             self.assertIn("string_of_int", (
                 entries[entry_id]["operations"][0]["after"]
@@ -1020,7 +1040,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 51", source,
+            "List.length candle_flyspeck_normalized_sources <> 52", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -1030,10 +1050,10 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 51)
+        self.assertEqual(len(selected_normalizations), 52)
         self.assertEqual(
             sum(entry["operation_count"] for entry in selected_normalizations),
-            188,
+            194,
         )
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)

@@ -3129,13 +3129,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 429,
+        "line": 434,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 429,
+        "line": 434,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -3325,6 +3325,48 @@
         "member": "succ_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 766,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 775,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 782,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 793,
+        "member": "logor",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 793,
+        "member": "shift_left",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 794,
+        "member": "of_int",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 795,
+        "member": "of_int",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
       },
       {
         "line": 338,
@@ -6044,13 +6086,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 429,
+        "line": 434,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 429,
+        "line": 434,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -6240,6 +6282,48 @@
         "member": "succ_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
+      },
+      {
+        "line": 766,
+        "member": "make",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 775,
+        "member": "set",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 782,
+        "member": "get",
+        "module": "Array",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 793,
+        "member": "logor",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 793,
+        "member": "shift_left",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 794,
+        "member": "of_int",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
+      },
+      {
+        "line": 795,
+        "member": "of_int",
+        "module": "Int64",
+        "source": "candle:candle/ocaml.ml"
       },
       {
         "line": 338,
@@ -8818,7 +8902,10 @@
         "t"
       ],
       "Int64": [
+        "logor",
         "of_float",
+        "of_int",
+        "shift_left",
         "to_string"
       ],
       "Num": [
@@ -10591,8 +10678,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "4bc72f8d1fa27b60fa40c7430aa2e722",
-    "generated_source_sha256": "1f89e9e407357cf2dae9379968bd7b95bc17fe39db83a11a9e4753506be7521c",
+    "generated_source_md5": "2af840566e60c5cb56f1f2368f0e8c17",
+    "generated_source_sha256": "c1e1b09a09118d5a9ac109e12750e910f2d8ee9265a1b3a9dc9a4edfa007fc6b",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -13336,7 +13423,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 61034,
+      "bytes": 61166,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -16606,10 +16693,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "12dae7346bc177bd16f35e866e94c6b1",
+      "md5": "edb61d1c3272e7598604743ef8464fe1",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "dc0c7f046b4d8be23190e49f12064e04afaa947a4c6b2809100faef15f66cd86"
+      "sha256": "4bda5a301633af3925ad18c26e8bdfd6f51da9d59b7bc26b43cf6197ba2f1465"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -16620,7 +16707,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 19415,
+      "bytes": 19632,
       "dependencies": [
         {
           "kind": "#use",
@@ -16658,7 +16745,7 @@
         },
         {
           "kind": "needs",
-          "line": 451,
+          "line": 456,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -16669,7 +16756,7 @@
         },
         {
           "kind": "needs",
-          "line": 457,
+          "line": 462,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -16680,7 +16767,7 @@
         },
         {
           "kind": "needs",
-          "line": 459,
+          "line": 464,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -16690,10 +16777,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "a5e43fa080e7ef99503118f04b8f3ea5",
+      "md5": "5d5f25ee35d3450cb367eb828d5fff77",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "b0bab05732392c0ad3119d4950a8a8884a8b26f594b6948358ba19478df4eebb"
+      "sha256": "85eb2462abd196b63bdf9f487e10a4c375a8b21fc0d88faf8fc7c609564d9eff"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -16720,12 +16807,12 @@
       "sha256": "7cabf002e6aac6908c813c1424095658d3a6a01ec2ebd900303828a154cfe8f1"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 39276,
+      "bytes": 45116,
       "dependencies": [],
-      "md5": "2b0aa30314b08018e2d4806eb9694994",
+      "md5": "39ff2fc1e768ec55d2a0360f7d14fb95",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "85ccdd99ab56f738d511b9fb2c39073544ea23357e7ae3aec74a10683be020cc"
+      "sha256": "d4709ac3d8713a7eeadd818ecae2f9c28fc1a9a7f0ae6a156228321c3aa02515"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -18772,10 +18859,10 @@
       "execution_normalization": {
         "id": "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 12002,
-        "normalized_md5": "01e6a821807c8580ea525b4d79dab727",
-        "normalized_sha256": "5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12",
-        "operation_count": 1
+        "normalized_bytes": 12011,
+        "normalized_md5": "7a315e6e82c7e9f6ee43777933bf0110",
+        "normalized_sha256": "7a303cebc05ddb7d4bba12814cb4a0d690f3204ca8099ecdc63301df4a64922f",
+        "operation_count": 2
       },
       "md5": "15e00378926ac9ab62fb69a449447290",
       "path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
@@ -18983,10 +19070,10 @@
       "execution_normalization": {
         "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3300,
-        "normalized_md5": "639783011d135bd2aa117330b257174d",
-        "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
-        "operation_count": 2
+        "normalized_bytes": 5878,
+        "normalized_md5": "dcca51c5dc5dd5679f0b7337202c4f75",
+        "normalized_sha256": "56091f8b4fad4966d589a31642dda713eac6080266fd8654d119e3d885d248de",
+        "operation_count": 3
       },
       "md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
       "path": "formal_lp/hypermap/main/lp_certificate.hl",
@@ -19077,10 +19164,10 @@
       "execution_normalization": {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45302,
-        "normalized_md5": "5f8f1f79a5076c3fa97477de09b1a4c6",
-        "normalized_sha256": "f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e",
-        "operation_count": 7
+        "normalized_bytes": 45306,
+        "normalized_md5": "a01c82d20e64cffe5a4a16bf1c08ad06",
+        "normalized_sha256": "552440a25ea043ab73776775213cb231865e34b46b57e0eea4fb5a33c3363b39",
+        "operation_count": 8
       },
       "md5": "84a0a3d05891ddbabdb833b0d6b73779",
       "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
@@ -19220,10 +19307,10 @@
       "execution_normalization": {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3742,
-        "normalized_md5": "906fdf1b660695eb8833a1ada975d273",
-        "normalized_sha256": "49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed",
-        "operation_count": 5
+        "normalized_bytes": 3761,
+        "normalized_md5": "37d1180dfbfff7c2d6e524220dba4140",
+        "normalized_sha256": "5704e371145974bb82315059c16a0bef1898288ac91c3209928dd60a73621b47",
+        "operation_count": 7
       },
       "md5": "ff8322ced466dd6f05ed40120ed00a74",
       "path": "formal_lp/hypermap/verify_all.hl",
@@ -19376,6 +19463,14 @@
           "syntax_position": "standalone-phrase"
         }
       ],
+      "execution_normalization": {
+        "id": "PROJECT-LP-S3-PROVE-TERM-ORDER-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 17135,
+        "normalized_md5": "93a89444e9e90fa2392911a20ed13a72",
+        "normalized_sha256": "b5dfd560289091ae6b38a47b6dbffd4bd657b25efb84462636852f3e6836e2a7",
+        "operation_count": 1
+      },
       "md5": "5d1df4a2ed982e72abbcd995250d0dae",
       "path": "formal_lp/more_arith/prove_lp.hl",
       "repository": "flyspeck",
@@ -24135,16 +24230,16 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "48e9ce6de407cde8c470a47f43d2edab84bb4991bf70b4e3a24e50d902a860dc",
+    "contract_sha256": "d2ef6afa9c13d4f06655725f8933b469aeecf23669577ba68d124bd6856f1100",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
         "id": "PROJECT-POINTER-S3-IMMEDIATE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 45302,
-        "normalized_md5": "5f8f1f79a5076c3fa97477de09b1a4c6",
-        "normalized_sha256": "f640fc6dc381f67887c84eca68ab3de2a0f138369f1b40a62de588120ae5193e",
-        "operation_count": 7,
+        "normalized_bytes": 45306,
+        "normalized_md5": "a01c82d20e64cffe5a4a16bf1c08ad06",
+        "normalized_sha256": "552440a25ea043ab73776775213cb231865e34b46b57e0eea4fb5a33c3363b39",
+        "operation_count": 8,
         "operations": [
           {
             "after": "let var_table : (term, thm) Hashtbl.t = Hashtbl.create 1000;;",
@@ -24166,6 +24261,24 @@
             "id": "PROJECT-COMPARE-S3-LP-TERM-ORDER-001-VARIABLE-TABLE",
             "kind": "exact_bytes_replace_once",
             "line": 342
+          },
+          {
+            "id": "PROJECT-LP-S3-MK-VAR-TUPLE-GROUPING-001",
+            "kind": "exact_lines_replace_once",
+            "line": 433,
+            "replacement_count": 2,
+            "replacements": [
+              {
+                "after": "    diag_vars = map (fun i -> mk_var ((\"diag\" ^ string_of_int i), `:num#num`)) (0--6) and",
+                "before": "    diag_vars = map (fun i -> mk_var (\"diag\" ^ string_of_int i, `:num#num`)) (0--6) and",
+                "line": 433
+              },
+              {
+                "after": "    a_vars = map (fun i -> mk_var ((\"a\" ^ string_of_int i), `:real`)) (0--6);;",
+                "before": "    a_vars = map (fun i -> mk_var (\"a\" ^ string_of_int i, `:real`)) (0--6);;",
+                "line": 434
+              }
+            ]
           },
           {
             "after": "    if n = 1 then [] else\n",
@@ -24203,11 +24316,34 @@
           }
         ],
         "path": "formal_lp/hypermap/main/prove_flyspeck_lp.hl",
-        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. The table annotation is confined to var_table and changes no allocation, key, value, mutation, lookup, or iteration. Compiled ordering, exception diagnostics, progress bytes, table behavior, and terminal theorem fingerprints remain required.",
-        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text. The var_table key/value types are forced to term and thm by its only insertions and reads; stating that exact type at allocation preserves the same table while avoiding Candle's declaration-boundary value restriction.",
+        "scope_limit": "The scalar rule does not apply to allocated values and does not authorize changing any identity-sensitive list comparison. The comparator rewrites are confined to the two typed term lists. The formatting rewrites cover the complete executable sprintf set in this pinned source; the second identical diagnostic occurs only inside a comment and is deliberately unchanged. They do not implement general formatting. The table annotation is confined to var_table and changes no allocation, key, value, mutation, lookup, or iteration. The grouping repair is confined to the two mk_var tuple arguments at pinned lines 433--434 and changes no binding, term, theorem, or proof. Compiled ordering, exception diagnostics, progress bytes, table behavior, complete source loading, and terminal theorem fingerprints remain required.",
+        "semantic_rule": "In pinned OCaml 4.14.1, Stdlib maps == to %eq, translprim maps %eq to Pintcomp Ceq, and structural = on int also specializes to Pintcomp Ceq; the runtime representation additionally encodes each int injectively as one tagged immediate word. The two predicates therefore select the same branch for every int value. Both LP comparisons are over HOL terms, so Candle's explicit Term.compare supplies the same total term ordering without polymorphic comparison. The three executable fixed formats contain only %s and %d conversions. Literal concatenation and string_of_int preserve their bytes and argument order, including the Failure diagnostic and terminal progress text. The var_table key/value types are forced to term and thm by its only insertions and reads; stating that exact type at allocation preserves the same table while avoiding Candle's declaration-boundary value restriction. The two mk_var calls already pass a string and a HOL type as one pair under native OCaml precedence; explicitly grouping each string-valued concatenation makes the same pair structure unambiguous to Candle without changing either generated name, type, list order, or evaluation.",
         "source_key": "flyspeck:formal_lp/hypermap/main/prove_flyspeck_lp.hl",
         "source_md5": "84a0a3d05891ddbabdb833b0d6b73779",
         "source_sha256": "8ed592aa6515b9fe76cef8f101c98953bfe53b21d0cf023ccb45aaa62f97cc3f"
+      },
+      {
+        "id": "PROJECT-LP-S3-PROVE-TERM-ORDER-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 17135,
+        "normalized_md5": "93a89444e9e90fa2392911a20ed13a72",
+        "normalized_sha256": "b5dfd560289091ae6b38a47b6dbffd4bd657b25efb84462636852f3e6836e2a7",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "if Term.(<) v1 v2 then",
+            "before": "if (v1 < v2) then",
+            "id": "PROJECT-LP-S3-PROVE-TERM-ORDER-001-LINEAR-VARIABLE",
+            "kind": "exact_bytes_replace_once",
+            "line": 120
+          }
+        ],
+        "path": "formal_lp/more_arith/prove_lp.hl",
+        "scope_limit": "The rewrite is confined to the sole term comparison in Prove_lp.lin_f_add_conv2 at pinned line 120. It does not authorize ordering any other representation. Source drift, a changed operand type, or failure of the complete source and LP verification gates blocks release.",
+        "semantic_rule": "The operands are the HOL terms obtained as the second components of the two linear-function head pairs. Pinned native OCaml orders them with polymorphic structural comparison; Candle's verified HOL library exposes the canonical strict HOL-term order explicitly as Term.(<). The existing exhaustive native/Candle term-order oracle covers every term constructor and establishes the same branch order for this exact type.",
+        "source_key": "flyspeck:formal_lp/more_arith/prove_lp.hl",
+        "source_md5": "5d1df4a2ed982e72abbcd995250d0dae",
+        "source_sha256": "e43b85cb2e403458dd8715376d80862cd5ffa3a7007586521907c8f230d69c75"
       },
       {
         "id": "PROJECT-POINTER-S3-ALLOCATED-LIB-001",
@@ -25391,10 +25527,10 @@
       {
         "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3300,
-        "normalized_md5": "639783011d135bd2aa117330b257174d",
-        "normalized_sha256": "79ef91c2192a39566ffc9dc2b5064b6f5c04defb5db9074447f1043495b2122c",
-        "operation_count": 2,
+        "normalized_bytes": 5878,
+        "normalized_md5": "dcca51c5dc5dd5679f0b7337202c4f75",
+        "normalized_sha256": "56091f8b4fad4966d589a31642dda713eac6080266fd8654d119e3d885d248de",
+        "operation_count": 3,
         "operations": [
           {
             "after": "(* Candle S3 reads only manifest-authenticated, host-prepared certificate files. *)\n",
@@ -25402,6 +25538,13 @@
             "id": "PROJECT-FFI-S3-LP-SHELL-ELIMINATION-001-REMOVE-RUNTIME-EXTRACTION",
             "kind": "exact_bytes_replace_once",
             "line": 88
+          },
+          {
+            "after": "let candle_marshal_failure expected =\n  failwith (\"Candle LP certificate Marshal shape mismatch: \" ^ expected);;\n\nlet candle_marshal_int = function\n  | Candle_marshal.Marshal_int value -> value\n  | _ -> candle_marshal_failure \"int\";;\n\nlet candle_marshal_bool = function\n  | Candle_marshal.Marshal_int 0 -> false\n  | Candle_marshal.Marshal_int 1 -> true\n  | _ -> candle_marshal_failure \"bool\";;\n\nlet candle_marshal_string = function\n  | Candle_marshal.Marshal_string value -> value\n  | _ -> candle_marshal_failure \"string\";;\n\nlet candle_marshal_int64 = function\n  | Candle_marshal.Marshal_int64 value -> value\n  | _ -> candle_marshal_failure \"int64\";;\n\nlet rec candle_marshal_list decode = function\n  | Candle_marshal.Marshal_int 0 -> []\n  | Candle_marshal.Marshal_block (0, [head; tail]) ->\n      decode head :: candle_marshal_list decode tail\n  | _ -> candle_marshal_failure \"list\";;\n\nlet candle_marshal_constraint = function\n  | Candle_marshal.Marshal_block (0, [name; indices; coefficients]) ->\n      (candle_marshal_string name,\n       candle_marshal_list candle_marshal_int indices,\n       candle_marshal_list candle_marshal_int64 coefficients)\n  | _ -> candle_marshal_failure \"constraint\";;\n\nlet candle_marshal_terminal = function\n  | Candle_marshal.Marshal_block\n      (0, [precision; infeasible; constraints; targets; bounds]) ->\n      { precision = candle_marshal_int precision;\n        infeasible = candle_marshal_bool infeasible;\n        constraints = candle_marshal_list candle_marshal_constraint constraints;\n        target_variables = candle_marshal_list candle_marshal_constraint targets;\n        variable_bounds = candle_marshal_list candle_marshal_constraint bounds }\n  | _ -> candle_marshal_failure \"terminal case\";;\n\nlet candle_marshal_split = function\n  | Candle_marshal.Marshal_block (0, [split_type; split_face]) ->\n      { split_type = candle_marshal_string split_type;\n        split_face = candle_marshal_list candle_marshal_int split_face }\n  | _ -> candle_marshal_failure \"split case\";;\n\nlet rec candle_marshal_case = function\n  | Candle_marshal.Marshal_block (0, [terminal]) ->\n      Lp_terminal (candle_marshal_terminal terminal)\n  | Candle_marshal.Marshal_block (1, [split; children]) ->\n      Lp_split (candle_marshal_split split,\n                candle_marshal_list candle_marshal_case children)\n  | _ -> candle_marshal_failure \"certificate case\";;\n\nlet candle_marshal_certificate = function\n  | Candle_marshal.Marshal_block (0, [hypermap; root]) ->\n      { hypermap_string = candle_marshal_string hypermap;\n        root_case = candle_marshal_case root }\n  | _ -> candle_marshal_failure \"certificate\";;\n\n(* The selected full verifier is read-only. *)\nlet write_lp_certificates (_:string) (_:lp_certificate list) =\n  failwith \"Candle LP certificate writer is unavailable on the selected route\";;\n\nlet read_raw_lp_certificates fname =\n  let input = open_in_bin fname in\n  let encoded = Candle_marshal.decode_channel input in\n  let _ = close_in input in\n  candle_marshal_list candle_marshal_certificate encoded;;\n",
+            "before": "(* Writes a certificate into a binary file *)\nlet write_lp_certificates fname (certificates : lp_certificate list) =\n  let out = open_out_bin fname in\n  let _ = Marshal.to_channel out certificates [] in\n    close_out out;;\n\n(* Reads a certificate from a binary file *)\nlet read_raw_lp_certificates fname =\n  let input = open_in_bin fname in\n  let certificates = (Marshal.from_channel input : lp_certificate list) in\n  let _ = close_in input in\n    certificates;;\n",
+            "id": "PROJECT-LP-S3-MARSHAL-DECODER-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 111
           },
           {
             "after": "let read_lp_certificates fname =\n  if Filename.check_suffix fname \".gz\" then\n    failwith \"compressed LP certificate reached the shell-free Candle S3 runtime\"\n  else\n    read_raw_lp_certificates fname;;\n",
@@ -25412,8 +25555,8 @@
           }
         ],
         "path": "formal_lp/hypermap/main/lp_certificate.hl",
-        "scope_limit": "This exact selected-route rewrite requires the 39-entry authenticated certificate table and the prepared hard_7.dat receipt. It does not claim general Sys.command, tar, temporary-directory, directory-enumeration, or compressed-input compatibility. Any .gz path reaching the compiled reader fails closed.",
-        "semantic_rule": "The release input preparer authenticates the sole selected tar.gz archive, requires exactly one ordinary hard_7.dat member, and atomically emits bytes with a pinned digest into a separate generated-input tree. The compiled source therefore reads raw certificate bytes only; those bytes remain untrusted evidence checked by the existing HOL Light LP verifier.",
+        "scope_limit": "This exact selected-route rewrite requires the 39-entry authenticated certificate table and the prepared hard_7.dat receipt. It does not claim general Sys.command, tar, temporary-directory, directory-enumeration, compressed-input, or polymorphic OCaml Marshal compatibility. Unknown wire codes, custom identifiers other than _j, bad headers/counts/lengths, forward or cyclic references, wrong LP shapes, and every runtime write fail closed. Any .gz path reaching the compiled reader also fails closed. Native/Candle structural-oracle agreement and successful proof verification of every certificate remain release gates.",
+        "semantic_rule": "The release input preparer authenticates the sole selected tar.gz archive, requires exactly one ordinary hard_7.dat member, and atomically emits bytes with a pinned digest into a separate generated-input tree. The compiled source therefore reads raw certificate bytes only; those bytes remain untrusted evidence checked by the existing HOL Light LP verifier. A complete scan of all 39 pinned files found 105,305,810 Marshal objects and only small integers/strings/blocks, signed int8, shared8/shared16/shared32, string8, and legacy _j int64 blocks. Candle_marshal decodes exactly that measured wire subset into an explicit tree, and the normalized source checks every block tag, arity, list cell, scalar kind, record field, and variant constructor while rebuilding the original lp_certificate values. The selected verifier never writes certificates, so the writer fails explicitly instead of exposing an unverified serializer.",
         "source_key": "flyspeck:formal_lp/hypermap/main/lp_certificate.hl",
         "source_md5": "2fbd26f4fe53e67b3d1bdafe6e9ec9da",
         "source_sha256": "256ad729d3e4138da4ee911d03d98ce04fac42f2df360252bf6a9c6badd52709"
@@ -25421,11 +25564,29 @@
       {
         "id": "PROJECT-FFI-S3-LP-STATIC-INVENTORY-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 3742,
-        "normalized_md5": "906fdf1b660695eb8833a1ada975d273",
-        "normalized_sha256": "49e01e67d0ae506d261ac82f77a0f5359e8875331042617100632bb1d4317bed",
-        "operation_count": 5,
+        "normalized_bytes": 3761,
+        "normalized_md5": "37d1180dfbfff7c2d6e524220dba4140",
+        "normalized_sha256": "5704e371145974bb82315059c16a0bef1898288ac91c3209928dd60a73621b47",
+        "operation_count": 7,
         "operations": [
+          {
+            "id": "PROJECT-LP-S3-DECR-001-REMAINING-FILE-COUNTERS",
+            "kind": "exact_lines_replace_once",
+            "line": 98,
+            "replacement_count": 2,
+            "replacements": [
+              {
+                "after": "\t   let _ = k := !k - 1 in",
+                "before": "\t   let _ = decr k in",
+                "line": 98
+              },
+              {
+                "after": "\t   let _ = k := !k - 1 in",
+                "before": "\t   let _ = decr k in",
+                "line": 111
+              }
+            ]
+          },
           {
             "after": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_certificate_files_with_prefix _ prefix =\n  let n = String.length prefix in\n  filter\n    (fun path ->\n      let file = Filename.basename path in\n      String.length file >= n && String.sub file 0 n = prefix)\n    candle_flyspeck_lp_certificate_files;;\n\n",
             "before": "let cert_dir = ref (flyspeck_dir ^ \"/../formal_lp/glpk/binary\");;\n\nlet get_files_with_prefix dir prefix =\n  let files = Array.to_list (Sys.readdir dir) in\n  let n = String.length prefix in\n  let files1 = filter (fun f -> String.length f >= n) files in\n  let files2 = filter (fun f -> String.sub f 0 n = prefix) files1 in\n    map (fun f -> sprintf \"%s/%s\" dir f) files2;;\n\nlet get_certificate_files_with_prefix dir prefix =\n  let alt_dir = dir ^ \"/lp_certificates\" in\n  let files1 = get_files_with_prefix dir prefix in\n  let files2 =\n    if Sys.file_exists alt_dir then\n      get_files_with_prefix alt_dir prefix\n    else\n      [] in\n    files1 @ files2;;\n\n",
@@ -25460,11 +25621,18 @@
             "id": "PROJECT-LP-S3-FIXED-FORMAT-001-VERIFY-FILE",
             "kind": "exact_bytes_replace_once",
             "line": 70
+          },
+          {
+            "after": "  let concls = setify Term.(<) (map concl ths) in",
+            "before": "  let concls = setify (map concl ths) in",
+            "id": "PROJECT-LP-S3-TERM-SETIFY-001-VERIFY-CONCLUSIONS",
+            "kind": "exact_bytes_replace_once",
+            "line": 125
           }
         ],
         "path": "formal_lp/hypermap/verify_all.hl",
-        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims. The two formatting replacements do not implement general formatting; exact progress bytes and full verification remain gates.",
-        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS. The two remaining executable fixed formats contain only %d and %s conversions; literal concatenation and string_of_int preserve their bytes and argument order.",
+        "scope_limit": "Equivalence is limited to the pinned certificate inventory and selected calls with prefixes easy, easy_1.dat, and hard. The consumption event means successful return from read_lp_certificates, not successful LP proof verification or S2/S3 approval; the v6 terminal additionally requires every authenticated path exactly once. The outer manifest and in-process digest table must authenticate every listed file; extra host files are deliberately invisible and missing files fail preflight. The telemetry rewrite is not a Gc.stat implementation and cannot justify performance claims. The two formatting replacements do not implement general formatting. The decr expansion is confined to the two private integer counters at source lines 98 and 111 and changes no file, result, exception, theorem, or proof behavior. The comparator correction is confined to the single unary setify call over theorem conclusions at source line 125 and does not authorize an order for any other element type. Exact progress bytes, native counter observations, native term ordering, and full verification remain gates.",
+        "semantic_rule": "The selected full verifier consumes the exact manifest-generated list of 39 certificate paths in deterministic basename order. Prefix selection over that list chooses the same easy and hard basename classes as the original directory scan, while removing ambient directory contents, alternate directories, and enumeration order from the proof run. After each certificate file has returned successfully from the unchanged deserializer, an authenticated runtime recorder observes that selected path; the recorder is a no-op outside the disjoint evidence-v6 protocol. GC statistics affect only progress text, so the in-process host-memory query is replaced by a deterministic notice while the authenticated outer runner records actual RSS. The two remaining executable fixed formats contain only %d and %s conversions; literal concatenation and string_of_int preserve their bytes and argument order. OCaml decr on each private remaining-file counter is exactly the same dereference, integer subtraction by one, and assignment expressed by k := !k - 1; the update remains after the same verify_file call and before the same result is returned. The concls input is a list of HOL theorem conclusions. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The existing native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor.",
         "source_key": "flyspeck:formal_lp/hypermap/verify_all.hl",
         "source_md5": "ff8322ced466dd6f05ed40120ed00a74",
         "source_sha256": "c81f340edda820f06c3f2db753e192fdd6288abb7b3c410c1c4a97299e76df95"
@@ -26163,10 +26331,10 @@
       {
         "id": "PROJECT-LP-S3-FIXED-FORMAT-INEQS-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 12002,
-        "normalized_md5": "01e6a821807c8580ea525b4d79dab727",
-        "normalized_sha256": "5a10de553316284be1a5e179e6d539bb925e96ca34e0a3b147bba8657472ac12",
-        "operation_count": 1,
+        "normalized_bytes": 12011,
+        "normalized_md5": "7a315e6e82c7e9f6ee43777933bf0110",
+        "normalized_sha256": "7a303cebc05ddb7d4bba12814cb4a0d690f3204ca8099ecdc63301df4a64922f",
+        "operation_count": 2,
         "operations": [
           {
             "after": "report (\"Processing: \" ^ ineq.name ^ \" (\" ^\n      string_of_int !counter ^ \" / \" ^ string_of_int !total ^ \")\")",
@@ -26174,11 +26342,18 @@
             "id": "PROJECT-LP-S3-FIXED-FORMAT-001-INEQ-PROGRESS",
             "kind": "exact_bytes_replace_once",
             "line": 308
+          },
+          {
+            "after": "  let lp_tms = setify Term.(<) (map (fun t -> t.ineq) lp_ineqs) in",
+            "before": "  let lp_tms = setify (map (fun t -> t.ineq) lp_ineqs) in",
+            "id": "PROJECT-LP-S3-TERM-SETIFY-001-INEQ-DEFINITIONS",
+            "kind": "exact_bytes_replace_once",
+            "line": 50
           }
         ],
         "path": "formal_lp/hypermap/ineqs/lp_ineqs.hl",
-        "scope_limit": "This hash-pinned replacement covers only the action-173 inequality progress message. It does not implement general formatting or change an inequality, theorem, hypothesis, proof step, or axiom. Exact native formatting, complete source loading, generated-inequality behavior, and cumulative replay remain gates.",
-        "semantic_rule": "The sole format contains one string and two integer conversions surrounded by fixed literal bytes. Concatenation and string_of_int preserve the exact progress text and left-to-right argument observations while leaving inequality generation unchanged.",
+        "scope_limit": "These hash-pinned replacements cover only the action-173 inequality progress message and the single unary setify call over the selected HOL inequality terms at source line 50. The comparator correction does not authorize an order for any other element type. Neither replacement changes an inequality, theorem statement, hypothesis, proof step, proof intent, or axiom. Exact native formatting and term ordering, complete source loading, generated-inequality behavior, and cumulative replay remain gates.",
+        "semantic_rule": "The sole format contains one string and two integer conversions surrounded by fixed literal bytes. Concatenation and string_of_int preserve the exact progress text and left-to-right argument observations while leaving inequality generation unchanged. The lp_tms input is a list of HOL terms selected from the ineq field. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The existing native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor.",
         "source_key": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs.hl",
         "source_md5": "15e00378926ac9ab62fb69a449447290",
         "source_sha256": "3fb369d89d13c1dd04cb1710424d9b2f1943bc8b04a1f83128f716975ea09a1e"
@@ -26505,7 +26680,7 @@
         "source_sha256": "879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c"
       }
     ],
-    "entry_count": 52,
+    "entry_count": 53,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -26636,8 +26811,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "12dae7346bc177bd16f35e866e94c6b1",
-    "generated_source_sha256": "dc0c7f046b4d8be23190e49f12064e04afaa947a4c6b2809100faef15f66cd86",
+    "generated_source_md5": "edb61d1c3272e7598604743ef8464fe1",
+    "generated_source_sha256": "4bda5a301633af3925ad18c26e8bdfd6f51da9d59b7bc26b43cf6197ba2f1465",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",
@@ -27974,19 +28149,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 748,
+        "line": 897,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 749,
+        "line": 898,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 750,
+        "line": 899,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"

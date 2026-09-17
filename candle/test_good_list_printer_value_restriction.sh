@@ -45,6 +45,17 @@ rg -Fq 'candle_incr_observation : int = 1' \
 rg -Fq 'candle_incr_observation : int = 1' \
   "$test_dir/ocaml-incr-normalized.log"
 
+ocaml -noinit -noprompt \
+  <"$fixtures/decr_counter_original.ml" \
+  >"$test_dir/ocaml-decr-original.log" 2>&1
+ocaml -noinit -noprompt \
+  <"$fixtures/decr_counter_normalized.ml" \
+  >"$test_dir/ocaml-decr-normalized.log" 2>&1
+rg -Fq 'candle_decr_observation : int = 1' \
+  "$test_dir/ocaml-decr-original.log"
+rg -Fq 'candle_decr_observation : int = 1' \
+  "$test_dir/ocaml-decr-normalized.log"
+
 (
   cd "$candle_workdir"
   timeout 300 "$candle" --candle \
@@ -83,4 +94,23 @@ if rg -q 'EXCEPTION:|Parsing failed|ERROR:|Undefined variable:' \
   exit 1
 fi
 
-printf 'PASS: action-170 good-list printer and counter normalizations\n'
+(
+  cd "$candle_workdir"
+  timeout 300 "$candle" --candle \
+    <"$fixtures/decr_counter_original.ml"
+) >"$test_dir/candle-decr-original.log" 2>&1
+rg -Fq 'Undefined variable: decr' "$test_dir/candle-decr-original.log"
+
+(
+  cd "$candle_workdir"
+  timeout 300 "$candle" --candle \
+    <"$fixtures/decr_counter_normalized.ml"
+) >"$test_dir/candle-decr-normalized.log" 2>&1
+rg -Fq 'val candle_decr_observation = 1: int' \
+  "$test_dir/candle-decr-normalized.log"
+if rg -q 'EXCEPTION:|Parsing failed|ERROR:|Undefined variable:' \
+     "$test_dir/candle-decr-normalized.log"; then
+  exit 1
+fi
+
+printf 'PASS: action-170/183 printer and counter normalizations\n'
