@@ -344,7 +344,7 @@
 #flyspeck_needs "../formal_lp/ineqs/delta_ineq.hl";;
 (* 164 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl sha256=dd2f76a67dff3c847c05932c574c0752a7fd6cc86ff95ad091c9ed7285c8442e *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_proofs2-compiled.hl";;
-(* 165 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl sha256=879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c *)
+(* 165 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl sha256=879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c normalization=PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001 normalized_sha256=05057121eaab23f5f145ffae459bd0375182ec2f5a356f8c0bc013aaf8aac81a *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl";;
 (* 166 selected=flyspeck:formal_lp/hypermap/computations/more_theory-compiled.hl sha256=7990e6c09e98d13ef4de216b18e051eaf2283ceae04ceb31550685e244d8c6b2 *)
 #flyspeck_needs "../formal_lp/hypermap/computations/more_theory-compiled.hl";;
@@ -590,7 +590,7 @@
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_proofs-compiled.hl";;
 (* 286 selected=flyspeck:formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl sha256=10e6a449605eab5f209d942e7e192ced7c70cba66f616acc314be1538ac0f5aa *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_main_estimate-compiled.hl";;
-(* 287 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl sha256=879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c *)
+(* 287 selected=flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl sha256=879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c normalization=PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001 normalized_sha256=05057121eaab23f5f145ffae459bd0375182ec2f5a356f8c0bc013aaf8aac81a *)
 #flyspeck_needs "../formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl";;
 (* 288 selected=flyspeck:text_formalization/tame/ssreflect/KCBLRQC-compiled.hl sha256=22a17578d5edeb7ea8f44bda56b751ea54085948c1f0b2ad9488d1b3faa1bd32 *)
 #flyspeck_needs "tame/ssreflect/KCBLRQC-compiled.hl";;

@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 51)
+        self.assertEqual(contract["entry_count"], 52)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -666,6 +666,26 @@ class GeneratedManifestTests(unittest.TestCase):
                 'needs "../formal_lp/glpk/glpk_link.ml";;',
                 'needs "../formal_graph/archive/archive_all.ml";;',
             ],
+        )
+        lp_quads = entries[
+            "PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001"
+        ]
+        self.assertEqual(
+            lp_quads["source_key"],
+            "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        )
+        self.assertEqual(lp_quads["operation_count"], 1)
+        self.assertEqual(
+            lp_quads["operations"][0]["kind"],
+            "exact_span_replace_once",
+        )
+        self.assertIn(
+            'USE_THEN "fanV"',
+            lp_quads["operations"][0]["after"],
+        )
+        self.assertIn(
+            "module Candle_lp_ineqs_quads_tactic_support = struct",
+            lp_quads["operations"][0]["after"],
         )
         flyspeck_lib = entries[
             "PROJECT-FLYSPECK-LIB-S3-COMPATIBILITY-002"
@@ -996,7 +1016,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 50", source,
+            "List.length candle_flyspeck_normalized_sources <> 51", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -1006,7 +1026,11 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 50)
+        self.assertEqual(len(selected_normalizations), 51)
+        self.assertEqual(
+            sum(entry["operation_count"] for entry in selected_normalizations),
+            185,
+        )
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
         self.assertIn("formal_graph/archive/archive_all.ml", source)

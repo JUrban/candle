@@ -202,7 +202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 51)
+        self.assertEqual(len(self.contract["entries"]), 52)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -1107,6 +1107,48 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
         ))
+        lp_quads = entries[
+            "PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001"
+        ]
+        self.assertEqual(
+            lp_quads["path"],
+            "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+        )
+        self.assertEqual(len(lp_quads["operations"]), 1)
+        whole_source = lp_quads["operations"][0]
+        self.assertEqual(whole_source["kind"], "exact_span_replace_once")
+        self.assertEqual(
+            [whole_source["line"], whole_source["end_line"]],
+            [1, 270],
+        )
+        self.assertEqual(
+            whole_source["span_sha256"],
+            lp_quads["source_sha256"],
+        )
+        self.assertEqual(
+            hashlib.sha256(whole_source["after"].encode()).hexdigest(),
+            lp_quads["normalized_sha256"],
+        )
+        self.assertIn('USE_THEN "fanV"', whole_source["after"])
+        self.assertIn(
+            "F_FAN_PAIR_EXT_PERMUTES_DART_OF_FAN",
+            whole_source["after"],
+        )
+        self.assertIn("PERMUTES_INVERSE", whole_source["after"])
+        self.assertIn("PERMUTES_IN_IMAGE", whole_source["after"])
+        invf_helper = whole_source["after"].split(
+            "module Candle_lp_ineqs_quads_ineq119_tauVEF_tactics_00",
+            1,
+        )[0]
+        self.assertNotIn("f_fan_pair_ext_in_darts_k", invf_helper)
+        self.assertIn(
+            "module Candle_lp_ineqs_quads_tactic_support = struct",
+            whole_source["after"],
+        )
+        self.assertIn("module Lp_ineqs_quads = struct", whole_source["after"])
+        self.assertIn("complete 85-item flattened trace", (
+            lp_quads["scope_limit"]
+        ))
         conforming_sequence = entries[
             "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001"
         ]["operations"][0]
@@ -1136,7 +1178,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 186)
+        self.assertEqual(len(operation_ids), 187)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

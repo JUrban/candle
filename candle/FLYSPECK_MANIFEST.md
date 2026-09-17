@@ -64,9 +64,9 @@ hash-mismatched entries also abort.  The direct loader authenticates the
 generated program's MD5 before `strictbuild`; its SHA-256 remains an outer
 release-manifest pin.
 
-`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 51
-site-specific, hash-bound source overlays, 50 selected by the direct source
-graph.  The selected overlays contain 180 exact operations.
+`flyspeck_normalizations.json` and `flyspeck_normalize.py` implement 52
+site-specific, hash-bound source overlays, 51 selected by the direct source
+graph.  The selected overlays contain 185 exact operations.
 `PROJECT-POINTER-S3-IMMEDIATE-001` replaces the
 unique integer branch `if n == 1 then [] else` with `if n = 1 then [] else`.
 `PROJECT-POINTER-S3-ALLOCATED-LIB-001` replaces five exact blocks containing
@@ -87,6 +87,18 @@ progress/output sites with byte-equivalent concatenation and `string_of_int`;
 the in-process `%f` timing notice is delegated explicitly to the authenticated
 outer runner.  It does not provide a general `Printf` implementation or
 activate the fail-closed GLPK process route.
+`PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001` replaces the unique hash-pinned
+generated `lp_ineqs_quads-compiled.hl` as one exact span.  It consumes the
+existing labeled `fanV` section hypothesis to prove the unchanged
+`invf_in_dart` statement directly, and moves the remaining exact generated
+tactic expressions into closed helper modules containing at most eight
+phrases.  Two measured nine-term `Arg_term` CPS chains are beta-reduced through
+one helper; their term order and continuations are unchanged.  The original
+public `Lp_ineqs_quads` module, theorem statements, section context,
+finalization order, definitions, and axioms remain unchanged.  The complete
+85-item proof body and the exact module-preserving output passed from the clean
+post-action164 predecessor; a real loader action and fresh cumulative replay
+remain required gates.
 `PROJECT-POINTER-S3-RELABEL-001` confines structural
 comparison to Jordan's binder exclusion used by `mk_primed_var`; final exact
 fingerprints must still validate its selected calls.
@@ -171,7 +183,7 @@ the normalized branch is accepted and selects the expected cases.  The
 allocation refinements retain compiled, performance, and final-fingerprint
 gates.  Runtime application is wired
 through the authenticated static source action: the manifest and compiled boot
-select the exact 50-file overlay, but the complete-run status remains
+select the exact 51-file overlay, but the complete-run status remains
 `exact-overlay-selection-active-pending-full-run`; this work alone advances no
 S milestone.
 
@@ -221,7 +233,7 @@ roots as explicit source-level inputs.  `Sys.configure_manifest_environment`
 turns those into the exact `HOLLIGHT_DIR`/`FLYSPECK_DIR` allowlist used by the
 source build; ambient host variables are not inherited.  The loader checks
 ordinary marker files, installs only the manifest load paths, authenticates all
-51 exact normalization outputs, registers the 50 selected by the
+52 exact normalization outputs, registers the 51 selected by the
 direct graph, authenticates a host-prepared
 `hard_7.dat`, installs the fixed 39-file LP certificate table, executes the generated static
 sequence through `#flyspeck_needs`, and then loads the direct target.  It does

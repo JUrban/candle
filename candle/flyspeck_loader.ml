@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "6e74075cdfb23f5c9fb584b45d0d6402" then
+     "e2bb3acfb4718814afc3b04e924fb955" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "3747adf7e05d78f79f28b2214d9cf01a" then
+     "9bd72e0f0e1f9b2b99229b2b6b52cab1" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all fifty-one outputs in a separate tree;
-   this process registers only the fifty selected by the direct source graph.
+(* The host-side normalizer materializes all fifty-two outputs in a separate tree;
+   this process registers only the fifty-one selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -413,9 +413,14 @@ let candle_flyspeck_normalized_sources =
       "packing/SLTSTLO.hl",
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/SLTSTLO.hl",
-    "78e1641aace383531357719f10fa90cb")];;
+    "78e1641aace383531357719f10fa90cb");
+   (Filename.concat candle_flyspeck_root
+      "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
+    "9de99cf5a983e899733f76058a0c8814")];;
 
-if List.length candle_flyspeck_normalized_sources <> 50 then
+if List.length candle_flyspeck_normalized_sources <> 51 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =
