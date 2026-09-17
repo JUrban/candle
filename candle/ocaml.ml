@@ -28,6 +28,12 @@ let open_in name = try Text_io.openIn name
 
 let open_out name = Text_io.openOut name;;
 
+(* On the selected Unix runtime, OCaml's text and binary channel openings have
+   identical byte semantics.  Keep the ordinary names used by Flyspeck while
+   retaining the same verified TextIO streams. *)
+let open_in_bin name = open_in name;;
+let open_out_bin name = open_out name;;
+
 let output_string s fd = Text_io.output s fd;;
 
 let close_in fd = Text_io.closeIn fd;;
