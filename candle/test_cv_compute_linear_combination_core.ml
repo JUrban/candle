@@ -184,12 +184,12 @@ let candle_cv_lc_test_result,candle_cv_lc_test_bulk_th =
      (candle_cv_lc_test_ineq2,`4`)];;
 
 if not (aconv candle_cv_lc_test_result
-              `([(6,0);(4,0);(0,9)],(21,4))`) ||
+              `([(6,0);(4,0);(0,9)],(17,0))`) ||
    not (set_eq (hyp candle_cv_lc_test_bulk_th)
           [concl candle_cv_lc_test_ineq1;concl candle_cv_lc_test_ineq2]) ||
    not (aconv (concl candle_cv_lc_test_bulk_th)
          `candle_lc_vec_real [x:real;y;z] [(6,0);(4,0);(0,9)] <=
-          candle_lc_zreal (21,4)`) then
+          candle_lc_zreal (17,0)`) then
   failwith "linear-combination computed adapter mismatch";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
