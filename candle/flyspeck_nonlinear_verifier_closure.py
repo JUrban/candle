@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,21 @@ MANIFEST = Path("candle/flyspeck_manifest.json")
 OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
+)
+SOURCE_NORMALIZATION = "candle-flyspeck-parser-compatibility-v1"
+NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
+NORMALIZATION_SEMANTIC_RULE = (
+    "make native OCaml grouping explicit: chained array accesses use "
+    "Array.get/Array.set with parenthesized indices; module-qualified record "
+    "labels use the same unqualified labels under an explicit original record "
+    "type; and a ref assignment's conditional RHS is parenthesized"
+)
+NESTED_ARRAY_SET_RE = re.compile(
+    rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
+    rb"\s*<-\s*([^;\r\n]+?)\s+in\b"
+)
+NESTED_ARRAY_GET_RE = re.compile(
+    rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
 )
 
 
@@ -48,6 +64,183 @@ def _git_head(root: Path) -> str:
         text=True,
     )
     return result.stdout.strip()
+
+
+def normalize_nested_array_access(
+    source: bytes,
+) -> tuple[bytes, list[dict[str, Any]]]:
+    """Lower chained OCaml array syntax to the equivalent central API.
+
+    Candle accepts individual array indexing and update expressions, but its
+    frontend does not group chained ``a.(i).(j)`` occurrences faithfully in
+    the larger formal-verifier modules.  Array.get/Array.set make the native
+    OCaml grouping explicit without changing evaluation order or values.
+    """
+
+    operations: list[dict[str, Any]] = []
+
+    def replace_set(match: re.Match[bytes]) -> bytes:
+        before = match.group(0)
+        after = (
+            b"Array.set (Array.get " + match.group(1) + b" ("
+            + match.group(2) + b")) (" + match.group(3) + b") "
+            + match.group(4) + b" in"
+        )
+        operations.append({
+            "kind": "nested-array-set",
+            "line": source.count(b"\n", 0, match.start()) + 1,
+            "before": before.decode("ascii"),
+            "after": after.decode("ascii"),
+        })
+        return after
+
+    normalized = NESTED_ARRAY_SET_RE.sub(replace_set, source)
+
+    def replace_get(match: re.Match[bytes]) -> bytes:
+        before = match.group(0)
+        after = (
+            b"Array.get (Array.get " + match.group(1) + b" ("
+            + match.group(2) + b")) (" + match.group(3) + b")"
+        )
+        operations.append({
+            "kind": "nested-array-get",
+            "line": normalized.count(b"\n", 0, match.start()) + 1,
+            "before": before.decode("ascii"),
+            "after": after.decode("ascii"),
+        })
+        return after
+
+    normalized = NESTED_ARRAY_GET_RE.sub(replace_get, normalized)
+    if (
+        NESTED_ARRAY_SET_RE.search(normalized) is not None
+        or NESTED_ARRAY_GET_RE.search(normalized) is not None
+    ):
+        raise ValueError("nested array normalization left an unmatched access")
+    operations.sort(key=lambda operation: (
+        int(operation["line"]),
+        str(operation["kind"]),
+        str(operation["before"]),
+    ))
+    return normalized, operations
+
+
+MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
+    (
+        "typed-informal-verification-record",
+        b'''      {
+\tInformal_verifier.taylor = eval_ti;
+\tInformal_verifier.f = eval0_informal;
+\tInformal_verifier.df = dummy_df;
+\tInformal_verifier.ddf = dummy_ddf
+      };;''',
+        b'''      ({
+\ttaylor = eval_ti;
+\tf = eval0_informal;
+\tdf = dummy_df;
+\tddf = dummy_ddf
+      } : Informal_verifier.verification_funs);;''',
+    ),
+    (
+        "parenthesized-assignment-conditional",
+        b'''\tval_ref := if lo_flag then (lhs, snd !val_ref) else (fst !val_ref, rhs) in''',
+        b'''\tval_ref := (if lo_flag then (lhs, snd !val_ref) else (fst !val_ref, rhs)) in''',
+    ),
+    (
+        "typed-informal-search-record-adaptive",
+        b'''      let opt0 = {
+\tInformal_search.raw_intervals0 = !params.raw_intervals0;
+\tInformal_search.max_width = 1e-10;
+\tInformal_search.max_depth = 200;
+\tInformal_search.pp = pp;
+\tInformal_search.mono_depth = if !params.allow_derivatives then 200 else 0;
+      } in''',
+        b'''      let opt0 = ({
+\traw_intervals0 = !params.raw_intervals0;
+\tmax_width = 1e-10;
+\tmax_depth = 200;
+\tpp = pp;
+\tmono_depth = if !params.allow_derivatives then 200 else 0;
+      } : Informal_search.search_options) in''',
+    ),
+    (
+        "typed-informal-search-record-fixed",
+        b'''      let opt0 = {
+\tInformal_search.raw_intervals0 = !params.raw_intervals0;
+\tInformal_search.max_width = 1e-10;
+\tInformal_search.max_depth = 200;
+\tInformal_search.pp = pp;
+\tInformal_search.mono_depth = 0;
+      } in''',
+        b'''      let opt0 = ({
+\traw_intervals0 = !params.raw_intervals0;
+\tmax_width = 1e-10;
+\tmax_depth = 200;
+\tpp = pp;
+\tmono_depth = 0;
+      } : Informal_search.search_options) in''',
+    ),
+)
+
+
+def normalize_source(
+    source_key: str,
+    source: bytes,
+) -> tuple[bytes, list[dict[str, Any]]]:
+    """Apply the complete bounded frontend compatibility normalization."""
+
+    normalized, operations = normalize_nested_array_access(source)
+    if source_key != (
+        "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+    ):
+        return normalized, operations
+    for kind, before, after in MAIN_VERIFIER_GROUPING_REPLACEMENTS:
+        if normalized.count(before) != 1:
+            raise ValueError(f"main verifier grouping anchor drift: {kind}")
+        offset = normalized.index(before)
+        operations.append({
+            "kind": kind,
+            "line": normalized.count(b"\n", 0, offset) + 1,
+            "before": before.decode("ascii"),
+            "after": after.decode("ascii"),
+        })
+        normalized = normalized.replace(before, after, 1)
+    operations.sort(key=lambda operation: (
+        int(operation["line"]),
+        str(operation["kind"]),
+        str(operation["before"]),
+    ))
+    return normalized, operations
+
+
+def apply_recorded_normalization(
+    source_key: str,
+    source: bytes,
+    node: dict[str, Any],
+) -> tuple[bytes, dict[str, Any] | None]:
+    """Reproduce and validate a closure node's normalization contract."""
+
+    normalized, operations = normalize_source(source_key, source)
+    record = node.get("normalization")
+    if not operations:
+        if record is not None:
+            raise ValueError(f"spurious source normalization: {source_key}")
+        return source, None
+    if not isinstance(record, dict):
+        raise ValueError(f"missing source normalization: {source_key}")
+    observed = {
+        "id": SOURCE_NORMALIZATION,
+        "semantic_rule": NORMALIZATION_SEMANTIC_RULE,
+        "operation_count": len(operations),
+        "operations": operations,
+        "normalized_bytes": len(normalized),
+        "normalized_md5": hashlib.md5(
+            normalized, usedforsecurity=False,
+        ).hexdigest(),
+        "normalized_sha256": hashlib.sha256(normalized).hexdigest(),
+    }
+    if record != observed:
+        raise ValueError(f"source normalization contract drift: {source_key}")
+    return normalized, record
 
 
 def _load_direct_manifest(candle_root: Path) -> tuple[bytes, dict[str, Any]]:
@@ -92,9 +285,8 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             raise ValueError(
                 f"formal-verifier source is not an ordinary file: {source_ref.key}"
             )
-        text = source_path.read_text(
-            encoding="utf-8", errors="surrogateescape",
-        )
+        source_data = source_path.read_bytes()
+        text = source_data.decode("utf-8", errors="surrogateescape")
         for use in flyspeck_manifest.scan_qualified_module_uses(
             text, compatibility_modules,
         ):
@@ -158,15 +350,33 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             pending.append(selected)
 
         discovery_order.append(source_ref.key)
-        nodes[source_ref.key] = {
+        normalized_data, normalization_operations = (
+            normalize_source(source_ref.key, source_data)
+        )
+        node = {
             "repository": source_ref.repository,
             "logical_relative_path": source_ref.path,
-            "bytes": source_path.stat().st_size,
+            "bytes": len(source_data),
             "md5": _digest(source_path, "md5"),
             "sha256": _digest(source_path, "sha256"),
             "dependencies": dependencies,
             "selected_dependencies": sorted(set(selected_keys)),
         }
+        if normalization_operations:
+            node["normalization"] = {
+                "id": SOURCE_NORMALIZATION,
+                "semantic_rule": NORMALIZATION_SEMANTIC_RULE,
+                "operation_count": len(normalization_operations),
+                "operations": normalization_operations,
+                "normalized_bytes": len(normalized_data),
+                "normalized_md5": hashlib.md5(
+                    normalized_data, usedforsecurity=False,
+                ).hexdigest(),
+                "normalized_sha256": hashlib.sha256(
+                    normalized_data,
+                ).hexdigest(),
+            }
+        nodes[source_ref.key] = node
 
     direct_nodes = set(manifest["source_nodes"])
     selected_nodes = set(nodes)
@@ -248,6 +458,13 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             "already_in_direct_manifest": len(overlap_nodes),
             "identity_extension": len(extension_nodes),
             "identity_extension_by_repository": extension_repository_counts,
+            "normalized_sources": sum(
+                "normalization" in node for node in nodes.values()
+            ),
+            "normalization_operations": sum(
+                node.get("normalization", {}).get("operation_count", 0)
+                for node in nodes.values()
+            ),
         },
         "discovery_order": discovery_order,
         "direct_manifest_overlap": overlap_nodes,

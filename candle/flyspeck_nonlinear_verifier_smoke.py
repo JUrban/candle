@@ -18,11 +18,14 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import resource
 import subprocess
 import time
 from pathlib import Path, PurePosixPath
 from typing import Any
+
+import flyspeck_nonlinear_verifier_closure
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +35,8 @@ PASS_MARKER = "CANDLE_NONLINEAR_VERIFIER_SMOKE_OK"
 LOAD_MARKER = "CANDLE_NONLINEAR_VERIFIER_CLOSURE_LOADED"
 THEOREM_BEGIN = "CANDLE_NONLINEAR_VERIFIER_THEOREM_BEGIN"
 THEOREM_END = "CANDLE_NONLINEAR_VERIFIER_THEOREM_END"
+CLOSURE_SECONDS = "CANDLE_NONLINEAR_VERIFIER_CLOSURE_SECONDS"
+SMOKE_PROOF_SECONDS = "CANDLE_NONLINEAR_VERIFIER_SMOKE_PROOF_SECONDS"
 FORBIDDEN_LOG_BYTES = (b"Parsing failed", b"EXCEPTION:")
 
 
@@ -78,7 +83,7 @@ def _logical_path(value: object, label: str) -> str:
 def authenticate_closure(
     candle_root: Path,
     flyspeck_root: Path,
-) -> tuple[bytes, dict[str, Any], list[dict[str, str]]]:
+) -> tuple[bytes, dict[str, Any], list[dict[str, Any]]]:
     """Validate the complete closure and return physical identity records."""
 
     candle_root = candle_root.resolve()
@@ -108,7 +113,7 @@ def authenticate_closure(
     if not isinstance(nodes, dict) or len(nodes) != 90:
         raise ValueError("malformed nonlinear verifier source-node map")
     roots = {"candle": candle_root, "flyspeck": flyspeck_root}
-    records: list[dict[str, str]] = []
+    records: list[dict[str, Any]] = []
     for source_key in sorted(nodes):
         node = nodes[source_key]
         if not isinstance(node, dict):
@@ -137,6 +142,11 @@ def authenticate_closure(
             dependency not in nodes for dependency in selected
         ):
             raise ValueError(f"invalid source dependency closure: {source_key}")
+        normalized, normalization = (
+            flyspeck_nonlinear_verifier_closure.apply_recorded_normalization(
+                source_key, data, node,
+            )
+        )
         records.append({
             "source_key": source_key,
             "repository": repository,
@@ -146,14 +156,58 @@ def authenticate_closure(
             "bytes": str(len(data)),
             "md5": md5,
             "sha256": sha256,
+            "normalization": normalization,
+            "normalized_bytes": normalized,
         })
     return closure_data, closure, records
+
+
+def materialize_normalizations(
+    output_root: Path,
+    records: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Write exact normalized overlays after the complete host preflight."""
+
+    overlays: list[dict[str, str]] = []
+    for record in records:
+        normalization = record["normalization"]
+        if normalization is None:
+            continue
+        normalized = record["normalized_bytes"]
+        normalized_path = (
+            output_root / "overlay" / record["repository"]
+            / record["logical_relative_path"]
+        )
+        normalized_path.parent.mkdir(parents=True, exist_ok=True)
+        with normalized_path.open("xb") as destination:
+            destination.write(normalized)
+        normalized_path.chmod(0o444)
+        if (
+            len(normalized) != normalization["normalized_bytes"]
+            or hashlib.md5(
+                normalized, usedforsecurity=False,
+            ).hexdigest() != normalization["normalized_md5"]
+            or hashlib.sha256(normalized).hexdigest()
+            != normalization["normalized_sha256"]
+        ):
+            raise ValueError(
+                f"materialized normalization drift: {record['source_key']}"
+            )
+        overlays.append({
+            "source_key": record["source_key"],
+            "original_path": record["physical_path"],
+            "normalized_path": str(normalized_path),
+            "normalized_md5": normalization["normalized_md5"],
+            "normalized_sha256": normalization["normalized_sha256"],
+        })
+    return overlays
 
 
 def build_driver(
     candle_root: Path,
     flyspeck_root: Path,
-    records: list[dict[str, str]],
+    records: list[dict[str, Any]],
+    overlays: list[dict[str, str]],
 ) -> str:
     """Generate the one-file, failure-dependent source-load/proof program."""
 
@@ -166,6 +220,14 @@ def build_driver(
             _ocaml_string(record["md5"]),
         )
         for record in records
+    )
+    overlay_rows = ";\n   ".join(
+        "(%s,%s,%s)" % (
+            _ocaml_string(record["original_path"]),
+            _ocaml_string(record["normalized_path"]),
+            _ocaml_string(record["normalized_md5"]),
+        )
+        for record in overlays
     )
     root_record = next(
         record for record in records
@@ -180,6 +242,8 @@ def build_driver(
     )
     return f'''(* Generated DEVELOPMENT / NON-RELEASE nonlinear verifier gate. *)
 #use "hol.ml";;
+
+let candle_nonlinear_closure_started = Unix.gettimeofday();;
 
 let candle_nonlinear_source_rows =
   [{source_rows}];;
@@ -196,6 +260,20 @@ List.iter candle_nonlinear_check_source candle_nonlinear_source_rows;;
 Cakeml.configureSourceIdentities
   (map (fun (path,basename,digest) -> path,(basename,digest))
        candle_nonlinear_source_rows);;
+
+let candle_nonlinear_overlay_rows =
+  [{overlay_rows}];;
+
+let candle_nonlinear_check_overlay (_,path,expected_md5) =
+  if not (Sys.file_exists path) then
+    failwith ("missing nonlinear verifier overlay: " ^ path)
+  else if Digest.to_hex (Digest.file path) <> expected_md5 then
+    failwith ("nonlinear verifier overlay digest mismatch: " ^ path);;
+
+List.iter candle_nonlinear_check_overlay candle_nonlinear_overlay_rows;;
+Cakeml.configureNormalizationOverlay
+  (map (fun (original,normalized,_) -> original,normalized)
+       candle_nonlinear_overlay_rows);;
 
 let candle_nonlinear_add_load_path path =
   if List.mem path !load_path then () else load_path := path :: !load_path;;
@@ -219,15 +297,22 @@ if !Cakeml.pendingLoadedSourceIds <> [] ||
   failwith "nonlinear verifier loader identity did not commit";;
 
 print_endline "{LOAD_MARKER}";;
+print_endline
+  (Printf.sprintf "{CLOSURE_SECONDS} %.6f"
+     (Unix.gettimeofday() -. candle_nonlinear_closure_started));;
 
 open M_verifier_main;;
 Verifier_options.info_print_level := 0;;
 let candle_nonlinear_smoke_term =
   `&0 <= x /\\ x <= &1 ==> x < #1.5`;;
 let candle_nonlinear_axioms_before = axioms ();;
+let candle_nonlinear_smoke_started = Unix.gettimeofday();;
 let candle_nonlinear_smoke_theorem,candle_nonlinear_smoke_stats =
   verify_ineq {{default_params with eps = 1e-10}} 6
     candle_nonlinear_smoke_term;;
+print_endline
+  (Printf.sprintf "{SMOKE_PROOF_SECONDS} %.6f"
+     (Unix.gettimeofday() -. candle_nonlinear_smoke_started));;
 
 if hyp candle_nonlinear_smoke_theorem <> [] ||
    concl candle_nonlinear_smoke_theorem <> candle_nonlinear_smoke_term then
@@ -256,36 +341,75 @@ def _record_file(path: Path) -> dict[str, Any]:
     }
 
 
+def _extract_seconds(log_data: bytes, marker: str) -> float | None:
+    matches = re.findall(
+        rb"^" + re.escape(marker.encode("ascii"))
+        + rb" ([0-9]+(?:\.[0-9]+)?)$",
+        log_data,
+        flags=re.MULTILINE,
+    )
+    if len(matches) != 1:
+        return None
+    return float(matches[0])
+
+
 def run(
     flyspeck_root: Path,
     runtime: Path,
+    generated_insulate: Path,
     output_root: Path,
     timeout_seconds: int,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
     runtime = runtime.resolve()
+    generated_insulate = generated_insulate.resolve()
     output_root = output_root.resolve()
     if output_root.exists():
         raise ValueError(f"output root already exists: {output_root}")
     _ordinary_file(runtime, "Candle runtime")
+    _ordinary_file(
+        generated_insulate, "Candle generated insulation support",
+    )
     closure_data, closure, records = authenticate_closure(
         candle_root, flyspeck_root,
     )
 
     output_root.mkdir(parents=True)
+    overlays = materialize_normalizations(output_root, records)
+    support_root = output_root / "base-support"
+    support_insulate = support_root / "candle/build/insulate.ml"
+    support_insulate.parent.mkdir(parents=True)
+    with support_insulate.open("xb") as destination:
+        destination.write(generated_insulate.read_bytes())
+    support_insulate.chmod(0o444)
+    if (
+        support_insulate.stat().st_size != generated_insulate.stat().st_size
+        or _hash_file(support_insulate, "sha256")
+        != _hash_file(generated_insulate, "sha256")
+    ):
+        raise ValueError("materialized generated insulation support drift")
     driver = output_root / "driver.ml"
     stdin = output_root / "stdin.ml"
     log = output_root / "candle.log"
     driver.write_text(
-        build_driver(candle_root, flyspeck_root, records),
+        build_driver(candle_root, flyspeck_root, records, overlays),
         encoding="ascii", newline="\n",
     )
     stdin.write_text(
-        f'Cakeml.loadPath := [{_ocaml_string(str(candle_root))}];;\n'
+        f'Cakeml.loadPath := [{_ocaml_string(str(candle_root))}; '
+        f'{_ocaml_string(str(support_root))}];;\n'
         f'#use {_ocaml_string(str(driver))};;\n',
         encoding="ascii", newline="\n",
     )
+
+    candle_commit = _git_head(candle_root)
+    runtime_record = _record_file(runtime)
+    generated_insulation_input_record = _record_file(generated_insulate)
+    generated_insulation_support_record = _record_file(support_insulate)
+    controller_record = _record_file(Path(__file__).resolve())
+    driver_record = _record_file(driver)
+    stdin_record = _record_file(stdin)
 
     started_utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     started = time.monotonic()
@@ -320,6 +444,12 @@ def run(
         value.decode("ascii") for value in FORBIDDEN_LOG_BYTES
         if value in log_data
     ]
+    timings = {
+        "closure_seconds": _extract_seconds(log_data, CLOSURE_SECONDS),
+        "smoke_proof_seconds": _extract_seconds(
+            log_data, SMOKE_PROOF_SECONDS,
+        ),
+    }
     outcome = (
         "proof-pass"
         if not timed_out
@@ -330,6 +460,7 @@ def run(
             "theorem_end": 1,
             "pass": 1,
         }
+        and all(value is not None for value in timings.values())
         and not forbidden
         else "proof-failure"
     )
@@ -351,18 +482,32 @@ def run(
         "child_system_seconds": usage_after.ru_stime - usage_before.ru_stime,
         "child_max_rss_kib": usage_after.ru_maxrss,
         "markers": markers,
+        "timings": timings,
         "forbidden_log_fragments": forbidden,
         "source_node_count": len(records),
+        "normalized_source_count": len(overlays),
+        "normalized_sources": [
+            {
+                "source_key": overlay["source_key"],
+                "normalized_path": overlay["normalized_path"],
+                "normalized_md5": overlay["normalized_md5"],
+                "normalized_sha256": overlay["normalized_sha256"],
+            }
+            for overlay in overlays
+        ],
         "closure": {
             "path": CLOSURE.as_posix(),
             "bytes": len(closure_data),
             "sha256": hashlib.sha256(closure_data).hexdigest(),
             "flyspeck_commit": closure["repositories"]["flyspeck"]["commit"],
         },
-        "candle_commit": _git_head(candle_root),
-        "runtime": _record_file(runtime),
-        "driver": _record_file(driver),
-        "stdin": _record_file(stdin),
+        "candle_commit": candle_commit,
+        "runtime": runtime_record,
+        "generated_insulation_input": generated_insulation_input_record,
+        "generated_insulation_support": generated_insulation_support_record,
+        "controller": controller_record,
+        "driver": driver_record,
+        "stdin": stdin_record,
         "log": _record_file(log),
     }
     result_path = output_root / "result.json"
@@ -376,12 +521,14 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--flyspeck-root", type=Path, required=True)
     parser.add_argument("--runtime", type=Path, required=True)
+    parser.add_argument("--generated-insulate", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=int, default=43200)
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
         arguments.runtime,
+        arguments.generated_insulate,
         arguments.output_root,
         arguments.timeout_seconds,
     )

@@ -19,12 +19,16 @@ from pathlib import Path
 from typing import Any
 
 import flyspeck_loader_quotation
+import flyspeck_nonlinear_verifier_closure
 import flyspeck_parser_diagnostic
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CLOSURE = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 RESULT_SCHEMA = 1
+PRE_NORMALIZATION_CLOSURE_SHA256 = (
+    "217091456fb2391bea713819ca9ccf8a32354f497b545f0a08b7d5ec23c738ca"
+)
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -63,11 +67,36 @@ def _run_parser(
     return result, time.monotonic() - started
 
 
+def _can_reuse_prior_attempt(
+    base_attempt: dict[str, Any],
+    prior_attempt: dict[str, Any] | None,
+    normalization: dict[str, Any] | None,
+) -> bool:
+    """Admit only an unchanged, successful parser-process observation."""
+
+    return (
+        normalization is None
+        and prior_attempt is not None
+        and prior_attempt.get("index") == base_attempt["index"]
+        and prior_attempt.get("source") == base_attempt["source"]
+        and prior_attempt.get("manifest_action_count")
+        == base_attempt["manifest_action_count"]
+        and prior_attempt.get("quotation_expansion")
+        == base_attempt["quotation_expansion"]
+        and prior_attempt.get("prepared_input")
+        == base_attempt["prepared_input"]
+        and prior_attempt.get("outcome") == "parse-ok"
+        and prior_attempt.get("exit_code") == 0
+        and prior_attempt.get("stderr", {}).get("bytes") == 0
+    )
+
+
 def run(
     flyspeck_root: Path,
     runtime: Path,
     output: Path,
     timeout_seconds: int,
+    reuse_result: Path | None = None,
 ) -> dict[str, Any]:
     flyspeck_root = flyspeck_root.resolve()
     runtime = runtime.resolve()
@@ -83,6 +112,44 @@ def run(
         raise ValueError("unexpected nonlinear verifier closure")
     if not runtime.is_file() or runtime.is_symlink():
         raise ValueError("parser runtime is not an ordinary file")
+    controller_path = Path(__file__).resolve()
+    controller_record = {
+        "path": Path(__file__).name,
+        "bytes": controller_path.stat().st_size,
+        "sha256": _hash_file(controller_path, "sha256"),
+    }
+
+    prior_data: bytes | None = None
+    prior: dict[str, Any] | None = None
+    prior_attempts: dict[str, dict[str, Any]] = {}
+    if reuse_result is not None:
+        reuse_result = reuse_result.resolve()
+        if not reuse_result.is_file() or reuse_result.is_symlink():
+            raise ValueError("prior parser result is not an ordinary file")
+        prior_data = reuse_result.read_bytes()
+        prior = json.loads(prior_data)
+        if (
+            prior.get("schema") != RESULT_SCHEMA
+            or prior.get("kind")
+            != "candle-flyspeck-nonlinear-verifier-parser-result"
+            or prior.get("attempt_count") != 56
+            or not isinstance(prior.get("attempts"), list)
+            or len(prior["attempts"]) != 56
+            or prior.get("closure", {}).get("sha256")
+            != PRE_NORMALIZATION_CLOSURE_SHA256
+        ):
+            raise ValueError("unsupported prior nonlinear parser result")
+        prior_runtime = prior.get("runtime", {})
+        if (
+            prior_runtime.get("bytes") != runtime.stat().st_size
+            or prior_runtime.get("sha256") != _hash_file(runtime, "sha256")
+        ):
+            raise ValueError("prior parser runtime identity drift")
+        for attempt in prior["attempts"]:
+            source_key = attempt.get("source_key")
+            if not isinstance(source_key, str) or source_key in prior_attempts:
+                raise ValueError("malformed prior nonlinear parser attempts")
+            prior_attempts[source_key] = attempt
 
     capability, capability_seconds = _run_parser(
         runtime,
@@ -111,10 +178,15 @@ def run(
             or hashlib.sha256(source).hexdigest() != node["sha256"]
         ):
             raise ValueError(f"nonlinear verifier source identity drift: {source_key}")
+        normalized, normalization = (
+            flyspeck_nonlinear_verifier_closure.apply_recorded_normalization(
+                source_key, source, node,
+            )
+        )
         prepared, actions, unsupported, quotation = (
             flyspeck_parser_diagnostic.prepare_source(
                 source_key,
-                source,
+                normalized,
                 node["dependencies"],
                 flyspeck_loader_quotation,
             )
@@ -124,18 +196,7 @@ def run(
                 f"unsupported nonlinear verifier parser preparation: "
                 f"{source_key}: {unsupported}"
             )
-        nonce = os.urandom(32).hex()
-        result, elapsed = _run_parser(
-            runtime,
-            runtime.parent,
-            [flyspeck_parser_diagnostic.RUN_ARGUMENT, nonce],
-            prepared,
-            timeout_seconds,
-        )
-        protocol = flyspeck_parser_diagnostic.parse_protocol_result(
-            nonce, result,
-        )
-        attempt = {
+        base_attempt = {
             "index": index,
             "source_key": source_key,
             "source": {
@@ -145,21 +206,56 @@ def run(
                 "md5": node["md5"],
                 "sha256": node["sha256"],
             },
+            "normalization": normalization,
+            "normalized_source": _record_bytes(normalized),
             "manifest_action_count": len(actions),
             "quotation_expansion": quotation,
             "prepared_input": _record_bytes(prepared),
-            "nonce": nonce,
-            "elapsed_seconds": elapsed,
-            "exit_code": result.returncode,
-            "outcome": protocol["outcome"],
-            "stdout": _record_bytes(result.stdout),
-            "stderr": _record_bytes(result.stderr),
-            "parser_error": protocol["controller_stderr_digest"],
         }
+        prior_attempt = prior_attempts.get(source_key)
+        reusable = _can_reuse_prior_attempt(
+            base_attempt, prior_attempt, normalization,
+        )
+        if reusable:
+            attempt = {
+                **base_attempt,
+                "nonce": prior_attempt["nonce"],
+                "elapsed_seconds": prior_attempt["elapsed_seconds"],
+                "exit_code": prior_attempt["exit_code"],
+                "outcome": prior_attempt["outcome"],
+                "stdout": prior_attempt["stdout"],
+                "stderr": prior_attempt["stderr"],
+                "parser_error": prior_attempt["parser_error"],
+                "execution": "reused-exact-prior-parse-ok",
+            }
+        else:
+            nonce = os.urandom(32).hex()
+            result, elapsed = _run_parser(
+                runtime,
+                runtime.parent,
+                [flyspeck_parser_diagnostic.RUN_ARGUMENT, nonce],
+                prepared,
+                timeout_seconds,
+            )
+            protocol = flyspeck_parser_diagnostic.parse_protocol_result(
+                nonce, result,
+            )
+            attempt = {
+                **base_attempt,
+                "nonce": nonce,
+                "elapsed_seconds": elapsed,
+                "exit_code": result.returncode,
+                "outcome": protocol["outcome"],
+                "stdout": _record_bytes(result.stdout),
+                "stderr": _record_bytes(result.stderr),
+                "parser_error": protocol["controller_stderr_digest"],
+                "execution": "fresh-parser-process",
+            }
         attempts.append(attempt)
         print(
             f"{index + 1:02d}/56 {attempt['outcome']} "
-            f"{elapsed:.3f}s {source_key}",
+            f"{attempt['elapsed_seconds']:.3f}s {source_key} "
+            f"({attempt['execution']})",
             flush=True,
         )
 
@@ -188,8 +284,29 @@ def run(
             "capability": flyspeck_parser_diagnostic.CAPABILITY_LINE.decode().rstrip(),
             "capability_seconds": capability_seconds,
         },
+        "controller": controller_record,
+        "reuse_authority": (
+            None if prior_data is None else {
+                "path": str(reuse_result),
+                "bytes": len(prior_data),
+                "sha256": hashlib.sha256(prior_data).hexdigest(),
+                "rule": (
+                    "only an exact unchanged prepared input with a successful "
+                    "zero-exit prior parse may be reused; every normalized or "
+                    "failed source is executed freshly"
+                ),
+            }
+        ),
         "source_authority": closure["repositories"],
         "attempt_count": len(attempts),
+        "fresh_attempt_count": sum(
+            attempt["execution"] == "fresh-parser-process"
+            for attempt in attempts
+        ),
+        "reused_attempt_count": sum(
+            attempt["execution"] == "reused-exact-prior-parse-ok"
+            for attempt in attempts
+        ),
         "parse_ok_count": sum(
             attempt["outcome"] == "parse-ok" for attempt in attempts
         ),
@@ -198,6 +315,10 @@ def run(
         ),
         "total_parser_seconds": sum(
             attempt["elapsed_seconds"] for attempt in attempts
+        ),
+        "fresh_parser_seconds": sum(
+            attempt["elapsed_seconds"] for attempt in attempts
+            if attempt["execution"] == "fresh-parser-process"
         ),
         "outcome": outcome,
         "attempts": attempts,
@@ -215,12 +336,14 @@ def main() -> None:
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=int, default=1800)
+    parser.add_argument("--reuse-result", type=Path)
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
         arguments.runtime,
         arguments.output,
         arguments.timeout_seconds,
+        arguments.reuse_result,
     )
     if payload["outcome"] != "parse-pass":
         raise SystemExit(1)

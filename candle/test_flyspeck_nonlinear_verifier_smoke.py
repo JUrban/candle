@@ -2,6 +2,7 @@
 
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,7 +21,17 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         cls.closure_data, cls.closure, cls.records = (
             subject.authenticate_closure(ROOT, FLYSPECK_ROOT)
         )
-        cls.driver = subject.build_driver(ROOT, FLYSPECK_ROOT, cls.records)
+        cls.temp = tempfile.TemporaryDirectory()
+        cls.overlays = subject.materialize_normalizations(
+            Path(cls.temp.name), cls.records,
+        )
+        cls.driver = subject.build_driver(
+            ROOT, FLYSPECK_ROOT, cls.records, cls.overlays,
+        )
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.temp.cleanup()
 
     def test_authenticates_the_published_complete_closure(self) -> None:
         self.assertEqual(len(self.records), 90)
@@ -32,6 +43,7 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
+        self.assertEqual(len(self.overlays), 4)
 
     def test_every_identity_is_in_the_runtime_preflight(self) -> None:
         for record in self.records:
@@ -52,6 +64,8 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         self.assertLess(base, verifier)
         self.assertLess(verifier, proof)
         self.assertLess(proof, success)
+        self.assertIn(subject.CLOSURE_SECONDS, self.driver)
+        self.assertIn(subject.SMOKE_PROOF_SECONDS, self.driver)
 
     def test_gate_requires_exact_theorem_interface_and_axiom_stability(self) -> None:
         self.assertIn("hyp candle_nonlinear_smoke_theorem <> []", self.driver)

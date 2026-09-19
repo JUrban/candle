@@ -1,9 +1,9 @@
 {
   "claim": "authenticated target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
   "closure": {
-    "bytes": 264600,
+    "bytes": 277861,
     "path": "candle/flyspeck_nonlinear_verifier_closure.json",
-    "sha256": "217091456fb2391bea713819ca9ccf8a32354f497b545f0a08b7d5ec23c738ca"
+    "sha256": "ce6b25c55dace03af9530608a236ad72d154e059afb53e3135849b4fb9ecdd28"
   },
   "evidence_files": {
     "azure_stdout": {
@@ -16,6 +16,16 @@
       "logical_relative_path": "text_formalization/nonlinear/break_case_log.hl",
       "sha256": "2b3c74156a5ee9a6b3b5b6905ff28a7fb21e7c50052ad37887b90b9ed3d5e499"
     },
+    "compiled_break_case": {
+      "bytes": 4473,
+      "logical_relative_path": "azure/flyspeck-nat/break_case.hl",
+      "sha256": "7df2af9a8b24923a9c7761c4a3ac3496be39f4c161bef480fe0089db24f7d0bd"
+    },
+    "compiled_definitions": {
+      "bytes": 49779,
+      "logical_relative_path": "azure/flyspeck-nat/definitions.hl",
+      "sha256": "f5c34e49f0114e038949ed0dc1d9a9f5d5f50103420a1272c3231d8b436bbac4"
+    },
     "main_verifier": {
       "bytes": 2544,
       "logical_relative_path": "azure/main_verifier.hl",
@@ -25,6 +35,11 @@
       "bytes": 1179697,
       "logical_relative_path": "text_formalization/nonlinear/prep.hl",
       "sha256": "3ccef1bf65b13ca02e7ab1f409ebb49c979862ed5ea6ff1d57ed1e4e4761723d"
+    },
+    "prove_by_refinement": {
+      "bytes": 4271,
+      "logical_relative_path": "text_formalization/general/prove_by_refinement.hl",
+      "sha256": "3101d7b115e9437e94bcfe7ae8156cfc065ac4422d463a91d690d41acca04cdb"
     }
   },
   "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",

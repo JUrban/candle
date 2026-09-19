@@ -2515,6 +2515,8 @@
       "candle": 0,
       "flyspeck": 56
     },
+    "normalization_operations": 45,
+    "normalized_sources": 4,
     "selected_by_repository": {
       "candle": 28,
       "flyspeck": 62
@@ -6057,6 +6059,106 @@
       ],
       "logical_relative_path": "formal_ineqs/taylor/m_taylor.hl",
       "md5": "857ba2079f2717bc1e448d559f7cbc67",
+      "normalization": {
+        "id": "candle-flyspeck-parser-compatibility-v1",
+        "normalized_bytes": 63128,
+        "normalized_md5": "c60c3cc797907baa92d9f2accb72da07",
+        "normalized_sha256": "f064384a1c00c6a8babb68a159fbb5791bb209ebe80fe3d862715b23105c486f",
+        "operation_count": 15,
+        "operations": [
+          {
+            "after": "Array.get (Array.get array (n)) (i)",
+            "before": "array.(n).(i)",
+            "kind": "nested-array-get",
+            "line": 109
+          },
+          {
+            "after": "Array.get (Array.get array (n - 1)) (i - 1)",
+            "before": "array.(n - 1).(i - 1)",
+            "kind": "nested-array-get",
+            "line": 110
+          },
+          {
+            "after": "Array.set (Array.get array (n)) (i) el_th in",
+            "before": "array.(n).(i) <- el_th in",
+            "kind": "nested-array-set",
+            "line": 114
+          },
+          {
+            "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
+            "before": "el_thms_array.(n).(i - 1)",
+            "kind": "nested-array-get",
+            "line": 129
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (j)) (i)",
+            "before": "dd_vars_array.(j).(i)",
+            "kind": "nested-array-get",
+            "line": 635
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1158
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1195
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1384
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1386
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (j)) (i)",
+            "before": "dd_vars_array.(j).(i)",
+            "kind": "nested-array-get",
+            "line": 1386
+          },
+          {
+            "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
+            "before": "el_thms_array.(n).(i - 1)",
+            "kind": "nested-array-get",
+            "line": 1391
+          },
+          {
+            "after": "Array.get (Array.get m_taylor_partial_upper_array (n)) (i)",
+            "before": "m_taylor_partial_upper_array.(n).(i)",
+            "kind": "nested-array-get",
+            "line": 1424
+          },
+          {
+            "after": "Array.get (Array.get m_taylor_partial_bound_array (n)) (i)",
+            "before": "m_taylor_partial_bound_array.(n).(i)",
+            "kind": "nested-array-get",
+            "line": 1426
+          },
+          {
+            "after": "Array.get (Array.get m_taylor_partial_lower_array (n)) (i)",
+            "before": "m_taylor_partial_lower_array.(n).(i)",
+            "kind": "nested-array-get",
+            "line": 1428
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1437
+          }
+        ],
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/arith/eval_interval.hl",
@@ -6140,6 +6242,106 @@
       ],
       "logical_relative_path": "formal_ineqs/taylor/m_taylor_arith2.hl",
       "md5": "b1b06aa262f12307ff257f22ad73e66d",
+      "normalization": {
+        "id": "candle-flyspeck-parser-compatibility-v1",
+        "normalized_bytes": 50173,
+        "normalized_md5": "95954760a39a09ef926a7c9137613732",
+        "normalized_sha256": "0983ed1b16e310ed530207cd577283e09ffd6c06dfdcba95e05c50c21a4a55ed",
+        "operation_count": 15,
+        "operations": [
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 60
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 176
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 234
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 313
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 364
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 492
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 580
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 662
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 748
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 832
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 915
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 998
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1087
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1177
+          },
+          {
+            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "before": "dd_vars_array.(i).(j)",
+            "kind": "nested-array-get",
+            "line": 1261
+          }
+        ],
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
@@ -7234,6 +7436,82 @@
       ],
       "logical_relative_path": "formal_ineqs/verifier/m_verifier.hl",
       "md5": "3aea162e079d904a73f18c5962258444",
+      "normalization": {
+        "id": "candle-flyspeck-parser-compatibility-v1",
+        "normalized_bytes": 73839,
+        "normalized_md5": "11fe5f2d0ee4ff3c7f8aadabff15f86e",
+        "normalized_sha256": "b4a9ed301a29361faebc7c0c258cdb6d26a739ab760892f605368dd4d6b4c8d4",
+        "operation_count": 11,
+        "operations": [
+          {
+            "after": "Array.get (Array.get incr_gen_thms_array (n)) (j)",
+            "before": "incr_gen_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1003
+          },
+          {
+            "after": "Array.get (Array.get decr_gen_thms_array (n)) (j)",
+            "before": "decr_gen_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1028
+          },
+          {
+            "after": "Array.get (Array.get glue_thms_array (n)) (j)",
+            "before": "glue_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1072
+          },
+          {
+            "after": "Array.get (Array.get glue_thms_array (n)) (j)",
+            "before": "glue_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1093
+          },
+          {
+            "after": "Array.get (Array.get decr_gen_thms_array (n)) (j)",
+            "before": "decr_gen_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1120
+          },
+          {
+            "after": "Array.get (Array.get incr_gen_thms_array (n)) (j)",
+            "before": "incr_gen_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1120
+          },
+          {
+            "after": "Array.get (Array.get incr_thms_array (n)) (j)",
+            "before": "incr_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1144
+          },
+          {
+            "after": "Array.get (Array.get decr_thms_array (n)) (j)",
+            "before": "decr_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1167
+          },
+          {
+            "after": "Array.get (Array.get convex_thms_array (n)) (j)",
+            "before": "convex_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1193
+          },
+          {
+            "after": "Array.get (Array.get left_restrict_thms_array (n)) (j)",
+            "before": "left_restrict_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1231
+          },
+          {
+            "after": "Array.get (Array.get right_restrict_thms_array (n)) (j)",
+            "before": "right_restrict_thms_array.(n).(j)",
+            "kind": "nested-array-get",
+            "line": 1231
+          }
+        ],
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/misc/misc_vars.hl",
@@ -7488,6 +7766,40 @@
       ],
       "logical_relative_path": "formal_ineqs/verifier/m_verifier_main.hl",
       "md5": "ca4991873b0c34b2da24a7080c5f521b",
+      "normalization": {
+        "id": "candle-flyspeck-parser-compatibility-v1",
+        "normalized_bytes": 31921,
+        "normalized_md5": "002f39e21c6d8afa8fa55511bbc7c6fc",
+        "normalized_sha256": "e1c689bea39ebb4a0161816c59cf469a2f983c5705d1b392b79a555d38247dbb",
+        "operation_count": 4,
+        "operations": [
+          {
+            "after": "      ({\n\ttaylor = eval_ti;\n\tf = eval0_informal;\n\tdf = dummy_df;\n\tddf = dummy_ddf\n      } : Informal_verifier.verification_funs);;",
+            "before": "      {\n\tInformal_verifier.taylor = eval_ti;\n\tInformal_verifier.f = eval0_informal;\n\tInformal_verifier.df = dummy_df;\n\tInformal_verifier.ddf = dummy_ddf\n      };;",
+            "kind": "typed-informal-verification-record",
+            "line": 355
+          },
+          {
+            "after": "\tval_ref := (if lo_flag then (lhs, snd !val_ref) else (fst !val_ref, rhs)) in",
+            "before": "\tval_ref := if lo_flag then (lhs, snd !val_ref) else (fst !val_ref, rhs) in",
+            "kind": "parenthesized-assignment-conditional",
+            "line": 492
+          },
+          {
+            "after": "      let opt0 = ({\n\traw_intervals0 = !params.raw_intervals0;\n\tmax_width = 1e-10;\n\tmax_depth = 200;\n\tpp = pp;\n\tmono_depth = if !params.allow_derivatives then 200 else 0;\n      } : Informal_search.search_options) in",
+            "before": "      let opt0 = {\n\tInformal_search.raw_intervals0 = !params.raw_intervals0;\n\tInformal_search.max_width = 1e-10;\n\tInformal_search.max_depth = 200;\n\tInformal_search.pp = pp;\n\tInformal_search.mono_depth = if !params.allow_derivatives then 200 else 0;\n      } in",
+            "kind": "typed-informal-search-record-adaptive",
+            "line": 556
+          },
+          {
+            "after": "      let opt0 = ({\n\traw_intervals0 = !params.raw_intervals0;\n\tmax_width = 1e-10;\n\tmax_depth = 200;\n\tpp = pp;\n\tmono_depth = 0;\n      } : Informal_search.search_options) in",
+            "before": "      let opt0 = {\n\tInformal_search.raw_intervals0 = !params.raw_intervals0;\n\tInformal_search.max_width = 1e-10;\n\tInformal_search.max_depth = 200;\n\tInformal_search.pp = pp;\n\tInformal_search.mono_depth = 0;\n      } in",
+            "kind": "typed-informal-search-record-fixed",
+            "line": 666
+          }
+        ],
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/informal/informal_search.hl",

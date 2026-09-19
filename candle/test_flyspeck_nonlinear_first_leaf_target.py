@@ -47,6 +47,21 @@ class NonlinearFirstLeafTargetTest(unittest.TestCase):
         self.assertEqual(self.payload["status"], "development-non-release")
         self.assertIn("no Candle proof", self.payload["claim"])
 
+    def test_reconstruction_support_is_authenticated(self) -> None:
+        evidence = self.payload["evidence_files"]
+        self.assertEqual(set(evidence), {
+            "azure_stdout",
+            "break_case_log",
+            "prep",
+            "main_verifier",
+            "prove_by_refinement",
+            "compiled_definitions",
+            "compiled_break_case",
+        })
+        for record in evidence.values():
+            self.assertGreater(record["bytes"], 0)
+            self.assertEqual(len(record["sha256"]), 64)
+
 
 if __name__ == "__main__":
     unittest.main()

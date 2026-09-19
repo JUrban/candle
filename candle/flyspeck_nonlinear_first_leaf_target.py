@@ -27,6 +27,11 @@ AZURE_STDOUT = Path("azure/results/urban/out/1/7850/2/7899/stdout")
 BREAK_LOG = Path("text_formalization/nonlinear/break_case_log.hl")
 PREP = Path("text_formalization/nonlinear/prep.hl")
 MAIN_VERIFIER = Path("azure/main_verifier.hl")
+PROVE_BY_REFINEMENT = Path(
+    "text_formalization/general/prove_by_refinement.hl"
+)
+COMPILED_DEFINITIONS = Path("azure/flyspeck-nat/definitions.hl")
+COMPILED_BREAK_CASE = Path("azure/flyspeck-nat/break_case.hl")
 
 
 def _hash(path: Path, algorithm: str = "sha256") -> str:
@@ -39,6 +44,8 @@ def _hash(path: Path, algorithm: str = "sha256") -> str:
 
 def _identity(root: Path, relative: Path) -> dict[str, Any]:
     path = root / relative
+    if not path.is_file() or path.is_symlink():
+        raise ValueError(f"target evidence is not an ordinary file: {relative}")
     return {
         "logical_relative_path": relative.as_posix(),
         "bytes": path.stat().st_size,
@@ -106,7 +113,12 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
     if theorem_match is None:
         raise ValueError("retained first-leaf theorem record is absent")
     theorem = theorem_match.group("theorem")
-    if not theorem.startswith("ineqm [x1; x2; x3; x4; x5; x6]"):
+    if (
+        not theorem.startswith("ineqm [x1; x2; x3; x4; x5; x6]")
+        or "frac_left 0 #0.7637" not in theorem
+        or "cayleyR6u x1 x2 x3 x4 x5 x6 * -- &1 < &0" not in theorem
+        or "deltaL_x4 #4.0 x1 x2 x3 x4 x5 x6 * -- &1 < &0" not in theorem
+    ):
         raise ValueError("retained first-leaf theorem has unexpected interface")
 
     break_log = (flyspeck_root / BREAK_LOG).read_text(encoding="utf-8")
@@ -128,6 +140,23 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
         or "{default_params with eps = 1e-10}" not in verifier
     ):
         raise ValueError("historical verifier parameter contract has drifted")
+
+    definitions = (flyspeck_root / COMPILED_DEFINITIONS).read_text(
+        encoding="utf-8",
+    )
+    break_case = (flyspeck_root / COMPILED_BREAK_CASE).read_text(
+        encoding="utf-8",
+    )
+    if (
+        not definitions.startswith("open Hol_core;;\nopen Prove_by_refinement;;")
+        or "let flyspeck_defs =" not in definitions
+        or not break_case.startswith(
+            "open Hol_core\nopen Misc\nopen Prove_by_refinement\n"
+            "open Definitions\n"
+        )
+        or "let rec ineqm_conv =" not in break_case
+    ):
+        raise ValueError("first-leaf reconstruction support has drifted")
 
     lower = Fraction(4)
     original_upper = Fraction(2) * Fraction(126, 100)
@@ -164,6 +193,15 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
             "break_case_log": _identity(flyspeck_root, BREAK_LOG),
             "prep": _identity(flyspeck_root, PREP),
             "main_verifier": _identity(flyspeck_root, MAIN_VERIFIER),
+            "prove_by_refinement": _identity(
+                flyspeck_root, PROVE_BY_REFINEMENT,
+            ),
+            "compiled_definitions": _identity(
+                flyspeck_root, COMPILED_DEFINITIONS,
+            ),
+            "compiled_break_case": _identity(
+                flyspeck_root, COMPILED_BREAK_CASE,
+            ),
         },
         "target": {
             "id": CASE_ID,
