@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "claim": "development/non-release focused wall-clock benchmark",
+  "date_utc": "2026-09-19",
+  "source_commit": "7df6416bdee533ec6ed17a4d7d7bc16ac450d04c",
+  "runtime_binary_sha256": "3aaa248c0d5d6c96fa8e36445d1a945a751f0cf11a8b734a6142e9fab1088b2b",
+  "method": "One fresh Candle process; both paths warmed and theorem conclusions compared before an externally timed alternating schedule. Candle's deterministic Sys.time was not used.",
+  "input": {
+    "description": "representative hard_2 hypermap shape",
+    "faces": 18,
+    "total_face_list_length": 58
+  },
+  "repetitions_per_sample": 100,
+  "samples_seconds": {
+    "existing_eval_list_of_faces": [
+      0.05907642748206854,
+      0.06687604542821646,
+      0.06668360903859138
+    ],
+    "reflected_candle_cv_list_of_faces_conv": [
+      0.6910972744226456,
+      0.7787250922992826,
+      0.7372922198846936
+    ]
+  },
+  "median_seconds": {
+    "existing_eval_list_of_faces": 0.06668360903859138,
+    "reflected_candle_cv_list_of_faces_conv": 0.7372922198846936
+  },
+  "median_seconds_per_call": {
+    "existing_eval_list_of_faces": 0.0006668360903859138,
+    "reflected_candle_cv_list_of_faces_conv": 0.007372922198846936
+  },
+  "reflected_over_existing": 11.056573429581551,
+  "conclusion": "The bridge validates proof-producing reflection and exact theorem-interface recovery, but this leaf is already faster through its specialized theorem builder and should not be replaced for performance."
+}
