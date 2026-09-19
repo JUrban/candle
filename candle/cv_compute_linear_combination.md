@@ -44,10 +44,18 @@ preserves it, and that a fold from `(0,0)` yields a valid aggregate inequality.
 This closes the abstract inequality-combination argument independently of cval
 evaluation.
 
+The first Flyspeck-facing bridge now accepts authenticated `lhs <= rhs`
+theorems paired with natural multipliers, constructs the corresponding row
+list, and derives one fold inequality through that soundness theorem. It
+preserves all input hypotheses and performs no unchecked theorem synthesis.
+This removes theorem-per-addition construction from the combination boundary;
+the conclusion is intentionally still an unnormalized fold expression, so no
+end-to-end speedup is claimed yet.
+
 It is not yet a Flyspeck checker. Before integration it must add:
 
-1. the bridge from authenticated `get_ineqs` theorems and the computed exact
-   aggregate equality into the generic real soundness theorem;
+1. the equality bridge from the unnormalized real fold to the computed exact
+   coefficient aggregate;
 2. a faithful reifier for `lin_f` terms with exact variable identity and
    integer right-hand sides;
 3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
