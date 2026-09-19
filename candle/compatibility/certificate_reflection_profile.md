@@ -114,6 +114,20 @@ can use nonnegative exact coefficients rather than a signed sparse format for
 these real workloads. The existing theorem path remains the oracle for any
 future corpus cases outside this observed shape.
 
+Within `hard_2`, raw payload size is not a useful predictor of the current
+theorem-building cost. Terminal wall times range from 13.055 s to 32.935 s
+(median 18.096 s). Across the 17 terminals, coefficient-entry count versus
+terminal time has Pearson correlation -0.009 and Spearman correlation 0.078;
+total coefficient decimal digits gives -0.048 and 0.059 respectively. This is
+a small, narrow sample and is not a corpus-wide performance model, but it does
+show that selecting only the largest serialized row would miss the current
+worst case. A focused prototype benchmark should include terminal 15 (the
+measured 32.935 s case, despite only 683 coefficients), terminal 5 (the largest
+payload at 799 coefficients), and terminal 17 (the 13.055 s low endpoint).
+Inequality identity and term/conversion shape are plausible remaining
+variables; the coarse reflected checker is intended to remove much of that
+fine-grained conversion sensitivity.
+
 The promising LP object-logic boundary is a normalized exact linear
 combination checker: encode the selected inequality indices, integer
 coefficients, and normalized variable map; compute that the combination
