@@ -241,6 +241,14 @@ let candle_nonlinear_profile_marker scope phase event =
 def instrument_nonlinear_break(source: str) -> str:
     source = replace_once(
         source,
+        "          let _ = incr candle_nonlinear_iarg_leaf_visits in\n",
+        "          let _ =\n"
+        "            candle_nonlinear_iarg_leaf_visits :=\n"
+        "              !candle_nonlinear_iarg_leaf_visits + 1 in\n",
+        "nonlinear leaf counter compatibility",
+    )
+    source = replace_once(
+        source,
         "let candle_nonlinear_iarg_leaf_visits = ref 0;;\n",
         "let candle_nonlinear_iarg_leaf_visits = ref 0;;\n\n"
         + NONLINEAR_HELPERS,

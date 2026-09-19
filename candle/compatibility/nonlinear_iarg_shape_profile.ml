@@ -33,11 +33,35 @@ let candle_iarg_compare (_, (l1, _, _, _, _)) (_, (l2, _, _, _, _)) =
 
 let candle_iarg_sorted = List.sort candle_iarg_compare candle_iarg_rows;;
 
+let candle_percentile percentile values =
+  let sorted = List.sort compare values in
+  let length = List.length sorted in
+  List.nth sorted (min (length - 1) (length * percentile / 100));;
+
 let leaves, bisects, facets, max_depth, logged_ms = candle_iarg_totals;;
 Printf.printf
   "NONLINEAR_IARG_TOTAL cases=%d leaves=%d bisects=%d facets=%d subdomains=%d max_depth=%d logged_milliseconds=%d\n"
   (List.length candle_iarg_rows) leaves bisects facets (leaves + facets)
   max_depth logged_ms;;
+
+let candle_leaf_counts =
+  List.map (fun (_, (l, _, _, _, _)) -> l) candle_iarg_rows
+and candle_subdomain_counts =
+  List.map (fun (_, (l, _, f, _, _)) -> l + f) candle_iarg_rows
+and candle_logged_times =
+  List.map (fun (_, (_, _, _, _, m)) -> m) candle_iarg_rows;;
+
+Printf.printf
+  "NONLINEAR_IARG_DISTRIBUTION leaf_p50=%d leaf_p90=%d leaf_p99=%d subdomains_p50=%d subdomains_p90=%d subdomains_p99=%d logged_ms_p50=%d logged_ms_p90=%d logged_ms_p99=%d\n"
+  (candle_percentile 50 candle_leaf_counts)
+  (candle_percentile 90 candle_leaf_counts)
+  (candle_percentile 99 candle_leaf_counts)
+  (candle_percentile 50 candle_subdomain_counts)
+  (candle_percentile 90 candle_subdomain_counts)
+  (candle_percentile 99 candle_subdomain_counts)
+  (candle_percentile 50 candle_logged_times)
+  (candle_percentile 90 candle_logged_times)
+  (candle_percentile 99 candle_logged_times);;
 
 let rec candle_print_top rank = function
   | _ when rank > 10 -> ()

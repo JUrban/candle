@@ -75,6 +75,7 @@ class InstrumentationTests(unittest.TestCase):
         self.assertNotIn("incr candle_lp_profile_terminal", lp_result)
         self.assertEqual(lp_result.count("CANDLE_CERT_PROFILE"), 1)
         self.assertIn("iarg-tree-reconstruction", break_result)
+        self.assertNotIn("incr candle_nonlinear_iarg_leaf_visits", break_result)
         self.assertIn("serialized-prep-cases", assembly_result)
 
 

@@ -23,6 +23,12 @@ The first plan-changing nonlinear result is structural. The authenticated
   40; and
 - 28,691,131 ms (7h 58m 11.131s) of stored C++ interval-check runtime.
 
+The median explicit tree has 6 leaves, 20 generated subdomains, and 24.219 s
+of stored C++ time; the 90th percentiles are 45 leaves, 127 subdomains, and
+162.722 s, and the 99th percentiles are 134 leaves, 389 subdomains, and
+476.538 s. The largest tree has 167 leaves and 491 subdomains, so it is a
+bounded but substantial first reconstruction profile rather than a toy leaf.
+
 The last number is historical checker telemetry embedded in the certificate,
 not a measurement of Candle reconstruction. It does confirm that useful
 reflection must include the nonlinear leaf-checking semantics eventually, not
@@ -98,7 +104,9 @@ therefore distinguish:
 
 - `certificate_profile_instrument.py` fails closed on the input SHA-256 and on
   every exact source anchor. It supports the current LP source and both
-  nonlinear reconstruction sources.
+  nonlinear reconstruction sources. It also normalizes the development-only
+  nonlinear visit counter from OCaml's unavailable `incr r` to the equivalent
+  Candle expression `r := !r + 1`; this changes only profiling telemetry.
 - `certificate_phase_profile.py` timestamps markers and samples `/proc` without
   writing to the proof process.
 - `certificate_profile_summary.py` aggregates repeated terminal/case phases.
