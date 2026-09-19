@@ -78,7 +78,7 @@ rg -Fq 'Type mismatch between int list -> int list and string list' \
   "$test_dir/string-order-original.log"
 rg -Fq 'val candle_nonlinear_string_order_ok = true: bool' \
   "$test_dir/string-order-normalized.log"
-rg -Fq 'Type mismatch between unit and candle_nonlinear_structure_datum' \
+rg -Fq 'val candle_nonlinear_structure_effect_original_ok = true: bool' \
   "$test_dir/structure-effect-original.log"
 rg -Fq 'val candle_nonlinear_structure_effect_ok = true: bool' \
   "$test_dir/structure-effect-normalized.log"
@@ -109,7 +109,8 @@ rg -Fq 'val candle_merge_ineq_setify_ok = true: bool' \
   "$test_dir/merge-ineq-setify-normalized.log"
 
 for output in nth-normalized.log string-order-normalized.log \
-              structure-effect-normalized.log ineqdoc-normalized.log \
+              structure-effect-original.log structure-effect-normalized.log \
+              ineqdoc-normalized.log \
               dart-classes-normalized.log autogen-normalized.log \
               optimize-preprocess-tuple-normalized.log \
               merge-qualified-record-normalized.log \

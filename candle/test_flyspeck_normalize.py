@@ -202,7 +202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 54)
+        self.assertEqual(len(self.contract["entries"]), 55)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -672,7 +672,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("type t = string list", set_make["operations"][0]["after"])
         self.assertNotIn("Set.Make", set_make["operations"][0]["after"])
         self.assertIn("only through empty, add, and mem", set_make["semantic_rule"])
-        self.assertEqual(len(set_make["operations"]), 3)
+        self.assertEqual(len(set_make["operations"]), 15)
         self.assertIn("#flyspeck_loadt", set_make["operations"][1]["after"])
         digest_output = set_make["operations"][2]
         self.assertEqual(digest_output["kind"], "exact_span_replace_once")
@@ -681,13 +681,84 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("Filename.temp_file", digest_output["start"])
         self.assertNotIn("Filename.temp_file", digest_output["after"])
         self.assertEqual(digest_output["after"].count("failwith"), 2)
+        serialization_tuple = set_make["operations"][3]
+        self.assertEqual(serialization_tuple["line"], 77)
+        self.assertIn("let name = base^", serialization_tuple["after"])
+        self.assertIn("mk_var(name,ty)", serialization_tuple["after"])
+        serialization_bool_ty = set_make["operations"][4]
+        self.assertEqual(serialization_bool_ty["line"], 212)
+        self.assertEqual(serialization_bool_ty["after"], "let bool_ty = bool_ty;;")
+        self.assertEqual(
+            [operation["line"] for operation in set_make["operations"][4:8]],
+            [212, 363, 571, 601],
+        )
+        self.assertNotIn(
+            "Hol.",
+            "".join(operation["after"] for operation in set_make["operations"][4:8]),
+        )
+        self.assertIn(
+            "identical included kernel values", set_make["semantic_rule"]
+        )
+        serialization_hash2 = set_make["operations"][8]
+        self.assertEqual(serialization_hash2["line"], 383)
+        self.assertEqual(
+            serialization_hash2["after"],
+            "let hash2 : (string, (string * thm) list) Hashtbl.t = "
+            "Hashtbl.create 2000;;",
+        )
+        self.assertIn(
+            "complete top-level Hashtbl.create inventory",
+            set_make["semantic_rule"],
+        )
+        serialization_string_order = set_make["operations"][9:13]
+        self.assertEqual(
+            [operation["line"] for operation in serialization_string_order],
+            [389, 402, 421, 437],
+        )
+        self.assertTrue(
+            all("String.compare" in operation["after"]
+                for operation in serialization_string_order)
+        )
+        self.assertIn(
+            "complete five-site string-sort inventory",
+            set_make["semantic_rule"],
+        )
+        serialization_save_all = set_make["operations"][13]
+        self.assertEqual(serialization_save_all["kind"],
+                         "exact_span_replace_once")
+        self.assertEqual(
+            (serialization_save_all["line"], serialization_save_all["end_line"]),
+            (519, 525),
+        )
+        self.assertNotIn("!theorems", serialization_save_all["after"])
+        self.assertIn("failwith", serialization_save_all["after"])
+        self.assertIn("all three deferred", set_make["semantic_rule"])
+        serialization_thm_list = set_make["operations"][14]
+        self.assertEqual(serialization_thm_list["line"], 511)
+        self.assertEqual(
+            serialization_thm_list["after"],
+            "let thm_list : thm list ref = ref [];;",
+        )
+        self.assertIn(
+            "sole polymorphic empty value", set_make["semantic_rule"]
+        )
         self.assertIn("attempt-local atomic", set_make["scope_limit"])
         update_database = entries["PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001"]
         self.assertEqual(
             [operation["kind"] for operation in update_database["operations"]],
-            ["exact_bytes_replace_once", "exact_span_replace_once"],
+            [
+                "exact_bytes_replace_once",
+                "exact_span_replace_once",
+                "exact_bytes_replace_once",
+            ],
         )
         self.assertIn("failwith", update_database["operations"][1]["after"])
+        self.assertIn(
+            "dynamic theorem search is disabled",
+            update_database["operations"][2]["after"],
+        )
+        self.assertNotIn("theorems", update_database["operations"][2]["after"])
+        self.assertIn("Both dynamic entry points", update_database["scope_limit"])
         self.assertIn("dead-effect elimination", update_database["scope_limit"])
         update_database_310 = entries[
             "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
@@ -1141,21 +1212,30 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         ]
         self.assertEqual(
             [operation["line"] for operation in nonlinear_coverage["operations"]],
-            [1649, 1693, 1702],
+            [27, 925, 930, 980, 996, 1412, 1649, 1693, 1702, 1760],
         )
         nonlinear_coverage_after = "".join(
             operation["after"] for operation in nonlinear_coverage["operations"]
         )
         self.assertIn("23242 ||", nonlinear_coverage_after)
         self.assertIn("candle_nonlinear_iarg_leaf_visits", nonlinear_coverage_after)
-        self.assertIn("incr candle_nonlinear_iarg_leaf_visits", nonlinear_coverage_after)
+        self.assertIn(
+            "candle_nonlinear_iarg_leaf_visits := "
+            "!candle_nonlinear_iarg_leaf_visits + 1",
+            nonlinear_coverage_after,
+        )
+        self.assertIn("List.compare Float.compare", nonlinear_coverage_after)
+        self.assertEqual(
+            nonlinear_coverage_after.count("candle_break_case_string_le"),
+            6,
+        )
         self.assertIn("partition-shape", nonlinear_coverage["scope_limit"])
         nonlinear_digests = entries[
             "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001"
         ]
         self.assertEqual(
             [operation["line"] for operation in nonlinear_digests["operations"]],
-            [49, 335, 364, 412],
+            [49, 79, 212, 335, 364, 412],
         )
         nonlinear_after = "".join(
             operation["after"] for operation in nonlinear_digests["operations"]
@@ -1164,6 +1244,8 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("e607b9e5e7f4c495236c6546d6889963", nonlinear_after)
         self.assertIn("filter (fun (_,t) -> t = TRUTH) exec_results = []", nonlinear_after)
         self.assertIn("candle_nonlinear_iarg_leaf_visits = 7479", nonlinear_after)
+        self.assertIn("String.compare x y <= 0", nonlinear_after)
+        self.assertIn("setify Term.(<)", nonlinear_after)
         self.assertEqual(nonlinear_after.count("||\n  failwith"), 4)
         self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
@@ -1227,6 +1309,26 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("complete 85-item flattened trace", (
             lp_quads["scope_limit"]
         ))
+        main_statement = entries[
+            "PROJECT-MAIN-STATEMENT-S3-TERM-SETIFY-001"
+        ]
+        self.assertEqual(
+            main_statement["path"],
+            "text_formalization/general/the_main_statement.hl",
+        )
+        self.assertEqual(len(main_statement["operations"]), 1)
+        self.assertEqual(
+            main_statement["operations"][0]["line"],
+            43,
+        )
+        self.assertIn(
+            "setify Term.(<)",
+            main_statement["operations"][0]["after"],
+        )
+        self.assertIn(
+            "identical typed expression",
+            main_statement["semantic_rule"],
+        )
         conforming_sequence = entries[
             "PROJECT-CONFORMING-S2-TACTIC-SEQUENCE-001"
         ]["operations"][0]
@@ -1256,7 +1358,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 198)
+        self.assertEqual(len(operation_ids), 221)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

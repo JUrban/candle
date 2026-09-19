@@ -16,3 +16,6 @@ module Candle_nonlinear_structure_effects = struct
     candle_nonlinear_structure_enabled = false
   };;
 end;;
+
+let candle_nonlinear_structure_effect_original_ok =
+  !candle_nonlinear_structure_trace = ["second";"first"];;

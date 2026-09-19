@@ -3129,13 +3129,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 439,
+        "line": 444,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 439,
+        "line": 444,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -5415,127 +5415,133 @@
         "source": "flyspeck:text_formalization/general/parser_verbose.hl"
       },
       {
-        "line": 270,
+        "line": 271,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 270,
+        "line": 271,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 306,
+        "line": 307,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 307,
+        "line": 308,
         "member": "clear",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 317,
+        "line": 318,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 325,
-        "member": "add",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 331,
+        "line": 326,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
         "line": 332,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 333,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 334,
+        "line": 335,
         "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 340,
-        "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
         "line": 341,
-        "member": "clear",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 342,
-        "member": "add",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 377,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 379,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 385,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 387,
+        "line": 342,
         "member": "clear",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 390,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 405,
+        "line": 343,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 440,
+        "line": 378,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 380,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 386,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 386,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 388,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 391,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 406,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 441,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 440,
+        "line": 441,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 484,
+        "line": 485,
         "member": "output_string",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/general/serialization.hl"
@@ -6086,13 +6092,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 439,
+        "line": 444,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 439,
+        "line": 444,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -8372,127 +8378,133 @@
         "source": "flyspeck:text_formalization/general/parser_verbose.hl"
       },
       {
-        "line": 270,
+        "line": 271,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 270,
+        "line": 271,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 306,
+        "line": 307,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 307,
+        "line": 308,
         "member": "clear",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 317,
+        "line": 318,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 325,
-        "member": "add",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 331,
+        "line": 326,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
         "line": 332,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 333,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 334,
+        "line": 335,
         "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 340,
-        "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
         "line": 341,
-        "member": "clear",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 342,
-        "member": "add",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 377,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 379,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 385,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 387,
+        "line": 342,
         "member": "clear",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 390,
-        "member": "find",
-        "module": "Hashtbl",
-        "source": "flyspeck:text_formalization/general/serialization.hl"
-      },
-      {
-        "line": 405,
+        "line": 343,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 440,
+        "line": 378,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 380,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 386,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 386,
+        "member": "t",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 388,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 391,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 406,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:text_formalization/general/serialization.hl"
+      },
+      {
+        "line": 441,
         "member": "string",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 440,
+        "line": 441,
         "member": "to_hex",
         "module": "Digest",
         "source": "flyspeck:text_formalization/general/serialization.hl"
       },
       {
-        "line": 484,
+        "line": 485,
         "member": "output_string",
         "module": "Stdlib",
         "source": "flyspeck:text_formalization/general/serialization.hl"
@@ -10678,8 +10690,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "5aaca51e970777a80d2a1d963feeb2a2",
-    "generated_source_sha256": "52949650e380c20cb752dcefbbdf8f896ff9a6df10d0419e12b11d4d21f94b1d",
+    "generated_source_md5": "f2bacddef4b71855907386fed139d221",
+    "generated_source_sha256": "7b2ce923f525fc44e48fe87f4db7359ab0755ccad93783649f6f0b90fced2644",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -13423,7 +13435,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 61306,
+      "bytes": 61445,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -16693,10 +16705,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "28ed5be32d3533d6caadd160ad00d154",
+      "md5": "512e51711806d2531db5e51baaca24b4",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "0192be7bbaa99274bc51804aef97f46bbe97d26d081d6edea9d46fc4c2412441"
+      "sha256": "74e264b69e9dfe974b0d4526f37a35a7a53e2de81f946d52933dfa2c6b66075d"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -16707,7 +16719,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 19840,
+      "bytes": 20072,
       "dependencies": [
         {
           "kind": "#use",
@@ -16745,7 +16757,7 @@
         },
         {
           "kind": "needs",
-          "line": 461,
+          "line": 466,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -16756,7 +16768,7 @@
         },
         {
           "kind": "needs",
-          "line": 467,
+          "line": 472,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -16767,7 +16779,7 @@
         },
         {
           "kind": "needs",
-          "line": 469,
+          "line": 474,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -16777,10 +16789,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "9515000631b41f334789b535c16113ab",
+      "md5": "338c0ee0eb1b597424316c3ea5880c9a",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "c589da37f289fee1502f3cdf48a7e1263e92590248cf97f40c0560c25a9d7bab"
+      "sha256": "05658eba87b759a7104644e5f1e2f6f8a9811f311bd3d7cdb768293f641e2c6e"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -20357,10 +20369,10 @@
       "execution_normalization": {
         "id": "PROJECT-MODULE-S3-SET-MAKE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26382,
-        "normalized_md5": "1d7f8887a5f880ffebd96526d23e7a36",
-        "normalized_sha256": "144319f2c4501d6aa73006bedb5a9df29877e6f61aa2a8a458fde3b6dd9c04df",
-        "operation_count": 3
+        "normalized_bytes": 26405,
+        "normalized_md5": "5569a1ea6ae3fb700a48dff785c65c3b",
+        "normalized_sha256": "db4cdfd85f2b3b8328b291d441c29636cc61677b57dae4f51c792b131d84e9fb",
+        "operation_count": 15
       },
       "md5": "9228eaf6a96159d9f59fea40fcc2a12f",
       "path": "text_formalization/general/serialization.hl",
@@ -20422,6 +20434,14 @@
     "flyspeck:text_formalization/general/the_main_statement.hl": {
       "bytes": 8931,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-MAIN-STATEMENT-S3-TERM-SETIFY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 8940,
+        "normalized_md5": "6aa746d4fba12b0b871556738b352298",
+        "normalized_sha256": "0d20295a4d5f7df300f4111fcba61643be9e4d6aea2e6091490cc881a8f5572f",
+        "operation_count": 1
+      },
       "md5": "8969afea2e404e71cfc4a30aebe8fb21",
       "path": "text_formalization/general/the_main_statement.hl",
       "repository": "flyspeck",
@@ -20481,10 +20501,10 @@
       "execution_normalization": {
         "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 5871,
-        "normalized_md5": "85ffaa8772cbaf66897720a5bf6215bd",
-        "normalized_sha256": "3fe52ade9303ab0ae0839cadac09995254d5dce553fe949bb5cda558ed8aefbe",
-        "operation_count": 2
+        "normalized_bytes": 5889,
+        "normalized_md5": "895b0b8e4e7fc4bab3a6d38d830bbdfd",
+        "normalized_sha256": "640fe40b869a88a5393ccece965dc769e3dc0d47262fe9cbc0779a62d80cd445",
+        "operation_count": 3
       },
       "md5": "4e923bcd7bc9f75b38329fdf2e380406",
       "path": "text_formalization/general/update_database_400.ml",
@@ -21506,10 +21526,10 @@
       "execution_normalization": {
         "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 62100,
-        "normalized_md5": "877814cc08f081a8a25d6dfbc64aba1e",
-        "normalized_sha256": "79346ceabbfcd0bf1f166579a1eeae3b62e03a03baa2b0f460efb4dc311efe63",
-        "operation_count": 3
+        "normalized_bytes": 62779,
+        "normalized_md5": "577d017b7dbcef85ca53900734f1712f",
+        "normalized_sha256": "f2dc6340274f1d29ba85bb62bde2e09a209837b80d36f1589e2f548faae572ee",
+        "operation_count": 10
       },
       "md5": "736fb16a1dab5f13102fdb185a0a1c08",
       "path": "text_formalization/nonlinear/break_case_exec.hl",
@@ -21725,10 +21745,10 @@
       "execution_normalization": {
         "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 14841,
-        "normalized_md5": "44f7f8842ee7bf2d2aeca90d5a1d2d94",
-        "normalized_sha256": "404aa6a9252dcf790703b0cb8d1a1b6f61af623276d2a794ba02bfa26a4d5a1c",
-        "operation_count": 4
+        "normalized_bytes": 14893,
+        "normalized_md5": "315c1d48f4826ae667d1763d05daff08",
+        "normalized_sha256": "08ff0eb708c6b6370e042c1d888ba8bd457b7dbaec12390edd30a57b2afea5dc",
+        "operation_count": 6
       },
       "md5": "d80256e5d423dadbde8f58f6ff5cbc81",
       "path": "text_formalization/nonlinear/mk_all_ineq.hl",
@@ -24238,7 +24258,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "dd3d04cbc5338e7552a36777940eae667db82652ebf68b2ecc10006790ca7a17",
+    "contract_sha256": "35bf670a467d7f1d3c5fa3fc1d7b4cea9fe3bfd8070b17598477a8f50be4fec8",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -24584,10 +24604,10 @@
       {
         "id": "PROJECT-MODULE-S3-SET-MAKE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 26382,
-        "normalized_md5": "1d7f8887a5f880ffebd96526d23e7a36",
-        "normalized_sha256": "144319f2c4501d6aa73006bedb5a9df29877e6f61aa2a8a458fde3b6dd9c04df",
-        "operation_count": 3,
+        "normalized_bytes": 26405,
+        "normalized_md5": "5569a1ea6ae3fb700a48dff785c65c3b",
+        "normalized_sha256": "db4cdfd85f2b3b8328b291d441c29636cc61677b57dae4f51c792b131d84e9fb",
+        "operation_count": 15,
         "operations": [
           {
             "after": "module St = struct\n  type elt = string;;\n  type t = string list;;\n  let empty = [];;\n  let rec mem value values =\n    match values with\n      [] -> false\n    | head::tail -> value = head || mem value tail;;\n  let add value values =\n    if mem value values then values else value::values;;\nend;;",
@@ -24612,11 +24632,98 @@
             "line": 490,
             "span_sha256": "9799aeb7cf4ad579becbf9c9ba99316faa3c0c5344f49ad2cb46f33b2bbe626b",
             "start": "let digest_file = Filename.temp_file \"digest\" \".hl\";; \n"
+          },
+          {
+            "after": "let mk_b_var base (i, v) = \n  let (_,ty) = dest_var v in\n  let name = base^(string_of_int i) in\n  let b = mk_var(name,ty) in\n    b;;",
+            "before": "let mk_b_var base (i, v) = \n  let (_,ty) = dest_var v in\n  let b = mk_var(base^(string_of_int i),ty) in\n    b;;",
+            "id": "PROJECT-SERIALIZATION-S3-TUPLE-CONSTRUCTOR-001-MK-B-VAR",
+            "kind": "exact_bytes_replace_once",
+            "line": 77
+          },
+          {
+            "after": "let bool_ty = bool_ty;;",
+            "before": "let bool_ty = Hol.bool_ty;;",
+            "id": "PROJECT-SERIALIZATION-S3-HOL-BOOL-TY-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 212
+          },
+          {
+            "after": "    let hd = definitions() in",
+            "before": "    let hd = Hol.definitions() in",
+            "id": "PROJECT-SERIALIZATION-S3-HOL-DEFINITIONS-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 363
+          },
+          {
+            "after": "  let abs_rep,rep_abs = new_basic_type_definition ",
+            "before": "  let abs_rep,rep_abs = Hol.new_basic_type_definition ",
+            "id": "PROJECT-SERIALIZATION-S3-HOL-BASIC-TYPE-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 571
+          },
+          {
+            "after": "      with _ -> new_axiom t;;",
+            "before": "      with _ -> Hol.new_axiom t;;",
+            "id": "PROJECT-SERIALIZATION-S3-HOL-AXIOM-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 601
+          },
+          {
+            "after": "let hash2 : (string, (string * thm) list) Hashtbl.t = Hashtbl.create 2000;;",
+            "before": "let hash2 = Hashtbl.create 2000;;",
+            "id": "PROJECT-SERIALIZATION-S3-HASHTBL-HASH2-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 383
+          },
+          {
+            "after": "    let sort_uniq = uniq o (sort (fun a b -> String.compare (fst a) (fst b) < 0)) in",
+            "before": "    let sort_uniq = uniq o (sort (fun a b -> fst a < fst b)) in",
+            "id": "PROJECT-SERIALIZATION-S3-STRING-ORDER-001-HISTORY-LOCAL",
+            "kind": "exact_bytes_replace_once",
+            "line": 389
+          },
+          {
+            "after": "    let f' = uniq  (sort (fun a b -> String.compare (fst a) (fst b) < 0) f1) in",
+            "before": "    let f' = uniq  (sort (fun a b -> fst a < fst b) f1) in",
+            "id": "PROJECT-SERIALIZATION-S3-STRING-ORDER-001-HISTORY-RESULT",
+            "kind": "exact_bytes_replace_once",
+            "line": 402
+          },
+          {
+            "after": "  let sort_uniq = uniq o (sort (fun a b -> String.compare (fst a) (fst b) < 0)) in\n  let axiom_reduced = filter (fun t -> not(is_deserial_axiom t)  ) (axioms()) in",
+            "before": "  let sort_uniq = uniq o (sort (fun a b -> fst a < fst b)) in\n  let axiom_reduced = filter (fun t -> not(is_deserial_axiom t)  ) (axioms()) in",
+            "id": "PROJECT-SERIALIZATION-S3-STRING-ORDER-001-AXIOM-HISTORY",
+            "kind": "exact_bytes_replace_once",
+            "line": 421
+          },
+          {
+            "after": "  let h4 =  (String.concat \" \" o nub o  (sort (fun a b -> String.compare a b < 0))) h2 in",
+            "before": "  let h4 =  (String.concat \" \" o nub o  (sort (<))) h2 in",
+            "id": "PROJECT-SERIALIZATION-S3-STRING-ORDER-001-FULL-DIGEST",
+            "kind": "exact_bytes_replace_once",
+            "line": 437
+          },
+          {
+            "after": "let save_all_theorems () =\n  failwith \"Candle Flyspeck theorem-database export is disabled\";;",
+            "end": "  let _ =   save_all tt2 in\n    ();;",
+            "end_line": 525,
+            "id": "PROJECT-SERIALIZATION-S3-SAVE-ALL-THEOREMS-001-DISABLE",
+            "kind": "exact_span_replace_once",
+            "line": 519,
+            "span_sha256": "ed7874df3f03d5c3dcc6ca7b1a21ac45da441308b94b53e519feffe017559145",
+            "start": "let save_all_theorems() = \n"
+          },
+          {
+            "after": "let thm_list : thm list ref = ref [];;",
+            "before": "let thm_list = ref [];;",
+            "id": "PROJECT-SERIALIZATION-S3-THM-LIST-VALUE-RESTRICTION-001",
+            "kind": "exact_bytes_replace_once",
+            "line": 511
           }
         ],
         "path": "text_formalization/general/serialization.hl",
-        "scope_limit": "This is not general functor, Set.Make, conditional dynamic-loading, generated-output, or stdout-equivalence support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, the pinned 4.14.1 update-database branch, and selected-run non-use of theorem-digest file output. No consumer of the two removed Filename diagnostic lines is permitted by this preservation claim. Any new St operation, representation observation, source/version drift, branch change, diagnostic-output dependency, or theorem-digest output/reload consumer reopens the compatibility gate and requires a separately versioned attempt-local atomic generated-output lifecycle.",
-        "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted. The selected proof run does not invoke save_all_theorems, save_all, or load_digest_file. Removing the load-time Filename.temp_file allocation preserves the selected proof state, source-action semantics, and semantic fingerprints, while both deferred theorem-digest output and reload now fail closed if selected. It intentionally removes exactly two diagnostic stdout lines from Candle's Filename implementation: TODO Filename.temp_file (just concats temp dir, prefix, suffix) and TODO Filename.get_temp_dir_name (always returns /tmp).",
+        "scope_limit": "This is not general functor, Set.Make, conditional dynamic-loading, generated-output, stdout-equivalence, tuple-constructor, module-qualification, mutable-value generalization, or polymorphic-comparison support. It is confined to the pinned Serialization.St module, its exact selected empty/add/mem use set, the pinned 4.14.1 update-database branch, selected-run non-use of theorem-database and theorem-digest export/reload, mk_b_var's one generated-name tuple, the complete four-site Hol-qualified inventory, the only top-level Serialization Hashtbl.create binding, the four retained string-sort comparator sites plus the disabled export-only fifth site, and the sole polymorphic top-level ref allocation. No consumer of the two removed Filename diagnostic lines is permitted by this preservation claim. Any new St operation, representation observation, source/version drift, branch change, diagnostic-output dependency, theorem-database or theorem-digest output/reload consumer, tuple construction, qualified Hol access, top-level mutable allocation, or string sort reopens the compatibility gate and requires a separately validated normalization or attempt-local atomic generated-output lifecycle.",
+        "semantic_rule": "The exact selected source uses St only through empty, add, and mem: set_of_string folds add over strings, and the resulting private value is queried only by mem. For strings, OCaml Set.Make membership is String_compare.compare x y = 0, equivalent to structural string equality. The explicit list set preserves empty membership, duplicate-insensitive add, and every subsequent membership result; ordering and representation are unobservable in the selected graph. The pinned ocaml_version is 4.14.1, so the source conditional selects update_database_400.ml; the exact static load action preserves that selected branch while leaving update_database_310.ml unexecuted. The selected proof run does not invoke save_all_theorems, save_all, or load_digest_file. Removing the load-time Filename.temp_file allocation preserves the selected proof state, source-action semantics, and semantic fingerprints, while all three deferred theorem-database export, theorem-digest output, and reload entry points now fail closed if selected. Disabling the whole dormant save_all_theorems body also removes its otherwise uncompilable reference to the deliberately absent dynamic theorem-search database; no substitute registry or theorem bytes are introduced. It intentionally removes exactly two diagnostic stdout lines from Candle's Filename implementation: TODO Filename.temp_file (just concats temp dir, prefix, suffix) and TODO Filename.get_temp_dir_name (always returns /tmp). Binding mk_b_var's pure generated string immediately before the identical mk_var pair preserves the exact bound-variable name, HOL type, alpha-normal form, term, effects, and exceptions while avoiding the independently reproduced Candle tuple-constructor inference defect. HOL startup includes module Hol into the top level; the nonrecursive bool_ty binding and the unqualified definitions, new_basic_type_definition, and new_axiom references therefore select the identical included kernel values intended by the complete four-site Hol-qualified inventory, while preserving every selected Serialization binding and call. The complete top-level Hashtbl.create inventory contains one table, hash2. Its only insertions and reads force string keys and (string * thm) list values; stating that exact type at allocation preserves the same table, capacity, mutation order, contents, lookup behavior, effects, and exceptions while avoiding Candle's declaration-boundary value restriction. The complete five-site string-sort inventory orders theorem-history digest pairs or digest strings. Four retained sites use OCaml structural string less-than, which String.compare x y < 0 preserves exactly; the fifth occurs only inside the fail-closed save_all_theorems body and is removed with that body. The retained sorted histories, duplicate removal, concatenated bytes, and digests therefore remain identical while avoiding Candle's integer specialization of polymorphic (<). Of the two top-level ref allocations, use_serialization is already concretely bool-valued and thm_list is the sole polymorphic empty value; every write and read forces thm list ref. Its explicit erased type preserves the same empty initial value, mutation order, stored theorems, reads, and exceptions while avoiding the declaration-boundary value restriction.",
         "source_key": "flyspeck:text_formalization/general/serialization.hl",
         "source_md5": "9228eaf6a96159d9f59fea40fcc2a12f",
         "source_sha256": "fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed"
@@ -24624,10 +24731,10 @@
       {
         "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 5871,
-        "normalized_md5": "85ffaa8772cbaf66897720a5bf6215bd",
-        "normalized_sha256": "3fe52ade9303ab0ae0839cadac09995254d5dce553fe949bb5cda558ed8aefbe",
-        "operation_count": 2,
+        "normalized_bytes": 5889,
+        "normalized_md5": "895b0b8e4e7fc4bab3a6d38d830bbdfd",
+        "normalized_sha256": "640fe40b869a88a5393ccece965dc769e3dc0d47262fe9cbc0779a62d80cd445",
+        "operation_count": 3,
         "operations": [
           {
             "after": "let candle_flyspeck_update_database_effect_elided = true;;",
@@ -24645,11 +24752,18 @@
             "line": 27,
             "span_sha256": "321ace78ddb20b521a213df73bf2d3b8ac73774293b6266e8aeb7d789c6e5a2d",
             "start": "let exec = ignore o Toploop.execute_phrase false Format.std_formatter\r\n  o !Toploop.parse_toplevel_phrase o Lexing.from_string;;\r\n"
+          },
+          {
+            "after": "let search _ = failwith \"Candle Flyspeck: dynamic theorem search is disabled by the static proof route\";;",
+            "before": "let search pat = sort (increasing fst) (search_thml (term_match [])  pat (!theorems));;",
+            "id": "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001-FAIL-CLOSED-SEARCH",
+            "kind": "exact_bytes_replace_once",
+            "line": 332
           }
         ],
         "path": "text_formalization/general/update_database_400.ml",
-        "scope_limit": "This is selected-route dead-effect elimination, not a successful no-op implementation of Toploop or theorem search. The complete run, exact final theorem/assumption fingerprints, and mutation tests must confirm non-observation. Any selected search call, theorem-cache read, reflection, source drift, or fingerprint difference invalidates the normalization and requires a typed registry or verified dynamic-evaluation design.",
-        "semantic_rule": "The only selected active update_database call is the initial load-time replacement of the interactive theorem-search cache. Exact comment/string/quotation-aware inventory finds no selected accepted-run consumer of that cache or of search/search_thml; later update_database and !theorems sites are in deferred serialization helper bodies. The static proof route therefore removes the unobserved initial cache mutation, retains pure search-pattern constructors, and makes every future dynamic update/search attempt fail closed instead of supplying Toploop, Lexing, Obj.magic, or compiler-layout guesses.",
+        "scope_limit": "This is selected-route dead-effect elimination, not a successful no-op implementation of Toploop or theorem search. Both dynamic entry points raise explicit failures if a future source begins to observe them. The complete run, exact final theorem/assumption fingerprints, and mutation tests must confirm non-observation. Any selected search call, theorem-cache read, reflection, source drift, or fingerprint difference invalidates the normalization and requires a typed registry or verified dynamic-evaluation design.",
+        "semantic_rule": "The only selected active update_database call is the initial load-time replacement of the interactive theorem-search cache. Exact comment/string/quotation-aware inventory finds no selected accepted-run consumer of that cache or of search/search_thml; later update_database, search, and !theorems sites are deferred serialization helper bodies. The static proof route therefore removes the unobserved initial cache mutation, retains pure search-pattern constructors, and makes every future dynamic update/search attempt fail closed instead of supplying Toploop, Lexing, Obj.magic, compiler-layout guesses, or an unauthenticated replacement theorem database.",
         "source_key": "flyspeck:text_formalization/general/update_database_400.ml",
         "source_md5": "4e923bcd7bc9f75b38329fdf2e380406",
         "source_sha256": "f1d0a45a0ce2ec54a57bf017989d6960124fd9bbfeb0a8a3ad24a3ffac268467"
@@ -26073,11 +26187,53 @@
       {
         "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 62100,
-        "normalized_md5": "877814cc08f081a8a25d6dfbc64aba1e",
-        "normalized_sha256": "79346ceabbfcd0bf1f166579a1eeae3b62e03a03baa2b0f460efb4dc311efe63",
-        "operation_count": 3,
+        "normalized_bytes": 62779,
+        "normalized_md5": "577d017b7dbcef85ca53900734f1712f",
+        "normalized_sha256": "f2dc6340274f1d29ba85bb62bde2e09a209837b80d36f1589e2f548faae572ee",
+        "operation_count": 10,
         "operations": [
+          {
+            "after": "  open Hales_tactic;;\n\n  let candle_break_case_string_le x y = String.compare x y <= 0;;\n  let candle_break_case_float_le x y = Float.compare x y <= 0;;\n  let candle_break_case_float_list_compare x y =\n    List.compare Float.compare x y;;\n  let candle_break_case_float_list_pair_le x y =\n    Pair.compare candle_break_case_float_list_compare\n      candle_break_case_float_list_compare x y <= 0;;",
+            "before": "  open Hales_tactic;;",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-DEFINE",
+            "kind": "exact_bytes_replace_once",
+            "line": 27
+          },
+          {
+            "after": "let check_odom = setify candle_break_case_float_list_pair_le\n  (map (fun ((a,b),t) -> ",
+            "before": "let check_odom = setify (map (fun ((a,b),t) -> ",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-ODOM-OUTER",
+            "kind": "exact_bytes_replace_once",
+            "line": 925
+          },
+          {
+            "after": "\t setify candle_break_case_float_le (diff a c),\n         setify candle_break_case_float_le (diff b d)) odom_table);;",
+            "before": "\t setify(diff a c),setify(diff b d)) odom_table);;",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-ODOM-INNER",
+            "kind": "exact_bytes_replace_once",
+            "line": 930
+          },
+          {
+            "after": "  let delta_idv =\n    setify candle_break_case_string_le (delta_pos_idv @ delta_inert_idv) in",
+            "before": "  let delta_idv = setify (delta_pos_idv @ delta_inert_idv) in",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-DELTA",
+            "kind": "exact_bytes_replace_once",
+            "line": 980
+          },
+          {
+            "after": "    (setify candle_break_case_string_le all_idv =\n     setify candle_break_case_string_le\n       (oxl_idv @ alpha_idv @ beta_idv @ gamma_idv @ delta_idv)) ",
+            "before": "    (setify all_idv = setify (oxl_idv @ alpha_idv @ beta_idv @ gamma_idv @ delta_idv)) ",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-PARTITION",
+            "kind": "exact_bytes_replace_once",
+            "line": 996
+          },
+          {
+            "after": "let POST_TAC =   ASM_TAC THEN REWRITE_TAC[GSYM Nonlinear_lemma.ineq_expand6];;\n\nlet bad_names t = \n  let t' = concl (REWRITE_RULE nonlin_rewrites (ASSUME t)) in\n  filter (fun c -> not(mem c good_names))\n    (setify candle_break_case_string_le (get_const_names t'));;",
+            "before": "let POST_TAC =   ASM_TAC THEN REWRITE_TAC[GSYM Nonlinear_lemma.ineq_expand6];;\n\nlet bad_names t = \n  let t' = concl (REWRITE_RULE nonlin_rewrites (ASSUME t)) in\n  filter (fun c -> not(mem c good_names)) (setify ( (get_const_names t')));;",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-BAD-NAMES",
+            "kind": "exact_bytes_replace_once",
+            "line": 1412
+          },
           {
             "after": "List.length all_parameters = 23242 ||\n  failwith \"nonlinear all_parameters count mismatch\";;",
             "before": "List.length all_parameters = 23242;;",
@@ -26093,16 +26249,23 @@
             "line": 1693
           },
           {
-            "after": "      | Iarg_leaf _ ->\n          let _ = incr candle_nonlinear_iarg_leaf_visits in\n            ASSUME tm\n",
+            "after": "      | Iarg_leaf _ ->\n          let _ = candle_nonlinear_iarg_leaf_visits := !candle_nonlinear_iarg_leaf_visits + 1 in\n            ASSUME tm\n",
             "before": "      | Iarg_leaf _ -> ASSUME tm\n",
             "id": "PROJECT-NONLINEAR-S3-RECONSTRUCTION-COVERAGE-001-LEAF-VISIT",
             "kind": "exact_bytes_replace_once",
             "line": 1702
+          },
+          {
+            "after": "let all_idv =\n  setify candle_break_case_string_le\n    (oxl_idv @ alpha_idv @ beta_idv @ gamma_idv @ delta_idv);;",
+            "before": "let all_idv = setify (oxl_idv @ alpha_idv @ beta_idv @ gamma_idv @ delta_idv);;",
+            "id": "PROJECT-NONLINEAR-S3-SETIFY-COMPARATORS-001-ALL-IDV",
+            "kind": "exact_bytes_replace_once",
+            "line": 1760
           }
         ],
         "path": "text_formalization/nonlinear/break_case_exec.hl",
-        "scope_limit": "The 23,242 pre-setify diagnostic list remains only a partition-shape guard. The 7,479 visit gate establishes complete traversal of the pinned serialized Iarg leaf corpus only when combined with the fatal caught-failure gates, the authenticated case-log hash, final theorem fingerprints, and clean compiled execution; it does not independently bind proof history or exclude a count-preserving source mutation.",
-        "semantic_rule": "The existing 23,242 comparison still evaluates once and now fails closed. The recursive proof-tree reconstruction also increments one private counter at every Iarg_leaf branch, immediately before the unchanged ASSUME operation. The final assembly normalization requires exactly the 7,479 leaf constructors authenticated by break_case_log.hl to have been visited.",
+        "scope_limit": "The explicit comparators cover the complete mechanically enumerated active unary setify call set in break_case_exec.hl; the occurrence inside the commented historical bad_names definition is deliberately untouched. They change no domain value, identifier, theorem, tactic, proof step, or axiom. The 23,242 pre-setify diagnostic list remains only a partition-shape guard. The 7,479 visit gate establishes complete traversal of the pinned serialized Iarg leaf corpus only when combined with the fatal caught-failure gates, the authenticated case-log hash, final theorem fingerprints, and clean compiled execution; it does not independently bind proof history or exclude a count-preserving source mutation.",
+        "semantic_rule": "Native unary setify orders and deduplicates with OCaml structural comparison. Candle makes the ordering argument explicit. String.compare supplies the same total string order for every inequality identifier and constant name; Float.compare supplies OCaml's total float order for the finite domain differences; and List.compare plus Pair.compare recursively supplies the same lexicographic order for each pair of float lists. The existing 23,242 comparison still evaluates once and now fails closed. The recursive proof-tree reconstruction also increments one private counter at every Iarg_leaf branch, immediately before the unchanged ASSUME operation. The final assembly normalization requires exactly the 7,479 leaf constructors authenticated by break_case_log.hl to have been visited.",
         "source_key": "flyspeck:text_formalization/nonlinear/break_case_exec.hl",
         "source_md5": "736fb16a1dab5f13102fdb185a0a1c08",
         "source_sha256": "e20b303d586f51f771afa3ad48f7c40fa275b6e88888554ed10b52794abfbced"
@@ -26110,10 +26273,10 @@
       {
         "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001",
         "kind": "exact_bytes_replace_sequence",
-        "normalized_bytes": 14841,
-        "normalized_md5": "44f7f8842ee7bf2d2aeca90d5a1d2d94",
-        "normalized_sha256": "404aa6a9252dcf790703b0cb8d1a1b6f61af623276d2a794ba02bfa26a4d5a1c",
-        "operation_count": 4,
+        "normalized_bytes": 14893,
+        "normalized_md5": "315c1d48f4826ae667d1763d05daff08",
+        "normalized_sha256": "08ff0eb708c6b6370e042c1d888ba8bd457b7dbaec12390edd30a57b2afea5dc",
+        "operation_count": 6,
         "operations": [
           {
             "after": "let check_nonlinear_md5 = \n  Serialization.simple_digest_thm assume_the_nonlinear_inequalities = \n  \"1f054717131cf915bd8cc95ab7b645c3\" ||\n  failwith \"the_nonlinear_inequalities surface digest mismatch\";;",
@@ -26121,6 +26284,20 @@
             "id": "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001-SURFACE-DIGEST",
             "kind": "exact_bytes_replace_once",
             "line": 49
+          },
+          {
+            "after": "    setify (fun x y -> String.compare x y <= 0)\n      (map (fun idq -> idq.idv) has_quad_idq);;",
+            "before": "    setify (map (fun idq -> idq.idv) has_quad_idq);;",
+            "id": "PROJECT-NONLINEAR-S3-FINAL-SETIFY-001-QUAD-IDS",
+            "kind": "exact_bytes_replace_once",
+            "line": 79
+          },
+          {
+            "after": "  let lp_tms = setify Term.(<) (map (fun t -> t.ineq) lp_ineqs) in",
+            "before": "  let lp_tms = setify (map (fun t -> t.ineq) lp_ineqs) in",
+            "id": "PROJECT-NONLINEAR-S3-FINAL-SETIFY-001-LP-TERMS",
+            "kind": "exact_bytes_replace_once",
+            "line": 212
           },
           {
             "after": "let exec_results = exec();;\n\nlet _ =\n  filter (fun (_,t) -> t = TRUTH) exec_results = [] ||\n  failwith \"failed nonlinear implication reconstruction\";;",
@@ -26145,8 +26322,8 @@
           }
         ],
         "path": "text_formalization/nonlinear/mk_all_ineq.hl",
-        "scope_limit": "The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required.",
-        "semantic_rule": "Both existing digest comparisons remain fatal. In addition, every caught Failure in the nonlinear implication reconstruction and the serialized prep reconstruction must leave no TRUTH sentinel, and the complete prep traversal must visit exactly 7,479 authenticated Iarg leaves before final theorem construction can continue.",
+        "scope_limit": "The explicit comparators are confined to the complete two-call unary setify inventory in mk_all_ineq.hl and change no selected inequality, theorem statement, hypothesis, definition, proof step, proof intent, or axiom. The leaf count is bound to the pinned break_case_log source and the unchanged recursive proof-tree traversal, while the TRUTH gates reject both source catch-and-continue paths. These checks still do not bind definition/proof history, the permitted axiom identities, or a count-preserving mutation; final structural fingerprints, exact input provenance, compiled execution, and independent repetition remain required.",
+        "semantic_rule": "Native unary setify orders and deduplicates the quad identifiers and LP inequality terms with OCaml structural comparison. Candle's String.compare supplies the same total identifier order, while Term.(<) is its canonical verified strict HOL-term order and has already been checked against native term-constructor ordering. Both existing digest comparisons remain fatal. In addition, every caught Failure in the nonlinear implication reconstruction and the serialized prep reconstruction must leave no TRUTH sentinel, and the complete prep traversal must visit exactly 7,479 authenticated Iarg leaves before final theorem construction can continue.",
         "source_key": "flyspeck:text_formalization/nonlinear/mk_all_ineq.hl",
         "source_md5": "d80256e5d423dadbde8f58f6ff5cbc81",
         "source_sha256": "99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11"
@@ -26716,9 +26893,32 @@
         "source_key": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
         "source_md5": "7d8a5d6324d9e66be13f57f7f2b4d719",
         "source_sha256": "879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c"
+      },
+      {
+        "id": "PROJECT-MAIN-STATEMENT-S3-TERM-SETIFY-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 8940,
+        "normalized_md5": "6aa746d4fba12b0b871556738b352298",
+        "normalized_sha256": "0d20295a4d5f7df300f4111fcba61643be9e4d6aea2e6091490cc881a8f5572f",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "  let lp_tms = setify Term.(<) (map (fun t -> t.ineq) lp_ineqs) in",
+            "before": "  let lp_tms = setify (map (fun t -> t.ineq) lp_ineqs) in",
+            "id": "PROJECT-MAIN-STATEMENT-S3-TERM-SETIFY-001-EXPLICIT-COMPARATOR",
+            "kind": "exact_bytes_replace_once",
+            "line": 43
+          }
+        ],
+        "path": "text_formalization/general/the_main_statement.hl",
+        "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over selected HOL inequality terms at the_main_statement.hl line 43. It changes no selected inequality, theorem statement, hypothesis, definition, proof step, proof intent, or axiom. Exact normalized-source identity, focused original-reject/normalized-accept execution from a clean predecessor, and later cumulative replay are required.",
+        "semantic_rule": "The lp_tms input is a list of HOL terms selected from the ineq field. Native Flyspeck setify sorts and deduplicates those terms with OCaml structural comparison; Candle's verified HOL library requires the comparator explicitly, and Term.(<) is its canonical strict HOL-term order. The existing native/Candle term-order oracle establishes the same ordering and duplicate removal on every term constructor. This is the identical typed expression already validated in formal_lp/hypermap/ineqs/lp_ineqs.hl.",
+        "source_key": "flyspeck:text_formalization/general/the_main_statement.hl",
+        "source_md5": "8969afea2e404e71cfc4a30aebe8fb21",
+        "source_sha256": "1e0171dd49125995da6e9f183e6de3eb802ac0eae42a913d5619374108e11f2a"
       }
     ],
-    "entry_count": 54,
+    "entry_count": 55,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -26849,8 +27049,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "28ed5be32d3533d6caadd160ad00d154",
-    "generated_source_sha256": "0192be7bbaa99274bc51804aef97f46bbe97d26d081d6edea9d46fc4c2412441",
+    "generated_source_md5": "512e51711806d2531db5e51baaca24b4",
+    "generated_source_sha256": "74e264b69e9dfe974b0d4526f37a35a7a53e2de81f946d52933dfa2c6b66075d",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

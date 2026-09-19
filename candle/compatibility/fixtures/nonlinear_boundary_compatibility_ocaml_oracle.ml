@@ -204,6 +204,21 @@ let original_nested_bounds =
 let nested_comparator_ok =
   List.sort_uniq Stdlib.compare original_nested_bounds =
   List.sort_uniq compare_nested_string_pair original_nested_bounds;;
+
+let compare_float_list = List.compare Float.compare;;
+
+let compare_float_list_pair =
+  compare_pair compare_float_list compare_float_list;;
+
+let break_case_setify_order_ok =
+  let float_values = [0.0; -0.0; 1.25; -2.5; 7.99; 8.0] in
+  let domain_differences =
+    [([0.0],[0.0]); ([1.25;0.0],[-2.5;7.99]);
+     ([0.0],[0.0]); ([-2.5],[8.0])] in
+  List.sort_uniq Stdlib.compare float_values =
+    List.sort_uniq Float.compare float_values &&
+  List.sort_uniq Stdlib.compare domain_differences =
+    List.sort_uniq compare_float_list_pair domain_differences;;
 type ineqdoc_marker = Section | Ineqdoc | Comment;;
 
 module Original_ineqdoc = struct
@@ -432,6 +447,7 @@ let () =
   if simple_formats_ok && formatting_ok && iteration_ok && list_alias_ok &&
      string_order_ok && structure_effects_ok && ineqdoc_value_ok &&
      remaining_empty_reference_values_ok && parse_ineq_runtime_ok &&
-     nested_comparator_ok && tuple_and_qualified_record_ok
+     nested_comparator_ok && break_case_setify_order_ok &&
+     tuple_and_qualified_record_ok
   then print_endline "NONLINEAR_BOUNDARY_COMPATIBILITY_OCAML_ORACLE_OK"
   else failwith "nonlinear boundary compatibility oracle";;
