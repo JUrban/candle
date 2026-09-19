@@ -62,6 +62,38 @@ times in 1.467294 s (1.467 ms/call), and `hard_10.dat` 1,000 times in
 but they make file decode an unlikely explanation for 14--24 minute focused
 proofs.
 
+That diagnosis is now confirmed by a real Candle run of the exact `hard_2`
+certificate (18 faces, total face-list length 58; 17 terminals and 1,218
+constraint references). The existing theorem interface was reproduced with
+three hypotheses and conclusion `contravening V ==> F`. At 50 ms external
+sampling resolution, the verifier took 320.126 s wall / 320.070 s CPU:
+
+- the case tree consumed 315.299 s (98.493% of verifier time);
+- constraint theorem construction consumed 179.060 s (56.791% of case-tree
+  time);
+- constraint combination consumed 78.507 s (24.899%);
+- variable-bound theorem construction consumed 33.874 s (10.744%);
+- variable cancellation consumed 22.042 s (6.991%); and
+- those four theorem-building phases together consumed 313.484 s, 99.424% of
+  case-tree time and 97.925% of verifier time.
+
+By contrast, `compute_all` took 4.061 s (1.269% of verifier time), certificate
+hypermap decode 0.051 s, condition construction 0.660 s, base inequalities
+0.051 s, and certificate-file decode 0.053 s. Inequality initialization was a
+separate 54.295 s before the verifier. The full observer duration, including
+428.706 s of checkpoint restore and source closure before the first
+certificate marker, was 803.240 s. The sampled CakeML RSS was 17.224 GiB.
+There were 392 markers, 196 matched phases, no unclosed phases, no proof
+errors, and no new swap-out.
+
+This is a plan-changing prioritization result: `compute_all` is useful for
+establishing reflective machinery, but it is not the primary performance
+boundary on this faithful example. The next substantial LP prototype should
+target the normalized linear-combination proof path. The current phase split
+does not pretend to distinguish conversion work from kernel checking inside
+each theorem operation; doing that would require more invasive kernel
+instrumentation.
+
 The promising LP object-logic boundary is a normalized exact linear
 combination checker: encode the selected inequality indices, integer
 coefficients, and normalized variable map; compute that the combination
