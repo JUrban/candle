@@ -38,10 +38,16 @@ correctness theorem, not an unchecked implementation substitution.
 
 The adapter decodes the computed cval result through proved round trips and
 returns an assumption-free ordinary HOL equality for the complete aggregate.
+The generic real theorem layer now proves, without assumptions, that each
+nonnegative natural-weighted inequality preserves `<=`, that the list fold
+preserves it, and that a fold from `(0,0)` yields a valid aggregate inequality.
+This closes the abstract inequality-combination argument independently of cval
+evaluation.
+
 It is not yet a Flyspeck checker. Before integration it must add:
 
-1. a generic real-linear-combination soundness theorem connecting authenticated
-   `get_ineqs` premises and nonnegative multipliers to the aggregate inequality;
+1. the bridge from authenticated `get_ineqs` theorems and the computed exact
+   aggregate equality into the generic real soundness theorem;
 2. a faithful reifier for `lin_f` terms with exact variable identity and
    integer right-hand sides;
 3. conclusion, hypothesis, and axiom-fingerprint equality against the existing

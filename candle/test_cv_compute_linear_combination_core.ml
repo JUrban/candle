@@ -1,9 +1,11 @@
 needs "candle/compute.ml";;
 needs "candle/cv_compute_linear_combination_core.ml";;
 needs "candle/cv_compute_linear_combination.ml";;
+needs "candle/cv_compute_linear_combination_sound.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination;;
+open Candle_cv_linear_combination_sound;;
 
 let candle_cv_lc_test_rows =
  `[(3,([(2,0);(0,1)],(5,0)));
@@ -68,5 +70,10 @@ if hyp candle_cv_lc_test_ordinary <> [] then
 if not (aconv (concl candle_cv_lc_test_ordinary)
               candle_cv_lc_test_ordinary_expected) then
   failwith "ordinary linear-combination theorem interface mismatch";;
+
+if hyp candle_lc_real_accumulate_sound <> [] ||
+   hyp candle_lc_real_fold_sound <> [] ||
+   hyp candle_lc_real_fold_from_zero <> []
+then failwith "linear-combination soundness theorem has assumptions";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
