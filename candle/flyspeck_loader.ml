@@ -131,12 +131,12 @@ let candle_flyspeck_full_build_program =
 
 if not (Sys.file_exists candle_flyspeck_source_digest_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_source_digest_program) <>
-     "2af840566e60c5cb56f1f2368f0e8c17" then
+     "5aaca51e970777a80d2a1d963feeb2a2" then
   failwith "Flyspeck source digest program authentication failed";;
 
 if not (Sys.file_exists candle_flyspeck_full_build_program) ||
    Digest.to_hex (Digest.file candle_flyspeck_full_build_program) <>
-     "edb61d1c3272e7598604743ef8464fe1" then
+     "28ed5be32d3533d6caadd160ad00d154" then
   failwith "Flyspeck static full-build program authentication failed";;
 
 needs "candle/flyspeck_source_digests.ml";;
@@ -156,8 +156,8 @@ let candle_flyspeck_source_identity (source_root,source,digest) =
 Cakeml.configureSourceIdentities
   (map candle_flyspeck_source_identity candle_flyspeck_source_digests);;
 
-(* The host-side normalizer materializes all fifty-three outputs in a separate tree;
-   this process registers only the fifty-two selected by the direct source graph.
+(* The host-side normalizer materializes all fifty-four outputs in a separate tree;
+   this process registers only the fifty-three selected by the direct source graph.
    The outer release manifest authenticates size and SHA-256; this process checks
    OCaml-compatible MD5 before registering exact original-to-normalized paths.
    The overlay root is never put on [load_path], so an extra output cannot shadow
@@ -419,13 +419,18 @@ let candle_flyspeck_normalized_sources =
     Filename.concat candle_flyspeck_overlay_root
       "text_formalization/packing/SLTSTLO.hl",
     "78e1641aace383531357719f10fa90cb");
+   (Filename.concat candle_flyspeck_text_root
+      "local/ZLZTHIC.hl",
+    Filename.concat candle_flyspeck_overlay_root
+      "text_formalization/local/ZLZTHIC.hl",
+    "94685b843623c0918058a08cd8c984a8");
    (Filename.concat candle_flyspeck_root
       "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
     Filename.concat candle_flyspeck_overlay_root
       "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
     "9de99cf5a983e899733f76058a0c8814")];;
 
-if List.length candle_flyspeck_normalized_sources <> 52 then
+if List.length candle_flyspeck_normalized_sources <> 53 then
   failwith "incomplete Flyspeck normalized source table";;
 
 let candle_flyspeck_verify_normalized_source (_,path,expected) =

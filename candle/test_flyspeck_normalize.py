@@ -202,7 +202,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
 
     def test_contract_is_narrow_and_auditable(self):
         self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(len(self.contract["entries"]), 53)
+        self.assertEqual(len(self.contract["entries"]), 54)
         entries = {entry["id"]: entry for entry in self.contract["entries"]}
         retired_frontend_entries = {
             "PROJECT-ADD-TRIANGLE-S2-STRUCTURE-EFFECTS-001",
@@ -1168,6 +1168,23 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("do not bind definition/proof history", (
             nonlinear_digests["scope_limit"]
         ))
+        zlzthic = entries[
+            "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001"
+        ]
+        self.assertEqual(
+            zlzthic["path"],
+            "text_formalization/local/ZLZTHIC.hl",
+        )
+        self.assertEqual(
+            [operation["line"] for operation in zlzthic["operations"]],
+            [2600, 3780],
+        )
+        self.assertIn("ARITH_RULE `i <= r + 1 ==> i <= r + 2`", (
+            zlzthic["operations"][0]["after"]
+        ))
+        self.assertIn("line 3102 is deliberately untouched", (
+            zlzthic["scope_limit"]
+        ))
         lp_quads = entries[
             "PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001"
         ]
@@ -1239,7 +1256,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("same logical relative-path literals", (
             lpproc["semantic_rule"]
         ))
-        self.assertEqual(len(operation_ids), 196)
+        self.assertEqual(len(operation_ids), 198)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):

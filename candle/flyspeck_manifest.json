@@ -3129,13 +3129,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 434,
+        "line": 439,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 434,
+        "line": 439,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -6086,13 +6086,13 @@
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 434,
+        "line": 439,
         "member": "file",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
       },
       {
-        "line": 434,
+        "line": 439,
         "member": "to_hex",
         "module": "Digest",
         "source": "candle:candle/flyspeck_loader.ml"
@@ -10678,8 +10678,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "2af840566e60c5cb56f1f2368f0e8c17",
-    "generated_source_sha256": "c1e1b09a09118d5a9ac109e12750e910f2d8ee9265a1b3a9dc9a4edfa007fc6b",
+    "generated_source_md5": "5aaca51e970777a80d2a1d963feeb2a2",
+    "generated_source_sha256": "52949650e380c20cb752dcefbbdf8f896ff9a6df10d0419e12b11d4d21f94b1d",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -13423,7 +13423,7 @@
       "sha256": "38092db42ba7f803051da6854bef0b98570565208797cbe824f882c8095ef804"
     },
     "candle:candle/flyspeck_full_build.ml": {
-      "bytes": 61166,
+      "bytes": 61306,
       "dependencies": [
         {
           "kind": "#flyspeck_needs",
@@ -16693,10 +16693,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "edb61d1c3272e7598604743ef8464fe1",
+      "md5": "28ed5be32d3533d6caadd160ad00d154",
       "path": "candle/flyspeck_full_build.ml",
       "repository": "candle",
-      "sha256": "4bda5a301633af3925ad18c26e8bdfd6f51da9d59b7bc26b43cf6197ba2f1465"
+      "sha256": "0192be7bbaa99274bc51804aef97f46bbe97d26d081d6edea9d46fc4c2412441"
     },
     "candle:candle/flyspeck_l2_target.ml": {
       "bytes": 384,
@@ -16707,7 +16707,7 @@
       "sha256": "bff75422adaac4c73489b6bec4b50b36c6a20a4d18660b98c77edd8802b40051"
     },
     "candle:candle/flyspeck_loader.ml": {
-      "bytes": 19632,
+      "bytes": 19840,
       "dependencies": [
         {
           "kind": "#use",
@@ -16745,7 +16745,7 @@
         },
         {
           "kind": "needs",
-          "line": 456,
+          "line": 461,
           "literal": "build/strictbuild.hl",
           "matches": [
             "flyspeck:text_formalization/build/strictbuild.hl"
@@ -16756,7 +16756,7 @@
         },
         {
           "kind": "needs",
-          "line": 462,
+          "line": 467,
           "literal": "candle/flyspeck_full_build.ml",
           "matches": [
             "candle:candle/flyspeck_full_build.ml"
@@ -16767,7 +16767,7 @@
         },
         {
           "kind": "needs",
-          "line": 464,
+          "line": 469,
           "literal": "candle/flyspeck_l2_target.ml",
           "matches": [
             "candle:candle/flyspeck_l2_target.ml"
@@ -16777,10 +16777,10 @@
           "syntax_position": "standalone-phrase"
         }
       ],
-      "md5": "5d5f25ee35d3450cb367eb828d5fff77",
+      "md5": "9515000631b41f334789b535c16113ab",
       "path": "candle/flyspeck_loader.ml",
       "repository": "candle",
-      "sha256": "85eb2462abd196b63bdf9f487e10a4c375a8b21fc0d88faf8fc7c609564d9eff"
+      "sha256": "c589da37f289fee1502f3cdf48a7e1263e92590248cf97f40c0560c25a9d7bab"
     },
     "candle:candle/flyspeck_source_integrity.ml": {
       "bytes": 1111,
@@ -21325,6 +21325,14 @@
     "flyspeck:text_formalization/local/ZLZTHIC.hl": {
       "bytes": 166319,
       "dependencies": [],
+      "execution_normalization": {
+        "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 166489,
+        "normalized_md5": "94685b843623c0918058a08cd8c984a8",
+        "normalized_sha256": "3983453c53ae54210f877aa81a49048fda8c219bf30a122928f4876bb3dc317c",
+        "operation_count": 2
+      },
       "md5": "eb81ed551566451b72f073beaa89d5cc",
       "path": "text_formalization/local/ZLZTHIC.hl",
       "repository": "flyspeck",
@@ -24230,7 +24238,7 @@
   },
   "source_normalization_contract": {
     "activation_status": "exact-overlay-selection-active-pending-full-run",
-    "contract_sha256": "d2ef6afa9c13d4f06655725f8933b469aeecf23669577ba68d124bd6856f1100",
+    "contract_sha256": "dd3d04cbc5338e7552a36777940eae667db82652ebf68b2ecc10006790ca7a17",
     "contract_source": "candle:candle/flyspeck_normalizations.json",
     "entries": [
       {
@@ -26654,6 +26662,36 @@
         "source_sha256": "f3d683fb2d3d8b2f49cfea798f7cb66b8d20f23efb530bd1b86519727b70e346"
       },
       {
+        "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001",
+        "kind": "exact_bytes_replace_sequence",
+        "normalized_bytes": 166489,
+        "normalized_md5": "94685b843623c0918058a08cd8c984a8",
+        "normalized_sha256": "3983453c53ae54210f877aa81a49048fda8c219bf30a122928f4876bb3dc317c",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "  TYPIFY_GOAL_THEN `(!i. i < r           ==> azim_cycle {w i | i IN 1..r + 1} (vec 0) (w 1 cross w 2)               (w (SUC i)) =               w (SUC (i + 1)))` (unlist REWRITE_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    REWRITE_TAC[arith `SUC (i + 1) = SUC i + 1`];\n    FIRST_X_ASSUM MATCH_MP_TAC;\n    BY(FIRST_X_ASSUM MP_TAC THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n  TYPIFY `!i j k. i IN 1..r+1 /\\ j IN 1..r+1 /\\ k IN 1..r+1 /\\ ~(i = j) /\\ ~(i = k) /\\ azim (vec 0) (w i) (w j) (w k) = &0 ==> dihV (vec 0) (w i) (w j) (w k) = &0` (C SUBGOAL_THEN ASSUME_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    GMATCH_SIMP_TAC (GSYM Polar_fan.AZIM_DIHV_SAME_STRONG);\n    RULE_ASSUM_TAC (REWRITE_RULE[pairwise]);\n    TYPIFY_GOAL_THEN `~collinear {vec 0, w i, w j} /\\  ~collinear {vec 0, w i, w k}` (unlist REWRITE_TAC);\n      BY(CONJ_TAC THEN FIRST_X_ASSUM MATCH_MP_TAC THEN\n         MATCH_MP_TAC\n           (MESON[IN_NUMSEG;\n                  ARITH_RULE `i <= r + 1 ==> i <= r + 2`]\n             `i IN 1..r+1 /\\ j IN 1..r+1 /\\ ~(i = j)\n              ==> i IN 1..r+2 /\\ j IN 1..r+2 /\\ ~(i = j)`) THEN\n         ASM_REWRITE_TAC[]);\n",
+            "before": "  TYPIFY_GOAL_THEN `(!i. i < r           ==> azim_cycle {w i | i IN 1..r + 1} (vec 0) (w 1 cross w 2)               (w (SUC i)) =               w (SUC (i + 1)))` (unlist REWRITE_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    REWRITE_TAC[arith `SUC (i + 1) = SUC i + 1`];\n    FIRST_X_ASSUM MATCH_MP_TAC;\n    BY(FIRST_X_ASSUM MP_TAC THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n  TYPIFY `!i j k. i IN 1..r+1 /\\ j IN 1..r+1 /\\ k IN 1..r+1 /\\ ~(i = j) /\\ ~(i = k) /\\ azim (vec 0) (w i) (w j) (w k) = &0 ==> dihV (vec 0) (w i) (w j) (w k) = &0` (C SUBGOAL_THEN ASSUME_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    GMATCH_SIMP_TAC (GSYM Polar_fan.AZIM_DIHV_SAME_STRONG);\n    RULE_ASSUM_TAC (REWRITE_RULE[pairwise]);\n    TYPIFY_GOAL_THEN `~collinear {vec 0, w i, w j} /\\  ~collinear {vec 0, w i, w k}` (unlist REWRITE_TAC);\n      BY(CONJ_TAC THEN FIRST_X_ASSUM MATCH_MP_TAC THEN REPLICATE_TAC 8 (FIRST_X_ASSUM MP_TAC) THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n",
+            "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001-PROOF",
+            "kind": "exact_bytes_replace_once",
+            "line": 2600
+          },
+          {
+            "after": "end;;\n",
+            "before": "end;;\n\n",
+            "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001-TERMINAL-BLANK",
+            "kind": "exact_bytes_replace_once",
+            "line": 3780
+          }
+        ],
+        "path": "text_formalization/local/ZLZTHIC.hl",
+        "scope_limit": "This hash-pinned normalization changes only the unique proof line at ZLZTHIC.hl line 2610 and removes one terminal blank line so the normalized artifact is byte-identical to the checkpoint-tested candidate. It changes no theorem statement, hypothesis, definition, proof intent, module binding, or axiom; the mechanically identical but distinct line 3102 is deliberately untouched. Exact normalized-source identity, a focused clean-predecessor replay, and a later fresh cumulative action-zero replay are required.",
+        "semantic_rule": "The XIV_ECAU subgoal needs only the retained pairwise membership assumptions for i and j, their disequality, and the arithmetic implication i <= r + 1 ==> i <= r + 2. The explicit MESON lemma proves exactly that bounded NUMSEG weakening before ASM_REWRITE_TAC discharges the unchanged local facts, avoiding submission of eight unrelated higher-order ambient assumptions to REAL_ARITH. The terminal blank-line normalization is lexical whitespace only.",
+        "source_key": "flyspeck:text_formalization/local/ZLZTHIC.hl",
+        "source_md5": "eb81ed551566451b72f073beaa89d5cc",
+        "source_sha256": "ee0bbc735edc2796b580bf21b5243ed66a17d0d84e2d3808de4a58e38a026081"
+      },
+      {
         "id": "PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001",
         "kind": "exact_bytes_replace_sequence",
         "normalized_bytes": 48911,
@@ -26680,7 +26718,7 @@
         "source_sha256": "879bb59c3e98ac8c9e2d14deabaede782082178ff72bd0838994087c9015976c"
       }
     ],
-    "entry_count": 53,
+    "entry_count": 54,
     "failure_policy": "commit, path, input digest, original anchor count/line, operation order, output size, or output digest drift aborts; heuristic and blanket rewrites are forbidden",
     "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
     "gates": [
@@ -26811,8 +26849,8 @@
     "entry_count": 297,
     "failure_policy": "unknown, malformed, reordered, unresolved, hash-mismatched, or unsupported dynamic loads abort; evaluator false or any evaluation exception aborts the one-shot process before neutralization, later targets, or a success marker; any neutralization exception likewise aborts before action success; the directive must not be erased or implemented as a successful no-op",
     "generated_source": "candle:candle/flyspeck_full_build.ml",
-    "generated_source_md5": "edb61d1c3272e7598604743ef8464fe1",
-    "generated_source_sha256": "4bda5a301633af3925ad18c26e8bdfd6f51da9d59b7bc26b43cf6197ba2f1465",
+    "generated_source_md5": "28ed5be32d3533d6caadd160ad00d154",
+    "generated_source_sha256": "0192be7bbaa99274bc51804aef97f46bbe97d26d081d6edea9d46fc4c2412441",
     "open_gate": "a complete selected run, dynamic non-use observations, and exact semantic fingerprints remain open",
     "ordered_target_sha256": "b5f3008395ca5d9273e4cc7f55cd0bc25db6256132fdd24c4ba615c328f6295e",
     "preload_authentication": "the direct loader checks generated_source_md5 before strictbuild; the outer release manifest pins generated_source_sha256",

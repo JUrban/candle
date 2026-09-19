@@ -2320,6 +2320,34 @@
       "scope_limit": "This hash-pinned replacement supplies a comparator only to the unique unary setify call over the flattened frees result at SLTSTLO.hl line 27. It changes no theorem statement, hypothesis, proof step, proof intent, geometric definition, or axiom. Source typing, focused original-reject/normalized-accept execution, the existing native/Candle term-order oracle, and cumulative source loading are required."
     },
     {
+      "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001",
+      "source_key": "flyspeck:text_formalization/local/ZLZTHIC.hl",
+      "path": "text_formalization/local/ZLZTHIC.hl",
+      "source_sha256": "ee0bbc735edc2796b580bf21b5243ed66a17d0d84e2d3808de4a58e38a026081",
+      "source_md5": "eb81ed551566451b72f073beaa89d5cc",
+      "normalized_sha256": "3983453c53ae54210f877aa81a49048fda8c219bf30a122928f4876bb3dc317c",
+      "normalized_md5": "94685b843623c0918058a08cd8c984a8",
+      "normalized_bytes": 166489,
+      "operations": [
+        {
+          "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001-PROOF",
+          "kind": "exact_bytes_replace_once",
+          "line": 2600,
+          "before": "  TYPIFY_GOAL_THEN `(!i. i < r           ==> azim_cycle {w i | i IN 1..r + 1} (vec 0) (w 1 cross w 2)               (w (SUC i)) =               w (SUC (i + 1)))` (unlist REWRITE_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    REWRITE_TAC[arith `SUC (i + 1) = SUC i + 1`];\n    FIRST_X_ASSUM MATCH_MP_TAC;\n    BY(FIRST_X_ASSUM MP_TAC THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n  TYPIFY `!i j k. i IN 1..r+1 /\\ j IN 1..r+1 /\\ k IN 1..r+1 /\\ ~(i = j) /\\ ~(i = k) /\\ azim (vec 0) (w i) (w j) (w k) = &0 ==> dihV (vec 0) (w i) (w j) (w k) = &0` (C SUBGOAL_THEN ASSUME_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    GMATCH_SIMP_TAC (GSYM Polar_fan.AZIM_DIHV_SAME_STRONG);\n    RULE_ASSUM_TAC (REWRITE_RULE[pairwise]);\n    TYPIFY_GOAL_THEN `~collinear {vec 0, w i, w j} /\\  ~collinear {vec 0, w i, w k}` (unlist REWRITE_TAC);\n      BY(CONJ_TAC THEN FIRST_X_ASSUM MATCH_MP_TAC THEN REPLICATE_TAC 8 (FIRST_X_ASSUM MP_TAC) THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n",
+          "after": "  TYPIFY_GOAL_THEN `(!i. i < r           ==> azim_cycle {w i | i IN 1..r + 1} (vec 0) (w 1 cross w 2)               (w (SUC i)) =               w (SUC (i + 1)))` (unlist REWRITE_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    REWRITE_TAC[arith `SUC (i + 1) = SUC i + 1`];\n    FIRST_X_ASSUM MATCH_MP_TAC;\n    BY(FIRST_X_ASSUM MP_TAC THEN REWRITE_TAC[IN_NUMSEG] THEN ARITH_TAC);\n  TYPIFY `!i j k. i IN 1..r+1 /\\ j IN 1..r+1 /\\ k IN 1..r+1 /\\ ~(i = j) /\\ ~(i = k) /\\ azim (vec 0) (w i) (w j) (w k) = &0 ==> dihV (vec 0) (w i) (w j) (w k) = &0` (C SUBGOAL_THEN ASSUME_TAC);\n    REPEAT WEAKER_STRIP_TAC;\n    GMATCH_SIMP_TAC (GSYM Polar_fan.AZIM_DIHV_SAME_STRONG);\n    RULE_ASSUM_TAC (REWRITE_RULE[pairwise]);\n    TYPIFY_GOAL_THEN `~collinear {vec 0, w i, w j} /\\  ~collinear {vec 0, w i, w k}` (unlist REWRITE_TAC);\n      BY(CONJ_TAC THEN FIRST_X_ASSUM MATCH_MP_TAC THEN\n         MATCH_MP_TAC\n           (MESON[IN_NUMSEG;\n                  ARITH_RULE `i <= r + 1 ==> i <= r + 2`]\n             `i IN 1..r+1 /\\ j IN 1..r+1 /\\ ~(i = j)\n              ==> i IN 1..r+2 /\\ j IN 1..r+2 /\\ ~(i = j)`) THEN\n         ASM_REWRITE_TAC[]);\n"
+        },
+        {
+          "id": "PROJECT-ZLZTHIC-S2-CONTEXT-FREE-NUMSEG-001-TERMINAL-BLANK",
+          "kind": "exact_bytes_replace_once",
+          "line": 3780,
+          "before": "end;;\n\n",
+          "after": "end;;\n"
+        }
+      ],
+      "semantic_rule": "The XIV_ECAU subgoal needs only the retained pairwise membership assumptions for i and j, their disequality, and the arithmetic implication i <= r + 1 ==> i <= r + 2. The explicit MESON lemma proves exactly that bounded NUMSEG weakening before ASM_REWRITE_TAC discharges the unchanged local facts, avoiding submission of eight unrelated higher-order ambient assumptions to REAL_ARITH. The terminal blank-line normalization is lexical whitespace only.",
+      "scope_limit": "This hash-pinned normalization changes only the unique proof line at ZLZTHIC.hl line 2610 and removes one terminal blank line so the normalized artifact is byte-identical to the checkpoint-tested candidate. It changes no theorem statement, hypothesis, definition, proof intent, module binding, or axiom; the mechanically identical but distinct line 3102 is deliberately untouched. Exact normalized-source identity, a focused clean-predecessor replay, and a later fresh cumulative action-zero replay are required."
+    },
+    {
       "id": "PROJECT-LP-S3-QUADS-BOUNDED-FRONTEND-001",
       "source_key": "flyspeck:formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
       "path": "formal_lp/hypermap/ineqs/lp_ineqs_quads-compiled.hl",
