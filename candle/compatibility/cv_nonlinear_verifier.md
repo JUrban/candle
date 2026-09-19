@@ -51,6 +51,8 @@ following central compatibility support without changing Flyspeck source:
 - the complete missing subset from a mechanical audit of native `Num` names
   in the 90-source closure: `pred_num`, `compare_num`, and exact rational
   `approx_num_exp` rendering;
+- the missing top-level `sign_num` export expected after native `open Num`,
+  sourced from the same central `Num.sign_num` implementation;
 - an exact, hash-bound normalization of the private raw-float comparator's
   `Num.num` exponent ordering from unavailable polymorphic `<=` to `le_num`;
 - exact binary64 definitions of OCaml's `infinity`, `neg_infinity`, and

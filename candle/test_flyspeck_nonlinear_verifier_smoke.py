@@ -75,6 +75,10 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             subject.NUM_OVERLAY_MEMBERS,
         )
         self.assertEqual(
+            set(self.big_int_record["num_toplevel"]["overlay_members"]),
+            subject.NUM_TOPLEVEL_OVERLAY_MEMBERS,
+        )
+        self.assertEqual(
             set(self.big_int_record["num_bridge"][
                 "closure_selected_members"
             ]),

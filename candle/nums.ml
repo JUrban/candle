@@ -542,6 +542,9 @@ let big_int_of_num = Num.big_int_of_num;;
 let pred_num = Num.pred_num;;
 let compare_num = Num.compare_num;;
 let approx_num_exp = Num.approx_num_exp;;
+(* CANDLE_NUM_TOPLEVEL_OVERLAY_BEGIN *)
+let sign_num = Num.sign_num;;
+(* CANDLE_NUM_TOPLEVEL_OVERLAY_END *)
 let int_of_num = Num.int_of_num;;
 let string_of_num = Num.string_of_num;;
 let float_of_num = Num.float_of_num;;

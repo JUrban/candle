@@ -26,7 +26,7 @@ trap cleanup EXIT
 rg -Fq 'module Big_int = struct' "$candle_root/candle/nums.ml"
 rg -Fq 'let num_of_big_int i = Int i' "$candle_root/candle/nums.ml"
 
-printf '#load "nums.cma";;\n#use "%s";;\n' "$fixture" |
+printf '#load "nums.cma";;\nopen Num;;\n#use "%s";;\n' "$fixture" |
   "$ocaml" -noinit -noprompt >"$test_dir/ocaml.log" 2>&1
 rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/ocaml.log"
 ocaml_approx=$(rg '^CANDLE_NUM_APPROX_OBSERVATIONS ' "$test_dir/ocaml.log")

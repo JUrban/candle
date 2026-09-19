@@ -75,6 +75,7 @@ let candle_num_remaining_surface_ok =
   Num.compare_num half three_halves = -1 &&
   Num.compare_num three_halves three_halves = 0 &&
   Num.compare_num three_halves half = 1 &&
+  sign_num (Num.num_of_int (-3)) = -1 &&
   List.for_all candle_num_approx_exp_ok candle_num_approx_exp_inputs;;
 
 let candle_num_approx_differential_observations =

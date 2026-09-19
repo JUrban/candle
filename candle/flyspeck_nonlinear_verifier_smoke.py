@@ -76,6 +76,7 @@ NUM_OVERLAY_MEMBERS = {
     "approx_num_exp", "big_int_of_num", "compare_num", "num_of_big_int",
     "pred_num",
 }
+NUM_TOPLEVEL_OVERLAY_MEMBERS = {"sign_num"}
 FLOAT_CONSTANT_MEMBERS = {
     "float_ieee_equal", "float_ieee_ge", "float_ieee_lt", "infinity",
     "nan", "neg_infinity",
@@ -223,7 +224,29 @@ def authenticate_big_int_compatibility(
             "selected Num compatibility member missing: "
             f"{sorted(NUM_CLOSURE_SELECTED_MEMBERS - num_members)}"
         )
-    overlay = float_constants + b"\n" + module + b"\n\n" + bridge
+    exports_begin = b"(* CANDLE_NUM_TOPLEVEL_OVERLAY_BEGIN *)\n"
+    exports_end = b"(* CANDLE_NUM_TOPLEVEL_OVERLAY_END *)"
+    if source.count(exports_begin) != 1 or source.count(exports_end) != 1:
+        raise ValueError("Num top-level overlay boundary drift")
+    exports_start = source.index(exports_begin) + len(exports_begin)
+    exports_finish = source.index(exports_end, exports_start)
+    exports = source[exports_start:exports_finish]
+    exports_text = exports.decode("ascii")
+    export_members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", exports_text,
+            flags=re.MULTILINE,
+        )
+    }
+    if export_members != NUM_TOPLEVEL_OVERLAY_MEMBERS:
+        raise ValueError(
+            "Num top-level overlay member inventory drift: "
+            f"{sorted(export_members)}"
+        )
+    overlay = (
+        float_constants + b"\n" + module + b"\n\n" + bridge + b"\n" + exports
+    )
     return overlay.decode("ascii"), {
         "float_constants": {
             "source": FLOAT_CONSTANT_SOURCE.as_posix(),
@@ -256,6 +279,11 @@ def authenticate_big_int_compatibility(
             ),
             "integer_case": "representation identity",
             "noninteger_case": "failwith big_int_of_ratio",
+        },
+        "num_toplevel": {
+            "bytes": len(exports),
+            "sha256": hashlib.sha256(exports).hexdigest(),
+            "overlay_members": sorted(export_members),
         },
         "overlay": {
             "bytes": len(overlay),
