@@ -2515,7 +2515,7 @@
       "candle": 0,
       "flyspeck": 56
     },
-    "normalization_operations": 101,
+    "normalization_operations": 105,
     "normalized_sources": 18,
     "selected_by_repository": {
       "candle": 28,
@@ -4439,11 +4439,39 @@
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
-        "normalized_bytes": 163942,
-        "normalized_md5": "7323ab3919f57f5f5bd9e8b3285eddb8",
-        "normalized_sha256": "3a62568eaba4f99f5c9592155423aec65f9429ce336e658e9a016e27ec8aec58",
-        "operation_count": 10,
+        "normalized_bytes": 164196,
+        "normalized_md5": "630980f9403b2aedb0c168ec16b0e6c1",
+        "normalized_sha256": "bb572282f81e701e9f4d485f66ce0ce982c576b01f1208390aa9058d9c321e0c",
+        "operation_count": 14,
         "operations": [
+          {
+            "after": "let lo_thm_table : (term, thm) Hashtbl.t = Hashtbl.create Arith_num.arith_base;;",
+            "before": "let lo_thm_table = Hashtbl.create Arith_num.arith_base;;",
+            "kind": "arith-float-lo-table-type",
+            "line": 264,
+            "replacement_count": 1
+          },
+          {
+            "after": "let lo_thm2_table : (term, thm) Hashtbl.t = Hashtbl.create Arith_num.arith_base;;",
+            "before": "let lo_thm2_table = Hashtbl.create Arith_num.arith_base;;",
+            "kind": "arith-float-lo2-table-type",
+            "line": 280,
+            "replacement_count": 1
+          },
+          {
+            "after": "let hi_thm_table : (term, thm) Hashtbl.t = Hashtbl.create Arith_num.arith_base;;",
+            "before": "let hi_thm_table = Hashtbl.create Arith_num.arith_base;;",
+            "kind": "arith-float-hi-table-type",
+            "line": 297,
+            "replacement_count": 1
+          },
+          {
+            "after": "let mul_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    div_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    add_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    sub_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    sqrt_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    le_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r\n    max_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size;;",
+            "before": "let mul_table = Hashtbl.create cache_size and\r\n    div_table = Hashtbl.create cache_size and\r\n    add_table = Hashtbl.create cache_size and\r\n    sub_table = Hashtbl.create cache_size and\r\n    sqrt_table = Hashtbl.create cache_size and\r\n    le_table = Hashtbl.create cache_size and\r\n    max_table = Hashtbl.create cache_size;;",
+            "kind": "arith-float-cache-table-types",
+            "line": 2456,
+            "replacement_count": 1
+          },
           {
             "after": "\"lt0 = \" ^ string_of_int !lt0_c ^ \"\\ngt0 = \" ^ string_of_int !gt0_c ^ \"\\nlt = \" ^ string_of_int !lt_c ^ \"\\n\"",
             "before": "sprintf \"lt0 = %d\\ngt0 = %d\\nlt = %d\\n\" !lt0_c !gt0_c !lt_c",
@@ -4515,8 +4543,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -5472,8 +5500,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -5760,8 +5788,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -5827,8 +5855,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6020,8 +6048,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6355,8 +6383,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [],
@@ -6610,8 +6638,8 @@
             "line": 1437
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6795,8 +6823,8 @@
             "line": 1261
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6991,8 +7019,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [],
@@ -7282,8 +7310,8 @@
             "replacement_count": 2
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -7692,8 +7720,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -7903,8 +7931,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -8148,8 +8176,8 @@
             "replacement_count": 2
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -8299,8 +8327,8 @@
             "replacement_count": 1
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -8471,8 +8499,8 @@
             "line": 666
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The complete remaining top-level Hashtbl.create inventory states the exact key and value types already forced by its uses. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [

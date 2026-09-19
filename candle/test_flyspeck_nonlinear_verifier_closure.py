@@ -42,7 +42,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 18)
-        self.assertEqual(counts["normalization_operations"], 101)
+        self.assertEqual(counts["normalization_operations"], 105)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -163,6 +163,33 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                     for operation in record["operations"]
                 )
             },
+        )
+
+    def test_arith_float_top_level_table_inventory_is_typed(self) -> None:
+        source_key = "flyspeck:formal_ineqs/arith/arith_float.hl"
+        node = self.payload["source_nodes"][source_key]
+        operations = node["normalization"]["operations"]
+        table_operations = {
+            operation["kind"]: operation
+            for operation in operations
+            if operation["kind"].endswith("table-type")
+            or operation["kind"].endswith("table-types")
+        }
+        self.assertEqual(set(table_operations), {
+            "arith-float-lo-table-type",
+            "arith-float-lo2-table-type",
+            "arith-float-hi-table-type",
+            "arith-float-cache-table-types",
+        })
+        self.assertEqual(
+            sum(operation["before"].count("Hashtbl.create")
+                for operation in table_operations.values()),
+            10,
+        )
+        self.assertEqual(
+            sum(operation["after"].count(" Hashtbl.t = Hashtbl.create")
+                for operation in table_operations.values()),
+            10,
         )
 
     def test_direct_normalizations_reuse_canonical_authority(self) -> None:

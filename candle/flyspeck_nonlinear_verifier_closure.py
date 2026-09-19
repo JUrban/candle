@@ -38,6 +38,8 @@ NORMALIZATION_SEMANTIC_RULE = (
     "Array.get/Array.set with parenthesized indices; module-qualified record "
     "labels use the same unqualified labels under an explicit original record "
     "type; and a ref assignment's conditional RHS is parenthesized. The "
+    "complete remaining top-level Hashtbl.create inventory states the exact "
+    "key and value types already forced by its uses. The "
     "closed verifier extension's fixed %d/%s/%b diagnostic formats use exact "
     "literal concatenation and primitive conversions; optional file logging "
     "fails closed if invoked because Candle has no channel-backed formatter"
@@ -48,7 +50,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "It changes no theorem statement, hypothesis, proof step, proof intent, "
     "runtime primitive, or axiom. Existing direct-Flyspeck execution "
     "normalizations remain authoritative and are applied from the shared "
-    "versioned normalization contract. Diagnostic-only substitutions preserve "
+    "versioned normalization contract. Hash-table annotations change no "
+    "allocation, operation, contents, or exceptions. Diagnostic-only "
+    "substitutions preserve "
     "the fixed rendered bytes except the unused elapsed-time suffix, which "
     "fails closed; optional float logging is disabled only while its controlling "
     "flag remains false and any invocation fails closed."
@@ -208,6 +212,41 @@ def _replacement(
 
 EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     "flyspeck:formal_ineqs/arith/arith_float.hl": (
+        _replacement(
+            "arith-float-lo-table-type",
+            b'let lo_thm_table = Hashtbl.create Arith_num.arith_base;;',
+            b'let lo_thm_table : (term, thm) Hashtbl.t = '
+            b'Hashtbl.create Arith_num.arith_base;;',
+        ),
+        _replacement(
+            "arith-float-lo2-table-type",
+            b'let lo_thm2_table = Hashtbl.create Arith_num.arith_base;;',
+            b'let lo_thm2_table : (term, thm) Hashtbl.t = '
+            b'Hashtbl.create Arith_num.arith_base;;',
+        ),
+        _replacement(
+            "arith-float-hi-table-type",
+            b'let hi_thm_table = Hashtbl.create Arith_num.arith_base;;',
+            b'let hi_thm_table : (term, thm) Hashtbl.t = '
+            b'Hashtbl.create Arith_num.arith_base;;',
+        ),
+        _replacement(
+            "arith-float-cache-table-types",
+            b'''let mul_table = Hashtbl.create cache_size and\r
+    div_table = Hashtbl.create cache_size and\r
+    add_table = Hashtbl.create cache_size and\r
+    sub_table = Hashtbl.create cache_size and\r
+    sqrt_table = Hashtbl.create cache_size and\r
+    le_table = Hashtbl.create cache_size and\r
+    max_table = Hashtbl.create cache_size;;''',
+            b'''let mul_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    div_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    add_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    sub_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    sqrt_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    le_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
+    max_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size;;''',
+        ),
         _replacement(
             "arith-float-stat-cmp1",
             b'sprintf "lt0 = %d\\ngt0 = %d\\nlt = %d\\n" !lt0_c !gt0_c !lt_c',
