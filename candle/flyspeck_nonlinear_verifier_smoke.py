@@ -341,6 +341,16 @@ def _record_file(path: Path) -> dict[str, Any]:
     }
 
 
+def build_stdin(candle_root: Path, support_root: Path, driver: Path) -> str:
+    """Retain the unprefixed resolver entry needed by an absolute #use."""
+
+    return (
+        f'Cakeml.loadPath := [{_ocaml_string(str(candle_root))}; '
+        f'{_ocaml_string(str(support_root))}; Filename.currentDir];;\n'
+        f'#use {_ocaml_string(str(driver))};;\n'
+    )
+
+
 def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     matches = re.findall(
         rb"^" + re.escape(marker.encode("ascii"))
@@ -397,9 +407,7 @@ def run(
         encoding="ascii", newline="\n",
     )
     stdin.write_text(
-        f'Cakeml.loadPath := [{_ocaml_string(str(candle_root))}; '
-        f'{_ocaml_string(str(support_root))}];;\n'
-        f'#use {_ocaml_string(str(driver))};;\n',
+        build_stdin(candle_root, support_root, driver),
         encoding="ascii", newline="\n",
     )
 

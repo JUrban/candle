@@ -332,9 +332,7 @@ def run(
         newline="\n",
     )
     stdin.write_text(
-        f'Cakeml.loadPath := [{smoke._ocaml_string(str(candle_root))}; '
-        f'{smoke._ocaml_string(str(support_root))}];;\n'
-        f'#use {smoke._ocaml_string(str(driver))};;\n',
+        smoke.build_stdin(candle_root, support_root, driver),
         encoding="ascii",
         newline="\n",
     )

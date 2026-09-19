@@ -77,6 +77,13 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         self.assertIn("candle_nonlinear_axioms_before", self.driver)
         self.assertIn("candle_nonlinear_axioms_after", self.driver)
 
+    def test_absolute_driver_keeps_unprefixed_resolver_entry(self) -> None:
+        stdin = subject.build_stdin(
+            ROOT, Path("/tmp/support"), Path("/tmp/run/driver.ml"),
+        )
+        self.assertIn("Filename.currentDir", stdin)
+        self.assertIn('#use "/tmp/run/driver.ml";;', stdin)
+
 
 if __name__ == "__main__":
     unittest.main()
