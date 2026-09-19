@@ -64,6 +64,24 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             for item in extension
         ))
 
+    def test_runtime_compatibility_members_are_accounted_for(self) -> None:
+        compatibility = self.payload["compatibility"]
+        self.assertEqual(compatibility["unsupported_use_count"], 0)
+        self.assertEqual(compatibility["unsupported_uses"], [])
+        members = {
+            (use["module"], use["member"])
+            for use in compatibility["qualified_uses"]
+        }
+        self.assertTrue({
+            ("Array", "to_list"),
+            ("Big_int", "eq_big_int"),
+            ("Big_int", "mult_big_int"),
+            ("Big_int", "sqrt_big_int"),
+            ("Format", "std_formatter"),
+            ("Stdlib", "abs_float"),
+            ("Stdlib", "ignore"),
+        } <= members)
+
 
 if __name__ == "__main__":
     unittest.main()

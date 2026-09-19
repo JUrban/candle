@@ -67,6 +67,23 @@ module Big_int = struct
     match Cake.Int.fromString s with
     | None -> failwith "Big_int.big_int_of_string"
     | Some i -> i
+
+  let mult_big_int left right = left * right
+
+  let eq_big_int left right = left = right
+
+  (* [Big_int.sqrt_big_int] is floor square root on nonnegative arbitrary
+     precision integers.  CakeML integers are already arbitrary precision, so
+     Newton descent gives the same exact result without a representation
+     conversion or floating-point approximation. *)
+  let sqrt_big_int value =
+    if value < 0 then failwith "Big_int.sqrt_big_int"
+    else if value < 2 then value
+    else
+      let rec descend estimate =
+        let next = (estimate + value / estimate) / 2 in
+        if next >= estimate then estimate else descend next in
+      descend value
 end;;
 
 type num =

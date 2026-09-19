@@ -214,7 +214,7 @@ def main() -> None:
     parser.add_argument("--flyspeck-root", type=Path, required=True)
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--timeout-seconds", type=int, default=180)
+    parser.add_argument("--timeout-seconds", type=int, default=1800)
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,

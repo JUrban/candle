@@ -51,8 +51,13 @@ STATIC_RUNTIME_MEMBERS = {
     },
 }
 OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
-    "Array": {"fold_left", "get", "init", "length", "make", "map", "of_list", "set"},
-    "Big_int": {"big_int_of_string"},
+    "Array": {
+        "fold_left", "get", "init", "length", "make", "map", "of_list",
+        "set", "to_list",
+    },
+    "Big_int": {
+        "big_int_of_string", "eq_big_int", "mult_big_int", "sqrt_big_int",
+    },
     "Digest": {"compare", "file", "string", "t", "to_hex"},
     "Gc": {"compact"},
     "Hashtbl": {
@@ -70,8 +75,8 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
         "sub_num", "succ_num",
     },
     "Stdlib": {
-        "Float", "close_in", "close_out", "compare", "input_line", "open_in",
-        "open_out", "output_string", "sqrt",
+        "Float", "abs_float", "close_in", "close_out", "compare", "ignore",
+        "input_line", "open_in", "open_out", "output_string", "sqrt",
     },
 }
 OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS = {
@@ -86,7 +91,7 @@ TOPLEVEL_INTERFACE_SOURCE_MEMBERS = {
         "pp_print_break", "pp_print_newline", "pp_print_space",
         "pp_print_string", "pp_set_max_boxes", "print_as", "print_break",
         "print_flush", "print_newline", "print_space", "print_string", "set_margin",
-        "set_max_boxes",
+        "set_max_boxes", "std_formatter",
     },
     "Lexing": set(),
     "Obj": set(),

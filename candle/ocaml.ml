@@ -107,7 +107,13 @@ module Float = struct
   let one = Cake.Double.fromInt 1
   let minus_one = Cake.Double.fromInt ~-1
   let sqrt x = Cake.Double.sqrt x
-  let abs x = Cake.Double.abs x
+  (* Binary64 absolute value is exactly sign-bit clearing, including zeros,
+     infinities, and NaN payloads.  Spell it through the proved field
+     operations because [Cake.Double.abs] is not a floating-point Basis
+     operation in the currently linked CakeML runtime. *)
+  let abs (x:double) : double =
+    Cake.Double.construct (Cake.Word64.fromInt 0)
+      (Cake.Double.exponent x) (Cake.Double.significand x)
   let compare x y =
     if Cake.Double.(<) x y then -1
     else if Cake.Double.(>) x y then 1
@@ -215,6 +221,13 @@ module Stdlib = struct
     if left = right then 0
     else failwith
       "Stdlib.compare: polymorphic ordering is unavailable; use an explicit comparator"
+  (* Keep the binary64 operation explicit here.  Referring to [Float.abs]
+     inside this module is ambiguous to Candle's module elaborator because
+     [Stdlib.Float] is declared below. *)
+  let abs_float (x:double) : double =
+    Cake.Double.construct (Cake.Word64.fromInt 0)
+      (Cake.Double.exponent x) (Cake.Double.significand x)
+  let ignore _ = ()
   let open_in = open_in
   let open_out = open_out
   let input_line = input_line
@@ -706,6 +719,11 @@ module Array = struct
     with Subscript -> raise (Invalid_argument "Array.get")
   let fold_left f init a = Cake.Array.foldl (fun x y -> f y x) init a
   let of_list l = Cake.Array.fromList l
+  let to_list a =
+    let rec collect index result =
+      if index < 0 then result
+      else collect (index - 1) (get a index :: result) in
+    collect (length a - 1) []
   let map f a =
     Cake.Array.tabulate (Cake.Array.length a) (fun i -> f (Cake.Array.sub a i))
 end;;
@@ -852,6 +870,11 @@ end;;
 
 module Format = struct
   type formatter = Pretty_imp.state;;
+
+  (* The formal nonlinear library binds diagnostic printers against the
+     standard formatter.  Candle does not install those OCaml toplevel
+     printers, but it must preserve the formatter value and callback types. *)
+  let std_formatter = Pretty_imp.empty ();;
 
   let set_margin n =
     if n < 1 then failwith "set_margin: must be positive";

@@ -76,6 +76,12 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
     pending = [VERIFIER_ROOT]
     discovery_order: list[str] = []
     nodes: dict[str, dict[str, Any]] = {}
+    compatibility_uses: list[dict[str, Any]] = []
+    compatibility_modules = (
+        set(flyspeck_manifest.OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
+        | set(flyspeck_manifest.STATIC_RUNTIME_LIBRARIES.values())
+        | set(flyspeck_manifest.TOPLEVEL_INTERFACE_MODULES)
+    )
     while pending:
         source_ref = pending.pop(0)
         if source_ref.key in nodes:
@@ -88,6 +94,10 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
         text = source_path.read_text(
             encoding="utf-8", errors="surrogateescape",
         )
+        for use in flyspeck_manifest.scan_qualified_module_uses(
+            text, compatibility_modules,
+        ):
+            compatibility_uses.append({"source": source_ref.key, **use})
         dependencies: list[dict[str, Any]] = []
         selected_keys: list[str] = []
         for call in flyspeck_manifest.scan_load_calls(text):
@@ -175,6 +185,26 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
         }
         for key in extension_nodes
     ]
+    supported_members = {
+        **flyspeck_manifest.OCAML_COMPATIBILITY_SUPPORTED_MEMBERS,
+        **{
+            module: flyspeck_manifest.STATIC_RUNTIME_MEMBERS[module]
+            for _library, module
+            in flyspeck_manifest.STATIC_RUNTIME_LIBRARIES.items()
+        },
+        **flyspeck_manifest.TOPLEVEL_INTERFACE_SOURCE_MEMBERS,
+    }
+    sorted_compatibility_uses = sorted(
+        compatibility_uses,
+        key=lambda use: (
+            str(use["source"]), int(use["line"]),
+            str(use["module"]), str(use["member"]),
+        ),
+    )
+    unsupported_compatibility_uses = [
+        use for use in sorted_compatibility_uses
+        if str(use["member"]) not in supported_members[str(use["module"])]
+    ]
     return {
         "schema": SCHEMA,
         "kind": "candle-flyspeck-nonlinear-verifier-source-closure",
@@ -207,6 +237,16 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
         "discovery_order": discovery_order,
         "direct_manifest_overlap": overlap_nodes,
         "identity_extension": identity_extension,
+        "compatibility": {
+            "qualified_use_count": len(sorted_compatibility_uses),
+            "qualified_member_count": len({
+                (str(use["module"]), str(use["member"]))
+                for use in sorted_compatibility_uses
+            }),
+            "unsupported_use_count": len(unsupported_compatibility_uses),
+            "unsupported_uses": unsupported_compatibility_uses,
+            "qualified_uses": sorted_compatibility_uses,
+        },
         "source_nodes": {key: nodes[key] for key in sorted(nodes)},
         "integration_policy": {
             "source_authority": (

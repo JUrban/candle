@@ -3153,217 +3153,217 @@
         "source": "candle:candle/flyspeck_source_integrity.ml"
       },
       {
-        "line": 377,
+        "line": 394,
         "member": "num_of_int",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 378,
+        "line": 395,
         "member": "int_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 379,
+        "line": 396,
         "member": "string_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 380,
+        "line": 397,
         "member": "float_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 381,
+        "line": 398,
         "member": "denominator",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 382,
+        "line": 399,
         "member": "numerator",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 383,
+        "line": 400,
         "member": "minus_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 384,
+        "line": 401,
         "member": "abs_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 385,
+        "line": 402,
         "member": "floor_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 386,
+        "line": 403,
         "member": "round_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 387,
+        "line": 404,
         "member": "ceiling_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 394,
+        "line": 411,
         "member": "add_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 395,
+        "line": 412,
         "member": "sub_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 396,
+        "line": 413,
         "member": "mul_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 397,
+        "line": 414,
         "member": "div_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 401,
+        "line": 418,
         "member": "quo_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 402,
+        "line": 419,
         "member": "mod_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 411,
+        "line": 428,
         "member": "lt_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 412,
+        "line": 429,
         "member": "le_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 413,
+        "line": 430,
         "member": "gt_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 414,
+        "line": 431,
         "member": "ge_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 415,
+        "line": 432,
         "member": "eq_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 417,
+        "line": 434,
         "member": "min_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 418,
+        "line": 435,
         "member": "max_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 419,
+        "line": 436,
         "member": "compare",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 420,
+        "line": 437,
         "member": "gcd_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 423,
+        "line": 440,
         "member": "power_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 425,
+        "line": 442,
         "member": "is_integer_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 427,
+        "line": 444,
         "member": "succ_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 766,
+        "line": 784,
         "member": "make",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 775,
+        "line": 793,
         "member": "set",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 782,
+        "line": 800,
         "member": "get",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 811,
         "member": "logor",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 811,
         "member": "shift_left",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 794,
+        "line": 812,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 795,
+        "line": 813,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
@@ -6116,217 +6116,217 @@
         "source": "candle:candle/flyspeck_source_integrity.ml"
       },
       {
-        "line": 377,
+        "line": 394,
         "member": "num_of_int",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 378,
+        "line": 395,
         "member": "int_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 379,
+        "line": 396,
         "member": "string_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 380,
+        "line": 397,
         "member": "float_of_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 381,
+        "line": 398,
         "member": "denominator",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 382,
+        "line": 399,
         "member": "numerator",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 383,
+        "line": 400,
         "member": "minus_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 384,
+        "line": 401,
         "member": "abs_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 385,
+        "line": 402,
         "member": "floor_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 386,
+        "line": 403,
         "member": "round_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 387,
+        "line": 404,
         "member": "ceiling_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 394,
+        "line": 411,
         "member": "add_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 395,
+        "line": 412,
         "member": "sub_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 396,
+        "line": 413,
         "member": "mul_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 397,
+        "line": 414,
         "member": "div_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 401,
+        "line": 418,
         "member": "quo_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 402,
+        "line": 419,
         "member": "mod_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 411,
+        "line": 428,
         "member": "lt_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 412,
+        "line": 429,
         "member": "le_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 413,
+        "line": 430,
         "member": "gt_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 414,
+        "line": 431,
         "member": "ge_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 415,
+        "line": 432,
         "member": "eq_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 417,
+        "line": 434,
         "member": "min_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 418,
+        "line": 435,
         "member": "max_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 419,
+        "line": 436,
         "member": "compare",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 420,
+        "line": 437,
         "member": "gcd_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 423,
+        "line": 440,
         "member": "power_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 425,
+        "line": 442,
         "member": "is_integer_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 427,
+        "line": 444,
         "member": "succ_num",
         "module": "Num",
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 766,
+        "line": 784,
         "member": "make",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 775,
+        "line": 793,
         "member": "set",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 782,
+        "line": 800,
         "member": "get",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 811,
         "member": "logor",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 811,
         "member": "shift_left",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 794,
+        "line": 812,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 795,
+        "line": 813,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
@@ -8974,10 +8974,14 @@
         "make",
         "map",
         "of_list",
-        "set"
+        "set",
+        "to_list"
       ],
       "Big_int": [
-        "big_int_of_string"
+        "big_int_of_string",
+        "eq_big_int",
+        "mult_big_int",
+        "sqrt_big_int"
       ],
       "Digest": [
         "compare",
@@ -9047,9 +9051,11 @@
       ],
       "Stdlib": [
         "Float",
+        "abs_float",
         "close_in",
         "close_out",
         "compare",
+        "ignore",
         "input_line",
         "open_in",
         "open_out",
@@ -10690,8 +10696,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "f2bacddef4b71855907386fed139d221",
-    "generated_source_sha256": "7b2ce923f525fc44e48fe87f4db7359ab0755ccad93783649f6f0b90fced2644",
+    "generated_source_md5": "796de0dea88f872d603a858c90d65699",
+    "generated_source_sha256": "fa86a856e27a7fa69796bd4558d5b54414dc5b75435d7951d5ca9984a9289bdb",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -16811,20 +16817,20 @@
       "sha256": "bd79eef975e9e5258d6ad9c10fc144fe02f7e551faeced05c6e09ce5ecb0dbf6"
     },
     "candle:candle/nums.ml": {
-      "bytes": 11751,
+      "bytes": 12414,
       "dependencies": [],
-      "md5": "1dfeba48a53db41c34ca599963fefa6c",
+      "md5": "26f9be5a2a827dd8f878beeb3251fef1",
       "path": "candle/nums.ml",
       "repository": "candle",
-      "sha256": "7cabf002e6aac6908c813c1424095658d3a6a01ec2ebd900303828a154cfe8f1"
+      "sha256": "43ebec021a3792789b5a9e4d6ca0eecaa8090bf9d9ba14685d2b12395ab3bb4b"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 45116,
+      "bytes": 46298,
       "dependencies": [],
-      "md5": "39ff2fc1e768ec55d2a0360f7d14fb95",
+      "md5": "19b9bc7ad1c434a53efde7f669409c12",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "d4709ac3d8713a7eeadd818ecae2f9c28fc1a9a7f0ae6a156228321c3aa02515"
+      "sha256": "6d4bc6d7fa2a2e2d64f6456efa7c96dfec089d25729558b43888d81e876b0cf7"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -28355,7 +28361,8 @@
         "print_space",
         "print_string",
         "set_margin",
-        "set_max_boxes"
+        "set_max_boxes",
+        "std_formatter"
       ],
       "Lexing": [],
       "Obj": [],
@@ -28387,19 +28394,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 897,
+        "line": 920,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 898,
+        "line": 921,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 899,
+        "line": 922,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
@@ -29257,8 +29264,7 @@
       "Format": [
         "formatter_of_buffer",
         "pp_set_margin",
-        "sprintf",
-        "std_formatter"
+        "sprintf"
       ],
       "Lexing": [
         "from_string"

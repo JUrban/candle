@@ -6,8 +6,8 @@ candle_binary=${CANDLE_BINARY:-"$candle_root/candle/build/cake"}
 candle_runtime_cwd=${CANDLE_RUNTIME_CWD:-"$candle_root"}
 candle_hol_root=${CANDLE_HOL_ROOT:-"$candle_root"}
 ocaml=${OCAML_414:-/project/repos/hol-light/_opam/bin/ocaml}
-fixture="$candle_root/candle/compatibility/fixtures/big_int_num_compat.ml"
-test_dir=$(mktemp -d /tmp/candle-big-int-num-compat.XXXXXX)
+fixture="$candle_root/candle/compatibility/fixtures/nonlinear_verifier_runtime_compat.ml"
+test_dir=$(mktemp -d /tmp/candle-nonlinear-verifier-runtime.XXXXXX)
 cleanup() {
   local status=$?
   trap - EXIT
@@ -23,12 +23,9 @@ cleanup() {
 }
 trap cleanup EXIT
 
-rg -Fq 'module Big_int = struct' "$candle_root/candle/nums.ml"
-rg -Fq 'let num_of_big_int i = Int i' "$candle_root/candle/nums.ml"
-
-printf '#load "nums.cma";;\n#use "%s";;\n' "$fixture" |
+printf '#use "%s";;\n' "$fixture" |
   "$ocaml" -noinit -noprompt >"$test_dir/ocaml.log" 2>&1
-rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/ocaml.log"
+rg -Fq 'CANDLE_NONLINEAR_VERIFIER_RUNTIME_COMPAT_OK' "$test_dir/ocaml.log"
 
 (
   cd "$candle_runtime_cwd"
@@ -41,11 +38,12 @@ rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/ocaml.log"
     timeout 600 "$candle_binary" --candle
 ) >"$test_dir/candle.log" 2>&1
 
-rg -Fq 'val candle_big_int_num_compat_ok = true: bool' "$test_dir/candle.log"
-rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/candle.log"
+rg -Fq 'val candle_nonlinear_verifier_runtime_compat_ok = true: bool' \
+  "$test_dir/candle.log"
+rg -Fq 'CANDLE_NONLINEAR_VERIFIER_RUNTIME_COMPAT_OK' "$test_dir/candle.log"
 if rg -q 'ERROR:|EXCEPTION:|Parsing failed|Undefined variable:' \
   "$test_dir/candle.log"; then
   exit 1
 fi
 
-printf 'PASS: Big_int/Num compatibility matches OCaml 4.14.1\n'
+printf 'PASS: nonlinear verifier runtime compatibility matches OCaml 4.14.1\n'

@@ -1,5 +1,2437 @@
 {
   "claim": "exact recursive literal source closure for M_verifier_main.verify_ineq; not direct-run or release evidence",
+  "compatibility": {
+    "qualified_member_count": 34,
+    "qualified_use_count": 404,
+    "qualified_uses": [
+      {
+        "line": 18,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 19,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 23,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 25,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 26,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 27,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 28,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 29,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 30,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 50,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 77,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 143,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 154,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 165,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 175,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 186,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 197,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_cache.hl"
+      },
+      {
+        "line": 263,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 264,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 267,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 279,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 280,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 283,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 296,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 297,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 300,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 315,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 319,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 355,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 401,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2286,
+        "member": "sqrt_big_int",
+        "module": "Big_int",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2414,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2448,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2449,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2454,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2456,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2457,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2458,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2459,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2460,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2461,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2462,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2465,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2466,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2467,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2468,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2469,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2470,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2471,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2495,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2593,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2608,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2626,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2647,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2668,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2689,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2710,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2731,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2752,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2773,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2794,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2809,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 2832,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 4177,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 4179,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 4181,
+        "member": "string_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 4183,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/arith/arith_float.hl"
+      },
+      {
+        "line": 86,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 106,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 107,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 111,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 112,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 115,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 116,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 121,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 153,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 167,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 170,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 170,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 174,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 192,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 209,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 212,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 217,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 226,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 235,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 286,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 322,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 323,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 326,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 345,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 373,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 375,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 378,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 392,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 438,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 440,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 443,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 475,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 489,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 504,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 518,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 574,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 582,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 584,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 591,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 593,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 623,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 670,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 674,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 701,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 707,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 714,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 722,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 729,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 744,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 748,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 775,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 781,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 788,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 796,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 803,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 820,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 832,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 852,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 864,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 918,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 923,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 927,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 950,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 953,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 961,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 968,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 972,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 979,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 995,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1015,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1053,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1071,
+        "member": "abs_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1122,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1126,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1136,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1139,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1182,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1194,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1201,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1206,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1214,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1250,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1251,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1259,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1260,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1281,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1283,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1309,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1311,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1351,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1359,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1406,
+        "member": "quo_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1407,
+        "member": "mod_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1483,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1485,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1488,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1489,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1492,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1493,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1496,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1497,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1509,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 1521,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/arith_num.hl"
+      },
+      {
+        "line": 49,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 50,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 70,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 71,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 81,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 82,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 103,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 104,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 105,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 121,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 122,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 123,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 296,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 297,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/arith/eval_interval.hl"
+      },
+      {
+        "line": 29,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "line": 30,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "line": 65,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "line": 70,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "line": 72,
+        "member": "num_of_int",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "line": 94,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "line": 114,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "line": 168,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "line": 169,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "line": 36,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 37,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 57,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 58,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 68,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 69,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 107,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 108,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 109,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 126,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 127,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 128,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 291,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 292,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_eval_interval.hl"
+      },
+      {
+        "line": 75,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "line": 86,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "line": 102,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "line": 133,
+        "member": "abs_float",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "line": 16,
+        "member": "formatter",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 19,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 26,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 27,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 28,
+        "member": "num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 81,
+        "member": "pp_print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 83,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 428,
+        "member": "sqrt_big_int",
+        "module": "Big_int",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 446,
+        "member": "sqrt_big_int",
+        "module": "Big_int",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 449,
+        "member": "mult_big_int",
+        "module": "Big_int",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 450,
+        "member": "eq_big_int",
+        "module": "Big_int",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "line": 15,
+        "member": "formatter",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "line": 59,
+        "member": "std_formatter",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "line": 120,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_matan.hl"
+      },
+      {
+        "line": 66,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 80,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 95,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 98,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 102,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 107,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 111,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 112,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "line": 282,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "line": 283,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "line": 284,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "line": 284,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "line": 47,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/sections.hl"
+      },
+      {
+        "line": 892,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 893,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 894,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 895,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 896,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 897,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 907,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 908,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 909,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 910,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 911,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 912,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 924,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 951,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+      },
+      {
+        "line": 43,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+      },
+      {
+        "line": 48,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/misc/misc_functions.hl"
+      },
+      {
+        "line": 34,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/misc/report.hl"
+      },
+      {
+        "line": 34,
+        "member": "print_newline",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/misc/report.hl"
+      },
+      {
+        "line": 34,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/misc/report.hl"
+      },
+      {
+        "line": 43,
+        "member": "ignore",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/misc/report.hl"
+      },
+      {
+        "line": 58,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 64,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 67,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 72,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 76,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 77,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 78,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 79,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 81,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 82,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 83,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 84,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 86,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 87,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 88,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 106,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 107,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 131,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 132,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 211,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 441,
+        "member": "clear",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 441,
+        "member": "length",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 442,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 447,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 450,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 546,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 610,
+        "member": "make",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 677,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 800,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1166,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1169,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1172,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1402,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1403,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1412,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1413,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 181,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 660,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 667,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 1801,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 1807,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 1948,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 1954,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2088,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2094,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2225,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2231,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2357,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2363,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2492,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2498,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2630,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2636,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2760,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2766,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2892,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 2898,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3029,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3035,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3167,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3173,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3304,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 3310,
+        "member": "int_of_num",
+        "module": "Num",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+      },
+      {
+        "line": 117,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl"
+      },
+      {
+        "line": 17,
+        "member": "mkdir",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/tests/log.hl"
+      },
+      {
+        "line": 338,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "line": 371,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "line": 468,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "line": 469,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "line": 129,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "line": 155,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "line": 29,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 32,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 39,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 43,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 52,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 53,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 57,
+        "member": "length",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 58,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 71,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 74,
+        "member": "of_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 74,
+        "member": "of_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "line": 222,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "line": 239,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "line": 262,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "line": 360,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/trig/matan_eval.hl"
+      },
+      {
+        "line": 114,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 116,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 116,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 117,
+        "member": "replace",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 129,
+        "member": "fold",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 200,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 202,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 202,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 202,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/certificate.hl"
+      },
+      {
+        "line": 114,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 118,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 222,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 226,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 227,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 231,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 232,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 477,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 482,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 483,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 566,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 986,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 997,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 998,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1001,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1002,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1017,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1022,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1023,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1026,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1027,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1043,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1048,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1049,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1374,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1375,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1376,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1376,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1550,
+        "member": "create",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1551,
+        "member": "mem",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1552,
+        "member": "add",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 1552,
+        "member": "find",
+        "module": "Hashtbl",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "line": 439,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 452,
+        "member": "compare",
+        "module": "Stdlib",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 512,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 525,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 532,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 579,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 581,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 586,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 588,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 617,
+        "member": "to_list",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 631,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 689,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 691,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 696,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 698,
+        "member": "gettimeofday",
+        "module": "Unix",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+      },
+      {
+        "line": 10,
+        "member": "print_flush",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/verifier_options.hl"
+      },
+      {
+        "line": 10,
+        "member": "print_string",
+        "module": "Format",
+        "source": "flyspeck:formal_ineqs/verifier_options.hl"
+      }
+    ],
+    "unsupported_use_count": 0,
+    "unsupported_uses": []
+  },
   "counts": {
     "already_in_direct_manifest": 34,
     "identity_extension": 56,
@@ -17,7 +2449,7 @@
   "direct_manifest": {
     "path": "candle/flyspeck_manifest.json",
     "schema": 1,
-    "sha256": "841e1c15583c17ce63418457324286ef81d17fc692a03a4dcf18929dbd5a821f",
+    "sha256": "e745bb2a57f0c12adcdf578868652f940c053daeec0de60237e79165d2a50225",
     "source_node_count": 400
   },
   "direct_manifest_overlap": [

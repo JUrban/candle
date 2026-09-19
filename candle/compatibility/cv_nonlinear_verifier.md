@@ -1,0 +1,106 @@
+# Reflective nonlinear verifier development boundary
+
+Status: DEVELOPMENT / NON-RELEASE
+
+## Objective
+
+Exercise Flyspeck's existing proof-producing interval/nonlinear verifier in
+Candle on the exact public leaf consumed by the current serialized nonlinear
+reconstruction. The serialized theorem is an oracle for conclusion,
+hypotheses, and axioms only. It is not proof evidence for the new path.
+
+The target interface is an ordinary kernel theorem from
+`M_verifier_main.verify_ineq`. The experiment must compare its public
+conclusion and hypotheses to the existing leaf theorem and must leave the
+global axiom set unchanged.
+
+## Authenticated source boundary
+
+`flyspeck_nonlinear_verifier_closure.py` recursively follows the literal source
+actions of `formal_ineqs/verifier/m_verifier_main.hl` using the same scanner and
+lexical resolver as the direct manifest. Its generated closure contains:
+
+- 90 exact source nodes and 193 selected literal edges;
+- 28 Candle/HOL nodes and 62 Flyspeck nodes;
+- 34 nodes already present in the direct 400-source manifest; and
+- 56 additional Flyspeck logical identities.
+
+There are no missing, dynamic, or ambiguous source edges. Every extension
+entry carries repository identity, logical relative path, MD5, and SHA-256.
+Absolute worktree paths remain run-local observations and basenames never
+authorize a source.
+
+The closure is deliberately separate from the release manifest while this is
+an isolated experiment. A production integration must merge the same logical
+identities into the one generated direct authority before parsing or evaluating
+any of them. A failed or partial source load is never a reusable predecessor.
+
+## Runtime compatibility found by the closure
+
+The previously selected 400-source graph did not exercise several ordinary
+OCaml library members used by the formal verifier. This branch adds the
+following central compatibility support without changing Flyspeck source:
+
+- exact `Big_int.mult_big_int` and `Big_int.eq_big_int` over CakeML's
+  arbitrary-precision integers;
+- exact floor `Big_int.sqrt_big_int`, implemented by integer Newton descent;
+- order-preserving `Array.to_list`;
+- `Stdlib.abs_float` and `Stdlib.ignore`; and
+- the `Format.std_formatter` value needed by the verifier's diagnostic-printer
+  interfaces.
+
+The square-root differential test covers 0, adjacent nonsquares/squares, and
+`2^128 - 1`; multiplication also crosses the signed 64-bit range. Array order,
+float absolute value, ignored-result behavior, and formatter callback typing
+are checked against native OCaml 4.14.1.
+
+`Format.std_formatter` currently preserves the source type and diagnostic
+callback interface. It accumulates pretty-print tokens but is not a faithful
+stdout-flushing formatter. This does not weaken kernel theorem checking, but
+if a real verifier run relies on the associated diagnostic output, formatter
+flushing must be implemented and differentially tested before that output can
+be claimed equivalent.
+
+The closure generator inventories qualified compatibility uses and fails its
+regression if any member falls outside the central support table. This avoids
+letting the experimental source list and runtime support drift independently.
+The current closure contains 404 such uses of 34 distinct module members and
+zero unsupported uses.
+
+Both focused differential gates pass against native OCaml 4.14.1. The
+arithmetic gate covers exact floor square root around adjacent squares and at
+`2^128 - 1`, multiplication beyond signed 64-bit range, equality, and negative
+input rejection. The runtime gate covers array order, binary64 absolute value,
+discarded results, and the formatter callback type. The Candle halves load
+only `insulate.ml`, `nums.ml`, `pretty.ml`, and `ocaml.ml`, so these checks take
+seconds rather than paying for an unrelated full HOL replay.
+
+## Gates
+
+1. Parser-only gate all 56 extension sources through the dedicated
+   `caml_parser$run` capability after exact loader-action masking and HOL
+   quotation expansion. This performs no inference or evaluation.
+2. From a fresh clean predecessor, authenticate the complete source extension,
+   then load the formal verifier closure. Stop at the first parser, inference,
+   evaluation, or runtime failure and repair the smallest shared cause.
+3. Extract the exact first public `ineqm` leaf and its `ineq6m`/`ineq9m`
+   conversion from the largest reconstruction case.
+4. Run `M_verifier_main.verify_ineq` on that exact public term and compare
+   conclusion, hypotheses, theorem digest, and global axioms to the serialized
+   oracle.
+5. Profile verifier setup, interval evaluation, subdivision/search, theorem
+   construction, and final public conversion before deciding which computation
+   is worth reflecting further.
+
+The parser-only survey has exposed one material frontend hotspot rather than a
+syntax incompatibility: the 469,938-byte generated
+`multivariate_taylor-compiled.hl` source occupied one parser process for about
+27 minutes before passing and advancing to the next exact source. The gate's
+per-source timeout is therefore 30 minutes. This observation argues for
+persisting parser progress and avoiding repeated whole-closure parser surveys;
+it is not evidence about proof execution time.
+
+None of these gates changes the qualified Great100 runtime or evidence. Parser
+results, checkpoint probes, and oracle comparisons remain non-release evidence
+until a fresh cumulative direct run uses a single authenticated manifest and
+the production runtime.
