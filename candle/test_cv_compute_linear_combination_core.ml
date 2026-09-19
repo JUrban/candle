@@ -2,10 +2,12 @@ needs "candle/compute.ml";;
 needs "candle/cv_compute_linear_combination_core.ml";;
 needs "candle/cv_compute_linear_combination.ml";;
 needs "candle/cv_compute_linear_combination_sound.ml";;
+needs "candle/cv_compute_linear_combination_bulk.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination;;
 open Candle_cv_linear_combination_sound;;
+open Candle_cv_linear_combination_bulk;;
 
 let candle_cv_lc_test_rows =
  `[(3,([(2,0);(0,1)],(5,0)));
@@ -75,5 +77,23 @@ if hyp candle_lc_real_accumulate_sound <> [] ||
    hyp candle_lc_real_fold_sound <> [] ||
    hyp candle_lc_real_fold_from_zero <> []
 then failwith "linear-combination soundness theorem has assumptions";;
+
+let candle_cv_lc_bulk_left = ASSUME `x:real <= &3`;;
+let candle_cv_lc_bulk_right = ASSUME `y:real <= &4`;;
+let candle_cv_lc_bulk_test =
+  candle_lc_bulk_inequality
+    [(candle_cv_lc_bulk_left,`2`);(candle_cv_lc_bulk_right,`3`)];;
+let candle_cv_lc_bulk_expected =
+ `FST
+    (candle_lc_real_fold (&0,&0)
+      [(2,(x:real,&3));(3,(y:real,&4))]) <=
+  SND
+    (candle_lc_real_fold (&0,&0)
+      [(2,(x:real,&3));(3,(y:real,&4))])`;;
+
+if not (aconv (concl candle_cv_lc_bulk_test) candle_cv_lc_bulk_expected) then
+  failwith "bulk linear-combination conclusion mismatch";;
+if not (set_eq (hyp candle_cv_lc_bulk_test) [`x:real <= &3`; `y:real <= &4`])
+then failwith "bulk linear-combination hypotheses mismatch";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
