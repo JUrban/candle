@@ -2429,6 +2429,82 @@
         "source": "flyspeck:formal_ineqs/verifier_options.hl"
       }
     ],
+    "toplevel_members": [
+      "Assert_failure",
+      "abs_float",
+      "ceil",
+      "float_of_num",
+      "frexp",
+      "ldexp"
+    ],
+    "toplevel_use_count": 13,
+    "toplevel_uses": [
+      {
+        "identifier": "abs_float",
+        "line": 141,
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 148,
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 122,
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 130,
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 133,
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 37,
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 222,
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 502,
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 518,
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 202,
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 202,
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 209,
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 345,
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      }
+    ],
     "unsupported_use_count": 0,
     "unsupported_uses": []
   },
@@ -2449,7 +2525,7 @@
   "direct_manifest": {
     "path": "candle/flyspeck_manifest.json",
     "schema": 1,
-    "sha256": "e745bb2a57f0c12adcdf578868652f940c053daeec0de60237e79165d2a50225",
+    "sha256": "a4557ca895ebce36e4e26e298b55c3a50aa8bd4d593d444cec7da32b875c4688",
     "source_node_count": 400
   },
   "direct_manifest_overlap": [

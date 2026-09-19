@@ -2937,10 +2937,11 @@
         "status": "typed-source-bindings-and-exact-normalizations"
       },
       "toplevel_numeric_and_assertion": {
-        "assurance_limit": "float_of_num performs exact rational scaling and nearest-even binary64 rounding; frexp and ldexp use proved IEEE-754 field extraction and reconstruction; ceil uses the primitive correctly-rounded floor; and Assert_failure remains distinct from Failure, all without a new FFI",
+        "assurance_limit": "float_of_num performs exact rational scaling and nearest-even binary64 rounding; frexp and ldexp use proved IEEE-754 field extraction and reconstruction; abs_float clears exactly the binary64 sign bit; ceil uses the primitive correctly-rounded floor; and Assert_failure remains distinct from Failure, all without a new FFI",
         "gate": "candle:candle/test_flyspeck_ocaml_slice.sh",
         "members": [
           "Assert_failure",
+          "abs_float",
           "ceil",
           "float_of_num",
           "frexp",
@@ -3327,43 +3328,43 @@
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 784,
+        "line": 785,
         "member": "make",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 794,
         "member": "set",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 800,
+        "line": 801,
         "member": "get",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 811,
+        "line": 812,
         "member": "logor",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 811,
+        "line": 812,
         "member": "shift_left",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 812,
+        "line": 813,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 813,
+        "line": 814,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
@@ -6290,43 +6291,43 @@
         "source": "candle:candle/nums.ml"
       },
       {
-        "line": 784,
+        "line": 785,
         "member": "make",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 793,
+        "line": 794,
         "member": "set",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 800,
+        "line": 801,
         "member": "get",
         "module": "Array",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 811,
+        "line": 812,
         "member": "logor",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 811,
+        "line": 812,
         "member": "shift_left",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 812,
+        "line": 813,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 813,
+        "line": 814,
         "member": "of_int",
         "module": "Int64",
         "source": "candle:candle/ocaml.ml"
@@ -9065,6 +9066,7 @@
     },
     "toplevel_supported_members": [
       "Assert_failure",
+      "abs_float",
       "ceil",
       "float_of_num",
       "frexp",
@@ -10696,8 +10698,8 @@
     "execution_limit": "preflight detects on-disk corruption before strictbuild; hol.ml and the loader have already begun execution, and the loader is authenticated only by the outer release lock",
     "gate": "candle:candle/test_flyspeck_source_digests.sh",
     "generated_source": "candle:candle/flyspeck_source_digests.ml",
-    "generated_source_md5": "796de0dea88f872d603a858c90d65699",
-    "generated_source_sha256": "fa86a856e27a7fa69796bd4558d5b54414dc5b75435d7951d5ca9984a9289bdb",
+    "generated_source_md5": "19564b1e7f63d9bc4f14ea4f221b7e24",
+    "generated_source_sha256": "93a7d89d46ca67038becf60bab36721b0377060d4bfdf8fcf9f82d3b02258f22",
     "outer_integrity": "manifest and generated program pinned by SHA-256",
     "preload_authentication": "loader checks generated_source_md5 before executing the program"
   },
@@ -16825,12 +16827,12 @@
       "sha256": "43ebec021a3792789b5a9e4d6ca0eecaa8090bf9d9ba14685d2b12395ab3bb4b"
     },
     "candle:candle/ocaml.ml": {
-      "bytes": 46298,
+      "bytes": 46326,
       "dependencies": [],
-      "md5": "19b9bc7ad1c434a53efde7f669409c12",
+      "md5": "ebe4569ea00d4480616afa771d7aa06a",
       "path": "candle/ocaml.ml",
       "repository": "candle",
-      "sha256": "6d4bc6d7fa2a2e2d64f6456efa7c96dfec089d25729558b43888d81e876b0cf7"
+      "sha256": "85b6136ba4d118d23c9899e8e4cbf2e4be83bcc9e102ef527fe119563a147709"
     },
     "candle:candle/pretty.ml": {
       "bytes": 8217,
@@ -28394,19 +28396,19 @@
     "policy": "Toploop and dynamically evaluated source are correctness-relevant; a dummy return, silent skip, unchecked Obj.magic, or successful no-op implementation is forbidden. Exact selected-route dead-effect elimination and fail-closed non-use bindings require complete-run and final-fingerprint confirmation",
     "qualified_uses": [
       {
-        "line": 920,
+        "line": 921,
         "member": "print_as",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 921,
+        "line": 922,
         "member": "print_string",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"
       },
       {
-        "line": 922,
+        "line": 923,
         "member": "print_newline",
         "module": "Format",
         "source": "candle:candle/ocaml.ml"

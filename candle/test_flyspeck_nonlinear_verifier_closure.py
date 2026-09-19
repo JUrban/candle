@@ -81,6 +81,12 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             ("Stdlib", "abs_float"),
             ("Stdlib", "ignore"),
         } <= members)
+        self.assertIn("abs_float", compatibility["toplevel_members"])
+        self.assertTrue(any(
+            use["source"] == "flyspeck:formal_ineqs/trig/exp_eval.hl" and
+            use["identifier"] == "abs_float" and use["line"] == 345
+            for use in compatibility["toplevel_uses"]
+        ))
 
 
 if __name__ == "__main__":

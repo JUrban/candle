@@ -152,6 +152,7 @@ module Float = struct
 end;;
 
 let frexp = Float.frexp;;
+let abs_float = Float.abs;;
 
 (* OCaml floating-point compatibility used by Flyspeck's interval seed.
    [ceil] is derived from the primitive, correctly-rounded [floor]. *)

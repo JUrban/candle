@@ -77,6 +77,7 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
     discovery_order: list[str] = []
     nodes: dict[str, dict[str, Any]] = {}
     compatibility_uses: list[dict[str, Any]] = []
+    toplevel_compatibility_uses: list[dict[str, Any]] = []
     compatibility_modules = (
         set(flyspeck_manifest.OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
         | set(flyspeck_manifest.STATIC_RUNTIME_LIBRARIES.values())
@@ -98,6 +99,14 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             text, compatibility_modules,
         ):
             compatibility_uses.append({"source": source_ref.key, **use})
+        if source_ref.repository == "flyspeck":
+            for use in flyspeck_manifest.scan_identifier_uses(
+                text,
+                flyspeck_manifest.OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS,
+            ):
+                toplevel_compatibility_uses.append({
+                    "source": source_ref.key, **use,
+                })
         dependencies: list[dict[str, Any]] = []
         selected_keys: list[str] = []
         for call in flyspeck_manifest.scan_load_calls(text):
@@ -205,6 +214,12 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
         use for use in sorted_compatibility_uses
         if str(use["member"]) not in supported_members[str(use["module"])]
     ]
+    sorted_toplevel_compatibility_uses = sorted(
+        toplevel_compatibility_uses,
+        key=lambda use: (
+            str(use["source"]), int(use["line"]), str(use["identifier"]),
+        ),
+    )
     return {
         "schema": SCHEMA,
         "kind": "candle-flyspeck-nonlinear-verifier-source-closure",
@@ -246,6 +261,11 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             "unsupported_use_count": len(unsupported_compatibility_uses),
             "unsupported_uses": unsupported_compatibility_uses,
             "qualified_uses": sorted_compatibility_uses,
+            "toplevel_use_count": len(sorted_toplevel_compatibility_uses),
+            "toplevel_members": sorted(
+                flyspeck_manifest.OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS
+            ),
+            "toplevel_uses": sorted_toplevel_compatibility_uses,
         },
         "source_nodes": {key: nodes[key] for key in sorted(nodes)},
         "integration_policy": {

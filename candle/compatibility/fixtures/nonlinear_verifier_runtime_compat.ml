@@ -1,7 +1,10 @@
 let candle_nonlinear_verifier_array = Array.of_list [3;1;4;1;5];;
 let candle_nonlinear_verifier_array_list =
   Array.to_list candle_nonlinear_verifier_array;;
-let candle_nonlinear_verifier_abs = Stdlib.abs_float (0.0 -. 3.5);;
+let candle_nonlinear_verifier_qualified_abs =
+  Stdlib.abs_float (0.0 -. 3.5);;
+let candle_nonlinear_verifier_unqualified_abs =
+  abs_float (0.0 -. 3.5);;
 let candle_nonlinear_verifier_ignored = Stdlib.ignore 17;;
 let candle_nonlinear_verifier_formatter = Format.std_formatter;;
 let candle_nonlinear_verifier_empty_print =
@@ -9,7 +12,8 @@ let candle_nonlinear_verifier_empty_print =
 
 let candle_nonlinear_verifier_runtime_compat_ok =
   candle_nonlinear_verifier_array_list = [3;1;4;1;5] &&
-  candle_nonlinear_verifier_abs = 3.5 &&
+  candle_nonlinear_verifier_qualified_abs = 3.5 &&
+  candle_nonlinear_verifier_unqualified_abs = 3.5 &&
   candle_nonlinear_verifier_ignored = () &&
   candle_nonlinear_verifier_empty_print = ();;
 

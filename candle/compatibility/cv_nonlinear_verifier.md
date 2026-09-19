@@ -45,14 +45,14 @@ following central compatibility support without changing Flyspeck source:
   arbitrary-precision integers;
 - exact floor `Big_int.sqrt_big_int`, implemented by integer Newton descent;
 - order-preserving `Array.to_list`;
-- `Stdlib.abs_float` and `Stdlib.ignore`; and
+- qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer
   interfaces.
 
 The square-root differential test covers 0, adjacent nonsquares/squares, and
 `2^128 - 1`; multiplication also crosses the signed 64-bit range. Array order,
-float absolute value, ignored-result behavior, and formatter callback typing
-are checked against native OCaml 4.14.1.
+qualified and unqualified float absolute value, ignored-result behavior, and
+formatter callback typing are checked against native OCaml 4.14.1.
 
 `Format.std_formatter` currently preserves the source type and diagnostic
 callback interface. It accumulates pretty-print tokens but is not a faithful
@@ -65,15 +65,19 @@ The closure generator inventories qualified compatibility uses and fails its
 regression if any member falls outside the central support table. This avoids
 letting the experimental source list and runtime support drift independently.
 The current closure contains 404 such uses of 34 distinct module members and
-zero unsupported uses.
+zero unsupported uses. It separately records 13 lexical uses of supported
+top-level compatibility names; this catches the implicitly opened
+`abs_float` at `trig/exp_eval.hl:345` while retaining the local definitions
+that require later inference to disambiguate.
 
 Both focused differential gates pass against native OCaml 4.14.1. The
 arithmetic gate covers exact floor square root around adjacent squares and at
 `2^128 - 1`, multiplication beyond signed 64-bit range, equality, and negative
-input rejection. The runtime gate covers array order, binary64 absolute value,
-discarded results, and the formatter callback type. The Candle halves load
-only `insulate.ml`, `nums.ml`, `pretty.ml`, and `ocaml.ml`, so these checks take
-seconds rather than paying for an unrelated full HOL replay.
+input rejection. The runtime gate covers array order, qualified and
+unqualified binary64 absolute value, discarded results, and the formatter
+callback type. The Candle halves load only `insulate.ml`, `nums.ml`,
+`pretty.ml`, and `ocaml.ml`, so these checks take seconds rather than paying for
+an unrelated full HOL replay.
 
 ## Gates
 

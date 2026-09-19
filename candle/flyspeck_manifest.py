@@ -80,7 +80,7 @@ OCAML_COMPATIBILITY_SUPPORTED_MEMBERS = {
     },
 }
 OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS = {
-    "Assert_failure", "ceil", "float_of_num", "frexp", "ldexp",
+    "Assert_failure", "abs_float", "ceil", "float_of_num", "frexp", "ldexp",
 }
 TOPLEVEL_INTERFACE_MODULES = {"Format", "Lexing", "Obj", "Toploop"}
 TOPLEVEL_INTERFACE_SOURCE_MEMBERS = {
@@ -2267,6 +2267,7 @@ def build_manifest(candle_root: Path, flyspeck_root: Path) -> dict[str, object]:
                         "float_of_num performs exact rational scaling and "
                         "nearest-even binary64 rounding; frexp and ldexp use "
                         "proved IEEE-754 field extraction and reconstruction; "
+                        "abs_float clears exactly the binary64 sign bit; "
                         "ceil uses the primitive correctly-rounded floor; and "
                         "Assert_failure remains distinct from Failure, all "
                         "without a new FFI"
