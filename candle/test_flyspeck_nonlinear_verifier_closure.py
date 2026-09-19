@@ -41,8 +41,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 19)
-        self.assertEqual(counts["normalization_operations"], 116)
+        self.assertEqual(counts["normalized_sources"], 22)
+        self.assertEqual(counts["normalization_operations"], 126)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -236,6 +236,27 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 "float_ieee_" in operation["after"]
                 for operation in selected.values()
             ))
+
+    def test_all_active_assertions_use_distinct_failure_helper(self) -> None:
+        assertion_operations = [
+            operation
+            for node in self.payload["source_nodes"].values()
+            for operation in node.get("normalization", {}).get(
+                "operations", []
+            )
+            if "assert" in operation["kind"]
+        ]
+        self.assertEqual(len(assertion_operations), 10)
+        self.assertEqual(
+            sum(operation["replacement_count"]
+                for operation in assertion_operations),
+            14,
+        )
+        self.assertTrue(all(
+            operation["before"].startswith("assert (") and
+            operation["after"].startswith("candle_assert (")
+            for operation in assertion_operations
+        ))
 
     def test_direct_normalizations_reuse_canonical_authority(self) -> None:
         normalized = {

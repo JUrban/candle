@@ -9,6 +9,11 @@ let assertion_is_distinct =
   try raise (Assert_failure ("fixture", 1, 0)); false
   with Assert_failure _ -> true | Failure _ -> false;;
 require assertion_is_distinct "assert compatibility exception mismatch";;
+require (candle_assert true "probe" = ()) "assert true mismatch";;
+let candle_assert_is_distinct =
+  try candle_assert false "probe"; false
+  with Assert_failure (source,0,0) -> source = "probe" | Failure _ -> false;;
+require candle_assert_is_distinct "normalized assert exception mismatch";;
 
 let encoded = Bytes.create 2;;
 Bytes.set encoded 0 'A';;

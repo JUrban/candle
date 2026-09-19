@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v5"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v6"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -51,7 +51,9 @@ NORMALIZATION_SEMANTIC_RULE = (
     "tests through float_ieee_equal, preserving OCaml float equality despite "
     "CakeML generic equality's representation semantics; their adjacent "
     "native float orderings use typed IEEE less-than and greater-or-equal "
-    "helpers instead of Candle's integer-only unqualified operators"
+    "helpers instead of Candle's integer-only unqualified operators. All 14 "
+    "active native assert sites call one condition-preserving helper that "
+    "raises the existing distinct Assert_failure on false"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -72,7 +74,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "more_float and informal_float; they preserve signed-zero equality, NaN "
     "inequality, infinity equality, and every finite nonzero comparison. The "
     "typed ordering rewrites cover exactly the three adjacent split branches "
-    "in each implementation and preserve native false-on-NaN behavior."
+    "in each implementation and preserve native false-on-NaN behavior. The "
+    "assert rewrites preserve condition evaluation, success value, and failure "
+    "constructor; only the run-local native source position is replaced by a "
+    "stable logical source label with zero line/column fields."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -228,6 +233,19 @@ def _replacement(
 
 
 EXTENSION_COMPATIBILITY_REPLACEMENTS = {
+    "flyspeck:formal_ineqs/arith/float_pow.hl": (
+        _replacement(
+            "float-pow-assert-gt2",
+            b'assert (n > 2)',
+            b'candle_assert (n > 2) "formal_ineqs/arith/float_pow.hl"',
+            2,
+        ),
+        _replacement(
+            "float-pow-assert-gt1",
+            b'assert (n > 1)',
+            b'candle_assert (n > 1) "formal_ineqs/arith/float_pow.hl"',
+        ),
+    ),
     "flyspeck:formal_ineqs/arith/more_float.hl": (
         _replacement(
             "more-float-ieee-special-equality",
@@ -391,6 +409,18 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
             b'if float_ieee_lt f 0.0 then',
         ),
         _replacement(
+            "informal-float-assert-nonnegative",
+            b'assert (n >= 0)',
+            b'candle_assert (n >= 0) "formal_ineqs/informal/informal_float.hl"',
+            2,
+        ),
+        _replacement(
+            "informal-float-assert-gt2",
+            b'assert (n > 2)',
+            b'candle_assert (n > 2) "formal_ineqs/informal/informal_float.hl"',
+            2,
+        ),
+        _replacement(
             "informal-float-plain",
             b'Printf.sprintf "%s%s" s_str n_str',
             b's_str ^ n_str',
@@ -400,6 +430,35 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
             b'Printf.sprintf "%s%s*%d^%d" s_str n_str arith_base k',
             b's_str ^ n_str ^ "*" ^ string_of_int arith_base ^ "^" ^ '
             b'string_of_int k',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_atn.hl": (
+        _replacement(
+            "informal-atn-assert-x1-sign",
+            b'assert (sign_float x1 = false)',
+            b'candle_assert (sign_float x1 = false) '
+            b'"formal_ineqs/informal/informal_atn.hl"',
+        ),
+        _replacement(
+            "informal-atn-assert-lo-sign",
+            b'assert (sign_float lo = false)',
+            b'candle_assert (sign_float lo = false) '
+            b'"formal_ineqs/informal/informal_atn.hl"',
+        ),
+        _replacement(
+            "informal-atn-assert-t-sign",
+            b'assert (sign_float t = false)',
+            b'candle_assert (sign_float t = false) '
+            b'"formal_ineqs/informal/informal_atn.hl"',
+            2,
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_interval.hl": (
+        _replacement(
+            "informal-interval-assert-gt1",
+            b'assert (n > 1)',
+            b'candle_assert (n > 1) '
+            b'"formal_ineqs/informal/informal_interval.hl"',
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_search.hl": (
@@ -416,6 +475,18 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_sin_cos.hl": (
+        _replacement(
+            "informal-sin-cos-assert-negative",
+            b'assert (i < 0)',
+            b'candle_assert (i < 0) '
+            b'"formal_ineqs/informal/informal_sin_cos.hl"',
+        ),
+        _replacement(
+            "informal-sin-cos-assert-nonnegative",
+            b'assert (i >= 0)',
+            b'candle_assert (i >= 0) '
+            b'"formal_ineqs/informal/informal_sin_cos.hl"',
+        ),
         _replacement(
             "informal-cos-constant-warning",
             b'Printf.sprintf "cos_interval: reduction failed"',

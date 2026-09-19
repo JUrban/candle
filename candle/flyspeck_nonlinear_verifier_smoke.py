@@ -85,6 +85,7 @@ FLOAT_CLOSURE_SELECTED_MEMBERS = {"infinity", "nan"}
 FLOAT_NATIVE_MEMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_'])(infinity|neg_infinity|nan)(?![A-Za-z0-9_'])"
 )
+ASSERT_HELPER_MEMBERS = {"candle_assert"}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -158,6 +159,29 @@ def authenticate_big_int_compatibility(
         raise ValueError(
             "float constant compatibility member inventory drift: "
             f"{sorted(float_members)}"
+        )
+    assert_begin = b"(* CANDLE_OCAML_ASSERT_HELPER_BEGIN *)\n"
+    assert_end = b"(* CANDLE_OCAML_ASSERT_HELPER_END *)"
+    if (
+        float_source.count(assert_begin) != 1
+        or float_source.count(assert_end) != 1
+    ):
+        raise ValueError("assert compatibility helper boundary drift")
+    assert_start = float_source.index(assert_begin) + len(assert_begin)
+    assert_finish = float_source.index(assert_end, assert_start)
+    assert_helper = float_source[assert_start:assert_finish]
+    assert_text = assert_helper.decode("ascii")
+    assert_members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", assert_text,
+            flags=re.MULTILINE,
+        )
+    }
+    if assert_members != ASSERT_HELPER_MEMBERS:
+        raise ValueError(
+            "assert compatibility helper member inventory drift: "
+            f"{sorted(assert_members)}"
         )
 
     source_path = candle_root / BIG_INT_SOURCE
@@ -245,7 +269,8 @@ def authenticate_big_int_compatibility(
             f"{sorted(export_members)}"
         )
     overlay = (
-        float_constants + b"\n" + module + b"\n\n" + bridge + b"\n" + exports
+        assert_helper + b"\n" + float_constants + b"\n" + module + b"\n\n"
+        + bridge + b"\n" + exports
     )
     return overlay.decode("ascii"), {
         "float_constants": {
@@ -258,6 +283,13 @@ def authenticate_big_int_compatibility(
             "closure_selected_members": sorted(
                 FLOAT_CLOSURE_SELECTED_MEMBERS
             ),
+        },
+        "assert_helper": {
+            "source": FLOAT_CONSTANT_SOURCE.as_posix(),
+            "bytes": len(assert_helper),
+            "sha256": hashlib.sha256(assert_helper).hexdigest(),
+            "overlay_members": sorted(assert_members),
+            "semantics": "condition or distinct Assert_failure",
         },
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),

@@ -63,6 +63,9 @@ following central compatibility support without changing Flyspeck source:
   NaNs where CakeML's generic equality compares binary representations;
 - typed `float_ieee_lt`/`float_ieee_ge` bridges plus the six adjacent checker
   orderings, preserving native finite, infinity, signed-zero, and NaN branches;
+- a central condition-preserving `candle_assert` helper and all 14 active
+  assertion sites in the authenticated closure, retaining the distinct
+  `Assert_failure` constructor on false;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer

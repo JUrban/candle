@@ -47,13 +47,18 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
-        self.assertEqual(len(self.overlays), 19)
+        self.assertEqual(len(self.overlays), 22)
 
     def test_central_big_int_overlay_is_complete_and_source_bound(self) -> None:
         self.assertEqual(
             set(self.big_int_record["float_constants"]["overlay_members"]),
             subject.FLOAT_CONSTANT_MEMBERS,
         )
+        self.assertEqual(
+            set(self.big_int_record["assert_helper"]["overlay_members"]),
+            subject.ASSERT_HELPER_MEMBERS,
+        )
+        self.assertIn("Assert_failure", self.big_int_compatibility)
         self.assertEqual(
             set(self.big_int_record["float_constants"][
                 "closure_selected_members"
@@ -128,6 +133,7 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             self.assertNotIn(
                 "formatter_of_out_channel", masked, record["source_key"],
             )
+            self.assertNotRegex(masked, r"(?<![A-Za-z0-9_'])assert\s*\(")
 
     def test_every_identity_is_in_the_runtime_preflight(self) -> None:
         for record in self.records:

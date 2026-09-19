@@ -22,6 +22,15 @@ let pp_exn e =
 
 let invalid_arg s = raise (Invalid_argument s);;
 
+(* Candle's frontend currently treats native OCaml [assert] syntax as an
+   unresolved identifier.  Exact source normalizations call this helper with
+   the original condition and a stable logical source label. *)
+(* CANDLE_OCAML_ASSERT_HELPER_BEGIN *)
+let candle_assert condition logical_source =
+  if condition then ()
+  else raise (Assert_failure (logical_source,0,0));;
+(* CANDLE_OCAML_ASSERT_HELPER_END *)
+
 let open_in name = try Text_io.openIn name
   with Text_io.Bad_file_name -> raise (Sys_error ("open_in " ^ name))
 ;;
