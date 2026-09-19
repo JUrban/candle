@@ -501,7 +501,7 @@ class GeneratedManifestTests(unittest.TestCase):
             contract["activation_status"],
             "exact-overlay-selection-active-pending-full-run",
         )
-        self.assertEqual(contract["entry_count"], 54)
+        self.assertEqual(contract["entry_count"], 55)
         self.assertIn("span anchors must occur once", contract["input_policy"])
         self.assertIn("before parsing", contract["output_policy"])
         self.assertIn("never add the overlay", contract["runtime_selection_policy"])
@@ -986,19 +986,20 @@ class GeneratedManifestTests(unittest.TestCase):
         normalization = self.payload["source_nodes"][
             "flyspeck:text_formalization/general/serialization.hl"
         ]["execution_normalization"]
-        self.assertEqual(normalization["operation_count"], 3)
+        self.assertEqual(normalization["operation_count"], 15)
         detailed = next(
             entry for entry in
             self.payload["source_normalization_contract"]["entries"]
             if entry["source_key"] ==
             "flyspeck:text_formalization/general/serialization.hl"
         )
-        self.assertEqual(
-            detailed["operations"][-1]["id"],
-            "PROJECT-GENERATED-RUNTIME-S3-THEOREM-DIGEST-OUTPUT-001-DISABLE",
+        generated_runtime = next(
+            operation for operation in detailed["operations"]
+            if operation["id"] ==
+            "PROJECT-GENERATED-RUNTIME-S3-THEOREM-DIGEST-OUTPUT-001-DISABLE"
         )
         self.assertNotIn("Filename.temp_file",
-                         detailed["operations"][-1]["after"])
+                         generated_runtime["after"])
         self.assertNotIn("candle:candle/build/insulate.ml", self.payload["source_nodes"])
 
     def test_final_target_is_direct_source_only(self):
@@ -1040,7 +1041,7 @@ class GeneratedManifestTests(unittest.TestCase):
         self.assertIn('needs "candle/flyspeck_full_build.ml"', source)
         self.assertIn("Cakeml.configureNormalizationOverlay", source)
         self.assertIn(
-            "List.length candle_flyspeck_normalized_sources <> 53", source,
+            "List.length candle_flyspeck_normalized_sources <> 54", source,
         )
         normalization_entries = self.payload[
             "source_normalization_contract"
@@ -1050,10 +1051,10 @@ class GeneratedManifestTests(unittest.TestCase):
             if entry["id"]
             != "PROJECT-TOPLOOP-S3-UPDATE-DATABASE-310-UNSELECTED-001"
         ]
-        self.assertEqual(len(selected_normalizations), 53)
+        self.assertEqual(len(selected_normalizations), 54)
         self.assertEqual(
             sum(entry["operation_count"] for entry in selected_normalizations),
-            196,
+            219,
         )
         for entry in selected_normalizations:
             self.assertEqual(source.count(entry["normalized_md5"]), 1)
