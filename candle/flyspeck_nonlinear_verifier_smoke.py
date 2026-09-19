@@ -38,6 +38,15 @@ THEOREM_END = "CANDLE_NONLINEAR_VERIFIER_THEOREM_END"
 CLOSURE_SECONDS = "CANDLE_NONLINEAR_VERIFIER_CLOSURE_SECONDS"
 SMOKE_PROOF_SECONDS = "CANDLE_NONLINEAR_VERIFIER_SMOKE_PROOF_SECONDS"
 FORBIDDEN_LOG_BYTES = (b"Parsing failed", b"EXCEPTION:")
+BIG_INT_SOURCE = Path("candle/nums.ml")
+BIG_INT_SELECTED_MEMBERS = {
+    "abs_big_int", "add_big_int", "big_int_of_int", "big_int_of_string",
+    "div_big_int", "eq_big_int", "le_big_int", "lt_big_int",
+    "mod_big_int", "mult_big_int", "mult_int_big_int",
+    "power_int_positive_int", "pred_big_int", "quomod_big_int",
+    "sign_big_int", "sqrt_big_int", "sub_big_int", "succ_big_int",
+    "zero_big_int",
+}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -78,6 +87,55 @@ def _logical_path(value: object, label: str) -> str:
     if not path.parts:
         raise ValueError(f"empty logical path: {label}")
     return value
+
+
+def authenticate_big_int_compatibility(
+    candle_root: Path,
+) -> tuple[str, dict[str, Any]]:
+    """Extract the one central Big_int module used by the dev runtime overlay."""
+
+    source_path = candle_root.resolve() / BIG_INT_SOURCE
+    _ordinary_file(source_path, "Big_int compatibility source")
+    source = source_path.read_bytes()
+    begin = b"module Big_int = struct\n"
+    end = b"\nend;;\n\ntype num ="
+    if source.count(begin) != 1 or source.count(end) != 1:
+        raise ValueError("Big_int compatibility module boundary drift")
+    start = source.index(begin)
+    finish = source.index(end, start) + len(b"\nend;;")
+    module = source[start:finish]
+    if not module.isascii():
+        raise ValueError("Big_int compatibility module is not ASCII")
+    text = module.decode("ascii")
+    observed_members = {
+        match.group(1)
+        for match in re.finditer(r"^  let(?: rec)? ([a-z0-9_]+)\b", text,
+                                 flags=re.MULTILINE)
+    }
+    if observed_members != BIG_INT_SELECTED_MEMBERS:
+        raise ValueError(
+            "Big_int compatibility member inventory drift: "
+            f"{sorted(observed_members)}"
+        )
+    if text.count("  type big_int = int\n") != 1:
+        raise ValueError("Big_int compatibility representation drift")
+    return text, {
+        "source": {
+            "path": BIG_INT_SOURCE.as_posix(),
+            "bytes": len(source),
+            "sha256": hashlib.sha256(source).hexdigest(),
+        },
+        "module": {
+            "bytes": len(module),
+            "sha256": hashlib.sha256(module).hexdigest(),
+            "representation": "type big_int = int",
+            "selected_members": sorted(observed_members),
+        },
+        "activation": (
+            "development source overlay loaded after the frozen runtime base; "
+            "must move into a fresh linked runtime before release use"
+        ),
+    }
 
 
 def authenticate_closure(
@@ -227,6 +285,7 @@ def build_driver(
     flyspeck_root: Path,
     records: list[dict[str, Any]],
     overlays: list[dict[str, str]],
+    big_int_compatibility: str,
 ) -> str:
     """Generate the one-file, failure-dependent source-load/proof program."""
 
@@ -263,6 +322,11 @@ def build_driver(
 #use "hol.ml";;
 
 let candle_nonlinear_closure_started = Unix.gettimeofday();;
+
+(* One source-authoritative development overlay for the complete selected
+   legacy Big_int surface.  The linked runtime must absorb this before any
+   release claim. *)
+{big_int_compatibility}
 
 let candle_nonlinear_source_rows =
   [{source_rows}];;
@@ -405,6 +469,9 @@ def run(
     closure_data, closure, records = authenticate_closure(
         candle_root, flyspeck_root,
     )
+    big_int_compatibility, big_int_compatibility_record = (
+        authenticate_big_int_compatibility(candle_root)
+    )
 
     output_root.mkdir(parents=True)
     overlays = materialize_normalizations(output_root, records)
@@ -424,7 +491,10 @@ def run(
     stdin = output_root / "stdin.ml"
     log = output_root / "candle.log"
     driver.write_text(
-        build_driver(candle_root, flyspeck_root, records, overlays),
+        build_driver(
+            candle_root, flyspeck_root, records, overlays,
+            big_int_compatibility,
+        ),
         encoding="ascii", newline="\n",
     )
     stdin.write_text(
@@ -530,6 +600,7 @@ def run(
             "sha256": hashlib.sha256(closure_data).hexdigest(),
             "flyspeck_commit": closure["repositories"]["flyspeck"]["commit"],
         },
+        "big_int_compatibility": big_int_compatibility_record,
         "candle_commit": candle_commit,
         "runtime": runtime_record,
         "generated_insulation_input": generated_insulation_input_record,

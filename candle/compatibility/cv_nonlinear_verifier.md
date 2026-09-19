@@ -41,18 +41,29 @@ The previously selected 400-source graph did not exercise several ordinary
 OCaml library members used by the formal verifier. This branch adds the
 following central compatibility support without changing Flyspeck source:
 
-- exact `Big_int.mult_big_int` and `Big_int.eq_big_int` over CakeML's
-  arbitrary-precision integers;
-- exact floor `Big_int.sqrt_big_int`, implemented by integer Newton descent;
+- the complete selected legacy `Big_int` surface over CakeML's
+  arbitrary-precision integers: representation/conversion, zero, sign,
+  absolute value, successor/predecessor, addition/subtraction/multiplication,
+  Euclidean quotient/remainder, comparison, positive integer powers, and
+  exact floor square root;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer
   interfaces.
 
-The square-root differential test covers 0, adjacent nonsquares/squares, and
-`2^128 - 1`; multiplication also crosses the signed 64-bit range. Array order,
-qualified and unqualified float absolute value, ignored-result behavior, and
-formatter callback typing are checked against native OCaml 4.14.1.
+The `Big_int` differential gate covers every selected member, values beyond
+the signed 64-bit range, all sign combinations for Euclidean division,
+positive integer powers, 0, adjacent nonsquares/squares, and `2^128 - 1`.
+Array order, qualified and unqualified float absolute value, ignored-result
+behavior, and formatter callback typing are checked against native OCaml
+4.14.1.
+
+The current first-leaf controller extracts this one source-authoritative
+`Big_int` module from `candle/nums.ml` and overlays it after the older linked
+development runtime starts. The controller records both source and extracted
+module hashes. This avoids a costly relink during compatibility discovery,
+but is deliberately non-release: the same committed module must be absorbed
+by a fresh linked runtime before any cumulative or release claim.
 
 `Format.std_formatter` currently preserves the source type and diagnostic
 callback interface. It accumulates pretty-print tokens but is not a faithful

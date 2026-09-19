@@ -308,6 +308,9 @@ def run(
     closure_data, closure, closure_records = smoke.authenticate_closure(
         candle_root, flyspeck_root,
     )
+    big_int_compatibility, big_int_compatibility_record = (
+        smoke.authenticate_big_int_compatibility(candle_root)
+    )
     target_data, target, support_records = authenticate_target(
         flyspeck_root, closure_data,
     )
@@ -333,7 +336,10 @@ def run(
         target, flyspeck_root, support_records,
     )
     driver.write_text(
-        smoke.build_driver(candle_root, flyspeck_root, records, overlays)
+        smoke.build_driver(
+            candle_root, flyspeck_root, records, overlays,
+            big_int_compatibility,
+        )
         + target_driver,
         encoding="ascii",
         newline="\n",
@@ -491,6 +497,7 @@ def run(
             }
             for record in support_records
         ],
+        "big_int_compatibility": big_int_compatibility_record,
         "candle_commit": candle_commit,
         **fixed_records,
         "log": smoke._record_file(log),

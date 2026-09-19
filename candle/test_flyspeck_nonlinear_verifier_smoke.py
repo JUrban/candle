@@ -25,8 +25,12 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         cls.overlays = subject.materialize_normalizations(
             Path(cls.temp.name), cls.records,
         )
+        cls.big_int_compatibility, cls.big_int_record = (
+            subject.authenticate_big_int_compatibility(ROOT)
+        )
         cls.driver = subject.build_driver(
             ROOT, FLYSPECK_ROOT, cls.records, cls.overlays,
+            cls.big_int_compatibility,
         )
 
     @classmethod
@@ -44,6 +48,21 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {"candle", "flyspeck"},
         )
         self.assertEqual(len(self.overlays), 18)
+
+    def test_central_big_int_overlay_is_complete_and_source_bound(self) -> None:
+        self.assertEqual(
+            set(self.big_int_record["module"]["selected_members"]),
+            subject.BIG_INT_SELECTED_MEMBERS,
+        )
+        self.assertEqual(
+            self.big_int_record["module"]["representation"],
+            "type big_int = int",
+        )
+        self.assertIn(self.big_int_compatibility, self.driver)
+        self.assertLess(
+            self.driver.index(self.big_int_compatibility),
+            self.driver.index('needs "arith_options.hl";;'),
+        )
 
     def test_normalized_closure_has_no_active_general_formatting(self) -> None:
         for record in self.records:
