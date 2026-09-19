@@ -76,12 +76,19 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
             "concl candle_nonlinear_first_leaf_theorem <>", self.driver,
         )
         self.assertIn(subject.PASS_MARKER, self.driver)
+        self.assertIn(subject.FORMAL_VERIFICATION_SECONDS, self.driver)
+        self.assertNotIn("Printf.sprintf", self.driver)
+        self.assertIn("string_of_float", self.driver)
 
     def test_result_timing_parser_is_fail_closed(self) -> None:
         marker = subject.RECONSTRUCTION_SECONDS
         self.assertEqual(
             subject._extract_seconds(f"{marker} 1.250000\n".encode(), marker),
             1.25,
+        )
+        self.assertEqual(
+            subject._extract_seconds(f"{marker} 1.25e+02\n".encode(), marker),
+            125.0,
         )
         self.assertIsNone(subject._extract_seconds(b"", marker))
         duplicate = f"{marker} 1.0\n{marker} 2.0\n".encode()

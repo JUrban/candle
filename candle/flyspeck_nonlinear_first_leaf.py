@@ -35,6 +35,9 @@ PASS_MARKER = "CANDLE_NONLINEAR_FIRST_LEAF_OK"
 RECONSTRUCTION_SECONDS = "CANDLE_NONLINEAR_FIRST_LEAF_RECONSTRUCTION_SECONDS"
 VERIFICATION_SECONDS = "CANDLE_NONLINEAR_FIRST_LEAF_VERIFICATION_SECONDS"
 VERIFIER_REPORTED_SECONDS = "CANDLE_NONLINEAR_FIRST_LEAF_VERIFIER_SECONDS"
+FORMAL_VERIFICATION_SECONDS = (
+    "CANDLE_NONLINEAR_FIRST_LEAF_FORMAL_VERIFICATION_SECONDS"
+)
 MODULE_NORMALIZATION = "candle-native-module-wrapper-v1"
 
 SUPPORT = {
@@ -209,8 +212,8 @@ let candle_nonlinear_first_leaf_eq =
 let candle_nonlinear_first_leaf_reconstruction_seconds =
   Unix.gettimeofday() -. candle_nonlinear_first_leaf_reconstruction_started;;
 print_endline
-  (Printf.sprintf "{RECONSTRUCTION_SECONDS} %.6f"
-     candle_nonlinear_first_leaf_reconstruction_seconds);;
+  ("{RECONSTRUCTION_SECONDS} " ^
+   string_of_float candle_nonlinear_first_leaf_reconstruction_seconds);;
 print_endline "{RECONSTRUCTION_END}";;
 
 if lhand (concl candle_nonlinear_first_leaf_eq) <>
@@ -227,11 +230,15 @@ let candle_nonlinear_first_leaf_raw,candle_nonlinear_first_leaf_stats =
 let candle_nonlinear_first_leaf_verification_seconds =
   Unix.gettimeofday() -. candle_nonlinear_first_leaf_verification_started;;
 print_endline
-  (Printf.sprintf "{VERIFICATION_SECONDS} %.6f"
-     candle_nonlinear_first_leaf_verification_seconds);;
+  ("{VERIFICATION_SECONDS} " ^
+   string_of_float candle_nonlinear_first_leaf_verification_seconds);;
 print_endline
-  (Printf.sprintf "{VERIFIER_REPORTED_SECONDS} %.6f"
-     candle_nonlinear_first_leaf_stats.total_time);;
+  ("{VERIFIER_REPORTED_SECONDS} " ^
+   string_of_float candle_nonlinear_first_leaf_stats.total_time);;
+print_endline
+  ("{FORMAL_VERIFICATION_SECONDS} " ^
+   string_of_float
+     candle_nonlinear_first_leaf_stats.formal_verification_time);;
 
 let candle_nonlinear_first_leaf_specialized =
   SPEC_ALL candle_nonlinear_first_leaf_raw;;
@@ -271,7 +278,7 @@ print_endline "{PASS_MARKER}";;
 def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     matches = re.findall(
         rb"^" + re.escape(marker.encode("ascii"))
-        + rb" ([0-9]+(?:\.[0-9]+)?)$",
+        + rb" ([-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)$",
         log_data,
         flags=re.MULTILINE,
     )
@@ -412,6 +419,9 @@ def run(
         ),
         "verifier_reported_seconds": _extract_seconds(
             log_data, VERIFIER_REPORTED_SECONDS,
+        ),
+        "formal_verification_seconds": _extract_seconds(
+            log_data, FORMAL_VERIFICATION_SECONDS,
         ),
     }
     outcome = (

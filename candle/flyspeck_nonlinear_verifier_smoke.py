@@ -317,7 +317,8 @@ if !Cakeml.pendingLoadedSourceIds <> [] ||
 
 print_endline "{LOAD_MARKER}";;
 print_endline
-  (Printf.sprintf "{CLOSURE_SECONDS} %.6f"
+  ("{CLOSURE_SECONDS} " ^
+   string_of_float
      (Unix.gettimeofday() -. candle_nonlinear_closure_started));;
 
 open M_verifier_main;;
@@ -330,7 +331,8 @@ let candle_nonlinear_smoke_theorem,candle_nonlinear_smoke_stats =
   verify_ineq {{default_params with eps = 1e-10}} 6
     candle_nonlinear_smoke_term;;
 print_endline
-  (Printf.sprintf "{SMOKE_PROOF_SECONDS} %.6f"
+  ("{SMOKE_PROOF_SECONDS} " ^
+   string_of_float
      (Unix.gettimeofday() -. candle_nonlinear_smoke_started));;
 
 if hyp candle_nonlinear_smoke_theorem <> [] ||
@@ -373,7 +375,7 @@ def build_stdin(candle_root: Path, support_root: Path, driver: Path) -> str:
 def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     matches = re.findall(
         rb"^" + re.escape(marker.encode("ascii"))
-        + rb" ([0-9]+(?:\.[0-9]+)?)$",
+        + rb" ([-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)$",
         log_data,
         flags=re.MULTILINE,
     )

@@ -112,6 +112,14 @@ def run(
         raise ValueError("unexpected nonlinear verifier closure")
     if not runtime.is_file() or runtime.is_symlink():
         raise ValueError("parser runtime is not an ordinary file")
+    _manifest_data, manifest = (
+        flyspeck_nonlinear_verifier_closure._load_direct_manifest(ROOT)
+    )
+    _normalization_contract_data, direct_normalizations = (
+        flyspeck_nonlinear_verifier_closure.load_direct_normalizations(
+            ROOT, flyspeck_root, manifest,
+        )
+    )
     controller_path = Path(__file__).resolve()
     controller_record = {
         "path": Path(__file__).name,
@@ -180,7 +188,7 @@ def run(
             raise ValueError(f"nonlinear verifier source identity drift: {source_key}")
         normalized, normalization = (
             flyspeck_nonlinear_verifier_closure.apply_recorded_normalization(
-                source_key, source, node,
+                source_key, source, node, direct_normalizations,
             )
         )
         prepared, actions, unsupported, quotation = (

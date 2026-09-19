@@ -41,8 +41,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 7)
-        self.assertEqual(counts["normalization_operations"], 50)
+        self.assertEqual(counts["normalized_sources"], 18)
+        self.assertEqual(counts["normalization_operations"], 101)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -102,14 +102,23 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             key: record for key, record in normalized.items()
             if record["authority"] == "nonlinear-verifier-closure"
         }
-        self.assertEqual(set(parser_normalized), {
+        grouping_sources = {
             "flyspeck:formal_ineqs/taylor/m_taylor.hl",
             "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl",
             "flyspeck:formal_ineqs/verifier/m_verifier.hl",
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl",
-        })
+        }
+        self.assertTrue(grouping_sources <= set(parser_normalized))
+        grouping_kinds = {
+            "nested-array-get", "nested-array-set",
+            *(kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS),
+        }
         self.assertEqual(
-            sum(record["operation_count"] for record in parser_normalized.values()),
+            sum(
+                operation["kind"] in grouping_kinds
+                for record in parser_normalized.values()
+                for operation in record["operations"]
+            ),
             45,
         )
         self.assertEqual(
@@ -131,6 +140,29 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertEqual(
             {operation["kind"] for operation in main["operations"]},
             {kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS},
+        )
+
+    def test_extension_formatting_inventory_is_complete(self) -> None:
+        normalized = {
+            key: node["normalization"]
+            for key, node in self.payload["source_nodes"].items()
+            if node.get("normalization", {}).get("authority")
+            == "nonlinear-verifier-closure"
+        }
+        self.assertEqual(
+            set(subject.EXTENSION_COMPATIBILITY_REPLACEMENTS),
+            {
+                key for key, record in normalized.items()
+                if any(
+                    operation["kind"]
+                    not in {"nested-array-get", "nested-array-set"}
+                    and operation["kind"] not in {
+                        kind for kind, _, _
+                        in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS
+                    }
+                    for operation in record["operations"]
+                )
+            },
         )
 
     def test_direct_normalizations_reuse_canonical_authority(self) -> None:
@@ -208,6 +240,42 @@ let () = Printf.printf "%d\\n" (f [|[|1;2|];[|7;8|]|]);;
                 )
                 outputs.append(result.stdout)
         self.assertEqual(outputs, [b"7\n", b"7\n"])
+
+    def test_fixed_format_lowering_preserves_native_behavior(self) -> None:
+        original = b'''let emit i s b =
+  print_endline (Printf.sprintf "i=%d s=%s b=%b" i s b);;
+let () =
+  emit 0 "" false;
+  emit (-17) "alpha beta" true;
+  emit min_int "punctuation: []()," false;;
+'''
+        normalized = b'''let emit i s b =
+  print_endline
+    ("i=" ^ string_of_int i ^ " s=" ^ s ^ " b=" ^
+     (if b then "true" else "false"));;
+let () =
+  emit 0 "" false;
+  emit (-17) "alpha beta" true;
+  emit min_int "punctuation: []()," false;;
+'''
+        outputs = []
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, source in (("original", original),
+                                 ("normalized", normalized)):
+                source_path = root / f"{name}.ml"
+                executable = root / name
+                source_path.write_bytes(source)
+                subprocess.run(
+                    ["ocamlc", "-o", str(executable), str(source_path)],
+                    check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                result = subprocess.run(
+                    [str(executable)], check=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                outputs.append(result.stdout)
+        self.assertEqual(outputs[0], outputs[1])
 
     def test_main_verifier_grouping_preserves_native_behavior(self) -> None:
         source = b'''module Informal_verifier = struct

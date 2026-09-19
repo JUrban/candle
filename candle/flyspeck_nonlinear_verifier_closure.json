@@ -2515,8 +2515,8 @@
       "candle": 0,
       "flyspeck": 56
     },
-    "normalization_operations": 50,
-    "normalized_sources": 7,
+    "normalization_operations": 101,
+    "normalized_sources": 18,
     "selected_by_repository": {
       "candle": 28,
       "flyspeck": 62
@@ -4436,6 +4436,88 @@
       ],
       "logical_relative_path": "formal_ineqs/arith/arith_float.hl",
       "md5": "5de3a2497f80e8811645b94da62d4ea2",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 163942,
+        "normalized_md5": "7323ab3919f57f5f5bd9e8b3285eddb8",
+        "normalized_sha256": "3a62568eaba4f99f5c9592155423aec65f9429ce336e658e9a016e27ec8aec58",
+        "operation_count": 10,
+        "operations": [
+          {
+            "after": "\"lt0 = \" ^ string_of_int !lt0_c ^ \"\\ngt0 = \" ^ string_of_int !gt0_c ^ \"\\nlt = \" ^ string_of_int !lt_c ^ \"\\n\"",
+            "before": "sprintf \"lt0 = %d\\ngt0 = %d\\nlt = %d\\n\" !lt0_c !gt0_c !lt_c",
+            "kind": "arith-float-stat-cmp1",
+            "line": 2496,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"le0 = \" ^ string_of_int !le0_c ^ \"\\nge0 = \" ^ string_of_int !ge0_c ^ \"\\n\"",
+            "before": "sprintf \"le0 = %d\\nge0 = %d\\n\" !le0_c !ge0_c",
+            "kind": "arith-float-stat-cmp2",
+            "line": 2497,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"min = \" ^ string_of_int !min_c ^ \"\\nmin_max = \" ^ string_of_int !min_max_c ^ \"\\n\"",
+            "before": "sprintf \"min = %d\\nmin_max = %d\\n\" !min_c !min_max_c",
+            "kind": "arith-float-stat-cmp3",
+            "line": 2498,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"le = \" ^ string_of_int !le_c ^ \" (le_hash = \" ^ string_of_int (len le_table) ^ \")\\n\"",
+            "before": "sprintf \"le = %d (le_hash = %d)\\n\" !le_c (len le_table)",
+            "kind": "arith-float-stat-le",
+            "line": 2499,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"max = \" ^ string_of_int !max_c ^ \" (max_hash = \" ^ string_of_int (len max_table) ^ \")\\n\"",
+            "before": "sprintf \"max = %d (max_hash = %d)\\n\" !max_c (len max_table)",
+            "kind": "arith-float-stat-max",
+            "line": 2500,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"mul_lo = \" ^ string_of_int !mul_lo_c ^ \", mul_hi = \" ^ string_of_int !mul_hi_c ^ \" (mul_hash = \" ^ string_of_int (len mul_table) ^ \")\\n\"",
+            "before": "sprintf \"mul_lo = %d, mul_hi = %d (mul_hash = %d)\\n\" !mul_lo_c !mul_hi_c (len mul_table)",
+            "kind": "arith-float-stat-mul",
+            "line": 2501,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"div_lo = \" ^ string_of_int !div_lo_c ^ \", div_hi = \" ^ string_of_int !div_hi_c ^ \" (div_hash = \" ^ string_of_int (len div_table) ^ \")\\n\"",
+            "before": "sprintf \"div_lo = %d, div_hi = %d (div_hash = %d)\\n\" !div_lo_c !div_hi_c (len div_table)",
+            "kind": "arith-float-stat-div",
+            "line": 2502,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"add_lo = \" ^ string_of_int !add_lo_c ^ \", add_hi = \" ^ string_of_int !add_hi_c ^ \" (add_hash = \" ^ string_of_int (len add_table) ^ \")\\n\"",
+            "before": "sprintf \"add_lo = %d, add_hi = %d (add_hash = %d)\\n\" !add_lo_c !add_hi_c (len add_table)",
+            "kind": "arith-float-stat-add",
+            "line": 2503,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"sub_lo = \" ^ string_of_int !sub_lo_c ^ \", sub_hi = \" ^ string_of_int !sub_hi_c ^ \" (sub_hash = \" ^ string_of_int (len sub_table) ^ \")\\n\"",
+            "before": "sprintf \"sub_lo = %d, sub_hi = %d (sub_hash = %d)\\n\" !sub_lo_c !sub_hi_c (len sub_table)",
+            "kind": "arith-float-stat-sub",
+            "line": 2504,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"sqrt_lo = \" ^ string_of_int !sqrt_lo_c ^ \", sqrt_hi = \" ^ string_of_int !sqrt_hi_c ^ \" (sqrt_hash = \" ^ string_of_int (len sqrt_table) ^ \")\\n\"",
+            "before": "sprintf \"sqrt_lo = %d, sqrt_hi = %d (sqrt_hash = %d)\\n\" !sqrt_lo_c !sqrt_hi_c (len sqrt_table)",
+            "kind": "arith-float-stat-sqrt",
+            "line": 2505,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "candle:Library/floor.ml",
@@ -5367,6 +5449,32 @@
       ],
       "logical_relative_path": "formal_ineqs/informal/informal_float.hl",
       "md5": "6fce549756c2c8451a0fff516c21bbb5",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 13154,
+        "normalized_md5": "dcd6ac4339909583e177ec8a670447ed",
+        "normalized_sha256": "8942e46475ef5df0fa2f582096ebfeccc5dc85406ca6b20243756cf414033958",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "s_str ^ n_str",
+            "before": "Printf.sprintf \"%s%s\" s_str n_str",
+            "kind": "informal-float-plain",
+            "line": 78,
+            "replacement_count": 1
+          },
+          {
+            "after": "s_str ^ n_str ^ \"*\" ^ string_of_int arith_base ^ \"^\" ^ string_of_int k",
+            "before": "Printf.sprintf \"%s%s*%d^%d\" s_str n_str arith_base k",
+            "kind": "informal-float-scaled",
+            "line": 80,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/informal/informal_nat.hl"
@@ -5629,6 +5737,32 @@
       ],
       "logical_relative_path": "formal_ineqs/informal/informal_search.hl",
       "md5": "33c739220ec8d6e8c32e457a2d758821",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 8806,
+        "normalized_md5": "f44f76576ae35b8eaa155a83c6ce6eb7",
+        "normalized_sha256": "7c58abef536f731cdb58f7e921aceca80511be555602df52ec21e6cbafbef00f",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "string_of_int !last_report ^ \" \"",
+            "before": "Printf.sprintf \"%d \" !last_report",
+            "kind": "search-progress",
+            "line": 95,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"depth (\" ^ string_of_int depth ^ \") > max_depth (\" ^ string_of_int opt.max_depth ^ \")\"",
+            "before": "Printf.sprintf \"depth (%d) > max_depth (%d)\" depth opt.max_depth",
+            "kind": "search-depth-error",
+            "line": 185,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/informal/informal_taylor.hl",
@@ -5677,6 +5811,25 @@
       ],
       "logical_relative_path": "formal_ineqs/informal/informal_sin_cos.hl",
       "md5": "aeaf4fcb6af269c9c6b6fb3bf0d61330",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 11359,
+        "normalized_md5": "09d882a35bdbac751f3e241fb6ce52bf",
+        "normalized_sha256": "7a9fbd70ab9b752624796609cfc6bd9eeaeca04324b63a2a55807204a2a395cc",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "\"cos_interval: reduction failed\"",
+            "before": "Printf.sprintf \"cos_interval: reduction failed\"",
+            "kind": "informal-cos-constant-warning",
+            "line": 335,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/informal/informal_atn.hl",
@@ -5788,6 +5941,88 @@
       ],
       "logical_relative_path": "formal_ineqs/informal/informal_verifier.hl",
       "md5": "13819dcf3d2d99191eaad1146ade9c6d",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 11408,
+        "normalized_md5": "6f3e9fae09208823f91ba97145feb6ad",
+        "normalized_sha256": "23e7636ca37ca3c7f5d35bdbb3e3dc0e83e39b62ff850d2f0367c31a8ab87db6",
+        "operation_count": 10,
+        "operations": [
+          {
+            "after": "\"Testing p = \" ^ string_of_int p ^ \" (other: \" ^ string_of_int (length ps) ^ \")\"",
+            "before": "sprintf \"Testing p = %d (other: %d)\" p (length ps)",
+            "kind": "informal-testing-precision",
+            "line": 139,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"Failure at p = \" ^ string_of_int p ^ \": \" ^ msg",
+            "before": "sprintf \"Failure at p = %d: %s\" p msg",
+            "kind": "informal-precision-failure",
+            "line": 146,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"Failure at p = \" ^ string_of_int p ^ \": Division_by_zero\"",
+            "before": "sprintf \"Failure at p = %d: Division_by_zero\" p",
+            "kind": "informal-division-failure",
+            "line": 151,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"p = \" ^ string_of_int p",
+            "before": "sprintf \"p = %d\" p",
+            "kind": "informal-selected-precision",
+            "line": 155,
+            "replacement_count": 1
+          },
+          {
+            "after": "(if m.decr_flag then \"-\" else \"\") ^ string_of_int m.variable ^\n                       \" (\" ^ (if m.df0_flag then \"true\" else \"false\") ^ \")\"",
+            "before": "sprintf \"%s%d (%b)\" (if m.decr_flag then \"-\" else \"\") \n\t\t       m.variable m.df0_flag",
+            "kind": "informal-mono-status",
+            "line": 211,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"Mono: [\" ^ String.concat \";\" mono_strs ^ \"]\"",
+            "before": "sprintf \"Mono: [%s]\" (String.concat \";\" mono_strs)",
+            "kind": "informal-mono-report",
+            "line": 213,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"Verifying: \" ^ string_of_int !k ^ \"/\" ^ string_of_int r_size ^ \" (f0_flag = \" ^ (if f0_flag then \"true\" else \"false\") ^ \")\"",
+            "before": "sprintf \"Verifying: %d/%d (f0_flag = %b)\" !k r_size f0_flag",
+            "kind": "informal-pass-progress",
+            "line": 226,
+            "replacement_count": 1
+          },
+          {
+            "after": "string_of_int r ^ \" \"",
+            "before": "sprintf \"%d \" r",
+            "kind": "informal-percent-progress",
+            "line": 230,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"Ref: \" ^ string_of_int i",
+            "before": "sprintf \"Ref: %d\" i",
+            "kind": "informal-reference-progress",
+            "line": 254,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"List: \" ^ string_of_int !k ^ \"/\" ^ string_of_int size",
+            "before": "sprintf \"List: %d/%d\" !k size",
+            "kind": "informal-list-progress",
+            "line": 322,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/informal/informal_taylor.hl",
@@ -6090,6 +6325,39 @@
       "dependencies": [],
       "logical_relative_path": "formal_ineqs/misc/report.hl",
       "md5": "19cf18cda718471efb4d659bf8aff07c",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 1691,
+        "normalized_md5": "6a1c07e15d5f423be7eeb171a7da13e9",
+        "normalized_sha256": "2ad5ac4b49d41c620146ca7f8488e8c0c544521177e36da9eaf9ea47b885138c",
+        "operation_count": 3,
+        "operations": [
+          {
+            "after": "let time_string () =\n  failwith \"Candle Flyspeck: timed diagnostic formatting is unavailable\";;",
+            "before": "let time_string () =   Printf.sprintf \"time(%.0f)\" (Sys.time());;",
+            "kind": "report-time-fail-closed",
+            "line": 17,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"(errors \" ^ string_of_int (get_error_count()) ^ \")\"",
+            "before": "Printf.sprintf \"(errors %d)\" (get_error_count())",
+            "kind": "report-error-count",
+            "line": 32,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"error(\" ^ string_of_int ec ^ \") --\\n\" ^ s",
+            "before": "Printf.sprintf \"error(%d) --\\n%s\" ec s",
+            "kind": "report-error-message",
+            "line": 43,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [],
       "sha256": "210164e0c4e5966eb8537d5895526cef654621c4cf339b2df965605344de618e"
@@ -6238,11 +6506,11 @@
       "md5": "857ba2079f2717bc1e448d559f7cbc67",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
-        "id": "candle-flyspeck-parser-compatibility-v1",
-        "normalized_bytes": 63128,
-        "normalized_md5": "c60c3cc797907baa92d9f2accb72da07",
-        "normalized_sha256": "f064384a1c00c6a8babb68a159fbb5791bb209ebe80fe3d862715b23105c486f",
-        "operation_count": 15,
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 63146,
+        "normalized_md5": "6218e8a5884a7651f6595e81805641fc",
+        "normalized_sha256": "96016b2e922399ce4f51e44b1b18b118e1959d77bb23fa85f91763b925dd7396",
+        "operation_count": 16,
         "operations": [
           {
             "after": "Array.get (Array.get array (n)) (i)",
@@ -6267,6 +6535,13 @@
             "before": "el_thms_array.(n).(i - 1)",
             "kind": "nested-array-get",
             "line": 129
+          },
+          {
+            "after": "\"Wrong vector size; expected size: \" ^ string_of_int n",
+            "before": "sprintf \"Wrong vector size; expected size: %d\" n",
+            "kind": "taylor-vector-size-error",
+            "line": 587,
+            "replacement_count": 3
           },
           {
             "after": "Array.get (Array.get dd_vars_array (j)) (i)",
@@ -6335,8 +6610,8 @@
             "line": 1437
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6423,7 +6698,7 @@
       "md5": "b1b06aa262f12307ff257f22ad73e66d",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
-        "id": "candle-flyspeck-parser-compatibility-v1",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
         "normalized_bytes": 50173,
         "normalized_md5": "95954760a39a09ef926a7c9137613732",
         "normalized_sha256": "0983ed1b16e310ed530207cd577283e09ffd6c06dfdcba95e05c50c21a4a55ed",
@@ -6520,8 +6795,8 @@
             "line": 1261
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -6700,6 +6975,25 @@
       "dependencies": [],
       "logical_relative_path": "formal_ineqs/tests/log.hl",
       "md5": "ad19396e96a66d1ccae3058ea3ed69dd",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 950,
+        "normalized_md5": "4b03a498fb3cbfeb85d9fcceb7b98d91",
+        "normalized_sha256": "568fa12c052f5cddbade0509637715c0a791367df738a21f8a084947db9c663a",
+        "operation_count": 1,
+        "operations": [
+          {
+            "after": "let candle_disabled_log () =\n  failwith \"Candle Flyspeck: optional float logging is unavailable\";;\n\nlet open_log name = let _ = name in candle_disabled_log ();;\nlet close_log name = let _ = name in candle_disabled_log ();;\nlet close_all_logs () = candle_disabled_log ();;\nlet append_to_log name str =\n  let _ = name in let _ = str in candle_disabled_log ();;\nlet log_fmt name = let _ = name in candle_disabled_log ();;",
+            "before": "let open_log, close_log, close_all_logs, append_to_log, log_fmt =\n  (* [name, (channel, formatter)] *)\n  let logs = ref [] in\n  let log_for_name name = \n    try\n      Some (assoc name !logs)\n    with Failure _ ->\n      None\n  in\n  let add_log name (c, fmt) =\n    logs := (name, (c, fmt)) :: !logs\n  in\n  let delete_log name =\n    logs := filter (fun (n, _) -> n <> name) !logs\n  in\n  let close_log name =\n    match log_for_name name with\n      | None -> ()\n      | Some (c, _) ->\n\t  close_out c;\n\t  delete_log name\n  in\n  let close_all_logs () =\n    let names = map fst !logs in\n    let _ = map close_log names in\n      ()\n  in\n  let open_log name =\n    match log_for_name name with\n      | Some _ -> ()\n      | None ->\n\t  let _ = get_dir \"log\" in\n\t  let log_name = Filename.concat \"log\" (Filename.basename name ^ \".log\") in\n\t  let c = open_out log_name in\n\t  let fmt = formatter_of_out_channel c in\n\t    add_log name (c, fmt)\n  in\n  let append_to_log name str =\n    match log_for_name name with\n      | None -> ()\n      | Some (_, fmt) ->\n\tpp_print_string fmt str;\n\tpp_print_newline fmt ()\n  in\n  let log_fmt name =\n    match log_for_name name with\n      | None -> None\n      | Some (_, fmt) -> Some fmt\n  in\n  open_log,\n  close_log,\n  close_all_logs,\n  append_to_log,\n  log_fmt;;",
+            "kind": "optional-channel-logging-fail-closed",
+            "line": 21,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [],
       "sha256": "2a577980512f9986d91c07c7ea331e1dbe3d8ebda5184d1eb62070aab43f6725"
@@ -6965,6 +7259,32 @@
       ],
       "logical_relative_path": "formal_ineqs/trig/cos_eval.hl",
       "md5": "c95dbfe9687190f1a1fd892d460c618a",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 50822,
+        "normalized_md5": "6ee9d147cebf348ff1f11b8ec73095ec",
+        "normalized_sha256": "dbe75b50934acac56392c1ef484dcc532c0b58cd32e44264b15919e5788ac41b",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "\"float_interval_cos: reduction failed (\" ^ string_of_term a_tm ^\n                                   \", \" ^ string_of_term b_tm ^ \")\"",
+            "before": "Printf.sprintf \"float_interval_cos: reduction failed (%s, %s)\"\n\t\t\t   (string_of_term a_tm) (string_of_term b_tm)",
+            "kind": "cos-interval-warning",
+            "line": 985,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"cos_reduction: reduction failed (\" ^ string_of_term a_tm ^\n                                 \", \" ^ string_of_term b_tm ^ \")\"",
+            "before": "Printf.sprintf \"cos_reduction: reduction failed (%s, %s)\"\n\t\t\t (string_of_term a_tm) (string_of_term b_tm)",
+            "kind": "cos-reduction-warning",
+            "line": 1129,
+            "replacement_count": 2
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/arith/interval_arith.hl",
@@ -7349,6 +7669,32 @@
       ],
       "logical_relative_path": "formal_ineqs/trig/poly_eval.hl",
       "md5": "30ddca5741d63ee14af3a6d913cc856f",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 14497,
+        "normalized_md5": "06d5e88506012f84dedb8896d78c4a4e",
+        "normalized_sha256": "66f56f0498c4ac72e6edfa3e881549778aaafbf96bd970ffeb6514d05fee8735",
+        "operation_count": 2,
+        "operations": [
+          {
+            "after": "\"eval_high_poly_f_pos_pos: non-positive coefficient: \" ^\n                  string_of_term c.c_tm ^ \", \" ^\n                  string_of_term c.bounds_tm",
+            "before": "Printf.sprintf \"eval_high_poly_f_pos_pos: non-positive coefficient: %s, %s\" \n\t\t  (string_of_term c.c_tm) \n\t\t  (string_of_term c.bounds_tm)",
+            "kind": "poly-high-coefficient-error",
+            "line": 160,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"eval_low_poly_f_pos_pos: non-positive coefficient: \" ^\n                  string_of_term c.c_tm ^ \", \" ^\n                  string_of_term c.bounds_tm",
+            "before": "Printf.sprintf \"eval_low_poly_f_pos_pos: non-positive coefficient: %s, %s\" \n\t\t  (string_of_term c.c_tm) \n\t\t  (string_of_term c.bounds_tm)",
+            "kind": "poly-low-coefficient-error",
+            "line": 207,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/arith/more_float.hl",
@@ -7520,6 +7866,46 @@
       ],
       "logical_relative_path": "formal_ineqs/verifier/certificate.hl",
       "md5": "414e218182e84542981db83ab45321e7",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 9016,
+        "normalized_md5": "c0b9b7b12fa0c66ae8bac423674ef772",
+        "normalized_sha256": "48c14ed4fb458121b3a81370aa26a2f59cdbe9a2aca24e1d709ec33bc960f1e4",
+        "operation_count": 4,
+        "operations": [
+          {
+            "after": "\"pass = \" ^ string_of_int stats.pass ^ \" (pass_raw = \" ^\n    string_of_int stats.pass_raw ^ \")\\nmono = \" ^ string_of_int stats.mono ^\n    \"\\nglue = \" ^ string_of_int stats.glue ^ \" (glue_convex = \" ^\n    string_of_int stats.glue_convex ^ \")\\npass_mono = \" ^\n    string_of_int stats.pass_mono",
+            "before": "sprintf \"pass = %d (pass_raw = %d)\\nmono = %d\\nglue = %d (glue_convex = %d)\\npass_mono = %d\"\n    stats.pass stats.pass_raw stats.mono stats.glue stats.glue_convex stats.pass_mono",
+            "kind": "certificate-stats",
+            "line": 108,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"p = \" ^ string_of_int p ^ \": \" ^ string_of_int c ^ \"\\n\"",
+            "before": "sprintf \"p = %d: %d\\n\" p c",
+            "kind": "certificate-precision-stats",
+            "line": 133,
+            "replacement_count": 1
+          },
+          {
+            "after": "\"[\" ^ String.concat \"; \" s1 ^ \"], [\" ^ String.concat \"; \" s2 ^ \"]\"",
+            "before": "sprintf \"[%s], [%s]\" (String.concat \"; \" s1) (String.concat \"; \" s2)",
+            "kind": "certificate-domain-string",
+            "line": 144,
+            "replacement_count": 1
+          },
+          {
+            "after": "s ^ \"(\" ^ string_of_int j ^ \")\"",
+            "before": "sprintf \"%s(%d)\" s j",
+            "kind": "certificate-path-string",
+            "line": 147,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/misc/report.hl"
@@ -7619,12 +8005,19 @@
       "md5": "3aea162e079d904a73f18c5962258444",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
-        "id": "candle-flyspeck-parser-compatibility-v1",
-        "normalized_bytes": 73839,
-        "normalized_md5": "11fe5f2d0ee4ff3c7f8aadabff15f86e",
-        "normalized_sha256": "b4a9ed301a29361faebc7c0c258cdb6d26a739ab760892f605368dd4d6b4c8d4",
-        "operation_count": 11,
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 74477,
+        "normalized_md5": "f733748c7881ee98afc51abb8e3f477f",
+        "normalized_sha256": "c1b234b4651a56511a5483acc35d0a8f037138bfc70a7897c05fd6e756acbf7d",
+        "operation_count": 21,
         "operations": [
+          {
+            "after": "name ^ string_of_int i",
+            "before": "sprintf \"%s%d\" name i",
+            "kind": "verifier-variable-name",
+            "line": 31,
+            "replacement_count": 4
+          },
           {
             "after": "Array.get (Array.get incr_gen_thms_array (n)) (j)",
             "before": "incr_gen_thms_array.(n).(j)",
@@ -7648,6 +8041,13 @@
             "before": "glue_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1093
+          },
+          {
+            "after": "\"m_mono_pass_gen: j = \" ^ string_of_int j ^ \", th = \" ^ string_of_thm le_th0",
+            "before": "sprintf \"m_mono_pass_gen: j = %d, th = %s\" j (string_of_thm le_th0)",
+            "kind": "verifier-mono-failure",
+            "line": 1116,
+            "replacement_count": 1
           },
           {
             "after": "Array.get (Array.get decr_gen_thms_array (n)) (j)",
@@ -7690,10 +8090,66 @@
             "before": "right_restrict_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1231
+          },
+          {
+            "after": "\"df0_flags = \" ^ (if df0_flags then \"true\" else \"false\")",
+            "before": "sprintf \"df0_flags = %b\" df0_flags",
+            "kind": "verifier-df0-report",
+            "line": 1267,
+            "replacement_count": 3
+          },
+          {
+            "after": "(if m.decr_flag then \"-\" else \"\") ^ string_of_int m.variable ^\n                               \" (\" ^ (if m.df0_flag then \"true\" else \"false\") ^ \")\"",
+            "before": "sprintf \"%s%d (%b)\" (if m.decr_flag then \"-\" else \"\") \n\t\t\t  m.variable m.df0_flag",
+            "kind": "verifier-mono-status",
+            "line": 1310,
+            "replacement_count": 3
+          },
+          {
+            "after": "\"Mono: [\" ^ String.concat \";\" mono_strs ^ \"]\"",
+            "before": "sprintf \"Mono: [%s]\" (String.concat \";\" mono_strs)",
+            "kind": "verifier-mono-report",
+            "line": 1312,
+            "replacement_count": 3
+          },
+          {
+            "after": "\"Verifying: \" ^ string_of_int !k ^ \"/\" ^ string_of_int r_size ^ \" (f0_flag = \" ^ (if f0_flag then \"true\" else \"false\") ^ \")\"",
+            "before": "sprintf \"Verifying: %d/%d (f0_flag = %b)\" !k r_size f0_flag",
+            "kind": "verifier-pass-progress",
+            "line": 1318,
+            "replacement_count": 4
+          },
+          {
+            "after": "string_of_int r ^ \" \"",
+            "before": "sprintf \"%d \" r",
+            "kind": "verifier-percent-progress",
+            "line": 1321,
+            "replacement_count": 4
+          },
+          {
+            "after": "\"GlueConvex: \" ^ string_of_int (i + 1)",
+            "before": "sprintf \"GlueConvex: %d\" (i + 1)",
+            "kind": "verifier-glue-progress",
+            "line": 1341,
+            "replacement_count": 3
+          },
+          {
+            "after": "\"Ref: \" ^ string_of_int i",
+            "before": "sprintf \"Ref: %d\" i",
+            "kind": "verifier-reference-progress",
+            "line": 1352,
+            "replacement_count": 4
+          },
+          {
+            "after": "\"List: \" ^ string_of_int !k ^ \"/\" ^ string_of_int size",
+            "before": "sprintf \"List: %d/%d\" !k size",
+            "kind": "verifier-list-progress",
+            "line": 1414,
+            "replacement_count": 2
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [
@@ -7813,6 +8269,39 @@
       ],
       "logical_relative_path": "formal_ineqs/verifier/m_verifier_build.hl",
       "md5": "a11f4eb2d92ef63f30e685539822895c",
+      "normalization": {
+        "authority": "nonlinear-verifier-closure",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
+        "normalized_bytes": 3488,
+        "normalized_md5": "fc461c6980c6fff2799d5ff4824666fb",
+        "normalized_sha256": "9ff87f947f084e42510c42ba74ec0297fb0b3f7d64d34152a35826ac1e7620d9",
+        "operation_count": 3,
+        "operations": [
+          {
+            "after": "\"Computing partial derivatives (\" ^ string_of_int n ^ \")...\"",
+            "before": "sprintf \"Computing partial derivatives (%d)...\" n",
+            "kind": "derivative-count-progress",
+            "line": 51,
+            "replacement_count": 1
+          },
+          {
+            "after": "\" \" ^ string_of_int i",
+            "before": "sprintf \" %d\" i",
+            "kind": "derivative-index-progress",
+            "line": 53,
+            "replacement_count": 1
+          },
+          {
+            "after": "\" \" ^ string_of_int j ^ \",\" ^ string_of_int i",
+            "before": "sprintf \" %d,%d\" j i",
+            "kind": "second-derivative-index-progress",
+            "line": 62,
+            "replacement_count": 1
+          }
+        ],
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
+      },
       "repository": "flyspeck",
       "selected_dependencies": [
         "flyspeck:formal_ineqs/arith/eval_interval.hl",
@@ -7951,7 +8440,7 @@
       "md5": "ca4991873b0c34b2da24a7080c5f521b",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
-        "id": "candle-flyspeck-parser-compatibility-v1",
+        "id": "candle-flyspeck-nonlinear-closure-compatibility-v2",
         "normalized_bytes": 31921,
         "normalized_md5": "002f39e21c6d8afa8fa55511bbc7c6fc",
         "normalized_sha256": "e1c689bea39ebb4a0161816c59cf469a2f983c5705d1b392b79a555d38247dbb",
@@ -7982,8 +8471,8 @@
             "line": 666
           }
         ],
-        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract.",
-        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized"
+        "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed.",
+        "semantic_rule": "make native OCaml grouping explicit: chained array accesses use Array.get/Array.set with parenthesized indices; module-qualified record labels use the same unqualified labels under an explicit original record type; and a ref assignment's conditional RHS is parenthesized. The closed verifier extension's fixed %d/%s/%b diagnostic formats use exact literal concatenation and primitive conversions; optional file logging fails closed if invoked because Candle has no channel-backed formatter"
       },
       "repository": "flyspeck",
       "selected_dependencies": [

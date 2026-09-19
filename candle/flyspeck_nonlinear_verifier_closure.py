@@ -31,13 +31,16 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-parser-compatibility-v1"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v2"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
     "Array.get/Array.set with parenthesized indices; module-qualified record "
     "labels use the same unqualified labels under an explicit original record "
-    "type; and a ref assignment's conditional RHS is parenthesized"
+    "type; and a ref assignment's conditional RHS is parenthesized. The "
+    "closed verifier extension's fixed %d/%s/%b diagnostic formats use exact "
+    "literal concatenation and primitive conversions; optional file logging "
+    "fails closed if invoked because Candle has no channel-backed formatter"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -45,7 +48,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "It changes no theorem statement, hypothesis, proof step, proof intent, "
     "runtime primitive, or axiom. Existing direct-Flyspeck execution "
     "normalizations remain authoritative and are applied from the shared "
-    "versioned normalization contract."
+    "versioned normalization contract. Diagnostic-only substitutions preserve "
+    "the fixed rendered bytes except the unused elapsed-time suffix, which "
+    "fails closed; optional float logging is disabled only while its controlling "
+    "flag remains false and any invocation fails closed."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -191,6 +197,405 @@ MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
 )
 
 
+def _replacement(
+    kind: str,
+    before: bytes,
+    after: bytes,
+    count: int = 1,
+) -> tuple[str, bytes, bytes, int]:
+    return kind, before, after, count
+
+
+EXTENSION_COMPATIBILITY_REPLACEMENTS = {
+    "flyspeck:formal_ineqs/arith/arith_float.hl": (
+        _replacement(
+            "arith-float-stat-cmp1",
+            b'sprintf "lt0 = %d\\ngt0 = %d\\nlt = %d\\n" !lt0_c !gt0_c !lt_c',
+            b'"lt0 = " ^ string_of_int !lt0_c ^ "\\ngt0 = " ^ '
+            b'string_of_int !gt0_c ^ "\\nlt = " ^ string_of_int !lt_c ^ "\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-cmp2",
+            b'sprintf "le0 = %d\\nge0 = %d\\n" !le0_c !ge0_c',
+            b'"le0 = " ^ string_of_int !le0_c ^ "\\nge0 = " ^ '
+            b'string_of_int !ge0_c ^ "\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-cmp3",
+            b'sprintf "min = %d\\nmin_max = %d\\n" !min_c !min_max_c',
+            b'"min = " ^ string_of_int !min_c ^ "\\nmin_max = " ^ '
+            b'string_of_int !min_max_c ^ "\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-le",
+            b'sprintf "le = %d (le_hash = %d)\\n" !le_c (len le_table)',
+            b'"le = " ^ string_of_int !le_c ^ " (le_hash = " ^ '
+            b'string_of_int (len le_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-max",
+            b'sprintf "max = %d (max_hash = %d)\\n" !max_c (len max_table)',
+            b'"max = " ^ string_of_int !max_c ^ " (max_hash = " ^ '
+            b'string_of_int (len max_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-mul",
+            b'sprintf "mul_lo = %d, mul_hi = %d (mul_hash = %d)\\n" !mul_lo_c !mul_hi_c (len mul_table)',
+            b'"mul_lo = " ^ string_of_int !mul_lo_c ^ ", mul_hi = " ^ '
+            b'string_of_int !mul_hi_c ^ " (mul_hash = " ^ '
+            b'string_of_int (len mul_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-div",
+            b'sprintf "div_lo = %d, div_hi = %d (div_hash = %d)\\n" !div_lo_c !div_hi_c (len div_table)',
+            b'"div_lo = " ^ string_of_int !div_lo_c ^ ", div_hi = " ^ '
+            b'string_of_int !div_hi_c ^ " (div_hash = " ^ '
+            b'string_of_int (len div_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-add",
+            b'sprintf "add_lo = %d, add_hi = %d (add_hash = %d)\\n" !add_lo_c !add_hi_c (len add_table)',
+            b'"add_lo = " ^ string_of_int !add_lo_c ^ ", add_hi = " ^ '
+            b'string_of_int !add_hi_c ^ " (add_hash = " ^ '
+            b'string_of_int (len add_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-sub",
+            b'sprintf "sub_lo = %d, sub_hi = %d (sub_hash = %d)\\n" !sub_lo_c !sub_hi_c (len sub_table)',
+            b'"sub_lo = " ^ string_of_int !sub_lo_c ^ ", sub_hi = " ^ '
+            b'string_of_int !sub_hi_c ^ " (sub_hash = " ^ '
+            b'string_of_int (len sub_table) ^ ")\\n"',
+        ),
+        _replacement(
+            "arith-float-stat-sqrt",
+            b'sprintf "sqrt_lo = %d, sqrt_hi = %d (sqrt_hash = %d)\\n" !sqrt_lo_c !sqrt_hi_c (len sqrt_table)',
+            b'"sqrt_lo = " ^ string_of_int !sqrt_lo_c ^ ", sqrt_hi = " ^ '
+            b'string_of_int !sqrt_hi_c ^ " (sqrt_hash = " ^ '
+            b'string_of_int (len sqrt_table) ^ ")\\n"',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_float.hl": (
+        _replacement(
+            "informal-float-plain",
+            b'Printf.sprintf "%s%s" s_str n_str',
+            b's_str ^ n_str',
+        ),
+        _replacement(
+            "informal-float-scaled",
+            b'Printf.sprintf "%s%s*%d^%d" s_str n_str arith_base k',
+            b's_str ^ n_str ^ "*" ^ string_of_int arith_base ^ "^" ^ '
+            b'string_of_int k',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_search.hl": (
+        _replacement(
+            "search-progress",
+            b'Printf.sprintf "%d " !last_report',
+            b'string_of_int !last_report ^ " "',
+        ),
+        _replacement(
+            "search-depth-error",
+            b'Printf.sprintf "depth (%d) > max_depth (%d)" depth opt.max_depth',
+            b'"depth (" ^ string_of_int depth ^ ") > max_depth (" ^ '
+            b'string_of_int opt.max_depth ^ ")"',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_sin_cos.hl": (
+        _replacement(
+            "informal-cos-constant-warning",
+            b'Printf.sprintf "cos_interval: reduction failed"',
+            b'"cos_interval: reduction failed"',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_verifier.hl": (
+        _replacement(
+            "informal-testing-precision",
+            b'sprintf "Testing p = %d (other: %d)" p (length ps)',
+            b'"Testing p = " ^ string_of_int p ^ " (other: " ^ '
+            b'string_of_int (length ps) ^ ")"',
+        ),
+        _replacement(
+            "informal-precision-failure",
+            b'sprintf "Failure at p = %d: %s" p msg',
+            b'"Failure at p = " ^ string_of_int p ^ ": " ^ msg',
+        ),
+        _replacement(
+            "informal-division-failure",
+            b'sprintf "Failure at p = %d: Division_by_zero" p',
+            b'"Failure at p = " ^ string_of_int p ^ ": Division_by_zero"',
+        ),
+        _replacement(
+            "informal-selected-precision",
+            b'sprintf "p = %d" p',
+            b'"p = " ^ string_of_int p',
+        ),
+        _replacement(
+            "informal-mono-status",
+            b'sprintf "%s%d (%b)" (if m.decr_flag then "-" else "") \n\t\t       m.variable m.df0_flag',
+            b'(if m.decr_flag then "-" else "") ^ string_of_int m.variable ^\n'
+            b'                       " (" ^ (if m.df0_flag then "true" else "false") ^ ")"',
+        ),
+        _replacement(
+            "informal-mono-report",
+            b'sprintf "Mono: [%s]" (String.concat ";" mono_strs)',
+            b'"Mono: [" ^ String.concat ";" mono_strs ^ "]"',
+        ),
+        _replacement(
+            "informal-pass-progress",
+            b'sprintf "Verifying: %d/%d (f0_flag = %b)" !k r_size f0_flag',
+            b'"Verifying: " ^ string_of_int !k ^ "/" ^ string_of_int r_size ^ '
+            b'" (f0_flag = " ^ (if f0_flag then "true" else "false") ^ ")"',
+        ),
+        _replacement(
+            "informal-percent-progress",
+            b'sprintf "%d " r',
+            b'string_of_int r ^ " "',
+        ),
+        _replacement(
+            "informal-reference-progress",
+            b'sprintf "Ref: %d" i',
+            b'"Ref: " ^ string_of_int i',
+        ),
+        _replacement(
+            "informal-list-progress",
+            b'sprintf "List: %d/%d" !k size',
+            b'"List: " ^ string_of_int !k ^ "/" ^ string_of_int size',
+        ),
+    ),
+    "flyspeck:formal_ineqs/misc/report.hl": (
+        _replacement(
+            "report-time-fail-closed",
+            b'let time_string () =   Printf.sprintf "time(%.0f)" (Sys.time());;',
+            b'let time_string () =\n  failwith "Candle Flyspeck: timed diagnostic formatting is unavailable";;',
+        ),
+        _replacement(
+            "report-error-count",
+            b'Printf.sprintf "(errors %d)" (get_error_count())',
+            b'"(errors " ^ string_of_int (get_error_count()) ^ ")"',
+        ),
+        _replacement(
+            "report-error-message",
+            b'Printf.sprintf "error(%d) --\\n%s" ec s',
+            b'"error(" ^ string_of_int ec ^ ") --\\n" ^ s',
+        ),
+    ),
+    "flyspeck:formal_ineqs/taylor/m_taylor.hl": (
+        _replacement(
+            "taylor-vector-size-error",
+            b'sprintf "Wrong vector size; expected size: %d" n',
+            b'"Wrong vector size; expected size: " ^ string_of_int n',
+            3,
+        ),
+    ),
+    "flyspeck:formal_ineqs/tests/log.hl": (
+        _replacement(
+            "optional-channel-logging-fail-closed",
+            b'''let open_log, close_log, close_all_logs, append_to_log, log_fmt =
+  (* [name, (channel, formatter)] *)
+  let logs = ref [] in
+  let log_for_name name =''' + b" \n" + b'''    try
+      Some (assoc name !logs)
+    with Failure _ ->
+      None
+  in
+  let add_log name (c, fmt) =
+    logs := (name, (c, fmt)) :: !logs
+  in
+  let delete_log name =
+    logs := filter (fun (n, _) -> n <> name) !logs
+  in
+  let close_log name =
+    match log_for_name name with
+      | None -> ()
+      | Some (c, _) ->
+	  close_out c;
+	  delete_log name
+  in
+  let close_all_logs () =
+    let names = map fst !logs in
+    let _ = map close_log names in
+      ()
+  in
+  let open_log name =
+    match log_for_name name with
+      | Some _ -> ()
+      | None ->
+	  let _ = get_dir "log" in
+	  let log_name = Filename.concat "log" (Filename.basename name ^ ".log") in
+	  let c = open_out log_name in
+	  let fmt = formatter_of_out_channel c in
+	    add_log name (c, fmt)
+  in
+  let append_to_log name str =
+    match log_for_name name with
+      | None -> ()
+      | Some (_, fmt) ->
+	pp_print_string fmt str;
+	pp_print_newline fmt ()
+  in
+  let log_fmt name =
+    match log_for_name name with
+      | None -> None
+      | Some (_, fmt) -> Some fmt
+  in
+  open_log,
+  close_log,
+  close_all_logs,
+  append_to_log,
+  log_fmt;;''',
+            b'''let candle_disabled_log () =
+  failwith "Candle Flyspeck: optional float logging is unavailable";;
+
+let open_log name = let _ = name in candle_disabled_log ();;
+let close_log name = let _ = name in candle_disabled_log ();;
+let close_all_logs () = candle_disabled_log ();;
+let append_to_log name str =
+  let _ = name in let _ = str in candle_disabled_log ();;
+let log_fmt name = let _ = name in candle_disabled_log ();;''',
+        ),
+    ),
+    "flyspeck:formal_ineqs/trig/cos_eval.hl": (
+        _replacement(
+            "cos-interval-warning",
+            b'Printf.sprintf "float_interval_cos: reduction failed (%s, %s)"\n\t\t\t   (string_of_term a_tm) (string_of_term b_tm)',
+            b'"float_interval_cos: reduction failed (" ^ string_of_term a_tm ^\n'
+            b'                                   ", " ^ string_of_term b_tm ^ ")"',
+        ),
+        _replacement(
+            "cos-reduction-warning",
+            b'Printf.sprintf "cos_reduction: reduction failed (%s, %s)"\n\t\t\t (string_of_term a_tm) (string_of_term b_tm)',
+            b'"cos_reduction: reduction failed (" ^ string_of_term a_tm ^\n'
+            b'                                 ", " ^ string_of_term b_tm ^ ")"',
+            2,
+        ),
+    ),
+    "flyspeck:formal_ineqs/trig/poly_eval.hl": (
+        _replacement(
+            "poly-high-coefficient-error",
+            b'Printf.sprintf "eval_high_poly_f_pos_pos: non-positive coefficient: %s, %s" \n\t\t  (string_of_term c.c_tm) \n\t\t  (string_of_term c.bounds_tm)',
+            b'"eval_high_poly_f_pos_pos: non-positive coefficient: " ^\n'
+            b'                  string_of_term c.c_tm ^ ", " ^\n'
+            b'                  string_of_term c.bounds_tm',
+        ),
+        _replacement(
+            "poly-low-coefficient-error",
+            b'Printf.sprintf "eval_low_poly_f_pos_pos: non-positive coefficient: %s, %s" \n\t\t  (string_of_term c.c_tm) \n\t\t  (string_of_term c.bounds_tm)',
+            b'"eval_low_poly_f_pos_pos: non-positive coefficient: " ^\n'
+            b'                  string_of_term c.c_tm ^ ", " ^\n'
+            b'                  string_of_term c.bounds_tm',
+        ),
+    ),
+    "flyspeck:formal_ineqs/verifier/certificate.hl": (
+        _replacement(
+            "certificate-stats",
+            b'sprintf "pass = %d (pass_raw = %d)\\nmono = %d\\nglue = %d (glue_convex = %d)\\npass_mono = %d"\n'
+            b'    stats.pass stats.pass_raw stats.mono stats.glue stats.glue_convex stats.pass_mono',
+            b'"pass = " ^ string_of_int stats.pass ^ " (pass_raw = " ^\n'
+            b'    string_of_int stats.pass_raw ^ ")\\nmono = " ^ string_of_int stats.mono ^\n'
+            b'    "\\nglue = " ^ string_of_int stats.glue ^ " (glue_convex = " ^\n'
+            b'    string_of_int stats.glue_convex ^ ")\\npass_mono = " ^\n'
+            b'    string_of_int stats.pass_mono',
+        ),
+        _replacement(
+            "certificate-precision-stats",
+            b'sprintf "p = %d: %d\\n" p c',
+            b'"p = " ^ string_of_int p ^ ": " ^ string_of_int c ^ "\\n"',
+        ),
+        _replacement(
+            "certificate-domain-string",
+            b'sprintf "[%s], [%s]" (String.concat "; " s1) (String.concat "; " s2)',
+            b'"[" ^ String.concat "; " s1 ^ "], [" ^ String.concat "; " s2 ^ "]"',
+        ),
+        _replacement(
+            "certificate-path-string",
+            b'sprintf "%s(%d)" s j',
+            b's ^ "(" ^ string_of_int j ^ ")"',
+        ),
+    ),
+    "flyspeck:formal_ineqs/verifier/m_verifier.hl": (
+        _replacement(
+            "verifier-variable-name",
+            b'sprintf "%s%d" name i',
+            b'name ^ string_of_int i',
+            4,
+        ),
+        _replacement(
+            "verifier-mono-failure",
+            b'sprintf "m_mono_pass_gen: j = %d, th = %s" j (string_of_thm le_th0)',
+            b'"m_mono_pass_gen: j = " ^ string_of_int j ^ ", th = " ^ '
+            b'string_of_thm le_th0',
+        ),
+        _replacement(
+            "verifier-df0-report",
+            b'sprintf "df0_flags = %b" df0_flags',
+            b'"df0_flags = " ^ (if df0_flags then "true" else "false")',
+            3,
+        ),
+        _replacement(
+            "verifier-mono-status",
+            b'sprintf "%s%d (%b)" (if m.decr_flag then "-" else "") \n\t\t\t  m.variable m.df0_flag',
+            b'(if m.decr_flag then "-" else "") ^ string_of_int m.variable ^\n'
+            b'                               " (" ^ (if m.df0_flag then "true" else "false") ^ ")"',
+            3,
+        ),
+        _replacement(
+            "verifier-mono-report",
+            b'sprintf "Mono: [%s]" (String.concat ";" mono_strs)',
+            b'"Mono: [" ^ String.concat ";" mono_strs ^ "]"',
+            3,
+        ),
+        _replacement(
+            "verifier-pass-progress",
+            b'sprintf "Verifying: %d/%d (f0_flag = %b)" !k r_size f0_flag',
+            b'"Verifying: " ^ string_of_int !k ^ "/" ^ string_of_int r_size ^ '
+            b'" (f0_flag = " ^ (if f0_flag then "true" else "false") ^ ")"',
+            4,
+        ),
+        _replacement(
+            "verifier-percent-progress",
+            b'sprintf "%d " r',
+            b'string_of_int r ^ " "',
+            4,
+        ),
+        _replacement(
+            "verifier-glue-progress",
+            b'sprintf "GlueConvex: %d" (i + 1)',
+            b'"GlueConvex: " ^ string_of_int (i + 1)',
+            3,
+        ),
+        _replacement(
+            "verifier-reference-progress",
+            b'sprintf "Ref: %d" i',
+            b'"Ref: " ^ string_of_int i',
+            4,
+        ),
+        _replacement(
+            "verifier-list-progress",
+            b'sprintf "List: %d/%d" !k size',
+            b'"List: " ^ string_of_int !k ^ "/" ^ string_of_int size',
+            2,
+        ),
+    ),
+    "flyspeck:formal_ineqs/verifier/m_verifier_build.hl": (
+        _replacement(
+            "derivative-count-progress",
+            b'sprintf "Computing partial derivatives (%d)..." n',
+            b'"Computing partial derivatives (" ^ string_of_int n ^ ")..."',
+        ),
+        _replacement(
+            "derivative-index-progress",
+            b'sprintf " %d" i',
+            b'" " ^ string_of_int i',
+        ),
+        _replacement(
+            "second-derivative-index-progress",
+            b'sprintf " %d,%d" j i',
+            b'" " ^ string_of_int j ^ "," ^ string_of_int i',
+        ),
+    ),
+}
+
+
 def normalize_source(
     source_key: str,
     source: bytes,
@@ -198,21 +603,35 @@ def normalize_source(
     """Apply the complete bounded frontend compatibility normalization."""
 
     normalized, operations = normalize_nested_array_access(source)
-    if source_key != (
-        "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+    if source_key == "flyspeck:formal_ineqs/verifier/m_verifier_main.hl":
+        for kind, before, after in MAIN_VERIFIER_GROUPING_REPLACEMENTS:
+            if normalized.count(before) != 1:
+                raise ValueError(f"main verifier grouping anchor drift: {kind}")
+            offset = normalized.index(before)
+            operations.append({
+                "kind": kind,
+                "line": normalized.count(b"\n", 0, offset) + 1,
+                "before": before.decode("ascii"),
+                "after": after.decode("ascii"),
+            })
+            normalized = normalized.replace(before, after, 1)
+    for kind, before, after, count in (
+        EXTENSION_COMPATIBILITY_REPLACEMENTS.get(source_key, ())
     ):
-        return normalized, operations
-    for kind, before, after in MAIN_VERIFIER_GROUPING_REPLACEMENTS:
-        if normalized.count(before) != 1:
-            raise ValueError(f"main verifier grouping anchor drift: {kind}")
+        if normalized.count(before) != count:
+            raise ValueError(
+                f"extension compatibility anchor drift: {source_key}: "
+                f"{kind}: expected {count}, observed {normalized.count(before)}"
+            )
         offset = normalized.index(before)
         operations.append({
             "kind": kind,
             "line": normalized.count(b"\n", 0, offset) + 1,
+            "replacement_count": count,
             "before": before.decode("ascii"),
             "after": after.decode("ascii"),
         })
-        normalized = normalized.replace(before, after, 1)
+        normalized = normalized.replace(before, after)
     operations.sort(key=lambda operation: (
         int(operation["line"]),
         str(operation["kind"]),

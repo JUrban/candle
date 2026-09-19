@@ -43,7 +43,19 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
-        self.assertEqual(len(self.overlays), 7)
+        self.assertEqual(len(self.overlays), 18)
+
+    def test_normalized_closure_has_no_active_general_formatting(self) -> None:
+        for record in self.records:
+            if record["normalization"] is None:
+                continue
+            text = record["normalized_bytes"].decode("latin-1")
+            scanner = subject.flyspeck_nonlinear_verifier_closure.flyspeck_manifest
+            masked = scanner._code_mask(scanner.strip_ocaml_comments(text))
+            self.assertNotIn("sprintf", masked, record["source_key"])
+            self.assertNotIn(
+                "formatter_of_out_channel", masked, record["source_key"],
+            )
 
     def test_every_identity_is_in_the_runtime_preflight(self) -> None:
         for record in self.records:
@@ -66,6 +78,8 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         self.assertLess(proof, success)
         self.assertIn(subject.CLOSURE_SECONDS, self.driver)
         self.assertIn(subject.SMOKE_PROOF_SECONDS, self.driver)
+        self.assertNotIn("Printf.sprintf", self.driver)
+        self.assertIn("string_of_float", self.driver)
 
     def test_gate_requires_exact_theorem_interface_and_axiom_stability(self) -> None:
         self.assertIn("hyp candle_nonlinear_smoke_theorem <> []", self.driver)
