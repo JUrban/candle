@@ -1,0 +1,138 @@
+{
+  "claim": "authenticated target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
+  "closure": {
+    "bytes": 264600,
+    "path": "candle/flyspeck_nonlinear_verifier_closure.json",
+    "sha256": "217091456fb2391bea713819ca9ccf8a32354f497b545f0a08b7d5ec23c738ca"
+  },
+  "evidence_files": {
+    "azure_stdout": {
+      "bytes": 71301,
+      "logical_relative_path": "azure/results/urban/out/1/7850/2/7899/stdout",
+      "sha256": "824d7c7c514c58ac60ec758417d3ab1cc0fa6d3661412c53616e121701ea6dc2"
+    },
+    "break_case_log": {
+      "bytes": 827309,
+      "logical_relative_path": "text_formalization/nonlinear/break_case_log.hl",
+      "sha256": "2b3c74156a5ee9a6b3b5b6905ff28a7fb21e7c50052ad37887b90b9ed3d5e499"
+    },
+    "main_verifier": {
+      "bytes": 2544,
+      "logical_relative_path": "azure/main_verifier.hl",
+      "sha256": "f8c18b2699325c0aeba9d853c8ffa2958346016af887133bf23d082adaa2f3dc"
+    },
+    "prep": {
+      "bytes": 1179697,
+      "logical_relative_path": "text_formalization/nonlinear/prep.hl",
+      "sha256": "3ccef1bf65b13ca02e7ab1f409ebb49c979862ed5ea6ff1d57ed1e4e4761723d"
+    }
+  },
+  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "kind": "candle-flyspeck-nonlinear-first-leaf-target",
+  "native_oracle": {
+    "epsilon": "1e-10",
+    "legacy_theorem_digest": "f7ff5f16bf03b6885aa4d46bb1490001",
+    "precision": 6,
+    "total_seconds": 365.672506
+  },
+  "schema": 1,
+  "status": "development-non-release",
+  "target": {
+    "first_tree_action": {
+      "archive_index": 800,
+      "coordinate": 0,
+      "fraction": {
+        "decimal": "0.7637",
+        "denominator": 10000,
+        "numerator": 7637
+      },
+      "kind": "Iarg_facet",
+      "side": "left"
+    },
+    "global_case": 7853,
+    "id": "prep-4680581274 delta issue-cayleyR",
+    "legacy_ineqm_text": "ineqm [x1; x2; x3; x4; x5; x6]\n   (frac_left 0 #0.7637\n   [#4.0,#2.0 * #1.26 * #2.0 * #1.26; #4.0,#2.0 * #1.26 * #2.0 * #1.26; \n   #4.0,\n   #2.0 * #1.26 * #2.0 * #1.26; #3.01 * #3.01,#3.166 * #3.166; #4.0,#4.0; \n   #4.0,\n   #2.0 * #1.26 * #2.0 * #1.26])\n   (cayleyR6u x1 x2 x3 x4 x5 x6 * -- &1 < &0 \\/\n    unit6 x1 x2 x3 x4 x5 x6 * &10 + deltaL_x #4.0 x1 x2 x3 x4 x5 x6 * -- &1 <\n    &0 \\/\n    deltaL_x4 #4.0 x1 x2 x3 x4 x5 x6 * -- &1 < &0)",
+    "legacy_ineqm_text_sha256": "7038fe9138fdcec2a8027e12a4382949ecd641b859873da151b36813c027a5c0",
+    "local_case": 0,
+    "public_bounds": [
+      {
+        "lower": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "upper": {
+          "decimal": "5.79500048",
+          "denominator": 6250000,
+          "numerator": 36218753
+        },
+        "variable": "x1"
+      },
+      {
+        "lower": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "upper": {
+          "decimal": "6.3504",
+          "denominator": 625,
+          "numerator": 3969
+        },
+        "variable": "x2"
+      },
+      {
+        "lower": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "upper": {
+          "decimal": "6.3504",
+          "denominator": 625,
+          "numerator": 3969
+        },
+        "variable": "x3"
+      },
+      {
+        "lower": {
+          "decimal": "9.0601",
+          "denominator": 10000,
+          "numerator": 90601
+        },
+        "upper": {
+          "decimal": "10.023556",
+          "denominator": 250000,
+          "numerator": 2505889
+        },
+        "variable": "x4"
+      },
+      {
+        "lower": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "upper": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "variable": "x5"
+      },
+      {
+        "lower": {
+          "decimal": "4.0",
+          "denominator": 1,
+          "numerator": 4
+        },
+        "upper": {
+          "decimal": "6.3504",
+          "denominator": 625,
+          "numerator": 3969
+        },
+        "variable": "x6"
+      }
+    ]
+  }
+}
