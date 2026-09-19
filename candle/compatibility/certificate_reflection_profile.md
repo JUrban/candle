@@ -189,6 +189,23 @@ Current exact inputs used to validate instrumentation:
 - nonlinear `mk_all_ineq.hl` SHA-256:
   `08ff0eb708c6b6370e042c1d888ba8bd457b7dbaec12390edd30a57b2afea5dc`.
 
+The completed real LP profile is preserved under
+`/project/flyspeck-candle-runs/cv-profile-hard2-v2`. Its proof log SHA-256 is
+`4712c7e0b954f28df34072da682c0ee98d311898e7435d71e4fb2923a8da7971`
+and its profile JSON SHA-256 is
+`b20a002087ca07714dc165db6bd989846b8833f34735b90b3f75e7dea1cb380d`.
+`RESULT.md` in that directory records the full phase summary and artifact
+identities.
+
+The largest-case nonlinear probe is prepared but not launched under
+`/project/flyspeck-candle-runs/cv-profile-nonlinear-largest-v1`. Its
+instrumented source SHA-256 is
+`ab9ce25a7bd2a44fcfbfc794d1cde04aca7e58a8d86f33f0c3c1b3e112dba035`
+and its stdin SHA-256 is
+`e2e39e153ffaff0e1f42ce42a9ef1ce279fa8536f79d4fcac4ab4d3c26d33769`.
+It remains gated on an authenticated clean pre-action-296 checkpoint; failed
+v250 and v252 states were not reused.
+
 All probes use fresh checkpoint copies. Failed or partially loaded states are
 never reused. Instrumented runs remain development evidence and must reproduce
 the existing conclusion, hypotheses, and axiom fingerprint before any speed
