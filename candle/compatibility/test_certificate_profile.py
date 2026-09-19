@@ -59,7 +59,7 @@ class InstrumentationTests(unittest.TestCase):
         )
         nonlinear = (
             root
-            / "v247-focused-action296-nonlinear-v66-001"
+            / "v260-focused-action292-through295-pre296-v66-001"
             / "overlay/text_formalization/nonlinear"
         )
         if not lp.exists() or not nonlinear.exists():

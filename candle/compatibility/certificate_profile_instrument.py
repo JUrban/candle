@@ -239,14 +239,33 @@ let candle_nonlinear_profile_marker scope phase event =
 
 
 def instrument_nonlinear_break(source: str) -> str:
-    source = replace_once(
-        source,
-        "          let _ = incr candle_nonlinear_iarg_leaf_visits in\n",
+    old_counter = "          let _ = incr candle_nonlinear_iarg_leaf_visits in\n"
+    current_counter = (
+        "          let _ = candle_nonlinear_iarg_leaf_visits := "
+        "!candle_nonlinear_iarg_leaf_visits + 1 in\n"
+    )
+    instrumented_counter = (
         "          let _ =\n"
         "            candle_nonlinear_iarg_leaf_visits :=\n"
-        "              !candle_nonlinear_iarg_leaf_visits + 1 in\n",
-        "nonlinear leaf counter compatibility",
+        "              !candle_nonlinear_iarg_leaf_visits + 1 in\n"
     )
+    old_count = source.count(old_counter)
+    current_count = source.count(current_counter)
+    if (old_count, current_count) == (1, 0):
+        source = replace_once(
+            source, old_counter, instrumented_counter,
+            "nonlinear leaf counter compatibility",
+        )
+    elif (old_count, current_count) == (0, 1):
+        source = replace_once(
+            source, current_counter, instrumented_counter,
+            "normalized nonlinear leaf counter compatibility",
+        )
+    else:
+        raise InstrumentationError(
+            "nonlinear leaf counter compatibility: expected exactly one "
+            f"accepted spelling, found old={old_count} current={current_count}"
+        )
     source = replace_once(
         source,
         "let candle_nonlinear_iarg_leaf_visits = ref 0;;\n",
