@@ -92,7 +92,7 @@ def _logical_path(value: object, label: str) -> str:
 def authenticate_big_int_compatibility(
     candle_root: Path,
 ) -> tuple[str, dict[str, Any]]:
-    """Extract the one central Big_int module used by the dev runtime overlay."""
+    """Extract the central integer modules used by the dev runtime overlay."""
 
     source_path = candle_root.resolve() / BIG_INT_SOURCE
     _ordinary_file(source_path, "Big_int compatibility source")
@@ -119,7 +119,29 @@ def authenticate_big_int_compatibility(
         )
     if text.count("  type big_int = int\n") != 1:
         raise ValueError("Big_int compatibility representation drift")
-    return text, {
+    bridge_begin = b"(* CANDLE_NUM_BIG_INT_BRIDGE_BEGIN *)\n"
+    bridge_end = b"(* CANDLE_NUM_BIG_INT_BRIDGE_END *)"
+    if source.count(bridge_begin) != 1 or source.count(bridge_end) != 1:
+        raise ValueError("Num/Big_int bridge boundary drift")
+    bridge_start = source.index(bridge_begin) + len(bridge_begin)
+    bridge_finish = source.index(bridge_end, bridge_start)
+    bridge = source[bridge_start:bridge_finish]
+    expected_bridge = (
+        b"let num_of_big_int i = Int i\n"
+        b";;\n"
+        b"\n"
+        b"let big_int_of_num n =\n"
+        b"  match n with\n"
+        b"  | Int i -> i\n"
+        b"  | Rat r ->\n"
+        b"      if Cake.Rat.denominator r = 1 then Cake.Rat.numerator r\n"
+        b"      else failwith \"big_int_of_ratio\"\n"
+        b";;\n"
+    )
+    if bridge != expected_bridge:
+        raise ValueError("Num/Big_int bridge implementation drift")
+    overlay = module + b"\n\n" + bridge
+    return overlay.decode("ascii"), {
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),
             "bytes": len(source),
@@ -130,6 +152,17 @@ def authenticate_big_int_compatibility(
             "sha256": hashlib.sha256(module).hexdigest(),
             "representation": "type big_int = int",
             "selected_members": sorted(observed_members),
+        },
+        "num_bridge": {
+            "bytes": len(bridge),
+            "sha256": hashlib.sha256(bridge).hexdigest(),
+            "selected_members": ["big_int_of_num", "num_of_big_int"],
+            "integer_case": "representation identity",
+            "noninteger_case": "failwith big_int_of_ratio",
+        },
+        "overlay": {
+            "bytes": len(overlay),
+            "sha256": hashlib.sha256(overlay).hexdigest(),
         },
         "activation": (
             "development source overlay loaded after the frozen runtime base; "
@@ -324,8 +357,8 @@ def build_driver(
 let candle_nonlinear_closure_started = Unix.gettimeofday();;
 
 (* One source-authoritative development overlay for the complete selected
-   legacy Big_int surface.  The linked runtime must absorb this before any
-   release claim. *)
+   legacy Big_int surface and bidirectional Num/Big_int bridge.  The linked
+   runtime must absorb this before any release claim. *)
 {big_int_compatibility}
 
 let candle_nonlinear_source_rows =

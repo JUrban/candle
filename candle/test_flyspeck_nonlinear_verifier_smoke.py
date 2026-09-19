@@ -58,6 +58,11 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             self.big_int_record["module"]["representation"],
             "type big_int = int",
         )
+        self.assertEqual(
+            self.big_int_record["num_bridge"]["selected_members"],
+            ["big_int_of_num", "num_of_big_int"],
+        )
+        self.assertIn("failwith \"big_int_of_ratio\"", self.big_int_compatibility)
         self.assertIn(self.big_int_compatibility, self.driver)
         self.assertLess(
             self.driver.index(self.big_int_compatibility),

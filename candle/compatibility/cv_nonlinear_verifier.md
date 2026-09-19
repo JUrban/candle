@@ -46,12 +46,14 @@ following central compatibility support without changing Flyspeck source:
   absolute value, successor/predecessor, addition/subtraction/multiplication,
   Euclidean quotient/remainder, comparison, positive integer powers, and
   exact floor square root;
+- the representation-preserving `Num.num_of_big_int`/`big_int_of_num` bridge
+  for integers, with native-compatible failure on a non-integer rational;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer
   interfaces.
 
-The `Big_int` differential gate covers every selected member, values beyond
+The `Big_int`/`Num` differential gate covers every selected member, values beyond
 the signed 64-bit range, all sign combinations for Euclidean division,
 positive integer powers, 0, adjacent nonsquares/squares, and `2^128 - 1`.
 Array order, qualified and unqualified float absolute value, ignored-result

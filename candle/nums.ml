@@ -146,6 +146,19 @@ let pp_num n =
   | Rat r -> pp_rat r
 ;;
 
+(* CANDLE_NUM_BIG_INT_BRIDGE_BEGIN *)
+let num_of_big_int i = Int i
+;;
+
+let big_int_of_num n =
+  match n with
+  | Int i -> i
+  | Rat r ->
+      if Cake.Rat.denominator r = 1 then Cake.Rat.numerator r
+      else failwith "big_int_of_ratio"
+;;
+(* CANDLE_NUM_BIG_INT_BRIDGE_END *)
+
 module Num (* : NUM*) = struct
 
 type num = num;;
@@ -194,7 +207,10 @@ let norm n = num_fix n
 let num_of_int i = Int i
 ;;
 
-let num_of_big_int i = Int i
+let num_of_big_int = num_of_big_int
+;;
+
+let big_int_of_num = big_int_of_num
 ;;
 
 (* The Num compatibility operation accepts integer strings.  CakeML integers
@@ -441,6 +457,8 @@ end;; (* struct *)
 (* There's no 'open': *)
 
 let num_of_int = Num.num_of_int;;
+let num_of_big_int = Num.num_of_big_int;;
+let big_int_of_num = Num.big_int_of_num;;
 let int_of_num = Num.int_of_num;;
 let string_of_num = Num.string_of_num;;
 let float_of_num = Num.float_of_num;;
