@@ -43,7 +43,7 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
-        self.assertEqual(len(self.overlays), 4)
+        self.assertEqual(len(self.overlays), 7)
 
     def test_every_identity_is_in_the_runtime_preflight(self) -> None:
         for record in self.records:

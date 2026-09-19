@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 import flyspeck_manifest
+import flyspeck_normalize
 
 
 SCHEMA = 1
@@ -37,6 +38,14 @@ NORMALIZATION_SEMANTIC_RULE = (
     "Array.get/Array.set with parenthesized indices; module-qualified record "
     "labels use the same unqualified labels under an explicit original record "
     "type; and a ref assignment's conditional RHS is parenthesized"
+)
+NORMALIZATION_SCOPE_LIMIT = (
+    "This bounded parser normalization is confined to the authenticated "
+    "formal-verifier closure and only makes native OCaml grouping explicit. "
+    "It changes no theorem statement, hypothesis, proof step, proof intent, "
+    "runtime primitive, or axiom. Existing direct-Flyspeck execution "
+    "normalizations remain authoritative and are applied from the shared "
+    "versioned normalization contract."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -212,24 +221,49 @@ def normalize_source(
     return normalized, operations
 
 
-def apply_recorded_normalization(
+def _normalization_record(
     source_key: str,
     source: bytes,
-    node: dict[str, Any],
+    direct_normalizations: dict[str, tuple[dict[str, Any], bytes]],
 ) -> tuple[bytes, dict[str, Any] | None]:
-    """Reproduce and validate a closure node's normalization contract."""
+    """Apply one authoritative normalization lane, rejecting overlap.
 
-    normalized, operations = normalize_source(source_key, source)
-    record = node.get("normalization")
+    Sources already covered by the direct Flyspeck normalization contract use
+    those exact recorded bytes.  The nonlinear parser compatibility pass is
+    then checked against the resulting bytes.  Supporting an overlap would
+    require an explicit composed contract; silently composing two authorities
+    here would make the output identity depend on an unreviewed order.
+    """
+
+    direct = direct_normalizations.get(source_key)
+    base = source if direct is None else direct[1]
+    normalized, operations = normalize_source(source_key, base)
+    if direct is not None and operations:
+        raise ValueError(
+            f"overlapping direct/parser normalizations: {source_key}"
+        )
+    if direct is not None:
+        entry, expected = direct
+        if normalized != expected:
+            raise ValueError(f"direct normalization output drift: {source_key}")
+        return normalized, {
+            "id": entry["id"],
+            "authority": "direct-flyspeck-normalization-contract",
+            "semantic_rule": entry["semantic_rule"],
+            "scope_limit": entry["scope_limit"],
+            "operation_count": len(entry["operations"]),
+            "operations": entry["operations"],
+            "normalized_bytes": entry["normalized_bytes"],
+            "normalized_md5": entry["normalized_md5"],
+            "normalized_sha256": entry["normalized_sha256"],
+        }
     if not operations:
-        if record is not None:
-            raise ValueError(f"spurious source normalization: {source_key}")
         return source, None
-    if not isinstance(record, dict):
-        raise ValueError(f"missing source normalization: {source_key}")
-    observed = {
+    return normalized, {
         "id": SOURCE_NORMALIZATION,
+        "authority": "nonlinear-verifier-closure",
         "semantic_rule": NORMALIZATION_SEMANTIC_RULE,
+        "scope_limit": NORMALIZATION_SCOPE_LIMIT,
         "operation_count": len(operations),
         "operations": operations,
         "normalized_bytes": len(normalized),
@@ -238,6 +272,69 @@ def apply_recorded_normalization(
         ).hexdigest(),
         "normalized_sha256": hashlib.sha256(normalized).hexdigest(),
     }
+
+
+def load_direct_normalizations(
+    candle_root: Path,
+    flyspeck_root: Path,
+    manifest: dict[str, Any],
+) -> tuple[bytes, dict[str, tuple[dict[str, Any], bytes]]]:
+    """Load the direct lane's canonical, versioned normalization authority."""
+
+    contract_path = candle_root / flyspeck_manifest.SOURCE_NORMALIZATION_CONTRACT
+    contract_data = contract_path.read_bytes()
+    authority = manifest.get("source_normalization_contract", {})
+    if (
+        authority.get("contract_source")
+        != "candle:" + flyspeck_manifest.SOURCE_NORMALIZATION_CONTRACT
+        or authority.get("contract_sha256")
+        != hashlib.sha256(contract_data).hexdigest()
+    ):
+        raise ValueError("direct normalization authority identity drift")
+    _contract, outputs = flyspeck_normalize.evaluate_contract(
+        contract_path, flyspeck_root,
+    )
+    result: dict[str, tuple[dict[str, Any], bytes]] = {}
+    for entry, normalized in outputs:
+        source_key = str(entry["source_key"])
+        node = manifest.get("source_nodes", {}).get(source_key)
+        recorded = None if not isinstance(node, dict) else node.get(
+            "execution_normalization"
+        )
+        expected = {
+            "id": entry["id"],
+            "kind": "exact_bytes_replace_sequence",
+            "operation_count": len(entry["operations"]),
+            "normalized_bytes": len(normalized),
+            "normalized_sha256": entry["normalized_sha256"],
+            "normalized_md5": entry["normalized_md5"],
+        }
+        if recorded != expected:
+            raise ValueError(
+                f"direct manifest normalization summary drift: {source_key}"
+            )
+        result[source_key] = (entry, normalized)
+    return contract_data, result
+
+
+def apply_recorded_normalization(
+    source_key: str,
+    source: bytes,
+    node: dict[str, Any],
+    direct_normalizations: dict[str, tuple[dict[str, Any], bytes]],
+) -> tuple[bytes, dict[str, Any] | None]:
+    """Reproduce and validate a closure node's normalization contract."""
+
+    normalized, observed = _normalization_record(
+        source_key, source, direct_normalizations,
+    )
+    record = node.get("normalization")
+    if observed is None:
+        if record is not None:
+            raise ValueError(f"spurious source normalization: {source_key}")
+        return source, None
+    if not isinstance(record, dict):
+        raise ValueError(f"missing source normalization: {source_key}")
     if record != observed:
         raise ValueError(f"source normalization contract drift: {source_key}")
     return normalized, record
@@ -258,6 +355,9 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
     candle_root = candle_root.resolve()
     flyspeck_root = flyspeck_root.resolve()
     manifest_data, manifest = _load_direct_manifest(candle_root)
+    normalization_contract_data, direct_normalizations = (
+        load_direct_normalizations(candle_root, flyspeck_root, manifest)
+    )
     expected_flyspeck_head = manifest["repositories"]["flyspeck"]["commit"]
     observed_flyspeck_head = _git_head(flyspeck_root)
     if observed_flyspeck_head != expected_flyspeck_head:
@@ -350,8 +450,8 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             pending.append(selected)
 
         discovery_order.append(source_ref.key)
-        normalized_data, normalization_operations = (
-            normalize_source(source_ref.key, source_data)
+        normalized_data, normalization = _normalization_record(
+            source_ref.key, source_data, direct_normalizations,
         )
         node = {
             "repository": source_ref.repository,
@@ -362,20 +462,8 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             "dependencies": dependencies,
             "selected_dependencies": sorted(set(selected_keys)),
         }
-        if normalization_operations:
-            node["normalization"] = {
-                "id": SOURCE_NORMALIZATION,
-                "semantic_rule": NORMALIZATION_SEMANTIC_RULE,
-                "operation_count": len(normalization_operations),
-                "operations": normalization_operations,
-                "normalized_bytes": len(normalized_data),
-                "normalized_md5": hashlib.md5(
-                    normalized_data, usedforsecurity=False,
-                ).hexdigest(),
-                "normalized_sha256": hashlib.sha256(
-                    normalized_data,
-                ).hexdigest(),
-            }
+        if normalization is not None:
+            node["normalization"] = normalization
         nodes[source_ref.key] = node
 
     direct_nodes = set(manifest["source_nodes"])
@@ -448,6 +536,13 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             "schema": manifest["schema"],
             "sha256": hashlib.sha256(manifest_data).hexdigest(),
             "source_node_count": len(direct_nodes),
+        },
+        "source_normalization_contract": {
+            "path": flyspeck_manifest.SOURCE_NORMALIZATION_CONTRACT,
+            "schema": 2,
+            "sha256": hashlib.sha256(
+                normalization_contract_data,
+            ).hexdigest(),
         },
         "counts": {
             "selected_source_nodes": len(selected_nodes),

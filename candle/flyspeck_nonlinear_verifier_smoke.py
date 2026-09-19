@@ -113,6 +113,25 @@ def authenticate_closure(
     if not isinstance(nodes, dict) or len(nodes) != 90:
         raise ValueError("malformed nonlinear verifier source-node map")
     roots = {"candle": candle_root, "flyspeck": flyspeck_root}
+    _manifest_data, manifest = (
+        flyspeck_nonlinear_verifier_closure._load_direct_manifest(candle_root)
+    )
+    normalization_contract_data, direct_normalizations = (
+        flyspeck_nonlinear_verifier_closure.load_direct_normalizations(
+            candle_root, flyspeck_root, manifest,
+        )
+    )
+    closure_normalization_authority = closure.get(
+        "source_normalization_contract", {}
+    )
+    if (
+        closure_normalization_authority.get("schema") != 2
+        or closure_normalization_authority.get("path")
+        != flyspeck_nonlinear_verifier_closure.flyspeck_manifest.SOURCE_NORMALIZATION_CONTRACT
+        or closure_normalization_authority.get("sha256")
+        != hashlib.sha256(normalization_contract_data).hexdigest()
+    ):
+        raise ValueError("nonlinear closure normalization authority drift")
     records: list[dict[str, Any]] = []
     for source_key in sorted(nodes):
         node = nodes[source_key]
@@ -144,7 +163,7 @@ def authenticate_closure(
             raise ValueError(f"invalid source dependency closure: {source_key}")
         normalized, normalization = (
             flyspeck_nonlinear_verifier_closure.apply_recorded_normalization(
-                source_key, data, node,
+                source_key, data, node, direct_normalizations,
             )
         )
         records.append({

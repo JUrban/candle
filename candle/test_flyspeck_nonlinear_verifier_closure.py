@@ -41,8 +41,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 4)
-        self.assertEqual(counts["normalization_operations"], 45)
+        self.assertEqual(counts["normalized_sources"], 7)
+        self.assertEqual(counts["normalization_operations"], 50)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -98,29 +98,33 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             for key, node in self.payload["source_nodes"].items()
             if "normalization" in node
         }
-        self.assertEqual(set(normalized), {
+        parser_normalized = {
+            key: record for key, record in normalized.items()
+            if record["authority"] == "nonlinear-verifier-closure"
+        }
+        self.assertEqual(set(parser_normalized), {
             "flyspeck:formal_ineqs/taylor/m_taylor.hl",
             "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl",
             "flyspeck:formal_ineqs/verifier/m_verifier.hl",
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl",
         })
         self.assertEqual(
-            sum(record["operation_count"] for record in normalized.values()),
+            sum(record["operation_count"] for record in parser_normalized.values()),
             45,
         )
         self.assertEqual(
             sum(
                 operation["kind"] == "nested-array-set"
-                for record in normalized.values()
+                for record in parser_normalized.values()
                 for operation in record["operations"]
             ),
             1,
         )
         self.assertTrue(all(
             record["id"] == subject.SOURCE_NORMALIZATION
-            for record in normalized.values()
+            for record in parser_normalized.values()
         ))
-        main = normalized[
+        main = parser_normalized[
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
         ]
         self.assertEqual(main["operation_count"], 4)
@@ -128,6 +132,49 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             {operation["kind"] for operation in main["operations"]},
             {kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS},
         )
+
+    def test_direct_normalizations_reuse_canonical_authority(self) -> None:
+        normalized = {
+            key: node["normalization"]
+            for key, node in self.payload["source_nodes"].items()
+            if "normalization" in node
+        }
+        direct = {
+            key: record for key, record in normalized.items()
+            if record["authority"] == "direct-flyspeck-normalization-contract"
+        }
+        self.assertEqual(set(direct), {
+            "flyspeck:formal_ineqs/arith/arith_cache.hl",
+            "flyspeck:formal_ineqs/arith/arith_num.hl",
+            "flyspeck:formal_ineqs/misc/misc_functions.hl",
+        })
+        manifest = json.loads(
+            (ROOT / subject.MANIFEST).read_text(encoding="utf-8")
+        )
+        for key, record in direct.items():
+            authority = manifest["source_nodes"][key]["execution_normalization"]
+            self.assertEqual(record["id"], authority["id"])
+            self.assertEqual(
+                record["normalized_sha256"], authority["normalized_sha256"],
+            )
+
+    def test_normalization_lanes_fail_closed_on_overlap(self) -> None:
+        source = b"let x = a.(i).(j);;\n"
+        direct = {
+            "flyspeck:test.hl": ({
+                "id": "direct-test",
+                "semantic_rule": "test",
+                "scope_limit": "test",
+                "operations": [{"id": "test", "kind": "test"}],
+                "normalized_bytes": len(source),
+                "normalized_md5": "unused",
+                "normalized_sha256": "unused",
+            }, source),
+        }
+        with self.assertRaisesRegex(ValueError, "overlapping"):
+            subject._normalization_record(
+                "flyspeck:test.hl", source, direct,
+            )
 
     def test_nested_array_lowering_preserves_native_behavior(self) -> None:
         original = b'''let f a =
