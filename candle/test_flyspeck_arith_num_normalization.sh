@@ -29,16 +29,16 @@ if rg -q '^let [A-Za-z0-9_]+ = Hashtbl\.create' "$normalized"; then
   echo 'normalized arith_num retained an unannotated theorem table' >&2
   exit 1
 fi
-if [[ $(rg -c '^let _ = for i = ' "$normalized") -ne 24 ]]; then
-  echo 'normalized arith_num does not bind exactly 24 outer for loops' >&2
+if [[ $(rg -c '^for i = ' "$normalized") -ne 24 ]]; then
+  echo 'normalized arith_num does not retain exactly 24 outer for loops' >&2
   exit 1
 fi
-if rg -q '^for i = ' "$normalized"; then
-  echo 'normalized arith_num retained an outer bare for loop' >&2
+if rg -q '^let _ = for i = ' "$normalized"; then
+  echo 'normalized arith_num retained an obsolete per-file loop binding' >&2
   exit 1
 fi
 
 ocaml -noinit -noprompt <"$fixture" >"$test_dir/ocaml.log" 2>&1
 rg -Fq 'ARITH_NUM_HASHTBL_ANNOTATION_OCAML_ORACLE_OK' "$test_dir/ocaml.log"
 
-printf 'PASS: arith_num value-restriction and nested-loop normalization\n'
+printf 'PASS: arith_num value restriction and central loop lowering contract\n'
