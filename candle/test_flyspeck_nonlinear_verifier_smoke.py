@@ -59,8 +59,14 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             "type big_int = int",
         )
         self.assertEqual(
-            self.big_int_record["num_bridge"]["selected_members"],
-            ["big_int_of_num", "num_of_big_int"],
+            set(self.big_int_record["num_bridge"]["overlay_members"]),
+            subject.NUM_OVERLAY_MEMBERS,
+        )
+        self.assertEqual(
+            set(self.big_int_record["num_bridge"][
+                "closure_selected_members"
+            ]),
+            subject.NUM_CLOSURE_SELECTED_MEMBERS,
         )
         self.assertIn("failwith \"big_int_of_ratio\"", self.big_int_compatibility)
         self.assertIn(self.big_int_compatibility, self.driver)
@@ -68,6 +74,18 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             self.driver.index(self.big_int_compatibility),
             self.driver.index('needs "arith_options.hl";;'),
         )
+
+    def test_native_num_inventory_is_mechanically_closed(self) -> None:
+        observed = set()
+        for record in self.records:
+            text = Path(record["physical_path"]).read_text(
+                encoding="utf-8", errors="surrogateescape",
+            )
+            observed.update(
+                match.group(1)
+                for match in subject.NUM_NATIVE_MEMBER_RE.finditer(text)
+            )
+        self.assertEqual(observed, subject.NUM_CLOSURE_SELECTED_MEMBERS)
 
     def test_normalized_closure_has_no_active_general_formatting(self) -> None:
         for record in self.records:

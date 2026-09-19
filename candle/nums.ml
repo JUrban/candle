@@ -157,6 +157,77 @@ let big_int_of_num n =
       if Cake.Rat.denominator r = 1 then Cake.Rat.numerator r
       else failwith "big_int_of_ratio"
 ;;
+
+let pred_num n =
+  match n with
+  | Int i -> Int (i - 1)
+  | Rat r ->
+      let result = Cake.Rat.(-) r (Cake.Rat.fromInt 1) in
+      if Cake.Rat.denominator result = 1 then
+        Int (Cake.Rat.numerator result)
+      else Rat result
+;;
+
+let compare_num x y =
+  let compare_rat left right =
+    if Cake.Rat.(<) left right then -1
+    else if Cake.Rat.(>) left right then 1
+    else 0 in
+  match x, y with
+  | Int i, Int j -> if i < j then -1 else if i > j then 1 else 0
+  | Int i, Rat r -> compare_rat (Cake.Rat.fromInt i) r
+  | Rat r, Int j -> compare_rat r (Cake.Rat.fromInt j)
+  | Rat i, Rat j -> compare_rat i j
+;;
+
+let approx_num_exp precision value =
+  if precision <= 0 then failwith "approx_ratio_exp" else
+  let numerator,denominator =
+    match value with
+    | Int i -> i,1
+    | Rat r -> Cake.Rat.numerator r,Cake.Rat.denominator r in
+  let negative = numerator < 0 in
+  let numerator = abs numerator in
+  let rec power accumulator factor exponent =
+    if exponent = 0 then accumulator
+    else
+      let square = factor * factor in
+      if exponent mod 2 = 0 then
+        power accumulator square (exponent / 2)
+      else
+        power (accumulator * factor) square (exponent / 2) in
+  let power10 exponent = power 1 10 exponent in
+  let rec zeroes count result =
+    if count <= 0 then result else zeroes (count - 1) ("0" ^ result) in
+  let sign = if negative then "-" else "+" in
+  if numerator = 0 then sign ^ "0." ^ zeroes precision "" ^ "e0"
+  else
+    let numerator_digits = Cake.String.size (string_of_int numerator) and
+        denominator_digits = Cake.String.size (string_of_int denominator) in
+    let candidate = numerator_digits - denominator_digits in
+    let below_candidate_power =
+      if candidate >= 0 then
+        numerator < denominator * power10 candidate
+      else
+        numerator * power10 (~-candidate) < denominator in
+    let exponent = if below_candidate_power then candidate else candidate + 1 in
+    let shift = precision - exponent in
+    let scaled_numerator,scaled_denominator =
+      if shift >= 0 then numerator * power10 shift,denominator
+      else numerator,denominator * power10 (~-shift) in
+    let quotient = scaled_numerator / scaled_denominator and
+        remainder = scaled_numerator mod scaled_denominator in
+    let rounded =
+      if 2 * remainder >= scaled_denominator then quotient + 1
+      else quotient in
+    let unit = power10 precision in
+    let integer_part = rounded / unit and fraction = rounded mod unit in
+    let fraction_string = string_of_int fraction in
+    let fraction_string =
+      zeroes (precision - Cake.String.size fraction_string) fraction_string in
+    sign ^ string_of_int integer_part ^ "." ^ fraction_string ^
+      "e" ^ string_of_int exponent
+;;
 (* CANDLE_NUM_BIG_INT_BRIDGE_END *)
 
 module Num (* : NUM*) = struct
@@ -211,6 +282,15 @@ let num_of_big_int = num_of_big_int
 ;;
 
 let big_int_of_num = big_int_of_num
+;;
+
+let pred_num = pred_num
+;;
+
+let compare_num = compare_num
+;;
+
+let approx_num_exp = approx_num_exp
 ;;
 
 (* The Num compatibility operation accepts integer strings.  CakeML integers
@@ -459,6 +539,9 @@ end;; (* struct *)
 let num_of_int = Num.num_of_int;;
 let num_of_big_int = Num.num_of_big_int;;
 let big_int_of_num = Num.big_int_of_num;;
+let pred_num = Num.pred_num;;
+let compare_num = Num.compare_num;;
+let approx_num_exp = Num.approx_num_exp;;
 let int_of_num = Num.int_of_num;;
 let string_of_num = Num.string_of_num;;
 let float_of_num = Num.float_of_num;;

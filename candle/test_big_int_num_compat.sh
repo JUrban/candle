@@ -29,6 +29,7 @@ rg -Fq 'let num_of_big_int i = Int i' "$candle_root/candle/nums.ml"
 printf '#load "nums.cma";;\n#use "%s";;\n' "$fixture" |
   "$ocaml" -noinit -noprompt >"$test_dir/ocaml.log" 2>&1
 rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/ocaml.log"
+ocaml_approx=$(rg '^CANDLE_NUM_APPROX_OBSERVATIONS ' "$test_dir/ocaml.log")
 
 (
   cd "$candle_runtime_cwd"
@@ -43,6 +44,8 @@ rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/ocaml.log"
 
 rg -Fq 'val candle_big_int_num_compat_ok = true: bool' "$test_dir/candle.log"
 rg -Fq 'CANDLE_BIG_INT_NUM_COMPAT_OK' "$test_dir/candle.log"
+candle_approx=$(rg '^CANDLE_NUM_APPROX_OBSERVATIONS ' "$test_dir/candle.log")
+[[ $candle_approx == "$ocaml_approx" ]]
 if rg -q 'ERROR:|EXCEPTION:|Parsing failed|Undefined variable:' \
   "$test_dir/candle.log"; then
   exit 1

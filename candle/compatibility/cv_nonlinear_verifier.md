@@ -48,6 +48,9 @@ following central compatibility support without changing Flyspeck source:
   exact floor square root;
 - the representation-preserving `Num.num_of_big_int`/`big_int_of_num` bridge
   for integers, with native-compatible failure on a non-integer rational;
+- the complete missing subset from a mechanical audit of native `Num` names
+  in the 90-source closure: `pred_num`, `compare_num`, and exact rational
+  `approx_num_exp` rendering;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer
@@ -58,7 +61,8 @@ the signed 64-bit range, all sign combinations for Euclidean division,
 positive integer powers, 0, adjacent nonsquares/squares, and `2^128 - 1`.
 Array order, qualified and unqualified float absolute value, ignored-result
 behavior, and formatter callback typing are checked against native OCaml
-4.14.1.
+4.14.1. The `approx_num_exp` cases cover signs, zero, fractions, very small
+and very large magnitudes, decimal rounding, and mantissa carry.
 
 The current first-leaf controller extracts this one source-authoritative
 `Big_int` module from `candle/nums.ml` and overlays it after the older linked

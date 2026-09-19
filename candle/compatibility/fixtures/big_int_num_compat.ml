@@ -44,6 +44,60 @@ let candle_num_noninteger_big_int_rejected =
       (Num.div_num (Num.num_of_int 3) (Num.num_of_int 2)) in false
   with _ -> true;;
 
+let candle_num_integer s =
+  Num.num_of_big_int (Big_int.big_int_of_string s);;
+
+let candle_num_ratio numerator denominator =
+  Num.div_num (candle_num_integer numerator)
+    (candle_num_integer denominator);;
+
+let candle_num_approx_exp_inputs =
+  [(6, candle_num_integer "0", "+0.000000e0");
+   (6, candle_num_integer "1", "+0.100000e1");
+   (6, candle_num_integer "-1", "-0.100000e1");
+   (6, candle_num_ratio "3" "2", "+0.150000e1");
+   (6, candle_num_ratio "1" "3", "+0.333333e0");
+   (6, candle_num_integer "123456789", "+0.123457e9");
+   (6, candle_num_integer "9999995", "+1.000000e7");
+   (10, candle_num_ratio "1" "100000000000000000000",
+    "+0.1000000000e-19");
+   (30, candle_num_integer
+      "340282366920938463463374607431768211455",
+    "+0.340282366920938463463374607432e39")];;
+
+let candle_num_approx_exp_ok (precision,value,expected) =
+  Num.approx_num_exp precision value = expected;;
+
+let candle_num_remaining_surface_ok =
+  let half = candle_num_ratio "1" "2" and
+      three_halves = candle_num_ratio "3" "2" in
+  Num.string_of_num (Num.pred_num three_halves) = "1/2" &&
+  Num.compare_num half three_halves = -1 &&
+  Num.compare_num three_halves three_halves = 0 &&
+  Num.compare_num three_halves half = 1 &&
+  List.for_all candle_num_approx_exp_ok candle_num_approx_exp_inputs;;
+
+let candle_num_approx_differential_observations =
+  let precisions = [1;2;3;6;10] and
+      numerators =
+        [-9999; -995; -25; -15; -1; 0; 1; 3; 5;
+         14; 15; 25; 95; 99; 995; 999; 9999] and
+      denominators = [1;2;3;7;20;1001] in
+  let render precision numerator denominator =
+    let value =
+      Num.div_num (Num.num_of_int numerator) (Num.num_of_int denominator) in
+    string_of_int precision ^ ":" ^ string_of_int numerator ^ "/" ^
+      string_of_int denominator ^ ":" ^ Num.approx_num_exp precision value in
+  List.flatten
+    (List.map
+      (fun precision ->
+        List.flatten
+          (List.map
+            (fun numerator ->
+              List.map (render precision numerator) denominators)
+            numerators))
+      precisions);;
+
 let candle_big_int_sqrt_ok (input,expected) =
   candle_big_int_render
     (Big_int.sqrt_big_int (Big_int.big_int_of_string input)) = expected;;
@@ -113,6 +167,7 @@ let candle_big_int_num_compat_ok =
   "-9223372036854775808" &&
   List.for_all candle_num_big_int_roundtrip candle_big_int_num_inputs &&
   candle_num_noninteger_big_int_rejected &&
+  candle_num_remaining_surface_ok &&
   List.for_all candle_big_int_sqrt_ok candle_big_int_sqrt_inputs &&
   candle_big_int_negative_sqrt_rejected &&
   candle_big_int_render candle_big_int_product =
@@ -126,6 +181,9 @@ let candle_big_int_num_compat_ok =
   candle_big_int_negative_power_rejected;;
 
 if candle_big_int_num_compat_ok then
-  print_string "CANDLE_BIG_INT_NUM_COMPAT_OK\n"
+  (print_string "CANDLE_BIG_INT_NUM_COMPAT_OK\n";
+   print_endline
+     ("CANDLE_NUM_APPROX_OBSERVATIONS " ^
+      String.concat "|" candle_num_approx_differential_observations))
 else
   failwith "Big_int/Num compatibility mismatch";;

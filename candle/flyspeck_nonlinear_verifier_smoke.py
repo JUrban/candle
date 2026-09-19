@@ -47,6 +47,34 @@ BIG_INT_SELECTED_MEMBERS = {
     "sign_big_int", "sqrt_big_int", "sub_big_int", "succ_big_int",
     "zero_big_int",
 }
+NUM_CLOSURE_SELECTED_MEMBERS = {
+    "abs_num", "approx_num_exp", "big_int_of_num", "compare_num",
+    "float_of_num", "int_of_num", "max_num", "minus_num", "mod_num",
+    "num_of_big_int", "num_of_int", "pred_num", "quo_num", "sign_num",
+    "string_of_num",
+}
+NUM_NATIVE_MEMBERS = {
+    "abs_num", "add_num", "approx_num_exp", "approx_num_fix",
+    "big_int_of_num", "big_int_of_num_opt", "ceiling_num", "compare_num",
+    "decr_num", "div_num", "eq_num", "float_of_num", "floor_num",
+    "ge_num", "gt_num", "incr_num", "int_of_num", "int_of_num_opt",
+    "integer_num", "is_integer_num", "le_num", "lt_num", "max_num",
+    "min_num", "minus_num", "mod_num", "mult_num", "nat_of_num",
+    "nat_of_num_opt", "num_of_big_int", "num_of_int", "num_of_nat",
+    "num_of_ratio", "num_of_string", "num_of_string_opt", "power_num",
+    "pred_num", "quo_num", "ratio_of_num", "round_num", "sign_num",
+    "square_num", "string_of_num", "sub_num", "succ_num",
+}
+NUM_NATIVE_MEMBER_RE = re.compile(
+    r"(?<![A-Za-z0-9_'])(" +
+    "|".join(sorted(map(re.escape, NUM_NATIVE_MEMBERS), key=len,
+                    reverse=True)) +
+    r")(?![A-Za-z0-9_'])"
+)
+NUM_OVERLAY_MEMBERS = {
+    "approx_num_exp", "big_int_of_num", "compare_num", "num_of_big_int",
+    "pred_num",
+}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -126,20 +154,38 @@ def authenticate_big_int_compatibility(
     bridge_start = source.index(bridge_begin) + len(bridge_begin)
     bridge_finish = source.index(bridge_end, bridge_start)
     bridge = source[bridge_start:bridge_finish]
-    expected_bridge = (
-        b"let num_of_big_int i = Int i\n"
-        b";;\n"
-        b"\n"
-        b"let big_int_of_num n =\n"
-        b"  match n with\n"
-        b"  | Int i -> i\n"
-        b"  | Rat r ->\n"
-        b"      if Cake.Rat.denominator r = 1 then Cake.Rat.numerator r\n"
-        b"      else failwith \"big_int_of_ratio\"\n"
-        b";;\n"
-    )
-    if bridge != expected_bridge:
-        raise ValueError("Num/Big_int bridge implementation drift")
+    bridge_text = bridge.decode("ascii")
+    bridge_members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", bridge_text,
+            flags=re.MULTILINE,
+        )
+    }
+    if bridge_members != NUM_OVERLAY_MEMBERS:
+        raise ValueError(
+            "Num/Big_int bridge member inventory drift: "
+            f"{sorted(bridge_members)}"
+        )
+    num_begin = b"module Num (* : NUM*) = struct\n"
+    num_end = b"\nend;; (* struct *)"
+    if source.count(num_begin) != 1 or source.count(num_end) != 1:
+        raise ValueError("Num compatibility module boundary drift")
+    num_start = source.index(num_begin)
+    num_finish = source.index(num_end, num_start)
+    num_text = source[num_start:num_finish].decode("ascii")
+    num_members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", num_text,
+            flags=re.MULTILINE,
+        )
+    }
+    if not NUM_CLOSURE_SELECTED_MEMBERS <= num_members:
+        raise ValueError(
+            "selected Num compatibility member missing: "
+            f"{sorted(NUM_CLOSURE_SELECTED_MEMBERS - num_members)}"
+        )
     overlay = module + b"\n\n" + bridge
     return overlay.decode("ascii"), {
         "source": {
@@ -156,7 +202,10 @@ def authenticate_big_int_compatibility(
         "num_bridge": {
             "bytes": len(bridge),
             "sha256": hashlib.sha256(bridge).hexdigest(),
-            "selected_members": ["big_int_of_num", "num_of_big_int"],
+            "overlay_members": sorted(bridge_members),
+            "closure_selected_members": sorted(
+                NUM_CLOSURE_SELECTED_MEMBERS
+            ),
             "integer_case": "representation identity",
             "noninteger_case": "failwith big_int_of_ratio",
         },
@@ -224,6 +273,7 @@ def authenticate_closure(
     ):
         raise ValueError("nonlinear closure normalization authority drift")
     records: list[dict[str, Any]] = []
+    observed_num_members: set[str] = set()
     for source_key in sorted(nodes):
         node = nodes[source_key]
         if not isinstance(node, dict):
@@ -239,6 +289,11 @@ def authenticate_closure(
         physical = roots[repository] / logical
         _ordinary_file(physical, f"nonlinear verifier source {source_key}")
         data = physical.read_bytes()
+        observed_num_members.update(
+            match.group(1) for match in NUM_NATIVE_MEMBER_RE.finditer(
+                data.decode("utf-8", errors="surrogateescape")
+            )
+        )
         md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
         sha256 = hashlib.sha256(data).hexdigest()
         if (
@@ -269,6 +324,12 @@ def authenticate_closure(
             "normalization": normalization,
             "normalized_bytes": normalized,
         })
+    if observed_num_members != NUM_CLOSURE_SELECTED_MEMBERS:
+        raise ValueError(
+            "nonlinear closure Num member inventory drift: "
+            f"observed={sorted(observed_num_members)} "
+            f"expected={sorted(NUM_CLOSURE_SELECTED_MEMBERS)}"
+        )
     return closure_data, closure, records
 
 
