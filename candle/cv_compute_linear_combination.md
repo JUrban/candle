@@ -81,6 +81,13 @@ combines two assumed inequalities with distinct signed coefficients and checks
 the exact accumulator, conclusion, and complete hypothesis set. The adapter
 does not invoke an oracle or trust its ML-produced row data.
 
+The result is now canonicalized by a second verified computation. The fold's
+subtraction-free `(positive,negative)` pairs are reduced to pairs with one zero
+component; HOL proofs establish preservation of both scalar and vector real
+denotations before the inequality is rewritten. The test deliberately produces
+an unreduced right side `(21,4)` and checks that the public adapter receives the
+proved canonical result `(17,0)` with unchanged hypotheses.
+
 It is not yet a Flyspeck checker. Before integration it must add:
 
 1. a Flyspeck wrapper selecting `Linear_function.lin_f`,

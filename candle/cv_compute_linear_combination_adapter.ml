@@ -10,12 +10,14 @@
 needs "candle/cv_compute_linear_combination.ml";;
 needs "candle/cv_compute_linear_combination_bulk.ml";;
 needs "candle/cv_compute_linear_combination_realize.ml";;
+needs "candle/cv_compute_linear_combination_normalize.ml";;
 
 module Candle_cv_linear_combination_adapter = struct
 
 open Candle_cv_linear_combination;;
 open Candle_cv_linear_combination_bulk;;
 open Candle_cv_linear_combination_realize;;
+open Candle_cv_linear_combination_normalize;;
 
 let candle_lc_exact_row_type = `:num#((num#num)list#(num#num))`;;
 let candle_lc_zero_acc = `([]:(num#num)list),(0,0)`;;
@@ -107,12 +109,20 @@ let candle_lc_bulk_compute_with
       candle_lc_fold_real in
   let realized_bulk_th = REWRITE_RULE[realization_th] exact_bulk_th in
   let fold_th = candle_cv_lc_fold_conv candle_lc_zero_acc exact_rows in
-  let result = rand (concl fold_th) in
-  let coefficients,integer = dest_pair result in
-  let computed_bulk_th =
+  let raw_result = rand (concl fold_th) in
+  let raw_bulk_th =
     REWRITE_RULE
       [fold_th; candle_lc_acc_real_def]
       realized_bulk_th in
+  let normalize_iff =
+    REWRITE_RULE[FST;SND]
+      (SPECL [variables_tm;raw_result] candle_lc_inequality_normalize) in
+  let normalized_bulk_th = EQ_MP (SYM normalize_iff) raw_bulk_th in
+  let normalize_th = candle_cv_lc_acc_normalize_conv raw_result in
+  let result = rand (concl normalize_th) in
+  let coefficients,integer = dest_pair result in
+  let computed_bulk_th =
+    REWRITE_RULE[normalize_th;FST;SND] normalized_bulk_th in
   let expected_conclusion =
     mk_binop `(<=):real->real->bool`
       (mk_comb (mk_comb (`candle_lc_vec_real`,variables_tm),coefficients))
