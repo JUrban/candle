@@ -68,16 +68,26 @@ term. Untrusted ML parsing never authorizes the equality: both sides are
 normalized by conversions, and the bridge is constructed only when their HOL
 terms agree. Duplicate or unsorted variables, variables outside the basis, and
 normalization mismatches fail closed. This generic layer has passed its full
-core test, but the actual Flyspeck adapter and public-conclusion normalization
+core test. The actual Flyspeck instantiation and public-conclusion normalization
 remain pending.
+
+The computed adapter now connects those pieces end to end for normalized
+generic rows. For each authenticated source inequality it requires
+assumption-free lhs/rhs reification theorems, proves that the resulting exact
+row denotes that source row, applies the bulk soundness theorem once, evaluates
+the complete exact fold with `Kernel.compute`, and rewrites the soundness
+result to the computed coefficient vector and integer. Its regression test
+combines two assumed inequalities with distinct signed coefficients and checks
+the exact accumulator, conclusion, and complete hypothesis set. The adapter
+does not invoke an oracle or trust its ML-produced row data.
 
 It is not yet a Flyspeck checker. Before integration it must add:
 
 1. a Flyspeck wrapper selecting `Linear_function.lin_f`,
    `Arith_int.my_dest_realintconst`, and the exact arithmetic rewrites required
    by the loaded checker;
-2. a normalized-conclusion adapter connecting the reifier, the proved
-   realization equality, and the existing theorem interface;
+2. canonicalization/public-conclusion rendering from the computed signed-pair
+   accumulator to the existing checker's `lin_f`/integer syntax;
 3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and
 4. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader

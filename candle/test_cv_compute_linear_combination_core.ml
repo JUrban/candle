@@ -10,6 +10,7 @@ let candle_cv_lc_test_lin_f_def = new_definition
     ITLIST (\tm x. (FST tm) * (SND tm) + x) terms (&0)`;;
 
 needs "candle/cv_compute_linear_combination_reify.ml";;
+needs "candle/cv_compute_linear_combination_adapter.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination;;
@@ -17,6 +18,7 @@ open Candle_cv_linear_combination_sound;;
 open Candle_cv_linear_combination_bulk;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_linear_combination_reify;;
+open Candle_cv_linear_combination_adapter;;
 
 let candle_cv_lc_test_rows =
  `[(3,([(2,0);(0,1)],(5,0)));
@@ -159,5 +161,35 @@ if not
      (candle_cv_lc_reifier_rejects [`y:real`; `x:real`; `z:real`]
         candle_cv_lc_test_lhs) then
   failwith "linear-combination reifier accepted an unsorted basis";;
+
+let candle_cv_lc_test_lhs2 =
+ `candle_cv_lc_test_lin_f [(&1,y:real)]`;;
+let candle_cv_lc_test_ineq1 =
+  ASSUME
+   `candle_cv_lc_test_lin_f [(&2,x:real);(-- &3,z)] <= &7`;;
+let candle_cv_lc_test_ineq2 =
+  ASSUME `candle_cv_lc_test_lin_f [(&1,y:real)] <= -- &1`;;
+let candle_cv_lc_test_reify_lhs lhs =
+  candle_lc_reify_lin_f_with
+    Term.(<) `candle_cv_lc_test_lin_f` candle_cv_lc_test_lin_f_def
+    dest_realintconst [] candle_cv_lc_test_variables lhs;;
+let candle_cv_lc_test_reify_rhs rhs =
+  candle_lc_reify_integer_with
+    candle_cv_lc_test_lin_f_def dest_realintconst [] rhs;;
+let candle_cv_lc_test_result,candle_cv_lc_test_bulk_th =
+  candle_lc_bulk_compute_with
+    candle_cv_lc_test_variables
+    candle_cv_lc_test_reify_lhs candle_cv_lc_test_reify_rhs
+    [(candle_cv_lc_test_ineq1,`3`);
+     (candle_cv_lc_test_ineq2,`4`)];;
+
+if not (aconv candle_cv_lc_test_result
+              `([(6,0);(4,0);(0,9)],(21,4))`) ||
+   not (set_eq (hyp candle_cv_lc_test_bulk_th)
+          [concl candle_cv_lc_test_ineq1;concl candle_cv_lc_test_ineq2]) ||
+   not (aconv (concl candle_cv_lc_test_bulk_th)
+         `candle_lc_vec_real [x:real;y;z] [(6,0);(4,0);(0,9)] <=
+          candle_lc_zreal (21,4)`) then
+  failwith "linear-combination computed adapter mismatch";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
