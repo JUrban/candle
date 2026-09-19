@@ -134,7 +134,7 @@ def instrument_lp(source: str) -> str:
         "    | Lp_terminal terminal ->\n\tlet _ = next_terminal() in\n\tlet hyp_set, hyp_fun = snd (compute_hypermap arg) in\n\tlet r =",
         "    | Lp_terminal terminal ->\n"
         "\tlet _ = next_terminal() in\n"
-        "\tlet _ = incr candle_lp_profile_terminal in\n"
+        "\tlet _ = candle_lp_profile_terminal := !candle_lp_profile_terminal + 1 in\n"
         "\tlet candle_profile_scope = candle_lp_profile_scope () in\n"
         "\tlet _ = candle_lp_profile_marker candle_profile_scope \"terminal-total\" \"begin\" in\n"
         "\tlet _ = candle_lp_profile_marker candle_profile_scope \"compute-hypermap\" \"begin\" in\n"

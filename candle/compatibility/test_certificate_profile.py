@@ -72,6 +72,7 @@ class InstrumentationTests(unittest.TestCase):
             (nonlinear / "mk_all_ineq.hl").read_text()
         )
         self.assertIn("phase=", lp_result)
+        self.assertNotIn("incr candle_lp_profile_terminal", lp_result)
         self.assertEqual(lp_result.count("CANDLE_CERT_PROFILE"), 1)
         self.assertIn("iarg-tree-reconstruction", break_result)
         self.assertIn("serialized-prep-cases", assembly_result)
