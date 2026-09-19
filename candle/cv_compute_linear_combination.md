@@ -68,8 +68,7 @@ term. Untrusted ML parsing never authorizes the equality: both sides are
 normalized by conversions, and the bridge is constructed only when their HOL
 terms agree. Duplicate or unsorted variables, variables outside the basis, and
 normalization mismatches fail closed. This generic layer has passed its full
-core test. The actual Flyspeck instantiation and public-conclusion normalization
-remain pending.
+core test.
 
 The computed adapter now connects those pieces end to end for normalized
 generic rows. For each authenticated source inequality it requires
@@ -88,16 +87,23 @@ denotations before the inequality is rewritten. The test deliberately produces
 an unreduced right side `(21,4)` and checks that the public adapter receives the
 proved canonical result `(17,0)` with unchanged hypotheses.
 
-It is not yet a Flyspeck checker. Before integration it must add:
+The Flyspeck instantiation now selects `Linear_function.lin_f`, converts the
+checker’s base-200 numeral syntax to ordinary numerals by a kernel conversion,
+and renders a canonical result back through `Arith_int.my_mk_realintconst`.
+Its focused fresh-state test passes for a normalized source aggregate and
+checks the exact result, public conclusion, and complete hypothesis set.
+The source-facing entry point additionally requires an assumption-free
+normalization equality from its caller. Its test converts raw checker-shaped
+linear expressions through such equalities and checks the exact result,
+public conclusion, complete raw hypothesis set, and unchanged global axiom
+state. The production post-action-181 caller will supply
+`Prove_lp.lin_f_conv`; the adapter does not trust or duplicate that parser.
 
-1. a Flyspeck wrapper selecting `Linear_function.lin_f`,
-   `Arith_int.my_dest_realintconst`, and the exact arithmetic rewrites required
-   by the loaded checker;
-2. canonicalization/public-conclusion rendering from the computed signed-pair
-   accumulator to the existing checker's `lin_f`/integer syntax;
-3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
+It is not yet a Flyspeck checker replacement. Before integration it must add:
+
+1. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and
-4. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
+2. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
    integration.
 
 The existing theorem path remains the fail-closed fallback. No certificate,
