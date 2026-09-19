@@ -3,11 +3,13 @@ needs "candle/cv_compute_linear_combination_core.ml";;
 needs "candle/cv_compute_linear_combination.ml";;
 needs "candle/cv_compute_linear_combination_sound.ml";;
 needs "candle/cv_compute_linear_combination_bulk.ml";;
+needs "candle/cv_compute_linear_combination_realize.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination;;
 open Candle_cv_linear_combination_sound;;
 open Candle_cv_linear_combination_bulk;;
+open Candle_cv_linear_combination_realize;;
 
 let candle_cv_lc_test_rows =
  `[(3,([(2,0);(0,1)],(5,0)));
@@ -95,5 +97,20 @@ if not (aconv (concl candle_cv_lc_bulk_test) candle_cv_lc_bulk_expected) then
   failwith "bulk linear-combination conclusion mismatch";;
 if not (set_eq (hyp candle_cv_lc_bulk_test) [`x:real <= &3`; `y:real <= &4`])
 then failwith "bulk linear-combination hypotheses mismatch";;
+
+if hyp candle_lc_zreal_add <> [] ||
+   hyp candle_lc_zreal_scale <> [] ||
+   hyp candle_lc_vec_real_add <> [] ||
+   hyp candle_lc_vec_real_scale <> [] ||
+   hyp candle_lc_accumulate_real <> [] ||
+   hyp candle_lc_fold_real <> []
+then failwith "linear-combination realization theorem has assumptions";;
+
+let candle_cv_lc_real_test =
+  SPECL [candle_cv_lc_test_rows; `[x:real;y]`; candle_cv_lc_test_acc]
+        candle_lc_fold_real;;
+
+if hyp candle_cv_lc_real_test <> [] then
+  failwith "linear-combination fold realization has assumptions";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
