@@ -72,6 +72,43 @@ let candle_cv_lc_rows_def = define
   (candle_cv_lc_rows (CONS row rows) =
      Cexp_pair (candle_cv_lc_row row) (candle_cv_lc_rows rows))`;;
 
+let candle_cv_lc_num_decode_def = define
+ `(candle_cv_lc_num_decode (Cexp_num n) = n) /\
+  (candle_cv_lc_num_decode (Cexp_pair x y) = 0)`;;
+
+let candle_cv_lc_z_decode_def = define
+ `(candle_cv_lc_z_decode (Cexp_num n) = (0,0)) /\
+  (candle_cv_lc_z_decode (Cexp_pair x y) =
+     (candle_cv_lc_num_decode x,candle_cv_lc_num_decode y))`;;
+
+let candle_cv_lc_vec_decode_def = define
+ `(candle_cv_lc_vec_decode (Cexp_num n) = []) /\
+  (candle_cv_lc_vec_decode (Cexp_pair x xs) =
+     CONS (candle_cv_lc_z_decode x) (candle_cv_lc_vec_decode xs))`;;
+
+let candle_cv_lc_acc_decode_def = define
+ `(candle_cv_lc_acc_decode (Cexp_num n) = ([],(0,0))) /\
+  (candle_cv_lc_acc_decode (Cexp_pair xs rhs) =
+     (candle_cv_lc_vec_decode xs,candle_cv_lc_z_decode rhs))`;;
+
+let candle_cv_lc_z_roundtrip = prove
+ (`!x:num#num. candle_cv_lc_z_decode (candle_cv_lc_z x) = x`,
+  REWRITE_TAC[candle_cv_lc_z_decode_def; candle_cv_lc_z_def;
+              candle_cv_lc_num_decode_def]);;
+
+let candle_cv_lc_vec_roundtrip = prove
+ (`!xs:(num#num)list.
+     candle_cv_lc_vec_decode (candle_cv_lc_vec xs) = xs`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_lc_vec_decode_def; candle_cv_lc_vec_def;
+                  candle_cv_lc_z_roundtrip]);;
+
+let candle_cv_lc_acc_roundtrip = prove
+ (`!acc:(num#num)list#(num#num).
+     candle_cv_lc_acc_decode (candle_cv_lc_acc acc) = acc`,
+  REWRITE_TAC[candle_cv_lc_acc_decode_def; candle_cv_lc_acc_def;
+              candle_cv_lc_vec_roundtrip; candle_cv_lc_z_roundtrip]);;
+
 let candle_cv_lc_zadd_def = new_definition
  `candle_cv_lc_zadd x y =
     Cexp_pair
