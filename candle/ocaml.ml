@@ -101,11 +101,40 @@ module Int64 = struct
   let logor x y = Cake.Word64.orb x y
 end;;
 
+(* OCaml's predefined IEEE-754 constants.  Keep their exact binary64 fields
+   in verified CakeML values; in particular, OCaml 4.14.1's canonical [nan]
+   has exponent 2047 and payload 1. *)
+(* CANDLE_OCAML_FLOAT_CONSTANTS_BEGIN *)
+let infinity = Cake.Double.posinf64;;
+let neg_infinity = Cake.Double.neginf64;;
+let nan =
+  Cake.Double.construct (Cake.Word64.fromInt 0)
+    (Cake.Word64.fromInt 2047) (Cake.Word64.fromInt 1);;
+
+let float_ieee_equal left right =
+  let left_exponent = Cake.Word64.toInt (Cake.Double.exponent left) and
+      right_exponent = Cake.Word64.toInt (Cake.Double.exponent right) and
+      left_significand = Cake.Word64.toInt (Cake.Double.significand left) and
+      right_significand = Cake.Word64.toInt (Cake.Double.significand right) in
+  let left_nan = left_exponent = 2047 && not (left_significand = 0) and
+      right_nan = right_exponent = 2047 && not (right_significand = 0) in
+  if left_nan || right_nan then false
+  else if left_exponent = 0 && left_significand = 0 &&
+          right_exponent = 0 && right_significand = 0 then true
+  else
+    Cake.Double.sign left = Cake.Double.sign right &&
+    left_exponent = right_exponent &&
+    left_significand = right_significand;;
+(* CANDLE_OCAML_FLOAT_CONSTANTS_END *)
+
 module Float = struct
   type float = double
   let zero = Cake.Double.fromInt 0
   let one = Cake.Double.fromInt 1
   let minus_one = Cake.Double.fromInt ~-1
+  let infinity = infinity
+  let neg_infinity = neg_infinity
+  let nan = nan
   let sqrt x = Cake.Double.sqrt x
   (* Binary64 absolute value is exactly sign-bit clearing, including zeros,
      infinities, and NaN payloads.  Spell it through the proved field

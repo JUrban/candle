@@ -39,6 +39,7 @@ CLOSURE_SECONDS = "CANDLE_NONLINEAR_VERIFIER_CLOSURE_SECONDS"
 SMOKE_PROOF_SECONDS = "CANDLE_NONLINEAR_VERIFIER_SMOKE_PROOF_SECONDS"
 FORBIDDEN_LOG_BYTES = (b"Parsing failed", b"EXCEPTION:")
 BIG_INT_SOURCE = Path("candle/nums.ml")
+FLOAT_CONSTANT_SOURCE = Path("candle/ocaml.ml")
 BIG_INT_SELECTED_MEMBERS = {
     "abs_big_int", "add_big_int", "big_int_of_int", "big_int_of_string",
     "div_big_int", "eq_big_int", "le_big_int", "lt_big_int",
@@ -75,6 +76,13 @@ NUM_OVERLAY_MEMBERS = {
     "approx_num_exp", "big_int_of_num", "compare_num", "num_of_big_int",
     "pred_num",
 }
+FLOAT_CONSTANT_MEMBERS = {
+    "float_ieee_equal", "infinity", "nan", "neg_infinity",
+}
+FLOAT_CLOSURE_SELECTED_MEMBERS = {"infinity", "nan"}
+FLOAT_NATIVE_MEMBER_RE = re.compile(
+    r"(?<![A-Za-z0-9_'])(infinity|neg_infinity|nan)(?![A-Za-z0-9_'])"
+)
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -122,7 +130,35 @@ def authenticate_big_int_compatibility(
 ) -> tuple[str, dict[str, Any]]:
     """Extract the central integer modules used by the dev runtime overlay."""
 
-    source_path = candle_root.resolve() / BIG_INT_SOURCE
+    candle_root = candle_root.resolve()
+    float_source_path = candle_root / FLOAT_CONSTANT_SOURCE
+    _ordinary_file(float_source_path, "float constant compatibility source")
+    float_source = float_source_path.read_bytes()
+    float_begin = b"(* CANDLE_OCAML_FLOAT_CONSTANTS_BEGIN *)\n"
+    float_end = b"(* CANDLE_OCAML_FLOAT_CONSTANTS_END *)"
+    if (
+        float_source.count(float_begin) != 1
+        or float_source.count(float_end) != 1
+    ):
+        raise ValueError("float constant compatibility boundary drift")
+    float_start = float_source.index(float_begin) + len(float_begin)
+    float_finish = float_source.index(float_end, float_start)
+    float_constants = float_source[float_start:float_finish]
+    float_text = float_constants.decode("ascii")
+    float_members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", float_text,
+            flags=re.MULTILINE,
+        )
+    }
+    if float_members != FLOAT_CONSTANT_MEMBERS:
+        raise ValueError(
+            "float constant compatibility member inventory drift: "
+            f"{sorted(float_members)}"
+        )
+
+    source_path = candle_root / BIG_INT_SOURCE
     _ordinary_file(source_path, "Big_int compatibility source")
     source = source_path.read_bytes()
     begin = b"module Big_int = struct\n"
@@ -186,8 +222,19 @@ def authenticate_big_int_compatibility(
             "selected Num compatibility member missing: "
             f"{sorted(NUM_CLOSURE_SELECTED_MEMBERS - num_members)}"
         )
-    overlay = module + b"\n\n" + bridge
+    overlay = float_constants + b"\n" + module + b"\n\n" + bridge
     return overlay.decode("ascii"), {
+        "float_constants": {
+            "source": FLOAT_CONSTANT_SOURCE.as_posix(),
+            "source_bytes": len(float_source),
+            "source_sha256": hashlib.sha256(float_source).hexdigest(),
+            "bytes": len(float_constants),
+            "sha256": hashlib.sha256(float_constants).hexdigest(),
+            "overlay_members": sorted(float_members),
+            "closure_selected_members": sorted(
+                FLOAT_CLOSURE_SELECTED_MEMBERS
+            ),
+        },
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),
             "bytes": len(source),
@@ -274,6 +321,7 @@ def authenticate_closure(
         raise ValueError("nonlinear closure normalization authority drift")
     records: list[dict[str, Any]] = []
     observed_num_members: set[str] = set()
+    observed_float_members: set[str] = set()
     for source_key in sorted(nodes):
         node = nodes[source_key]
         if not isinstance(node, dict):
@@ -289,10 +337,17 @@ def authenticate_closure(
         physical = roots[repository] / logical
         _ordinary_file(physical, f"nonlinear verifier source {source_key}")
         data = physical.read_bytes()
+        source_text = data.decode("utf-8", errors="surrogateescape")
         observed_num_members.update(
             match.group(1) for match in NUM_NATIVE_MEMBER_RE.finditer(
-                data.decode("utf-8", errors="surrogateescape")
+                source_text
             )
+        )
+        scanner = flyspeck_nonlinear_verifier_closure.flyspeck_manifest
+        masked = scanner._code_mask(scanner.strip_ocaml_comments(source_text))
+        observed_float_members.update(
+            match.group(1)
+            for match in FLOAT_NATIVE_MEMBER_RE.finditer(masked)
         )
         md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
         sha256 = hashlib.sha256(data).hexdigest()
@@ -329,6 +384,12 @@ def authenticate_closure(
             "nonlinear closure Num member inventory drift: "
             f"observed={sorted(observed_num_members)} "
             f"expected={sorted(NUM_CLOSURE_SELECTED_MEMBERS)}"
+        )
+    if observed_float_members != FLOAT_CLOSURE_SELECTED_MEMBERS:
+        raise ValueError(
+            "nonlinear closure float constant inventory drift: "
+            f"observed={sorted(observed_float_members)} "
+            f"expected={sorted(FLOAT_CLOSURE_SELECTED_MEMBERS)}"
         )
     return closure_data, closure, records
 

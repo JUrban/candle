@@ -20,6 +20,17 @@ let same_float_bits left right =
   Cake.Double.exponent left = Cake.Double.exponent right &&
   Cake.Double.significand left = Cake.Double.significand right;;
 
+require (same_float_bits infinity Cake.Double.posinf64)
+  "infinity bits mismatch";;
+require (same_float_bits neg_infinity Cake.Double.neginf64)
+  "negative infinity bits mismatch";;
+let expected_nan =
+  Cake.Double.construct (Cake.Word64.fromInt 0) (Cake.Word64.fromInt 2047)
+    (Cake.Word64.fromInt 1);;
+require (same_float_bits nan expected_nan) "NaN bits mismatch";;
+require (not (float_ieee_equal nan nan)) "NaN equality mismatch";;
+require (float_ieee_equal infinity infinity) "infinity equality mismatch";;
+
 let half = Float.of_string "0.5";;
 let eight = Float.of_string "8.0";;
 let eight_fraction, eight_exponent = frexp eight;;
@@ -30,6 +41,8 @@ let negative_zero =
   Cake.Double.construct (Cake.Word64.fromInt 1) (Cake.Word64.fromInt 0)
     (Cake.Word64.fromInt 0);;
 let zero_fraction, zero_exponent = frexp negative_zero;;
+require (float_ieee_equal negative_zero Float.zero)
+  "signed-zero equality mismatch";;
 require (same_float_bits zero_fraction negative_zero && zero_exponent = 0)
   "frexp signed-zero mismatch";;
 

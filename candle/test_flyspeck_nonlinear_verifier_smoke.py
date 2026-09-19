@@ -47,9 +47,21 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
-        self.assertEqual(len(self.overlays), 18)
+        self.assertEqual(len(self.overlays), 19)
 
     def test_central_big_int_overlay_is_complete_and_source_bound(self) -> None:
+        self.assertEqual(
+            set(self.big_int_record["float_constants"]["overlay_members"]),
+            subject.FLOAT_CONSTANT_MEMBERS,
+        )
+        self.assertEqual(
+            set(self.big_int_record["float_constants"][
+                "closure_selected_members"
+            ]),
+            subject.FLOAT_CLOSURE_SELECTED_MEMBERS,
+        )
+        self.assertIn("Cake.Double.posinf64", self.big_int_compatibility)
+        self.assertIn("Cake.Word64.fromInt 2047", self.big_int_compatibility)
         self.assertEqual(
             set(self.big_int_record["module"]["selected_members"]),
             subject.BIG_INT_SELECTED_MEMBERS,
@@ -86,6 +98,20 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
                 for match in subject.NUM_NATIVE_MEMBER_RE.finditer(text)
             )
         self.assertEqual(observed, subject.NUM_CLOSURE_SELECTED_MEMBERS)
+
+    def test_native_float_constant_inventory_is_mechanically_closed(self) -> None:
+        observed = set()
+        scanner = subject.flyspeck_nonlinear_verifier_closure.flyspeck_manifest
+        for record in self.records:
+            text = Path(record["physical_path"]).read_text(
+                encoding="utf-8", errors="surrogateescape",
+            )
+            masked = scanner._code_mask(scanner.strip_ocaml_comments(text))
+            observed.update(
+                match.group(1)
+                for match in subject.FLOAT_NATIVE_MEMBER_RE.finditer(masked)
+            )
+        self.assertEqual(observed, subject.FLOAT_CLOSURE_SELECTED_MEMBERS)
 
     def test_normalized_closure_has_no_active_general_formatting(self) -> None:
         for record in self.records:

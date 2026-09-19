@@ -53,6 +53,12 @@ following central compatibility support without changing Flyspeck source:
   `approx_num_exp` rendering;
 - an exact, hash-bound normalization of the private raw-float comparator's
   `Num.num` exponent ordering from unavailable polymorphic `<=` to `le_num`;
+- exact binary64 definitions of OCaml's `infinity`, `neg_infinity`, and
+  canonical `nan` constants, with the active nonlinear closure mechanically
+  restricted to its observed `infinity` and `nan` subset;
+- a typed `float_ieee_equal` bridge plus four exact checker normalizations,
+  preserving native equality for signed zero, infinities, finite values, and
+  NaNs where CakeML's generic equality compares binary representations;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer

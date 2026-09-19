@@ -41,8 +41,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 18)
-        self.assertEqual(counts["normalization_operations"], 106)
+        self.assertEqual(counts["normalized_sources"], 19)
+        self.assertEqual(counts["normalization_operations"], 110)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -205,6 +205,31 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertEqual(selected[0]["before"], "if e1 <= e2 then")
         self.assertEqual(selected[0]["after"], "if le_num e1 e2 then")
         self.assertEqual(selected[0]["replacement_count"], 1)
+
+    def test_float_split_uses_native_ieee_equality(self) -> None:
+        expected = {
+            "flyspeck:formal_ineqs/arith/more_float.hl": {
+                "more-float-ieee-special-equality",
+                "more-float-ieee-zero-equality",
+            },
+            "flyspeck:formal_ineqs/informal/informal_float.hl": {
+                "informal-float-ieee-special-equality",
+                "informal-float-ieee-zero-equality",
+            },
+        }
+        for source_key, kinds in expected.items():
+            operations = self.payload["source_nodes"][source_key][
+                "normalization"
+            ]["operations"]
+            selected = {
+                operation["kind"]: operation
+                for operation in operations if operation["kind"] in kinds
+            }
+            self.assertEqual(set(selected), kinds)
+            self.assertTrue(all(
+                "float_ieee_equal" in operation["after"]
+                for operation in selected.values()
+            ))
 
     def test_direct_normalizations_reuse_canonical_authority(self) -> None:
         normalized = {

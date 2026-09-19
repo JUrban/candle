@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v3"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v4"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -46,7 +46,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "The private raw-float comparator orders the two Num-valued numeral "
     "exponents with Num.le_num instead of unavailable OCaml polymorphic <=; "
     "native canonical nonnegative integer Num values have the same structural "
-    "and numeric order, including across the Int/Big_int boundary"
+    "and numeric order, including across the Int/Big_int boundary. The two "
+    "float-splitting implementations route their zero, infinity, and NaN "
+    "tests through float_ieee_equal, preserving OCaml float equality despite "
+    "CakeML generic equality's representation semantics"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -62,7 +65,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "flag remains false and any invocation fails closed. The Num ordering "
     "rewrite is confined to the two nonnegative numeral hashes passed to the "
     "private compare_floats_raw helper; it does not authorize general "
-    "polymorphic comparison or change a theorem statement or inference."
+    "polymorphic comparison or change a theorem statement or inference. The "
+    "float equality rewrites are confined to the identical split/fix tests in "
+    "more_float and informal_float; they preserve signed-zero equality, NaN "
+    "inequality, infinity equality, and every finite nonzero comparison."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -218,6 +224,19 @@ def _replacement(
 
 
 EXTENSION_COMPATIBILITY_REPLACEMENTS = {
+    "flyspeck:formal_ineqs/arith/more_float.hl": (
+        _replacement(
+            "more-float-ieee-special-equality",
+            b'if t = 0.0 || t = infinity || t = nan then',
+            b'if float_ieee_equal t 0.0 || float_ieee_equal t infinity || '
+            b'float_ieee_equal t nan then',
+        ),
+        _replacement(
+            "more-float-ieee-zero-equality",
+            b'if f = 0.0 then',
+            b'if float_ieee_equal f 0.0 then',
+        ),
+    ),
     "flyspeck:formal_ineqs/arith/arith_float.hl": (
         _replacement(
             "arith-float-lo-table-type",
@@ -326,6 +345,17 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_float.hl": (
+        _replacement(
+            "informal-float-ieee-special-equality",
+            b'if t = 0.0 || t = infinity || t = nan then',
+            b'if float_ieee_equal t 0.0 || float_ieee_equal t infinity || '
+            b'float_ieee_equal t nan then',
+        ),
+        _replacement(
+            "informal-float-ieee-zero-equality",
+            b'if f = 0.0 then',
+            b'if float_ieee_equal f 0.0 then',
+        ),
         _replacement(
             "informal-float-plain",
             b'Printf.sprintf "%s%s" s_str n_str',
