@@ -58,14 +58,25 @@ denotation, and that the complete exact accumulator fold denotes exactly the
 same real fold used by the inequality theorem. Every theorem is
 assumption-free. Together with the existing cval representation theorem, this
 closes the generic equality bridge from evaluator output to the real
-linear-combination result; it does not yet reify Flyspeck's `lin_f` syntax or
-normalize the result to the existing checker's public conclusion.
+linear-combination result.
+
+The strict theorem-producing reifier now accepts a caller-supplied normalized
+linear-function definition, exact integer decoder, sorted variable basis, and
+linear-function term. It constructs a dense signed-pair coefficient vector and
+returns a kernel theorem equating that vector's real denotation to the source
+term. Untrusted ML parsing never authorizes the equality: both sides are
+normalized by conversions, and the bridge is constructed only when their HOL
+terms agree. Duplicate or unsorted variables, variables outside the basis, and
+normalization mismatches fail closed. This generic layer has passed its full
+core test, but the actual Flyspeck adapter and public-conclusion normalization
+remain pending.
 
 It is not yet a Flyspeck checker. Before integration it must add:
 
-1. a faithful reifier for `lin_f` terms with exact variable identity and
-   integer right-hand sides;
-2. a normalized-conclusion adapter connecting that reifier, the proved
+1. a Flyspeck wrapper selecting `Linear_function.lin_f`,
+   `Arith_int.my_dest_realintconst`, and the exact arithmetic rewrites required
+   by the loaded checker;
+2. a normalized-conclusion adapter connecting the reifier, the proved
    realization equality, and the existing theorem interface;
 3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and

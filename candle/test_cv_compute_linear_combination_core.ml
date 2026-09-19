@@ -5,11 +5,18 @@ needs "candle/cv_compute_linear_combination_sound.ml";;
 needs "candle/cv_compute_linear_combination_bulk.ml";;
 needs "candle/cv_compute_linear_combination_realize.ml";;
 
+let candle_cv_lc_test_lin_f_def = new_definition
+ `candle_cv_lc_test_lin_f terms =
+    ITLIST (\tm x. (FST tm) * (SND tm) + x) terms (&0)`;;
+
+needs "candle/cv_compute_linear_combination_reify.ml";;
+
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination;;
 open Candle_cv_linear_combination_sound;;
 open Candle_cv_linear_combination_bulk;;
 open Candle_cv_linear_combination_realize;;
+open Candle_cv_linear_combination_reify;;
 
 let candle_cv_lc_test_rows =
  `[(3,([(2,0);(0,1)],(5,0)));
@@ -112,5 +119,45 @@ let candle_cv_lc_real_test =
 
 if hyp candle_cv_lc_real_test <> [] then
   failwith "linear-combination fold realization has assumptions";;
+
+let candle_cv_lc_test_variables = [`x:real`; `y:real`; `z:real`];;
+let candle_cv_lc_test_lhs =
+ `candle_cv_lc_test_lin_f [(&2,x:real); (-- &3,z:real)]`;;
+let candle_cv_lc_test_coefficients,candle_cv_lc_test_reification =
+  candle_lc_reify_lin_f_with
+    Term.(<) `candle_cv_lc_test_lin_f` candle_cv_lc_test_lin_f_def
+    dest_realintconst [] candle_cv_lc_test_variables
+    candle_cv_lc_test_lhs;;
+
+if not (aconv candle_cv_lc_test_coefficients
+              `[(2,0); (0,0); (0,3)]`) then
+  failwith "linear-combination reifier coefficient mismatch";;
+if hyp candle_cv_lc_test_reification <> [] ||
+   not (aconv (concl candle_cv_lc_test_reification)
+         `candle_lc_vec_real [x:real;y;z] [(2,0);(0,0);(0,3)] =
+          candle_cv_lc_test_lin_f [(&2,x);(-- &3,z)]`) then
+  failwith "linear-combination reifier theorem mismatch";;
+
+let candle_cv_lc_reifier_rejects variables lhs =
+  try
+    let _ =
+      candle_lc_reify_lin_f_with
+        Term.(<) `candle_cv_lc_test_lin_f` candle_cv_lc_test_lin_f_def
+        dest_realintconst [] variables lhs in
+    false
+  with Failure _ -> true;;
+
+if not
+     (candle_cv_lc_reifier_rejects candle_cv_lc_test_variables
+        `candle_cv_lc_test_lin_f [(&1,x:real);(&2,x:real)]`) then
+  failwith "linear-combination reifier accepted duplicate variables";;
+if not
+     (candle_cv_lc_reifier_rejects candle_cv_lc_test_variables
+        `candle_cv_lc_test_lin_f [(&1,w:real)]`) then
+  failwith "linear-combination reifier accepted an out-of-basis variable";;
+if not
+     (candle_cv_lc_reifier_rejects [`y:real`; `x:real`; `z:real`]
+        candle_cv_lc_test_lhs) then
+  failwith "linear-combination reifier accepted an unsorted basis";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_CORE_OK";;
