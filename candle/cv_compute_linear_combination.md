@@ -52,12 +52,21 @@ This removes theorem-per-addition construction from the combination boundary;
 the conclusion is intentionally still an unnormalized fold expression, so no
 end-to-end speedup is claimed yet.
 
+The realization layer now proves that signed natural pairs denote integer
+differences over the reals, that vector addition and scaling preserve this
+denotation, and that the complete exact accumulator fold denotes exactly the
+same real fold used by the inequality theorem. Every theorem is
+assumption-free. Together with the existing cval representation theorem, this
+closes the generic equality bridge from evaluator output to the real
+linear-combination result; it does not yet reify Flyspeck's `lin_f` syntax or
+normalize the result to the existing checker's public conclusion.
+
 It is not yet a Flyspeck checker. Before integration it must add:
 
-1. the equality bridge from the unnormalized real fold to the computed exact
-   coefficient aggregate;
-2. a faithful reifier for `lin_f` terms with exact variable identity and
+1. a faithful reifier for `lin_f` terms with exact variable identity and
    integer right-hand sides;
+2. a normalized-conclusion adapter connecting that reifier, the proved
+   realization equality, and the existing theorem interface;
 3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and
 4. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
