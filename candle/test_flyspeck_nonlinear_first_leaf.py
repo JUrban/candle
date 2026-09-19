@@ -90,6 +90,10 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
             subject._extract_seconds(f"{marker} 1.25e+02\n".encode(), marker),
             125.0,
         )
+        self.assertEqual(
+            subject._extract_seconds(f"{marker} 0.\n".encode(), marker),
+            0.0,
+        )
         self.assertIsNone(subject._extract_seconds(b"", marker))
         duplicate = f"{marker} 1.0\n{marker} 2.0\n".encode()
         self.assertIsNone(subject._extract_seconds(duplicate, marker))

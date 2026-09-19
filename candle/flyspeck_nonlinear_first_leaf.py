@@ -278,7 +278,7 @@ print_endline "{PASS_MARKER}";;
 def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     matches = re.findall(
         rb"^" + re.escape(marker.encode("ascii"))
-        + rb" ([-+]?[0-9]+(?:\.[0-9]+)?(?:[eE][-+]?[0-9]+)?)$",
+        + rb" ([-+]?[0-9]+(?:\.[0-9]*)?(?:[eE][-+]?[0-9]+)?)$",
         log_data,
         flags=re.MULTILINE,
     )
