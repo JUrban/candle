@@ -42,7 +42,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 18)
-        self.assertEqual(counts["normalization_operations"], 105)
+        self.assertEqual(counts["normalization_operations"], 106)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -191,6 +191,20 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 for operation in table_operations.values()),
             10,
         )
+
+    def test_raw_float_num_exponents_use_explicit_num_order(self) -> None:
+        source_key = "flyspeck:formal_ineqs/arith/arith_float.hl"
+        operations = self.payload["source_nodes"][source_key][
+            "normalization"
+        ]["operations"]
+        selected = [
+            operation for operation in operations
+            if operation["kind"] == "arith-float-num-exponent-order"
+        ]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["before"], "if e1 <= e2 then")
+        self.assertEqual(selected[0]["after"], "if le_num e1 e2 then")
+        self.assertEqual(selected[0]["replacement_count"], 1)
 
     def test_direct_normalizations_reuse_canonical_authority(self) -> None:
         normalized = {

@@ -51,6 +51,8 @@ following central compatibility support without changing Flyspeck source:
 - the complete missing subset from a mechanical audit of native `Num` names
   in the 90-source closure: `pred_num`, `compare_num`, and exact rational
   `approx_num_exp` rendering;
+- an exact, hash-bound normalization of the private raw-float comparator's
+  `Num.num` exponent ordering from unavailable polymorphic `<=` to `le_num`;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer

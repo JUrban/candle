@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v2"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v3"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -42,7 +42,11 @@ NORMALIZATION_SEMANTIC_RULE = (
     "key and value types already forced by its uses. The "
     "closed verifier extension's fixed %d/%s/%b diagnostic formats use exact "
     "literal concatenation and primitive conversions; optional file logging "
-    "fails closed if invoked because Candle has no channel-backed formatter"
+    "fails closed if invoked because Candle has no channel-backed formatter. "
+    "The private raw-float comparator orders the two Num-valued numeral "
+    "exponents with Num.le_num instead of unavailable OCaml polymorphic <=; "
+    "native canonical nonnegative integer Num values have the same structural "
+    "and numeric order, including across the Int/Big_int boundary"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -55,7 +59,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "substitutions preserve "
     "the fixed rendered bytes except the unused elapsed-time suffix, which "
     "fails closed; optional float logging is disabled only while its controlling "
-    "flag remains false and any invocation fails closed."
+    "flag remains false and any invocation fails closed. The Num ordering "
+    "rewrite is confined to the two nonnegative numeral hashes passed to the "
+    "private compare_floats_raw helper; it does not authorize general "
+    "polymorphic comparison or change a theorem statement or inference."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -246,6 +253,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     sqrt_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
     le_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size and\r
     max_table : (string, thm) Hashtbl.t = Hashtbl.create cache_size;;''',
+        ),
+        _replacement(
+            "arith-float-num-exponent-order",
+            b'if e1 <= e2 then',
+            b'if le_num e1 e2 then',
         ),
         _replacement(
             "arith-float-stat-cmp1",
