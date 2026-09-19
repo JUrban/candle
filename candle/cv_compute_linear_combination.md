@@ -36,16 +36,17 @@ correctness theorem, not an unchecked implementation substitution.
 
 ## Required next links
 
-The core is not yet a Flyspeck checker. Before integration it must add:
+The adapter decodes the computed cval result through proved round trips and
+returns an assumption-free ordinary HOL equality for the complete aggregate.
+It is not yet a Flyspeck checker. Before integration it must add:
 
-1. a proved decoder/theorem conversion returning an ordinary aggregate;
-2. a generic real-linear-combination soundness theorem connecting authenticated
+1. a generic real-linear-combination soundness theorem connecting authenticated
    `get_ineqs` premises and nonnegative multipliers to the aggregate inequality;
-3. a faithful reifier for `lin_f` terms with exact variable identity and
+2. a faithful reifier for `lin_f` terms with exact variable identity and
    integer right-hand sides;
-4. conclusion, hypothesis, and axiom-fingerprint equality against the existing
+3. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and
-5. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
+4. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
    integration.
 
 The existing theorem path remains the fail-closed fallback. No certificate,
