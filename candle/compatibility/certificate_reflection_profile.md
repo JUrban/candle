@@ -94,6 +94,26 @@ does not pretend to distinguish conversion work from kernel checking inside
 each theorem operation; doing that would require more invasive kernel
 instrumentation.
 
+The serialized row shape is large enough to justify a bulk checker but still
+simple enough for an exact natural-number representation. In `hard_2`, the 17
+terminals contain 799 ordinary constraint rows, 17 target-variable rows, and
+402 bound rows. Those rows carry 7,162, 221, and 4,665 coefficients
+respectively (12,048 total), with at most 43 coefficients in one row. All are
+strictly positive, at most 10 decimal digits, and every index list has exactly
+the same length as its coefficient list. Precisions range from 3 through 5;
+no terminal is marked infeasible.
+
+The larger `hard_10` shape has 2,572 ordinary rows, 59 target rows, and 1,344
+bound rows across 58 terminals, carrying 28,653, 738, and 19,645 coefficients
+(49,036 total), with at most 66 coefficients per row. Again every coefficient
+is strictly positive and every row length agrees; the largest coefficient has
+12 decimal digits. Precisions range from 3 through 6 and one terminal is
+marked infeasible. Thus the prototype must preserve the three row roles,
+precision scaling, and the infeasible branch, while its certificate arithmetic
+can use nonnegative exact coefficients rather than a signed sparse format for
+these real workloads. The existing theorem path remains the oracle for any
+future corpus cases outside this observed shape.
+
 The promising LP object-logic boundary is a normalized exact linear
 combination checker: encode the selected inequality indices, integer
 coefficients, and normalized variable map; compute that the combination
