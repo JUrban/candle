@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v4"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v5"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -49,7 +49,9 @@ NORMALIZATION_SEMANTIC_RULE = (
     "and numeric order, including across the Int/Big_int boundary. The two "
     "float-splitting implementations route their zero, infinity, and NaN "
     "tests through float_ieee_equal, preserving OCaml float equality despite "
-    "CakeML generic equality's representation semantics"
+    "CakeML generic equality's representation semantics; their adjacent "
+    "native float orderings use typed IEEE less-than and greater-or-equal "
+    "helpers instead of Candle's integer-only unqualified operators"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -68,7 +70,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "polymorphic comparison or change a theorem statement or inference. The "
     "float equality rewrites are confined to the identical split/fix tests in "
     "more_float and informal_float; they preserve signed-zero equality, NaN "
-    "inequality, infinity equality, and every finite nonzero comparison."
+    "inequality, infinity equality, and every finite nonzero comparison. The "
+    "typed ordering rewrites cover exactly the three adjacent split branches "
+    "in each implementation and preserve native false-on-NaN behavior."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -236,6 +240,21 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
             b'if f = 0.0 then',
             b'if float_ieee_equal f 0.0 then',
         ),
+        _replacement(
+            "more-float-ieee-unit-order",
+            b'else if t < 1.0 then',
+            b'else if float_ieee_lt t 1.0 then',
+        ),
+        _replacement(
+            "more-float-ieee-base-order",
+            b'else if t >= b then',
+            b'else if float_ieee_ge t b then',
+        ),
+        _replacement(
+            "more-float-ieee-sign-order",
+            b'if f < 0.0 then',
+            b'if float_ieee_lt f 0.0 then',
+        ),
     ),
     "flyspeck:formal_ineqs/arith/arith_float.hl": (
         _replacement(
@@ -355,6 +374,21 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
             "informal-float-ieee-zero-equality",
             b'if f = 0.0 then',
             b'if float_ieee_equal f 0.0 then',
+        ),
+        _replacement(
+            "informal-float-ieee-unit-order",
+            b'else if t < 1.0 then',
+            b'else if float_ieee_lt t 1.0 then',
+        ),
+        _replacement(
+            "informal-float-ieee-base-order",
+            b'else if t >= b then',
+            b'else if float_ieee_ge t b then',
+        ),
+        _replacement(
+            "informal-float-ieee-sign-order",
+            b'if f < 0.0 then',
+            b'if float_ieee_lt f 0.0 then',
         ),
         _replacement(
             "informal-float-plain",

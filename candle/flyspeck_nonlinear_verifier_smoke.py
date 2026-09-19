@@ -77,7 +77,8 @@ NUM_OVERLAY_MEMBERS = {
     "pred_num",
 }
 FLOAT_CONSTANT_MEMBERS = {
-    "float_ieee_equal", "infinity", "nan", "neg_infinity",
+    "float_ieee_equal", "float_ieee_ge", "float_ieee_lt", "infinity",
+    "nan", "neg_infinity",
 }
 FLOAT_CLOSURE_SELECTED_MEMBERS = {"infinity", "nan"}
 FLOAT_NATIVE_MEMBER_RE = re.compile(

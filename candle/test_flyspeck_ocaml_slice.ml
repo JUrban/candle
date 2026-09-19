@@ -30,6 +30,13 @@ let expected_nan =
 require (same_float_bits nan expected_nan) "NaN bits mismatch";;
 require (not (float_ieee_equal nan nan)) "NaN equality mismatch";;
 require (float_ieee_equal infinity infinity) "infinity equality mismatch";;
+require (float_ieee_lt (Float.of_string "0.5") (Float.of_string "1.0"))
+  "float less-than mismatch";;
+require (float_ieee_ge infinity (Float.of_string "1.0"))
+  "float greater-or-equal mismatch";;
+require (not (float_ieee_lt nan Float.zero) &&
+         not (float_ieee_ge nan Float.zero))
+  "NaN ordering mismatch";;
 
 let half = Float.of_string "0.5";;
 let eight = Float.of_string "8.0";;

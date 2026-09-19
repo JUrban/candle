@@ -125,6 +125,9 @@ let float_ieee_equal left right =
     Cake.Double.sign left = Cake.Double.sign right &&
     left_exponent = right_exponent &&
     left_significand = right_significand;;
+
+let float_ieee_lt left right = Cake.Double.(<) left right;;
+let float_ieee_ge left right = Cake.Double.(>=) left right;;
 (* CANDLE_OCAML_FLOAT_CONSTANTS_END *)
 
 module Float = struct

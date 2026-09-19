@@ -59,6 +59,8 @@ following central compatibility support without changing Flyspeck source:
 - a typed `float_ieee_equal` bridge plus four exact checker normalizations,
   preserving native equality for signed zero, infinities, finite values, and
   NaNs where CakeML's generic equality compares binary representations;
+- typed `float_ieee_lt`/`float_ieee_ge` bridges plus the six adjacent checker
+  orderings, preserving native finite, infinity, signed-zero, and NaN branches;
 - order-preserving `Array.to_list`;
 - qualified and implicitly opened `abs_float`, plus `Stdlib.ignore`; and
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer

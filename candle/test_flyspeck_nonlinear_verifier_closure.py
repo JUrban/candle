@@ -42,7 +42,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 19)
-        self.assertEqual(counts["normalization_operations"], 110)
+        self.assertEqual(counts["normalization_operations"], 116)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -209,11 +209,17 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
     def test_float_split_uses_native_ieee_equality(self) -> None:
         expected = {
             "flyspeck:formal_ineqs/arith/more_float.hl": {
+                "more-float-ieee-base-order",
                 "more-float-ieee-special-equality",
+                "more-float-ieee-sign-order",
+                "more-float-ieee-unit-order",
                 "more-float-ieee-zero-equality",
             },
             "flyspeck:formal_ineqs/informal/informal_float.hl": {
+                "informal-float-ieee-base-order",
                 "informal-float-ieee-special-equality",
+                "informal-float-ieee-sign-order",
+                "informal-float-ieee-unit-order",
                 "informal-float-ieee-zero-equality",
             },
         }
@@ -227,7 +233,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             }
             self.assertEqual(set(selected), kinds)
             self.assertTrue(all(
-                "float_ieee_equal" in operation["after"]
+                "float_ieee_" in operation["after"]
                 for operation in selected.values()
             ))
 
