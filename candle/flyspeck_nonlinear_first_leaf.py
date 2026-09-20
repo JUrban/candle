@@ -16,11 +16,13 @@ import json
 import re
 import resource
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import Any
 
 import flyspeck_nonlinear_first_leaf_target as target_authority
+import flyspeck_nonlinear_first_leaf_profile as phase_profile
 import flyspeck_nonlinear_verifier_smoke as smoke
 
 
@@ -39,6 +41,8 @@ FORMAL_VERIFICATION_SECONDS = (
     "CANDLE_NONLINEAR_FIRST_LEAF_FORMAL_VERIFICATION_SECONDS"
 )
 MODULE_NORMALIZATION = "candle-native-module-wrapper-v1"
+PHASE_OBSERVER = Path("candle/compatibility/certificate_phase_profile.py")
+PHASE_PROFILE_STOP_KEY = "nonlinear-leaf/target/total"
 
 SUPPORT = {
     "prove_by_refinement": (
@@ -171,6 +175,7 @@ def build_target_driver(
     target: dict[str, Any],
     flyspeck_root: Path,
     support_records: list[dict[str, Any]],
+    profile_phases: bool = False,
 ) -> str:
     theorem_text = target["target"]["legacy_ineqm_text"]
     if not isinstance(theorem_text, str) or "`" in theorem_text:
@@ -182,6 +187,14 @@ def build_target_driver(
             smoke._ocaml_string(record["md5"]),
         )
         for record in support_records
+    )
+    profile_begin = (
+        'candle_nonlinear_profile_marker "target" "total" "begin";;'
+        if profile_phases else ""
+    )
+    profile_end = (
+        'candle_nonlinear_profile_marker "target" "total" "end";;'
+        if profile_phases else ""
     )
     return f'''
 
@@ -223,10 +236,12 @@ if lhand (concl candle_nonlinear_first_leaf_eq) <>
 let candle_nonlinear_first_leaf_converted =
   rand (concl candle_nonlinear_first_leaf_eq);;
 let candle_nonlinear_first_leaf_verification_started = Unix.gettimeofday();;
+{profile_begin}
 let candle_nonlinear_first_leaf_raw,candle_nonlinear_first_leaf_stats =
   M_verifier_main.verify_ineq
     {{M_verifier_main.default_params with eps = 1e-10}} 6
     candle_nonlinear_first_leaf_converted;;
+{profile_end}
 let candle_nonlinear_first_leaf_verification_seconds =
   Unix.gettimeofday() -. candle_nonlinear_first_leaf_verification_started;;
 print_endline
@@ -293,6 +308,7 @@ def run(
     generated_insulate: Path,
     output_root: Path,
     timeout_seconds: int,
+    profile_phases: bool = False,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
@@ -307,6 +323,10 @@ def run(
     )
     closure_data, closure, closure_records = smoke.authenticate_closure(
         candle_root, flyspeck_root,
+    )
+    phase_profile_receipt = (
+        phase_profile.instrument_records(closure_records)
+        if profile_phases else None
     )
     big_int_compatibility, big_int_compatibility_record = (
         smoke.authenticate_big_int_compatibility(candle_root)
@@ -333,7 +353,7 @@ def run(
     stdin = output_root / "stdin.ml"
     log = output_root / "candle.log"
     target_driver = build_target_driver(
-        target, flyspeck_root, support_records,
+        target, flyspeck_root, support_records, profile_phases,
     )
     driver.write_text(
         smoke.build_driver(
@@ -363,22 +383,68 @@ def run(
     started = time.monotonic()
     usage_before = resource.getrusage(resource.RUSAGE_CHILDREN)
     timed_out = False
+    phase_profile_path = output_root / "phase-profile.json"
+    phase_observer_log = output_root / "phase-observer.log"
+    phase_observer_status: int | None = None
     with stdin.open("rb") as source, log.open("xb") as transcript:
-        try:
-            completed = subprocess.run(
+        if profile_phases:
+            observer_script = (candle_root / PHASE_OBSERVER).resolve()
+            smoke._ordinary_file(observer_script, "nonlinear phase observer")
+            process = subprocess.Popen(
                 [str(runtime), "--candle"],
                 stdin=source,
                 stdout=transcript,
                 stderr=subprocess.STDOUT,
                 cwd=runtime.parent,
                 env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
-                timeout=timeout_seconds,
-                check=False,
             )
-            return_code: int | None = completed.returncode
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            return_code = None
+            with phase_observer_log.open("xb") as observer_transcript:
+                observer = subprocess.Popen(
+                    [
+                        sys.executable,
+                        str(observer_script),
+                        "--pid", str(process.pid),
+                        "--log", str(log),
+                        "--output", str(phase_profile_path),
+                        "--poll-seconds", "0.25",
+                        "--stop-key", PHASE_PROFILE_STOP_KEY,
+                        "--wait-for-log-seconds", "10",
+                    ],
+                    stdin=subprocess.DEVNULL,
+                    stdout=observer_transcript,
+                    stderr=subprocess.STDOUT,
+                    cwd=candle_root,
+                    env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+                )
+                try:
+                    return_code = process.wait(timeout=timeout_seconds)
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    process.kill()
+                    process.wait()
+                    return_code = None
+                try:
+                    phase_observer_status = observer.wait(timeout=120)
+                except subprocess.TimeoutExpired:
+                    observer.kill()
+                    observer.wait()
+                    phase_observer_status = None
+        else:
+            try:
+                completed = subprocess.run(
+                    [str(runtime), "--candle"],
+                    stdin=source,
+                    stdout=transcript,
+                    stderr=subprocess.STDOUT,
+                    cwd=runtime.parent,
+                    env={"PATH": "/usr/bin:/bin", "LC_ALL": "C"},
+                    timeout=timeout_seconds,
+                    check=False,
+                )
+                return_code = completed.returncode
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                return_code = None
     elapsed = time.monotonic() - started
     usage_after = resource.getrusage(resource.RUSAGE_CHILDREN)
     log_data = log.read_bytes()
@@ -430,12 +496,45 @@ def run(
             log_data, FORMAL_VERIFICATION_SECONDS,
         ),
     }
+    phase_profile_summary = None
+    phase_profile_ok = not profile_phases
+    if profile_phases and phase_profile_path.exists():
+        phase_data = json.loads(phase_profile_path.read_bytes())
+        phase_profile_summary = {
+            "schema": phase_data.get("schema"),
+            "stop_seen": phase_data.get("stop_seen"),
+            "unclosed_phases": phase_data.get("unclosed_phases"),
+            "event_count": len(phase_data.get("events", [])),
+            "phase_count": len(phase_data.get("phases", [])),
+            "peak_sampled_rss_kib": phase_data.get("peak_sampled_rss_kib"),
+        }
+        phase_profile_ok = (
+            phase_observer_status == 0
+            and phase_data.get("schema")
+            == "candle-certificate-phase-profile-v1"
+            and phase_data.get("stop_key") == PHASE_PROFILE_STOP_KEY
+            and phase_data.get("stop_seen") is True
+            and phase_data.get("unclosed_phases") == []
+        )
+    phase_artifacts: dict[str, Any] = {}
+    if profile_phases:
+        phase_artifacts["phase_observer"] = smoke._record_file(
+            (candle_root / PHASE_OBSERVER).resolve()
+        )
+        phase_artifacts["phase_observer_log"] = smoke._record_file(
+            phase_observer_log
+        )
+        if phase_profile_path.exists():
+            phase_artifacts["phase_profile"] = smoke._record_file(
+                phase_profile_path
+            )
     outcome = (
         "proof-pass"
         if not timed_out
         and return_code == 0
         and markers == expected_markers
         and all(value is not None for value in timings.values())
+        and phase_profile_ok
         and not forbidden
         else "proof-failure"
     )
@@ -459,6 +558,10 @@ def run(
         "timings": timings,
         "markers": markers,
         "forbidden_log_fragments": forbidden,
+        "phase_profile_enabled": profile_phases,
+        "phase_profile_receipt": phase_profile_receipt,
+        "phase_profile_summary": phase_profile_summary,
+        "phase_observer_status": phase_observer_status,
         "source_node_count": len(records),
         "normalized_source_count": len(overlays),
         "normalized_sources": [
@@ -500,6 +603,7 @@ def run(
         "big_int_compatibility": big_int_compatibility_record,
         "candle_commit": candle_commit,
         **fixed_records,
+        **phase_artifacts,
         "log": smoke._record_file(log),
     }
     result_path = output_root / "result.json"
@@ -516,6 +620,7 @@ def main() -> None:
     parser.add_argument("--generated-insulate", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=int, default=86400)
+    parser.add_argument("--phase-profile", action="store_true")
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
@@ -523,6 +628,7 @@ def main() -> None:
         arguments.generated_insulate,
         arguments.output_root,
         arguments.timeout_seconds,
+        arguments.phase_profile,
     )
     print(json.dumps({
         "outcome": payload["outcome"],
