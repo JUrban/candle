@@ -133,4 +133,37 @@ if candle_cv_lc_flyspeck_source_variables <>
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck source/oracle theorem interface mismatch";;
 
+let candle_cv_lc_flyspeck_cancel_positive =
+  mk_comb
+    (`lin_f`,mk_list
+      ([mk_pair (candle_cv_lc_flyspeck_one,`x:real`)],`:real#real`));;
+let candle_cv_lc_flyspeck_cancel_negative =
+  mk_comb
+    (`lin_f`,mk_list
+      ([mk_pair (candle_cv_lc_flyspeck_neg_one,`x:real`)],`:real#real`));;
+let candle_cv_lc_flyspeck_zero = Arith_int.my_mk_realintconst (num 0);;
+let candle_cv_lc_flyspeck_cancel_ineq1 =
+  ASSUME
+    (mk_binop `(<=):real->real->bool`
+      candle_cv_lc_flyspeck_cancel_positive candle_cv_lc_flyspeck_zero);;
+let candle_cv_lc_flyspeck_cancel_ineq2 =
+  ASSUME
+    (mk_binop `(<=):real->real->bool`
+      candle_cv_lc_flyspeck_cancel_negative candle_cv_lc_flyspeck_neg_one);;
+let candle_cv_lc_flyspeck_cancel_variables,
+    candle_cv_lc_flyspeck_cancel_result,
+    candle_cv_lc_flyspeck_cancel_th =
+  candle_lc_bulk_refute_flyspeck_source
+    REFL
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+if candle_cv_lc_flyspeck_cancel_variables <> [`x:real`] ||
+   not (aconv candle_cv_lc_flyspeck_cancel_result `([(0,0)],(0,1))`) ||
+   concl candle_cv_lc_flyspeck_cancel_th <> `F` ||
+   not (set_eq (hyp candle_cv_lc_flyspeck_cancel_th)
+          [concl candle_cv_lc_flyspeck_cancel_ineq1;
+           concl candle_cv_lc_flyspeck_cancel_ineq2]) ||
+   not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
+  failwith "Flyspeck reflected cancellation/refutation mismatch";;
+
 print_endline "CANDLE_CV_LINEAR_COMBINATION_FLYSPECK_OK";;

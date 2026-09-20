@@ -152,4 +152,44 @@ let candle_lc_bulk_compute_flyspeck_source
     candle_lc_bulk_compute_flyspeck variables normalized in
   variables,result,computed_th;;
 
+let candle_lc_flyspeck_final_inequality =
+  Arith_nat.NUMERALS_TO_NUM
+    (prove
+      (`!n. lin_f [] <= -- &n <=> n = 0`,
+       REWRITE_TAC
+         [Linear_function.LIN_F_EMPTY; REAL_NEG_GE0; REAL_OF_NUM_LE; LE]));;
+
+let candle_lc_all_zero_coefficients coefficients_tm =
+  List.for_all
+    (fun coefficient_tm ->
+       let positive_tm,negative_tm = dest_pair coefficient_tm in
+       dest_numeral positive_tm =/ candle_lc_flyspeck_zero &&
+       dest_numeral negative_tm =/ candle_lc_flyspeck_zero)
+    (dest_list coefficients_tm);;
+
+let candle_lc_bulk_refute_flyspeck_source
+      normalize_lhs weighted_inequalities =
+  let variables,result,aggregate =
+    candle_lc_bulk_compute_flyspeck_source
+      normalize_lhs weighted_inequalities in
+  let coefficients_tm,integer_tm = dest_pair result in
+  let positive_tm,negative_tm = dest_pair integer_tm in
+  let positive = dest_numeral positive_tm and
+      negative = dest_numeral negative_tm in
+  if not (candle_lc_all_zero_coefficients coefficients_tm) ||
+     not (positive =/ candle_lc_flyspeck_zero) ||
+     negative =/ candle_lc_flyspeck_zero then
+    failwith "Flyspeck adapter: aggregate is not a strict contradiction";
+  let lhs,rhs = dest_binop `(<=):real->real->bool` (concl aggregate) in
+  let expected_lhs =
+    candle_lc_render_flyspeck_lin_f variables coefficients_tm and
+      expected_rhs = candle_lc_render_flyspeck_z integer_tm in
+  if not (aconv lhs expected_lhs) || not (aconv rhs expected_rhs) then
+    failwith "Flyspeck adapter: public contradiction shape mismatch";
+  let n_tm = rand (Arith_int.my_mk_realintconst negative) in
+  let final_iff = SPEC n_tm candle_lc_flyspeck_final_inequality in
+  let zero_th = Arith_nat.NUM_EQ0_HASH_CONV n_tm in
+  let contradiction = EQ_MP final_iff aggregate in
+  variables,result,EQ_MP zero_th contradiction;;
+
 end;;
