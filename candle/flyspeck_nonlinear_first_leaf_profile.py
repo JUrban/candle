@@ -13,9 +13,11 @@ import hashlib
 from typing import Any
 
 
-SOURCE_KEY = "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
-INPUT_SHA256 = "e1c689bea39ebb4a0161816c59cf469a2f983c5705d1b392b79a555d38247dbb"
-NORMALIZATION_ID = "candle-nonlinear-first-leaf-phase-profile-v1"
+MAIN_SOURCE_KEY = "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
+MAIN_INPUT_SHA256 = "e1c689bea39ebb4a0161816c59cf469a2f983c5705d1b392b79a555d38247dbb"
+FORMAL_SOURCE_KEY = "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+FORMAL_INPUT_SHA256 = "c1b234b4651a56511a5483acc35d0a8f037138bfc70a7897c05fd6e756acbf7d"
+NORMALIZATION_ID = "candle-nonlinear-first-leaf-phase-profile-v2"
 MARKER_PREFIX = "CANDLE_CERT_PROFILE lane=nonlinear-leaf"
 
 
@@ -28,16 +30,56 @@ def _replace_once(data: bytes, before: bytes, after: bytes, label: str) -> bytes
     return data.replace(before, after, 1)
 
 
-def instrument_records(records: list[dict[str, Any]]) -> dict[str, Any]:
-    """Instrument the exact normalized verifier source and update its identity."""
-
-    matches = [record for record in records if record["source_key"] == SOURCE_KEY]
+def _exact_record(
+    records: list[dict[str, Any]], source_key: str, input_sha256: str,
+) -> dict[str, Any]:
+    matches = [record for record in records if record["source_key"] == source_key]
     if len(matches) != 1:
-        raise ValueError("nonlinear profile source identity is absent or duplicated")
+        raise ValueError(
+            f"nonlinear profile source identity is absent or duplicated: {source_key}"
+        )
     record = matches[0]
-    data = record["normalized_bytes"]
-    if hashlib.sha256(data).hexdigest() != INPUT_SHA256:
-        raise ValueError("nonlinear profile normalized source identity drift")
+    if hashlib.sha256(record["normalized_bytes"]).hexdigest() != input_sha256:
+        raise ValueError(
+            f"nonlinear profile normalized source identity drift: {source_key}"
+        )
+    return record
+
+
+def _finish_record(
+    record: dict[str, Any], data: bytes, input_sha256: str,
+    operation_count: int, rule: str,
+) -> dict[str, Any]:
+    digest = hashlib.sha256(data).hexdigest()
+    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
+    prior = record["normalization"]
+    record["normalized_bytes"] = data
+    record["normalization"] = {
+        "authority": "development-only-nonlinear-profile",
+        "id": NORMALIZATION_ID,
+        "semantic_rule": rule,
+        "input_normalization": prior,
+        "operation_count": operation_count,
+        "normalized_bytes": len(data),
+        "normalized_md5": md5,
+        "normalized_sha256": digest,
+    }
+    return {
+        "source_key": record["source_key"],
+        "input_sha256": input_sha256,
+        "normalized_bytes": len(data),
+        "normalized_md5": md5,
+        "normalized_sha256": digest,
+        "operation_count": operation_count,
+    }
+
+
+def instrument_records(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """Instrument exact normalized verifier sources and update their identities."""
+
+    main_record = _exact_record(records, MAIN_SOURCE_KEY, MAIN_INPUT_SHA256)
+    formal_record = _exact_record(records, FORMAL_SOURCE_KEY, FORMAL_INPUT_SHA256)
+    data = main_record["normalized_bytes"]
 
     marker_definition = b'''open Verifier_options;;
 
@@ -177,28 +219,126 @@ let candle_nonlinear_profile_marker scope phase event =
         "final-normalization",
     )
 
-    digest = hashlib.sha256(data).hexdigest()
-    md5 = hashlib.md5(data, usedforsecurity=False).hexdigest()
-    prior = record["normalization"]
-    record["normalized_bytes"] = data
-    record["normalization"] = {
-        "authority": "development-only-nonlinear-profile",
-        "id": NORMALIZATION_ID,
-        "semantic_rule": (
-            "insert flushed phase markers around unchanged expressions in the "
-            "authenticated disjunctive nonlinear verifier; marker results are "
-            "discarded and do not construct or authorize a theorem"
-        ),
-        "input_normalization": prior,
-        "operation_count": 8,
-        "normalized_bytes": len(data),
-        "normalized_md5": md5,
-        "normalized_sha256": digest,
-    }
+    main_receipt = _finish_record(
+        main_record,
+        data,
+        MAIN_INPUT_SHA256,
+        8,
+        "insert flushed phase markers around unchanged expressions in the "
+        "authenticated disjunctive nonlinear verifier; marker results are "
+        "discarded and do not construct or authorize a theorem",
+    )
+    data = formal_record["normalized_bytes"]
+    formal_marker_definition = b'''open Certificate;;
+
+let candle_nonlinear_profile_marker scope phase event =
+  print_endline
+    ("CANDLE_CERT_PROFILE lane=nonlinear-leaf scope=" ^ scope ^
+     " phase=" ^ phase ^ " event=" ^ event);;
+'''
+    data = _replace_once(
+        data,
+        b"open Certificate;;\n",
+        formal_marker_definition,
+        "formal-marker-definition",
+    )
+    data = _replace_once(
+        data,
+        b'''let m_p_verify_disj_raw (report_start, total_size) n p_split fs_list certificate domain_th0 th_list =
+  let r_size = p_result_size certificate in
+  let r_size2 = float_of_int (if total_size > 0 then total_size else (if r_size > 0 then r_size else 1)) in
+  let k = ref 0 in
+  let kk = ref report_start in
+''',
+        b'''let m_p_verify_disj_raw (report_start, total_size) n p_split fs_list certificate domain_th0 th_list =
+  let r_size = p_result_size certificate in
+  let r_size2 = float_of_int (if total_size > 0 then total_size else (if r_size > 0 then r_size else 1)) in
+  let k = ref 0 in
+  let glue_k = ref 0 in
+  let kk = ref report_start in
+''',
+        "formal-glue-counter",
+    )
+    data = _replace_once(
+        data,
+        b'''\t    let fs = List.nth fs_list j in
+\t      if f0_flag then
+\t\tlet domain, _, _ = (dest_m_cell_domain o concl) domain_th in
+\t\tlet xx, zz = dest_pair domain in
+\t\t  m_taylor_cell_list_pass0 n (fs.f p_stat.pp xx zz)
+\t      else
+\t\tlet taylor_th = fs.taylor p_stat.pp p_stat.pp domain_th in
+\t\t  m_taylor_cell_list_pass n p_stat.pp taylor_th''' b"  \n",
+        b'''\t    let fs = List.nth fs_list j in
+\t    let leaf_scope = "formal-leaf-" ^ string_of_int !k in
+\t    let _ = candle_nonlinear_profile_marker leaf_scope "leaf-check" "begin" in
+\t    let result =
+\t      if f0_flag then
+\t\tlet domain, _, _ = (dest_m_cell_domain o concl) domain_th in
+\t\tlet xx, zz = dest_pair domain in
+\t\t  m_taylor_cell_list_pass0 n (fs.f p_stat.pp xx zz)
+\t      else
+\t\tlet taylor_th = fs.taylor p_stat.pp p_stat.pp domain_th in
+\t\t  m_taylor_cell_list_pass n p_stat.pp taylor_th in
+\t    let _ = candle_nonlinear_profile_marker leaf_scope "leaf-check" "end" in
+\t      result
+''',
+        "formal-leaf-check",
+    )
+    data = _replace_once(
+        data,
+        b'''\t| P_result_glue (p_stat, i, convex_flag, r1, r2) ->
+\t    let domain1_th, domain2_th =
+\t      if convex_flag then
+\t\tlet d1, _ = restrict_domain n (i + 1) true domain_th in
+\t\tlet d2, _ = restrict_domain n (i + 1) false domain_th in
+\t\t  d1, d2
+\t      else
+\t\tsplit_domain n p_split (i + 1) domain_th in
+\t    let th1 = rec_verify domain1_th r1 in
+\t    let th2 = rec_verify domain2_th r2 in
+\t      if convex_flag then
+\t\tfailwith "convexity: not implemented"
+\t      else
+\t\tlet th0 = m_glue_cells_list n (i + 1) th1 th2 in
+\t\t  merge_m_cell_list_pass n th0
+''',
+        b'''\t| P_result_glue (p_stat, i, convex_flag, r1, r2) ->
+\t    let _ = glue_k := !glue_k + 1 in
+\t    let glue_scope = "formal-glue-" ^ string_of_int !glue_k in
+\t    let _ = candle_nonlinear_profile_marker glue_scope "domain-split" "begin" in
+\t    let domain1_th, domain2_th =
+\t      if convex_flag then
+\t\tlet d1, _ = restrict_domain n (i + 1) true domain_th in
+\t\tlet d2, _ = restrict_domain n (i + 1) false domain_th in
+\t\t  d1, d2
+\t      else
+\t\tsplit_domain n p_split (i + 1) domain_th in
+\t    let _ = candle_nonlinear_profile_marker glue_scope "domain-split" "end" in
+\t    let th1 = rec_verify domain1_th r1 in
+\t    let th2 = rec_verify domain2_th r2 in
+\t      if convex_flag then
+\t\tfailwith "convexity: not implemented"
+\t      else
+\t\tlet _ = candle_nonlinear_profile_marker glue_scope "theorem-glue" "begin" in
+\t\tlet th0 = m_glue_cells_list n (i + 1) th1 th2 in
+\t\tlet result = merge_m_cell_list_pass n th0 in
+\t\tlet _ = candle_nonlinear_profile_marker glue_scope "theorem-glue" "end" in
+\t\t  result
+''',
+        "formal-domain-and-glue",
+    )
+    formal_receipt = _finish_record(
+        formal_record,
+        data,
+        FORMAL_INPUT_SHA256,
+        4,
+        "insert flushed markers around each unchanged adaptive formal leaf "
+        "check, domain split, and theorem glue expression; marker results are "
+        "discarded and do not construct or authorize a theorem",
+    )
     return {
-        "source_key": SOURCE_KEY,
-        "input_sha256": INPUT_SHA256,
-        "normalized_bytes": len(data),
-        "normalized_md5": md5,
-        "normalized_sha256": digest,
+        "normalization_id": NORMALIZATION_ID,
+        "source_count": 2,
+        "sources": [main_receipt, formal_receipt],
     }
