@@ -197,6 +197,57 @@ let candle_lc_flyspeck_weight_term weight =
     failwith "Flyspeck adapter: negative certificate multiplier"
   else mk_numeral weight;;
 
+(* The legacy Flyspeck checker accumulates target and variable-bound rows by
+   variable. Whenever an extended group has zero total lhs coefficient, it
+   removes the complete group, including its hypotheses and rhs, from the
+   cancellation fold. A later row for that variable starts a fresh group.
+   Reproduce that source-row selection before the reflected bulk fold. *)
+let candle_lc_select_flyspeck_auxiliary_rows
+      normalize_lhs weighted_inequalities =
+  let classify ((inequality,weight) as weighted_inequality) =
+    let _ = candle_lc_flyspeck_weight_term weight in
+    let normalized =
+      candle_lc_normalize_flyspeck_inequality normalize_lhs inequality in
+    let lhs,_ = dest_binop `(<=):real->real->bool` (concl normalized) in
+    let standard_lhs =
+      rand (concl (candle_lc_flyspeck_standardize_numerals lhs)) in
+    let head,entries_tm = dest_comb standard_lhs in
+    if head <> candle_lc_flyspeck_lin_f_const then
+      failwith "Flyspeck adapter: auxiliary lhs is not lin_f";
+    match dest_list entries_tm with
+    | [entry] ->
+        let coefficient_tm,variable = dest_pair entry in
+        variable,dest_realintconst coefficient_tm */ weight,
+        weighted_inequality
+    | _ ->
+        failwith "Flyspeck adapter: auxiliary lhs is not a singleton" in
+  let rec update variable coefficient row groups =
+    match groups with
+    | [] -> [variable,coefficient,[row]]
+    | (group_variable,total,rows)::tail ->
+        if aconv variable group_variable then
+          let new_total = coefficient +/ total in
+          if new_total =/ candle_lc_flyspeck_zero then tail
+          else (group_variable,new_total,row::rows)::tail
+        else
+          (group_variable,total,rows)::
+          update variable coefficient row tail in
+  let groups =
+    List.fold_left
+      (fun groups weighted_inequality ->
+         let variable,coefficient,row = classify weighted_inequality in
+         update variable coefficient row groups)
+      [] weighted_inequalities in
+  let term_less = Term.(<) in
+  let ordered_groups =
+    List.sort
+      (fun (left,_,_) (right,_,_) ->
+         if left = right then 0
+         else if term_less left right then -1 else 1)
+      groups in
+  List.flatten
+    (map (fun (_,_,rows) -> List.rev rows) ordered_groups);;
+
 let candle_lc_bulk_refute_flyspeck_terminal
       normalize_lhs precision_constant constraint_inequalities
       auxiliary_inequalities =
