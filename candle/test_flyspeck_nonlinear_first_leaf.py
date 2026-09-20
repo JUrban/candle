@@ -113,6 +113,31 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         duplicate = f"{marker} 1.0\n{marker} 2.0\n".encode()
         self.assertIsNone(subject._extract_seconds(duplicate, marker))
 
+    def test_phase_profile_requires_the_complete_expected_split(self) -> None:
+        phases = []
+        for (scope, phase), count in subject.EXPECTED_PHASE_COUNTS.items():
+            phases.extend({
+                "lane": "nonlinear-leaf",
+                "scope": scope,
+                "phase": phase,
+                "result": "end",
+            } for _ in range(count))
+        data = {
+            "schema": "candle-certificate-phase-profile-v1",
+            "stop_key": subject.PHASE_PROFILE_STOP_KEY,
+            "stop_seen": True,
+            "unclosed_phases": [],
+            "events": [{}] * (2 * len(phases)),
+            "phases": phases,
+            "peak_sampled_rss_kib": 123,
+        }
+        summary, valid = subject._validate_phase_profile(data)
+        self.assertTrue(valid)
+        self.assertEqual(summary["phase_count"], len(phases))
+        data["phases"] = phases[:-1]
+        _, valid = subject._validate_phase_profile(data)
+        self.assertFalse(valid)
+
 
 if __name__ == "__main__":
     unittest.main()
