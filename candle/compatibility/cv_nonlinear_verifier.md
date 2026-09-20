@@ -148,11 +148,21 @@ controller tests and three observer tests pass. This is prepared machinery,
 not yet a timing or speedup result; it should run only after the uninstrumented
 fresh replay first establishes a successful exact baseline.
 
-The exact instrumented verifier source also passes the real parser-only runtime
-gate: 33,673 prepared bytes with seven masked loader actions parsed in 1.256
-seconds, with exit status zero, empty stderr, and `parse-ok`. This closes syntax
-only; inference, execution, and theorem equivalence remain for the fresh
-profiled proof run.
+The v2 instrumentation also marks each adaptive formal reconstruction node:
+16 leaf checks and, for each of 15 glue nodes, the domain split and final
+theorem glue. Dynamic scope names keep recursive nodes distinct for the
+external observer. Acceptance requires every one of those 46 node phases in
+addition to the outer phase split.
+
+Both exact instrumented sources pass the real parser-only runtime gate. The
+formal verifier prepared 78,238 bytes with five masked loader actions and
+parsed in 2.304 seconds; the main verifier prepared 33,673 bytes with seven
+masked loader actions and parsed in 1.205 seconds. Both returned exit status
+zero, empty stderr, and `parse-ok`. The normalized source SHA-256 identities
+are `9c4ae1c590888d4fb1e592a040a4b382ef177b18ead23d2b1073fe66bb3f5a28`
+and `48c122ceb552264c9f126254e0a009f9ae42d4256fd52c5dcd69c6a51dfc87b3`,
+respectively. This closes syntax only; inference, execution, phase timing, and
+theorem equivalence remain for the fresh profiled proof run.
 
 The fourteenth fresh first-leaf replay completed `arith/float_pow.hl`, the
 large `trig/exp_log.hl` analysis dependency chain, and `trig/poly_eval.hl` in
