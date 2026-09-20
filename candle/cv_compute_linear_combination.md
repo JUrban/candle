@@ -99,6 +99,16 @@ public conclusion, complete raw hypothesis set, and unchanged global axiom
 state. The production post-action-181 caller will supply
 `Prove_lp.lin_f_conv`; the adapter does not trust or duplicate that parser.
 
+The adapter now also closes the cancellation/refutation boundary. It accepts
+the same weighted source inequalities, requires the verified computation to
+produce an all-zero coefficient vector and a strictly negative canonical
+right-hand side, re-renders and reifies that exact result, and derives `F`
+through an ordinary HOL theorem. Its focused test combines `x <= 0` and
+`--x <= --1`, obtains the exact computed result `([(0,0)],(0,1))`, preserves
+both assumptions, and leaves the global axiom set unchanged. This establishes
+the machinery needed to replace the old per-variable `add_cancel_step` fold;
+it is not yet a real-terminal or timing result.
+
 ## Real-certificate measurement
 
 The generic bulk-soundness path has run on terminals 15, 5, and 17 from the
