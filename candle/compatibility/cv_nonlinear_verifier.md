@@ -158,7 +158,7 @@ formal kernel-theorem reconstruction, and final public normalization. A
 separate read-only observer timestamps those markers and samples process CPU,
 RSS, and high-water RSS from `/proc`; the profiled result is accepted only if
 the target-wide phase closes, every opened phase closes, the ordinary theorem
-gate passes, and the observer artifact is complete. Forty-one nonlinear
+gate passes, and the observer artifact is complete. Forty-four nonlinear
 controller tests and three observer tests pass. This is prepared machinery,
 not yet a timing or speedup result; it should run only after the uninstrumented
 fresh replay first establishes a successful exact baseline.
@@ -167,12 +167,13 @@ The v2 instrumentation also marks each adaptive formal reconstruction node:
 16 leaf checks and, for each of 15 glue nodes, the domain split and final
 theorem glue. Dynamic scope names keep recursive nodes distinct for the
 external observer. Acceptance requires every one of those 46 node phases in
-addition to the outer phase split.
+addition to the outer phase split, and rejects any phase whose lane is not the
+declared `nonlinear-leaf` lane.
 
 Both exact instrumented sources pass the real parser-only runtime gate. The
 formal verifier prepared 78,238 bytes with five masked loader actions and
-parsed in 2.304 seconds; the main verifier prepared 33,673 bytes with seven
-masked loader actions and parsed in 1.205 seconds. Both returned exit status
+parsed in 2.360 seconds; the main verifier prepared 33,673 bytes with seven
+masked loader actions and parsed in 1.207 seconds. Both returned exit status
 zero, empty stderr, and `parse-ok`. The normalized source SHA-256 identities
 are `9c4ae1c590888d4fb1e592a040a4b382ef177b18ead23d2b1073fe66bb3f5a28`
 and `48c122ceb552264c9f126254e0a009f9ae42d4256fd52c5dcd69c6a51dfc87b3`,
