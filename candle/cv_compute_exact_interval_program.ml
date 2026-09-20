@@ -112,6 +112,14 @@ let candle_q_real_run_def = define
   (candle_q_real_run env (CONS h t) stack =
      candle_q_real_run env t (candle_q_real_step env h stack))`;;
 
+let candle_q_real_run_append = prove
+ (`!left right env stack.
+     candle_q_real_run env (APPEND left right) stack =
+     candle_q_real_run env right
+       (candle_q_real_run env left stack)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[APPEND; candle_q_real_run_def]);;
+
 let candle_q_interval_run_def = define
  `(candle_q_interval_run env [] stack = stack) /\
   (candle_q_interval_run env (CONS h t) stack =

@@ -24,7 +24,7 @@ let candle_q_reify_one = Num.num_of_int 1;;
 let candle_q_instruction_type = `:candle_q_instruction`;;
 let candle_q_interval_type = `:((num#num)#num)#((num#num)#num)`;;
 
-let candle_q_push_term rational =
+let candle_q_term rational =
   let numerator,denominator = numdom rational in
   if denominator <=/ candle_q_reify_zero then
     failwith "candle_q reifier: nonpositive rational denominator";
@@ -32,10 +32,17 @@ let candle_q_push_term rational =
     if numerator >=/ candle_q_reify_zero then
       numerator,candle_q_reify_zero
     else candle_q_reify_zero,minus_num numerator in
+  mk_pair
+    (mk_pair (mk_numeral positive,mk_numeral negative),
+     mk_numeral (denominator -/ candle_q_reify_one));;
+
+let candle_q_push_term rational =
+  let signed,denominator_predecessor =
+    dest_pair (candle_q_term rational) in
+  let positive,negative = dest_pair signed in
   list_mk_comb
     (`Candle_q_push`,
-     [mk_numeral positive; mk_numeral negative;
-      mk_numeral (denominator -/ candle_q_reify_one)]);;
+     [positive;negative;denominator_predecessor]);;
 
 let candle_q_load_term index =
   mk_comb (`Candle_q_load`,mk_numeral (Num.num_of_int index));;
@@ -127,35 +134,184 @@ let rec candle_q_numeral_suc_expansions index =
   else candle_q_numeral_suc_expansion index::
        candle_q_numeral_suc_expansions (index - 1);;
 
-let candle_q_reify_real_expression variables tm =
-  if exists (fun variable -> type_of variable <> `:real`) variables then
-    failwith "candle_q reifier: non-real variable basis";
-  if type_of tm <> `:real` then
-    failwith "candle_q reifier: expression is not real";
-  let instructions = candle_q_compile_real_expression variables tm in
-  let variables_tm = mk_list (variables,`:real`) in
-  let program_tm = mk_list (instructions,candle_q_instruction_type) in
-  let empty_stack = `[]:real list` in
-  let run_tm =
+let candle_q_real_cons_const =
+  rator (rator `CONS (&0) ([]:real list)`);;
+
+let candle_q_instruction_append_const =
+  rator
+    (rator
+      `APPEND ([]:candle_q_instruction list)
+         ([]:candle_q_instruction list)`);;
+
+let candle_q_append_program left right =
+  mk_comb (mk_comb (candle_q_instruction_append_const,left),right);;
+
+let candle_q_component_goal variables program denotation =
+  let stack = mk_var ("stack",`:real list`) in
+  let run =
     list_mk_comb
-      (`candle_q_real_run`,[variables_tm;program_tm;empty_stack]) in
-  let result_tm = mk_list ([tm],`:real`) in
-  let goal = mk_eq (run_tm,result_tm) in
+      (`candle_q_real_run`,
+       [mk_list (variables,`:real`);program;stack]) in
+  let result =
+    mk_comb (mk_comb (candle_q_real_cons_const,denotation),stack) in
+  mk_forall (stack,mk_eq (run,result));;
+
+let candle_q_base_component variables denotation instruction =
+  let program = mk_list ([instruction],candle_q_instruction_type) in
+  let goal = candle_q_component_goal variables program denotation in
   let index_expansions =
     candle_q_numeral_suc_expansions (length variables) in
-  let run_th = prove
+  let th = prove
     (goal,
      REWRITE_TAC
        (index_expansions @
         [candle_q_real_run_def; candle_q_real_step_def;
          candle_q_real_lookup_def; candle_q_real_head_def;
          candle_q_real_tail_def; candle_q_real_def; candle_q_den_def;
-         candle_lc_zreal_def; real_sub; real_pow;
-         REAL_SUB_RZERO; REAL_SUB_LZERO; REAL_NEG_0;
-         REAL_MUL_RID; REAL_MUL_ASSOC; CONS_11]) THEN
+         candle_lc_zreal_def; REAL_SUB_RZERO; REAL_SUB_LZERO;
+         REAL_NEG_0]) THEN
      REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
-     REWRITE_TAC[REAL_ADD_LID; REAL_ADD_RID; REAL_MUL_RID]) in
-  if hyp run_th <> [] || not (aconv (concl run_th) goal) then
+     REWRITE_TAC[REAL_ADD_LID; REAL_ADD_RID; REAL_MUL_RID;
+                 REAL_DIV_1]) in
+  program,denotation,th;;
+
+let candle_q_rational_component variables source rational =
+  let rational_tm = candle_q_term rational in
+  let exact_denotation = mk_comb (`candle_q_real`,rational_tm) in
+  let program,_,exact_th =
+    candle_q_base_component variables exact_denotation
+      (candle_q_push_term rational) in
+  let denotation_th = prove
+    (mk_eq (exact_denotation,source),
+     REWRITE_TAC[candle_q_real_def; candle_q_den_def;
+                 candle_lc_zreal_def] THEN
+     REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
+     CONV_TAC REAL_RAT_REDUCE_CONV) in
+  program,source,REWRITE_RULE[denotation_th] exact_th;;
+
+let candle_q_unary_component
+      variables (program,_,component_th) instruction denotation =
+  let suffix = mk_list ([instruction],candle_q_instruction_type) in
+  let symbolic_program = candle_q_append_program program suffix in
+  let expansion_th = REWRITE_CONV[APPEND] symbolic_program in
+  let concrete_program = rand (concl expansion_th) in
+  let goal =
+    candle_q_component_goal variables concrete_program denotation in
+  let th = prove
+    (goal,
+     GEN_TAC THEN ONCE_REWRITE_TAC[SYM expansion_th] THEN
+     REWRITE_TAC[candle_q_real_run_append; component_th;
+                 candle_q_real_run_def; candle_q_real_step_def;
+                 candle_q_real_head_def; candle_q_real_tail_def;
+                 real_sub]) in
+  concrete_program,denotation,th;;
+
+let candle_q_binary_component
+      variables (left_program,_,left_th) (right_program,_,right_th)
+      instruction denotation =
+  let suffix = mk_list ([instruction],candle_q_instruction_type) in
+  let symbolic_program =
+    candle_q_append_program left_program
+      (candle_q_append_program right_program suffix) in
+  let expansion_th = REWRITE_CONV[APPEND] symbolic_program in
+  let concrete_program = rand (concl expansion_th) in
+  let goal =
+    candle_q_component_goal variables concrete_program denotation in
+  let th = prove
+    (goal,
+     GEN_TAC THEN ONCE_REWRITE_TAC[SYM expansion_th] THEN
+     REWRITE_TAC[candle_q_real_run_append; left_th; right_th;
+                 candle_q_real_run_def; candle_q_real_step_def;
+                 candle_q_real_head_def; candle_q_real_tail_def;
+                 real_sub]) in
+  concrete_program,denotation,th;;
+
+let rec candle_q_repeat_component variables base count =
+  if count = 0 then
+    candle_q_rational_component variables `&1` (Num.num_of_int 1)
+  else if count = 1 then base
+  else
+    let previous = candle_q_repeat_component variables base (count - 1) in
+    let _,previous_denotation,_ = previous in
+    let _,base_denotation,_ = base in
+    candle_q_binary_component variables previous base candle_q_mul_term
+      (mk_binop `(*):real->real->real`
+        previous_denotation base_denotation);;
+
+let rec candle_q_compile_proved_expression variables tm =
+  match candle_q_variable_index variables tm with
+  | Some index ->
+      candle_q_base_component variables tm (candle_q_load_term index)
+  | None ->
+      if is_ratconst tm then
+        candle_q_rational_component variables tm (rat_of_term tm)
+      else if candle_q_is_unary `(--):real->real` tm then
+        let child = candle_q_dest_unary `(--):real->real` tm in
+        candle_q_unary_component variables
+          (candle_q_compile_proved_expression variables child)
+          candle_q_neg_term tm
+      else if candle_q_is_binary `(+):real->real->real` tm then
+        let left,right =
+          candle_q_dest_binary `(+):real->real->real` tm in
+        candle_q_binary_component variables
+          (candle_q_compile_proved_expression variables left)
+          (candle_q_compile_proved_expression variables right)
+          candle_q_add_term tm
+      else if candle_q_is_binary `(-):real->real->real` tm then
+        let left,right =
+          candle_q_dest_binary `(-):real->real->real` tm in
+        let negated_right =
+          candle_q_unary_component variables
+            (candle_q_compile_proved_expression variables right)
+            candle_q_neg_term (mk_comb (`(--):real->real`,right)) in
+        candle_q_binary_component variables
+          (candle_q_compile_proved_expression variables left)
+          negated_right candle_q_add_term tm
+      else if candle_q_is_binary `(*):real->real->real` tm then
+        let left,right =
+          candle_q_dest_binary `(*):real->real->real` tm in
+        candle_q_binary_component variables
+          (candle_q_compile_proved_expression variables left)
+          (candle_q_compile_proved_expression variables right)
+          candle_q_mul_term tm
+      else if candle_q_is_binary `(pow):real->num->real` tm then
+        let base_tm,exponent_tm =
+          candle_q_dest_binary `(pow):real->num->real` tm in
+        let exponent = Num.int_of_num (dest_numeral exponent_tm) in
+        if exponent < 0 || exponent > 16 then
+          failwith "candle_q reifier: exponent is outside 0..16";
+        let program,expanded,expanded_th =
+          candle_q_repeat_component variables
+            (candle_q_compile_proved_expression variables base_tm)
+            exponent in
+        let denotation_th = prove
+          (mk_eq (expanded,tm),
+           REWRITE_TAC
+             (candle_q_numeral_suc_expansions exponent @
+              [real_pow; REAL_MUL_RID; REAL_MUL_ASSOC]) THEN
+           REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
+           REWRITE_TAC[REAL_ADD_LID; REAL_ADD_RID; REAL_MUL_RID]) in
+        program,tm,REWRITE_RULE[denotation_th] expanded_th
+      else
+        failwith "candle_q reifier: unsupported real expression";;
+
+let candle_q_reify_real_expression variables tm =
+  if exists (fun variable -> type_of variable <> `:real`) variables then
+    failwith "candle_q reifier: non-real variable basis";
+  if type_of tm <> `:real` then
+    failwith "candle_q reifier: expression is not real";
+  let program_tm,denotation,stack_th =
+    candle_q_compile_proved_expression variables tm in
+  if not (aconv denotation tm) then
+    failwith "candle_q reifier: denotation term mismatch";
+  let run_th = SPEC `[]:real list` stack_th in
+  let expected =
+    mk_eq
+      (list_mk_comb
+        (`candle_q_real_run`,
+         [mk_list (variables,`:real`);program_tm;`[]:real list`]),
+       mk_list ([tm],`:real`)) in
+  if hyp run_th <> [] || not (aconv (concl run_th) expected) then
     failwith "candle_q reifier: kernel reconstruction mismatch";
   program_tm,run_th;;
 
