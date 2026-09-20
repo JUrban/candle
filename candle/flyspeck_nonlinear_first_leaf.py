@@ -43,6 +43,16 @@ FORMAL_VERIFICATION_SECONDS = (
 MODULE_NORMALIZATION = "candle-native-module-wrapper-v1"
 PHASE_OBSERVER = Path("candle/compatibility/certificate_phase_profile.py")
 PHASE_PROFILE_STOP_KEY = "nonlinear-leaf/target/total"
+EXPECTED_PHASE_COUNTS = {
+    ("verify-call", "standardize"): 2,
+    ("verify-call", "problem-reification"): 1,
+    ("verify-call", "evaluator-build"): 1,
+    ("verify-call", "informal-search"): 1,
+    ("verify-call", "adaptive-informal-verification"): 1,
+    ("verify-call", "formal-verification"): 1,
+    ("verify-call", "final-normalization"): 1,
+    ("target", "total"): 1,
+}
 
 SUPPORT = {
     "prove_by_refinement": (
@@ -302,6 +312,41 @@ def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     return float(matches[0])
 
 
+def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    counts: dict[tuple[str, str], int] = {}
+    all_ended = True
+    for phase in data.get("phases", []):
+        key = (phase.get("scope"), phase.get("phase"))
+        counts[key] = counts.get(key, 0) + 1
+        all_ended = all_ended and phase.get("result") == "end"
+    expected = {
+        f"{scope}/{phase}": count
+        for (scope, phase), count in EXPECTED_PHASE_COUNTS.items()
+    }
+    observed = {
+        f"{scope}/{phase}": count
+        for (scope, phase), count in sorted(counts.items())
+    }
+    complete = (
+        data.get("schema") == "candle-certificate-phase-profile-v1"
+        and data.get("stop_key") == PHASE_PROFILE_STOP_KEY
+        and data.get("stop_seen") is True
+        and data.get("unclosed_phases") == []
+        and all_ended
+        and counts == EXPECTED_PHASE_COUNTS
+    )
+    return {
+        "schema": data.get("schema"),
+        "stop_seen": data.get("stop_seen"),
+        "unclosed_phases": data.get("unclosed_phases"),
+        "event_count": len(data.get("events", [])),
+        "phase_count": len(data.get("phases", [])),
+        "peak_sampled_rss_kib": data.get("peak_sampled_rss_kib"),
+        "expected_phase_counts": expected,
+        "observed_phase_counts": observed,
+    }, complete
+
+
 def run(
     flyspeck_root: Path,
     runtime: Path,
@@ -500,21 +545,12 @@ def run(
     phase_profile_ok = not profile_phases
     if profile_phases and phase_profile_path.exists():
         phase_data = json.loads(phase_profile_path.read_bytes())
-        phase_profile_summary = {
-            "schema": phase_data.get("schema"),
-            "stop_seen": phase_data.get("stop_seen"),
-            "unclosed_phases": phase_data.get("unclosed_phases"),
-            "event_count": len(phase_data.get("events", [])),
-            "phase_count": len(phase_data.get("phases", [])),
-            "peak_sampled_rss_kib": phase_data.get("peak_sampled_rss_kib"),
-        }
+        phase_profile_summary, phase_content_ok = _validate_phase_profile(
+            phase_data
+        )
         phase_profile_ok = (
             phase_observer_status == 0
-            and phase_data.get("schema")
-            == "candle-certificate-phase-profile-v1"
-            and phase_data.get("stop_key") == PHASE_PROFILE_STOP_KEY
-            and phase_data.get("stop_seen") is True
-            and phase_data.get("unclosed_phases") == []
+            and phase_content_ok
         )
     phase_artifacts: dict[str, Any] = {}
     if profile_phases:
