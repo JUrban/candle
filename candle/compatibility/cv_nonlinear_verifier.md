@@ -158,7 +158,7 @@ formal kernel-theorem reconstruction, and final public normalization. A
 separate read-only observer timestamps those markers and samples process CPU,
 RSS, and high-water RSS from `/proc`; the profiled result is accepted only if
 the target-wide phase closes, every opened phase closes, the ordinary theorem
-gate passes, and the observer artifact is complete. Forty-four nonlinear
+gate passes, and the observer artifact is complete. Forty-five nonlinear
 controller tests and three observer tests pass. This is prepared machinery,
 not yet a timing or speedup result; it should run only after the uninstrumented
 fresh replay first establishes a successful exact baseline.
@@ -172,8 +172,8 @@ declared `nonlinear-leaf` lane.
 
 Both exact instrumented sources pass the real parser-only runtime gate. The
 formal verifier prepared 78,238 bytes with five masked loader actions and
-parsed in 2.360 seconds; the main verifier prepared 33,673 bytes with seven
-masked loader actions and parsed in 1.207 seconds. Both returned exit status
+parsed in 2.404 seconds; the main verifier prepared 33,673 bytes with seven
+masked loader actions and parsed in 1.205 seconds. Both returned exit status
 zero, empty stderr, and `parse-ok`. The normalized source SHA-256 identities
 are `9c4ae1c590888d4fb1e592a040a4b382ef177b18ead23d2b1073fe66bb3f5a28`
 and `48c122ceb552264c9f126254e0a009f9ae42d4256fd52c5dcd69c6a51dfc87b3`,
@@ -253,6 +253,14 @@ runtime gate reproduces the original CakeML type mismatch and proves both
 normalized `THENL_FIRST` and `THENL_LAST` test theorems in fresh HOL states.
 The complete nonlinear regression suite passes all 40 tests in 39.381 seconds.
 These are the required focused gates before another expensive replay.
+
+The profiling descendant has been rebuilt on this exact v9 closure rather
+than retaining the v8 authority as an implicit assumption. Its complete
+nonlinear suite passes 45 tests in 47.898 seconds, and the independent observer
+suite passes all three tests in 0.679 seconds. The two exact instrumented
+source hashes and prepared-input sizes remain unchanged, and both fresh parser
+processes returned `parse-ok` with zero stderr. Execution of the instrumented
+proof remains gated on a successful ordinary v17 theorem.
 
 The parser-only survey has exposed one material frontend hotspot rather than a
 syntax incompatibility: the 469,938-byte generated
