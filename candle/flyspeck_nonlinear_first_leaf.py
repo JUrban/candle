@@ -53,6 +53,15 @@ EXPECTED_PHASE_COUNTS = {
     ("verify-call", "final-normalization"): 1,
     ("target", "total"): 1,
 }
+EXPECTED_PHASE_COUNTS.update({
+    (f"formal-leaf-{index}", "leaf-check"): 1
+    for index in range(1, 17)
+})
+EXPECTED_PHASE_COUNTS.update({
+    (f"formal-glue-{index}", phase): 1
+    for index in range(1, 16)
+    for phase in ("domain-split", "theorem-glue")
+})
 
 SUPPORT = {
     "prove_by_refinement": (
