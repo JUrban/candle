@@ -50,6 +50,7 @@ let candle_q_load_term index =
 let candle_q_neg_term = `Candle_q_neg`;;
 let candle_q_add_term = `Candle_q_add`;;
 let candle_q_mul_term = `Candle_q_mul`;;
+let candle_q_square_term = `Candle_q_square`;;
 
 let rec candle_q_variable_index_from index variable = function
   | [] -> None
@@ -82,6 +83,7 @@ let candle_q_is_binary operator tm =
 let rec candle_q_repeat_program base count =
   if count = 0 then [candle_q_push_term (Num.num_of_int 1)]
   else if count = 1 then base
+  else if count = 2 then base @ [candle_q_square_term]
   else candle_q_repeat_program base (count - 1) @ base @
        [candle_q_mul_term];;
 
@@ -230,6 +232,10 @@ let rec candle_q_repeat_component variables base count =
   if count = 0 then
     candle_q_rational_component variables `&1` (Num.num_of_int 1)
   else if count = 1 then base
+  else if count = 2 then
+    let _,base_denotation,_ = base in
+    candle_q_unary_component variables base candle_q_square_term
+      (mk_binop `(*):real->real->real` base_denotation base_denotation)
   else
     let previous = candle_q_repeat_component variables base (count - 1) in
     let _,previous_denotation,_ = previous in

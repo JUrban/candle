@@ -7,13 +7,14 @@
 (* theorems, and the ordinary semantics preserves real interval containment.  *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_exact_interval_mul_core.ml";;
+needs "candle/cv_compute_exact_interval_square_core.ml";;
 
 module Candle_cv_exact_interval_program = struct
 
 open Candle_cv_exact_rational_core;;
 open Candle_cv_exact_interval_core;;
 open Candle_cv_exact_interval_mul_core;;
+open Candle_cv_exact_interval_square_core;;
 open Candle_cv_linear_combination_realize;;
 
 let candle_q_instruction_INDUCT,candle_q_instruction_RECURSION = define_type
@@ -22,7 +23,8 @@ let candle_q_instruction_INDUCT,candle_q_instruction_RECURSION = define_type
      | Candle_q_load num
      | Candle_q_neg
      | Candle_q_add
-     | Candle_q_mul";;
+     | Candle_q_mul
+     | Candle_q_square";;
 
 let candle_q_zero_def = new_definition
  `candle_q_zero = (((0,0),0):(num#num)#num)`;;
@@ -82,7 +84,11 @@ let candle_q_real_step_def = define
      CONS
        (candle_q_real_head (candle_q_real_tail stack) *
         candle_q_real_head stack)
-       (candle_q_real_tail (candle_q_real_tail stack)))`;;
+       (candle_q_real_tail (candle_q_real_tail stack))) /\
+  (candle_q_real_step env Candle_q_square stack =
+     CONS
+       (candle_q_real_head stack * candle_q_real_head stack)
+       (candle_q_real_tail stack))`;;
 
 let candle_q_interval_step_def = define
  `(candle_q_interval_step env (Candle_q_push p n d) stack =
@@ -105,7 +111,11 @@ let candle_q_interval_step_def = define
        (candle_q_interval_mul
          (candle_q_interval_head (candle_q_interval_tail stack))
          (candle_q_interval_head stack))
-       (candle_q_interval_tail (candle_q_interval_tail stack)))`;;
+       (candle_q_interval_tail (candle_q_interval_tail stack))) /\
+  (candle_q_interval_step env Candle_q_square stack =
+     CONS
+       (candle_q_interval_square (candle_q_interval_head stack))
+       (candle_q_interval_tail stack))`;;
 
 let candle_q_real_run_def = define
  `(candle_q_real_run env [] stack = stack) /\
@@ -235,7 +245,13 @@ let candle_q_interval_step_sound = prove
         MATCH_MP_TAC candle_q_stack_tail_contains THEN ASM_REWRITE_TAC[];
         MATCH_MP_TAC candle_q_stack_head_contains THEN ASM_REWRITE_TAC[]];
       MATCH_MP_TAC candle_q_stack_tail_contains THEN
-      MATCH_MP_TAC candle_q_stack_tail_contains THEN ASM_REWRITE_TAC[]]]);;
+      MATCH_MP_TAC candle_q_stack_tail_contains THEN ASM_REWRITE_TAC[]];
+    CONJ_TAC THENL
+      [MATCH_MP_TAC candle_q_interval_square_sound THEN
+       MATCH_MP_TAC candle_q_stack_head_contains THEN
+       FIRST_X_ASSUM (fun th -> ACCEPT_TAC th);
+       MATCH_MP_TAC candle_q_stack_tail_contains THEN
+       FIRST_X_ASSUM (fun th -> ACCEPT_TAC th)]]);;
 
 let candle_q_interval_run_sound = prove
  (`!program ienv r_env i_stack r_stack.
@@ -261,7 +277,8 @@ let candle_cv_q_instruction_def = define
      Cexp_pair (Cexp_num 1) (Cexp_num i)) /\
   (candle_cv_q_instruction Candle_q_neg = Cexp_num 2) /\
   (candle_cv_q_instruction Candle_q_add = Cexp_num 3) /\
-  (candle_cv_q_instruction Candle_q_mul = Cexp_num 4)`;;
+  (candle_cv_q_instruction Candle_q_mul = Cexp_num 4) /\
+  (candle_cv_q_instruction Candle_q_square = Cexp_num 5)`;;
 
 let candle_cv_q_instruction_list_def = define
  `(candle_cv_q_instruction_list [] = Cexp_num 0) /\
@@ -342,12 +359,17 @@ let candle_cv_q_interval_step_def = new_definition
               (candle_cv_q_interval_head stack))
             (candle_cv_q_interval_tail
               (candle_cv_q_interval_tail stack)))
-          (Cexp_pair
-            (candle_cv_q_interval_mul
-              (candle_cv_q_interval_head
-                (candle_cv_q_interval_tail stack))
-              (candle_cv_q_interval_head stack))
-            (candle_cv_q_interval_tail
+          (Cexp_if (Cexp_eq instruction (Cexp_num 4))
+            (Cexp_pair
+              (candle_cv_q_interval_mul
+                (candle_cv_q_interval_head
+                  (candle_cv_q_interval_tail stack))
+                (candle_cv_q_interval_head stack))
+              (candle_cv_q_interval_tail
+                (candle_cv_q_interval_tail stack)))
+            (Cexp_pair
+              (candle_cv_q_interval_square
+                (candle_cv_q_interval_head stack))
               (candle_cv_q_interval_tail stack)))))`;;
 
 let candle_cv_q_interval_run_def = define
@@ -389,7 +411,7 @@ let candle_cv_q_interval_run_compute = prove
               cexp_ispair_def; cexp_fst_def; cexp_snd_def]);;
 
 let candle_cv_q_interval_program_compute_eqs =
-  candle_cv_q_interval_mul_compute_eqs @
+  candle_cv_q_interval_square_compute_eqs @
   map SPEC_ALL
    [candle_cv_q_zero_interval_compute;
     candle_cv_q_interval_head_def;
@@ -440,6 +462,15 @@ let candle_four_ne_three =
 let candle_three_ne_two =
   EQT_ELIM (NUM_REDUCE_CONV `~(3 = 2)`);;
 
+let candle_five_ne_two =
+  EQT_ELIM (NUM_REDUCE_CONV `~(5 = 2)`);;
+
+let candle_five_ne_three =
+  EQT_ELIM (NUM_REDUCE_CONV `~(5 = 3)`);;
+
+let candle_five_ne_four =
+  EQT_ELIM (NUM_REDUCE_CONV `~(5 = 4)`);;
+
 let candle_cv_q_interval_step_correct = prove
  (`!instruction env stack.
      candle_cv_q_interval_step
@@ -458,12 +489,15 @@ let candle_cv_q_interval_step_correct = prove
               distinctness "cval"; injectivity "cval"; NOT_SUC;
               candle_one_ne_zero; candle_four_ne_two;
               candle_four_ne_three; candle_three_ne_two;
+              candle_five_ne_two; candle_five_ne_three;
+              candle_five_ne_four;
               candle_cv_q_interval_lookup_correct;
               candle_cv_q_interval_head_correct;
               candle_cv_q_interval_tail_correct;
               candle_cv_q_interval_neg_correct;
               candle_cv_q_interval_add_correct;
-              candle_cv_q_interval_mul_correct] THEN
+              candle_cv_q_interval_mul_correct;
+              candle_cv_q_interval_square_correct] THEN
   REWRITE_TAC[candle_cv_q_interval_def]);;
 
 let candle_cv_q_interval_run_correct = prove

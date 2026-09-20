@@ -67,7 +67,7 @@ then failwith "exact interval reifier sound theorem mismatch";;
 let candle_q_reify_test_program_items =
   dest_list candle_q_reify_test_program;;
 
-if length candle_q_reify_test_program_items <> 14 then
+if length candle_q_reify_test_program_items <> 13 then
   failwith "exact interval reifier instruction count mismatch";;
 
 let candle_q_reify_unsupported_division =
