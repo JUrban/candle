@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+from collections import Counter
 import subprocess
 import sys
 import tempfile
@@ -91,6 +92,44 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             use["identifier"] == "abs_float" and use["line"] == 345
             for use in compatibility["toplevel_uses"]
         ))
+
+    def test_unqualified_float_runtime_surface_is_accounted_for(self) -> None:
+        compatibility = self.payload["compatibility"]
+        self.assertEqual(
+            compatibility["unqualified_float_runtime_resolution"],
+            subject.UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION,
+        )
+        uses = compatibility["unqualified_float_uses"]
+        self.assertEqual(compatibility["unqualified_float_use_count"], 94)
+        self.assertEqual(
+            Counter(use["identifier"] for use in uses),
+            Counter({
+                "abs_float": 13,
+                "atan": 4,
+                "float_of_int": 42,
+                "float_of_string": 2,
+                "floor": 4,
+                "infinity": 2,
+                "int_of_float": 19,
+                "log": 6,
+                "nan": 2,
+            }),
+        )
+        self.assertTrue(all(
+            use["resolution"] ==
+            subject.UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION[use["identifier"]]
+            for use in uses
+        ))
+        atan_sites = {
+            (use["source"], use["line"])
+            for use in uses if use["identifier"] == "atan"
+        }
+        self.assertEqual(atan_sites, {
+            ("flyspeck:formal_ineqs/informal/informal_sin_cos.hl", 58),
+            ("flyspeck:formal_ineqs/informal/informal_sin_cos.hl", 62),
+            ("flyspeck:formal_ineqs/trig/cos_bounds_eval.hl", 109),
+            ("flyspeck:formal_ineqs/trig/cos_bounds_eval.hl", 119),
+        })
 
     def test_nested_array_grouping_is_lowered_exactly(self) -> None:
         normalized = {
