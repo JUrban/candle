@@ -192,4 +192,28 @@ let candle_lc_bulk_refute_flyspeck_source
   let contradiction = EQ_MP final_iff aggregate in
   variables,result,EQ_MP zero_th contradiction;;
 
+let candle_lc_flyspeck_weight_term weight =
+  if weight </ candle_lc_flyspeck_zero then
+    failwith "Flyspeck adapter: negative certificate multiplier"
+  else mk_numeral weight;;
+
+let candle_lc_bulk_refute_flyspeck_terminal
+      normalize_lhs precision_constant constraint_inequalities
+      auxiliary_inequalities =
+  if precision_constant <=/ candle_lc_flyspeck_zero then
+    failwith "Flyspeck adapter: nonpositive precision multiplier";
+  let scaled_constraints =
+    map
+      (fun (inequality,weight) ->
+         inequality,
+         candle_lc_flyspeck_weight_term (precision_constant */ weight))
+      constraint_inequalities and
+      auxiliaries =
+    map
+      (fun (inequality,weight) ->
+         inequality,candle_lc_flyspeck_weight_term weight)
+      auxiliary_inequalities in
+  candle_lc_bulk_refute_flyspeck_source
+    normalize_lhs (scaled_constraints @ auxiliaries);;
+
 end;;

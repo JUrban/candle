@@ -109,6 +109,16 @@ both assumptions, and leaves the global axiom set unchanged. This establishes
 the machinery needed to replace the old per-variable `add_cancel_step` fold;
 it is not yet a real-terminal or timing result.
 
+The terminal-shaped entry point separately applies the positive
+`10^precision` multiplier to every ordinary constraint coefficient while
+leaving target-variable, variable-bound, and optional global-inequality rows
+at their certificate weights. It then invokes the same verified bulk
+refutation. A focused cancellation uses multiplier 10 on the constraint side
+and weight 10 on the bound side, computes `([(0,0)],(0,10))`, and derives `F`
+with the exact two hypotheses. Negative row weights and a nonpositive precision
+multiplier fail closed. The real-checkpoint caller still owns authenticated
+row selection and optional global-inequality construction.
+
 ## Real-certificate measurement
 
 The generic bulk-soundness path has run on terminals 15, 5, and 17 from the
