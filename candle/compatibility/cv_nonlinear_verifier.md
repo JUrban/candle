@@ -149,6 +149,20 @@ an unrelated full HOL replay.
    construction, and final public conversion before deciding which computation
    is worth reflecting further.
 
+The dedicated profiling descendant now implements that fifth gate without
+changing the active replay. It authenticates the exact already-normalized
+`m_verifier_main.hl` bytes, then inserts discarded, flushed markers around the
+active disjunctive verifier's standardization, problem reification, evaluator
+construction, informal certificate search, adaptive informal verification,
+formal kernel-theorem reconstruction, and final public normalization. A
+separate read-only observer timestamps those markers and samples process CPU,
+RSS, and high-water RSS from `/proc`; the profiled result is accepted only if
+the target-wide phase closes, every opened phase closes, the ordinary theorem
+gate passes, and the observer artifact is complete. Forty nonlinear controller
+tests and two observer tests pass. This is prepared machinery, not yet a timing
+or speedup result; it should run only after the uninstrumented fresh replay
+first establishes a successful exact baseline.
+
 The fourteenth fresh first-leaf replay completed `arith/float_pow.hl`, the
 large `trig/exp_log.hl` analysis dependency chain, and `trig/poly_eval.hl` in
 4,210.637 seconds (peak RSS 1,178,240 KiB). It then failed during inference of
