@@ -28,6 +28,9 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         cls.driver = subject.build_target_driver(
             cls.target, FLYSPECK_ROOT, cls.support_records,
         )
+        cls.profile_driver = subject.build_target_driver(
+            cls.target, FLYSPECK_ROOT, cls.support_records, True,
+        )
 
     def test_exact_support_is_wrapped_and_authenticated(self) -> None:
         self.assertEqual(len(self.support_records), 3)
@@ -79,6 +82,18 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         self.assertIn(subject.FORMAL_VERIFICATION_SECONDS, self.driver)
         self.assertNotIn("Printf.sprintf", self.driver)
         self.assertIn("string_of_float", self.driver)
+        self.assertNotIn("candle_nonlinear_profile_marker", self.driver)
+
+    def test_profile_driver_brackets_the_exact_verifier_call(self) -> None:
+        begin = (
+            'candle_nonlinear_profile_marker "target" "total" "begin";;'
+        )
+        end = 'candle_nonlinear_profile_marker "target" "total" "end";;'
+        call = "M_verifier_main.verify_ineq"
+        self.assertEqual(self.profile_driver.count(begin), 1)
+        self.assertEqual(self.profile_driver.count(end), 1)
+        self.assertLess(self.profile_driver.index(begin), self.profile_driver.index(call))
+        self.assertLess(self.profile_driver.index(call), self.profile_driver.index(end))
 
     def test_result_timing_parser_is_fail_closed(self) -> None:
         marker = subject.RECONSTRUCTION_SECONDS
