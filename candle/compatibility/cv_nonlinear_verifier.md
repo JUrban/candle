@@ -274,3 +274,27 @@ None of these gates changes the qualified Great100 runtime or evidence. Parser
 results, checkpoint probes, and oracle comparisons remain non-release evidence
 until a fresh cumulative direct run uses a single authenticated manifest and
 the production runtime.
+
+## Taylor closure localization
+
+The uninstrumented v17 replay stopped after the five dependencies of
+`taylor_interval-compiled.hl` and before any verifier/reconstruction marker.
+That source is one 3,701-line module phrase, so the absence of an internal
+marker does not distinguish whole-phrase frontend elaboration from execution
+of its first proof.
+
+`flyspeck_nonlinear_closure_profile.py` now authenticates the exact original
+Taylor source SHA-256
+`998d6e16c3cff9dfeee58de64525d3c549c12b09b6836c656b974a6cd17af624`
+and adds development-only discarded print markers immediately before the
+module phrase, at the first and last module-body structure items, and at all 28
+authenticated section boundaries. The before-module marker closes the prior
+ambiguity: if it appears without the first body marker, the cost is in
+parsing/inference/elaboration of the complete module phrase; later markers
+localize theorem execution by section. The public module values, theorem
+statements, proof tactics, and first-leaf theorem checks are unchanged.
+
+The controller records the derived source identity, exact ordered section
+event inventory, and observed marker counts. Its ten focused authority and
+profile tests pass. This localizer is DEVELOPMENT / NON-RELEASE and provides
+no theorem, cumulative, S2, S3, or release credit by itself.

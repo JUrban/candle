@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import flyspeck_nonlinear_first_leaf_target as target_authority
+import flyspeck_nonlinear_closure_profile as closure_profile
 import flyspeck_nonlinear_first_leaf_profile as phase_profile
 import flyspeck_nonlinear_verifier_smoke as smoke
 
@@ -369,6 +370,7 @@ def run(
     output_root: Path,
     timeout_seconds: int,
     profile_phases: bool = False,
+    profile_closure: bool = False,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
@@ -387,6 +389,10 @@ def run(
     phase_profile_receipt = (
         phase_profile.instrument_records(closure_records)
         if profile_phases else None
+    )
+    closure_profile_receipt = (
+        closure_profile.instrument_records(closure_records)
+        if profile_closure else None
     )
     big_int_compatibility, big_int_compatibility_record = (
         smoke.authenticate_big_int_compatibility(candle_root)
@@ -531,6 +537,23 @@ def run(
         "theorem_end": log_data.count((THEOREM_END + "\n").encode()),
         "pass": log_data.count((PASS_MARKER + "\n").encode()),
     }
+    closure_markers = {
+        "module_frontend_begin": log_data.count(
+            b"CANDLE_NONLINEAR_TAYLOR stage=module-frontend event=begin\n"
+        ),
+        "module_execution_begin": log_data.count(
+            b"CANDLE_NONLINEAR_TAYLOR stage=module-execution event=begin\n"
+        ),
+        "module_execution_end": log_data.count(
+            b"CANDLE_NONLINEAR_TAYLOR stage=module-execution event=end\n"
+        ),
+        "module_frontend_end": log_data.count(
+            b"CANDLE_NONLINEAR_TAYLOR stage=module-frontend event=end\n"
+        ),
+        "section_events": log_data.count(
+            b"CANDLE_NONLINEAR_TAYLOR stage=section "
+        ),
+    }
     expected_markers = {name: 1 for name in markers}
     forbidden = [
         value.decode("ascii") for value in smoke.FORBIDDEN_LOG_BYTES
@@ -613,6 +636,9 @@ def run(
         "phase_profile_receipt": phase_profile_receipt,
         "phase_profile_summary": phase_profile_summary,
         "phase_observer_status": phase_observer_status,
+        "closure_profile_enabled": profile_closure,
+        "closure_profile_receipt": closure_profile_receipt,
+        "closure_profile_markers": closure_markers,
         "source_node_count": len(records),
         "normalized_source_count": len(overlays),
         "normalized_sources": [
@@ -672,6 +698,7 @@ def main() -> None:
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=int, default=86400)
     parser.add_argument("--phase-profile", action="store_true")
+    parser.add_argument("--closure-profile", action="store_true")
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
@@ -680,6 +707,7 @@ def main() -> None:
         arguments.output_root,
         arguments.timeout_seconds,
         arguments.phase_profile,
+        arguments.closure_profile,
     )
     print(json.dumps({
         "outcome": payload["outcome"],
