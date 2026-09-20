@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "claim": "development/non-release focused proof-producing reflection profile",
+  "date_utc": "2026-09-20",
+  "source_commit": "0ce64a9b548da56dfb31df48057da438f04cb91d",
+  "runtime_binary_sha256": "3aaa248c0d5d6c96fa8e36445d1a945a751f0cf11a8b734a6142e9fab1088b2b",
+  "method": "Fresh copies of the clean post-hol.ml plus candle/compute.ml DMTCP checkpoint. GNU time measured the complete restart and load because Candle time APIs are deliberately deterministic. A separate marker-only restart measures the fixed checkpoint cost. The profile reconstructs all program semantics in the kernel and checks that the reification, reflected computation, and final interval-soundness theorems have no assumptions.",
+  "input": {
+    "description": "six-variable Taylor-shaped polynomial with first-order terms and a lower-triangular quadratic form",
+    "variables": 6,
+    "terms": 27,
+    "generated_program_instructions": 149,
+    "coefficient_denominator": 16,
+    "variable_interval_denominator": 8
+  },
+  "timing_seconds": {
+    "marker_only_checkpoint_restart": 10.98,
+    "complete_taylor_profile": 17.17,
+    "profile_above_marker_only_restart": 6.19,
+    "superseded_monolithic_reification_lower_bound": 390.0
+  },
+  "max_rss_kb": {
+    "marker_only_checkpoint_restart": 2252544,
+    "complete_taylor_profile": 2252544
+  },
+  "exact_result_representation_bits": {
+    "lower_positive": 230,
+    "lower_negative": 0,
+    "lower_denominator_predecessor": 226,
+    "upper_positive": 231,
+    "upper_negative": 0,
+    "upper_denominator_predecessor": 226
+  },
+  "artifacts": {
+    "profile_log": {
+      "path": "/project/flyspeck-candle-runs/cv-taylor-profile-v3/restart.log",
+      "sha256": "6975ca3fec050af3b46ce156f26825868dcba640c0b6e90b022f7190ff144ed7"
+    },
+    "checkpoint_baseline_log": {
+      "path": "/project/flyspeck-candle-runs/cv-program-checkpoint-baseline-v1/restart.log",
+      "sha256": "d6f7e23be6d3578567b0d275e7208b30e2c362b58dfa3f4b61771b8f42a18714"
+    },
+    "fresh_reifier_test_log": {
+      "path": "/project/flyspeck-candle-runs/cv-reify-test-fresh-v13.log",
+      "sha256": "dece88a7e898ca30ea50eb0d3bdc0874ed8ad3e51c7a2bbe7316d724564049a0"
+    },
+    "fresh_program_test_log": {
+      "path": "/project/flyspeck-candle-runs/cv-program-test-fresh-v2.log",
+      "sha256": "cdc3c20bcc0dcdcb7380c68c27d074dbeaaff22d357547799d0396e6b936d302"
+    }
+  },
+  "conclusion": "Compositional reconstruction removes the immediate proof-generation bottleneck: the complete profile is at most 6.19 seconds above a marker-only restart, while the superseded monolithic reconstruction had not completed after 390 seconds. Exact rational endpoint growth is now the scaling concern: only 27 terms already produce 226-bit denominators and 230-231-bit numerators. The next nonlinear prototype should preserve the single coarse proof boundary while evaluating whether bounded dyadic directed rounding is required for substantial checker workloads."
+}
