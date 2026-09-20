@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "claim": "development/non-release focused proof-producing nonlinear profile",
+  "date_utc": "2026-09-20",
+  "source_commit": "0c9427420af47783244bd1507a433a07c443fc5d",
+  "runtime_binary_sha256": "3aaa248c0d5d6c96fa8e36445d1a945a751f0cf11a8b734a6142e9fab1088b2b",
+  "flyspeck_source": {
+    "commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+    "definition_path": "text_formalization/general/sphere.hl",
+    "definition_file_sha256": "3ca15c5381194f63bb1d467b7d3a0ef3560e16769fac03b0f96d7aa9da514f32",
+    "target_manifest_path": "candle/flyspeck_nonlinear_first_leaf_target.json",
+    "target_global_case": 7853,
+    "target_id": "prep-4680581274 delta issue-cayleyR"
+  },
+  "method": "Evaluate the exact right-hand side of Flyspeck delta_x, multiplied by -1 as in the selected target case, over the target manifest's six public rational intervals. A fresh copy of the clean post-hol.ml plus candle/compute.ml checkpoint was used. GNU time measured the complete restart and load; the companion marker-only restart was 10.98 seconds. The kernel reconstructs the program semantics and checks the reflected computation and interval soundness theorem.",
+  "input": {
+    "variables": 6,
+    "generated_program_instructions": 83,
+    "domain": [
+      ["4", "36218753/6250000"],
+      ["4", "3969/625"],
+      ["4", "3969/625"],
+      ["90601/10000", "2505889/250000"],
+      ["4", "4"],
+      ["4", "3969/625"]
+    ]
+  },
+  "timing_seconds": {
+    "marker_only_checkpoint_restart": 10.98,
+    "complete_delta_profile": 17.12,
+    "profile_above_marker_only_restart": 6.14
+  },
+  "max_rss_kb": 2252544,
+  "exact_result": {
+    "lower": "-22130616918607650087/15625000000000000",
+    "upper": "3554986147474841/4882812500000",
+    "lower_approx": -1416.3594827908896,
+    "upper_approx": 728.0611630028475,
+    "lower_denominator_predecessor_bits": 245,
+    "upper_denominator_predecessor_bits": 245
+  },
+  "artifact": {
+    "path": "/project/flyspeck-candle-runs/cv-flyspeck-delta-profile-v2/restart.log",
+    "sha256": "8be053b557b43006f8006db3528e80ad2a46dd12d4a8de48d5c6ce2f71ffc8ce"
+  },
+  "conclusion": "The proof-producing evaluator handles a real target-case polynomial at negligible cost relative to checkpoint startup, but raw interval evaluation spans zero and cannot discharge the leaf. The nonlinear integration must reflect or otherwise retain Flyspeck's Taylor dependency information; replacing Taylor evaluation with a raw interval pass would be unsound as a performance plan because it loses the strength needed by the certificate."
+}
