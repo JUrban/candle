@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v7"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v8"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -53,7 +53,9 @@ NORMALIZATION_SEMANTIC_RULE = (
     "native float orderings use typed IEEE helpers instead of Candle's "
     "integer-only unqualified operators. The twelve active raw-double "
     "threshold and angle-reduction comparisons use the same typed IEEE "
-    "helpers. All 14 "
+    "helpers. The four active cosine-table uses of OCaml's unavailable "
+    "atan compute only 2 * atan(1); they use the bit-identical binary64 "
+    "pi/2 literal. All 14 "
     "active native assert sites call one condition-preserving helper that "
     "raises the existing distinct Assert_failure on false"
 )
@@ -78,7 +80,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "typed ordering rewrites cover exactly the three adjacent split branches "
     "in each implementation plus twelve raw-double threshold and angle "
     "branches in seven authenticated sources; they preserve native "
-    "false-on-NaN behavior. The "
+    "false-on-NaN behavior. The atan rewrite is confined to the four exact "
+    "2.0 *. atan 1.0 table-bound expressions in two authenticated sources; "
+    "it does not introduce a general atan implementation. The "
     "assert rewrites preserve condition evaluation, success value, and failure "
     "constructor; only the run-local native source position is replaced by a "
     "stable logical source label with zero line/column fields."
@@ -497,6 +501,12 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     ),
     "flyspeck:formal_ineqs/informal/informal_sin_cos.hl": (
         _replacement(
+            "informal-cos-pi-over-two-literal",
+            b'2.0 *. atan 1.0',
+            b'1.5707963267948966',
+            2,
+        ),
+        _replacement(
             "informal-cos-ieee-tail-order",
             b'if r <= t then i else try_i (i + 1)',
             b'if float_ieee_le r t then i else try_i (i + 1)',
@@ -684,6 +694,12 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
         ),
     ),
     "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl": (
+        _replacement(
+            "cos-bounds-eval-pi-over-two-literal",
+            b'2.0 *. atan 1.0',
+            b'1.5707963267948966',
+            2,
+        ),
         _replacement(
             "cos-bounds-eval-ieee-tail-order",
             b'if r <= t then i else try_i (i + 1)',

@@ -42,7 +42,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 26)
-        self.assertEqual(counts["normalization_operations"], 138)
+        self.assertEqual(counts["normalization_operations"], 140)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -288,6 +288,26 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "float_ieee_" in operation["after"]
             for operation in operations
         ))
+
+    def test_atan_one_table_bounds_use_exact_binary64_literal(self) -> None:
+        expected = {
+            "flyspeck:formal_ineqs/informal/informal_sin_cos.hl":
+                "informal-cos-pi-over-two-literal",
+            "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl":
+                "cos-bounds-eval-pi-over-two-literal",
+        }
+        for source_key, kind in expected.items():
+            operations = self.payload["source_nodes"][source_key][
+                "normalization"
+            ]["operations"]
+            selected = [
+                operation for operation in operations
+                if operation["kind"] == kind
+            ]
+            self.assertEqual(len(selected), 1)
+            self.assertEqual(selected[0]["replacement_count"], 2)
+            self.assertEqual(selected[0]["before"], "2.0 *. atan 1.0")
+            self.assertEqual(selected[0]["after"], "1.5707963267948966")
 
     def test_all_active_assertions_use_distinct_failure_helper(self) -> None:
         assertion_operations = [

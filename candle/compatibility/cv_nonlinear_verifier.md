@@ -66,6 +66,8 @@ following central compatibility support without changing Flyspeck source:
   raw-double threshold/angle-reduction comparisons in seven authenticated
   checker sources, preserving native finite, infinity, signed-zero, and NaN
   branches;
+- an exact four-site normalization of `2.0 *. atan 1.0` to the bit-identical
+  binary64 literal `1.5707963267948966` in the two cosine-table builders;
 - a central condition-preserving `candle_assert` helper and all 14 active
   assertion sites in the authenticated closure, retaining the distinct
   `Assert_failure` constructor on false;
@@ -142,6 +144,34 @@ but Candle's unqualified operator is integer-only. A complete audit found the
 same boundary at 12 sites rather than just patching the observed line. The
 focused 196-observation differential gate is green; the next expensive replay
 uses that coherent batch.
+
+The fifteenth fresh replay passed that typed-threshold boundary and loaded the
+large trigonometric development through `trig/poly_eval.hl`. It stopped while
+inferring `trig/cos_bounds_eval.hl:89` because Candle does not export native
+OCaml's `atan`. This was a frontend/name-availability failure before proof
+execution, not a failed theorem. The failed run is preserved with elapsed time
+4,595.625 seconds, child CPU 4,525.855 user + 65.453 system seconds, peak RSS
+1,184,512 KiB, and log SHA-256
+`150b065ff3396252e2284861bf522ae884ebde71c0e57c31af207da1ea250d01`.
+
+A complete audit of the authenticated active closure found exactly four
+`atan` occurrences: two each in `trig/cos_bounds_eval.hl` and
+`informal/informal_sin_cos.hl`. Every occurrence is the closed expression
+`2.0 *. atan 1.0`, used only to choose an even or odd cosine Taylor-table
+degree. Native OCaml 4.14.1 gives the same binary64 bits
+`0x3ff921fb54442d18` for that expression and the decimal literal above. The
+focused differential gate also checks all 42 upper/lower degree choices for
+precisions 0 through 20. The raw expression reproduces Candle's undefined-name
+failure and the exact-literal form passes. This deliberately does not add an
+unverified general transcendental implementation.
+
+Closure compatibility version 8 applies only those four exact replacements.
+Its parser gate passes 56/56 sources with zero parser errors: 23 changed
+prepared inputs were executed freshly in 20.261 parser-seconds and 33 exact
+unchanged prior successes were reused by prepared-input hash. The complete
+gate took 3,170.820 elapsed seconds because it retained the known generated
+parser hotspot. Closure SHA-256 is
+`b82746f4378a6c256ae9a81abdba66334b71d891503f6fd40fadb8edd0d1fc15`.
 
 The parser-only survey has exposed one material frontend hotspot rather than a
 syntax incompatibility: the 469,938-byte generated
