@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "claim": "development/non-release focused first-leaf profile",
+  "date_utc": "2026-09-20",
+  "source_commit": "da688627f8892419726c86a87484ee8d0cafcc43",
+  "runtime_binary_sha256": "3aaa248c0d5d6c96fa8e36445d1a945a751f0cf11a8b734a6142e9fab1088b2b",
+  "flyspeck_source": {
+    "commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+    "partition_path": "text_formalization/nonlinear/break_case_log.hl",
+    "target_global_case": 7853,
+    "target_id": "prep-4680581274 delta issue-cayleyR",
+    "first_partition": "Iarg_facet ((0,false),0.7637,800,...)",
+    "first_leaf_x1_upper": "335677616661/62500000000"
+  },
+  "method": "Use break_case_exec.mk_case_list semantics for the top-level left facet and evaluate the exact delta_x times -1 polynomial on that first independent leaf. The benchmark first repeats its public-domain companion and then checks the first-leaf theorem. All reflected computation theorems are assumption-free; the soundness theorem retains exactly the six scalar interval assumptions.",
+  "timing_seconds": {
+    "marker_only_checkpoint_restart": 10.98,
+    "public_domain_plus_first_leaf_profile": 17.44,
+    "profile_above_marker_only_restart": 6.46
+  },
+  "max_rss_kb": 2252544,
+  "first_leaf_exact_result": {
+    "lower": "-210312804338768585034419/156250000000000000000",
+    "upper": "66875965553784611009/97656250000000000",
+    "lower_approx": -1346.001947768119,
+    "upper_approx": 684.8098872707544,
+    "lower_denominator_predecessor_bits": 285,
+    "upper_denominator_predecessor_bits": 285
+  },
+  "artifact": {
+    "path": "/project/flyspeck-candle-runs/cv-flyspeck-delta-first-leaf-v1/restart.log",
+    "sha256": "cb6ace45404d09348cd2d31cea8bd9d939b616d22f211532669e274f08e537bb"
+  },
+  "conclusion": "The exact first partition leaf remains easy for proof-producing reflection, but raw interval dependency loss still gives an interval spanning zero. The modest narrowing relative to the public domain does not change the integration plan: the reflected checker must consume a Taylor model, including its first- and second-derivative enclosures, rather than only reevaluate the source polynomial on a box."
+}
