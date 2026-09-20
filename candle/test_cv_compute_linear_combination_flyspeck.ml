@@ -166,4 +166,35 @@ if candle_cv_lc_flyspeck_cancel_variables <> [`x:real`] ||
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck reflected cancellation/refutation mismatch";;
 
+let candle_cv_lc_flyspeck_terminal_variables,
+    candle_cv_lc_flyspeck_terminal_result,
+    candle_cv_lc_flyspeck_terminal_th =
+  candle_lc_bulk_refute_flyspeck_terminal
+    REFL (num 10)
+    [(candle_cv_lc_flyspeck_cancel_ineq1,num 1)]
+    [(candle_cv_lc_flyspeck_cancel_ineq2,num 10)];;
+if candle_cv_lc_flyspeck_terminal_variables <> [`x:real`] ||
+   not (aconv candle_cv_lc_flyspeck_terminal_result `([(0,0)],(0,10))`) ||
+   concl candle_cv_lc_flyspeck_terminal_th <> `F` ||
+   not (set_eq (hyp candle_cv_lc_flyspeck_terminal_th)
+          [concl candle_cv_lc_flyspeck_cancel_ineq1;
+           concl candle_cv_lc_flyspeck_cancel_ineq2]) ||
+   not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
+  failwith "Flyspeck reflected terminal scaling mismatch";;
+
+let candle_cv_lc_flyspeck_negative_weight_rejected =
+  try
+    let _ = candle_lc_flyspeck_weight_term (num (-1)) in false
+  with Failure _ -> true;;
+let candle_cv_lc_flyspeck_zero_precision_rejected =
+  try
+    let _ =
+      candle_lc_bulk_refute_flyspeck_terminal
+        REFL (num 0) [] [] in
+    false
+  with Failure _ -> true;;
+if not candle_cv_lc_flyspeck_negative_weight_rejected ||
+   not candle_cv_lc_flyspeck_zero_precision_rejected then
+  failwith "Flyspeck reflected terminal multiplier guard mismatch";;
+
 print_endline "CANDLE_CV_LINEAR_COMBINATION_FLYSPECK_OK";;
