@@ -61,8 +61,11 @@ following central compatibility support without changing Flyspeck source:
 - a typed `float_ieee_equal` bridge plus four exact checker normalizations,
   preserving native equality for signed zero, infinities, finite values, and
   NaNs where CakeML's generic equality compares binary representations;
-- typed `float_ieee_lt`/`float_ieee_ge` bridges plus the six adjacent checker
-  orderings, preserving native finite, infinity, signed-zero, and NaN branches;
+- typed `float_ieee_lt`/`float_ieee_le`/`float_ieee_gt`/`float_ieee_ge`
+  bridges, the six adjacent float-splitting orderings, and all 12 active
+  raw-double threshold/angle-reduction comparisons in seven authenticated
+  checker sources, preserving native finite, infinity, signed-zero, and NaN
+  branches;
 - a central condition-preserving `candle_assert` helper and all 14 active
   assertion sites in the authenticated closure, retaining the distinct
   `Assert_failure` constructor on false;
@@ -71,7 +74,10 @@ following central compatibility support without changing Flyspeck source:
 - the `Format.std_formatter` value needed by the verifier's diagnostic-printer
   interfaces.
 
-The `Big_int`/`Num` differential gate covers every selected member, values beyond
+The IEEE comparison differential gate compares all four ordering operators for
+every pair in a seven-value matrix containing finite negatives and positives,
+both signed zeros, both infinities, and NaN: 196 native/Candle observations in
+total. The `Big_int`/`Num` differential gate covers every selected member, values beyond
 the signed 64-bit range, all sign combinations for Euclidean division,
 positive integer powers, 0, adjacent nonsquares/squares, and `2^128 - 1`.
 Array order, qualified and unqualified float absolute value, ignored-result
@@ -127,6 +133,15 @@ an unrelated full HOL replay.
 5. Profile verifier setup, interval evaluation, subdivision/search, theorem
    construction, and final public conversion before deciding which computation
    is worth reflecting further.
+
+The fourteenth fresh first-leaf replay completed `arith/float_pow.hl`, the
+large `trig/exp_log.hl` analysis dependency chain, and `trig/poly_eval.hl` in
+4,210.637 seconds (peak RSS 1,178,240 KiB). It then failed during inference of
+`trig/exp_eval.hl:184`, where native OCaml inferred `r <= t` over two doubles
+but Candle's unqualified operator is integer-only. A complete audit found the
+same boundary at 12 sites rather than just patching the observed line. The
+focused 196-observation differential gate is green; the next expensive replay
+uses that coherent batch.
 
 The parser-only survey has exposed one material frontend hotspot rather than a
 syntax incompatibility: the 469,938-byte generated

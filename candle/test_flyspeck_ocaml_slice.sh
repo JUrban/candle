@@ -4,6 +4,7 @@ set -euo pipefail
 candle_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 candle=${1:-"$candle_root/candle.sh"}
 temporary=$(mktemp -d)
+oracle="$candle_root/candle/compatibility/fixtures/flyspeck_float_order_ocaml_oracle.ml"
 cleanup() {
   local status=$?
   trap - EXIT
@@ -17,6 +18,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
+ocaml -noinit -noprompt <"$oracle" >"$temporary/ocaml.log" 2>&1
+rg -o 'CANDLE_FLYSPECK_FLOAT_ORDER_MATRIX=[01]+' "$temporary/ocaml.log" \
+  >"$temporary/ocaml-matrix.log"
+
 (
   cd "$candle_root"
   timeout 1800 "$candle" --candle \
@@ -24,6 +29,9 @@ trap cleanup EXIT
 ) >"$temporary/candle.log" 2>&1
 
 rg -a -q 'CANDLE_FLYSPECK_OCAML_SLICE_OK' "$temporary/candle.log"
+rg -a -o 'CANDLE_FLYSPECK_FLOAT_ORDER_MATRIX=[01]+' "$temporary/candle.log" \
+  >"$temporary/candle-matrix.log"
+cmp "$temporary/ocaml-matrix.log" "$temporary/candle-matrix.log"
 if rg -a -q 'EXCEPTION:|Parsing failed|ERROR:|Undefined variable:' \
   "$temporary/candle.log"; then
   tail -n 80 "$temporary/candle.log" >&2

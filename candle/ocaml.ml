@@ -136,6 +136,8 @@ let float_ieee_equal left right =
     left_significand = right_significand;;
 
 let float_ieee_lt left right = Cake.Double.(<) left right;;
+let float_ieee_le left right = Cake.Double.(<=) left right;;
+let float_ieee_gt left right = Cake.Double.(>) left right;;
 let float_ieee_ge left right = Cake.Double.(>=) left right;;
 (* CANDLE_OCAML_FLOAT_CONSTANTS_END *)
 

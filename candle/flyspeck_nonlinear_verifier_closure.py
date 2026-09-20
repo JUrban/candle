@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v6"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v7"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
@@ -50,8 +50,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "float-splitting implementations route their zero, infinity, and NaN "
     "tests through float_ieee_equal, preserving OCaml float equality despite "
     "CakeML generic equality's representation semantics; their adjacent "
-    "native float orderings use typed IEEE less-than and greater-or-equal "
-    "helpers instead of Candle's integer-only unqualified operators. All 14 "
+    "native float orderings use typed IEEE helpers instead of Candle's "
+    "integer-only unqualified operators. The twelve active raw-double "
+    "threshold and angle-reduction comparisons use the same typed IEEE "
+    "helpers. All 14 "
     "active native assert sites call one condition-preserving helper that "
     "raises the existing distinct Assert_failure on false"
 )
@@ -74,7 +76,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "more_float and informal_float; they preserve signed-zero equality, NaN "
     "inequality, infinity equality, and every finite nonzero comparison. The "
     "typed ordering rewrites cover exactly the three adjacent split branches "
-    "in each implementation and preserve native false-on-NaN behavior. The "
+    "in each implementation plus twelve raw-double threshold and angle "
+    "branches in seven authenticated sources; they preserve native "
+    "false-on-NaN behavior. The "
     "assert rewrites preserve condition evaluation, success value, and failure "
     "constructor; only the run-local native source position is replaced by a "
     "stable logical source label with zero line/column fields."
@@ -434,6 +438,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     ),
     "flyspeck:formal_ineqs/informal/informal_atn.hl": (
         _replacement(
+            "informal-atn-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+        _replacement(
             "informal-atn-assert-x1-sign",
             b'assert (sign_float x1 = false)',
             b'candle_assert (sign_float x1 = false) '
@@ -451,6 +460,18 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
             b'candle_assert (sign_float t = false) '
             b'"formal_ineqs/informal/informal_atn.hl"',
             2,
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_exp.hl": (
+        _replacement(
+            "informal-exp-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+        _replacement(
+            "informal-exp-ieee-reduction-order",
+            b'if f <= exp_max_x then',
+            b'if float_ieee_le f exp_max_x then',
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_interval.hl": (
@@ -475,6 +496,21 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_sin_cos.hl": (
+        _replacement(
+            "informal-cos-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+        _replacement(
+            "informal-cos-ieee-reduction-lower-order",
+            b'if y < -.f_pi then k0 + 1',
+            b'if float_ieee_lt y (-.f_pi) then k0 + 1',
+        ),
+        _replacement(
+            "informal-cos-ieee-reduction-upper-order",
+            b'else if y > f_pi then k0 - 1',
+            b'else if float_ieee_gt y f_pi then k0 - 1',
+        ),
         _replacement(
             "informal-sin-cos-assert-negative",
             b'assert (i < 0)',
@@ -640,7 +676,31 @@ let append_to_log name str =
 let log_fmt name = let _ = name in candle_disabled_log ();;''',
         ),
     ),
+    "flyspeck:formal_ineqs/trig/atn_eval.hl": (
+        _replacement(
+            "atn-eval-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+    ),
+    "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl": (
+        _replacement(
+            "cos-bounds-eval-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+    ),
     "flyspeck:formal_ineqs/trig/cos_eval.hl": (
+        _replacement(
+            "cos-eval-ieee-reduction-lower-order",
+            b'if y < -.f_pi then k0 + 1',
+            b'if float_ieee_lt y (-.f_pi) then k0 + 1',
+        ),
+        _replacement(
+            "cos-eval-ieee-reduction-upper-order",
+            b'else if y > f_pi then k0 - 1',
+            b'else if float_ieee_gt y f_pi then k0 - 1',
+        ),
         _replacement(
             "cos-interval-warning",
             b'Printf.sprintf "float_interval_cos: reduction failed (%s, %s)"\n\t\t\t   (string_of_term a_tm) (string_of_term b_tm)',
@@ -653,6 +713,18 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
             b'"cos_reduction: reduction failed (" ^ string_of_term a_tm ^\n'
             b'                                 ", " ^ string_of_term b_tm ^ ")"',
             2,
+        ),
+    ),
+    "flyspeck:formal_ineqs/trig/exp_eval.hl": (
+        _replacement(
+            "exp-eval-ieee-tail-order",
+            b'if r <= t then i else try_i (i + 1)',
+            b'if float_ieee_le r t then i else try_i (i + 1)',
+        ),
+        _replacement(
+            "exp-eval-ieee-reduction-order",
+            b'if f <= exp_max_x then',
+            b'if float_ieee_le f exp_max_x then',
         ),
     ),
     "flyspeck:formal_ineqs/trig/poly_eval.hl": (

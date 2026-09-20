@@ -32,16 +32,47 @@ require (same_float_bits neg_infinity Cake.Double.neginf64)
 let expected_nan =
   Cake.Double.construct (Cake.Word64.fromInt 0) (Cake.Word64.fromInt 2047)
     (Cake.Word64.fromInt 1);;
+let negative_zero =
+  Cake.Double.construct (Cake.Word64.fromInt 1) (Cake.Word64.fromInt 0)
+    (Cake.Word64.fromInt 0);;
 require (same_float_bits nan expected_nan) "NaN bits mismatch";;
 require (not (float_ieee_equal nan nan)) "NaN equality mismatch";;
 require (float_ieee_equal infinity infinity) "infinity equality mismatch";;
 require (float_ieee_lt (Float.of_string "0.5") (Float.of_string "1.0"))
   "float less-than mismatch";;
+require (float_ieee_le negative_zero Float.zero)
+  "float less-or-equal signed-zero mismatch";;
+require (float_ieee_gt infinity (Float.of_string "1.0"))
+  "float greater-than mismatch";;
 require (float_ieee_ge infinity (Float.of_string "1.0"))
   "float greater-or-equal mismatch";;
 require (not (float_ieee_lt nan Float.zero) &&
+         not (float_ieee_le nan Float.zero) &&
+         not (float_ieee_gt nan Float.zero) &&
          not (float_ieee_ge nan Float.zero))
   "NaN ordering mismatch";;
+
+let bool_digit condition = if condition then "1" else "0";;
+let float_order_code left right =
+  bool_digit (float_ieee_lt left right) ^
+  bool_digit (float_ieee_le left right) ^
+  bool_digit (float_ieee_gt left right) ^
+  bool_digit (float_ieee_ge left right);;
+let rec float_order_row left = function
+  | [] -> ""
+  | right :: rest ->
+      float_order_code left right ^ float_order_row left rest;;
+let rec float_order_matrix values =
+  match values with
+  | [] -> ""
+  | left :: rest ->
+      float_order_row left values ^ float_order_matrix rest;;
+let float_order_values =
+  [nan; neg_infinity; Float.of_string "-1.0"; negative_zero; Float.zero;
+   Float.of_string "1.0"; infinity];;
+print_endline
+  ("CANDLE_FLYSPECK_FLOAT_ORDER_MATRIX=" ^
+   float_order_matrix float_order_values);;
 
 let half = Float.of_string "0.5";;
 let eight = Float.of_string "8.0";;
@@ -49,9 +80,6 @@ let eight_fraction, eight_exponent = frexp eight;;
 require (same_float_bits eight_fraction half && eight_exponent = 4)
   "frexp normal mismatch";;
 
-let negative_zero =
-  Cake.Double.construct (Cake.Word64.fromInt 1) (Cake.Word64.fromInt 0)
-    (Cake.Word64.fromInt 0);;
 let zero_fraction, zero_exponent = frexp negative_zero;;
 require (float_ieee_equal negative_zero Float.zero)
   "signed-zero equality mismatch";;

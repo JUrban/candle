@@ -41,8 +41,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 22)
-        self.assertEqual(counts["normalization_operations"], 126)
+        self.assertEqual(counts["normalized_sources"], 26)
+        self.assertEqual(counts["normalization_operations"], 138)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -236,6 +236,58 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 "float_ieee_" in operation["after"]
                 for operation in selected.values()
             ))
+
+    def test_raw_double_branches_use_native_ieee_order(self) -> None:
+        expected = {
+            "flyspeck:formal_ineqs/informal/informal_atn.hl": {
+                "informal-atn-ieee-tail-order",
+            },
+            "flyspeck:formal_ineqs/informal/informal_exp.hl": {
+                "informal-exp-ieee-reduction-order",
+                "informal-exp-ieee-tail-order",
+            },
+            "flyspeck:formal_ineqs/informal/informal_sin_cos.hl": {
+                "informal-cos-ieee-reduction-lower-order",
+                "informal-cos-ieee-reduction-upper-order",
+                "informal-cos-ieee-tail-order",
+            },
+            "flyspeck:formal_ineqs/trig/atn_eval.hl": {
+                "atn-eval-ieee-tail-order",
+            },
+            "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl": {
+                "cos-bounds-eval-ieee-tail-order",
+            },
+            "flyspeck:formal_ineqs/trig/cos_eval.hl": {
+                "cos-eval-ieee-reduction-lower-order",
+                "cos-eval-ieee-reduction-upper-order",
+            },
+            "flyspeck:formal_ineqs/trig/exp_eval.hl": {
+                "exp-eval-ieee-reduction-order",
+                "exp-eval-ieee-tail-order",
+            },
+        }
+        selected = {}
+        for source_key, kinds in expected.items():
+            operations = self.payload["source_nodes"][source_key][
+                "normalization"
+            ]["operations"]
+            selected[source_key] = {
+                operation["kind"]: operation
+                for operation in operations
+                if operation["kind"] in kinds
+            }
+            self.assertEqual(set(selected[source_key]), kinds)
+        operations = [
+            operation
+            for source_operations in selected.values()
+            for operation in source_operations.values()
+        ]
+        self.assertEqual(len(operations), 12)
+        self.assertTrue(all(
+            operation["replacement_count"] == 1 and
+            "float_ieee_" in operation["after"]
+            for operation in operations
+        ))
 
     def test_all_active_assertions_use_distinct_failure_helper(self) -> None:
         assertion_operations = [
