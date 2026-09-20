@@ -108,12 +108,7 @@ let COMPUTE_INIT_THMS =
     REWRITE_TAC [MULT_CLAUSES; ADD_SYM]) in
   let SUB_LEMMA = prove (
     `n <= m ==> (m = n + k <=> m - n = k)`,
-    STRIP_TAC THEN EQ_TAC THEN STRIP_TAC THEN
-    ASM_SIMP_TAC [ADD_SUB; ADD_SUB2] THEN
-    POP_ASSUM (SUBST_ALL_TAC o SYM) THEN
-    RULE_ASSUM_TAC (REWRITE_RULE [LE_EXISTS]) THEN
-    POP_ASSUM (CHOOSE_THEN SUBST1_TAC) THEN
-    REWRITE_TAC [EQ_ADD_LCANCEL; ADD_SYM; ADD_SUB]) in
+    ARITH_TAC) in
   let DIV_RECURSIVE = prove (
     `m DIV n = if n = 0 then 0 else if m < n then 0 else SUC ((m - n) DIV n)`,
     ASM_CASES_TAC `n = 0` THEN ASM_SIMP_TAC [DIV_ZERO] THEN

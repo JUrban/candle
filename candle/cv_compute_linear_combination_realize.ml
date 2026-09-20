@@ -31,10 +31,10 @@ let candle_lc_acc_real_def = new_definition
 
 let candle_lc_row_real_def = new_definition
  `candle_lc_row_real (variables:real list)
-                     (row:num#((num#num)list#(num#num))) =
-    (FST row,
-     (candle_lc_vec_real variables (FST (SND row)),
-      candle_lc_zreal (SND (SND row))))`;;
+                     (lcrow:num#((num#num)list#(num#num))) =
+    (FST lcrow,
+     (candle_lc_vec_real variables (FST (SND lcrow)),
+      candle_lc_zreal (SND (SND lcrow))))`;;
 
 let candle_lc_zreal_add = prove
  (`!x y. candle_lc_zreal (candle_lc_zadd x y) =
@@ -102,11 +102,11 @@ let candle_lc_vec_real_scale = prove
                     REAL_MUL_ASSOC; REAL_MUL_RZERO]]);;
 
 let candle_lc_accumulate_real = prove
- (`!variables acc row.
-     candle_lc_acc_real variables (candle_lc_accumulate acc row) =
+ (`!variables acc lcrow.
+     candle_lc_acc_real variables (candle_lc_accumulate acc lcrow) =
      candle_lc_real_accumulate
        (candle_lc_acc_real variables acc)
-       (candle_lc_row_real variables row)`,
+       (candle_lc_row_real variables lcrow)`,
   REPEAT GEN_TAC THEN
   REWRITE_TAC[candle_lc_acc_real_def; candle_lc_row_real_def;
               candle_lc_accumulate_def; candle_lc_real_accumulate_def;
