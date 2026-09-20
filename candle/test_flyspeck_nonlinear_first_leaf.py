@@ -138,6 +138,29 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         _, valid = subject._validate_phase_profile(data)
         self.assertFalse(valid)
 
+    def test_phase_profile_rejects_foreign_lane_substitution(self) -> None:
+        phases = []
+        for (scope, phase), count in subject.EXPECTED_PHASE_COUNTS.items():
+            phases.extend({
+                "lane": "nonlinear-leaf",
+                "scope": scope,
+                "phase": phase,
+                "result": "end",
+            } for _ in range(count))
+        phases[0]["lane"] = "foreign-lane"
+        data = {
+            "schema": "candle-certificate-phase-profile-v1",
+            "stop_key": subject.PHASE_PROFILE_STOP_KEY,
+            "stop_seen": True,
+            "unclosed_phases": [],
+            "events": [{}] * (2 * len(phases)),
+            "phases": phases,
+            "peak_sampled_rss_kib": 123,
+        }
+        summary, valid = subject._validate_phase_profile(data)
+        self.assertFalse(valid)
+        self.assertFalse(summary["all_lanes_match"])
+
 
 if __name__ == "__main__":
     unittest.main()
