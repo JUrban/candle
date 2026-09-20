@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "claim": "development/non-release focused nonlinear recentering profile",
+  "date_utc": "2026-09-20",
+  "source_commit": "cd0753455fdf996fc1953b8151f0d2dc9b5473ba",
+  "runtime_binary_sha256": "3aaa248c0d5d6c96fa8e36445d1a945a751f0cf11a8b734a6142e9fab1088b2b",
+  "flyspeck_source": {
+    "commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+    "target_global_case": 7853,
+    "target_id": "prep-4680581274 delta issue-cayleyR",
+    "first_partition": "Iarg_facet ((0,false),0.7637,800,...)",
+    "source_expression": "delta_x * -1"
+  },
+  "method": "Translate each variable to an exact midpoint plus an offset, normalize the resulting polynomial with REAL_POLY_CONV, and authenticate the centered expression against the unchanged source expression with a kernel REAL_RING theorem. Evaluate the authenticated centered program by reflected exact intervals. A dedicated square instruction intersects the generic multiplication result with the kernel theorem x^2 >= 0. All ML-selected transformations are checked before their results are used.",
+  "input": {
+    "variables": 6,
+    "centered_program_instructions_before_square": 307,
+    "centered_program_instructions_with_square": 295,
+    "offset_domains": [
+      ["-85677616661/125000000000", "85677616661/125000000000"],
+      ["-1469/1250", "1469/1250"],
+      ["-1469/1250", "1469/1250"],
+      ["-7527/15625", "7527/15625"],
+      ["0", "0"],
+      ["-1469/1250", "1469/1250"]
+    ]
+  },
+  "timing_seconds": {
+    "marker_only_checkpoint_restart": 10.98,
+    "recentered_profile_before_square": 25.79,
+    "recentered_profile_with_square": 26.87,
+    "square_profile_above_marker_only_restart": 15.89
+  },
+  "max_rss_kb": 2251648,
+  "exact_result": {
+    "raw_first_leaf_upper_approx": 684.8098872707544,
+    "recentered_before_square": {
+      "lower": "-907132775863079280977235045847/1953125000000000000000000000",
+      "upper": "304871321282931580016083367/61035156250000000000000000",
+      "lower_approx": -464.4519812418966,
+      "upper_approx": 4.995011727899551
+    },
+    "recentered_with_square": {
+      "lower": "-1715088433410773797187652969797/3906250000000000000000000000",
+      "upper": "304871321282931580016083367/61035156250000000000000000",
+      "lower_approx": -439.0626389531581,
+      "upper_approx": 4.995011727899551,
+      "stored_lower_denominator_predecessor_bits": 2330,
+      "stored_upper_denominator_predecessor_bits": 2514
+    }
+  },
+  "artifacts": {
+    "profile_before_square": {
+      "path": "/project/flyspeck-candle-runs/cv-flyspeck-delta-first-leaf-recenter-v1/restart.log",
+      "sha256": "6964b3d76fd0c3cdff1659b32e47bab84049af6733767b4e0256d14a7fcc27d9"
+    },
+    "profile_with_square": {
+      "path": "/project/flyspeck-candle-runs/cv-flyspeck-delta-first-leaf-recenter-square-v1/restart.log",
+      "sha256": "7eb60c7c946ed598fc5919d3dbb52561c8a30187d9f2a9e0f5c040af75e73d83"
+    },
+    "program_regression": {
+      "path": "/project/flyspeck-candle-runs/cv-square-program-clean-v1/restart.log",
+      "sha256": "707d9f922a827e8f033d29a05c87ab0fd582fe9cb16c5dbbe3556d05ea651a95"
+    },
+    "reifier_regression": {
+      "path": "/project/flyspeck-candle-runs/cv-square-reify-clean-v1/restart.log",
+      "sha256": "17ba0ccb37ca0e4abb944bccdfdb79ed98bf740ad3fe1760ff9cfac2647c3d5f"
+    },
+    "cross_zero_square_regression": {
+      "path": "/project/flyspeck-candle-runs/cv-square-test-checkpoint-v33/restart.log",
+      "sha256": "4f6d6d3fc639284bad47c12f41ab909e0cf808cd6802b9c80488e9214ba38535"
+    }
+  },
+  "conclusion": "Kernel-authenticated midpoint recentering reduces the first leaf's raw upper bound from about 684.81 to about 4.995, but does not make it negative. The square rule shortens the program by 12 instructions and improves only the lower endpoint; the decisive upper endpoint is unchanged. Adding isolated algebraic interval primitives is therefore not the main path to this certificate. The next prototype must reconstruct Flyspeck's Taylor dependency argument, including derivative and remainder bounds, while bounded normalization or directed rounding should address the 2330-2514-bit stored denominators before scaling to substantial workloads."
+}
