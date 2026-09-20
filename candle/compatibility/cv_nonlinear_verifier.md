@@ -158,10 +158,16 @@ formal kernel-theorem reconstruction, and final public normalization. A
 separate read-only observer timestamps those markers and samples process CPU,
 RSS, and high-water RSS from `/proc`; the profiled result is accepted only if
 the target-wide phase closes, every opened phase closes, the ordinary theorem
-gate passes, and the observer artifact is complete. Forty nonlinear controller
-tests and two observer tests pass. This is prepared machinery, not yet a timing
-or speedup result; it should run only after the uninstrumented fresh replay
-first establishes a successful exact baseline.
+gate passes, and the observer artifact is complete. Forty-one nonlinear
+controller tests and three observer tests pass. This is prepared machinery,
+not yet a timing or speedup result; it should run only after the uninstrumented
+fresh replay first establishes a successful exact baseline.
+
+The exact instrumented verifier source also passes the real parser-only runtime
+gate: 33,673 prepared bytes with seven masked loader actions parsed in 1.256
+seconds, with exit status zero, empty stderr, and `parse-ok`. This closes syntax
+only; inference, execution, and theorem equivalence remain for the fresh
+profiled proof run.
 
 The fourteenth fresh first-leaf replay completed `arith/float_pow.hl`, the
 large `trig/exp_log.hl` analysis dependency chain, and `trig/poly_eval.hl` in
