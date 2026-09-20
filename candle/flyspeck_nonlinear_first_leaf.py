@@ -324,10 +324,14 @@ def _extract_seconds(log_data: bytes, marker: str) -> float | None:
 def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]:
     counts: dict[tuple[str, str], int] = {}
     all_ended = True
+    all_lanes_match = True
     for phase in data.get("phases", []):
         key = (phase.get("scope"), phase.get("phase"))
         counts[key] = counts.get(key, 0) + 1
         all_ended = all_ended and phase.get("result") == "end"
+        all_lanes_match = (
+            all_lanes_match and phase.get("lane") == "nonlinear-leaf"
+        )
     expected = {
         f"{scope}/{phase}": count
         for (scope, phase), count in EXPECTED_PHASE_COUNTS.items()
@@ -342,12 +346,14 @@ def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]
         and data.get("stop_seen") is True
         and data.get("unclosed_phases") == []
         and all_ended
+        and all_lanes_match
         and counts == EXPECTED_PHASE_COUNTS
     )
     return {
         "schema": data.get("schema"),
         "stop_seen": data.get("stop_seen"),
         "unclosed_phases": data.get("unclosed_phases"),
+        "all_lanes_match": all_lanes_match,
         "event_count": len(data.get("events", [])),
         "phase_count": len(data.get("phases", [])),
         "peak_sampled_rss_kib": data.get("peak_sampled_rss_kib"),
