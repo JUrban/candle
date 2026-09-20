@@ -186,6 +186,43 @@ gate took 3,170.820 elapsed seconds because it retained the known generated
 parser hotspot. Closure SHA-256 is
 `b82746f4378a6c256ae9a81abdba66334b71d891503f6fd40fadb8edd0d1fc15`.
 
+The sixteenth fresh replay passed `trig/cos_bounds_eval.hl`, confirming the
+four-site `atan` normalization on the real closure. It then stopped later while
+inferring the copied `THENL_FIRST` / `THENL_LAST` helper at
+`formal_ineqs/lib/ssreflect/ssreflect.hl:64`. The failure is the already known
+current-tactic-API mismatch: the second tactic sequence's instantiation must be
+propagated into the first sequence's pending goals and justification. No
+reconstruction marker was reached, so this remains a source-compatibility
+failure before the target proof rather than a nonlinear theorem failure.
+
+The preserved v16 result took 4,394.047 elapsed seconds, 4,382.414 child-user
+seconds, 4.207 child-system seconds, and 1,197,056 KiB peak RSS. Its log is
+9,664,504 bytes with SHA-256
+`23d8c3eb33c41950bbde85b72a2e8063850b7ee0aaac1c5145831a3dd7b79f2a`.
+
+The direct Flyspeck lane already carries a focused, theorem-producing repair
+for the sibling `jHOLLight/caml/ssreflect.hl`; its original helper reproduces
+this mismatch and its normalized `THENL_FIRST` and `THENL_LAST` both construct
+`T /\ T`. Closure compatibility version 9 does not copy those rewrite bytes or
+define another tactic repair. It selects the six shared exact-byte operation
+objects from the canonical versioned direct normalization contract and applies
+them to the authenticated module-wrapped sibling. The obsolete dynamic-lookup
+block is not selected because this formal-verifier copy already comments it
+out. Source anchors, the selected canonical operation IDs, and the derived
+output identity all fail closed.
+
+The v9 closure has 27 normalized sources and 146 operations. Its JSON is
+431,963 bytes with SHA-256
+`3ce968d6b6dec45c05800527a5f3dfddea2fa5e44b49a5aac8da1895db1d1ef2`;
+the regenerated first-leaf target has SHA-256
+`6d84cd963c3bf4eead49ea87ea777827cc6885d782742c6a0591c7854f17cfbe`.
+All 24 closure/target authority tests pass, including byte-for-byte comparison
+of every derived operation with its canonical contract object. The focused
+runtime gate reproduces the original CakeML type mismatch and proves both
+normalized `THENL_FIRST` and `THENL_LAST` test theorems in fresh HOL states.
+The complete nonlinear regression suite passes all 40 tests in 39.381 seconds.
+These are the required focused gates before another expensive replay.
+
 The parser-only survey has exposed one material frontend hotspot rather than a
 syntax incompatibility: the 469,938-byte generated
 `multivariate_taylor-compiled.hl` source occupied one parser process for about

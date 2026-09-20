@@ -47,7 +47,7 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             {record["repository"] for record in self.records},
             {"candle", "flyspeck"},
         )
-        self.assertEqual(len(self.overlays), 26)
+        self.assertEqual(len(self.overlays), 27)
 
     def test_central_big_int_overlay_is_complete_and_source_bound(self) -> None:
         self.assertEqual(

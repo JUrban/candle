@@ -4,6 +4,8 @@ set -euo pipefail
 candle_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 candle_binary=${CANDLE_BINARY:-"$candle_root/candle/build/cake"}
 candle_runtime_cwd=${CANDLE_RUNTIME_CWD:-"$candle_root"}
+candle_hol_root=${CANDLE_HOL_ROOT:-"$candle_root"}
+candle_support_root=${CANDLE_SUPPORT_ROOT:-"$candle_root"}
 fixture_root="$candle_root/candle/compatibility/fixtures"
 test_dir=$(mktemp -d /tmp/candle-flyspeck-ssreflect-thenl.XXXXXX)
 cleanup() {
@@ -22,13 +24,15 @@ rg -Fq 'compose_justs (length gls1) just1 just2 insts2' \
 
 (
   cd "$candle_runtime_cwd"
-  printf '#use "hol.ml";;\n#use "%s";;\n' \
+  printf 'Cakeml.loadPath := ["%s"; "%s"; Filename.currentDir];;\n#use "%s/hol.ml";;\n#use "%s";;\n' \
+    "$candle_support_root" "$candle_hol_root" "$candle_hol_root" \
     "$fixture_root/ssreflect_thenl_original.ml" |
     timeout 300 "$candle_binary" --candle >"$test_dir/original.log" 2>&1
 )
 (
   cd "$candle_runtime_cwd"
-  printf '#use "hol.ml";;\n#use "%s";;\n' \
+  printf 'Cakeml.loadPath := ["%s"; "%s"; Filename.currentDir];;\n#use "%s/hol.ml";;\n#use "%s";;\n' \
+    "$candle_support_root" "$candle_hol_root" "$candle_hol_root" \
     "$fixture_root/ssreflect_thenl_normalized.ml" |
     timeout 300 "$candle_binary" --candle >"$test_dir/normalized.log" 2>&1
 )

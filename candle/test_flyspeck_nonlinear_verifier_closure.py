@@ -42,8 +42,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 26)
-        self.assertEqual(counts["normalization_operations"], 140)
+        self.assertEqual(counts["normalized_sources"], 27)
+        self.assertEqual(counts["normalization_operations"], 146)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -395,6 +395,66 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             self.assertEqual(
                 record["normalized_sha256"], authority["normalized_sha256"],
             )
+
+    def test_module_ssreflect_reuses_canonical_operation_objects(self) -> None:
+        node = self.payload["source_nodes"][
+            subject.SSREFLECT_MODULE_SOURCE_KEY
+        ]
+        record = node["normalization"]
+        self.assertEqual(record["id"], subject.DIRECT_NORMALIZATION_ALIAS)
+        self.assertEqual(
+            record["authority"],
+            "direct-flyspeck-normalization-derived-alias",
+        )
+        self.assertEqual(
+            record["canonical_source_key"],
+            subject.SSREFLECT_CANONICAL_SOURCE_KEY,
+        )
+        self.assertEqual(record["operation_count"], 6)
+        self.assertEqual(
+            tuple(operation["id"] for operation in record["operations"]),
+            subject.SSREFLECT_SHARED_OPERATION_IDS,
+        )
+
+        contract = json.loads(
+            (ROOT / subject.flyspeck_manifest.SOURCE_NORMALIZATION_CONTRACT)
+            .read_text(encoding="utf-8")
+        )
+        canonical = next(
+            entry for entry in contract["entries"]
+            if entry["source_key"] == subject.SSREFLECT_CANONICAL_SOURCE_KEY
+        )
+        canonical_operations = {
+            operation["id"]: operation
+            for operation in canonical["operations"]
+        }
+        for operation in record["operations"]:
+            authoritative = canonical_operations[operation["id"]]
+            self.assertEqual(operation["kind"], authoritative["kind"])
+            self.assertEqual(operation["before"], authoritative["before"])
+            self.assertEqual(operation["after"], authoritative["after"])
+            self.assertEqual(
+                operation["canonical_line"], authoritative["line"],
+            )
+
+        source = (
+            FLYSPECK_ROOT / node["logical_relative_path"]
+        ).read_bytes()
+        _contract_data, direct = subject.load_direct_normalizations(
+            ROOT, FLYSPECK_ROOT,
+            json.loads((ROOT / subject.MANIFEST).read_text(encoding="utf-8")),
+        )
+        normalized, observed = subject.apply_recorded_normalization(
+            subject.SSREFLECT_MODULE_SOURCE_KEY, source, node, direct,
+        )
+        self.assertEqual(observed, record)
+        self.assertEqual(len(normalized), record["normalized_bytes"])
+        self.assertNotIn(
+            canonical_operations[
+                subject.SSREFLECT_SHARED_OPERATION_IDS[0]
+            ]["before"].encode("utf-8"),
+            normalized,
+        )
 
     def test_normalization_lanes_fail_closed_on_overlap(self) -> None:
         source = b"let x = a.(i).(j);;\n"

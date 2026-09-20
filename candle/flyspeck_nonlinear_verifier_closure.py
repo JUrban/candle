@@ -31,8 +31,23 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v8"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v9"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
+DIRECT_NORMALIZATION_ALIAS = (
+    "candle-flyspeck-direct-normalization-derived-alias-v1"
+)
+SSREFLECT_CANONICAL_SOURCE_KEY = "flyspeck:jHOLLight/caml/ssreflect.hl"
+SSREFLECT_MODULE_SOURCE_KEY = (
+    "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+)
+SSREFLECT_SHARED_OPERATION_IDS = (
+    "PROJECT-SSREFLECT-S2-INSTANTIATION-PROPAGATION-001-JUSTIFICATIONS",
+    "PROJECT-SSREFLECT-S2-INSTANTIATION-PROPAGATION-001-GOALS",
+    "PROJECT-SSREFLECT-S2-CONTEXT-TERM-SETIFY-001",
+    "PROJECT-SSREFLECT-S2-SPEC-COMMAND-PAIR-GROUPING-001",
+    "PROJECT-SSREFLECT-S2-CASES-TABLE-TYPE-001",
+    "PROJECT-SSREFLECT-S2-ELIM-TABLE-TYPE-001",
+)
 FLOAT_RUNTIME_IDENTIFIER_RESOLUTION = {
     "abs_float": "central-candle-compatibility",
     "atan": "exact-closed-expression-normalization",
@@ -940,9 +955,14 @@ def _normalization_record(
     """
 
     direct = direct_normalizations.get(source_key)
-    base = source if direct is None else direct[1]
+    alias_base, alias_record = _direct_normalization_alias(
+        source_key, source, direct_normalizations,
+    )
+    if direct is not None and alias_record is not None:
+        raise ValueError(f"overlapping direct normalization alias: {source_key}")
+    base = direct[1] if direct is not None else alias_base
     normalized, operations = normalize_source(source_key, base)
-    if direct is not None and operations:
+    if (direct is not None or alias_record is not None) and operations:
         raise ValueError(
             f"overlapping direct/parser normalizations: {source_key}"
         )
@@ -961,6 +981,10 @@ def _normalization_record(
             "normalized_md5": entry["normalized_md5"],
             "normalized_sha256": entry["normalized_sha256"],
         }
+    if alias_record is not None:
+        if normalized != alias_base:
+            raise ValueError(f"direct normalization alias drift: {source_key}")
+        return normalized, alias_record
     if not operations:
         return source, None
     return normalized, {
@@ -970,6 +994,78 @@ def _normalization_record(
         "scope_limit": NORMALIZATION_SCOPE_LIMIT,
         "operation_count": len(operations),
         "operations": operations,
+        "normalized_bytes": len(normalized),
+        "normalized_md5": hashlib.md5(
+            normalized, usedforsecurity=False,
+        ).hexdigest(),
+        "normalized_sha256": hashlib.sha256(normalized).hexdigest(),
+    }
+
+
+def _direct_normalization_alias(
+    source_key: str,
+    source: bytes,
+    direct_normalizations: dict[str, tuple[dict[str, Any], bytes]],
+) -> tuple[bytes, dict[str, Any] | None]:
+    """Apply shared canonical operations to an authenticated source sibling.
+
+    The formal verifier carries a module-wrapped copy of ssreflect whose
+    obsolete dynamic-lookup block is already commented out.  Its six remaining
+    compatibility edits are identical to the canonical direct-Flyspeck entry.
+    Select those operation objects from that versioned authority so this lane
+    cannot acquire a second handwritten definition of the tactic repair.
+    """
+
+    if source_key != SSREFLECT_MODULE_SOURCE_KEY:
+        return source, None
+    canonical = direct_normalizations.get(SSREFLECT_CANONICAL_SOURCE_KEY)
+    if canonical is None:
+        raise ValueError("canonical ssreflect normalization is absent")
+    entry, _canonical_normalized = canonical
+    selected = [
+        operation for operation in entry["operations"]
+        if operation["id"] in SSREFLECT_SHARED_OPERATION_IDS
+    ]
+    if tuple(operation["id"] for operation in selected) != (
+        SSREFLECT_SHARED_OPERATION_IDS
+    ):
+        raise ValueError("canonical ssreflect shared operation set drift")
+
+    normalized = source
+    observed_operations: list[dict[str, Any]] = []
+    for operation in selected:
+        if operation.get("kind") != "exact_bytes_replace_once":
+            raise ValueError("unsupported shared ssreflect operation kind")
+        before = str(operation["before"]).encode("utf-8")
+        after = str(operation["after"]).encode("utf-8")
+        if normalized.count(before) != 1:
+            raise ValueError(
+                "module ssreflect shared anchor count is not one: "
+                + str(operation["id"])
+            )
+        offset = normalized.index(before)
+        observed = dict(operation)
+        observed["canonical_line"] = observed.pop("line")
+        observed["line"] = normalized.count(b"\n", 0, offset) + 1
+        observed_operations.append(observed)
+        normalized = normalized.replace(before, after, 1)
+
+    return normalized, {
+        "id": DIRECT_NORMALIZATION_ALIAS,
+        "authority": "direct-flyspeck-normalization-derived-alias",
+        "canonical_source_key": SSREFLECT_CANONICAL_SOURCE_KEY,
+        "canonical_normalization_id": entry["id"],
+        "semantic_rule": entry["semantic_rule"],
+        "scope_limit": (
+            "The authenticated module-wrapped formal_ineqs sibling already "
+            "comments out the canonical entry's dynamic lookup block. Only "
+            "the six shared exact-byte operations named by the canonical "
+            "versioned direct normalization are reused; source, anchors, and "
+            "result bytes remain hash-bound by this closure. "
+            + entry["scope_limit"]
+        ),
+        "operation_count": len(observed_operations),
+        "operations": observed_operations,
         "normalized_bytes": len(normalized),
         "normalized_md5": hashlib.md5(
             normalized, usedforsecurity=False,
