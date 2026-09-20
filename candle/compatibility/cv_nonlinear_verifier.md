@@ -111,15 +111,17 @@ top-level compatibility names; this catches the implicitly opened
 that require later inference to disambiguate.
 
 The closure also mechanically inventories the previously unaccounted
-unqualified floating-runtime surface alongside the existing top-level scan.
+floating-runtime identifier surface alongside the existing top-level scan.
 Across the authenticated Flyspeck sources it records 94 lexical uses of nine
 relevant names. `log` is supplied by the verified runtime; `abs_float`, the
 integer and string conversions, `floor`, `infinity`, and `nan` are supplied by
 Candle's central compatibility layer; and the four `atan` uses are exactly the
 closed cosine-table expressions covered by the bit-identical normalization
 above. The regression pins the complete reviewed counts and all four `atan`
-source sites, so a new unsupported unqualified floating call cannot silently
-enter this closure.
+source sites, so a new unsupported floating-runtime identifier cannot silently
+enter this closure. The lexical inventory deliberately includes both qualified
+and unqualified occurrences; its resolution record distinguishes how each name
+is supplied.
 
 Both focused differential gates pass against native OCaml 4.14.1. The
 arithmetic gate covers exact floor square root around adjacent squares and at

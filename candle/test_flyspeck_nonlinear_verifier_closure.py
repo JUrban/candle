@@ -93,14 +93,16 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             for use in compatibility["toplevel_uses"]
         ))
 
-    def test_unqualified_float_runtime_surface_is_accounted_for(self) -> None:
+    def test_float_runtime_identifier_surface_is_accounted_for(self) -> None:
         compatibility = self.payload["compatibility"]
         self.assertEqual(
-            compatibility["unqualified_float_runtime_resolution"],
-            subject.UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION,
+            compatibility["float_runtime_identifier_resolution"],
+            subject.FLOAT_RUNTIME_IDENTIFIER_RESOLUTION,
         )
-        uses = compatibility["unqualified_float_uses"]
-        self.assertEqual(compatibility["unqualified_float_use_count"], 94)
+        uses = compatibility["float_runtime_identifier_uses"]
+        self.assertEqual(
+            compatibility["float_runtime_identifier_use_count"], 94,
+        )
         self.assertEqual(
             Counter(use["identifier"] for use in uses),
             Counter({
@@ -117,7 +119,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         )
         self.assertTrue(all(
             use["resolution"] ==
-            subject.UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION[use["identifier"]]
+            subject.FLOAT_RUNTIME_IDENTIFIER_RESOLUTION[use["identifier"]]
             for use in uses
         ))
         atan_sites = {

@@ -1,6 +1,584 @@
 {
   "claim": "exact recursive literal source closure for M_verifier_main.verify_ineq; not direct-run or release evidence",
   "compatibility": {
+    "float_runtime_identifier_resolution": {
+      "abs_float": "central-candle-compatibility",
+      "atan": "exact-closed-expression-normalization",
+      "float_of_int": "central-candle-compatibility",
+      "float_of_string": "central-candle-compatibility",
+      "floor": "central-candle-compatibility",
+      "infinity": "central-candle-compatibility",
+      "int_of_float": "central-candle-compatibility",
+      "log": "verified-runtime-primitive",
+      "nan": "central-candle-compatibility"
+    },
+    "float_runtime_identifier_use_count": 94,
+    "float_runtime_identifier_uses": [
+      {
+        "identifier": "float_of_string",
+        "line": 38,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 43,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 44,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "infinity",
+        "line": 46,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "nan",
+        "line": 46,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "floor",
+        "line": 59,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 59,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 60,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 64,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 69,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 70,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 69,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 73,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 73,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 77,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 141,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 148,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 47,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 51,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 51,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 122,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 130,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 133,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "floor",
+        "line": 137,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 137,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 37,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "float_of_string",
+        "line": 116,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 120,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 121,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "infinity",
+        "line": 123,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "nan",
+        "line": 123,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "floor",
+        "line": 136,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 136,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 137,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 141,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 146,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 147,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 222,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 502,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 518,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 202,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 202,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 209,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 29,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/informal/informal_log.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 93,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_search.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 42,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 46,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 46,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "atan",
+        "line": 58,
+        "resolution": "exact-closed-expression-normalization",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "atan",
+        "line": 62,
+        "resolution": "exact-closed-expression-normalization",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 207,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 208,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 127,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 130,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 130,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 229,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 229,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 305,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 305,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 309,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 90,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 95,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 95,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "identifier": "atan",
+        "line": 109,
+        "resolution": "exact-closed-expression-normalization",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "identifier": "atan",
+        "line": 119,
+        "resolution": "exact-closed-expression-normalization",
+        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 714,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 715,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 175,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 179,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 179,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "abs_float",
+        "line": 345,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "floor",
+        "line": 349,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 349,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
+      },
+      {
+        "identifier": "log",
+        "line": 156,
+        "resolution": "verified-runtime-primitive",
+        "source": "flyspeck:formal_ineqs/trig/log_eval.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1242,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1245,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1245,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1320,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1320,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1427,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1430,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1430,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1500,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1500,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1604,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1607,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1607,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1685,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1685,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1747,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1750,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1750,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "float_of_int",
+        "line": 1763,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      },
+      {
+        "identifier": "int_of_float",
+        "line": 1763,
+        "resolution": "central-candle-compatibility",
+        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+      }
+    ],
     "qualified_member_count": 34,
     "qualified_use_count": 404,
     "qualified_uses": [
@@ -2503,584 +3081,6 @@
         "identifier": "abs_float",
         "line": 345,
         "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      }
-    ],
-    "unqualified_float_runtime_resolution": {
-      "abs_float": "central-candle-compatibility",
-      "atan": "exact-closed-expression-normalization",
-      "float_of_int": "central-candle-compatibility",
-      "float_of_string": "central-candle-compatibility",
-      "floor": "central-candle-compatibility",
-      "infinity": "central-candle-compatibility",
-      "int_of_float": "central-candle-compatibility",
-      "log": "verified-runtime-primitive",
-      "nan": "central-candle-compatibility"
-    },
-    "unqualified_float_use_count": 94,
-    "unqualified_float_uses": [
-      {
-        "identifier": "float_of_string",
-        "line": 38,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 43,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 44,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "infinity",
-        "line": 46,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "nan",
-        "line": 46,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "floor",
-        "line": 59,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 59,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 60,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 64,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 69,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 70,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/arith/more_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 69,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 73,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 73,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 77,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 141,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 148,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_atn.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 47,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 51,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 51,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 122,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 130,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 133,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "floor",
-        "line": 137,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 137,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_exp.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 37,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "float_of_string",
-        "line": 116,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 120,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 121,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "infinity",
-        "line": 123,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "nan",
-        "line": 123,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "floor",
-        "line": 136,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 136,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 137,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 141,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 146,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 147,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 222,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 502,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 518,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_float.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 202,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 202,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 209,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_interval.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 29,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/informal/informal_log.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 93,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_search.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 42,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 46,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 46,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "atan",
-        "line": 58,
-        "resolution": "exact-closed-expression-normalization",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "atan",
-        "line": 62,
-        "resolution": "exact-closed-expression-normalization",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 207,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 208,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_sin_cos.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 127,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 130,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 130,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 229,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 229,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/informal/informal_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 305,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 305,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 309,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/atn_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 90,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 95,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 95,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
-      },
-      {
-        "identifier": "atan",
-        "line": 109,
-        "resolution": "exact-closed-expression-normalization",
-        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
-      },
-      {
-        "identifier": "atan",
-        "line": 119,
-        "resolution": "exact-closed-expression-normalization",
-        "source": "flyspeck:formal_ineqs/trig/cos_bounds_eval.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 714,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 715,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/cos_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 175,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 179,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 179,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "abs_float",
-        "line": 345,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "floor",
-        "line": 349,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 349,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/trig/exp_eval.hl"
-      },
-      {
-        "identifier": "log",
-        "line": 156,
-        "resolution": "verified-runtime-primitive",
-        "source": "flyspeck:formal_ineqs/trig/log_eval.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1242,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1245,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1245,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1320,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1320,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1427,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1430,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1430,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1500,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1500,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1604,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1607,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1607,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1685,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1685,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1747,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1750,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1750,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "float_of_int",
-        "line": 1763,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-      },
-      {
-        "identifier": "int_of_float",
-        "line": 1763,
-        "resolution": "central-candle-compatibility",
-        "source": "flyspeck:formal_ineqs/verifier/m_verifier.hl"
       }
     ],
     "unsupported_use_count": 0,

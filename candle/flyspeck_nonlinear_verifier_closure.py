@@ -33,7 +33,7 @@ VERIFIER_ROOT = flyspeck_manifest.SourceRef(
 )
 SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v8"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
-UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION = {
+FLOAT_RUNTIME_IDENTIFIER_RESOLUTION = {
     "abs_float": "central-candle-compatibility",
     "atan": "exact-closed-expression-normalization",
     "float_of_int": "central-candle-compatibility",
@@ -1075,7 +1075,7 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
     nodes: dict[str, dict[str, Any]] = {}
     compatibility_uses: list[dict[str, Any]] = []
     toplevel_compatibility_uses: list[dict[str, Any]] = []
-    unqualified_float_uses: list[dict[str, Any]] = []
+    float_runtime_identifier_uses: list[dict[str, Any]] = []
     compatibility_modules = (
         set(flyspeck_manifest.OCAML_COMPATIBILITY_SUPPORTED_MEMBERS)
         | set(flyspeck_manifest.STATIC_RUNTIME_LIBRARIES.values())
@@ -1105,11 +1105,11 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
                     "source": source_ref.key, **use,
                 })
             for use in flyspeck_manifest.scan_identifier_uses(
-                text, set(UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION),
+                text, set(FLOAT_RUNTIME_IDENTIFIER_RESOLUTION),
             ):
-                unqualified_float_uses.append({
+                float_runtime_identifier_uses.append({
                     "source": source_ref.key,
-                    "resolution": UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION[
+                    "resolution": FLOAT_RUNTIME_IDENTIFIER_RESOLUTION[
                         str(use["identifier"])
                     ],
                     **use,
@@ -1233,8 +1233,8 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
             str(use["source"]), int(use["line"]), str(use["identifier"]),
         ),
     )
-    sorted_unqualified_float_uses = sorted(
-        unqualified_float_uses,
+    sorted_float_runtime_identifier_uses = sorted(
+        float_runtime_identifier_uses,
         key=lambda use: (
             str(use["source"]), int(use["line"]), str(use["identifier"]),
         ),
@@ -1299,13 +1299,15 @@ def build_closure(candle_root: Path, flyspeck_root: Path) -> dict[str, Any]:
                 flyspeck_manifest.OCAML_TOPLEVEL_COMPATIBILITY_MEMBERS
             ),
             "toplevel_uses": sorted_toplevel_compatibility_uses,
-            "unqualified_float_runtime_resolution": (
-                UNQUALIFIED_FLOAT_RUNTIME_RESOLUTION
+            "float_runtime_identifier_resolution": (
+                FLOAT_RUNTIME_IDENTIFIER_RESOLUTION
             ),
-            "unqualified_float_use_count": len(
-                sorted_unqualified_float_uses
+            "float_runtime_identifier_use_count": len(
+                sorted_float_runtime_identifier_uses
             ),
-            "unqualified_float_uses": sorted_unqualified_float_uses,
+            "float_runtime_identifier_uses": (
+                sorted_float_runtime_identifier_uses
+            ),
         },
         "source_nodes": {key: nodes[key] for key in sorted(nodes)},
         "integration_policy": {
