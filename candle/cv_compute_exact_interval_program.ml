@@ -267,6 +267,22 @@ let candle_cv_q_interval_list_def = define
      Cexp_pair (candle_cv_q_interval h)
        (candle_cv_q_interval_list t))`;;
 
+let candle_cv_q_interval_list_decode_def = define
+ `(candle_cv_q_interval_list_decode (Cexp_num n) =
+     ([]:(((num#num)#num)#((num#num)#num))list)) /\
+  (candle_cv_q_interval_list_decode (Cexp_pair h t) =
+     CONS (candle_cv_q_interval_decode h)
+       (candle_cv_q_interval_list_decode t))`;;
+
+let candle_cv_q_interval_list_roundtrip = prove
+ (`!intervals:(((num#num)#num)#((num#num)#num))list.
+     candle_cv_q_interval_list_decode
+       (candle_cv_q_interval_list intervals) = intervals`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_q_interval_list_decode_def;
+                  candle_cv_q_interval_list_def;
+                  candle_cv_q_interval_roundtrip]);;
+
 let candle_cv_q_zero_interval_def = new_definition
  `candle_cv_q_zero_interval =
     candle_cv_q_interval candle_q_zero_interval`;;
