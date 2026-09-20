@@ -1,7 +1,7 @@
 # Reflected exact linear-combination prototype
 
-Status: DEVELOPMENT / NON-RELEASE; no Flyspeck theorem replacement or speedup
-claim
+Status: DEVELOPMENT / NON-RELEASE; measured local benefit, but no Flyspeck
+theorem replacement or end-to-end speedup claim
 
 ## Why this boundary
 
@@ -99,12 +99,37 @@ public conclusion, complete raw hypothesis set, and unchanged global axiom
 state. The production post-action-181 caller will supply
 `Prove_lp.lin_f_conv`; the adapter does not trust or duplicate that parser.
 
+## Real-certificate measurement
+
+The generic bulk-soundness path has run on terminals 15, 5, and 17 from the
+authenticated `hard_2.dat` certificate in three successive fresh checkpoint
+attempts. The accepted 50 ms externally sampled attempt used 402/480/382 real
+rows, preserved 68/78/65 hypotheses, and measured:
+
+| Terminal | Selection + bulk proof | Legacy construction + combination | Local ratio |
+|---:|---:|---:|---:|
+| 15 | 2.641 s | 26.077 s | 9.87x |
+| 5 | 3.960 s | 16.449 s | 4.15x |
+| 17 | 2.841 s | 10.407 s | 3.66x |
+
+This clears the feasibility response's 3x continuation threshold on all three
+selected slices. It is deliberately not an inclusive terminal benchmark: the
+measured prototype did not yet include the exact reifier, `Kernel.compute`,
+canonicalization, public rendering, variable-bound construction,
+cancellation, or final discharge. The retained evidence is
+`/project/flyspeck-candle-runs/cv-lp-bulk-hard2-v11`.
+
+The corrected complete old/new comparison harness is prepared, but its latest
+fresh checkpoint restore was stopped by the swap-out resource guard before any
+proof byte was emitted. That partial state is rejected and is not reused.
+
 It is not yet a Flyspeck checker replacement. Before integration it must add:
 
 1. conclusion, hypothesis, and axiom-fingerprint equality against the existing
    `transform_le_ineq`/`add_step'` oracle; and
-2. inclusive benchmarks on `hard_2` terminals 15, 5, and 17 before any broader
-   integration.
+2. an inclusive complete-adapter benchmark on `hard_2` terminals 15, 5, and 17,
+   followed by reflection of variable bounds/cancellation if they remain
+   material.
 
 The existing theorem path remains the fail-closed fallback. No certificate,
 source theorem, hypothesis, public interface, or allowed axiom is changed.
