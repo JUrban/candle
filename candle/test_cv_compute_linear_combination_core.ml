@@ -1,4 +1,11 @@
 needs "candle/compute.ml";;
+
+(* Model the late Flyspeck namespace, where Multivariate/vectors.ml already
+   owns the logical constant [rows].  Prototype binders must remain variables
+   rather than being captured by an unrelated constant with this name. *)
+let candle_cv_lc_test_rows_collision_def = new_definition
+ `rows (n:num) = n`;;
+
 needs "candle/cv_compute_linear_combination_core.ml";;
 needs "candle/cv_compute_linear_combination.ml";;
 needs "candle/cv_compute_linear_combination_sound.ml";;
