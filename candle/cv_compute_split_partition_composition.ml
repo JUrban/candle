@@ -52,6 +52,19 @@ let candle_split_partition_leaf_count_def = define
      candle_split_partition_leaf_count candle_split_left_tree +
        candle_split_partition_leaf_count candle_split_right_tree)`;;
 
+let candle_split_partition_well_formed_def = define
+ `(candle_split_partition_well_formed candle_split_dimension
+      Candle_split_partition_leaf <=> T) /\
+  (candle_split_partition_well_formed candle_split_dimension
+      (Candle_split_partition_node candle_split_index candle_split_value
+        candle_split_left_tree candle_split_right_tree) <=>
+     1 <= candle_split_index /\
+     candle_split_index <= candle_split_dimension /\
+     candle_split_partition_well_formed candle_split_dimension
+       candle_split_left_tree /\
+     candle_split_partition_well_formed candle_split_dimension
+       candle_split_right_tree)`;;
+
 let candle_split_partition_composition_sound = prove
  (`!candle_split_predicate candle_split_left candle_split_right.
      (!candle_split_index candle_split_value candle_split_domain.
@@ -72,5 +85,30 @@ let candle_split_partition_composition_sound = prove
   REWRITE_TAC[candle_split_partition_holds_def] THEN
   ASM_MESON_TAC[]);;
 
-end;;
+let candle_split_partition_composition_sound_well_formed = prove
+ (`!candle_split_dimension candle_split_predicate
+      candle_split_left candle_split_right.
+     (!candle_split_index candle_split_value candle_split_domain.
+       1 <= candle_split_index /\
+       candle_split_index <= candle_split_dimension ==>
+       candle_split_predicate
+         (candle_split_left candle_split_index candle_split_value
+           candle_split_domain) /\
+       candle_split_predicate
+         (candle_split_right candle_split_index candle_split_value
+           candle_split_domain)
+       ==> candle_split_predicate candle_split_domain)
+     ==> !candle_split_tree candle_split_domain.
+       candle_split_partition_well_formed candle_split_dimension
+         candle_split_tree /\
+       candle_split_partition_holds candle_split_predicate
+         candle_split_left candle_split_right candle_split_domain
+         candle_split_tree
+       ==> candle_split_predicate candle_split_domain`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_split_partition_INDUCT THEN
+  REWRITE_TAC[candle_split_partition_holds_def;
+              candle_split_partition_well_formed_def] THEN
+  ASM_MESON_TAC[]);;
 
+end;;

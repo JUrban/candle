@@ -20,18 +20,18 @@ let candle_split_test_closure = prove
   ARITH_TAC);;
 
 let candle_split_test_tree =
- `Candle_split_partition_node 0 #0.5
+ `Candle_split_partition_node 1 #0.5
     Candle_split_partition_leaf
-    (Candle_split_partition_node 1 #1.25
+    (Candle_split_partition_node 2 #1.25
       Candle_split_partition_leaf Candle_split_partition_leaf)`;;
 
 let candle_split_test_holds = prove
  (`candle_split_partition_holds
      candle_split_test_predicate candle_split_test_left
      candle_split_test_right 1
-     (Candle_split_partition_node 0 #0.5
+     (Candle_split_partition_node 1 #0.5
        Candle_split_partition_leaf
-       (Candle_split_partition_node 1 #1.25
+       (Candle_split_partition_node 2 #1.25
          Candle_split_partition_leaf Candle_split_partition_leaf))`,
   REWRITE_TAC[candle_split_partition_holds_def;
               candle_split_test_predicate_def;
@@ -52,22 +52,52 @@ let candle_split_test_sound =
 
 let candle_split_test_counts = prove
  (`candle_split_partition_node_count
-      (Candle_split_partition_node 0 #0.5
+      (Candle_split_partition_node 1 #0.5
         Candle_split_partition_leaf
-        (Candle_split_partition_node 1 #1.25
+        (Candle_split_partition_node 2 #1.25
           Candle_split_partition_leaf Candle_split_partition_leaf)) = 5 /\
     candle_split_partition_leaf_count
-      (Candle_split_partition_node 0 #0.5
+      (Candle_split_partition_node 1 #0.5
         Candle_split_partition_leaf
-        (Candle_split_partition_node 1 #1.25
+        (Candle_split_partition_node 2 #1.25
           Candle_split_partition_leaf Candle_split_partition_leaf)) = 3`,
   REWRITE_TAC[candle_split_partition_node_count_def;
               candle_split_partition_leaf_count_def] THEN
   ARITH_TAC);;
 
+let candle_split_test_well_formed = prove
+ (`candle_split_partition_well_formed 2
+     (Candle_split_partition_node 1 #0.5
+       Candle_split_partition_leaf
+       (Candle_split_partition_node 2 #1.25
+         Candle_split_partition_leaf Candle_split_partition_leaf))`,
+  REWRITE_TAC[candle_split_partition_well_formed_def] THEN ARITH_TAC);;
+
+let candle_split_test_sound_well_formed =
+  let generic =
+    ISPECL
+      [`2`;
+       `candle_split_test_predicate:num->bool`;
+       `candle_split_test_left:num->real->num->num`;
+       `candle_split_test_right:num->real->num->num`]
+      candle_split_partition_composition_sound_well_formed in
+  let closure = prove
+    (`!i t d. 1 <= i /\ i <= 2 ==>
+       candle_split_test_predicate (candle_split_test_left i t d) /\
+       candle_split_test_predicate (candle_split_test_right i t d)
+       ==> candle_split_test_predicate d`,
+     MESON_TAC[candle_split_test_closure]) in
+  let closed = MP generic closure in
+  MP (ISPECL [candle_split_test_tree;`1`] closed)
+    (CONJ candle_split_test_well_formed candle_split_test_holds);;
+
 if hyp candle_split_test_sound <> [] ||
    not (aconv (concl candle_split_test_sound)
      `candle_split_test_predicate 1`) ||
+   hyp candle_split_test_sound_well_formed <> [] ||
+   not (aconv (concl candle_split_test_sound_well_formed)
+     `candle_split_test_predicate 1`) ||
+   hyp candle_split_test_well_formed <> [] ||
    hyp candle_split_test_counts <> []
 then failwith "split partition composition theorem interface mismatch";;
 
