@@ -8,7 +8,9 @@
 (* characterizing equations.                                                  *)
 (* ========================================================================== *)
 
-needs "define.ml";;
+(* This wrapper is loaded after hol.ml, which already establishes [define].
+   Avoid replaying the dependency here: late-state authenticated loaders must
+   not reinterpret an old physical cache entry as a new logical source load. *)
 
 (* -------------------------------------------------------------------------- *)
 (* Definition of cexps (compute expressions) and operations on cexps.         *)
