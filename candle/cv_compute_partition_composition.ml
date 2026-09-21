@@ -23,78 +23,128 @@ let candle_partition_INDUCT,candle_partition_RECURSION = define_type
 (* [recurse_right] is its mirror image.  [n]/[q] is kept exact.               *)
 
 let candle_partition_holds_def = define
- `(candle_partition_holds p candle_partition_bisect_left
+ `(candle_partition_holds candle_partition_predicate candle_partition_bisect_left
       candle_partition_bisect_right candle_partition_frac_left
-      candle_partition_frac_right d
-      Candle_partition_leaf <=> p d) /\
-  (candle_partition_holds p candle_partition_bisect_left
+      candle_partition_frac_right candle_partition_domain
+      Candle_partition_leaf <=>
+     candle_partition_predicate candle_partition_domain) /\
+  (candle_partition_holds candle_partition_predicate candle_partition_bisect_left
       candle_partition_bisect_right candle_partition_frac_left
-      candle_partition_frac_right d
-      (Candle_partition_bisect i left right) <=>
-     candle_partition_holds p candle_partition_bisect_left
+      candle_partition_frac_right candle_partition_domain
+      (Candle_partition_bisect candle_partition_index
+        candle_partition_left_tree candle_partition_right_tree) <=>
+     candle_partition_holds candle_partition_predicate candle_partition_bisect_left
        candle_partition_bisect_right candle_partition_frac_left
-       candle_partition_frac_right (candle_partition_bisect_left i d) left /\
-     candle_partition_holds p candle_partition_bisect_left
+       candle_partition_frac_right
+       (candle_partition_bisect_left candle_partition_index
+         candle_partition_domain)
+       candle_partition_left_tree /\
+     candle_partition_holds candle_partition_predicate candle_partition_bisect_left
        candle_partition_bisect_right candle_partition_frac_left
-       candle_partition_frac_right (candle_partition_bisect_right i d) right) /\
-  (candle_partition_holds p candle_partition_bisect_left
+       candle_partition_frac_right
+       (candle_partition_bisect_right candle_partition_index
+         candle_partition_domain)
+       candle_partition_right_tree) /\
+  (candle_partition_holds candle_partition_predicate candle_partition_bisect_left
       candle_partition_bisect_right candle_partition_frac_left
-      candle_partition_frac_right d
-      (Candle_partition_recurse_left i n q child) <=>
-     candle_partition_holds p candle_partition_bisect_left
+      candle_partition_frac_right candle_partition_domain
+      (Candle_partition_recurse_left candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) <=>
+     candle_partition_holds candle_partition_predicate candle_partition_bisect_left
        candle_partition_bisect_right candle_partition_frac_left
-       candle_partition_frac_right (candle_partition_frac_left i n q d) child /\
-     p (candle_partition_frac_right i n q d)) /\
-  (candle_partition_holds p candle_partition_bisect_left
+       candle_partition_frac_right
+       (candle_partition_frac_left candle_partition_index
+         candle_partition_numerator candle_partition_denominator
+         candle_partition_domain)
+       candle_partition_child_tree /\
+     candle_partition_predicate
+       (candle_partition_frac_right candle_partition_index
+         candle_partition_numerator candle_partition_denominator
+         candle_partition_domain)) /\
+  (candle_partition_holds candle_partition_predicate candle_partition_bisect_left
       candle_partition_bisect_right candle_partition_frac_left
-      candle_partition_frac_right d
-      (Candle_partition_recurse_right i n q child) <=>
-     p (candle_partition_frac_left i n q d) /\
-     candle_partition_holds p candle_partition_bisect_left
+      candle_partition_frac_right candle_partition_domain
+      (Candle_partition_recurse_right candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) <=>
+     candle_partition_predicate
+       (candle_partition_frac_left candle_partition_index
+         candle_partition_numerator candle_partition_denominator
+         candle_partition_domain) /\
+     candle_partition_holds candle_partition_predicate candle_partition_bisect_left
        candle_partition_bisect_right candle_partition_frac_left
-       candle_partition_frac_right (candle_partition_frac_right i n q d) child)`;;
+       candle_partition_frac_right
+       (candle_partition_frac_right candle_partition_index
+         candle_partition_numerator candle_partition_denominator
+         candle_partition_domain)
+       candle_partition_child_tree)`;;
 
 let candle_partition_well_formed_def = define
- `(candle_partition_well_formed dimension Candle_partition_leaf <=> T) /\
-  (candle_partition_well_formed dimension
-      (Candle_partition_bisect i left right) <=>
-     i < dimension /\
-     candle_partition_well_formed dimension left /\
-     candle_partition_well_formed dimension right) /\
-  (candle_partition_well_formed dimension
-      (Candle_partition_recurse_left i n q child) <=>
-     i < dimension /\ 0 < q /\ n <= q /\
-     candle_partition_well_formed dimension child) /\
-  (candle_partition_well_formed dimension
-      (Candle_partition_recurse_right i n q child) <=>
-     i < dimension /\ 0 < q /\ n <= q /\
-     candle_partition_well_formed dimension child)`;;
+ `(candle_partition_well_formed candle_partition_dimension
+      Candle_partition_leaf <=> T) /\
+  (candle_partition_well_formed candle_partition_dimension
+      (Candle_partition_bisect candle_partition_index
+        candle_partition_left_tree candle_partition_right_tree) <=>
+     candle_partition_index < candle_partition_dimension /\
+     candle_partition_well_formed candle_partition_dimension
+       candle_partition_left_tree /\
+     candle_partition_well_formed candle_partition_dimension
+       candle_partition_right_tree) /\
+  (candle_partition_well_formed candle_partition_dimension
+      (Candle_partition_recurse_left candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) <=>
+     candle_partition_index < candle_partition_dimension /\
+     0 < candle_partition_denominator /\
+     candle_partition_numerator <= candle_partition_denominator /\
+     candle_partition_well_formed candle_partition_dimension
+       candle_partition_child_tree) /\
+  (candle_partition_well_formed candle_partition_dimension
+      (Candle_partition_recurse_right candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) <=>
+     candle_partition_index < candle_partition_dimension /\
+     0 < candle_partition_denominator /\
+     candle_partition_numerator <= candle_partition_denominator /\
+     candle_partition_well_formed candle_partition_dimension
+       candle_partition_child_tree)`;;
 
 let candle_partition_case_count_def = define
  `(candle_partition_case_count Candle_partition_leaf = 1) /\
   (candle_partition_case_count
-      (Candle_partition_bisect i left right) =
-     candle_partition_case_count left +
-     candle_partition_case_count right) /\
+      (Candle_partition_bisect candle_partition_index
+        candle_partition_left_tree candle_partition_right_tree) =
+     candle_partition_case_count candle_partition_left_tree +
+     candle_partition_case_count candle_partition_right_tree) /\
   (candle_partition_case_count
-      (Candle_partition_recurse_left i n q child) =
-     SUC (candle_partition_case_count child)) /\
+      (Candle_partition_recurse_left candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) =
+     SUC (candle_partition_case_count candle_partition_child_tree)) /\
   (candle_partition_case_count
-      (Candle_partition_recurse_right i n q child) =
-     SUC (candle_partition_case_count child))`;;
+      (Candle_partition_recurse_right candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) =
+     SUC (candle_partition_case_count candle_partition_child_tree))`;;
 
 let candle_partition_leaf_count_def = define
  `(candle_partition_leaf_count Candle_partition_leaf = 1) /\
   (candle_partition_leaf_count
-      (Candle_partition_bisect i left right) =
-     candle_partition_leaf_count left +
-     candle_partition_leaf_count right) /\
+      (Candle_partition_bisect candle_partition_index
+        candle_partition_left_tree candle_partition_right_tree) =
+     candle_partition_leaf_count candle_partition_left_tree +
+     candle_partition_leaf_count candle_partition_right_tree) /\
   (candle_partition_leaf_count
-      (Candle_partition_recurse_left i n q child) =
-     candle_partition_leaf_count child) /\
+      (Candle_partition_recurse_left candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) =
+     candle_partition_leaf_count candle_partition_child_tree) /\
   (candle_partition_leaf_count
-      (Candle_partition_recurse_right i n q child) =
-     candle_partition_leaf_count child)`;;
+      (Candle_partition_recurse_right candle_partition_index
+        candle_partition_numerator candle_partition_denominator
+        candle_partition_child_tree) =
+     candle_partition_leaf_count candle_partition_child_tree)`;;
 
 let candle_partition_composition_sound = prove
  (`!p candle_partition_bisect_left candle_partition_bisect_right

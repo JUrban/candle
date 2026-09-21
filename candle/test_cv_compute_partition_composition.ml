@@ -9,6 +9,8 @@ let candle_partition_collision_frac_left_def = new_definition
  `frac_left (i:num) (r:real) (d:num) = d`;;
 let candle_partition_collision_frac_right_def = new_definition
  `frac_right (i:num) (r:real) (d:num) = d`;;
+let candle_partition_collision_dimension_def = new_definition
+ `dimension (s:num->bool) = 0`;;
 
 needs "candle/cv_compute_partition_composition.ml";;
 
