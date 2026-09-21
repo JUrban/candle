@@ -33,7 +33,11 @@ class NonlinearAction296LeafTargetTest(unittest.TestCase):
         self.assertEqual(target["local_case"], 0)
         self.assertIn("frac_right 0 #0.5000", target["legacy_ineqm_text"])
         self.assertEqual(oracle["formal_leaf_count"], 1061)
+        self.assertEqual(oracle["formal_raw_leaf_count"], 0)
+        self.assertEqual(oracle["formal_mono_count"], 0)
         self.assertEqual(oracle["formal_glue_count"], 1060)
+        self.assertEqual(oracle["formal_convex_glue_count"], 0)
+        self.assertEqual(oracle["formal_pass_mono_count"], 0)
         self.assertEqual(oracle["total_seconds"], 667.725002)
         self.assertEqual(
             oracle["legacy_theorem_digest"],

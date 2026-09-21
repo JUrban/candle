@@ -91,6 +91,40 @@ def _fraction_record(value: Fraction) -> dict[str, Any]:
     }
 
 
+def _native_certificate_stats(
+    stdout: str, global_case: int, label: str,
+) -> dict[str, int]:
+    """Extract the exact certificate-shape record paired with one theorem."""
+
+    start = f"Verifying: {global_case}:  {label}\n"
+    end = f"Theorem  {label}: |- "
+    if stdout.count(start) != 1 or stdout.count(end) != 1:
+        raise ValueError("retained native certificate record is ambiguous")
+    section = stdout.split(start, 1)[1].split(end, 1)[0]
+    if "\nVerifying: " in section:
+        raise ValueError("retained native certificate record crossed a case")
+    matches = re.findall(
+        r"pass = ([0-9]+) \(pass_raw = ([0-9]+)\)\n"
+        r"mono = ([0-9]+)\n"
+        r"glue = ([0-9]+) \(glue_convex = ([0-9]+)\)\n"
+        r"pass_mono = ([0-9]+)\n",
+        section,
+    )
+    if len(matches) != 1:
+        raise ValueError("retained native certificate shape is absent or ambiguous")
+    leaves, raw_leaves, mono, glue, convex_glue, pass_mono = map(
+        int, matches[0],
+    )
+    return {
+        "formal_leaf_count": leaves,
+        "formal_raw_leaf_count": raw_leaves,
+        "formal_mono_count": mono,
+        "formal_glue_count": glue,
+        "formal_convex_glue_count": convex_glue,
+        "formal_pass_mono_count": pass_mono,
+    }
+
+
 def build_target(flyspeck_root: Path) -> dict[str, Any]:
     flyspeck_root = flyspeck_root.resolve()
     closure_data = (ROOT / CLOSURE).read_bytes()
@@ -112,6 +146,16 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
     )
     if theorem_match is None:
         raise ValueError("retained first-leaf theorem record is absent")
+    oracle_stats = _native_certificate_stats(stdout, GLOBAL_CASE, label)
+    if oracle_stats != {
+        "formal_leaf_count": 16,
+        "formal_raw_leaf_count": 0,
+        "formal_mono_count": 0,
+        "formal_glue_count": 15,
+        "formal_convex_glue_count": 0,
+        "formal_pass_mono_count": 0,
+    }:
+        raise ValueError("retained first-leaf certificate shape has drifted")
     theorem = theorem_match.group("theorem")
     if (
         not theorem.startswith("ineqm [x1; x2; x3; x4; x5; x6]")
@@ -232,8 +276,7 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
             "epsilon": "1e-10",
             "total_seconds": float(theorem_match.group("seconds")),
             "legacy_theorem_digest": theorem_match.group("digest"),
-            "formal_leaf_count": 16,
-            "formal_glue_count": 15,
+            **oracle_stats,
         },
     }
 

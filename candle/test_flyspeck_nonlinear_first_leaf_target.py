@@ -38,6 +38,12 @@ class NonlinearFirstLeafTargetTest(unittest.TestCase):
         self.assertEqual(oracle["precision"], 6)
         self.assertEqual(oracle["epsilon"], "1e-10")
         self.assertEqual(oracle["total_seconds"], 365.672506)
+        self.assertEqual(oracle["formal_leaf_count"], 16)
+        self.assertEqual(oracle["formal_raw_leaf_count"], 0)
+        self.assertEqual(oracle["formal_mono_count"], 0)
+        self.assertEqual(oracle["formal_glue_count"], 15)
+        self.assertEqual(oracle["formal_convex_glue_count"], 0)
+        self.assertEqual(oracle["formal_pass_mono_count"], 0)
         self.assertEqual(
             oracle["legacy_theorem_digest"],
             "f7ff5f16bf03b6885aa4d46bb1490001",

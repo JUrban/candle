@@ -46,8 +46,12 @@
   "kind": "candle-flyspeck-nonlinear-first-leaf-target",
   "native_oracle": {
     "epsilon": "1e-10",
+    "formal_convex_glue_count": 0,
     "formal_glue_count": 15,
     "formal_leaf_count": 16,
+    "formal_mono_count": 0,
+    "formal_pass_mono_count": 0,
+    "formal_raw_leaf_count": 0,
     "legacy_theorem_digest": "f7ff5f16bf03b6885aa4d46bb1490001",
     "precision": 6,
     "total_seconds": 365.672506

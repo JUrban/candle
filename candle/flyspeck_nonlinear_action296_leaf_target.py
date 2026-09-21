@@ -49,6 +49,18 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
     )
     if theorem_match is None:
         raise ValueError("retained action-296 theorem record is absent")
+    oracle_stats = common._native_certificate_stats(
+        stdout, GLOBAL_CASE, label,
+    )
+    if oracle_stats != {
+        "formal_leaf_count": FORMAL_LEAF_COUNT,
+        "formal_raw_leaf_count": 0,
+        "formal_mono_count": 0,
+        "formal_glue_count": FORMAL_GLUE_COUNT,
+        "formal_convex_glue_count": 0,
+        "formal_pass_mono_count": 0,
+    }:
+        raise ValueError("retained action-296 certificate shape has drifted")
     theorem = theorem_match.group("theorem")
     if (
         not theorem.startswith("ineqm [x1; x2; x3; x4; x5; x6]")
@@ -159,8 +171,7 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
             "epsilon": "1e-10",
             "total_seconds": float(theorem_match.group("seconds")),
             "legacy_theorem_digest": theorem_match.group("digest"),
-            "formal_leaf_count": FORMAL_LEAF_COUNT,
-            "formal_glue_count": FORMAL_GLUE_COUNT,
+            **oracle_stats,
         },
     }
 
