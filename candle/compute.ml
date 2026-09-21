@@ -128,7 +128,7 @@ let COMPUTE_INIT_THMS =
     ONCE_REWRITE_TAC [ADD_SYM] THEN
     ASM_SIMP_TAC [GSYM ADD_ASSOC; LT_IMP_LE; SUB_LEMMA; DIVISION_SIMP;
                   ADD_SYM] THEN
-    REWRITE_TAC [ADD_SUB2]) in
+    ARITH_TAC) in
   let MOD_RECURSIVE = prove (
     `m MOD n = if n = 0 then m else if m < n then m else (m - n) MOD n`,
     ASM_CASES_TAC `n = 0` THEN ASM_SIMP_TAC [MOD_ZERO] THEN
