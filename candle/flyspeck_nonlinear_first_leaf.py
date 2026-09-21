@@ -26,6 +26,7 @@ import flyspeck_nonlinear_action296_leaf_target as action296_target_authority
 import flyspeck_nonlinear_closure_profile as closure_profile
 import flyspeck_nonlinear_first_leaf_profile as phase_profile
 import flyspeck_nonlinear_module_segmentation as module_segmentation
+import flyspeck_nonlinear_analytic_segmentation as analytic_segmentation
 import flyspeck_nonlinear_verifier_smoke as smoke
 
 
@@ -434,6 +435,7 @@ def run(
     profile_closure: bool = False,
     segment_taylor_closure: bool = False,
     target_profile: str = DEFAULT_TARGET_PROFILE,
+    segment_analytic_closure: bool = False,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
@@ -449,10 +451,14 @@ def run(
     closure_data, closure, closure_records = smoke.authenticate_closure(
         candle_root, flyspeck_root,
     )
-    if profile_closure and segment_taylor_closure:
+    if profile_closure and (
+        segment_taylor_closure or segment_analytic_closure
+    ):
         raise ValueError(
-            "Taylor closure profiling and segmentation are mutually exclusive"
+            "closure profiling and segmentation are mutually exclusive"
         )
+    if segment_taylor_closure and segment_analytic_closure:
+        raise ValueError("select only one closure segmentation mode")
     phase_profile_receipt = (
         phase_profile.instrument_records(closure_records)
         if profile_phases else None
@@ -462,6 +468,8 @@ def run(
         if profile_closure else None
     )
     module_segmentation_receipt = (
+        analytic_segmentation.segment_records(closure_records)
+        if segment_analytic_closure else
         module_segmentation.segment_records(closure_records)
         if segment_taylor_closure else None
     )
@@ -673,6 +681,33 @@ def run(
             phase_artifacts["phase_profile"] = smoke._record_file(
                 phase_profile_path
             )
+    segmentation_sources = (
+        module_segmentation_receipt.get(
+            "sources", [module_segmentation_receipt],
+        )
+        if module_segmentation_receipt is not None else []
+    )
+    segmentation_markers = {
+        event: sum(
+            log_data.count(
+                (
+                    f"{source['marker_prefix']} index={index} "
+                    f"event={event}\n"
+                ).encode("ascii")
+            )
+            for source in segmentation_sources
+            for index in range(source["chunk_count"])
+        )
+        for event in ("begin", "end")
+    }
+    segmentation_ok = (
+        not segmentation_sources
+        or all(
+            segmentation_markers[event]
+            == sum(source["chunk_count"] for source in segmentation_sources)
+            for event in ("begin", "end")
+        )
+    )
     outcome = (
         "proof-pass"
         if not timed_out
@@ -680,6 +715,7 @@ def run(
         and markers == expected_markers
         and all(value is not None for value in timings.values())
         and phase_profile_ok
+        and segmentation_ok
         and not forbidden
         else "proof-failure"
     )
@@ -710,23 +746,16 @@ def run(
         "closure_profile_enabled": profile_closure,
         "closure_profile_receipt": closure_profile_receipt,
         "closure_profile_markers": closure_markers,
-        "module_segmentation_enabled": segment_taylor_closure,
+        "module_segmentation_enabled": (
+            segment_taylor_closure or segment_analytic_closure
+        ),
+        "module_segmentation_mode": (
+            "analytic" if segment_analytic_closure else
+            "taylor" if segment_taylor_closure else None
+        ),
         "module_segmentation_receipt": module_segmentation_receipt,
-        "module_segmentation_markers": {
-            event: sum(
-                log_data.count(
-                    (
-                        "CANDLE_NONLINEAR_TAYLOR_SEGMENT index="
-                        f"{index} event={event}\n"
-                    ).encode("ascii")
-                )
-                for index in range(
-                    module_segmentation_receipt["chunk_count"]
-                    if module_segmentation_receipt is not None else 0
-                )
-            )
-            for event in ("begin", "end")
-        },
+        "module_segmentation_markers": segmentation_markers,
+        "module_segmentation_ok": segmentation_ok,
         "source_node_count": len(records),
         "normalized_source_count": len(overlays),
         "normalized_sources": [
@@ -789,6 +818,7 @@ def main() -> None:
     parser.add_argument("--phase-profile", action="store_true")
     parser.add_argument("--closure-profile", action="store_true")
     parser.add_argument("--segment-taylor-closure", action="store_true")
+    parser.add_argument("--segment-analytic-closure", action="store_true")
     parser.add_argument(
         "--target-profile",
         choices=sorted(TARGET_PROFILES),
@@ -805,6 +835,7 @@ def main() -> None:
         arguments.closure_profile,
         arguments.segment_taylor_closure,
         arguments.target_profile,
+        arguments.segment_analytic_closure,
     )
     print(json.dumps({
         "outcome": payload["outcome"],

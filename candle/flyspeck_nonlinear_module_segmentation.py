@@ -164,6 +164,7 @@ def segment_records(records: list[dict[str, Any]]) -> dict[str, Any]:
         "normalization_id": NORMALIZATION_ID,
         "source_key": SOURCE_KEY,
         "input_sha256": INPUT_SHA256,
+        "marker_prefix": MARKER_PREFIX,
         "chunk_count": len(chunks),
         "chunks": chunk_records,
         "marker_count": 2 * len(chunks),
