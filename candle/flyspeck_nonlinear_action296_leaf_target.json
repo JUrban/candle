@@ -1,0 +1,76 @@
+{
+  "claim": "authenticated action-296 target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
+  "closure": {
+    "bytes": 431963,
+    "path": "candle/flyspeck_nonlinear_verifier_closure.json",
+    "sha256": "3ce968d6b6dec45c05800527a5f3dfddea2fa5e44b49a5aac8da1895db1d1ef2"
+  },
+  "evidence_files": {
+    "azure_stdout": {
+      "bytes": 107203,
+      "logical_relative_path": "azure/results/urban/out/1/10150/2/10199/stdout",
+      "sha256": "0b1c3eed6921b392449cd4622ae29f06aef83a01fc88423bb4499a04654ceed1"
+    },
+    "break_case_log": {
+      "bytes": 827309,
+      "logical_relative_path": "text_formalization/nonlinear/break_case_log.hl",
+      "sha256": "2b3c74156a5ee9a6b3b5b6905ff28a7fb21e7c50052ad37887b90b9ed3d5e499"
+    },
+    "compiled_break_case": {
+      "bytes": 4473,
+      "logical_relative_path": "azure/flyspeck-nat/break_case.hl",
+      "sha256": "7df2af9a8b24923a9c7761c4a3ac3496be39f4c161bef480fe0089db24f7d0bd"
+    },
+    "compiled_definitions": {
+      "bytes": 49779,
+      "logical_relative_path": "azure/flyspeck-nat/definitions.hl",
+      "sha256": "f5c34e49f0114e038949ed0dc1d9a9f5d5f50103420a1272c3231d8b436bbac4"
+    },
+    "main_verifier": {
+      "bytes": 2544,
+      "logical_relative_path": "azure/main_verifier.hl",
+      "sha256": "f8c18b2699325c0aeba9d853c8ffa2958346016af887133bf23d082adaa2f3dc"
+    },
+    "prep": {
+      "bytes": 1179697,
+      "logical_relative_path": "text_formalization/nonlinear/prep.hl",
+      "sha256": "3ccef1bf65b13ca02e7ab1f409ebb49c979862ed5ea6ff1d57ed1e4e4761723d"
+    },
+    "prove_by_refinement": {
+      "bytes": 4271,
+      "logical_relative_path": "text_formalization/general/prove_by_refinement.hl",
+      "sha256": "3101d7b115e9437e94bcfe7ae8156cfc065ac4422d463a91d690d41acca04cdb"
+    }
+  },
+  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "kind": "candle-flyspeck-nonlinear-first-leaf-target",
+  "native_oracle": {
+    "epsilon": "1e-10",
+    "formal_glue_count": 1060,
+    "formal_leaf_count": 1061,
+    "legacy_theorem_digest": "9e11e82fc40c91d58cdf811a429ffdd5",
+    "precision": 6,
+    "total_seconds": 667.725002
+  },
+  "schema": 1,
+  "status": "development-non-release",
+  "target": {
+    "first_tree_action": {
+      "archive_index": 716,
+      "coordinate": 0,
+      "fraction": {
+        "decimal": "0.5000",
+        "denominator": 2,
+        "numerator": 1
+      },
+      "kind": "Iarg_facet",
+      "leaf_index": 1311,
+      "side": "right"
+    },
+    "global_case": 10172,
+    "id": "prep-8657368829",
+    "legacy_ineqm_text": "ineqm [x1; x2; x3; x4; x5; x6]\n   (frac_right 0 #0.5000\n   [#4.7524,#6.3504; #4.0,#4.7524; #4.0,#4.7524; #4.0,#2.25 * #2.25; \n   #4.0,\n   #2.25 * #2.25; #4.0,#2.25 * #2.25])\n   (unit6 x1 x2 x3 x4 x5 x6 * #1.277 +\n    sqrt_x1 x1 x2 x3 x4 x5 x6 * #0.273298 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.273298 * --#2.18 +\n    sqrt_x2 x1 x2 x3 x4 x5 x6 * --#0.273853 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.273853 * #2.0 +\n    sqrt_x3 x1 x2 x3 x4 x5 x6 * --#0.273853 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.273853 * #2.0 +\n    sqrt_x4 x1 x2 x3 x4 x5 x6 * #0.708818 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.708818 * --#2.0 +\n    sqrt_x5 x1 x2 x3 x4 x5 x6 * --#0.313988 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.313988 * #2.0 +\n    sqrt_x6 x1 x2 x3 x4 x5 x6 * --#0.313988 +\n    unit6 x1 x2 x3 x4 x5 x6 * #0.313988 * #2.0 +\n    dihatn_x x1 x2 x3 x4 x5 x6 * -- &1 <\n    &0)",
+    "legacy_ineqm_text_sha256": "e913d39aaff74b8fdceff72d12a6b3e4d581bffbc403ce3a89c73fc37119d2d4",
+    "local_case": 0
+  }
+}

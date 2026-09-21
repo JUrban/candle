@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import flyspeck_nonlinear_first_leaf_target as target_authority
+import flyspeck_nonlinear_action296_leaf_target as action296_target_authority
 import flyspeck_nonlinear_closure_profile as closure_profile
 import flyspeck_nonlinear_first_leaf_profile as phase_profile
 import flyspeck_nonlinear_module_segmentation as module_segmentation
@@ -29,7 +30,21 @@ import flyspeck_nonlinear_verifier_smoke as smoke
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGET = Path("candle/flyspeck_nonlinear_first_leaf_target.json")
+TARGET_PROFILES = {
+    "first-substantial": {
+        "path": Path("candle/flyspeck_nonlinear_first_leaf_target.json"),
+        "id": target_authority.CASE_ID,
+        "global_case": target_authority.GLOBAL_CASE,
+        "local_case": target_authority.LOCAL_CASE,
+    },
+    "action296-case0": {
+        "path": action296_target_authority.OUTPUT,
+        "id": action296_target_authority.CASE_ID,
+        "global_case": action296_target_authority.GLOBAL_CASE,
+        "local_case": action296_target_authority.LOCAL_CASE,
+    },
+}
+DEFAULT_TARGET_PROFILE = "first-substantial"
 RESULT_SCHEMA = 1
 RECONSTRUCTION_BEGIN = "CANDLE_NONLINEAR_FIRST_LEAF_RECONSTRUCTION_BEGIN"
 RECONSTRUCTION_END = "CANDLE_NONLINEAR_FIRST_LEAF_RECONSTRUCTION_END"
@@ -64,6 +79,44 @@ EXPECTED_PHASE_COUNTS.update({
     for index in range(1, 16)
     for phase in ("domain-split", "theorem-glue")
 })
+
+
+def expected_phase_counts(target: dict[str, Any]) -> dict[tuple[str, str], int]:
+    """Return the exact phase cardinalities authenticated by a target."""
+
+    oracle = target.get("native_oracle", {})
+    leaf_count = oracle.get("formal_leaf_count")
+    glue_count = oracle.get("formal_glue_count")
+    if (
+        not isinstance(leaf_count, int)
+        or isinstance(leaf_count, bool)
+        or leaf_count <= 0
+        or not isinstance(glue_count, int)
+        or isinstance(glue_count, bool)
+        or glue_count < 0
+        or glue_count != leaf_count - 1
+    ):
+        raise ValueError("invalid nonlinear target phase cardinalities")
+    counts = {
+        ("verify-call", "standardize"): 2,
+        ("verify-call", "problem-reification"): 1,
+        ("verify-call", "evaluator-build"): 1,
+        ("verify-call", "informal-search"): 1,
+        ("verify-call", "adaptive-informal-verification"): 1,
+        ("verify-call", "formal-verification"): 1,
+        ("verify-call", "final-normalization"): 1,
+        ("target", "total"): 1,
+    }
+    counts.update({
+        (f"formal-leaf-{index}", "leaf-check"): 1
+        for index in range(1, leaf_count + 1)
+    })
+    counts.update({
+        (f"formal-glue-{index}", phase): 1
+        for index in range(1, glue_count + 1)
+        for phase in ("domain-split", "theorem-glue")
+    })
+    return counts
 
 SUPPORT = {
     "prove_by_refinement": (
@@ -112,11 +165,15 @@ def _module_wrapper(
 def authenticate_target(
     flyspeck_root: Path,
     closure_data: bytes,
+    target_profile: str = DEFAULT_TARGET_PROFILE,
 ) -> tuple[bytes, dict[str, Any], list[dict[str, Any]]]:
     """Authenticate the published target and prepare exact module overlays."""
 
     flyspeck_root = flyspeck_root.resolve()
-    target_path = ROOT / TARGET
+    if target_profile not in TARGET_PROFILES:
+        raise ValueError(f"unknown nonlinear target profile: {target_profile}")
+    profile = TARGET_PROFILES[target_profile]
+    target_path = ROOT / profile["path"]
     smoke._ordinary_file(target_path, "nonlinear first-leaf target")
     target_data = target_path.read_bytes()
     target = json.loads(target_data)
@@ -125,11 +182,11 @@ def authenticate_target(
         or target.get("kind")
         != "candle-flyspeck-nonlinear-first-leaf-target"
         or target.get("status") != "development-non-release"
-        or target.get("target", {}).get("id") != target_authority.CASE_ID
+        or target.get("target", {}).get("id") != profile["id"]
         or target.get("target", {}).get("global_case")
-        != target_authority.GLOBAL_CASE
+        != profile["global_case"]
         or target.get("target", {}).get("local_case")
-        != target_authority.LOCAL_CASE
+        != profile["local_case"]
     ):
         raise ValueError("unexpected nonlinear first-leaf target contract")
     if (
@@ -323,7 +380,10 @@ def _extract_seconds(log_data: bytes, marker: str) -> float | None:
     return float(matches[0])
 
 
-def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+def _validate_phase_profile(
+    data: dict[str, Any],
+    expected_counts: dict[tuple[str, str], int] = EXPECTED_PHASE_COUNTS,
+) -> tuple[dict[str, Any], bool]:
     counts: dict[tuple[str, str], int] = {}
     all_ended = True
     all_lanes_match = True
@@ -336,7 +396,7 @@ def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]
         )
     expected = {
         f"{scope}/{phase}": count
-        for (scope, phase), count in EXPECTED_PHASE_COUNTS.items()
+        for (scope, phase), count in expected_counts.items()
     }
     observed = {
         f"{scope}/{phase}": count
@@ -349,7 +409,7 @@ def _validate_phase_profile(data: dict[str, Any]) -> tuple[dict[str, Any], bool]
         and data.get("unclosed_phases") == []
         and all_ended
         and all_lanes_match
-        and counts == EXPECTED_PHASE_COUNTS
+        and counts == expected_counts
     )
     return {
         "schema": data.get("schema"),
@@ -373,6 +433,7 @@ def run(
     profile_phases: bool = False,
     profile_closure: bool = False,
     segment_taylor_closure: bool = False,
+    target_profile: str = DEFAULT_TARGET_PROFILE,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
@@ -408,7 +469,7 @@ def run(
         smoke.authenticate_big_int_compatibility(candle_root)
     )
     target_data, target, support_records = authenticate_target(
-        flyspeck_root, closure_data,
+        flyspeck_root, closure_data, target_profile,
     )
     records = closure_records + support_records
 
@@ -594,7 +655,7 @@ def run(
     if profile_phases and phase_profile_path.exists():
         phase_data = json.loads(phase_profile_path.read_bytes())
         phase_profile_summary, phase_content_ok = _validate_phase_profile(
-            phase_data
+            phase_data, expected_phase_counts(target)
         )
         phase_profile_ok = (
             phase_observer_status == 0
@@ -683,7 +744,8 @@ def run(
             "flyspeck_commit": closure["repositories"]["flyspeck"]["commit"],
         },
         "target": {
-            "path": TARGET.as_posix(),
+            "profile": target_profile,
+            "path": TARGET_PROFILES[target_profile]["path"].as_posix(),
             "bytes": len(target_data),
             "sha256": hashlib.sha256(target_data).hexdigest(),
             "id": target["target"]["id"],
@@ -727,6 +789,11 @@ def main() -> None:
     parser.add_argument("--phase-profile", action="store_true")
     parser.add_argument("--closure-profile", action="store_true")
     parser.add_argument("--segment-taylor-closure", action="store_true")
+    parser.add_argument(
+        "--target-profile",
+        choices=sorted(TARGET_PROFILES),
+        default=DEFAULT_TARGET_PROFILE,
+    )
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
@@ -737,6 +804,7 @@ def main() -> None:
         arguments.phase_profile,
         arguments.closure_profile,
         arguments.segment_taylor_closure,
+        arguments.target_profile,
     )
     print(json.dumps({
         "outcome": payload["outcome"],

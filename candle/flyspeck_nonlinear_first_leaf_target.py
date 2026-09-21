@@ -232,6 +232,8 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
             "epsilon": "1e-10",
             "total_seconds": float(theorem_match.group("seconds")),
             "legacy_theorem_digest": theorem_match.group("digest"),
+            "formal_leaf_count": 16,
+            "formal_glue_count": 15,
         },
     }
 

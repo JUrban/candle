@@ -84,6 +84,29 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         self.assertIn("string_of_float", self.driver)
         self.assertNotIn("candle_nonlinear_profile_marker", self.driver)
 
+    def test_action296_profile_authenticates_a_distinct_real_target(self) -> None:
+        _, target, records = subject.authenticate_target(
+            FLYSPECK_ROOT, self.closure_data, "action296-case0",
+        )
+        self.assertEqual(target["target"]["id"], "prep-8657368829")
+        self.assertEqual(target["target"]["global_case"], 10172)
+        self.assertEqual(len(records), 3)
+        counts = subject.expected_phase_counts(target)
+        self.assertEqual(
+            sum(scope.startswith("formal-leaf-") for scope, _ in counts),
+            1061,
+        )
+        self.assertEqual(
+            sum(scope.startswith("formal-glue-") for scope, _ in counts),
+            2120,
+        )
+
+    def test_unknown_target_profile_fails_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "unknown nonlinear target"):
+            subject.authenticate_target(
+                FLYSPECK_ROOT, self.closure_data, "unpublished-target",
+            )
+
     def test_profile_driver_brackets_the_exact_verifier_call(self) -> None:
         begin = (
             'candle_nonlinear_profile_marker "target" "total" "begin";;'
