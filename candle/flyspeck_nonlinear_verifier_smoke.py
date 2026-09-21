@@ -502,6 +502,8 @@ def build_driver(
     records: list[dict[str, Any]],
     overlays: list[dict[str, str]],
     big_int_compatibility: str,
+    *,
+    closure_only: bool = False,
 ) -> str:
     """Generate the one-file, failure-dependent source-load/proof program."""
 
@@ -534,7 +536,7 @@ def build_driver(
         f"({_ocaml_string(root_record['basename'])},"
         f"{_ocaml_string(root_record['md5'])})"
     )
-    return f'''(* Generated DEVELOPMENT / NON-RELEASE nonlinear verifier gate. *)
+    closure_driver = f'''(* Generated DEVELOPMENT / NON-RELEASE nonlinear verifier gate. *)
 #use "hol.ml";;
 
 let candle_nonlinear_closure_started = Unix.gettimeofday();;
@@ -591,15 +593,24 @@ needs "arith_options.hl";;
 Arith_options.base := 200;;
 needs "verifier/m_verifier_main.hl";;
 
+(* Candle reports source errors without terminating the surrounding input
+   stream.  Keep the loader-identity check, exported-value check, and ready
+   marker in one phrase so a failed [needs] cannot be mistaken for a usable
+   closure by a later independent print phrase. *)
 if !Cakeml.pendingLoadedSourceIds <> [] ||
    not (List.mem {root_identity} !Cakeml.loadedSourceIds) then
-  failwith "nonlinear verifier loader identity did not commit";;
-
-print_endline "{LOAD_MARKER}";;
-print_endline
-  ("{CLOSURE_SECONDS} " ^
-   string_of_float
-     (Unix.gettimeofday() -. candle_nonlinear_closure_started));;
+  failwith "nonlinear verifier loader identity did not commit"
+else
+  let _ = M_verifier_main.verify_ineq in
+  (print_endline "{LOAD_MARKER}";
+   print_endline
+     ("{CLOSURE_SECONDS} " ^
+      string_of_float
+        (Unix.gettimeofday() -. candle_nonlinear_closure_started)));;
+'''
+    if closure_only:
+        return closure_driver
+    return closure_driver + f'''
 
 open M_verifier_main;;
 Verifier_options.info_print_level := 0;;

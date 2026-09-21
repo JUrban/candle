@@ -32,6 +32,10 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             ROOT, FLYSPECK_ROOT, cls.records, cls.overlays,
             cls.big_int_compatibility,
         )
+        cls.closure_driver = subject.build_driver(
+            ROOT, FLYSPECK_ROOT, cls.records, cls.overlays,
+            cls.big_int_compatibility, closure_only=True,
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -168,6 +172,23 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
         )
         self.assertIn("candle_nonlinear_axioms_before", self.driver)
         self.assertIn("candle_nonlinear_axioms_after", self.driver)
+
+    def test_closure_ready_marker_is_guarded_by_exported_value(self) -> None:
+        identity = self.closure_driver.index(
+            "nonlinear verifier loader identity did not commit"
+        )
+        exported = self.closure_driver.index(
+            "M_verifier_main.verify_ineq", identity,
+        )
+        ready = self.closure_driver.index(subject.LOAD_MARKER, exported)
+        self.assertLess(identity, exported)
+        self.assertLess(exported, ready)
+        self.assertIn(
+            "else\n  let _ = M_verifier_main.verify_ineq",
+            self.closure_driver,
+        )
+        self.assertNotIn(subject.PASS_MARKER, self.closure_driver)
+        self.assertNotIn("candle_nonlinear_smoke_term", self.closure_driver)
 
     def test_absolute_driver_keeps_unprefixed_resolver_entry(self) -> None:
         stdin = subject.build_stdin(
