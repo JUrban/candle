@@ -24,6 +24,7 @@ from typing import Any
 import flyspeck_nonlinear_first_leaf_target as target_authority
 import flyspeck_nonlinear_closure_profile as closure_profile
 import flyspeck_nonlinear_first_leaf_profile as phase_profile
+import flyspeck_nonlinear_module_segmentation as module_segmentation
 import flyspeck_nonlinear_verifier_smoke as smoke
 
 
@@ -371,6 +372,7 @@ def run(
     timeout_seconds: int,
     profile_phases: bool = False,
     profile_closure: bool = False,
+    segment_taylor_closure: bool = False,
 ) -> dict[str, Any]:
     candle_root = ROOT.resolve()
     flyspeck_root = flyspeck_root.resolve()
@@ -386,6 +388,10 @@ def run(
     closure_data, closure, closure_records = smoke.authenticate_closure(
         candle_root, flyspeck_root,
     )
+    if profile_closure and segment_taylor_closure:
+        raise ValueError(
+            "Taylor closure profiling and segmentation are mutually exclusive"
+        )
     phase_profile_receipt = (
         phase_profile.instrument_records(closure_records)
         if profile_phases else None
@@ -393,6 +399,10 @@ def run(
     closure_profile_receipt = (
         closure_profile.instrument_records(closure_records)
         if profile_closure else None
+    )
+    module_segmentation_receipt = (
+        module_segmentation.segment_records(closure_records)
+        if segment_taylor_closure else None
     )
     big_int_compatibility, big_int_compatibility_record = (
         smoke.authenticate_big_int_compatibility(candle_root)
@@ -639,6 +649,23 @@ def run(
         "closure_profile_enabled": profile_closure,
         "closure_profile_receipt": closure_profile_receipt,
         "closure_profile_markers": closure_markers,
+        "module_segmentation_enabled": segment_taylor_closure,
+        "module_segmentation_receipt": module_segmentation_receipt,
+        "module_segmentation_markers": {
+            event: sum(
+                log_data.count(
+                    (
+                        "CANDLE_NONLINEAR_TAYLOR_SEGMENT index="
+                        f"{index} event={event}\n"
+                    ).encode("ascii")
+                )
+                for index in range(
+                    module_segmentation_receipt["chunk_count"]
+                    if module_segmentation_receipt is not None else 0
+                )
+            )
+            for event in ("begin", "end")
+        },
         "source_node_count": len(records),
         "normalized_source_count": len(overlays),
         "normalized_sources": [
@@ -699,6 +726,7 @@ def main() -> None:
     parser.add_argument("--timeout-seconds", type=int, default=86400)
     parser.add_argument("--phase-profile", action="store_true")
     parser.add_argument("--closure-profile", action="store_true")
+    parser.add_argument("--segment-taylor-closure", action="store_true")
     arguments = parser.parse_args()
     payload = run(
         arguments.flyspeck_root,
@@ -708,6 +736,7 @@ def main() -> None:
         arguments.timeout_seconds,
         arguments.phase_profile,
         arguments.closure_profile,
+        arguments.segment_taylor_closure,
     )
     print(json.dumps({
         "outcome": payload["outcome"],
