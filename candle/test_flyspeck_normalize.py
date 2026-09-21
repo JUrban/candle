@@ -696,8 +696,23 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "Hol.",
             "".join(operation["after"] for operation in set_make["operations"][4:8]),
         )
+        serialization_axiom = set_make["operations"][7]
+        self.assertEqual(
+            serialization_axiom["after"],
+            "      with _ -> Kernel.new_axiom t;;",
+        )
+        self.assertNotEqual(
+            serialization_axiom["after"],
+            "      with _ -> new_axiom t;;",
+        )
         self.assertIn(
             "identical included kernel values", set_make["semantic_rule"]
+        )
+        self.assertIn(
+            "leaving the unqualified guard intact", set_make["semantic_rule"]
+        )
+        self.assertIn(
+            "unrestricted late-axiom support", set_make["scope_limit"]
         )
         serialization_hash2 = set_make["operations"][8]
         self.assertEqual(serialization_hash2["line"], 383)

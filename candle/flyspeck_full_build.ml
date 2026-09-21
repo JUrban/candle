@@ -608,7 +608,7 @@
 #flyspeck_needs "general/audit_formal_proof.hl";;
 (* 294 selected=flyspeck:text_formalization/general/the_kepler_conjecture.hl sha256=d2a45bd4fca8c4f7f705736bf5c34cdbb60e7182226102560b1c5bc3369de3c7 *)
 #flyspeck_needs "general/the_kepler_conjecture.hl";;
-(* 295 selected=flyspeck:text_formalization/general/serialization.hl sha256=fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed normalization=PROJECT-MODULE-S3-SET-MAKE-001 normalized_sha256=db4cdfd85f2b3b8328b291d441c29636cc61677b57dae4f51c792b131d84e9fb *)
+(* 295 selected=flyspeck:text_formalization/general/serialization.hl sha256=fe7f414d6e72a2c838a81b59af15494a1e9f6a5118f9ec0cd1f6ade11a939eed normalization=PROJECT-MODULE-S3-SET-MAKE-001 normalized_sha256=fc0b01591d51dd64a53ba7d3bd3be1ddd3c894c13a6dc5fcdb1f5e9af989a7db *)
 #flyspeck_needs "general/serialization.hl";;
 (* 296 selected=flyspeck:text_formalization/nonlinear/mk_all_ineq.hl sha256=99d005141807102b57a6daee0c4e512691d9846996f9b2331dd7ff946b695c11 normalization=PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001 normalized_sha256=08ff0eb708c6b6370e042c1d888ba8bd457b7dbaec12390edd30a57b2afea5dc *)
 #flyspeck_needs "nonlinear/mk_all_ineq.hl";;
