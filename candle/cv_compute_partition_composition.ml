@@ -9,8 +9,6 @@
 (* authority of its own.                                                      *)
 (* ========================================================================== *)
 
-needs "candle/compute.ml";;
-
 module Candle_cv_partition_composition = struct
 
 let candle_partition_INDUCT,candle_partition_RECURSION = define_type
