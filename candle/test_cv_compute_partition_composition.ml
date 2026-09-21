@@ -1,3 +1,15 @@
+(* Exercise late loading after a client has already introduced the short
+   transformer names used by Flyspeck.  The generic theory's bound variables
+   must not be captured by these constants. *)
+let candle_partition_collision_bisect_left_def = new_definition
+ `bisect_left (i:num) (d:num) = d`;;
+let candle_partition_collision_bisect_right_def = new_definition
+ `bisect_right (i:num) (d:num) = d`;;
+let candle_partition_collision_frac_left_def = new_definition
+ `frac_left (i:num) (r:real) (d:num) = d`;;
+let candle_partition_collision_frac_right_def = new_definition
+ `frac_right (i:num) (r:real) (d:num) = d`;;
+
 needs "candle/cv_compute_partition_composition.ml";;
 
 open Candle_cv_partition_composition;;
