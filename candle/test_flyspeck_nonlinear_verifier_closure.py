@@ -43,7 +43,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 27)
-        self.assertEqual(counts["normalization_operations"], 146)
+        self.assertEqual(counts["normalization_operations"], 147)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -178,6 +178,19 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
         ]
         self.assertEqual(main["operation_count"], 4)
+
+        m_taylor = parser_normalized[
+            "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+        ]
+        finite_type = [
+            operation for operation in m_taylor["operations"]
+            if operation["kind"] == "modern-finite-type-size-theorem"
+        ]
+        self.assertEqual(len(finite_type), 1)
+        self.assertEqual(
+            finite_type[0]["after"],
+            "| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i));;",
+        )
         self.assertEqual(
             {operation["kind"] for operation in main["operations"]},
             {kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS},

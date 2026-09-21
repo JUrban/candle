@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v9"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v10"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -83,7 +83,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "atan compute only 2 * atan(1); they use the bit-identical binary64 "
     "pi/2 literal. All 14 "
     "active native assert sites call one condition-preserving helper that "
-    "raises the existing distinct Assert_failure on false"
+    "raises the existing distinct Assert_failure on false. The obsolete "
+    "define_finite_type call uses HOL Light's canonical modern equivalent, "
+    "HAS_SIZE_DIMINDEX_RULE over mk_finty, which produces the same size "
+    "theorem without the deleted type-definition side effects"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -111,7 +114,11 @@ NORMALIZATION_SCOPE_LIMIT = (
     "it does not introduce a general atan implementation. The "
     "assert rewrites preserve condition evaluation, success value, and failure "
     "constructor; only the run-local native source position is replaced by a "
-    "stable logical source label with zero line/column fields."
+    "stable logical source label with zero line/column fields. The finite-type "
+    "rewrite is confined to the authenticated max-dimension table in "
+    "m_taylor.hl and is byte-identical to the replacement shipped in Candle's "
+    "modern HOL Light Formal_ineqs copy; it changes neither the resulting "
+    "HAS_SIZE theorem nor downstream vector types."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -638,6 +645,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/taylor/m_taylor.hl": (
+        _replacement(
+            "modern-finite-type-size-theorem",
+            b'| _ -> define_finite_type i);;',
+            b'| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i));;',
+        ),
         _replacement(
             "taylor-vector-size-error",
             b'sprintf "Wrong vector size; expected size: %d" n',
