@@ -23,24 +23,36 @@ let candle_partition_INDUCT,candle_partition_RECURSION = define_type
 (* [recurse_right] is its mirror image.  [n]/[q] is kept exact.               *)
 
 let candle_partition_holds_def = define
- `(candle_partition_holds p bisect_left bisect_right frac_left frac_right d
+ `(candle_partition_holds p candle_partition_bisect_left
+      candle_partition_bisect_right candle_partition_frac_left
+      candle_partition_frac_right d
       Candle_partition_leaf <=> p d) /\
-  (candle_partition_holds p bisect_left bisect_right frac_left frac_right d
+  (candle_partition_holds p candle_partition_bisect_left
+      candle_partition_bisect_right candle_partition_frac_left
+      candle_partition_frac_right d
       (Candle_partition_bisect i left right) <=>
-     candle_partition_holds p bisect_left bisect_right frac_left frac_right
-       (bisect_left i d) left /\
-     candle_partition_holds p bisect_left bisect_right frac_left frac_right
-       (bisect_right i d) right) /\
-  (candle_partition_holds p bisect_left bisect_right frac_left frac_right d
+     candle_partition_holds p candle_partition_bisect_left
+       candle_partition_bisect_right candle_partition_frac_left
+       candle_partition_frac_right (candle_partition_bisect_left i d) left /\
+     candle_partition_holds p candle_partition_bisect_left
+       candle_partition_bisect_right candle_partition_frac_left
+       candle_partition_frac_right (candle_partition_bisect_right i d) right) /\
+  (candle_partition_holds p candle_partition_bisect_left
+      candle_partition_bisect_right candle_partition_frac_left
+      candle_partition_frac_right d
       (Candle_partition_recurse_left i n q child) <=>
-     candle_partition_holds p bisect_left bisect_right frac_left frac_right
-       (frac_left i n q d) child /\
-     p (frac_right i n q d)) /\
-  (candle_partition_holds p bisect_left bisect_right frac_left frac_right d
+     candle_partition_holds p candle_partition_bisect_left
+       candle_partition_bisect_right candle_partition_frac_left
+       candle_partition_frac_right (candle_partition_frac_left i n q d) child /\
+     p (candle_partition_frac_right i n q d)) /\
+  (candle_partition_holds p candle_partition_bisect_left
+      candle_partition_bisect_right candle_partition_frac_left
+      candle_partition_frac_right d
       (Candle_partition_recurse_right i n q child) <=>
-     p (frac_left i n q d) /\
-     candle_partition_holds p bisect_left bisect_right frac_left frac_right
-       (frac_right i n q d) child)`;;
+     p (candle_partition_frac_left i n q d) /\
+     candle_partition_holds p candle_partition_bisect_left
+       candle_partition_bisect_right candle_partition_frac_left
+       candle_partition_frac_right (candle_partition_frac_right i n q d) child)`;;
 
 let candle_partition_well_formed_def = define
  `(candle_partition_well_formed dimension Candle_partition_leaf <=> T) /\
@@ -85,12 +97,16 @@ let candle_partition_leaf_count_def = define
      candle_partition_leaf_count child)`;;
 
 let candle_partition_composition_sound = prove
- (`!p bisect_left bisect_right frac_left frac_right.
-     (!i d. p (bisect_left i d) /\ p (bisect_right i d) ==> p d) /\
-     (!i n q d. p (frac_left i n q d) /\ p (frac_right i n q d) ==> p d)
+ (`!p candle_partition_bisect_left candle_partition_bisect_right
+      candle_partition_frac_left candle_partition_frac_right.
+     (!i d. p (candle_partition_bisect_left i d) /\
+       p (candle_partition_bisect_right i d) ==> p d) /\
+     (!i n q d. p (candle_partition_frac_left i n q d) /\
+       p (candle_partition_frac_right i n q d) ==> p d)
      ==> !tree d.
        candle_partition_holds
-         p bisect_left bisect_right frac_left frac_right d tree
+         p candle_partition_bisect_left candle_partition_bisect_right
+         candle_partition_frac_left candle_partition_frac_right d tree
        ==> p d`,
   REPEAT GEN_TAC THEN STRIP_TAC THEN
   MATCH_MP_TAC candle_partition_INDUCT THEN
@@ -103,19 +119,25 @@ let candle_partition_composition_sound = prove
 (* [candle_partition_holds] exactly the conjunction of analytic leaf facts.  *)
 
 let candle_partition_composition_sound_with_invariant = prove
- (`!invariant p bisect_left bisect_right frac_left frac_right.
+ (`!invariant p candle_partition_bisect_left candle_partition_bisect_right
+      candle_partition_frac_left candle_partition_frac_right.
      (!i d. invariant d ==>
-       invariant (bisect_left i d) /\ invariant (bisect_right i d)) /\
+       invariant (candle_partition_bisect_left i d) /\
+       invariant (candle_partition_bisect_right i d)) /\
      (!i n q d. invariant d ==>
-       invariant (frac_left i n q d) /\ invariant (frac_right i n q d)) /\
+       invariant (candle_partition_frac_left i n q d) /\
+       invariant (candle_partition_frac_right i n q d)) /\
      (!i d. invariant d ==>
-       p (bisect_left i d) /\ p (bisect_right i d) ==> p d) /\
+       p (candle_partition_bisect_left i d) /\
+       p (candle_partition_bisect_right i d) ==> p d) /\
      (!i n q d. invariant d ==>
-       p (frac_left i n q d) /\ p (frac_right i n q d) ==> p d)
+       p (candle_partition_frac_left i n q d) /\
+       p (candle_partition_frac_right i n q d) ==> p d)
      ==> !tree d.
        invariant d /\
        candle_partition_holds
-         p bisect_left bisect_right frac_left frac_right d tree
+         p candle_partition_bisect_left candle_partition_bisect_right
+         candle_partition_frac_left candle_partition_frac_right d tree
        ==> p d`,
   REPEAT GEN_TAC THEN STRIP_TAC THEN
   MATCH_MP_TAC candle_partition_INDUCT THEN
