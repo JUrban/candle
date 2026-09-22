@@ -132,6 +132,43 @@ let candle_lc_sparse_integer_cache_stats () =
   !candle_lc_sparse_integer_cache_hits,
   !candle_lc_sparse_integer_cache_misses;;
 
+let candle_lc_sparse_lhs_cache_hits = ref 0;;
+let candle_lc_sparse_lhs_cache_misses = ref 0;;
+
+type candle_lc_sparse_flyspeck_context = {
+  candle_sparse_variables: term list;
+  candle_sparse_variables_tm: term;
+  candle_sparse_variable_index: term -> int;
+  candle_sparse_selector_conv: term -> thm;
+  candle_sparse_integer_conv: term -> term * thm;
+  candle_sparse_lhs_cache: (term,term * thm) Hashtbl.t
+};;
+
+let candle_lc_sparse_flyspeck_context_profiled profile variables =
+  let variables_tm = mk_list (variables,`:real`) in
+  let variable_index = candle_lc_sparse_flyspeck_indexer variables in
+  let selector_conv =
+    candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
+  profile "sparse-selector-proof-preparation" "begin";
+  candle_lc_sparse_flyspeck_prepare_selectors
+    variables variables_tm selector_conv;
+  profile "sparse-selector-proof-preparation" "end";
+  let integer_conv = candle_lc_sparse_flyspeck_integer_conv () in
+  candle_lc_sparse_lhs_cache_hits := 0;
+  candle_lc_sparse_lhs_cache_misses := 0;
+  {candle_sparse_variables = variables;
+   candle_sparse_variables_tm = variables_tm;
+   candle_sparse_variable_index = variable_index;
+   candle_sparse_selector_conv = selector_conv;
+   candle_sparse_integer_conv = integer_conv;
+   candle_sparse_lhs_cache = Hashtbl.create 1021};;
+
+let candle_lc_sparse_flyspeck_context variables =
+  candle_lc_sparse_flyspeck_context_profiled (fun _ _ -> ()) variables;;
+
+let candle_lc_sparse_lhs_cache_stats () =
+  !candle_lc_sparse_lhs_cache_hits,!candle_lc_sparse_lhs_cache_misses;;
+
 let candle_lc_sparse_flyspeck_nil = prove
  (`!candle_sparse_basis:real list.
      candle_lc_sparse_vec_real candle_sparse_basis [] = lin_f []`,
@@ -218,17 +255,40 @@ let candle_lc_reify_sparse_flyspeck_lin_f
     failwith "sparse Flyspeck adapter: structural denotation mismatch";
   sparse_entries_tm,TRANS structural_th (SYM standardize_th);;
 
+let candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs =
+  try
+    let entries,lhs_th = Hashtbl.find context.candle_sparse_lhs_cache lhs in
+    let exact_lhs =
+      mk_comb
+        (mk_comb
+          (`candle_lc_sparse_vec_real`,context.candle_sparse_variables_tm),
+         entries) in
+    candle_lc_check_reification "cached sparse lhs" exact_lhs lhs lhs_th;
+    candle_lc_sparse_lhs_cache_hits := !candle_lc_sparse_lhs_cache_hits + 1;
+    entries,lhs_th
+  with Not_found ->
+    let result =
+      candle_lc_reify_sparse_flyspeck_lin_f
+        context.candle_sparse_integer_conv
+        context.candle_sparse_selector_conv
+        context.candle_sparse_variable_index
+        context.candle_sparse_variables_tm lhs in
+    Hashtbl.add context.candle_sparse_lhs_cache lhs result;
+    candle_lc_sparse_lhs_cache_misses :=
+      !candle_lc_sparse_lhs_cache_misses + 1;
+    result;;
+
 let candle_lc_reify_sparse_flyspeck_row
-      integer_conv selector_conv variable_index variables_tm
-      (inequality,weight) =
+      context (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
   let entries,lhs_th =
-    candle_lc_reify_sparse_flyspeck_lin_f
-      integer_conv selector_conv variable_index variables_tm lhs and
-      integer,rhs_th = integer_conv rhs in
+    candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs and
+      integer,rhs_th = context.candle_sparse_integer_conv rhs in
   let exact_lhs =
     mk_comb
-      (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),entries) and
+      (mk_comb
+        (`candle_lc_sparse_vec_real`,context.candle_sparse_variables_tm),
+       entries) and
       exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
   candle_lc_check_reification "sparse lhs" exact_lhs lhs lhs_th;
   candle_lc_check_reification "sparse rhs" exact_rhs rhs rhs_th;
@@ -236,7 +296,9 @@ let candle_lc_reify_sparse_flyspeck_row
       raw_row = candle_lc_row_of_inequality weight inequality in
   let row_real_tm =
     mk_comb
-      (mk_comb (`candle_lc_sparse_row_real`,variables_tm),exact_row) in
+      (mk_comb
+        (`candle_lc_sparse_row_real`,context.candle_sparse_variables_tm),
+       exact_row) in
   let row_expansion =
     REWRITE_CONV[candle_lc_sparse_row_real_def] row_real_tm in
   let row_contents =
@@ -247,29 +309,24 @@ let candle_lc_reify_sparse_flyspeck_row
     failwith "sparse Flyspeck adapter: row denotation mismatch";
   exact_row,raw_row,row_th,inequality;;
 
-let candle_lc_sparse_flyspeck_rows_profiled
-      profile variables weighted_inequalities =
-  let variables_tm = mk_list (variables,`:real`) in
-  let variable_index = candle_lc_sparse_flyspeck_indexer variables in
-  let selector_conv =
-    candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
-  profile "sparse-selector-proof-preparation" "begin";
-  candle_lc_sparse_flyspeck_prepare_selectors
-    variables variables_tm selector_conv;
-  profile "sparse-selector-proof-preparation" "end";
-  let integer_conv = candle_lc_sparse_flyspeck_integer_conv () in
+let candle_lc_sparse_flyspeck_rows_with_context_profiled
+      profile context weighted_inequalities =
   profile "sparse-row-reification" "begin";
   let rows =
-    map
-      (candle_lc_reify_sparse_flyspeck_row
-        integer_conv selector_conv variable_index variables_tm)
-      weighted_inequalities in
+    map (candle_lc_reify_sparse_flyspeck_row context) weighted_inequalities in
   profile "sparse-row-reification" "end";
   let exact_rows =
     mk_list
       (map (fun (row,_,_,_) -> row) rows,
        candle_lc_sparse_flyspeck_row_type) in
-  variables_tm,exact_rows,rows;;
+  context.candle_sparse_variables_tm,exact_rows,rows;;
+
+let candle_lc_sparse_flyspeck_rows_profiled
+      profile variables weighted_inequalities =
+  let context =
+    candle_lc_sparse_flyspeck_context_profiled profile variables in
+  candle_lc_sparse_flyspeck_rows_with_context_profiled
+    profile context weighted_inequalities;;
 
 let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
   candle_lc_sparse_flyspeck_rows_profiled
@@ -356,6 +413,35 @@ let candle_lc_sparse_flyspeck_compute_verdict exact_rows =
     failwith "sparse Flyspeck adapter: computed certificate is not infeasible";
   TRANS logical (AP_TERM `Cexp_num` (ARITH_RULE `1 = SUC 0`));;
 
+let candle_lc_sparse_refute_flyspeck_prepared_profiled
+      profile context variables_tm exact_rows rows =
+  profile "sparse-source-proof-preparation" "begin";
+  let all_rows =
+    candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows in
+  profile "sparse-source-proof-preparation" "end";
+  profile "sparse-kernel-compute" "begin";
+  let computed = candle_lc_sparse_flyspeck_compute_verdict exact_rows in
+  profile "sparse-kernel-compute" "end";
+  profile "sparse-theorem-handoff" "begin";
+  let not_all =
+    MATCH_MP
+      (SPECL [variables_tm;exact_rows]
+        candle_cv_lc_sparse_fold_verdict_sound)
+      computed in
+  let contradiction = MP (NOT_ELIM not_all) all_rows in
+  profile "sparse-theorem-handoff" "end";
+  context.candle_sparse_variables,exact_rows,contradiction;;
+
+let candle_lc_sparse_refute_flyspeck_normalized_with_context_profiled
+      profile context normalized =
+  profile "sparse-source-number-conversion" "begin";
+  let variables_tm,exact_rows,rows =
+    candle_lc_sparse_flyspeck_rows_with_context_profiled
+      profile context normalized in
+  profile "sparse-source-number-conversion" "end";
+  candle_lc_sparse_refute_flyspeck_prepared_profiled
+    profile context variables_tm exact_rows rows;;
+
 let candle_lc_sparse_refute_flyspeck_source_profiled
       profile normalize_lhs weighted_inequalities =
   profile "sparse-source-normalization-variable-discovery" "begin";
@@ -374,26 +460,14 @@ let candle_lc_sparse_refute_flyspeck_source_profiled
           normalized)) in
   profile "sparse-source-normalization-variable-discovery" "end";
   profile "sparse-source-number-conversion" "begin";
+  let context =
+    candle_lc_sparse_flyspeck_context_profiled profile variables in
   let variables_tm,exact_rows,rows =
-    candle_lc_sparse_flyspeck_rows_profiled
-      profile variables normalized in
+    candle_lc_sparse_flyspeck_rows_with_context_profiled
+      profile context normalized in
   profile "sparse-source-number-conversion" "end";
-  profile "sparse-source-proof-preparation" "begin";
-  let all_rows =
-    candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows in
-  profile "sparse-source-proof-preparation" "end";
-  profile "sparse-kernel-compute" "begin";
-  let computed = candle_lc_sparse_flyspeck_compute_verdict exact_rows in
-  profile "sparse-kernel-compute" "end";
-  profile "sparse-theorem-handoff" "begin";
-  let not_all =
-    MATCH_MP
-      (SPECL [variables_tm;exact_rows]
-        candle_cv_lc_sparse_fold_verdict_sound)
-      computed in
-  let contradiction = MP (NOT_ELIM not_all) all_rows in
-  profile "sparse-theorem-handoff" "end";
-  variables,exact_rows,contradiction;;
+  candle_lc_sparse_refute_flyspeck_prepared_profiled
+    profile context variables_tm exact_rows rows;;
 
 let candle_lc_sparse_refute_flyspeck_source normalize_lhs rows =
   candle_lc_sparse_refute_flyspeck_source_profiled

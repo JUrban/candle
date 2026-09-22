@@ -250,6 +250,38 @@ if candle_cv_lc_sparse_flyspeck_cancel_variables <> [`x:real`] ||
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck sparse one-shot refutation mismatch";;
 
+(* A checked context may share basis and exact source-row proofs across a
+   certificate batch.  Reusing it must preserve the complete theorem. *)
+let candle_cv_lc_sparse_shared_context =
+  candle_lc_sparse_flyspeck_context [`x:real`];;
+let candle_cv_lc_sparse_shared_cold_variables,
+    candle_cv_lc_sparse_shared_cold_rows,
+    candle_cv_lc_sparse_shared_cold_th =
+  candle_lc_sparse_refute_flyspeck_normalized_with_context_profiled
+    (fun _ _ -> ()) candle_cv_lc_sparse_shared_context
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+let candle_cv_lc_sparse_shared_warm_variables,
+    candle_cv_lc_sparse_shared_warm_rows,
+    candle_cv_lc_sparse_shared_warm_th =
+  candle_lc_sparse_refute_flyspeck_normalized_with_context_profiled
+    (fun _ _ -> ()) candle_cv_lc_sparse_shared_context
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+let candle_cv_lc_sparse_shared_integer_hits,
+    candle_cv_lc_sparse_shared_integer_misses =
+  candle_lc_sparse_integer_cache_stats ();;
+if candle_lc_sparse_lhs_cache_stats () <> (2,2) ||
+   candle_cv_lc_sparse_shared_integer_hits <= 0 ||
+   candle_cv_lc_sparse_shared_integer_misses <= 0 ||
+   candle_cv_lc_sparse_shared_cold_variables <>
+     candle_cv_lc_sparse_shared_warm_variables ||
+   not (aconv candle_cv_lc_sparse_shared_cold_rows
+              candle_cv_lc_sparse_shared_warm_rows) ||
+   not (equals_thm candle_cv_lc_sparse_shared_cold_th
+                   candle_cv_lc_sparse_shared_warm_th) then
+  failwith "Flyspeck sparse shared-context mismatch";;
+
 let candle_cv_lc_flyspeck_profile_events = ref ([]:string list);;
 let candle_cv_lc_flyspeck_profile phase edge =
   candle_cv_lc_flyspeck_profile_events :=
