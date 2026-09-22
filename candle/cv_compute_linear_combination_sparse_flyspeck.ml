@@ -33,11 +33,23 @@ let candle_lc_sparse_flyspeck_all_const =
             num#((num#(num#num))list#(num#num)). T)
          ([]:(num#((num#(num#num))list#(num#num)))list)`);;
 
-let rec candle_lc_sparse_flyspeck_index variable index = function
-  | [] -> failwith "sparse Flyspeck adapter: variable outside basis"
-  | candidate::rest ->
-      if aconv variable candidate then index
-      else candle_lc_sparse_flyspeck_index variable (index + 1) rest;;
+let candle_lc_sparse_flyspeck_indexer variables =
+  candle_lc_check_variables Term.(<) variables;
+  let indices = Hashtbl.create (List.length variables) in
+  let rec add index = function
+    | [] -> ()
+    | variable::rest ->
+        Hashtbl.add indices variable (index,variable);
+        add (index + 1) rest in
+  add 0 variables;
+  fun variable ->
+    try
+      let index,canonical = Hashtbl.find indices variable in
+      if not (aconv canonical variable) then
+        failwith "sparse Flyspeck adapter: invalid variable index";
+      index
+    with Not_found ->
+      failwith "sparse Flyspeck adapter: variable outside basis";;
 
 let candle_lc_sparse_el_cache_hits = ref 0;;
 let candle_lc_sparse_el_cache_misses = ref 0;;
@@ -149,7 +161,7 @@ let candle_lc_sparse_flyspeck_cons = prove
    checked EL theorem.  No conversion descends through the full variable basis
    or through an already constructed row expression. *)
 let candle_lc_reify_sparse_flyspeck_entries
-      integer_conv selector_conv variables variables_tm entries =
+      integer_conv selector_conv variable_index variables_tm entries =
   let rec build = function
     | [] ->
         let sparse_tail = mk_list ([],candle_lc_sparse_flyspeck_entry_type) and
@@ -159,8 +171,7 @@ let candle_lc_reify_sparse_flyspeck_entries
     | (coefficient,variable,_)::rest ->
         let sparse_tail,source_tail,tail_th = build rest in
         let sparse_index =
-          mk_small_numeral
-            (candle_lc_sparse_flyspeck_index variable 0 variables) in
+          mk_small_numeral (variable_index variable) in
         let sparse_z,coefficient_th = integer_conv coefficient in
         let selector_tm =
           mk_comb
@@ -182,18 +193,18 @@ let candle_lc_reify_sparse_flyspeck_entries
   build entries;;
 
 let candle_lc_reify_sparse_flyspeck_lin_f
-      integer_conv selector_conv variables lhs =
-  candle_lc_check_variables Term.(<) variables;
+      integer_conv selector_conv variable_index variables_tm lhs =
   let standardize_th = candle_lc_flyspeck_standardize_numerals lhs in
   let standard_lhs = rand (concl standardize_th) in
   let entries =
     candle_lc_dest_entries
       candle_lc_flyspeck_lin_f_const dest_realintconst standard_lhs in
-  candle_lc_check_entries Term.(<) variables entries;
-  let variables_tm = mk_list (variables,`:real`) in
+  let entry_variables = map (fun (_,variable,_) -> variable) entries in
+  if not (candle_lc_strictly_sorted Term.(<) entry_variables) then
+    failwith "sparse Flyspeck adapter: lin_f variables are not sorted";
   let sparse_entries_tm,source_entries_tm,structural_th =
     candle_lc_reify_sparse_flyspeck_entries
-      integer_conv selector_conv variables variables_tm entries in
+      integer_conv selector_conv variable_index variables_tm entries in
   let source_head,source_terms_tm = dest_comb standard_lhs in
   if source_head <> candle_lc_flyspeck_lin_f_const ||
      not (aconv source_entries_tm source_terms_tm) then
@@ -208,11 +219,12 @@ let candle_lc_reify_sparse_flyspeck_lin_f
   sparse_entries_tm,TRANS structural_th (SYM standardize_th);;
 
 let candle_lc_reify_sparse_flyspeck_row
-      integer_conv selector_conv variables variables_tm (inequality,weight) =
+      integer_conv selector_conv variable_index variables_tm
+      (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
   let entries,lhs_th =
     candle_lc_reify_sparse_flyspeck_lin_f
-      integer_conv selector_conv variables lhs and
+      integer_conv selector_conv variable_index variables_tm lhs and
       integer,rhs_th = integer_conv rhs in
   let exact_lhs =
     mk_comb
@@ -238,6 +250,7 @@ let candle_lc_reify_sparse_flyspeck_row
 let candle_lc_sparse_flyspeck_rows_profiled
       profile variables weighted_inequalities =
   let variables_tm = mk_list (variables,`:real`) in
+  let variable_index = candle_lc_sparse_flyspeck_indexer variables in
   let selector_conv =
     candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
   profile "sparse-selector-proof-preparation" "begin";
@@ -249,7 +262,7 @@ let candle_lc_sparse_flyspeck_rows_profiled
   let rows =
     map
       (candle_lc_reify_sparse_flyspeck_row
-        integer_conv selector_conv variables variables_tm)
+        integer_conv selector_conv variable_index variables_tm)
       weighted_inequalities in
   profile "sparse-row-reification" "end";
   let exact_rows =
