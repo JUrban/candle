@@ -29,7 +29,8 @@ let candle_lc_sparse_flyspeck_all_const =
   rator
     (rator
       `ALL
-         (\row:num#((num#(num#num))list#(num#num)). T)
+         (\candle_sparse_encoded_row:
+            num#((num#(num#num))list#(num#num)). T)
          ([]:(num#((num#(num#num))list#(num#num)))list)`);;
 
 let rec candle_lc_sparse_flyspeck_index variable index = function
@@ -123,7 +124,8 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
   let row_real_fun =
     mk_comb (`candle_lc_sparse_row_real`,variables_tm) in
   let row_var =
-    mk_var ("row",candle_lc_sparse_flyspeck_row_type) in
+    mk_var
+      ("candle_sparse_encoded_row",candle_lc_sparse_flyspeck_row_type) in
   let predicate =
     mk_abs
       (row_var,
