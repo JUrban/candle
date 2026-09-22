@@ -193,12 +193,55 @@ let candle_lc_sparse_flyspeck_cons = prove
   ASM_REWRITE_TAC[candle_lc_sparse_vec_real_cons;
                   Linear_function.LIN_F_CONS; FST; SND]);;
 
-(* Construct the denotation theorem in lockstep with the authenticated source
-   entries.  Each step uses one exact coefficient equality and one cached,
-   checked EL theorem.  Build the product and sum congruences directly: the
-   earlier nested MATCH_MP chain repeatedly matched a growing tail theorem.
-   No conversion descends through the full variable basis or through an
-   already constructed row expression. *)
+(* Reify the source entry list before applying [lin_f].  This keeps the
+   concrete proof at the list/pair level: one generic theorem below connects
+   the whole list to its real denotation, so the host does not reconstruct a
+   growing arithmetic sum for every source row. *)
+(* Keep the clauses as separately typechecked quotations.  Candle's frontend
+   currently cannot infer the shared polymorphic recursive constant through
+   the single conjunction quotation accepted by native HOL Light. *)
+let candle_lc_sparse_source_entries_nil_clause =
+ `!candle_sparse_basis:real list.
+    candle_lc_sparse_source_entries candle_sparse_basis
+      ([]:(num#(num#num))list) = ([]:(real#real)list)`;;
+
+let candle_lc_sparse_source_entries_cons_clause =
+ `!(candle_sparse_basis:real list)
+    (candle_sparse_entry:num#(num#num))
+    (candle_sparse_tail:(num#(num#num))list).
+    candle_lc_sparse_source_entries candle_sparse_basis
+      (CONS candle_sparse_entry candle_sparse_tail) =
+    CONS
+      (candle_lc_zreal (SND candle_sparse_entry),
+       EL (FST candle_sparse_entry) candle_sparse_basis)
+      (candle_lc_sparse_source_entries candle_sparse_basis
+         candle_sparse_tail)`;;
+
+let candle_lc_sparse_source_entries_def =
+  new_recursive_definition list_RECURSION
+    (mk_conj
+      (candle_lc_sparse_source_entries_nil_clause,
+       candle_lc_sparse_source_entries_cons_clause));;
+
+let candle_lc_sparse_source_entries_denotation = prove
+ (`!candle_sparse_entries candle_sparse_basis.
+     candle_lc_sparse_vec_real candle_sparse_basis candle_sparse_entries =
+     lin_f
+       (candle_lc_sparse_source_entries candle_sparse_basis
+          candle_sparse_entries)`,
+  LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[candle_lc_sparse_vec_real_def;
+                candle_lc_sparse_source_entries_def;
+                Linear_function.LIN_F_EMPTY];
+    GEN_TAC THEN
+    ASM_REWRITE_TAC[candle_lc_sparse_vec_real_cons;
+                    candle_lc_sparse_source_entries_def;
+                    Linear_function.LIN_F_CONS; FST; SND]]);;
+
+(* Construct the encoded and authenticated source lists in lockstep.  Each
+   step uses one exact coefficient equality and one cached, checked EL
+   theorem.  Only list and pair congruences are built here; the once-proved
+   denotation theorem above supplies the complete arithmetic equality. *)
 let candle_lc_reify_sparse_flyspeck_entries
       integer_conv selector_conv variable_index variables_tm entries =
   let rec build = function
@@ -206,7 +249,11 @@ let candle_lc_reify_sparse_flyspeck_entries
         let sparse_tail = mk_list ([],candle_lc_sparse_flyspeck_entry_type) and
             source_tail = mk_list ([],`:real#real`) in
         sparse_tail,source_tail,
-        SPEC variables_tm candle_lc_sparse_flyspeck_nil
+        REWRITE_CONV[candle_lc_sparse_source_entries_def]
+          (mk_comb
+            (mk_comb
+              (`candle_lc_sparse_source_entries`,variables_tm),
+             sparse_tail))
     | (coefficient,variable,_)::rest ->
         let sparse_tail,source_tail,tail_th = build rest in
         let sparse_index =
@@ -220,22 +267,23 @@ let candle_lc_reify_sparse_flyspeck_entries
             source_entry = mk_pair (coefficient,variable) in
         let sparse_entries = mk_cons sparse_entry sparse_tail and
             source_entries = mk_cons source_entry source_tail in
-        let sparse_expansion =
+        let source_map_tm =
+          mk_comb
+            (mk_comb
+              (`candle_lc_sparse_source_entries`,variables_tm),
+             sparse_entries) in
+        let source_expansion =
           REWRITE_RULE[FST;SND]
-            (SPECL [variables_tm;sparse_entry;sparse_tail]
-              candle_lc_sparse_vec_real_cons) and
-            source_expansion =
-              REWRITE_RULE[FST;SND]
-                (SPECL [source_entry;source_tail]
-                  Linear_function.LIN_F_CONS) in
-        let product_th =
-          MK_BINOP `(*):real->real->real`
-            (coefficient_th,selector_th) in
-        let sum_th =
-          MK_BINOP `(+):real->real->real` (product_th,tail_th) in
-        let denotation_th =
-          TRANS sparse_expansion (TRANS sum_th (SYM source_expansion)) in
-        sparse_entries,source_entries,denotation_th in
+            (ONCE_REWRITE_CONV[candle_lc_sparse_source_entries_def]
+              source_map_tm) in
+        let source_head_th =
+          candle_lc_pair_rule coefficient_th selector_th in
+        let source_cons_th =
+          MK_BINOP
+            `(CONS):(real#real)->(real#real)list->(real#real)list`
+            (source_head_th,tail_th) in
+        sparse_entries,source_entries,
+        TRANS source_expansion source_cons_th in
   build entries;;
 
 let candle_lc_reify_sparse_flyspeck_lin_f
@@ -248,7 +296,7 @@ let candle_lc_reify_sparse_flyspeck_lin_f
   let entry_variables = map (fun (_,variable,_) -> variable) entries in
   if not (candle_lc_strictly_sorted Term.(<) entry_variables) then
     failwith "sparse Flyspeck adapter: lin_f variables are not sorted";
-  let sparse_entries_tm,source_entries_tm,structural_th =
+  let sparse_entries_tm,source_entries_tm,source_entries_th =
     candle_lc_reify_sparse_flyspeck_entries
       integer_conv selector_conv variable_index variables_tm entries in
   let source_head,source_terms_tm = dest_comb standard_lhs in
@@ -259,6 +307,11 @@ let candle_lc_reify_sparse_flyspeck_lin_f
     mk_comb
       (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),
        sparse_entries_tm) in
+  let structural_th =
+    TRANS
+      (SPECL [sparse_entries_tm;variables_tm]
+        candle_lc_sparse_source_entries_denotation)
+      (AP_TERM candle_lc_flyspeck_lin_f_const source_entries_th) in
   if hyp structural_th <> [] ||
      not (aconv (concl structural_th) (mk_eq (exact_tm,standard_lhs))) then
     failwith "sparse Flyspeck adapter: structural denotation mismatch";
