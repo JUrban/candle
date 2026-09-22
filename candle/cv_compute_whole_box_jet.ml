@@ -1228,8 +1228,10 @@ let candle_cv_q_jet_whole_box_check_correct = prove
 
 (* -------------------------------------------------------------------------- *)
 (* Analytic handoff.  The reflected checker above owns all recurring numeric *)
-(* work.  A source family need only establish this Taylor-remainder contract *)
-(* once, relating its original function to the exact real jet semantics.      *)
+(* work.  This is an intermediate specification: the intended next theorem   *)
+(* establishes it structurally for every valid expression in the supported   *)
+(* language.  Each source expression then needs only a mechanical reification *)
+(* theorem, never its own hand-written calculus/Taylor proof.                  *)
 (* -------------------------------------------------------------------------- *)
 
 let candle_q_midpoint_point_contains = prove
