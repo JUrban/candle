@@ -394,12 +394,16 @@ let candle_lc_sparse_flyspeck_plan master weighted_inequalities =
        (inequality,weight))
     weighted_inequalities;;
 
-let candle_lc_reify_sparse_flyspeck_master_row
+let candle_lc_resolve_sparse_flyspeck_master_row
       master (index,(inequality,weight)) =
   let entry = Array.get master.candle_sparse_master_entries index in
   if not
        (aconv entry.candle_sparse_source_conclusion (concl inequality)) then
     failwith "sparse Flyspeck master: plan/source mismatch";
+  entry,(inequality,weight);;
+
+let candle_lc_reify_resolved_sparse_flyspeck_master_row
+      master (entry,(inequality,weight)) =
   candle_lc_finish_sparse_flyspeck_row
     master.candle_sparse_master_context.candle_sparse_variables_tm
     entry.candle_sparse_source_entries
@@ -408,11 +412,21 @@ let candle_lc_reify_sparse_flyspeck_master_row
     entry.candle_sparse_source_rhs_th
     (inequality,weight);;
 
+let candle_lc_reify_sparse_flyspeck_master_row master planned_row =
+  candle_lc_reify_resolved_sparse_flyspeck_master_row master
+    (candle_lc_resolve_sparse_flyspeck_master_row master planned_row);;
+
 let candle_lc_sparse_flyspeck_rows_with_master_profiled
       profile master plan =
   profile "sparse-master-row-instantiation" "begin";
+  profile "sparse-master-plan-resolution" "begin";
+  let resolved =
+    map (candle_lc_resolve_sparse_flyspeck_master_row master) plan in
+  profile "sparse-master-plan-resolution" "end";
+  profile "sparse-master-row-denotation" "begin";
   let rows =
-    map (candle_lc_reify_sparse_flyspeck_master_row master) plan in
+    map (candle_lc_reify_resolved_sparse_flyspeck_master_row master) resolved in
+  profile "sparse-master-row-denotation" "end";
   profile "sparse-master-row-instantiation" "end";
   let exact_rows =
     mk_list
@@ -444,7 +458,8 @@ let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
   candle_lc_sparse_flyspeck_rows_profiled
     (fun _ _ -> ()) variables weighted_inequalities;;
 
-let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
+let candle_lc_sparse_flyspeck_all_rows_profiled
+      profile variables_tm exact_rows rows =
   let row_real_fun =
     mk_comb (`candle_lc_sparse_row_real`,variables_tm) in
   let row_var =
@@ -455,6 +470,7 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
       (row_var,
        mk_comb
          (`candle_lc_real_row_holds`,mk_comb (row_real_fun,row_var))) in
+  profile "sparse-source-row-holds" "begin";
   let exact_rows_and_theorems =
     map
       (fun (exact_row,raw_row,row_th,inequality) ->
@@ -467,6 +483,7 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
          let predicate_beta = BETA_CONV (mk_comb (predicate,exact_row)) in
          exact_row,EQ_MP (SYM predicate_beta) denoted_holds)
       rows in
+  profile "sparse-source-row-holds" "end";
   let all_predicate rows_tm =
     mk_comb
       (mk_comb (candle_lc_sparse_flyspeck_all_const,predicate),rows_tm) in
@@ -474,6 +491,7 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
     mk_list ([],candle_lc_sparse_flyspeck_row_type) in
   let empty_eq = ONCE_REWRITE_CONV[ALL] (all_predicate empty_rows) in
   let empty_th = EQ_MP (SYM empty_eq) TRUTH in
+  profile "sparse-all-list-construction" "begin";
   let built_rows,all_exact =
     List.fold_right
       (fun (row,row_th) (tail,tail_th) ->
@@ -482,15 +500,23 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
            ONCE_REWRITE_CONV[ALL] (all_predicate rows_tm) in
          rows_tm,EQ_MP (SYM all_eq) (CONJ row_th tail_th))
       exact_rows_and_theorems (empty_rows,empty_th) in
+  profile "sparse-all-list-construction" "end";
   if not (aconv built_rows exact_rows) then
     failwith "sparse Flyspeck adapter: exact row list mismatch";
+  profile "sparse-all-map-bridge" "begin";
   let all_map =
     REWRITE_RULE[o_DEF]
       (ISPECL [`candle_lc_real_row_holds`;row_real_fun;exact_rows]
         ALL_MAP) in
   if not (aconv (rand (concl all_map)) (concl all_exact)) then
     failwith "sparse Flyspeck adapter: ALL_MAP premise mismatch";
-  EQ_MP (SYM all_map) all_exact;;
+  let result = EQ_MP (SYM all_map) all_exact in
+  profile "sparse-all-map-bridge" "end";
+  result;;
+
+let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
+  candle_lc_sparse_flyspeck_all_rows_profiled
+    (fun _ _ -> ()) variables_tm exact_rows rows;;
 
 let candle_lc_sparse_flyspeck_compute_verdict exact_rows =
   let acc_rep =
@@ -529,7 +555,8 @@ let candle_lc_sparse_refute_flyspeck_prepared_profiled
       profile context variables_tm exact_rows rows =
   profile "sparse-source-proof-preparation" "begin";
   let all_rows =
-    candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows in
+    candle_lc_sparse_flyspeck_all_rows_profiled
+      profile variables_tm exact_rows rows in
   profile "sparse-source-proof-preparation" "end";
   profile "sparse-kernel-compute" "begin";
   let computed = candle_lc_sparse_flyspeck_compute_verdict exact_rows in
