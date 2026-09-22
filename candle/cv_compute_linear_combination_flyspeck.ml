@@ -54,9 +54,9 @@ let candle_lc_reify_flyspeck_integer integer_tm =
    against its exact requested conclusion before use. *)
 let candle_lc_reification_cache_basis : term option ref = ref None;;
 let candle_lc_lhs_reification_cache :
-    (term * (term * thm)) list ref = ref [];;
+    (term,term * thm) Hashtbl.t = Hashtbl.create 1021;;
 let candle_lc_rhs_reification_cache :
-    (term * (term * thm)) list ref = ref [];;
+    (term,term * thm) Hashtbl.t = Hashtbl.create 1021;;
 let candle_lc_lhs_cache_hits = ref 0 and
     candle_lc_lhs_cache_misses = ref 0 and
     candle_lc_rhs_cache_hits = ref 0 and
@@ -64,8 +64,8 @@ let candle_lc_lhs_cache_hits = ref 0 and
 
 let candle_lc_clear_reification_cache () =
   candle_lc_reification_cache_basis := None;
-  candle_lc_lhs_reification_cache := [];
-  candle_lc_rhs_reification_cache := [];;
+  Hashtbl.clear candle_lc_lhs_reification_cache;
+  Hashtbl.clear candle_lc_rhs_reification_cache;;
 
 let candle_lc_reset_reification_cache_stats () =
   candle_lc_lhs_cache_hits := 0;
@@ -76,8 +76,8 @@ let candle_lc_reset_reification_cache_stats () =
 let candle_lc_reification_cache_stats () =
   (!candle_lc_lhs_cache_hits,!candle_lc_lhs_cache_misses,
    !candle_lc_rhs_cache_hits,!candle_lc_rhs_cache_misses,
-   length !candle_lc_lhs_reification_cache,
-   length !candle_lc_rhs_reification_cache);;
+   Hashtbl.length candle_lc_lhs_reification_cache,
+   Hashtbl.length candle_lc_rhs_reification_cache);;
 
 let candle_lc_prepare_reification_cache variables =
   let variables_tm = mk_list (variables,`:real`) in
@@ -85,49 +85,38 @@ let candle_lc_prepare_reification_cache variables =
   | Some cached when cached = variables_tm -> variables_tm
   | _ ->
       candle_lc_reification_cache_basis := Some variables_tm;
-      candle_lc_lhs_reification_cache := [];
-      candle_lc_rhs_reification_cache := [];
+      Hashtbl.clear candle_lc_lhs_reification_cache;
+      Hashtbl.clear candle_lc_rhs_reification_cache;
       variables_tm;;
 
-let rec candle_lc_find_reification source entries =
-  match entries with
-  | [] -> None
-  | (cached_source,result)::tail ->
-      if cached_source = source then Some result
-      else candle_lc_find_reification source tail;;
-
 let candle_lc_reify_flyspeck_lin_f_cached variables variables_tm lhs =
-  match
-    candle_lc_find_reification lhs !candle_lc_lhs_reification_cache
-  with
-  | Some (coefficients,lhs_th) ->
+  try
+      let coefficients,lhs_th =
+        Hashtbl.find candle_lc_lhs_reification_cache lhs in
       let expected_lhs =
         mk_comb
           (mk_comb (`candle_lc_vec_real`,variables_tm),coefficients) in
       candle_lc_check_reification "cached lhs" expected_lhs lhs lhs_th;
       candle_lc_lhs_cache_hits := !candle_lc_lhs_cache_hits + 1;
       coefficients,lhs_th
-  | None ->
+  with Not_found ->
       let result = candle_lc_reify_flyspeck_lin_f variables lhs in
-      candle_lc_lhs_reification_cache :=
-        (lhs,result) :: !candle_lc_lhs_reification_cache;
+      Hashtbl.replace candle_lc_lhs_reification_cache lhs result;
       candle_lc_lhs_cache_misses := !candle_lc_lhs_cache_misses + 1;
       result;;
 
 let candle_lc_reify_flyspeck_integer_cached integer_tm =
-  match
-    candle_lc_find_reification integer_tm !candle_lc_rhs_reification_cache
-  with
-  | Some (integer,rhs_th) ->
+  try
+      let integer,rhs_th =
+        Hashtbl.find candle_lc_rhs_reification_cache integer_tm in
       let expected_rhs = mk_comb (`candle_lc_zreal`,integer) in
       candle_lc_check_reification
         "cached rhs" expected_rhs integer_tm rhs_th;
       candle_lc_rhs_cache_hits := !candle_lc_rhs_cache_hits + 1;
       integer,rhs_th
-  | None ->
+  with Not_found ->
       let result = candle_lc_reify_flyspeck_integer integer_tm in
-      candle_lc_rhs_reification_cache :=
-        (integer_tm,result) :: !candle_lc_rhs_reification_cache;
+      Hashtbl.replace candle_lc_rhs_reification_cache integer_tm result;
       candle_lc_rhs_cache_misses := !candle_lc_rhs_cache_misses + 1;
       result;;
 
