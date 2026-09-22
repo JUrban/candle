@@ -336,10 +336,12 @@ type candle_lc_sparse_flyspeck_master = {
 let candle_lc_sparse_flyspeck_master_profiled
       profile context weighted_inequalities =
   profile "sparse-master-row-preparation" "begin";
+  profile "sparse-master-source-deduplication" "begin";
   let source_conclusions =
     setify Term.(<)
       (map (fun (inequality,_) -> concl inequality) weighted_inequalities) in
-  let make_entry source_conclusion =
+  profile "sparse-master-source-deduplication" "end";
+  let authenticate_encoding source_conclusion =
     let inequality,_ =
       find
         (fun (candidate,_) ->
@@ -358,6 +360,12 @@ let candle_lc_sparse_flyspeck_master_profiled
         exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
     candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
     candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th;
+    source_conclusion,entries,lhs_th,integer,rhs_th in
+  profile "sparse-master-encoding-authentication" "begin";
+  let authenticated = map authenticate_encoding source_conclusions in
+  profile "sparse-master-encoding-authentication" "end";
+  let make_entry
+        (source_conclusion,entries,lhs_th,integer,rhs_th) =
     let weight_var =
       variant (frees source_conclusion)
         (mk_var ("candle_sparse_weight",`:num`)) in
@@ -374,7 +382,9 @@ let candle_lc_sparse_flyspeck_master_profiled
      candle_sparse_source_integer = integer;
      candle_sparse_source_rhs_th = rhs_th;
      candle_sparse_source_row_th = row_th} in
-  let entry_list = map make_entry source_conclusions in
+  profile "sparse-master-generalized-row-theorems" "begin";
+  let entry_list = map make_entry authenticated in
+  profile "sparse-master-generalized-row-theorems" "end";
   let entries = Array.of_list entry_list and
       indices = Hashtbl.create (List.length entry_list) in
   let rec add_indices index = function
