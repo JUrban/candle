@@ -282,6 +282,42 @@ if candle_lc_sparse_lhs_cache_stats () <> (2,2) ||
                    candle_cv_lc_sparse_shared_warm_th) then
   failwith "Flyspeck sparse shared-context mismatch";;
 
+let candle_cv_lc_sparse_master =
+  candle_lc_sparse_flyspeck_master candle_cv_lc_sparse_shared_context
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+let candle_cv_lc_sparse_master_plan =
+  candle_lc_sparse_flyspeck_plan candle_cv_lc_sparse_master
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+let candle_cv_lc_sparse_master_variables,
+    candle_cv_lc_sparse_master_rows,
+    candle_cv_lc_sparse_master_th =
+  candle_lc_sparse_refute_flyspeck_plan_with_master_profiled
+    (fun _ _ -> ()) candle_cv_lc_sparse_master
+    candle_cv_lc_sparse_master_plan;;
+let candle_cv_lc_sparse_master_wrong_index_rejected =
+  try
+    let first_index =
+      candle_lc_sparse_flyspeck_master_index
+        candle_cv_lc_sparse_master
+        (concl candle_cv_lc_flyspeck_cancel_ineq1) in
+    let _ =
+      candle_lc_sparse_refute_flyspeck_plan_with_master_profiled
+        (fun _ _ -> ()) candle_cv_lc_sparse_master
+        [(first_index,(candle_cv_lc_flyspeck_cancel_ineq2,`1`))] in
+    false
+  with Failure _ -> true;;
+if candle_lc_sparse_flyspeck_master_size candle_cv_lc_sparse_master <> 2 ||
+   candle_cv_lc_sparse_master_variables <>
+     candle_cv_lc_sparse_shared_cold_variables ||
+   not (aconv candle_cv_lc_sparse_master_rows
+              candle_cv_lc_sparse_shared_cold_rows) ||
+   not (equals_thm candle_cv_lc_sparse_master_th
+                   candle_cv_lc_sparse_shared_cold_th) ||
+   not candle_cv_lc_sparse_master_wrong_index_rejected then
+  failwith "Flyspeck sparse master-plan mismatch";;
+
 let candle_cv_lc_flyspeck_profile_events = ref ([]:string list);;
 let candle_cv_lc_flyspeck_profile phase edge =
   candle_cv_lc_flyspeck_profile_events :=

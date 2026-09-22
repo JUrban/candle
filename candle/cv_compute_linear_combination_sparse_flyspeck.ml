@@ -278,17 +278,12 @@ let candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs =
       !candle_lc_sparse_lhs_cache_misses + 1;
     result;;
 
-let candle_lc_reify_sparse_flyspeck_row
-      context (inequality,weight) =
+let candle_lc_finish_sparse_flyspeck_row
+      variables_tm entries lhs_th integer rhs_th (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
-  let entries,lhs_th =
-    candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs and
-      integer,rhs_th = context.candle_sparse_integer_conv rhs in
   let exact_lhs =
     mk_comb
-      (mk_comb
-        (`candle_lc_sparse_vec_real`,context.candle_sparse_variables_tm),
-       entries) and
+      (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),entries) and
       exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
   candle_lc_check_reification "sparse lhs" exact_lhs lhs lhs_th;
   candle_lc_check_reification "sparse rhs" exact_rhs rhs rhs_th;
@@ -296,9 +291,7 @@ let candle_lc_reify_sparse_flyspeck_row
       raw_row = candle_lc_row_of_inequality weight inequality in
   let row_real_tm =
     mk_comb
-      (mk_comb
-        (`candle_lc_sparse_row_real`,context.candle_sparse_variables_tm),
-       exact_row) in
+      (mk_comb (`candle_lc_sparse_row_real`,variables_tm),exact_row) in
   let row_expansion =
     REWRITE_CONV[candle_lc_sparse_row_real_def] row_real_tm in
   let row_contents =
@@ -308,6 +301,125 @@ let candle_lc_reify_sparse_flyspeck_row
   if not (aconv (rand (concl row_th)) raw_row) then
     failwith "sparse Flyspeck adapter: row denotation mismatch";
   exact_row,raw_row,row_th,inequality;;
+
+let candle_lc_reify_sparse_flyspeck_row context (inequality,weight) =
+  let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
+  let entries,lhs_th =
+    candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs and
+      integer,rhs_th = context.candle_sparse_integer_conv rhs in
+  candle_lc_finish_sparse_flyspeck_row
+    context.candle_sparse_variables_tm entries lhs_th integer rhs_th
+    (inequality,weight);;
+
+type candle_lc_sparse_flyspeck_master_entry = {
+  candle_sparse_source_conclusion: term;
+  candle_sparse_source_entries: term;
+  candle_sparse_source_lhs_th: thm;
+  candle_sparse_source_integer: term;
+  candle_sparse_source_rhs_th: thm
+};;
+
+type candle_lc_sparse_flyspeck_master = {
+  candle_sparse_master_context: candle_lc_sparse_flyspeck_context;
+  candle_sparse_master_entries: candle_lc_sparse_flyspeck_master_entry array;
+  candle_sparse_master_indices: (term,int * term) Hashtbl.t
+};;
+
+let candle_lc_sparse_flyspeck_master_profiled
+      profile context weighted_inequalities =
+  profile "sparse-master-row-preparation" "begin";
+  let source_conclusions =
+    setify Term.(<)
+      (map (fun (inequality,_) -> concl inequality) weighted_inequalities) in
+  let make_entry source_conclusion =
+    let inequality,_ =
+      find
+        (fun (candidate,_) ->
+           aconv (concl candidate) source_conclusion)
+        weighted_inequalities in
+    let lhs,rhs =
+      dest_binop `(<=):real->real->bool` (concl inequality) in
+    let entries,lhs_th =
+      candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs and
+        integer,rhs_th = context.candle_sparse_integer_conv rhs in
+    let exact_lhs =
+      mk_comb
+        (mk_comb
+          (`candle_lc_sparse_vec_real`,context.candle_sparse_variables_tm),
+         entries) and
+        exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
+    candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
+    candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th;
+    {candle_sparse_source_conclusion = source_conclusion;
+     candle_sparse_source_entries = entries;
+     candle_sparse_source_lhs_th = lhs_th;
+     candle_sparse_source_integer = integer;
+     candle_sparse_source_rhs_th = rhs_th} in
+  let entry_list = map make_entry source_conclusions in
+  let entries = Array.of_list entry_list and
+      indices = Hashtbl.create (List.length entry_list) in
+  let rec add_indices index = function
+    | [] -> ()
+    | entry::rest ->
+        Hashtbl.add indices entry.candle_sparse_source_conclusion
+          (index,entry.candle_sparse_source_conclusion);
+        add_indices (index + 1) rest in
+  add_indices 0 entry_list;
+  profile "sparse-master-row-preparation" "end";
+  {candle_sparse_master_context = context;
+   candle_sparse_master_entries = entries;
+   candle_sparse_master_indices = indices};;
+
+let candle_lc_sparse_flyspeck_master context weighted_inequalities =
+  candle_lc_sparse_flyspeck_master_profiled
+    (fun _ _ -> ()) context weighted_inequalities;;
+
+let candle_lc_sparse_flyspeck_master_size master =
+  Array.length master.candle_sparse_master_entries;;
+
+let candle_lc_sparse_flyspeck_master_index master source_conclusion =
+  try
+    let index,canonical =
+      Hashtbl.find master.candle_sparse_master_indices source_conclusion in
+    if not (aconv canonical source_conclusion) then
+      failwith "sparse Flyspeck master: invalid source index";
+    index
+  with Not_found ->
+    failwith "sparse Flyspeck master: undeclared source row";;
+
+let candle_lc_sparse_flyspeck_plan master weighted_inequalities =
+  map
+    (fun (inequality,weight) ->
+       candle_lc_sparse_flyspeck_master_index master (concl inequality),
+       (inequality,weight))
+    weighted_inequalities;;
+
+let candle_lc_reify_sparse_flyspeck_master_row
+      master (index,(inequality,weight)) =
+  let entry = Array.get master.candle_sparse_master_entries index in
+  if not
+       (aconv entry.candle_sparse_source_conclusion (concl inequality)) then
+    failwith "sparse Flyspeck master: plan/source mismatch";
+  candle_lc_finish_sparse_flyspeck_row
+    master.candle_sparse_master_context.candle_sparse_variables_tm
+    entry.candle_sparse_source_entries
+    entry.candle_sparse_source_lhs_th
+    entry.candle_sparse_source_integer
+    entry.candle_sparse_source_rhs_th
+    (inequality,weight);;
+
+let candle_lc_sparse_flyspeck_rows_with_master_profiled
+      profile master plan =
+  profile "sparse-master-row-instantiation" "begin";
+  let rows =
+    map (candle_lc_reify_sparse_flyspeck_master_row master) plan in
+  profile "sparse-master-row-instantiation" "end";
+  let exact_rows =
+    mk_list
+      (map (fun (row,_,_,_) -> row) rows,
+       candle_lc_sparse_flyspeck_row_type) in
+  master.candle_sparse_master_context.candle_sparse_variables_tm,
+  exact_rows,rows;;
 
 let candle_lc_sparse_flyspeck_rows_with_context_profiled
       profile context weighted_inequalities =
@@ -441,6 +553,17 @@ let candle_lc_sparse_refute_flyspeck_normalized_with_context_profiled
   profile "sparse-source-number-conversion" "end";
   candle_lc_sparse_refute_flyspeck_prepared_profiled
     profile context variables_tm exact_rows rows;;
+
+let candle_lc_sparse_refute_flyspeck_plan_with_master_profiled
+      profile master plan =
+  profile "sparse-source-number-conversion" "begin";
+  let variables_tm,exact_rows,rows =
+    candle_lc_sparse_flyspeck_rows_with_master_profiled
+      profile master plan in
+  profile "sparse-source-number-conversion" "end";
+  candle_lc_sparse_refute_flyspeck_prepared_profiled
+    profile master.candle_sparse_master_context
+    variables_tm exact_rows rows;;
 
 let candle_lc_sparse_refute_flyspeck_source_profiled
       profile normalize_lhs weighted_inequalities =
