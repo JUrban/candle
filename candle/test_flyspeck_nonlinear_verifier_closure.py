@@ -526,6 +526,39 @@ let () = Printf.printf "%d\\n" (f [|[|1;2|];[|7;8|]|]);;
                 outputs.append(result.stdout)
         self.assertEqual(outputs, [b"7\n", b"7\n"])
 
+    def test_nested_array_get_remains_one_argument_after_composition(self) -> None:
+        original = b'''let f a =
+  (fun x -> x + 1) a.(1).(0);;
+let () = Printf.printf "%d\\n" (f [|[|1|];[|7|]|]);;
+'''
+        normalized, operations = subject.normalize_nested_array_access(
+            original,
+        )
+        self.assertEqual(len(operations), 1)
+        self.assertIn(
+            b"(fun x -> x + 1) (Array.get (Array.get a (1)) (0))",
+            normalized,
+        )
+        outputs = []
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, source in (("original", original),
+                                 ("normalized", normalized)):
+                source_path = root / f"{name}.ml"
+                executable = root / name
+                source_path.write_bytes(source)
+                subprocess.run(
+                    ["ocamlc", "-o", str(executable), str(source_path)],
+                    check=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                result = subprocess.run(
+                    [str(executable)], check=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                outputs.append(result.stdout)
+        self.assertEqual(outputs, [b"8\n", b"8\n"])
+
     def test_fixed_format_lowering_preserves_native_behavior(self) -> None:
         original = b'''let emit i s b =
   print_endline (Printf.sprintf "i=%d s=%s b=%b" i s b);;

@@ -7431,9 +7431,9 @@
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v11",
-        "normalized_bytes": 63539,
-        "normalized_md5": "9cc414885a3a5968c0c63397b225c060",
-        "normalized_sha256": "e458e5db02f9ca4399cd44f215733a7280d0b56f525d9eaaac6332dc35ac0e37",
+        "normalized_bytes": 63567,
+        "normalized_md5": "ae5d19322dfa8857b52e05341bb05c99",
+        "normalized_sha256": "24b5ab3316a57f21725ce2dfe2428d90315f8308bf365d5025a0e4607a92843d",
         "operation_count": 17,
         "operations": [
           {
@@ -7444,13 +7444,13 @@
             "replacement_count": 1
           },
           {
-            "after": "Array.get (Array.get array (n)) (i)",
+            "after": "(Array.get (Array.get array (n)) (i))",
             "before": "array.(n).(i)",
             "kind": "nested-array-get",
             "line": 120
           },
           {
-            "after": "Array.get (Array.get array (n - 1)) (i - 1)",
+            "after": "(Array.get (Array.get array (n - 1)) (i - 1))",
             "before": "array.(n - 1).(i - 1)",
             "kind": "nested-array-get",
             "line": 121
@@ -7462,7 +7462,7 @@
             "line": 125
           },
           {
-            "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
+            "after": "(Array.get (Array.get el_thms_array (n)) (i - 1))",
             "before": "el_thms_array.(n).(i - 1)",
             "kind": "nested-array-get",
             "line": 140
@@ -7475,67 +7475,67 @@
             "replacement_count": 3
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (j)) (i)",
+            "after": "(Array.get (Array.get dd_vars_array (j)) (i))",
             "before": "dd_vars_array.(j).(i)",
             "kind": "nested-array-get",
             "line": 646
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1169
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1206
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1395
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1397
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (j)) (i)",
+            "after": "(Array.get (Array.get dd_vars_array (j)) (i))",
             "before": "dd_vars_array.(j).(i)",
             "kind": "nested-array-get",
             "line": 1397
           },
           {
-            "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
+            "after": "(Array.get (Array.get el_thms_array (n)) (i - 1))",
             "before": "el_thms_array.(n).(i - 1)",
             "kind": "nested-array-get",
             "line": 1402
           },
           {
-            "after": "Array.get (Array.get m_taylor_partial_upper_array (n)) (i)",
+            "after": "(Array.get (Array.get m_taylor_partial_upper_array (n)) (i))",
             "before": "m_taylor_partial_upper_array.(n).(i)",
             "kind": "nested-array-get",
             "line": 1435
           },
           {
-            "after": "Array.get (Array.get m_taylor_partial_bound_array (n)) (i)",
+            "after": "(Array.get (Array.get m_taylor_partial_bound_array (n)) (i))",
             "before": "m_taylor_partial_bound_array.(n).(i)",
             "kind": "nested-array-get",
             "line": 1437
           },
           {
-            "after": "Array.get (Array.get m_taylor_partial_lower_array (n)) (i)",
+            "after": "(Array.get (Array.get m_taylor_partial_lower_array (n)) (i))",
             "before": "m_taylor_partial_lower_array.(n).(i)",
             "kind": "nested-array-get",
             "line": 1439
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1448
@@ -7630,97 +7630,97 @@
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v11",
-        "normalized_bytes": 50201,
-        "normalized_md5": "8125f9d8994042c8e6b6eec75ee75cef",
-        "normalized_sha256": "36b406ec3fc07069becd9fb2794a286741df3ac4acfe993ede38c02a0c31efdd",
+        "normalized_bytes": 50231,
+        "normalized_md5": "95377d993a9bfa7fd89d8fc17bb54f4e",
+        "normalized_sha256": "670cf776e5487048635f743ff113a249057bedfef523a37bc56e93fbaf8c8515",
         "operation_count": 15,
         "operations": [
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 62
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 178
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 236
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 315
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 366
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 494
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 582
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 664
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 750
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 834
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 917
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1000
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1089
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1179
           },
           {
-            "after": "Array.get (Array.get dd_vars_array (i)) (j)",
+            "after": "(Array.get (Array.get dd_vars_array (i)) (j))",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
             "line": 1263
@@ -9022,9 +9022,9 @@
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v11",
-        "normalized_bytes": 74477,
-        "normalized_md5": "f733748c7881ee98afc51abb8e3f477f",
-        "normalized_sha256": "c1b234b4651a56511a5483acc35d0a8f037138bfc70a7897c05fd6e756acbf7d",
+        "normalized_bytes": 74499,
+        "normalized_md5": "4e9cb02ac26a1730d17c75b554b50278",
+        "normalized_sha256": "0f465a36e54a1a79739cecf25f3a294827a795413cc8fd8b3b42d0145f104840",
         "operation_count": 21,
         "operations": [
           {
@@ -9035,25 +9035,25 @@
             "replacement_count": 4
           },
           {
-            "after": "Array.get (Array.get incr_gen_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get incr_gen_thms_array (n)) (j))",
             "before": "incr_gen_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1003
           },
           {
-            "after": "Array.get (Array.get decr_gen_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get decr_gen_thms_array (n)) (j))",
             "before": "decr_gen_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1028
           },
           {
-            "after": "Array.get (Array.get glue_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get glue_thms_array (n)) (j))",
             "before": "glue_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1072
           },
           {
-            "after": "Array.get (Array.get glue_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get glue_thms_array (n)) (j))",
             "before": "glue_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1093
@@ -9066,43 +9066,43 @@
             "replacement_count": 1
           },
           {
-            "after": "Array.get (Array.get decr_gen_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get decr_gen_thms_array (n)) (j))",
             "before": "decr_gen_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1120
           },
           {
-            "after": "Array.get (Array.get incr_gen_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get incr_gen_thms_array (n)) (j))",
             "before": "incr_gen_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1120
           },
           {
-            "after": "Array.get (Array.get incr_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get incr_thms_array (n)) (j))",
             "before": "incr_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1144
           },
           {
-            "after": "Array.get (Array.get decr_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get decr_thms_array (n)) (j))",
             "before": "decr_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1167
           },
           {
-            "after": "Array.get (Array.get convex_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get convex_thms_array (n)) (j))",
             "before": "convex_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1193
           },
           {
-            "after": "Array.get (Array.get left_restrict_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get left_restrict_thms_array (n)) (j))",
             "before": "left_restrict_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1231
           },
           {
-            "after": "Array.get (Array.get right_restrict_thms_array (n)) (j)",
+            "after": "(Array.get (Array.get right_restrict_thms_array (n)) (j))",
             "before": "right_restrict_thms_array.(n).(j)",
             "kind": "nested-array-get",
             "line": 1231
