@@ -1,8 +1,9 @@
 needs "candle/compute.ml";;
-needs "candle/cv_compute_linear_combination_sparse_verdict.ml";;
+needs "candle/cv_compute_linear_combination_sparse_sound.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_sparse_verdict;;
+open Candle_cv_linear_combination_sparse_sound;;
 
 let candle_cv_lc_sparse_test_rows =
  `[(2,([(0,(1,0));(3,(0,2))],(5,0)));
@@ -78,5 +79,25 @@ let candle_cv_lc_sparse_verdict_correct =
     candle_cv_lc_sparse_fold_verdict_correct;;
 if hyp candle_cv_lc_sparse_verdict_correct <> [] then
   failwith "sparse verdict correctness has assumptions";;
+
+(* Exercise the intended one-theorem handoff: rewrite the kernel computation
+   back to its logical encodings, then use the generic soundness theorem once.
+   No intermediate coefficient arithmetic theorem is reconstructed. *)
+let candle_cv_lc_sparse_verdict_logical =
+  REWRITE_RULE
+    [GSYM candle_cv_lc_sparse_test_acc_rep;
+     GSYM candle_cv_lc_sparse_cancel_rows_rep]
+    candle_cv_lc_sparse_verdict_compute;;
+let candle_cv_lc_sparse_verdict_logical_suc =
+  TRANS candle_cv_lc_sparse_verdict_logical
+    (AP_TERM `Cexp_num` (ARITH_RULE `1 = SUC 0`));;
+let candle_cv_lc_sparse_test_sound =
+  MATCH_MP
+    (SPECL [`[]:real list`;candle_cv_lc_sparse_cancel_rows]
+      candle_cv_lc_sparse_fold_verdict_sound)
+    candle_cv_lc_sparse_verdict_logical_suc;;
+if hyp candle_cv_lc_sparse_verdict_logical_suc <> [] ||
+   hyp candle_cv_lc_sparse_test_sound <> [] then
+  failwith "sparse verdict soundness handoff has assumptions";;
 
 print_endline "CANDLE_CV_LINEAR_COMBINATION_SPARSE_VERDICT_OK";;
