@@ -180,7 +180,6 @@ let candle_cv_lc_sparse_fold_verdict_def = new_definition
     candle_cv_lc_sparse_infeasible
       (candle_cv_lc_sparse_fold acc lcrows)`;;
 
-
 (* All-variable evaluator equations. *)
 
 let candle_cv_lc_sparse_insert_compute = prove
@@ -204,7 +203,6 @@ let candle_cv_lc_sparse_insert_compute = prove
   REWRITE_TAC[candle_cv_lc_sparse_insert_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
 
-
 let candle_cv_lc_sparse_add_compute = prove
  (`!xs ys. candle_cv_lc_sparse_add xs ys =
      Cexp_if (Cexp_ispair xs)
@@ -215,7 +213,6 @@ let candle_cv_lc_sparse_add_compute = prove
   STRUCT_CASES_TAC (SPEC `xs:cval` (cases "cval")) THEN
   REWRITE_TAC[candle_cv_lc_sparse_add_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
-
 
 let candle_cv_lc_sparse_scale_compute = prove
  (`!k xs. candle_cv_lc_sparse_scale k xs =
@@ -230,7 +227,6 @@ let candle_cv_lc_sparse_scale_compute = prove
   REWRITE_TAC[candle_cv_lc_sparse_scale_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
 
-
 let candle_cv_lc_sparse_fold_compute = prove
  (`!acc lcrows. candle_cv_lc_sparse_fold acc lcrows =
      Cexp_if (Cexp_ispair lcrows)
@@ -242,7 +238,6 @@ let candle_cv_lc_sparse_fold_compute = prove
   STRUCT_CASES_TAC (SPEC `lcrows:cval` (cases "cval")) THEN
   REWRITE_TAC[candle_cv_lc_sparse_fold_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
-
 
 let candle_cv_lc_sparse_zero_compute = prove
  (`!xs. candle_cv_lc_sparse_zero xs =
@@ -261,7 +256,6 @@ let candle_cv_lc_sparse_zero_compute = prove
   STRUCT_CASES_TAC (SPEC `xs:cval` (cases "cval")) THEN
   REWRITE_TAC[candle_cv_lc_sparse_zero_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
-
 
 let candle_cv_lc_sparse_compute_eqs =
   map SPEC_ALL
@@ -308,7 +302,6 @@ let candle_cv_lc_sparse_insert_correct = prove
       [GSYM (SPEC `x:num#(num#num)` candle_cv_lc_sparse_entry_def)] THEN
     ASM_REWRITE_TAC[]]);;
 
-
 let candle_cv_lc_sparse_add_correct = prove
  (`!xs ys.
      candle_cv_lc_sparse_add (candle_cv_lc_sparse_vec xs)
@@ -323,7 +316,6 @@ let candle_cv_lc_sparse_add_correct = prove
     ASM_REWRITE_TAC[candle_cv_lc_sparse_vec_def;
                     candle_cv_lc_sparse_add_def;
                     candle_cv_lc_sparse_insert_correct]]);;
-
 
 let candle_cv_lc_sparse_scale_correct = prove
  (`!k xs.
@@ -341,7 +333,6 @@ let candle_cv_lc_sparse_scale_correct = prove
                     candle_cv_lc_sparse_scale_def;
                     cexp_fst_def; cexp_snd_def;
                     candle_cv_lc_zscale_correct]]);;
-
 
 let candle_cv_lc_sparse_accumulate_correct = prove
  (`!acc lcrow.
@@ -361,7 +352,6 @@ let candle_cv_lc_sparse_accumulate_correct = prove
               candle_cv_lc_zscale_correct;
               candle_cv_lc_zadd_correct]);;
 
-
 let candle_cv_lc_sparse_fold_correct = prove
  (`!lcrows acc.
      candle_cv_lc_sparse_fold
@@ -377,9 +367,8 @@ let candle_cv_lc_sparse_fold_correct = prove
                     candle_cv_lc_sparse_fold_def;
                     candle_cv_lc_sparse_accumulate_correct]]);;
 
-
 let candle_lc_num_order_eq = prove
- (`!m n. (m = n <=> ~(m < n) /\ ~(n < m))`,
+ (`!m n:num. (m = n <=> ~(m < n) /\ ~(n < m))`,
   ARITH_TAC);;
 
 let candle_cv_lc_sparse_zero_correct = prove
@@ -401,7 +390,6 @@ let candle_cv_lc_sparse_zero_correct = prove
                     cexp_if_def; injectivity "cval";
                     candle_lc_num_order_eq]]);;
 
-
 let candle_cv_lc_sparse_infeasible_correct = prove
  (`!acc.
      candle_cv_lc_sparse_infeasible (candle_cv_lc_sparse_acc acc) =
@@ -414,7 +402,6 @@ let candle_cv_lc_sparse_infeasible_correct = prove
   ASM_CASES_TAC `candle_lc_sparse_zero
                    (p1:(num#(num#num))list)` THEN
   ASM_REWRITE_TAC[cexp_if_def; cexp_less_def]);;
-
 
 let candle_cv_lc_sparse_fold_verdict_correct = prove
  (`!lcrows acc.
