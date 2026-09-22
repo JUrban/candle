@@ -137,6 +137,7 @@ if hyp candle_whole_box_jet_compute_th <> [] ||
    hyp candle_whole_box_jet_program_th <> [] ||
    hyp candle_cv_q_jet_whole_box_check_correct <> [] ||
    hyp candle_q_jet_program_contains <> [] ||
+   hyp candle_real_jet_program_f <> [] ||
    hyp candle_whole_box_jet_acceptance_th <> []
 then failwith "one-program whole-box jet theorem assumptions mismatch";;
 

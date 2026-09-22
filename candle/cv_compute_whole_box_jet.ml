@@ -307,6 +307,77 @@ let candle_real_jet_program_def = new_definition
  `candle_real_jet_program x y program =
     candle_real_jet_head (candle_real_jet_run x y program [])`;;
 
+let candle_real_jet_values_def = define
+ `(candle_real_jet_values [] = ([]:real list)) /\
+  (candle_real_jet_values (CONS h t) =
+     CONS (candle_real_jet_f h) (candle_real_jet_values t))`;;
+
+let candle_real_jet_variable_f = prove
+ (`!index x y.
+     candle_real_jet_f (candle_real_jet_variable x y index) =
+     candle_q_real_lookup index [x;y]`,
+  REPEAT GEN_TAC THEN
+  MP_TAC (SPEC `index:num` num_CASES) THEN
+  DISCH_THEN
+   (DISJ_CASES_THEN2 SUBST1_TAC (X_CHOOSE_THEN `n:num` SUBST1_TAC)) THENL
+   [REWRITE_TAC[candle_real_jet_variable_def; candle_real_jet_x_def;
+                candle_real_jet_make_def; candle_real_jet_f_def;
+                candle_q_real_lookup_def; FST; SND];
+    MP_TAC (SPEC `n:num` num_CASES) THEN
+    DISCH_THEN
+     (DISJ_CASES_THEN2 SUBST1_TAC
+       (X_CHOOSE_THEN `m:num` SUBST1_TAC)) THEN
+    REWRITE_TAC[candle_real_jet_variable_def; candle_real_jet_y_def;
+                candle_real_jet_zero_def; candle_real_jet_make_def;
+                candle_real_jet_f_def; candle_q_real_lookup_def; FST; SND]]);;
+
+let candle_real_jet_head_f = prove
+ (`!stack.
+     candle_real_jet_f (candle_real_jet_head stack) =
+     candle_q_real_head (candle_real_jet_values stack)`,
+  LIST_INDUCT_TAC THEN
+  REWRITE_TAC[candle_real_jet_head_def; candle_real_jet_values_def;
+              candle_real_jet_zero_def; candle_real_jet_make_def;
+              candle_real_jet_f_def; candle_q_real_head_def; FST; SND]);;
+
+let candle_real_jet_tail_values = prove
+ (`!stack.
+     candle_real_jet_values (candle_real_jet_tail stack) =
+     candle_q_real_tail (candle_real_jet_values stack)`,
+  LIST_INDUCT_TAC THEN
+  REWRITE_TAC[candle_real_jet_tail_def; candle_real_jet_values_def;
+              candle_q_real_tail_def]);;
+
+let candle_real_jet_step_values = prove
+ (`!instruction x y stack.
+     candle_real_jet_values (candle_real_jet_step x y instruction stack) =
+     candle_q_real_step [x;y] instruction (candle_real_jet_values stack)`,
+  MATCH_MP_TAC candle_q_instruction_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_real_jet_step_def; candle_q_real_step_def;
+              candle_real_jet_values_def; candle_real_jet_constant_def;
+              candle_real_jet_neg_def; candle_real_jet_add_def;
+              candle_real_jet_mul_def; candle_real_jet_make_def;
+              candle_real_jet_f_def; candle_real_jet_variable_f;
+              candle_real_jet_head_f; candle_real_jet_tail_values;
+              FST; SND]);;
+
+let candle_real_jet_run_values = prove
+ (`!program x y stack.
+     candle_real_jet_values (candle_real_jet_run x y program stack) =
+     candle_q_real_run [x;y] program (candle_real_jet_values stack)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_real_jet_run_def; candle_q_real_run_def;
+                  candle_real_jet_step_values]);;
+
+let candle_real_jet_program_f = prove
+ (`!program x y.
+     candle_real_jet_f (candle_real_jet_program x y program) =
+     candle_q_real_head (candle_q_real_run [x;y] program [])`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_real_jet_program_def; candle_real_jet_head_f;
+              candle_real_jet_run_values; candle_real_jet_values_def]);;
+
 let candle_q_jet_contains_def = new_definition
  `candle_q_jet_contains ijet rjet <=>
     candle_q_interval_contains (candle_q_jet_f ijet)
