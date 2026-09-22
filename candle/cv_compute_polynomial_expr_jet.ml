@@ -24,6 +24,21 @@ let candle_poly_expr_INDUCT,candle_poly_expr_RECURSION = define_type
      | Candle_poly_mul candle_poly_expr candle_poly_expr
      | Candle_poly_square candle_poly_expr";;
 
+(* The current numerical jet has exactly two coordinates, numbered 0 and 1 *)
+(* at the reflected-program boundary.  Keep validity explicit even though   *)
+(* the total evaluator maps an out-of-range load to zero: source reification *)
+(* must reject such an expression rather than silently change its meaning.  *)
+
+let candle_poly_valid_2_def = define
+ `(candle_poly_valid_2 (Candle_poly_const p n d) <=> T) /\
+  (candle_poly_valid_2 (Candle_poly_var i) <=> i < 2) /\
+  (candle_poly_valid_2 (Candle_poly_neg a) <=> candle_poly_valid_2 a) /\
+  (candle_poly_valid_2 (Candle_poly_add a b) <=>
+     candle_poly_valid_2 a /\ candle_poly_valid_2 b) /\
+  (candle_poly_valid_2 (Candle_poly_mul a b) <=>
+     candle_poly_valid_2 a /\ candle_poly_valid_2 b) /\
+  (candle_poly_valid_2 (Candle_poly_square a) <=> candle_poly_valid_2 a)`;;
+
 let candle_poly_value_def = define
  `(candle_poly_value x y (Candle_poly_const p n d) =
      candle_q_real ((p,n),d)) /\
