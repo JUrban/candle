@@ -56,18 +56,18 @@ let candle_lc_sparse_flyspeck_selector_conv variables variables_tm =
       | _ -> failwith "sparse Flyspeck adapter: malformed EL term" in
     if not (aconv list_tm variables_tm) then
       failwith "sparse Flyspeck adapter: unexpected selector basis";
-    let index = Num.int_of_num (dest_numeral index_tm) in
-    if index < 0 || index >= List.length variables then
-      failwith "sparse Flyspeck adapter: selector index outside basis";
+    let index = dest_numeral index_tm in
     try
       let th = Hashtbl.find cache index in
         candle_lc_sparse_el_cache_hits :=
           !candle_lc_sparse_el_cache_hits + 1;
         th
     with Not_found ->
-        let th = EL_CONV tm and expected = List.nth variables index in
+        let th = EL_CONV tm in
         if hyp th <> [] ||
-           not (aconv (concl th) (mk_eq (tm,expected))) then
+           not (aconv (lhand (concl th)) tm) ||
+           not (exists (fun variable -> aconv (rand (concl th)) variable)
+                  variables) then
           failwith "sparse Flyspeck adapter: invalid selector theorem";
         Hashtbl.add cache index th;
         candle_lc_sparse_el_cache_misses :=
