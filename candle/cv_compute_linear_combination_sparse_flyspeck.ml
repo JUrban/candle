@@ -195,8 +195,10 @@ let candle_lc_sparse_flyspeck_cons = prove
 
 (* Construct the denotation theorem in lockstep with the authenticated source
    entries.  Each step uses one exact coefficient equality and one cached,
-   checked EL theorem.  No conversion descends through the full variable basis
-   or through an already constructed row expression. *)
+   checked EL theorem.  Build the product and sum congruences directly: the
+   earlier nested MATCH_MP chain repeatedly matched a growing tail theorem.
+   No conversion descends through the full variable basis or through an
+   already constructed row expression. *)
 let candle_lc_reify_sparse_flyspeck_entries
       integer_conv selector_conv variable_index variables_tm entries =
   let rec build = function
@@ -218,14 +220,21 @@ let candle_lc_reify_sparse_flyspeck_entries
             source_entry = mk_pair (coefficient,variable) in
         let sparse_entries = mk_cons sparse_entry sparse_tail and
             source_entries = mk_cons source_entry source_tail in
-        let cons_th =
-          SPECL
-            [variables_tm;sparse_index;sparse_z;sparse_tail;
-             coefficient;variable;source_tail]
-            candle_lc_sparse_flyspeck_cons in
+        let sparse_expansion =
+          REWRITE_RULE[FST;SND]
+            (SPECL [variables_tm;sparse_entry;sparse_tail]
+              candle_lc_sparse_vec_real_cons) and
+            source_expansion =
+              REWRITE_RULE[FST;SND]
+                (SPECL [source_entry;source_tail]
+                  Linear_function.LIN_F_CONS) in
+        let product_th =
+          MK_BINOP `(*):real->real->real`
+            (coefficient_th,selector_th) in
+        let sum_th =
+          MK_BINOP `(+):real->real->real` (product_th,tail_th) in
         let denotation_th =
-          MATCH_MP (MATCH_MP (MATCH_MP cons_th coefficient_th) selector_th)
-            tail_th in
+          TRANS sparse_expansion (TRANS sum_th (SYM source_expansion)) in
         sparse_entries,source_entries,denotation_th in
   build entries;;
 
