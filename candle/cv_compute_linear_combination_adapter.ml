@@ -95,11 +95,14 @@ let candle_lc_zero_acc_real_conv variables_tm =
     failwith "candle_lc adapter: zero accumulator mismatch";
   th;;
 
-let candle_lc_bulk_compute_with
-      variables reify_lhs reify_rhs weighted_inequalities =
+let candle_lc_bulk_compute_with_profile
+      profile variables reify_lhs reify_rhs weighted_inequalities =
+  profile "source-number-conversion" "begin";
   let variables_tm,exact_rows,row_map_th =
     candle_lc_reify_rows
       variables reify_lhs reify_rhs weighted_inequalities in
+  profile "source-number-conversion" "end";
+  profile "precompute-proof-preparation" "begin";
   let bulk_th = candle_lc_bulk_inequality weighted_inequalities in
   let zero_acc_th = candle_lc_zero_acc_real_conv variables_tm in
   let exact_bulk_th =
@@ -108,7 +111,11 @@ let candle_lc_bulk_compute_with
     SPECL [exact_rows;variables_tm;candle_lc_zero_acc]
       candle_lc_fold_real in
   let realized_bulk_th = REWRITE_RULE[realization_th] exact_bulk_th in
+  profile "precompute-proof-preparation" "end";
+  profile "kernel-compute" "begin";
   let fold_th = candle_cv_lc_fold_conv candle_lc_zero_acc exact_rows in
+  profile "kernel-compute" "end";
+  profile "theorem-reconstruction" "begin";
   let raw_result = rand (concl fold_th) in
   let raw_bulk_th =
     REWRITE_RULE
@@ -129,6 +136,13 @@ let candle_lc_bulk_compute_with
       (mk_comb (`candle_lc_zreal`,integer)) in
   if not (aconv (concl computed_bulk_th) expected_conclusion) then
     failwith "candle_lc adapter: computed conclusion mismatch";
+  profile "theorem-reconstruction" "end";
   result,computed_bulk_th;;
+
+let candle_lc_bulk_compute_with
+      variables reify_lhs reify_rhs weighted_inequalities =
+  candle_lc_bulk_compute_with_profile
+    (fun _ _ -> ())
+    variables reify_lhs reify_rhs weighted_inequalities;;
 
 end;;

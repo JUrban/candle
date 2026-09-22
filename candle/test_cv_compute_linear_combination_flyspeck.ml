@@ -166,19 +166,42 @@ if candle_cv_lc_flyspeck_cancel_variables <> [`x:real`] ||
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck reflected cancellation/refutation mismatch";;
 
+let candle_cv_lc_flyspeck_profile_events = ref ([]:string list);;
+let candle_cv_lc_flyspeck_profile phase edge =
+  candle_cv_lc_flyspeck_profile_events :=
+    (phase ^ ":" ^ edge) :: !candle_cv_lc_flyspeck_profile_events;;
 let candle_cv_lc_flyspeck_terminal_variables,
     candle_cv_lc_flyspeck_terminal_result,
     candle_cv_lc_flyspeck_terminal_th =
-  candle_lc_bulk_refute_flyspeck_terminal
-    REFL (num 10)
+  candle_lc_bulk_refute_flyspeck_terminal_profiled
+    candle_cv_lc_flyspeck_profile REFL (num 10)
     [(candle_cv_lc_flyspeck_cancel_ineq1,num 1)]
     [(candle_cv_lc_flyspeck_cancel_ineq2,num 10)];;
+let candle_cv_lc_flyspeck_expected_profile_events =
+  ["terminal-number-conversion:begin";
+   "terminal-number-conversion:end";
+   "source-normalization-variable-discovery:begin";
+   "source-normalization-variable-discovery:end";
+   "source-number-conversion:begin";
+   "source-number-conversion:end";
+   "precompute-proof-preparation:begin";
+   "precompute-proof-preparation:end";
+   "kernel-compute:begin";
+   "kernel-compute:end";
+   "theorem-reconstruction:begin";
+   "theorem-reconstruction:end";
+   "theorem-publication:begin";
+   "theorem-publication:end";
+   "final-contradiction-handoff:begin";
+   "final-contradiction-handoff:end"];;
 if candle_cv_lc_flyspeck_terminal_variables <> [`x:real`] ||
    not (aconv candle_cv_lc_flyspeck_terminal_result `([(0,0)],(0,10))`) ||
    concl candle_cv_lc_flyspeck_terminal_th <> `F` ||
    not (set_eq (hyp candle_cv_lc_flyspeck_terminal_th)
           [concl candle_cv_lc_flyspeck_cancel_ineq1;
            concl candle_cv_lc_flyspeck_cancel_ineq2]) ||
+   List.rev !candle_cv_lc_flyspeck_profile_events <>
+     candle_cv_lc_flyspeck_expected_profile_events ||
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck reflected terminal scaling mismatch";;
 

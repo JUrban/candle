@@ -102,14 +102,23 @@ let candle_lc_publicize_flyspeck variables result exact_th =
     failwith "Flyspeck adapter: public conclusion mismatch";
   public_th;;
 
-let candle_lc_bulk_compute_flyspeck variables weighted_inequalities =
+let candle_lc_bulk_compute_flyspeck_profiled
+      profile variables weighted_inequalities =
   let result,exact_th =
-    candle_lc_bulk_compute_with
+    candle_lc_bulk_compute_with_profile profile
       variables
       (candle_lc_reify_flyspeck_lin_f variables)
       candle_lc_reify_flyspeck_integer
       weighted_inequalities in
-  result,candle_lc_publicize_flyspeck variables result exact_th;;
+  profile "theorem-publication" "begin";
+  let public_th =
+    candle_lc_publicize_flyspeck variables result exact_th in
+  profile "theorem-publication" "end";
+  result,public_th;;
+
+let candle_lc_bulk_compute_flyspeck variables weighted_inequalities =
+  candle_lc_bulk_compute_flyspeck_profiled
+    (fun _ _ -> ()) variables weighted_inequalities;;
 
 let candle_lc_normalize_flyspeck_inequality normalize_lhs inequality =
   let lhs,rhs =
@@ -133,8 +142,9 @@ let candle_lc_flyspeck_lhs_variables inequality =
     failwith "Flyspeck adapter: normalized lhs is not lin_f";
   map (fun entry -> snd (dest_pair entry)) (dest_list entries_tm);;
 
-let candle_lc_bulk_compute_flyspeck_source
-      normalize_lhs weighted_inequalities =
+let candle_lc_bulk_compute_flyspeck_source_profiled
+      profile normalize_lhs weighted_inequalities =
+  profile "source-normalization-variable-discovery" "begin";
   let normalized =
     map
       (fun (inequality,weight) ->
@@ -148,9 +158,16 @@ let candle_lc_bulk_compute_flyspeck_source
           (fun (inequality,_) ->
              candle_lc_flyspeck_lhs_variables inequality)
           normalized)) in
+  profile "source-normalization-variable-discovery" "end";
   let result,computed_th =
-    candle_lc_bulk_compute_flyspeck variables normalized in
+    candle_lc_bulk_compute_flyspeck_profiled
+      profile variables normalized in
   variables,result,computed_th;;
+
+let candle_lc_bulk_compute_flyspeck_source
+      normalize_lhs weighted_inequalities =
+  candle_lc_bulk_compute_flyspeck_source_profiled
+    (fun _ _ -> ()) normalize_lhs weighted_inequalities;;
 
 let candle_lc_flyspeck_final_inequality =
   Arith_nat.NUMERALS_TO_NUM
@@ -167,11 +184,12 @@ let candle_lc_all_zero_coefficients coefficients_tm =
        dest_numeral negative_tm =/ candle_lc_flyspeck_zero)
     (dest_list coefficients_tm);;
 
-let candle_lc_bulk_refute_flyspeck_source
-      normalize_lhs weighted_inequalities =
+let candle_lc_bulk_refute_flyspeck_source_profiled
+      profile normalize_lhs weighted_inequalities =
   let variables,result,aggregate =
-    candle_lc_bulk_compute_flyspeck_source
-      normalize_lhs weighted_inequalities in
+    candle_lc_bulk_compute_flyspeck_source_profiled
+      profile normalize_lhs weighted_inequalities in
+  profile "final-contradiction-handoff" "begin";
   let coefficients_tm,integer_tm = dest_pair result in
   let positive_tm,negative_tm = dest_pair integer_tm in
   let positive = dest_numeral positive_tm and
@@ -190,7 +208,14 @@ let candle_lc_bulk_refute_flyspeck_source
   let final_iff = SPEC n_tm candle_lc_flyspeck_final_inequality in
   let zero_th = Arith_nat.NUM_EQ0_HASH_CONV n_tm in
   let contradiction = EQ_MP final_iff aggregate in
-  variables,result,EQ_MP zero_th contradiction;;
+  let final_th = EQ_MP zero_th contradiction in
+  profile "final-contradiction-handoff" "end";
+  variables,result,final_th;;
+
+let candle_lc_bulk_refute_flyspeck_source
+      normalize_lhs weighted_inequalities =
+  candle_lc_bulk_refute_flyspeck_source_profiled
+    (fun _ _ -> ()) normalize_lhs weighted_inequalities;;
 
 let candle_lc_flyspeck_weight_term weight =
   if weight </ candle_lc_flyspeck_zero then
@@ -248,11 +273,12 @@ let candle_lc_select_flyspeck_auxiliary_rows
   List.flatten
     (map (fun (_,_,rows) -> List.rev rows) ordered_groups);;
 
-let candle_lc_bulk_refute_flyspeck_terminal
-      normalize_lhs precision_constant constraint_inequalities
+let candle_lc_bulk_refute_flyspeck_terminal_profiled
+      profile normalize_lhs precision_constant constraint_inequalities
       auxiliary_inequalities =
   if precision_constant <=/ candle_lc_flyspeck_zero then
     failwith "Flyspeck adapter: nonpositive precision multiplier";
+  profile "terminal-number-conversion" "begin";
   let scaled_constraints =
     map
       (fun (inequality,weight) ->
@@ -264,7 +290,15 @@ let candle_lc_bulk_refute_flyspeck_terminal
       (fun (inequality,weight) ->
          inequality,candle_lc_flyspeck_weight_term weight)
       auxiliary_inequalities in
-  candle_lc_bulk_refute_flyspeck_source
-    normalize_lhs (scaled_constraints @ auxiliaries);;
+  profile "terminal-number-conversion" "end";
+  candle_lc_bulk_refute_flyspeck_source_profiled
+    profile normalize_lhs (scaled_constraints @ auxiliaries);;
+
+let candle_lc_bulk_refute_flyspeck_terminal
+      normalize_lhs precision_constant constraint_inequalities
+      auxiliary_inequalities =
+  candle_lc_bulk_refute_flyspeck_terminal_profiled
+    (fun _ _ -> ()) normalize_lhs precision_constant
+    constraint_inequalities auxiliary_inequalities;;
 
 end;;
