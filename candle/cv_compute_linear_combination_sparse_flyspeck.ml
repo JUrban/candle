@@ -17,7 +17,6 @@ open Candle_cv_linear_combination_bulk;;
 open Candle_cv_linear_combination_adapter;;
 open Candle_cv_linear_combination_flyspeck;;
 open Candle_cv_linear_combination_realize;;
-open Candle_cv_linear_combination_sound;;
 open Candle_cv_linear_combination_sparse_verdict;;
 open Candle_cv_linear_combination_sparse_sound;;
 
@@ -194,41 +193,6 @@ let candle_lc_sparse_flyspeck_cons = prove
   ASM_REWRITE_TAC[candle_lc_sparse_vec_real_cons;
                   Linear_function.LIN_F_CONS; FST; SND]);;
 
-let candle_lc_sparse_flyspeck_row_denotes = prove
- (`!(candle_sparse_basis:real list)
-     (candle_sparse_entries:(num#(num#num))list)
-     (candle_sparse_integer:num#num) (candle_sparse_weight:num)
-     (candle_source_lhs:real) (candle_source_rhs:real).
-     candle_lc_sparse_vec_real candle_sparse_basis candle_sparse_entries =
-       candle_source_lhs
-     ==> candle_lc_zreal candle_sparse_integer = candle_source_rhs
-     ==> candle_lc_sparse_row_real candle_sparse_basis
-           (candle_sparse_weight,
-            (candle_sparse_entries,candle_sparse_integer)) =
-         (candle_sparse_weight,(candle_source_lhs,candle_source_rhs))`,
-  REPEAT STRIP_TAC THEN
-  ASM_REWRITE_TAC[candle_lc_sparse_row_real_def]);;
-
-let candle_lc_sparse_flyspeck_row_holds = prove
- (`!(candle_sparse_weight:num) (candle_source_lhs:real)
-     (candle_source_rhs:real).
-     candle_source_lhs <= candle_source_rhs
-     ==> candle_lc_real_row_holds
-           (candle_sparse_weight,(candle_source_lhs,candle_source_rhs))`,
-  REWRITE_TAC[candle_lc_real_row_holds_def]);;
-
-let candle_lc_sparse_all_nil = prove
- (`!candle_sparse_predicate:A->bool. ALL candle_sparse_predicate []`,
-  REWRITE_TAC[ALL]);;
-
-let candle_lc_sparse_all_cons = prove
- (`!(candle_sparse_predicate:A->bool) candle_sparse_head candle_sparse_tail.
-     candle_sparse_predicate candle_sparse_head
-     ==> ALL candle_sparse_predicate candle_sparse_tail
-     ==> ALL candle_sparse_predicate
-           (CONS candle_sparse_head candle_sparse_tail)`,
-  REWRITE_TAC[ALL] THEN MESON_TAC[]);;
-
 (* Construct the denotation theorem in lockstep with the authenticated source
    entries.  Each step uses one exact coefficient equality and one cached,
    checked EL theorem.  No conversion descends through the full variable basis
@@ -325,13 +289,15 @@ let candle_lc_finish_sparse_flyspeck_row
   candle_lc_check_reification "sparse rhs" exact_rhs rhs rhs_th;
   let exact_row = mk_pair (weight,mk_pair (entries,integer)) and
       raw_row = candle_lc_row_of_inequality weight inequality in
-  let row_th =
-    MATCH_MP
-      (MATCH_MP
-        (SPECL [variables_tm;entries;integer;weight;lhs;rhs]
-          candle_lc_sparse_flyspeck_row_denotes)
-        lhs_th)
-      rhs_th in
+  let row_real_tm =
+    mk_comb
+      (mk_comb (`candle_lc_sparse_row_real`,variables_tm),exact_row) in
+  let row_expansion =
+    REWRITE_CONV[candle_lc_sparse_row_real_def] row_real_tm in
+  let row_contents =
+    candle_lc_pair_rule (REFL weight)
+      (candle_lc_pair_rule lhs_th rhs_th) in
+  let row_th = TRANS row_expansion row_contents in
   if not (aconv (rand (concl row_th)) raw_row) then
     failwith "sparse Flyspeck adapter: row denotation mismatch";
   exact_row,raw_row,row_th,inequality;;
@@ -494,13 +460,7 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
       (fun (exact_row,raw_row,row_th,inequality) ->
          let denoted_row =
            mk_comb (row_real_fun,exact_row) in
-         let weight,source_row = dest_pair raw_row in
-         let lhs,rhs = dest_pair source_row in
-         let raw_holds =
-           MATCH_MP
-             (SPECL [weight;lhs;rhs]
-               candle_lc_sparse_flyspeck_row_holds)
-             inequality in
+         let raw_holds = candle_lc_row_holds_rule raw_row inequality in
          let holds_eq =
            AP_TERM `candle_lc_real_row_holds` row_th in
          let denoted_holds = EQ_MP (SYM holds_eq) raw_holds in
@@ -512,14 +472,15 @@ let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
       (mk_comb (candle_lc_sparse_flyspeck_all_const,predicate),rows_tm) in
   let empty_rows =
     mk_list ([],candle_lc_sparse_flyspeck_row_type) in
-  let empty_th = ISPEC predicate candle_lc_sparse_all_nil in
+  let empty_eq = ONCE_REWRITE_CONV[ALL] (all_predicate empty_rows) in
+  let empty_th = EQ_MP (SYM empty_eq) TRUTH in
   let built_rows,all_exact =
     List.fold_right
       (fun (row,row_th) (tail,tail_th) ->
          let rows_tm = mk_cons row tail in
-         let cons_th =
-           ISPECL [predicate;row;tail] candle_lc_sparse_all_cons in
-         rows_tm,MATCH_MP (MATCH_MP cons_th row_th) tail_th)
+         let all_eq =
+           ONCE_REWRITE_CONV[ALL] (all_predicate rows_tm) in
+         rows_tm,EQ_MP (SYM all_eq) (CONJ row_th tail_th))
       exact_rows_and_theorems (empty_rows,empty_th) in
   if not (aconv built_rows exact_rows) then
     failwith "sparse Flyspeck adapter: exact row list mismatch";
