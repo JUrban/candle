@@ -25,4 +25,4 @@ if rg -q 'ERROR:|EXCEPTION:|Parsing failed' "$log_file"; then
   exit 1
 fi
 
-rg -E 'CANDLE_CERT_PROFILE|CANDLE_CV_WHOLE_BOX_JET' "$log_file"
+rg 'CANDLE_CERT_PROFILE|CANDLE_CV_WHOLE_BOX_JET' "$log_file"
