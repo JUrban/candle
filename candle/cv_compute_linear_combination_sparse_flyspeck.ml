@@ -77,6 +77,19 @@ let candle_lc_sparse_flyspeck_selector_conv variables variables_tm =
 let candle_lc_sparse_el_cache_stats () =
   !candle_lc_sparse_el_cache_hits,!candle_lc_sparse_el_cache_misses;;
 
+let candle_lc_sparse_flyspeck_prepare_selectors
+      variables variables_tm selector_conv =
+  let rec prepare index = function
+    | [] -> ()
+    | _::rest ->
+        let index_tm = mk_small_numeral index in
+        let selector_tm =
+          mk_comb
+            (mk_comb (`EL:num->real list->real`,index_tm),variables_tm) in
+        let _ = selector_conv selector_tm in
+        prepare (index + 1) rest in
+  prepare 0 variables;;
+
 let candle_lc_sparse_integer_cache_hits = ref 0;;
 let candle_lc_sparse_integer_cache_misses = ref 0;;
 
@@ -222,21 +235,32 @@ let candle_lc_reify_sparse_flyspeck_row
     failwith "sparse Flyspeck adapter: row denotation mismatch";
   exact_row,raw_row,row_th,inequality;;
 
-let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
+let candle_lc_sparse_flyspeck_rows_profiled
+      profile variables weighted_inequalities =
   let variables_tm = mk_list (variables,`:real`) in
   let selector_conv =
     candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
+  profile "sparse-selector-proof-preparation" "begin";
+  candle_lc_sparse_flyspeck_prepare_selectors
+    variables variables_tm selector_conv;
+  profile "sparse-selector-proof-preparation" "end";
   let integer_conv = candle_lc_sparse_flyspeck_integer_conv () in
+  profile "sparse-row-reification" "begin";
   let rows =
     map
       (candle_lc_reify_sparse_flyspeck_row
         integer_conv selector_conv variables variables_tm)
       weighted_inequalities in
+  profile "sparse-row-reification" "end";
   let exact_rows =
     mk_list
       (map (fun (row,_,_,_) -> row) rows,
        candle_lc_sparse_flyspeck_row_type) in
   variables_tm,exact_rows,rows;;
+
+let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
+  candle_lc_sparse_flyspeck_rows_profiled
+    (fun _ _ -> ()) variables weighted_inequalities;;
 
 let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
   let row_real_fun =
@@ -338,7 +362,8 @@ let candle_lc_sparse_refute_flyspeck_source_profiled
   profile "sparse-source-normalization-variable-discovery" "end";
   profile "sparse-source-number-conversion" "begin";
   let variables_tm,exact_rows,rows =
-    candle_lc_sparse_flyspeck_rows variables normalized in
+    candle_lc_sparse_flyspeck_rows_profiled
+      profile variables normalized in
   profile "sparse-source-number-conversion" "end";
   profile "sparse-source-proof-preparation" "begin";
   let all_rows =
