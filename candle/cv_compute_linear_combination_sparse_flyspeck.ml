@@ -77,6 +77,36 @@ let candle_lc_sparse_flyspeck_selector_conv variables variables_tm =
 let candle_lc_sparse_el_cache_stats () =
   !candle_lc_sparse_el_cache_hits,!candle_lc_sparse_el_cache_misses;;
 
+let candle_lc_sparse_integer_cache_hits = ref 0;;
+let candle_lc_sparse_integer_cache_misses = ref 0;;
+
+(* A certificate repeats a small vocabulary of exact integer coefficients
+   across many source rows.  Keep this cache local to one conversion, and
+   recheck the exact requested equality on every hit. *)
+let candle_lc_sparse_flyspeck_integer_conv () =
+  let cache = Hashtbl.create 67 in
+  candle_lc_sparse_integer_cache_hits := 0;
+  candle_lc_sparse_integer_cache_misses := 0;
+  fun integer_tm ->
+    try
+      let integer,integer_th = Hashtbl.find cache integer_tm in
+      let expected = mk_comb (`candle_lc_zreal`,integer) in
+      candle_lc_check_reification
+        "cached sparse integer" expected integer_tm integer_th;
+      candle_lc_sparse_integer_cache_hits :=
+        !candle_lc_sparse_integer_cache_hits + 1;
+      integer,integer_th
+    with Not_found ->
+      let result = candle_lc_reify_flyspeck_integer integer_tm in
+      Hashtbl.add cache integer_tm result;
+      candle_lc_sparse_integer_cache_misses :=
+        !candle_lc_sparse_integer_cache_misses + 1;
+      result;;
+
+let candle_lc_sparse_integer_cache_stats () =
+  !candle_lc_sparse_integer_cache_hits,
+  !candle_lc_sparse_integer_cache_misses;;
+
 let candle_lc_sparse_flyspeck_nil = prove
  (`!candle_sparse_basis:real list.
      candle_lc_sparse_vec_real candle_sparse_basis [] = lin_f []`,
@@ -106,7 +136,7 @@ let candle_lc_sparse_flyspeck_cons = prove
    checked EL theorem.  No conversion descends through the full variable basis
    or through an already constructed row expression. *)
 let candle_lc_reify_sparse_flyspeck_entries
-      selector_conv variables variables_tm entries =
+      integer_conv selector_conv variables variables_tm entries =
   let rec build = function
     | [] ->
         let sparse_tail = mk_list ([],candle_lc_sparse_flyspeck_entry_type) and
@@ -118,8 +148,7 @@ let candle_lc_reify_sparse_flyspeck_entries
         let sparse_index =
           mk_small_numeral
             (candle_lc_sparse_flyspeck_index variable 0 variables) in
-        let sparse_z,coefficient_th =
-          candle_lc_reify_flyspeck_integer coefficient in
+        let sparse_z,coefficient_th = integer_conv coefficient in
         let selector_tm =
           mk_comb
             (mk_comb (`EL:num->real list->real`,sparse_index),variables_tm) in
@@ -139,7 +168,8 @@ let candle_lc_reify_sparse_flyspeck_entries
         sparse_entries,source_entries,denotation_th in
   build entries;;
 
-let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
+let candle_lc_reify_sparse_flyspeck_lin_f
+      integer_conv selector_conv variables lhs =
   candle_lc_check_variables Term.(<) variables;
   let standardize_th = candle_lc_flyspeck_standardize_numerals lhs in
   let standard_lhs = rand (concl standardize_th) in
@@ -150,7 +180,7 @@ let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
   let variables_tm = mk_list (variables,`:real`) in
   let sparse_entries_tm,source_entries_tm,structural_th =
     candle_lc_reify_sparse_flyspeck_entries
-      selector_conv variables variables_tm entries in
+      integer_conv selector_conv variables variables_tm entries in
   let source_head,source_terms_tm = dest_comb standard_lhs in
   if source_head <> candle_lc_flyspeck_lin_f_const ||
      not (aconv source_entries_tm source_terms_tm) then
@@ -164,12 +194,13 @@ let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
     failwith "sparse Flyspeck adapter: structural denotation mismatch";
   sparse_entries_tm,TRANS structural_th (SYM standardize_th);;
 
-let candle_lc_reify_sparse_flyspeck_row selector_conv variables variables_tm
-      (inequality,weight) =
+let candle_lc_reify_sparse_flyspeck_row
+      integer_conv selector_conv variables variables_tm (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
   let entries,lhs_th =
-    candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs and
-      integer,rhs_th = candle_lc_reify_flyspeck_integer rhs in
+    candle_lc_reify_sparse_flyspeck_lin_f
+      integer_conv selector_conv variables lhs and
+      integer,rhs_th = integer_conv rhs in
   let exact_lhs =
     mk_comb
       (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),entries) and
@@ -195,10 +226,11 @@ let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
   let variables_tm = mk_list (variables,`:real`) in
   let selector_conv =
     candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
+  let integer_conv = candle_lc_sparse_flyspeck_integer_conv () in
   let rows =
     map
       (candle_lc_reify_sparse_flyspeck_row
-        selector_conv variables variables_tm)
+        integer_conv selector_conv variables variables_tm)
       weighted_inequalities in
   let exact_rows =
     mk_list

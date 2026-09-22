@@ -45,8 +45,9 @@ let candle_cv_lc_sparse_flyspeck_selector_conv =
     candle_cv_lc_sparse_flyspeck_variables_tm;;
 let candle_cv_lc_sparse_flyspeck_entries,
     candle_cv_lc_sparse_flyspeck_entries_th =
+  let integer_conv = candle_lc_sparse_flyspeck_integer_conv () in
   candle_lc_reify_sparse_flyspeck_lin_f
-    candle_cv_lc_sparse_flyspeck_selector_conv
+    integer_conv candle_cv_lc_sparse_flyspeck_selector_conv
     candle_cv_lc_flyspeck_variables candle_cv_lc_flyspeck_lhs;;
 if not (aconv candle_cv_lc_sparse_flyspeck_entries
               `[(0,(2,0));(2,(0,3))]`) ||
@@ -70,6 +71,21 @@ if not (aconv candle_cv_lc_flyspeck_integer `(0,3)`) ||
            (mk_comb (`candle_lc_zreal`,candle_cv_lc_flyspeck_integer),
             candle_cv_lc_flyspeck_neg_three))) then
   failwith "Flyspeck integer reification mismatch";;
+
+let candle_cv_lc_sparse_integer_conv =
+  candle_lc_sparse_flyspeck_integer_conv ();;
+let candle_cv_lc_sparse_integer_cold,
+    candle_cv_lc_sparse_integer_cold_th =
+  candle_cv_lc_sparse_integer_conv candle_cv_lc_flyspeck_neg_three;;
+let candle_cv_lc_sparse_integer_warm,
+    candle_cv_lc_sparse_integer_warm_th =
+  candle_cv_lc_sparse_integer_conv candle_cv_lc_flyspeck_neg_three;;
+if candle_lc_sparse_integer_cache_stats () <> (1,1) ||
+   not (aconv candle_cv_lc_sparse_integer_cold
+              candle_cv_lc_sparse_integer_warm) ||
+   not (equals_thm candle_cv_lc_sparse_integer_cold_th
+                   candle_cv_lc_sparse_integer_warm_th) then
+  failwith "Flyspeck sparse integer cache mismatch";;
 
 let candle_cv_lc_flyspeck_one = Arith_int.my_mk_realintconst (num 1);;
 let candle_cv_lc_flyspeck_seven = Arith_int.my_mk_realintconst (num 7);;
