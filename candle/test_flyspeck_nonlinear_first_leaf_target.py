@@ -8,7 +8,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-FLYSPECK_ROOT = Path("/project/worktrees/flyspeck-v13-source")
+FLYSPECK_ROOT = Path(
+    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-minimal"
+)
 sys.path.insert(0, str(HERE))
 
 import flyspeck_nonlinear_first_leaf_target as subject

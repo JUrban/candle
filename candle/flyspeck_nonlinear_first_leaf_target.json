@@ -1,9 +1,9 @@
 {
   "claim": "authenticated target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
   "closure": {
-    "bytes": 431963,
+    "bytes": 443215,
     "path": "candle/flyspeck_nonlinear_verifier_closure.json",
-    "sha256": "3ce968d6b6dec45c05800527a5f3dfddea2fa5e44b49a5aac8da1895db1d1ef2"
+    "sha256": "174ad8a27e0721392795b9fbd0cd96545abcefe044638acbfb7a4e6fbca05a24"
   },
   "evidence_files": {
     "azure_stdout": {
@@ -42,7 +42,7 @@
       "sha256": "3101d7b115e9437e94bcfe7ae8156cfc065ac4422d463a91d690d41acca04cdb"
     }
   },
-  "flyspeck_commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53",
+  "flyspeck_commit": "d6cdcd9f3e45f4ceb5fd1ba08f5b5ec4ce6a65eb",
   "kind": "candle-flyspeck-nonlinear-first-leaf-target",
   "native_oracle": {
     "epsilon": "1e-10",

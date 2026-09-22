@@ -9,7 +9,9 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-FLYSPECK_ROOT = Path("/project/worktrees/flyspeck-v13-source")
+FLYSPECK_ROOT = Path(
+    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-minimal"
+)
 sys.path.insert(0, str(HERE))
 
 import flyspeck_nonlinear_first_leaf as subject
@@ -30,6 +32,12 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         )
         cls.profile_driver = subject.build_target_driver(
             cls.target, FLYSPECK_ROOT, cls.support_records, True,
+        )
+        cls.checkpoint_prelude = subject.build_target_prelude(
+            cls.target,
+            FLYSPECK_ROOT,
+            cls.support_records,
+            subject.SUPPORT_READY_MARKER,
         )
 
     def test_exact_support_is_wrapped_and_authenticated(self) -> None:
@@ -83,6 +91,23 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
         self.assertNotIn("Printf.sprintf", self.driver)
         self.assertIn("string_of_float", self.driver)
         self.assertNotIn("candle_nonlinear_profile_marker", self.driver)
+
+    def test_checkpoint_prelude_stops_before_reconstruction(self) -> None:
+        self.assertIn(subject.SUPPORT_READY_MARKER, self.checkpoint_prelude)
+        self.assertIn(
+            self.target["target"]["legacy_ineqm_text"],
+            self.checkpoint_prelude,
+        )
+        self.assertIn(
+            "first-leaf support loader identity did not commit",
+            self.checkpoint_prelude,
+        )
+        self.assertNotIn("Break_case.ineqm_conv", self.checkpoint_prelude)
+        self.assertNotIn("M_verifier_main.verify_ineq", self.checkpoint_prelude)
+        self.assertLess(
+            self.checkpoint_prelude.index("candle_nonlinear_first_leaf_support_ids"),
+            self.checkpoint_prelude.index(subject.SUPPORT_READY_MARKER),
+        )
 
     def test_action296_profile_authenticates_a_distinct_real_target(self) -> None:
         _, target, records = subject.authenticate_target(

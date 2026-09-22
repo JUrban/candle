@@ -58,6 +58,7 @@ VERIFIER_REPORTED_SECONDS = "CANDLE_NONLINEAR_FIRST_LEAF_VERIFIER_SECONDS"
 FORMAL_VERIFICATION_SECONDS = (
     "CANDLE_NONLINEAR_FIRST_LEAF_FORMAL_VERIFICATION_SECONDS"
 )
+SUPPORT_READY_MARKER = "CANDLE_NONLINEAR_FIRST_LEAF_SUPPORT_READY"
 MODULE_NORMALIZATION = "candle-native-module-wrapper-v1"
 PHASE_OBSERVER = Path("candle/compatibility/certificate_phase_profile.py")
 PHASE_PROFILE_STOP_KEY = "nonlinear-leaf/target/total"
@@ -250,12 +251,20 @@ def authenticate_target(
     return target_data, target, records
 
 
-def build_target_driver(
+def build_target_prelude(
     target: dict[str, Any],
     flyspeck_root: Path,
     support_records: list[dict[str, Any]],
-    profile_phases: bool = False,
+    ready_marker: str | None = None,
 ) -> str:
+    """Load the authenticated reconstruction modules and bind the target.
+
+    This is also the durable checkpoint boundary for focused first-leaf
+    experiments: all source identities are configured by the caller before
+    this text runs, but no reconstruction, search, or formal leaf proof has
+    begun yet.
+    """
+
     theorem_text = target["target"]["legacy_ineqm_text"]
     if not isinstance(theorem_text, str) or "`" in theorem_text:
         raise ValueError("unsafe first-leaf target term")
@@ -267,13 +276,11 @@ def build_target_driver(
         )
         for record in support_records
     )
-    profile_begin = (
-        'candle_nonlinear_profile_marker "target" "total" "begin";;'
-        if profile_phases else ""
-    )
-    profile_end = (
-        'candle_nonlinear_profile_marker "target" "total" "end";;'
-        if profile_phases else ""
+    ready = (
+        f'else let _ = candle_nonlinear_first_leaf_target in '
+        f'print_endline {smoke._ocaml_string(ready_marker)};;'
+        if ready_marker is not None else
+        "else ();;"
     )
     return f'''
 
@@ -287,14 +294,35 @@ needs "{target_authority.COMPILED_BREAK_CASE.as_posix()}";;
 
 let candle_nonlinear_first_leaf_support_ids =
   [{support_ids}];;
+let candle_nonlinear_first_leaf_target =
+  `{theorem_text}`;;
 if !Cakeml.pendingLoadedSourceIds <> [] ||
    not (List.for_all
           (fun source_id -> List.mem source_id !Cakeml.loadedSourceIds)
           candle_nonlinear_first_leaf_support_ids) then
-  failwith "first-leaf support loader identity did not commit";;
+  failwith "first-leaf support loader identity did not commit"
+{ready}
+'''
 
-let candle_nonlinear_first_leaf_target =
-  `{theorem_text}`;;
+
+def build_target_driver(
+    target: dict[str, Any],
+    flyspeck_root: Path,
+    support_records: list[dict[str, Any]],
+    profile_phases: bool = False,
+) -> str:
+    prelude = build_target_prelude(
+        target, flyspeck_root, support_records,
+    )
+    profile_begin = (
+        'candle_nonlinear_profile_marker "target" "total" "begin";;'
+        if profile_phases else ""
+    )
+    profile_end = (
+        'candle_nonlinear_profile_marker "target" "total" "end";;'
+        if profile_phases else ""
+    )
+    return prelude + f'''
 
 let candle_nonlinear_first_leaf_axioms_before = axioms ();;
 print_endline "{RECONSTRUCTION_BEGIN}";;
