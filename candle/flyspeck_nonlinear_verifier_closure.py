@@ -174,8 +174,8 @@ def normalize_nested_array_access(
     def replace_get(match: re.Match[bytes]) -> bytes:
         before = match.group(0)
         after = (
-            b"Array.get (Array.get " + match.group(1) + b" ("
-            + match.group(2) + b")) (" + match.group(3) + b")"
+            b"(Array.get (Array.get " + match.group(1) + b" ("
+            + match.group(2) + b")) (" + match.group(3) + b"))"
         )
         operations.append({
             "kind": "nested-array-get",
