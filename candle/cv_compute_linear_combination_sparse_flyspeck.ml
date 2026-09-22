@@ -135,6 +135,59 @@ let candle_lc_sparse_integer_cache_stats () =
 let candle_lc_sparse_lhs_cache_hits = ref 0;;
 let candle_lc_sparse_lhs_cache_misses = ref 0;;
 
+(* Development profiling for the real master-construction boundary.  These
+   timers never select or authorize a theorem; they only account successful
+   host-side proof construction. *)
+let candle_lc_sparse_profile_lin_standardize = ref 0.0;;
+let candle_lc_sparse_profile_entries_total = ref 0.0;;
+let candle_lc_sparse_profile_entry_integer = ref 0.0;;
+let candle_lc_sparse_profile_entry_selector = ref 0.0;;
+let candle_lc_sparse_profile_entry_expansion = ref 0.0;;
+let candle_lc_sparse_profile_entry_congruence = ref 0.0;;
+let candle_lc_sparse_profile_lin_structural = ref 0.0;;
+let candle_lc_sparse_profile_master_lhs = ref 0.0;;
+let candle_lc_sparse_profile_master_rhs = ref 0.0;;
+let candle_lc_sparse_profile_master_checks = ref 0.0;;
+let candle_lc_sparse_profile_master_row = ref 0.0;;
+
+let candle_lc_sparse_profile_time accumulator action =
+  let started = Unix.gettimeofday() in
+  try
+    let result = action () in
+    accumulator := !accumulator +. (Unix.gettimeofday() -. started);
+    result
+  with failure ->
+    (accumulator := !accumulator +. (Unix.gettimeofday() -. started);
+     raise failure);;
+
+let candle_lc_sparse_master_profile_reset () =
+  List.iter
+    (fun counter -> counter := 0.0)
+    [candle_lc_sparse_profile_lin_standardize;
+     candle_lc_sparse_profile_entries_total;
+     candle_lc_sparse_profile_entry_integer;
+     candle_lc_sparse_profile_entry_selector;
+     candle_lc_sparse_profile_entry_expansion;
+     candle_lc_sparse_profile_entry_congruence;
+     candle_lc_sparse_profile_lin_structural;
+     candle_lc_sparse_profile_master_lhs;
+     candle_lc_sparse_profile_master_rhs;
+     candle_lc_sparse_profile_master_checks;
+     candle_lc_sparse_profile_master_row];;
+
+let candle_lc_sparse_master_profile_stats () =
+  [("lin-standardize",!candle_lc_sparse_profile_lin_standardize);
+   ("entries-total",!candle_lc_sparse_profile_entries_total);
+   ("entry-integer",!candle_lc_sparse_profile_entry_integer);
+   ("entry-selector",!candle_lc_sparse_profile_entry_selector);
+   ("entry-expansion",!candle_lc_sparse_profile_entry_expansion);
+   ("entry-congruence",!candle_lc_sparse_profile_entry_congruence);
+   ("lin-structural",!candle_lc_sparse_profile_lin_structural);
+   ("master-lhs",!candle_lc_sparse_profile_master_lhs);
+   ("master-rhs",!candle_lc_sparse_profile_master_rhs);
+   ("master-checks",!candle_lc_sparse_profile_master_checks);
+   ("master-row",!candle_lc_sparse_profile_master_row)];;
+
 type candle_lc_sparse_flyspeck_context = {
   candle_sparse_variables: term list;
   candle_sparse_variables_tm: term;
@@ -258,11 +311,17 @@ let candle_lc_reify_sparse_flyspeck_entries
         let sparse_tail,source_tail,tail_th = build rest in
         let sparse_index =
           mk_small_numeral (variable_index variable) in
-        let sparse_z,coefficient_th = integer_conv coefficient in
+        let sparse_z,coefficient_th =
+          candle_lc_sparse_profile_time
+            candle_lc_sparse_profile_entry_integer
+            (fun () -> integer_conv coefficient) in
         let selector_tm =
           mk_comb
             (mk_comb (`EL:num->real list->real`,sparse_index),variables_tm) in
-        let selector_th = selector_conv selector_tm in
+        let selector_th =
+          candle_lc_sparse_profile_time
+            candle_lc_sparse_profile_entry_selector
+            (fun () -> selector_conv selector_tm) in
         let sparse_entry = mk_pair (sparse_index,sparse_z) and
             source_entry = mk_pair (coefficient,variable) in
         let sparse_entries = mk_cons sparse_entry sparse_tail and
@@ -273,22 +332,31 @@ let candle_lc_reify_sparse_flyspeck_entries
               (`candle_lc_sparse_source_entries`,variables_tm),
              sparse_entries) in
         let source_expansion =
-          REWRITE_RULE[FST;SND]
-            (ONCE_REWRITE_CONV[candle_lc_sparse_source_entries_def]
-              source_map_tm) in
-        let source_head_th =
-          candle_lc_pair_rule coefficient_th selector_th in
+          candle_lc_sparse_profile_time
+            candle_lc_sparse_profile_entry_expansion
+            (fun () ->
+              REWRITE_RULE[FST;SND]
+                (ONCE_REWRITE_CONV[candle_lc_sparse_source_entries_def]
+                  source_map_tm)) in
         let source_cons_th =
-          MK_BINOP
-            `(CONS):(real#real)->(real#real)list->(real#real)list`
-            (source_head_th,tail_th) in
+          candle_lc_sparse_profile_time
+            candle_lc_sparse_profile_entry_congruence
+            (fun () ->
+              let source_head_th =
+                candle_lc_pair_rule coefficient_th selector_th in
+              MK_BINOP
+                `(CONS):(real#real)->(real#real)list->(real#real)list`
+                (source_head_th,tail_th)) in
         sparse_entries,source_entries,
         TRANS source_expansion source_cons_th in
   build entries;;
 
 let candle_lc_reify_sparse_flyspeck_lin_f
       integer_conv selector_conv variable_index variables_tm lhs =
-  let standardize_th = candle_lc_flyspeck_standardize_numerals lhs in
+  let standardize_th =
+    candle_lc_sparse_profile_time
+      candle_lc_sparse_profile_lin_standardize
+      (fun () -> candle_lc_flyspeck_standardize_numerals lhs) in
   let standard_lhs = rand (concl standardize_th) in
   let entries =
     candle_lc_dest_entries
@@ -297,8 +365,11 @@ let candle_lc_reify_sparse_flyspeck_lin_f
   if not (candle_lc_strictly_sorted Term.(<) entry_variables) then
     failwith "sparse Flyspeck adapter: lin_f variables are not sorted";
   let sparse_entries_tm,source_entries_tm,source_entries_th =
-    candle_lc_reify_sparse_flyspeck_entries
-      integer_conv selector_conv variable_index variables_tm entries in
+    candle_lc_sparse_profile_time
+      candle_lc_sparse_profile_entries_total
+      (fun () ->
+        candle_lc_reify_sparse_flyspeck_entries
+          integer_conv selector_conv variable_index variables_tm entries) in
   let source_head,source_terms_tm = dest_comb standard_lhs in
   if source_head <> candle_lc_flyspeck_lin_f_const ||
      not (aconv source_entries_tm source_terms_tm) then
@@ -307,15 +378,18 @@ let candle_lc_reify_sparse_flyspeck_lin_f
     mk_comb
       (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),
        sparse_entries_tm) in
-  let structural_th =
-    TRANS
-      (SPECL [sparse_entries_tm;variables_tm]
-        candle_lc_sparse_source_entries_denotation)
-      (AP_TERM candle_lc_flyspeck_lin_f_const source_entries_th) in
-  if hyp structural_th <> [] ||
-     not (aconv (concl structural_th) (mk_eq (exact_tm,standard_lhs))) then
-    failwith "sparse Flyspeck adapter: structural denotation mismatch";
-  sparse_entries_tm,TRANS structural_th (SYM standardize_th);;
+  candle_lc_sparse_profile_time
+    candle_lc_sparse_profile_lin_structural
+    (fun () ->
+      let structural_th =
+        TRANS
+          (SPECL [sparse_entries_tm;variables_tm]
+            candle_lc_sparse_source_entries_denotation)
+          (AP_TERM candle_lc_flyspeck_lin_f_const source_entries_th) in
+      if hyp structural_th <> [] ||
+         not (aconv (concl structural_th) (mk_eq (exact_tm,standard_lhs))) then
+        failwith "sparse Flyspeck adapter: structural denotation mismatch";
+      sparse_entries_tm,TRANS structural_th (SYM standardize_th));;
 
 let candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs =
   try
@@ -412,24 +486,36 @@ let candle_lc_sparse_flyspeck_master_profiled
     let lhs,rhs =
       dest_binop `(<=):real->real->bool` (concl inequality) in
     let entries,lhs_th =
-      candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs and
-        integer,rhs_th = context.candle_sparse_integer_conv rhs in
+      candle_lc_sparse_profile_time
+        candle_lc_sparse_profile_master_lhs
+        (fun () ->
+          candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs) in
+    let integer,rhs_th =
+      candle_lc_sparse_profile_time
+        candle_lc_sparse_profile_master_rhs
+        (fun () -> context.candle_sparse_integer_conv rhs) in
     let exact_lhs =
       mk_comb
         (mk_comb
           (`candle_lc_sparse_vec_real`,context.candle_sparse_variables_tm),
          entries) and
         exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
-    candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
-    candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th;
+    candle_lc_sparse_profile_time
+      candle_lc_sparse_profile_master_checks
+      (fun () ->
+        candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
+        candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th);
     let weight_var =
       variant (frees source_conclusion)
         (mk_var ("candle_sparse_weight",`:num`)) in
     let row_th =
-      GEN weight_var
-        (candle_lc_sparse_flyspeck_row_denotation
-          context.candle_sparse_variables_tm entries lhs_th integer rhs_th
-          weight_var) in
+      candle_lc_sparse_profile_time
+        candle_lc_sparse_profile_master_row
+        (fun () ->
+          GEN weight_var
+            (candle_lc_sparse_flyspeck_row_denotation
+              context.candle_sparse_variables_tm entries lhs_th integer rhs_th
+              weight_var)) in
     if hyp row_th <> [] then
       failwith "sparse Flyspeck master: row theorem has assumptions";
     {candle_sparse_source_conclusion = source_conclusion;
