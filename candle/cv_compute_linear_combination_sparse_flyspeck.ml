@@ -39,7 +39,45 @@ let rec candle_lc_sparse_flyspeck_index variable index = function
       if aconv variable candidate then index
       else candle_lc_sparse_flyspeck_index variable (index + 1) rest;;
 
-let candle_lc_sparse_flyspeck_normalize_conv tm =
+let candle_lc_sparse_el_cache_hits = ref 0;;
+let candle_lc_sparse_el_cache_misses = ref 0;;
+
+let candle_lc_sparse_flyspeck_selector_conv variables variables_tm =
+  let cache = Hashtbl.create (List.length variables) in
+  candle_lc_sparse_el_cache_hits := 0;
+  candle_lc_sparse_el_cache_misses := 0;
+  fun tm ->
+    let head,args = strip_comb tm in
+    if not (is_const head) || fst (dest_const head) <> "EL" then
+      failwith "sparse Flyspeck adapter: selector conversion";
+    let index_tm,list_tm =
+      match args with
+      | [index_tm;list_tm] -> index_tm,list_tm
+      | _ -> failwith "sparse Flyspeck adapter: malformed EL term" in
+    if not (aconv list_tm variables_tm) then
+      failwith "sparse Flyspeck adapter: unexpected selector basis";
+    let index = Num.int_of_num (dest_numeral index_tm) in
+    if index < 0 || index >= List.length variables then
+      failwith "sparse Flyspeck adapter: selector index outside basis";
+    try
+      let th = Hashtbl.find cache index in
+        candle_lc_sparse_el_cache_hits :=
+          !candle_lc_sparse_el_cache_hits + 1;
+        th
+    with Not_found ->
+        let th = EL_CONV tm and expected = List.nth variables index in
+        if hyp th <> [] ||
+           not (aconv (concl th) (mk_eq (tm,expected))) then
+          failwith "sparse Flyspeck adapter: invalid selector theorem";
+        Hashtbl.add cache index th;
+        candle_lc_sparse_el_cache_misses :=
+          !candle_lc_sparse_el_cache_misses + 1;
+        th;;
+
+let candle_lc_sparse_el_cache_stats () =
+  !candle_lc_sparse_el_cache_hits,!candle_lc_sparse_el_cache_misses;;
+
+let candle_lc_sparse_flyspeck_normalize_conv selector_conv tm =
   let expansion =
     REWRITE_CONV
       [candle_lc_sparse_vec_real_def;
@@ -48,10 +86,10 @@ let candle_lc_sparse_flyspeck_normalize_conv tm =
        candle_lc_zreal_def;
        REAL_SUB_RZERO; REAL_SUB_LZERO; REAL_NEG_0;
        REAL_MUL_LZERO; REAL_ADD_LID; REAL_ADD_RID] tm in
-  let selected = DEPTH_CONV EL_CONV (rand (concl expansion)) in
+  let selected = DEPTH_CONV selector_conv (rand (concl expansion)) in
   TRANS expansion selected;;
 
-let candle_lc_reify_sparse_flyspeck_lin_f variables lhs =
+let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
   candle_lc_check_variables Term.(<) variables;
   let standardize_th = candle_lc_flyspeck_standardize_numerals lhs in
   let standard_lhs = rand (concl standardize_th) in
@@ -74,18 +112,20 @@ let candle_lc_reify_sparse_flyspeck_lin_f variables lhs =
     mk_comb
       (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),
        sparse_entries_tm) in
-  let exact_th = candle_lc_sparse_flyspeck_normalize_conv exact_tm and
-      source_th = candle_lc_sparse_flyspeck_normalize_conv standard_lhs in
+  let exact_th =
+    candle_lc_sparse_flyspeck_normalize_conv selector_conv exact_tm and
+      source_th =
+    candle_lc_sparse_flyspeck_normalize_conv selector_conv standard_lhs in
   if not (aconv (rand (concl exact_th)) (rand (concl source_th))) then
     failwith "sparse Flyspeck adapter: lhs denotation mismatch";
   sparse_entries_tm,
   TRANS exact_th (TRANS (SYM source_th) (SYM standardize_th));;
 
-let candle_lc_reify_sparse_flyspeck_row variables variables_tm
+let candle_lc_reify_sparse_flyspeck_row selector_conv variables variables_tm
       (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
   let entries,lhs_th =
-    candle_lc_reify_sparse_flyspeck_lin_f variables lhs and
+    candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs and
       integer,rhs_th = candle_lc_reify_flyspeck_integer rhs in
   let exact_lhs =
     mk_comb
@@ -110,9 +150,12 @@ let candle_lc_reify_sparse_flyspeck_row variables variables_tm
 
 let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
   let variables_tm = mk_list (variables,`:real`) in
+  let selector_conv =
+    candle_lc_sparse_flyspeck_selector_conv variables variables_tm in
   let rows =
     map
-      (candle_lc_reify_sparse_flyspeck_row variables variables_tm)
+      (candle_lc_reify_sparse_flyspeck_row
+        selector_conv variables variables_tm)
       weighted_inequalities in
   let exact_rows =
     mk_list
