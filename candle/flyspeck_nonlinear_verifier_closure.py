@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v11"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v12"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -87,6 +87,9 @@ NORMALIZATION_SEMANTIC_RULE = (
     "define_finite_type call uses HOL Light's canonical modern equivalent, "
     "HAS_SIZE_DIMINDEX_RULE over mk_finty, which produces the same size "
     "theorem without the deleted type-definition side effects"
+    "; and the Taylor component-variable constructor binds its concatenated "
+    "name before passing the `(string,hol_type)` pair, making native OCaml's "
+    "tuple/application grouping explicit"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -118,7 +121,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "rewrite is confined to the authenticated max-dimension table in "
     "m_taylor.hl and is byte-identical to the replacement shipped in Candle's "
     "modern HOL Light Formal_ineqs copy; it changes neither the resulting "
-    "HAS_SIZE theorem nor downstream vector types."
+    "HAS_SIZE theorem nor downstream vector types. The component-variable "
+    "rewrite is confined to one `mk_var` call in `gen_comp_thm`; it preserves "
+    "the exact generated `x1` through `xN` terms and theorem construction."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -645,6 +650,13 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/taylor/m_taylor.hl": (
+        _replacement(
+            "taylor-component-variable-tuple-grouping",
+            b'x_list = mk_list (map (fun i -> mk_var("x"^(string_of_int i), aty)) (1--n), aty) in',
+            b'x_list = mk_list (map (fun i ->\n'
+            b'        let name = "x" ^ string_of_int i in\n'
+            b'        mk_var (name,aty)) (1--n), aty) in',
+        ),
         _replacement(
             "modern-finite-type-size-theorem",
             b'| _ -> define_finite_type i);;',

@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 27)
-        self.assertEqual(counts["normalization_operations"], 147)
+        self.assertEqual(counts["normalization_operations"], 148)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -189,6 +189,18 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             if operation["kind"] == "modern-finite-type-size-theorem"
         ]
         self.assertEqual(len(finite_type), 1)
+        component_variable = [
+            operation for operation in m_taylor["operations"]
+            if operation["kind"] ==
+            "taylor-component-variable-tuple-grouping"
+        ]
+        self.assertEqual(len(component_variable), 1)
+        self.assertEqual(component_variable[0]["replacement_count"], 1)
+        self.assertIn(
+            'let name = "x" ^ string_of_int i in',
+            component_variable[0]["after"],
+        )
+        self.assertIn("mk_var (name,aty)", component_variable[0]["after"])
         canonical_modern_source = (
             ROOT / "Formal_ineqs/taylor/m_taylor.hl"
         ).read_text(encoding="utf-8")
