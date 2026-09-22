@@ -25,10 +25,11 @@ let candle_lc_sparse_flyspeck_row_type =
   `:num#((num#(num#num))list#(num#num))`;;
 let candle_lc_sparse_flyspeck_zero_acc =
   `(([]:(num#(num#num))list),(0,0))`;;
-let candle_lc_sparse_flyspeck_row_map_const =
+let candle_lc_sparse_flyspeck_all_const =
   rator
     (rator
-      `MAP (candle_lc_sparse_row_real ([]:real list))
+      `ALL
+         (\row:num#((num#(num#num))list#(num#num)). T)
          ([]:(num#((num#(num#num))list#(num#num)))list)`);;
 
 let rec candle_lc_sparse_flyspeck_index variable index = function
@@ -119,31 +120,51 @@ let candle_lc_sparse_flyspeck_rows variables weighted_inequalities =
   variables_tm,exact_rows,rows;;
 
 let candle_lc_sparse_flyspeck_all_rows variables_tm exact_rows rows =
-  let denoted_rows_and_theorems =
+  let row_real_fun =
+    mk_comb (`candle_lc_sparse_row_real`,variables_tm) in
+  let row_var =
+    mk_var ("row",candle_lc_sparse_flyspeck_row_type) in
+  let predicate =
+    mk_abs
+      (row_var,
+       mk_comb
+         (`candle_lc_real_row_holds`,mk_comb (row_real_fun,row_var))) in
+  let exact_rows_and_theorems =
     map
       (fun (exact_row,raw_row,row_th,inequality) ->
          let denoted_row =
-           mk_comb
-             (mk_comb (`candle_lc_sparse_row_real`,variables_tm),
-              exact_row) in
+           mk_comb (row_real_fun,exact_row) in
          let raw_holds = candle_lc_row_holds_rule raw_row inequality in
          let holds_eq =
            AP_TERM `candle_lc_real_row_holds` row_th in
-         denoted_row,EQ_MP (SYM holds_eq) raw_holds)
+         let denoted_holds = EQ_MP (SYM holds_eq) raw_holds in
+         let predicate_beta = BETA_CONV (mk_comb (predicate,exact_row)) in
+         exact_row,EQ_MP (SYM predicate_beta) denoted_holds)
       rows in
-  let denoted_rows,all_denoted =
-    candle_lc_all_rows_rule denoted_rows_and_theorems in
-  let row_real_fun =
-    mk_comb (`candle_lc_sparse_row_real`,variables_tm) in
-  let mapped_rows =
+  let all_predicate rows_tm =
     mk_comb
-      (mk_comb (candle_lc_sparse_flyspeck_row_map_const,row_real_fun),
-       exact_rows) in
-  let map_expansion = REWRITE_CONV[MAP] mapped_rows in
-  if not (aconv (rand (concl map_expansion)) denoted_rows) then
-    failwith "sparse Flyspeck adapter: row map mismatch";
-  let all_fun = `ALL candle_lc_real_row_holds` in
-  EQ_MP (AP_TERM all_fun (SYM map_expansion)) all_denoted;;
+      (mk_comb (candle_lc_sparse_flyspeck_all_const,predicate),rows_tm) in
+  let empty_rows =
+    mk_list ([],candle_lc_sparse_flyspeck_row_type) in
+  let empty_eq = ONCE_REWRITE_CONV[ALL] (all_predicate empty_rows) in
+  let empty_th = EQ_MP (SYM empty_eq) TRUTH in
+  let built_rows,all_exact =
+    List.fold_right
+      (fun (row,row_th) (tail,tail_th) ->
+         let rows_tm = mk_cons row tail in
+         let all_eq =
+           ONCE_REWRITE_CONV[ALL] (all_predicate rows_tm) in
+         rows_tm,EQ_MP (SYM all_eq) (CONJ row_th tail_th))
+      exact_rows_and_theorems (empty_rows,empty_th) in
+  if not (aconv built_rows exact_rows) then
+    failwith "sparse Flyspeck adapter: exact row list mismatch";
+  let all_map =
+    REWRITE_RULE[o_DEF]
+      (ISPECL [`candle_lc_real_row_holds`;row_real_fun;exact_rows]
+        ALL_MAP) in
+  if not (aconv (rand (concl all_map)) (concl all_exact)) then
+    failwith "sparse Flyspeck adapter: ALL_MAP premise mismatch";
+  EQ_MP (SYM all_map) all_exact;;
 
 let candle_lc_sparse_flyspeck_compute_verdict exact_rows =
   let acc_rep =
