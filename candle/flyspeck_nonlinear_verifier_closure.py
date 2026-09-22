@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v10"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v11"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -648,7 +648,7 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         _replacement(
             "modern-finite-type-size-theorem",
             b'| _ -> define_finite_type i);;',
-            b'| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i));;',
+            b'| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i)));;',
         ),
         _replacement(
             "taylor-vector-size-error",

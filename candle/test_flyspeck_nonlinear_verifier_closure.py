@@ -187,10 +187,14 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             if operation["kind"] == "modern-finite-type-size-theorem"
         ]
         self.assertEqual(len(finite_type), 1)
+        canonical_modern_source = (
+            ROOT / "Formal_ineqs/taylor/m_taylor.hl"
+        ).read_text(encoding="utf-8")
         self.assertEqual(
             finite_type[0]["after"],
-            "| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i));;",
+            "| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i)));;",
         )
+        self.assertIn(finite_type[0]["after"], canonical_modern_source)
         self.assertEqual(
             {operation["kind"] for operation in main["operations"]},
             {kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS},
