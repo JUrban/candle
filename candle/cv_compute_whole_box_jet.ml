@@ -1226,4 +1226,71 @@ let candle_cv_q_jet_whole_box_check_correct = prove
               candle_q_jet_whole_box_accept_def; candle_q_box_valid_def;
               CONJ_ASSOC]);;
 
+(* -------------------------------------------------------------------------- *)
+(* Analytic handoff.  The reflected checker above owns all recurring numeric *)
+(* work.  A source family need only establish this Taylor-remainder contract *)
+(* once, relating its original function to the exact real jet semantics.      *)
+(* -------------------------------------------------------------------------- *)
+
+let candle_q_midpoint_point_contains = prove
+ (`!i. candle_q_interval_contains
+          (candle_q_point_interval (candle_q_midpoint i))
+          (candle_q_real (candle_q_midpoint i))`,
+  REWRITE_TAC[candle_q_interval_contains_def;
+              candle_q_point_interval_def; FST; SND; REAL_LE_REFL]);;
+
+let candle_q_box_radius_nonnegative = prove
+ (`!i. candle_q_le (FST i) (SND i)
+       ==> &0 <= candle_q_real (candle_q_radius i)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_le_real; candle_q_radius_real] THEN
+  REAL_ARITH_TAC);;
+
+let candle_q_box_deviation = prove
+ (`!i x. candle_q_le (FST i) (SND i) /\
+          candle_q_interval_contains i x
+          ==> abs (x - candle_q_real (candle_q_midpoint i)) <=
+              candle_q_real (candle_q_radius i)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_le_real; candle_q_interval_contains_def;
+              candle_q_midpoint_real; candle_q_radius_real;
+              REAL_ABS_BOUNDS] THEN
+  REAL_ARITH_TAC);;
+
+let candle_real_jet_taylor_contract_def = new_definition
+ `candle_real_jet_taylor_contract program ix iy (f:real->real->real) <=>
+    !x y.
+      candle_q_interval_contains ix x /\
+      candle_q_interval_contains iy y
+      ==> ?u v.
+        candle_q_interval_contains ix u /\
+        candle_q_interval_contains iy v /\
+        f x y <=
+          candle_real_jet_f
+            (candle_real_jet_program
+              (candle_q_real (candle_q_midpoint ix))
+              (candle_q_real (candle_q_midpoint iy)) program) +
+          abs (x - candle_q_real (candle_q_midpoint ix)) *
+          abs (candle_real_jet_fx
+            (candle_real_jet_program
+              (candle_q_real (candle_q_midpoint ix))
+              (candle_q_real (candle_q_midpoint iy)) program)) +
+          abs (y - candle_q_real (candle_q_midpoint iy)) *
+          abs (candle_real_jet_fy
+            (candle_real_jet_program
+              (candle_q_real (candle_q_midpoint ix))
+              (candle_q_real (candle_q_midpoint iy)) program)) +
+          inv (&2) *
+          (abs (x - candle_q_real (candle_q_midpoint ix)) *
+             (abs (x - candle_q_real (candle_q_midpoint ix)) *
+                abs (candle_real_jet_fxx
+                  (candle_real_jet_program u v program)) +
+              &2 * abs (y - candle_q_real (candle_q_midpoint iy)) *
+                abs (candle_real_jet_fxy
+                  (candle_real_jet_program u v program))) +
+           abs (y - candle_q_real (candle_q_midpoint iy)) *
+             (abs (y - candle_q_real (candle_q_midpoint iy)) *
+                abs (candle_real_jet_fyy
+                  (candle_real_jet_program u v program))))`;;
+
 end;;
