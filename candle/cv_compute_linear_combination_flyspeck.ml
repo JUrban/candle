@@ -47,6 +47,90 @@ let candle_lc_reify_flyspeck_integer integer_tm =
       standard_integer in
   integer,TRANS standard_th (SYM standardize_th);;
 
+(* Reification equalities depend on the exact variable basis and source term,
+   but not on a terminal's certificate multiplier.  Retain only the current
+   basis so preparation is reusable within one certificate family without an
+   unbounded cross-corpus theorem cache.  Every cache hit is still checked
+   against its exact requested conclusion before use. *)
+let candle_lc_reification_cache_basis : term option ref = ref None;;
+let candle_lc_lhs_reification_cache :
+    (term * (term * thm)) list ref = ref [];;
+let candle_lc_rhs_reification_cache :
+    (term * (term * thm)) list ref = ref [];;
+let candle_lc_lhs_cache_hits = ref 0 and
+    candle_lc_lhs_cache_misses = ref 0 and
+    candle_lc_rhs_cache_hits = ref 0 and
+    candle_lc_rhs_cache_misses = ref 0;;
+
+let candle_lc_clear_reification_cache () =
+  candle_lc_reification_cache_basis := None;
+  candle_lc_lhs_reification_cache := [];
+  candle_lc_rhs_reification_cache := [];;
+
+let candle_lc_reset_reification_cache_stats () =
+  candle_lc_lhs_cache_hits := 0;
+  candle_lc_lhs_cache_misses := 0;
+  candle_lc_rhs_cache_hits := 0;
+  candle_lc_rhs_cache_misses := 0;;
+
+let candle_lc_reification_cache_stats () =
+  (!candle_lc_lhs_cache_hits,!candle_lc_lhs_cache_misses,
+   !candle_lc_rhs_cache_hits,!candle_lc_rhs_cache_misses,
+   length !candle_lc_lhs_reification_cache,
+   length !candle_lc_rhs_reification_cache);;
+
+let candle_lc_prepare_reification_cache variables =
+  let variables_tm = mk_list (variables,`:real`) in
+  match !candle_lc_reification_cache_basis with
+  | Some cached when cached = variables_tm -> variables_tm
+  | _ ->
+      candle_lc_reification_cache_basis := Some variables_tm;
+      candle_lc_lhs_reification_cache := [];
+      candle_lc_rhs_reification_cache := [];
+      variables_tm;;
+
+let rec candle_lc_find_reification source entries =
+  match entries with
+  | [] -> None
+  | (cached_source,result)::tail ->
+      if cached_source = source then Some result
+      else candle_lc_find_reification source tail;;
+
+let candle_lc_reify_flyspeck_lin_f_cached variables variables_tm lhs =
+  match
+    candle_lc_find_reification lhs !candle_lc_lhs_reification_cache
+  with
+  | Some (coefficients,lhs_th) ->
+      let expected_lhs =
+        mk_comb
+          (mk_comb (`candle_lc_vec_real`,variables_tm),coefficients) in
+      candle_lc_check_reification "cached lhs" expected_lhs lhs lhs_th;
+      candle_lc_lhs_cache_hits := !candle_lc_lhs_cache_hits + 1;
+      coefficients,lhs_th
+  | None ->
+      let result = candle_lc_reify_flyspeck_lin_f variables lhs in
+      candle_lc_lhs_reification_cache :=
+        (lhs,result) :: !candle_lc_lhs_reification_cache;
+      candle_lc_lhs_cache_misses := !candle_lc_lhs_cache_misses + 1;
+      result;;
+
+let candle_lc_reify_flyspeck_integer_cached integer_tm =
+  match
+    candle_lc_find_reification integer_tm !candle_lc_rhs_reification_cache
+  with
+  | Some (integer,rhs_th) ->
+      let expected_rhs = mk_comb (`candle_lc_zreal`,integer) in
+      candle_lc_check_reification
+        "cached rhs" expected_rhs integer_tm rhs_th;
+      candle_lc_rhs_cache_hits := !candle_lc_rhs_cache_hits + 1;
+      integer,rhs_th
+  | None ->
+      let result = candle_lc_reify_flyspeck_integer integer_tm in
+      candle_lc_rhs_reification_cache :=
+        (integer_tm,result) :: !candle_lc_rhs_reification_cache;
+      candle_lc_rhs_cache_misses := !candle_lc_rhs_cache_misses + 1;
+      result;;
+
 let candle_lc_dest_canonical_z z_tm =
   let positive_tm,negative_tm = dest_pair z_tm in
   let positive = dest_numeral positive_tm and
@@ -104,11 +188,12 @@ let candle_lc_publicize_flyspeck variables result exact_th =
 
 let candle_lc_bulk_compute_flyspeck_profiled
       profile variables weighted_inequalities =
+  let variables_tm = candle_lc_prepare_reification_cache variables in
   let result,exact_th =
     candle_lc_bulk_compute_with_profile profile
       variables
-      (candle_lc_reify_flyspeck_lin_f variables)
-      candle_lc_reify_flyspeck_integer
+      (candle_lc_reify_flyspeck_lin_f_cached variables variables_tm)
+      candle_lc_reify_flyspeck_integer_cached
       weighted_inequalities in
   profile "theorem-publication" "begin";
   let public_th =

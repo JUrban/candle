@@ -83,6 +83,30 @@ if not (aconv candle_cv_lc_flyspeck_result
            candle_cv_lc_flyspeck_expected_rhs)) then
   failwith "Flyspeck public linear-combination adapter mismatch";;
 
+(* Exact source rows are stable across terminals in one certificate family.
+   Confirm that a warm invocation reuses their authenticated reification
+   equalities, while returning the same public theorem. *)
+candle_lc_clear_reification_cache ();;
+candle_lc_reset_reification_cache_stats ();;
+let candle_cv_lc_flyspeck_cold_result,candle_cv_lc_flyspeck_cold_th =
+  candle_lc_bulk_compute_flyspeck
+    candle_cv_lc_flyspeck_variables
+    [(candle_cv_lc_flyspeck_ineq1,`3`);
+     (candle_cv_lc_flyspeck_ineq2,`4`)];;
+let candle_cv_lc_flyspeck_warm_result,candle_cv_lc_flyspeck_warm_th =
+  candle_lc_bulk_compute_flyspeck
+    candle_cv_lc_flyspeck_variables
+    [(candle_cv_lc_flyspeck_ineq1,`3`);
+     (candle_cv_lc_flyspeck_ineq2,`4`)];;
+if candle_lc_reification_cache_stats () <> (2,2,2,2,2,2) ||
+   not (aconv candle_cv_lc_flyspeck_cold_result
+              candle_cv_lc_flyspeck_warm_result) ||
+   not (aconv (concl candle_cv_lc_flyspeck_cold_th)
+              (concl candle_cv_lc_flyspeck_warm_th)) ||
+   not (set_eq (hyp candle_cv_lc_flyspeck_cold_th)
+               (hyp candle_cv_lc_flyspeck_warm_th)) then
+  failwith "Flyspeck exact reification cache mismatch";;
+
 let candle_cv_lc_flyspeck_raw_lhs1 =
   mk_binop `(+):real->real->real`
     (mk_binop `(*):real->real->real`
