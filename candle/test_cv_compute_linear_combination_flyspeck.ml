@@ -37,6 +37,30 @@ if not (aconv candle_cv_lc_flyspeck_coefficients
             candle_cv_lc_flyspeck_lhs))) then
   failwith "Flyspeck linear-function reification mismatch";;
 
+let candle_cv_lc_sparse_flyspeck_variables_tm =
+  mk_list (candle_cv_lc_flyspeck_variables,`:real`);;
+let candle_cv_lc_sparse_flyspeck_selector_conv =
+  candle_lc_sparse_flyspeck_selector_conv
+    candle_cv_lc_flyspeck_variables
+    candle_cv_lc_sparse_flyspeck_variables_tm;;
+let candle_cv_lc_sparse_flyspeck_entries,
+    candle_cv_lc_sparse_flyspeck_entries_th =
+  candle_lc_reify_sparse_flyspeck_lin_f
+    candle_cv_lc_sparse_flyspeck_selector_conv
+    candle_cv_lc_flyspeck_variables candle_cv_lc_flyspeck_lhs;;
+if not (aconv candle_cv_lc_sparse_flyspeck_entries
+              `[(0,(2,0));(2,(0,3))]`) ||
+   hyp candle_cv_lc_sparse_flyspeck_entries_th <> [] ||
+   not (aconv (concl candle_cv_lc_sparse_flyspeck_entries_th)
+         (mk_eq
+           (mk_comb
+             (mk_comb
+               (`candle_lc_sparse_vec_real`,
+                candle_cv_lc_sparse_flyspeck_variables_tm),
+              candle_cv_lc_sparse_flyspeck_entries),
+            candle_cv_lc_flyspeck_lhs))) then
+  failwith "Flyspeck structural sparse denotation mismatch";;
+
 let candle_cv_lc_flyspeck_integer,candle_cv_lc_flyspeck_integer_th =
   candle_lc_reify_flyspeck_integer candle_cv_lc_flyspeck_neg_three;;
 if not (aconv candle_cv_lc_flyspeck_integer `(0,3)`) ||

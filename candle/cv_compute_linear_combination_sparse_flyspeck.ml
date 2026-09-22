@@ -77,17 +77,67 @@ let candle_lc_sparse_flyspeck_selector_conv variables variables_tm =
 let candle_lc_sparse_el_cache_stats () =
   !candle_lc_sparse_el_cache_hits,!candle_lc_sparse_el_cache_misses;;
 
-let candle_lc_sparse_flyspeck_normalize_conv selector_conv tm =
-  let expansion =
-    REWRITE_CONV
-      [candle_lc_sparse_vec_real_def;
-       EL; HD; TL;
-       Linear_function.lin_f; ITLIST;
-       candle_lc_zreal_def;
-       REAL_SUB_RZERO; REAL_SUB_LZERO; REAL_NEG_0;
-       REAL_MUL_LZERO; REAL_ADD_LID; REAL_ADD_RID] tm in
-  let selected = DEPTH_CONV selector_conv (rand (concl expansion)) in
-  TRANS expansion selected;;
+let candle_lc_sparse_flyspeck_nil = prove
+ (`!candle_sparse_basis:real list.
+     candle_lc_sparse_vec_real candle_sparse_basis [] = lin_f []`,
+  REWRITE_TAC[candle_lc_sparse_vec_real_def;
+              Linear_function.LIN_F_EMPTY]);;
+
+let candle_lc_sparse_flyspeck_cons = prove
+ (`!(candle_sparse_basis:real list) (candle_sparse_i:num)
+     (candle_sparse_z:num#num)
+     (candle_sparse_tail:(num#(num#num))list)
+     (candle_source_c:real) (candle_source_x:real)
+     (candle_source_tail:(real#real)list).
+     candle_lc_zreal candle_sparse_z = candle_source_c
+     ==> EL candle_sparse_i candle_sparse_basis = candle_source_x
+     ==> candle_lc_sparse_vec_real candle_sparse_basis candle_sparse_tail =
+         lin_f candle_source_tail
+     ==> candle_lc_sparse_vec_real candle_sparse_basis
+           (CONS (candle_sparse_i,candle_sparse_z) candle_sparse_tail) =
+         lin_f (CONS (candle_source_c,candle_source_x)
+                     candle_source_tail)`,
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_lc_sparse_vec_real_cons;
+                  Linear_function.LIN_F_CONS; FST; SND]);;
+
+(* Construct the denotation theorem in lockstep with the authenticated source
+   entries.  Each step uses one exact coefficient equality and one cached,
+   checked EL theorem.  No conversion descends through the full variable basis
+   or through an already constructed row expression. *)
+let candle_lc_reify_sparse_flyspeck_entries
+      selector_conv variables variables_tm entries =
+  let rec build = function
+    | [] ->
+        let sparse_tail = mk_list ([],candle_lc_sparse_flyspeck_entry_type) and
+            source_tail = mk_list ([],`:real#real`) in
+        sparse_tail,source_tail,
+        SPEC variables_tm candle_lc_sparse_flyspeck_nil
+    | (coefficient,variable,_)::rest ->
+        let sparse_tail,source_tail,tail_th = build rest in
+        let sparse_index =
+          mk_small_numeral
+            (candle_lc_sparse_flyspeck_index variable 0 variables) in
+        let sparse_z,coefficient_th =
+          candle_lc_reify_flyspeck_integer coefficient in
+        let selector_tm =
+          mk_comb
+            (mk_comb (`EL:num->real list->real`,sparse_index),variables_tm) in
+        let selector_th = selector_conv selector_tm in
+        let sparse_entry = mk_pair (sparse_index,sparse_z) and
+            source_entry = mk_pair (coefficient,variable) in
+        let sparse_entries = mk_cons sparse_entry sparse_tail and
+            source_entries = mk_cons source_entry source_tail in
+        let cons_th =
+          SPECL
+            [variables_tm;sparse_index;sparse_z;sparse_tail;
+             coefficient;variable;source_tail]
+            candle_lc_sparse_flyspeck_cons in
+        let denotation_th =
+          MATCH_MP (MATCH_MP (MATCH_MP cons_th coefficient_th) selector_th)
+            tail_th in
+        sparse_entries,source_entries,denotation_th in
+  build entries;;
 
 let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
   candle_lc_check_variables Term.(<) variables;
@@ -97,29 +147,22 @@ let candle_lc_reify_sparse_flyspeck_lin_f selector_conv variables lhs =
     candle_lc_dest_entries
       candle_lc_flyspeck_lin_f_const dest_realintconst standard_lhs in
   candle_lc_check_entries Term.(<) variables entries;
-  let sparse_entries =
-    map
-      (fun (_,variable,coefficient) ->
-         mk_pair
-           (mk_small_numeral
-              (candle_lc_sparse_flyspeck_index variable 0 variables),
-            candle_lc_z_term coefficient))
-      entries in
-  let variables_tm = mk_list (variables,`:real`) and
-      sparse_entries_tm =
-        mk_list (sparse_entries,candle_lc_sparse_flyspeck_entry_type) in
+  let variables_tm = mk_list (variables,`:real`) in
+  let sparse_entries_tm,source_entries_tm,structural_th =
+    candle_lc_reify_sparse_flyspeck_entries
+      selector_conv variables variables_tm entries in
+  let source_head,source_terms_tm = dest_comb standard_lhs in
+  if source_head <> candle_lc_flyspeck_lin_f_const ||
+     not (aconv source_entries_tm source_terms_tm) then
+    failwith "sparse Flyspeck adapter: structural source list mismatch";
   let exact_tm =
     mk_comb
       (mk_comb (`candle_lc_sparse_vec_real`,variables_tm),
        sparse_entries_tm) in
-  let exact_th =
-    candle_lc_sparse_flyspeck_normalize_conv selector_conv exact_tm and
-      source_th =
-    candle_lc_sparse_flyspeck_normalize_conv selector_conv standard_lhs in
-  if not (aconv (rand (concl exact_th)) (rand (concl source_th))) then
-    failwith "sparse Flyspeck adapter: lhs denotation mismatch";
-  sparse_entries_tm,
-  TRANS exact_th (TRANS (SYM source_th) (SYM standardize_th));;
+  if hyp structural_th <> [] ||
+     not (aconv (concl structural_th) (mk_eq (exact_tm,standard_lhs))) then
+    failwith "sparse Flyspeck adapter: structural denotation mismatch";
+  sparse_entries_tm,TRANS structural_th (SYM standardize_th);;
 
 let candle_lc_reify_sparse_flyspeck_row selector_conv variables variables_tm
       (inequality,weight) =
