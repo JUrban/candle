@@ -278,6 +278,19 @@ let candle_lc_reify_sparse_flyspeck_lin_f_cached context lhs =
       !candle_lc_sparse_lhs_cache_misses + 1;
     result;;
 
+let candle_lc_sparse_flyspeck_row_denotation
+      variables_tm entries lhs_th integer rhs_th weight =
+  let exact_row = mk_pair (weight,mk_pair (entries,integer)) in
+  let row_real_tm =
+    mk_comb
+      (mk_comb (`candle_lc_sparse_row_real`,variables_tm),exact_row) in
+  let row_expansion =
+    REWRITE_CONV[candle_lc_sparse_row_real_def] row_real_tm in
+  let row_contents =
+    candle_lc_pair_rule (REFL weight)
+      (candle_lc_pair_rule lhs_th rhs_th) in
+  TRANS row_expansion row_contents;;
+
 let candle_lc_finish_sparse_flyspeck_row
       variables_tm entries lhs_th integer rhs_th (inequality,weight) =
   let lhs,rhs = dest_binop `(<=):real->real->bool` (concl inequality) in
@@ -289,15 +302,9 @@ let candle_lc_finish_sparse_flyspeck_row
   candle_lc_check_reification "sparse rhs" exact_rhs rhs rhs_th;
   let exact_row = mk_pair (weight,mk_pair (entries,integer)) and
       raw_row = candle_lc_row_of_inequality weight inequality in
-  let row_real_tm =
-    mk_comb
-      (mk_comb (`candle_lc_sparse_row_real`,variables_tm),exact_row) in
-  let row_expansion =
-    REWRITE_CONV[candle_lc_sparse_row_real_def] row_real_tm in
-  let row_contents =
-    candle_lc_pair_rule (REFL weight)
-      (candle_lc_pair_rule lhs_th rhs_th) in
-  let row_th = TRANS row_expansion row_contents in
+  let row_th =
+    candle_lc_sparse_flyspeck_row_denotation
+      variables_tm entries lhs_th integer rhs_th weight in
   if not (aconv (rand (concl row_th)) raw_row) then
     failwith "sparse Flyspeck adapter: row denotation mismatch";
   exact_row,raw_row,row_th,inequality;;
@@ -316,7 +323,8 @@ type candle_lc_sparse_flyspeck_master_entry = {
   candle_sparse_source_entries: term;
   candle_sparse_source_lhs_th: thm;
   candle_sparse_source_integer: term;
-  candle_sparse_source_rhs_th: thm
+  candle_sparse_source_rhs_th: thm;
+  candle_sparse_source_row_th: thm
 };;
 
 type candle_lc_sparse_flyspeck_master = {
@@ -350,11 +358,22 @@ let candle_lc_sparse_flyspeck_master_profiled
         exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
     candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
     candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th;
+    let weight_var =
+      variant (frees source_conclusion)
+        (mk_var ("candle_sparse_weight",`:num`)) in
+    let row_th =
+      GEN weight_var
+        (candle_lc_sparse_flyspeck_row_denotation
+          context.candle_sparse_variables_tm entries lhs_th integer rhs_th
+          weight_var) in
+    if hyp row_th <> [] then
+      failwith "sparse Flyspeck master: row theorem has assumptions";
     {candle_sparse_source_conclusion = source_conclusion;
      candle_sparse_source_entries = entries;
      candle_sparse_source_lhs_th = lhs_th;
      candle_sparse_source_integer = integer;
-     candle_sparse_source_rhs_th = rhs_th} in
+     candle_sparse_source_rhs_th = rhs_th;
+     candle_sparse_source_row_th = row_th} in
   let entry_list = map make_entry source_conclusions in
   let entries = Array.of_list entry_list and
       indices = Hashtbl.create (List.length entry_list) in
@@ -404,13 +423,18 @@ let candle_lc_resolve_sparse_flyspeck_master_row
 
 let candle_lc_reify_resolved_sparse_flyspeck_master_row
       master (entry,(inequality,weight)) =
-  candle_lc_finish_sparse_flyspeck_row
-    master.candle_sparse_master_context.candle_sparse_variables_tm
-    entry.candle_sparse_source_entries
-    entry.candle_sparse_source_lhs_th
-    entry.candle_sparse_source_integer
-    entry.candle_sparse_source_rhs_th
-    (inequality,weight);;
+  let exact_row =
+    mk_pair
+      (weight,
+       mk_pair
+         (entry.candle_sparse_source_entries,
+          entry.candle_sparse_source_integer)) and
+      raw_row = candle_lc_row_of_inequality weight inequality in
+  let row_th = SPEC weight entry.candle_sparse_source_row_th in
+  if hyp row_th <> [] ||
+     not (aconv (rand (concl row_th)) raw_row) then
+    failwith "sparse Flyspeck master: row denotation mismatch";
+  exact_row,raw_row,row_th,inequality;;
 
 let candle_lc_reify_sparse_flyspeck_master_row master planned_row =
   candle_lc_reify_resolved_sparse_flyspeck_master_row master
