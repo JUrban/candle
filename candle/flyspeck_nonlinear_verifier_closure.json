@@ -2143,19 +2143,13 @@
         "source": "flyspeck:formal_ineqs/misc/report.hl"
       },
       {
-        "line": 58,
+        "line": 63,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 64,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 67,
+        "line": 69,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -2167,25 +2161,7 @@
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 76,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
         "line": 77,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 78,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 79,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -2233,127 +2209,151 @@
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 106,
+        "line": 89,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 91,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 94,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 95,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 117,
         "member": "make",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 107,
+        "line": 118,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 131,
+        "line": 142,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 132,
+        "line": 143,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 211,
+        "line": 222,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 441,
+        "line": 452,
         "member": "clear",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 441,
+        "line": 452,
         "member": "length",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 442,
+        "line": 453,
         "member": "add",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 447,
+        "line": 458,
         "member": "create",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 450,
+        "line": 461,
         "member": "find",
         "module": "Hashtbl",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 546,
+        "line": 557,
         "member": "to_list",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 610,
+        "line": 621,
         "member": "make",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 677,
+        "line": 688,
         "member": "to_list",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 800,
+        "line": 811,
         "member": "to_list",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 1166,
+        "line": 1177,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 1169,
+        "line": 1180,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
-        "line": 1172,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 1402,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 1403,
-        "member": "init",
-        "module": "Array",
-        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
-      },
-      {
-        "line": 1412,
+        "line": 1183,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
       },
       {
         "line": 1413,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1414,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1423,
+        "member": "init",
+        "module": "Array",
+        "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
+      },
+      {
+        "line": 1424,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -2521,7 +2521,7 @@
         "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
       },
       {
-        "line": 117,
+        "line": 119,
         "member": "init",
         "module": "Array",
         "source": "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl"
@@ -3105,7 +3105,7 @@
   "direct_manifest": {
     "path": "candle/flyspeck_manifest.json",
     "schema": 1,
-    "sha256": "a4557ca895ebce36e4e26e298b55c3a50aa8bd4d593d444cec7da32b875c4688",
+    "sha256": "cbe798f243ba31a4bd9a00b494eef8624d76393d98d782f6b85cc0517518961a",
     "source_node_count": 400
   },
   "direct_manifest_overlap": [
@@ -3449,9 +3449,9 @@
     },
     {
       "logical_relative_path": "formal_ineqs/taylor/m_taylor.hl",
-      "md5": "857ba2079f2717bc1e448d559f7cbc67",
+      "md5": "1223a228b22440c35fb277a1ad6617e7",
       "repository": "flyspeck",
-      "sha256": "56291541f874802bf9966df85d74c6c39a8242a0fb5c7b8913f95a99deef87c9",
+      "sha256": "428e3dda7a0f20d6e82bb9e3a58ad9363073f63de1c3e59657fd951b43821c91",
       "source_key": "flyspeck:formal_ineqs/taylor/m_taylor.hl"
     },
     {
@@ -3463,9 +3463,9 @@
     },
     {
       "logical_relative_path": "formal_ineqs/taylor/m_taylor_arith2.hl",
-      "md5": "b1b06aa262f12307ff257f22ad73e66d",
+      "md5": "88ab14daf046924316e1a37d2648e390",
       "repository": "flyspeck",
-      "sha256": "fe9f16e903de3187d6c055b027ac600a50f67a5025eeb2cb00048e799ac4661a",
+      "sha256": "50e2ec7a24c65d1179d9e4499508b41de0c4dbc048522f35825f4ef41497da0f",
       "source_key": "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl"
     },
     {
@@ -3647,7 +3647,7 @@
       "identity": "closure-owning-tree"
     },
     "flyspeck": {
-      "commit": "1ce0353008eba83d3c76ae9a25c3c242e4802d53"
+      "commit": "d6cdcd9f3e45f4ceb5fd1ba08f5b5ec4ce6a65eb"
     }
   },
   "root": "flyspeck:formal_ineqs/verifier/m_verifier_main.hl",
@@ -7287,7 +7287,7 @@
       "sha256": "210164e0c4e5966eb8537d5895526cef654621c4cf339b2df965605344de618e"
     },
     "flyspeck:formal_ineqs/taylor/m_taylor.hl": {
-      "bytes": 62801,
+      "bytes": 63164,
       "dependencies": [
         {
           "kind": "needs",
@@ -7427,118 +7427,118 @@
         }
       ],
       "logical_relative_path": "formal_ineqs/taylor/m_taylor.hl",
-      "md5": "857ba2079f2717bc1e448d559f7cbc67",
+      "md5": "1223a228b22440c35fb277a1ad6617e7",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v11",
-        "normalized_bytes": 63176,
-        "normalized_md5": "70da45dd3cd1b12696056c790287bfc5",
-        "normalized_sha256": "978a494e00c02d90ff9c072432ff4385cdfdc0d2a97ec7160184a469a395ba1a",
+        "normalized_bytes": 63539,
+        "normalized_md5": "9cc414885a3a5968c0c63397b225c060",
+        "normalized_sha256": "e458e5db02f9ca4399cd44f215733a7280d0b56f525d9eaaac6332dc35ac0e37",
         "operation_count": 17,
         "operations": [
           {
             "after": "| _ -> HAS_SIZE_DIMINDEX_RULE(mk_finty(Num.num_of_int i)));;",
             "before": "| _ -> define_finite_type i);;",
             "kind": "modern-finite-type-size-theorem",
-            "line": 62,
+            "line": 67,
             "replacement_count": 1
           },
           {
             "after": "Array.get (Array.get array (n)) (i)",
             "before": "array.(n).(i)",
             "kind": "nested-array-get",
-            "line": 109
+            "line": 120
           },
           {
             "after": "Array.get (Array.get array (n - 1)) (i - 1)",
             "before": "array.(n - 1).(i - 1)",
             "kind": "nested-array-get",
-            "line": 110
+            "line": 121
           },
           {
             "after": "Array.set (Array.get array (n)) (i) el_th in",
             "before": "array.(n).(i) <- el_th in",
             "kind": "nested-array-set",
-            "line": 114
+            "line": 125
           },
           {
             "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
             "before": "el_thms_array.(n).(i - 1)",
             "kind": "nested-array-get",
-            "line": 129
+            "line": 140
           },
           {
             "after": "\"Wrong vector size; expected size: \" ^ string_of_int n",
             "before": "sprintf \"Wrong vector size; expected size: %d\" n",
             "kind": "taylor-vector-size-error",
-            "line": 587,
+            "line": 598,
             "replacement_count": 3
           },
           {
             "after": "Array.get (Array.get dd_vars_array (j)) (i)",
             "before": "dd_vars_array.(j).(i)",
             "kind": "nested-array-get",
-            "line": 635
+            "line": 646
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1158
+            "line": 1169
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1195
+            "line": 1206
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1384
+            "line": 1395
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1386
+            "line": 1397
           },
           {
             "after": "Array.get (Array.get dd_vars_array (j)) (i)",
             "before": "dd_vars_array.(j).(i)",
             "kind": "nested-array-get",
-            "line": 1386
+            "line": 1397
           },
           {
             "after": "Array.get (Array.get el_thms_array (n)) (i - 1)",
             "before": "el_thms_array.(n).(i - 1)",
             "kind": "nested-array-get",
-            "line": 1391
+            "line": 1402
           },
           {
             "after": "Array.get (Array.get m_taylor_partial_upper_array (n)) (i)",
             "before": "m_taylor_partial_upper_array.(n).(i)",
             "kind": "nested-array-get",
-            "line": 1424
+            "line": 1435
           },
           {
             "after": "Array.get (Array.get m_taylor_partial_bound_array (n)) (i)",
             "before": "m_taylor_partial_bound_array.(n).(i)",
             "kind": "nested-array-get",
-            "line": 1426
+            "line": 1437
           },
           {
             "after": "Array.get (Array.get m_taylor_partial_lower_array (n)) (i)",
             "before": "m_taylor_partial_lower_array.(n).(i)",
             "kind": "nested-array-get",
-            "line": 1428
+            "line": 1439
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1437
+            "line": 1448
           }
         ],
         "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed. The Num ordering rewrite is confined to the two nonnegative numeral hashes passed to the private compare_floats_raw helper; it does not authorize general polymorphic comparison or change a theorem statement or inference. The float equality rewrites are confined to the identical split/fix tests in more_float and informal_float; they preserve signed-zero equality, NaN inequality, infinity equality, and every finite nonzero comparison. The typed ordering rewrites cover exactly the three adjacent split branches in each implementation plus twelve raw-double threshold and angle branches in seven authenticated sources; they preserve native false-on-NaN behavior. The atan rewrite is confined to the four exact 2.0 *. atan 1.0 table-bound expressions in two authenticated sources; it does not introduce a general atan implementation. The assert rewrites preserve condition evaluation, success value, and failure constructor; only the run-local native source position is replaced by a stable logical source label with zero line/column fields. The finite-type rewrite is confined to the authenticated max-dimension table in m_taylor.hl and is byte-identical to the replacement shipped in Candle's modern HOL Light Formal_ineqs copy; it changes neither the resulting HAS_SIZE theorem nor downstream vector types.",
@@ -7555,7 +7555,7 @@
         "flyspeck:formal_ineqs/taylor/theory/multivariate_taylor-compiled.hl",
         "flyspeck:formal_ineqs/taylor/theory/taylor_interval-compiled.hl"
       ],
-      "sha256": "56291541f874802bf9966df85d74c6c39a8242a0fb5c7b8913f95a99deef87c9"
+      "sha256": "428e3dda7a0f20d6e82bb9e3a58ad9363073f63de1c3e59657fd951b43821c91"
     },
     "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl": {
       "bytes": 135554,
@@ -7605,7 +7605,7 @@
       "sha256": "010161f5d7b6bfa7b8d2dc7d4ced8e512022a4aec98d5fb5b3594e8e85c5c80e"
     },
     "flyspeck:formal_ineqs/taylor/m_taylor_arith2.hl": {
-      "bytes": 49843,
+      "bytes": 49871,
       "dependencies": [
         {
           "kind": "needs",
@@ -7626,104 +7626,104 @@
         }
       ],
       "logical_relative_path": "formal_ineqs/taylor/m_taylor_arith2.hl",
-      "md5": "b1b06aa262f12307ff257f22ad73e66d",
+      "md5": "88ab14daf046924316e1a37d2648e390",
       "normalization": {
         "authority": "nonlinear-verifier-closure",
         "id": "candle-flyspeck-nonlinear-closure-compatibility-v11",
-        "normalized_bytes": 50173,
-        "normalized_md5": "95954760a39a09ef926a7c9137613732",
-        "normalized_sha256": "0983ed1b16e310ed530207cd577283e09ffd6c06dfdcba95e05c50c21a4a55ed",
+        "normalized_bytes": 50201,
+        "normalized_md5": "8125f9d8994042c8e6b6eec75ee75cef",
+        "normalized_sha256": "36b406ec3fc07069becd9fb2794a286741df3ac4acfe993ede38c02a0c31efdd",
         "operation_count": 15,
         "operations": [
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 60
+            "line": 62
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 176
+            "line": 178
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 234
+            "line": 236
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 313
+            "line": 315
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 364
+            "line": 366
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 492
+            "line": 494
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 580
+            "line": 582
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 662
+            "line": 664
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 748
+            "line": 750
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 832
+            "line": 834
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 915
+            "line": 917
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 998
+            "line": 1000
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1087
+            "line": 1089
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1177
+            "line": 1179
           },
           {
             "after": "Array.get (Array.get dd_vars_array (i)) (j)",
             "before": "dd_vars_array.(i).(j)",
             "kind": "nested-array-get",
-            "line": 1261
+            "line": 1263
           }
         ],
         "scope_limit": "This bounded parser normalization is confined to the authenticated formal-verifier closure and only makes native OCaml grouping explicit. It changes no theorem statement, hypothesis, proof step, proof intent, runtime primitive, or axiom. Existing direct-Flyspeck execution normalizations remain authoritative and are applied from the shared versioned normalization contract. Hash-table annotations change no allocation, operation, contents, or exceptions. Diagnostic-only substitutions preserve the fixed rendered bytes except the unused elapsed-time suffix, which fails closed; optional float logging is disabled only while its controlling flag remains false and any invocation fails closed. The Num ordering rewrite is confined to the two nonnegative numeral hashes passed to the private compare_floats_raw helper; it does not authorize general polymorphic comparison or change a theorem statement or inference. The float equality rewrites are confined to the identical split/fix tests in more_float and informal_float; they preserve signed-zero equality, NaN inequality, infinity equality, and every finite nonzero comparison. The typed ordering rewrites cover exactly the three adjacent split branches in each implementation plus twelve raw-double threshold and angle branches in seven authenticated sources; they preserve native false-on-NaN behavior. The atan rewrite is confined to the four exact 2.0 *. atan 1.0 table-bound expressions in two authenticated sources; it does not introduce a general atan implementation. The assert rewrites preserve condition evaluation, success value, and failure constructor; only the run-local native source position is replaced by a stable logical source label with zero line/column fields. The finite-type rewrite is confined to the authenticated max-dimension table in m_taylor.hl and is byte-identical to the replacement shipped in Candle's modern HOL Light Formal_ineqs copy; it changes neither the resulting HAS_SIZE theorem nor downstream vector types.",
@@ -7733,7 +7733,7 @@
       "selected_dependencies": [
         "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
       ],
-      "sha256": "fe9f16e903de3187d6c055b027ac600a50f67a5025eeb2cb00048e799ac4661a"
+      "sha256": "50e2ec7a24c65d1179d9e4499508b41de0c4dbc048522f35825f4ef41497da0f"
     },
     "flyspeck:formal_ineqs/taylor/theory/multivariate_taylor-compiled.hl": {
       "bytes": 469938,
@@ -9515,7 +9515,7 @@
   "source_normalization_contract": {
     "path": "candle/flyspeck_normalizations.json",
     "schema": 2,
-    "sha256": "35bf670a467d7f1d3c5fa3fc1d7b4cea9fe3bfd8070b17598477a8f50be4fec8"
+    "sha256": "381b27e1fcc66685571b4deb3656b8d4ad2e845fca218ed79eaecbc4c46ce20c"
   },
   "status": "development-non-release"
 }
