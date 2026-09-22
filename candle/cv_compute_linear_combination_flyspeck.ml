@@ -19,8 +19,47 @@ let candle_lc_flyspeck_zero = num 0;;
 let candle_lc_flyspeck_lin_f_const = `lin_f`;;
 let candle_lc_flyspeck_rewrites = [];;
 
+(* Real LP masters repeat a very small vocabulary of Flyspeck numeral terms
+   across many otherwise distinct [lin_f] rows.  NUM_TO_NUMERAL_CONV is
+   proof-producing, so cache only its successful exact input theorems and
+   recheck every hit before DEPTH_CONV uses it.  Keep the cache bounded; it is
+   an edit/runtime optimization and never proof authority. *)
+let candle_lc_flyspeck_numeral_cache : (term,thm) Hashtbl.t =
+  Hashtbl.create 257;;
+let candle_lc_flyspeck_numeral_cache_hits = ref 0;;
+let candle_lc_flyspeck_numeral_cache_misses = ref 0;;
+
+let candle_lc_flyspeck_clear_numeral_cache () =
+  Hashtbl.clear candle_lc_flyspeck_numeral_cache;
+  candle_lc_flyspeck_numeral_cache_hits := 0;
+  candle_lc_flyspeck_numeral_cache_misses := 0;;
+
+let candle_lc_flyspeck_numeral_cache_stats () =
+  !candle_lc_flyspeck_numeral_cache_hits,
+  !candle_lc_flyspeck_numeral_cache_misses,
+  Hashtbl.length candle_lc_flyspeck_numeral_cache;;
+
+let candle_lc_flyspeck_cached_numeral_conv tm =
+  try
+    let th = Hashtbl.find candle_lc_flyspeck_numeral_cache tm in
+    if hyp th <> [] || not (aconv (lhand (concl th)) tm) then
+      failwith "Flyspeck numeral cache theorem mismatch";
+    candle_lc_flyspeck_numeral_cache_hits :=
+      !candle_lc_flyspeck_numeral_cache_hits + 1;
+    th
+  with Not_found ->
+    let th = Arith_nat.NUM_TO_NUMERAL_CONV tm in
+    if hyp th <> [] || not (aconv (lhand (concl th)) tm) then
+      failwith "Flyspeck numeral conversion theorem mismatch";
+    if Hashtbl.length candle_lc_flyspeck_numeral_cache >= 4096 then
+      Hashtbl.clear candle_lc_flyspeck_numeral_cache;
+    Hashtbl.add candle_lc_flyspeck_numeral_cache tm th;
+    candle_lc_flyspeck_numeral_cache_misses :=
+      !candle_lc_flyspeck_numeral_cache_misses + 1;
+    th;;
+
 let candle_lc_flyspeck_standardize_numerals tm =
-  DEPTH_CONV Arith_nat.NUM_TO_NUMERAL_CONV tm;;
+  DEPTH_CONV candle_lc_flyspeck_cached_numeral_conv tm;;
 
 let candle_lc_reify_flyspeck_lin_f variables lhs =
   let standardize_th = candle_lc_flyspeck_standardize_numerals lhs in

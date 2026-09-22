@@ -13,6 +13,46 @@ let candle_cv_lc_flyspeck_variables = [`x:real`; `y:real`; `z:real`];;
 let candle_cv_lc_flyspeck_two = Arith_int.my_mk_realintconst (num 2);;
 let candle_cv_lc_flyspeck_neg_three =
   Arith_int.my_mk_realintconst (minus_num (num 3));;
+let _ = candle_lc_flyspeck_clear_numeral_cache ();;
+let candle_cv_lc_flyspeck_numeral_cold =
+  candle_lc_flyspeck_standardize_numerals candle_cv_lc_flyspeck_two;;
+let candle_cv_lc_flyspeck_numeral_cold_hits,
+    candle_cv_lc_flyspeck_numeral_cold_misses,
+    candle_cv_lc_flyspeck_numeral_cold_size =
+  candle_lc_flyspeck_numeral_cache_stats ();;
+let candle_cv_lc_flyspeck_numeral_warm =
+  candle_lc_flyspeck_standardize_numerals candle_cv_lc_flyspeck_two;;
+let candle_cv_lc_flyspeck_numeral_warm_hits,
+    candle_cv_lc_flyspeck_numeral_warm_misses,
+    candle_cv_lc_flyspeck_numeral_warm_size =
+  candle_lc_flyspeck_numeral_cache_stats ();;
+let candle_cv_lc_flyspeck_numeral_changed =
+  candle_lc_flyspeck_standardize_numerals
+    candle_cv_lc_flyspeck_neg_three;;
+let candle_cv_lc_flyspeck_numeral_changed_hits,
+    candle_cv_lc_flyspeck_numeral_changed_misses,
+    candle_cv_lc_flyspeck_numeral_changed_size =
+  candle_lc_flyspeck_numeral_cache_stats ();;
+if hyp candle_cv_lc_flyspeck_numeral_cold <> [] ||
+   not (aconv (lhand (concl candle_cv_lc_flyspeck_numeral_cold))
+               candle_cv_lc_flyspeck_two) ||
+   not (equals_thm candle_cv_lc_flyspeck_numeral_cold
+                   candle_cv_lc_flyspeck_numeral_warm) ||
+   candle_cv_lc_flyspeck_numeral_cold_misses <= 0 ||
+   candle_cv_lc_flyspeck_numeral_warm_hits <=
+     candle_cv_lc_flyspeck_numeral_cold_hits ||
+   candle_cv_lc_flyspeck_numeral_warm_misses <>
+     candle_cv_lc_flyspeck_numeral_cold_misses ||
+   candle_cv_lc_flyspeck_numeral_warm_size <>
+     candle_cv_lc_flyspeck_numeral_cold_size ||
+   candle_cv_lc_flyspeck_numeral_changed_misses <=
+     candle_cv_lc_flyspeck_numeral_warm_misses ||
+   candle_cv_lc_flyspeck_numeral_changed_size <=
+     candle_cv_lc_flyspeck_numeral_warm_size ||
+   hyp candle_cv_lc_flyspeck_numeral_changed <> [] ||
+   not (aconv (lhand (concl candle_cv_lc_flyspeck_numeral_changed))
+               candle_cv_lc_flyspeck_neg_three) then
+  failwith "Flyspeck numeral conversion cache mismatch";;
 let candle_cv_lc_flyspeck_terms =
   mk_list
     ([mk_pair (candle_cv_lc_flyspeck_two,`x:real`);
