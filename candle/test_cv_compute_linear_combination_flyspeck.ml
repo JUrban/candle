@@ -2,9 +2,11 @@
 
 needs "candle/compute.ml";;
 needs "candle/cv_compute_linear_combination_flyspeck.ml";;
+needs "candle/cv_compute_linear_combination_sparse_flyspeck.ml";;
 
 open Candle_cv_linear_combination_reify;;
 open Candle_cv_linear_combination_flyspeck;;
+open Candle_cv_linear_combination_sparse_flyspeck;;
 
 let candle_cv_lc_flyspeck_axioms = axioms ();;
 let candle_cv_lc_flyspeck_variables = [`x:real`; `y:real`; `z:real`];;
@@ -189,6 +191,21 @@ if candle_cv_lc_flyspeck_cancel_variables <> [`x:real`] ||
            concl candle_cv_lc_flyspeck_cancel_ineq2]) ||
    not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
   failwith "Flyspeck reflected cancellation/refutation mismatch";;
+
+let candle_cv_lc_sparse_flyspeck_cancel_variables,
+    candle_cv_lc_sparse_flyspeck_cancel_rows,
+    candle_cv_lc_sparse_flyspeck_cancel_th =
+  candle_lc_sparse_refute_flyspeck_source
+    REFL
+    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
+     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)];;
+if candle_cv_lc_sparse_flyspeck_cancel_variables <> [`x:real`] ||
+   concl candle_cv_lc_sparse_flyspeck_cancel_th <> `F` ||
+   not (set_eq (hyp candle_cv_lc_sparse_flyspeck_cancel_th)
+          [concl candle_cv_lc_flyspeck_cancel_ineq1;
+           concl candle_cv_lc_flyspeck_cancel_ineq2]) ||
+   not (set_eq (axioms ()) candle_cv_lc_flyspeck_axioms) then
+  failwith "Flyspeck sparse one-shot refutation mismatch";;
 
 let candle_cv_lc_flyspeck_profile_events = ref ([]:string list);;
 let candle_cv_lc_flyspeck_profile phase edge =
