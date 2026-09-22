@@ -38,13 +38,16 @@ let rec candle_lc_sparse_flyspeck_index variable index = function
       else candle_lc_sparse_flyspeck_index variable (index + 1) rest;;
 
 let candle_lc_sparse_flyspeck_normalize_conv tm =
-  REWRITE_CONV
-    [candle_lc_sparse_vec_real_def;
-     EL; HD; TL;
-     Linear_function.lin_f; ITLIST;
-     candle_lc_zreal_def;
-     REAL_SUB_RZERO; REAL_SUB_LZERO; REAL_NEG_0;
-     REAL_MUL_LZERO; REAL_ADD_LID; REAL_ADD_RID] tm;;
+  let expansion =
+    REWRITE_CONV
+      [candle_lc_sparse_vec_real_def;
+       EL; HD; TL;
+       Linear_function.lin_f; ITLIST;
+       candle_lc_zreal_def;
+       REAL_SUB_RZERO; REAL_SUB_LZERO; REAL_NEG_0;
+       REAL_MUL_LZERO; REAL_ADD_LID; REAL_ADD_RID] tm in
+  let selected = DEPTH_CONV EL_CONV (rand (concl expansion)) in
+  TRANS expansion selected;;
 
 let candle_lc_reify_sparse_flyspeck_lin_f variables lhs =
   candle_lc_check_variables Term.(<) variables;
