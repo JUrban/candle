@@ -18,8 +18,8 @@ open Candle_cv_linear_combination_sparse_verdict;;
 let candle_lc_sparse_vec_real_def = define
  `(candle_lc_sparse_vec_real (variables:real list)
       ([]:(num#(num#num))list) = &0) /\
-  (candle_lc_sparse_vec_real variables (CONS (index,z) entries) =
-     candle_lc_zreal z * EL index variables +
+  (candle_lc_sparse_vec_real variables (CONS (i,z) entries) =
+     candle_lc_zreal z * EL i variables +
      candle_lc_sparse_vec_real variables entries)`;;
 
 let candle_lc_sparse_vec_real_cons = prove
