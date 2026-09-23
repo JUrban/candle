@@ -4,6 +4,7 @@ load_path :=
 
 needs "candle/compute.ml";;
 needs "candle/cv_compute_polynomial_expr_flyspeck_dim_sound.ml";;
+needs "candle/cv_compute_polynomial_expr_reify.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_exact_rational_core;;
@@ -14,6 +15,7 @@ open Candle_cv_polynomial_expr_jet;;
 open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_dim_check;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
+open Candle_cv_polynomial_expr_reify;;
 
 let candle_poly_dim_accept_interval_type =
   `:((num#num)#num)#((num#num)#num)`;;
@@ -30,12 +32,19 @@ let candle_poly_dim_accept_boxes_encode_conv boxes =
      candle_cv_q_def; candle_cv_lc_z_def]
     (mk_comb (`candle_cv_q_interval_list`,boxes));;
 
-let candle_poly_dim_accept_expression =
- `Candle_poly_add
-    (Candle_poly_add
-      (Candle_poly_mul (Candle_poly_var 0) (Candle_poly_var 5))
-      (Candle_poly_square (Candle_poly_var 2)))
-    (Candle_poly_const 0 1 0)`;;
+let candle_poly_dim_accept_variables =
+  [`x1:real`; `x2:real`; `x3:real`; `x4:real`; `x5:real`; `x6:real`];;
+
+let candle_poly_dim_accept_source =
+  `x1 * x6 + x3 pow 2 + -- &1`;;
+
+let candle_poly_dim_accept_expression,
+    candle_poly_dim_accept_reified_valid,
+    candle_poly_dim_accept_reified_source,
+    candle_poly_dim_accept_reified_program,
+    candle_poly_dim_accept_reified_run =
+  candle_poly_reify_real_expression
+    candle_poly_dim_accept_variables candle_poly_dim_accept_source;;
 
 let candle_poly_dim_accept_box =
  `((((0,0),0),((1,0),7)):
@@ -234,14 +243,8 @@ let candle_poly_dim_accept_source_numerical_th =
     (SYM candle_poly_dim_accept_source_numerical_norm)
     candle_poly_dim_accept_numerical_th;;
 
-let candle_poly_dim_accept_valid_goal =
-  list_mk_comb
-    (`candle_poly_valid_dim`,
-     [`6`;candle_poly_dim_accept_expression]);;
-
-let candle_poly_dim_accept_valid_th = prove
- (candle_poly_dim_accept_valid_goal,
-  REWRITE_TAC[candle_poly_valid_dim_def] THEN ARITH_TAC);;
+let candle_poly_dim_accept_valid_th =
+  candle_poly_dim_accept_reified_valid;;
 
 let candle_poly_dim_accept_components_th =
   CONJ
@@ -275,6 +278,8 @@ let candle_poly_dim_accept_original_th =
     (CONJ candle_poly_dim_accept_length candle_poly_dim_accept_th);;
 
 if hyp candle_poly_dim_accept_compute_th <> [] ||
+   hyp candle_poly_dim_accept_reified_source <> [] ||
+   hyp candle_poly_dim_accept_reified_run <> [] ||
    hyp candle_poly_dim_accept_numerical_th <> [] ||
    hyp candle_poly_dim_accept_source_numerical_th <> [] ||
    hyp candle_poly_dim_accept_th <> [] ||
