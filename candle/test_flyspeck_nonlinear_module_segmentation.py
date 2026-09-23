@@ -10,7 +10,9 @@ import flyspeck_nonlinear_verifier_smoke as smoke
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FLYSPECK = Path("/project/worktrees/flyspeck-v13-source")
+FLYSPECK = Path(
+    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6"
+)
 
 
 class NonlinearModuleSegmentationTests(unittest.TestCase):

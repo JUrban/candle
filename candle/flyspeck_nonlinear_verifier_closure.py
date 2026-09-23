@@ -91,7 +91,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "passing the `(string,hol_type)` pair, making native OCaml's tuple and "
     "application grouping explicit. The single "
     "integer Stdlib succ call in certificate statistics is expressed as the "
-    "definitionally equivalent c + 1 supported by Candle"
+    "definitionally equivalent c + 1 supported by Candle. The two certificate "
+    "tree accumulator appends are bound before construction of their result "
+    "triples, preserving native OCaml evaluation while avoiding a CakeML "
+    "frontend tuple/append inference trigger"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -128,7 +131,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "the exact generated `x1` through `xN` terms and theorem construction. "
     "The succ rewrite is "
     "confined to the local integer occurrence counter; c + 1 preserves the "
-    "counter value, table mutation order, contents, effects, and exceptions."
+    "counter value, table mutation order, contents, effects, and exceptions. "
+    "The two accumulator rewrites name the already evaluated pure list append "
+    "immediately before returning the same triple; they preserve append order, "
+    "tree identity, result shape, effects, and exceptions."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -844,6 +850,18 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
             "certificate-path-string",
             b'sprintf "%s(%d)" s j',
             b's ^ "(" ^ string_of_int j ^ ")"',
+        ),
+        _replacement(
+            "certificate-left-accumulator-binding",
+            b'''\t\tfalse, acc' @ [rev p1, r1], Result_glue (j, convex_flag, Result_pass_ref n, tree2)''',
+            b'''\t\tlet acc'' = acc' @ [rev p1, r1] in
+\t\t  false, acc'', Result_glue (j, convex_flag, Result_pass_ref n, tree2)''',
+        ),
+        _replacement(
+            "certificate-right-accumulator-binding",
+            b'''\t\t  false, acc' @ [rev p2, r2], Result_glue (j, convex_flag, tree1, Result_pass_ref n)''',
+            b'''\t\t  let acc'' = acc' @ [rev p2, r2] in
+\t\t    false, acc'', Result_glue (j, convex_flag, tree1, Result_pass_ref n)''',
         ),
     ),
     "flyspeck:formal_ineqs/verifier/m_verifier.hl": (

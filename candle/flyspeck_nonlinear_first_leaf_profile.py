@@ -16,7 +16,7 @@ from typing import Any
 MAIN_SOURCE_KEY = "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
 MAIN_INPUT_SHA256 = "e1c689bea39ebb4a0161816c59cf469a2f983c5705d1b392b79a555d38247dbb"
 FORMAL_SOURCE_KEY = "flyspeck:formal_ineqs/verifier/m_verifier.hl"
-FORMAL_INPUT_SHA256 = "c1b234b4651a56511a5483acc35d0a8f037138bfc70a7897c05fd6e756acbf7d"
+FORMAL_INPUT_SHA256 = "0f465a36e54a1a79739cecf25f3a294827a795413cc8fd8b3b42d0145f104840"
 NORMALIZATION_ID = "candle-nonlinear-first-leaf-phase-profile-v2"
 MARKER_PREFIX = "CANDLE_CERT_PROFILE lane=nonlinear-leaf"
 
