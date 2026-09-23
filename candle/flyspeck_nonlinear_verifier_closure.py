@@ -94,7 +94,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "definitionally equivalent c + 1 supported by Candle. The two certificate "
     "tree accumulator appends are bound before construction of their result "
     "triples, preserving native OCaml evaluation while avoiding a CakeML "
-    "frontend tuple/append inference trigger"
+    "frontend tuple/append inference trigger. The certificate subdomain "
+    "fold's native float-specialized <= is expressed with Candle's IEEE "
+    "float ordering helper, avoiding integer defaulting while preserving "
+    "finite, infinity, signed-zero, and false-on-NaN behavior"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -134,7 +137,11 @@ NORMALIZATION_SCOPE_LIMIT = (
     "counter value, table mutation order, contents, effects, and exceptions. "
     "The two accumulator rewrites name the already evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
-    "tree identity, result shape, effects, and exceptions."
+    "tree identity, result shape, effects, and exceptions. The one subdomain "
+    "rewrite is confined to elementwise ordering of the authenticated double "
+    "domain endpoints; it selects the IEEE float operation to which native "
+    "OCaml specialized the original operator and changes neither fold order "
+    "nor short-circuit behavior."
 )
 NESTED_ARRAY_SET_RE = re.compile(
     rb"\b([A-Za-z_][A-Za-z0-9_']*)\.\(([^()\r\n]+)\)\.\(([^()\r\n]+)\)"
@@ -862,6 +869,11 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
             b'''\t\t  false, acc' @ [rev p2, r2], Result_glue (j, convex_flag, tree1, Result_pass_ref n)''',
             b'''\t\t  let acc'' = acc' @ [rev p2, r2] in
 \t\t    false, acc'', Result_glue (j, convex_flag, tree1, Result_pass_ref n)''',
+        ),
+        _replacement(
+            "certificate-float-subdomain-order",
+            b"let le a b = itlist2 (fun a b c -> c && (a <= b)) a b true in",
+            b"let le a b = itlist2 (fun a b c -> c && float_ieee_le a b) a b true in",
         ),
     ),
     "flyspeck:formal_ineqs/verifier/m_verifier.hl": (

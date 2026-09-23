@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 27)
-        self.assertEqual(counts["normalization_operations"], 151)
+        self.assertEqual(counts["normalization_operations"], 152)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -275,6 +275,19 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "false, acc'', Result_glue" in operation["after"]
             for operation in selected.values()
         ))
+
+    def test_certificate_float_subdomain_order_is_explicit(self) -> None:
+        operations = self.payload["source_nodes"][
+            "flyspeck:formal_ineqs/verifier/certificate.hl"
+        ]["normalization"]["operations"]
+        selected = [
+            operation for operation in operations
+            if operation["kind"] == "certificate-float-subdomain-order"
+        ]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["replacement_count"], 1)
+        self.assertIn("(a <= b)", selected[0]["before"])
+        self.assertIn("float_ieee_le a b", selected[0]["after"])
 
     def test_arith_float_top_level_table_inventory_is_typed(self) -> None:
         source_key = "flyspeck:formal_ineqs/arith/arith_float.hl"
