@@ -45,16 +45,42 @@ let candle_poly_out_of_range_rejected = prove
  (`~candle_poly_valid_2 (Candle_poly_var 2)`,
   REWRITE_TAC[candle_poly_valid_2_def] THEN ARITH_TAC);;
 
+let candle_poly_sixth_variable_valid = prove
+ (`candle_poly_valid_dim 6 (Candle_poly_var 5)`,
+  REWRITE_TAC[candle_poly_valid_dim_def] THEN ARITH_TAC);;
+
+let candle_poly_seventh_variable_rejected = prove
+ (`~candle_poly_valid_dim 6 (Candle_poly_var 6)`,
+  REWRITE_TAC[candle_poly_valid_dim_def] THEN ARITH_TAC);;
+
+let candle_poly_cubic_list_value =
+  SPECL [candle_poly_cubic_expr; `x:real`; `y:real`]
+    candle_poly_value_list_2;;
+
+let candle_poly_cubic_real_program =
+  SPECL
+    [candle_poly_cubic_expr;
+     `[x1:real;x2;x3;x4;x5;x6]`]
+    candle_poly_compile_real_program;;
+
 let candle_poly_cubic_compiled_correct =
   SPECL [candle_poly_cubic_expr; `x:real`; `y:real`]
     candle_poly_compile_correct;;
 
 if hyp candle_poly_real_jet_correct <> [] ||
+   hyp candle_poly_valid_2_dim <> [] ||
+   hyp candle_poly_value_list_2 <> [] ||
+   hyp candle_poly_compile_real_run <> [] ||
+   hyp candle_poly_compile_real_program <> [] ||
    hyp candle_poly_compile_run <> [] ||
    hyp candle_poly_compile_program <> [] ||
    hyp candle_poly_compile_correct <> [] ||
    hyp candle_poly_cubic_valid <> [] ||
    hyp candle_poly_out_of_range_rejected <> [] ||
+   hyp candle_poly_sixth_variable_valid <> [] ||
+   hyp candle_poly_seventh_variable_rejected <> [] ||
+   hyp candle_poly_cubic_list_value <> [] ||
+   hyp candle_poly_cubic_real_program <> [] ||
    hyp candle_poly_cubic_compiled_correct <> []
 then failwith "polynomial AST jet theorem assumptions mismatch";;
 

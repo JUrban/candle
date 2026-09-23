@@ -39,6 +39,31 @@ let candle_poly_valid_2_def = define
      candle_poly_valid_2 a /\ candle_poly_valid_2 b) /\
   (candle_poly_valid_2 (Candle_poly_square a) <=> candle_poly_valid_2 a)`;;
 
+(* Dimension-parametric source validity.  The fixed two-coordinate checker  *)
+(* below remains the bounded numerical prototype, but source reification and *)
+(* postfix compilation need not be repeated when the jet representation is   *)
+(* generalized to Flyspeck's six-variable inequalities.                       *)
+
+let candle_poly_valid_dim_def = define
+ `(candle_poly_valid_dim (nvars:num) (Candle_poly_const p n d) <=> T) /\
+  (candle_poly_valid_dim nvars (Candle_poly_var i) <=> i < nvars) /\
+  (candle_poly_valid_dim nvars (Candle_poly_neg a) <=>
+     candle_poly_valid_dim nvars a) /\
+  (candle_poly_valid_dim nvars (Candle_poly_add a b) <=>
+     candle_poly_valid_dim nvars a /\
+     candle_poly_valid_dim nvars b) /\
+  (candle_poly_valid_dim nvars (Candle_poly_mul a b) <=>
+     candle_poly_valid_dim nvars a /\
+     candle_poly_valid_dim nvars b) /\
+  (candle_poly_valid_dim nvars (Candle_poly_square a) <=>
+     candle_poly_valid_dim nvars a)`;;
+
+let candle_poly_valid_2_dim = prove
+ (`!e. candle_poly_valid_2 e <=> candle_poly_valid_dim 2 e`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_poly_valid_2_def; candle_poly_valid_dim_def]);;
+
 let candle_poly_value_def = define
  `(candle_poly_value x y (Candle_poly_const p n d) =
      candle_q_real ((p,n),d)) /\
@@ -52,6 +77,26 @@ let candle_poly_value_def = define
      candle_poly_value x y a * candle_poly_value x y b) /\
   (candle_poly_value x y (Candle_poly_square a) =
      candle_poly_value x y a * candle_poly_value x y a)`;;
+
+let candle_poly_value_list_def = define
+ `(candle_poly_value_list env (Candle_poly_const p n d) =
+     candle_q_real ((p,n),d)) /\
+  (candle_poly_value_list env (Candle_poly_var i) =
+     candle_q_real_lookup i env) /\
+  (candle_poly_value_list env (Candle_poly_neg a) =
+     --(candle_poly_value_list env a)) /\
+  (candle_poly_value_list env (Candle_poly_add a b) =
+     candle_poly_value_list env a + candle_poly_value_list env b) /\
+  (candle_poly_value_list env (Candle_poly_mul a b) =
+     candle_poly_value_list env a * candle_poly_value_list env b) /\
+  (candle_poly_value_list env (Candle_poly_square a) =
+     candle_poly_value_list env a * candle_poly_value_list env a)`;;
+
+let candle_poly_value_list_2 = prove
+ (`!e x y. candle_poly_value_list [x;y] e = candle_poly_value x y e`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_poly_value_list_def; candle_poly_value_def]);;
 
 (* Symbolic first- and second-derivative semantics.  The next analytic layer *)
 (* proves once that these functions are Flyspeck partial/partial2.             *)
@@ -235,6 +280,23 @@ let candle_poly_compile_def = define
        (APPEND (candle_poly_compile b) [Candle_q_mul])) /\
   (candle_poly_compile (Candle_poly_square a) =
      APPEND (candle_poly_compile a) [Candle_q_square])`;;
+
+let candle_poly_compile_real_run = prove
+ (`!e env stack.
+     candle_q_real_run env (candle_poly_compile e) stack =
+     CONS (candle_poly_value_list env e) stack`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_poly_compile_def; candle_poly_value_list_def;
+                  candle_q_real_run_append; candle_q_real_run_def;
+                  candle_q_real_step_def; candle_q_real_head_def;
+                  candle_q_real_tail_def; APPEND]);;
+
+let candle_poly_compile_real_program = prove
+ (`!e env.
+     candle_q_real_run env (candle_poly_compile e) [] =
+     [candle_poly_value_list env e]`,
+  REWRITE_TAC[candle_poly_compile_real_run]);;
 
 let candle_real_jet_run_append = prove
  (`!left right x y stack.
