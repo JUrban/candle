@@ -44,8 +44,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 27)
-        self.assertEqual(counts["normalization_operations"], 152)
+        self.assertEqual(counts["normalized_sources"], 28)
+        self.assertEqual(counts["normalization_operations"], 156)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -249,6 +249,37 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertEqual(selected[0]["before"], "succ c")
         self.assertEqual(selected[0]["after"], "c + 1")
         self.assertEqual(selected[0]["replacement_count"], 1)
+
+    def test_informal_nat_integer_successors_are_explicit(self) -> None:
+        operations = self.payload["source_nodes"][
+            "flyspeck:formal_ineqs/informal/informal_nat.hl"
+        ]["normalization"]["operations"]
+        selected = {
+            operation["kind"]: operation
+            for operation in operations
+            if operation["kind"].startswith("informal-nat-")
+        }
+        self.assertEqual(set(selected), {
+            "informal-nat-normalize-successor",
+            "informal-nat-lo-successor",
+            "informal-nat-hi-successor",
+            "informal-nat-hi-rounded-successor",
+        })
+        self.assertEqual(
+            {operation["before"] for operation in selected.values()},
+            {
+                "normalize q (succ e)",
+                "lo q (succ e)",
+                "hi q (succ e)",
+                "hi (succ_big_int q) (succ e)",
+            },
+        )
+        self.assertTrue(all(
+            operation["replacement_count"] == 1 and
+            "succ e" not in operation["after"] and
+            "e + 1" in operation["after"]
+            for operation in selected.values()
+        ))
 
     def test_certificate_accumulator_append_grouping_is_explicit(self) -> None:
         operations = self.payload["source_nodes"][

@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v13"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v14"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -89,9 +89,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "theorem without the deleted type-definition side effects; the Taylor "
     "component-variable constructor binds its concatenated name before "
     "passing the `(string,hol_type)` pair, making native OCaml's tuple and "
-    "application grouping explicit. The single "
-    "integer Stdlib succ call in certificate statistics is expressed as the "
-    "definitionally equivalent c + 1 supported by Candle. The two certificate "
+    "application grouping explicit. The five integer Stdlib succ calls in "
+    "certificate statistics and the informal natural-number implementation "
+    "are expressed as the definitionally equivalent x + 1 supported by "
+    "Candle. The two certificate "
     "tree accumulator appends are bound before construction of their result "
     "triples, preserving native OCaml evaluation while avoiding a CakeML "
     "frontend tuple/append inference trigger. The certificate subdomain "
@@ -132,9 +133,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "HAS_SIZE theorem nor downstream vector types. The component-variable "
     "rewrite is confined to one `mk_var` call in `gen_comp_thm`; it preserves "
     "the exact generated `x1` through `xN` terms and theorem construction. "
-    "The succ rewrite is "
-    "confined to the local integer occurrence counter; c + 1 preserves the "
-    "counter value, table mutation order, contents, effects, and exceptions. "
+    "The succ rewrites are confined to local nonnegative integer counters; "
+    "x + 1 preserves their values, recursion order, table mutation order, "
+    "contents, effects, and exceptions. "
     "The two accumulator rewrites name the already evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
     "tree identity, result shape, effects, and exceptions. The one subdomain "
@@ -825,6 +826,28 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
             b'"eval_low_poly_f_pos_pos: non-positive coefficient: " ^\n'
             b'                  string_of_term c.c_tm ^ ", " ^\n'
             b'                  string_of_term c.bounds_tm',
+        ),
+    ),
+    "flyspeck:formal_ineqs/informal/informal_nat.hl": (
+        _replacement(
+            "informal-nat-normalize-successor",
+            b"normalize q (succ e)",
+            b"normalize q (e + 1)",
+        ),
+        _replacement(
+            "informal-nat-lo-successor",
+            b"lo q (succ e)",
+            b"lo q (e + 1)",
+        ),
+        _replacement(
+            "informal-nat-hi-successor",
+            b"hi q (succ e)",
+            b"hi q (e + 1)",
+        ),
+        _replacement(
+            "informal-nat-hi-rounded-successor",
+            b"hi (succ_big_int q) (succ e)",
+            b"hi (succ_big_int q) (e + 1)",
         ),
     ),
     "flyspeck:formal_ineqs/verifier/certificate.hl": (
