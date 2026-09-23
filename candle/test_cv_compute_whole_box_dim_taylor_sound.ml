@@ -8,6 +8,7 @@ if hyp candle_q_dim_real_zero <> [] ||
    hyp candle_q_center_environment_list_length <> [] ||
    hyp candle_q_radius_list_length <> [] ||
    hyp candle_q_radius_list_nonnegative <> [] ||
+   hyp candle_q_box_midpoint_radius <> [] ||
    hyp candle_q_dot_abs_upper_sound <> [] ||
    hyp candle_q_weighted_rows_abs_upper_sound <> [] then
   failwith "dimension-generic Taylor semantic invariant assumptions mismatch";;

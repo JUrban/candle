@@ -12,6 +12,7 @@ module Candle_cv_whole_box_dim_taylor_sound = struct
 
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_exact_rational_order_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_jet;;
@@ -59,6 +60,20 @@ let candle_q_radius_list_nonnegative = prove
      [MATCH_MP_TAC candle_q_box_radius_nonnegative THEN
       ASM_REWRITE_TAC[];
       FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_q_box_midpoint_radius = prove
+ (`!i.
+     candle_q_le (FST i) (SND i)
+     ==>
+     candle_q_real (FST i) <= candle_q_real (candle_q_midpoint i) /\
+     candle_q_real (candle_q_midpoint i) <= candle_q_real (SND i) /\
+     max
+       (candle_q_real (candle_q_midpoint i) - candle_q_real (FST i))
+       (candle_q_real (SND i) - candle_q_real (candle_q_midpoint i))
+     <= candle_q_real (candle_q_radius i)`,
+  REWRITE_TAC[candle_q_le_real; candle_q_midpoint_real;
+              candle_q_radius_real] THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV THEN REAL_ARITH_TAC);;
 
 (* The reflected dot accumulator bounds the corresponding real first-order  *)
 (* Taylor sum.  The length premise is already enforced by the source-derived *)
