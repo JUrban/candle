@@ -120,7 +120,7 @@ let candle_dim_taylor_boxes_rep =
 
 let candle_dim_taylor_compute_tm =
   list_mk_comb
-   (`candle_cv_q_dim_whole_box_upper`,
+   (`candle_cv_q_dim_whole_box_check`,
     [candle_dim_taylor_pf_rep;candle_dim_taylor_pds_rep;
      candle_dim_taylor_pdds_rep;candle_dim_taylor_boxes_rep]);;
 
@@ -150,8 +150,68 @@ let candle_dim_taylor_dest_pair tm =
 let candle_dim_taylor_dest_num tm =
   dest_small_numeral (candle_dim_taylor_dest_unary `Cexp_num` tm);;
 
-let candle_dim_taylor_result_z,candle_dim_taylor_result_d =
+let candle_dim_taylor_verdict,candle_dim_taylor_upper =
   candle_dim_taylor_dest_pair candle_dim_taylor_result;;
+
+if not (aconv candle_dim_taylor_verdict `Cexp_num 1`)
+then failwith "dimension-parametric Taylor checker rejected the fixture";;
+
+let candle_dim_taylor_expect_rejection label pds_rep pdds_rep boxes_rep =
+  let check_tm =
+    list_mk_comb
+     (`candle_cv_q_dim_whole_box_check`,
+      [candle_dim_taylor_pf_rep;pds_rep;pdds_rep;boxes_rep]) in
+  let check_th =
+    compute candle_cv_q_dim_whole_box_compute_eqs check_tm in
+  let verdict,_ =
+    candle_dim_taylor_dest_pair (rand (concl check_th)) in
+  if hyp check_th <> [] then
+    failwith ("conditional Taylor rejection theorem: " ^ label)
+  else if not (aconv verdict `Cexp_num 0`) then
+    failwith ("dimension-parametric Taylor checker accepted: " ^ label)
+  else
+    print_endline
+     ("CANDLE_CV_WHOLE_BOX_DIM_TAYLOR_REJECTED " ^ label);;
+
+let candle_dim_taylor_bad_gradient_count_rejected =
+  candle_dim_taylor_expect_rejection
+    "gradient-count" `Cexp_num 0`
+    candle_dim_taylor_pdds_rep candle_dim_taylor_boxes_rep;;
+
+let candle_dim_taylor_short_pdds_rep =
+  match candle_dim_taylor_pdds with
+  | [] -> failwith "empty dimension-parametric Hessian fixture"
+  | h::t ->
+      candle_dim_taylor_cval_list
+       (candle_dim_taylor_cval_list
+         (map candle_dim_taylor_program_rep (tl h)) ::
+        map
+         (fun row ->
+            candle_dim_taylor_cval_list
+             (map candle_dim_taylor_program_rep row))
+         t);;
+
+let candle_dim_taylor_bad_hessian_width_rejected =
+  candle_dim_taylor_expect_rejection
+    "hessian-row-width" candle_dim_taylor_pds_rep
+    candle_dim_taylor_short_pdds_rep candle_dim_taylor_boxes_rep;;
+
+let candle_dim_taylor_reversed_box =
+ `((((1,0),7),((0,0),0)):
+   ((num#num)#num)#((num#num)#num))`;;
+
+let candle_dim_taylor_reversed_boxes_rep =
+  candle_dim_taylor_cval_list
+    (replicate
+      (candle_dim_taylor_interval_rep candle_dim_taylor_reversed_box) 6);;
+
+let candle_dim_taylor_bad_box_rejected =
+  candle_dim_taylor_expect_rejection
+    "reversed-box" candle_dim_taylor_pds_rep
+    candle_dim_taylor_pdds_rep candle_dim_taylor_reversed_boxes_rep;;
+
+let candle_dim_taylor_result_z,candle_dim_taylor_result_d =
+  candle_dim_taylor_dest_pair candle_dim_taylor_upper;;
 let candle_dim_taylor_result_p,candle_dim_taylor_result_n =
   candle_dim_taylor_dest_pair candle_dim_taylor_result_z;;
 
@@ -167,7 +227,8 @@ if candle_dim_taylor_p >= candle_dim_taylor_n
 then failwith "dimension-parametric Taylor fixture is not negative";;
 
 if hyp candle_dim_taylor_compute_th <> [] ||
-   hyp candle_cv_q_dim_whole_box_upper_correct <> []
+   hyp candle_cv_q_dim_whole_box_upper_correct <> [] ||
+   hyp candle_cv_q_dim_whole_box_check_correct <> []
 then failwith "dimension-parametric Taylor theorem assumptions mismatch";;
 
 let candle_dim_taylor_program_count =
