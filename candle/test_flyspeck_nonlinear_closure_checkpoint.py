@@ -10,7 +10,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 FLYSPECK_ROOT = Path(
-    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-minimal"
+    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6"
 )
 RUNTIME = Path(
     "/project/flyspeck-candle-runs/"

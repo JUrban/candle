@@ -1,9 +1,9 @@
 {
   "claim": "authenticated action-296 target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
   "closure": {
-    "bytes": 443295,
+    "bytes": 458641,
     "path": "candle/flyspeck_nonlinear_verifier_closure.json",
-    "sha256": "9bb346c4d301f62068f33761b11e1f24ab291e66af8abed562bc61e31123b17c"
+    "sha256": "5f77d2dc345c6fc44827bdd11ca6c8705723f9207e5d648417f76d8059e827bf"
   },
   "evidence_files": {
     "azure_stdout": {

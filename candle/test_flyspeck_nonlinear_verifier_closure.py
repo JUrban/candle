@@ -12,7 +12,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 FLYSPECK_ROOT = Path(
-    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-minimal"
+    "/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6"
 )
 sys.path.insert(0, str(HERE))
 
@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 27)
-        self.assertEqual(counts["normalization_operations"], 147)
+        self.assertEqual(counts["normalization_operations"], 149)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -189,6 +189,18 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             if operation["kind"] == "modern-finite-type-size-theorem"
         ]
         self.assertEqual(len(finite_type), 1)
+        component_variable = [
+            operation for operation in m_taylor["operations"]
+            if operation["kind"] ==
+            "taylor-component-variable-tuple-grouping"
+        ]
+        self.assertEqual(len(component_variable), 1)
+        self.assertEqual(component_variable[0]["replacement_count"], 1)
+        self.assertIn(
+            'let name = "x" ^ string_of_int i in',
+            component_variable[0]["after"],
+        )
+        self.assertIn("mk_var (name,aty)", component_variable[0]["after"])
         canonical_modern_source = (
             ROOT / "Formal_ineqs/taylor/m_taylor.hl"
         ).read_text(encoding="utf-8")
@@ -224,6 +236,19 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 )
             },
         )
+
+    def test_certificate_integer_successor_is_explicit(self) -> None:
+        operations = self.payload["source_nodes"][
+            "flyspeck:formal_ineqs/verifier/certificate.hl"
+        ]["normalization"]["operations"]
+        selected = [
+            operation for operation in operations
+            if operation["kind"] == "certificate-int-successor"
+        ]
+        self.assertEqual(len(selected), 1)
+        self.assertEqual(selected[0]["before"], "succ c")
+        self.assertEqual(selected[0]["after"], "c + 1")
+        self.assertEqual(selected[0]["replacement_count"], 1)
 
     def test_arith_float_top_level_table_inventory_is_typed(self) -> None:
         source_key = "flyspeck:formal_ineqs/arith/arith_float.hl"
