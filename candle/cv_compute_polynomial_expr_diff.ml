@@ -168,6 +168,51 @@ let candle_poly_diff2_compile_real_program = prove
   REWRITE_TAC[candle_poly_compile_real_program;
               candle_poly_diff2_value_list]);;
 
+(* The dimension-generic checker must not accept an unrelated gradient or    *)
+(* Hessian program as an extra source of authority.  Derive every component  *)
+(* program inside HOL from the authenticated expression AST.                 *)
+
+let candle_poly_gradient_programs_def = new_definition
+ `candle_poly_gradient_programs nvars e =
+    list_of_seq
+      (\di. candle_poly_compile (candle_poly_diff di e)) nvars`;;
+
+let candle_poly_hessian_programs_def = new_definition
+ `candle_poly_hessian_programs nvars e =
+    list_of_seq
+      (\di. list_of_seq
+        (\dj. candle_poly_compile (candle_poly_diff2 dj di e)) nvars)
+      nvars`;;
+
+let candle_poly_gradient_programs_length = prove
+ (`!nvars e. LENGTH (candle_poly_gradient_programs nvars e) = nvars`,
+  REWRITE_TAC[candle_poly_gradient_programs_def; LENGTH_LIST_OF_SEQ]);;
+
+let candle_poly_gradient_programs_el = prove
+ (`!nvars e di.
+     di < nvars
+     ==> EL di (candle_poly_gradient_programs nvars e) =
+         candle_poly_compile (candle_poly_diff di e)`,
+  SIMP_TAC[candle_poly_gradient_programs_def; EL_LIST_OF_SEQ]);;
+
+let candle_poly_hessian_programs_length = prove
+ (`!nvars e. LENGTH (candle_poly_hessian_programs nvars e) = nvars`,
+  REWRITE_TAC[candle_poly_hessian_programs_def; LENGTH_LIST_OF_SEQ]);;
+
+let candle_poly_hessian_programs_row_length = prove
+ (`!nvars e di.
+     di < nvars
+     ==> LENGTH (EL di (candle_poly_hessian_programs nvars e)) = nvars`,
+  SIMP_TAC[candle_poly_hessian_programs_def; EL_LIST_OF_SEQ;
+           LENGTH_LIST_OF_SEQ]);;
+
+let candle_poly_hessian_programs_el = prove
+ (`!nvars e di dj.
+     di < nvars /\ dj < nvars
+     ==> EL dj (EL di (candle_poly_hessian_programs nvars e)) =
+         candle_poly_compile (candle_poly_diff2 dj di e)`,
+  SIMP_TAC[candle_poly_hessian_programs_def; EL_LIST_OF_SEQ]);;
+
 (* The existing reflected interval evaluator can therefore enclose each      *)
 (* generated component with no expression-specific arithmetic proof.         *)
 

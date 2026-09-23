@@ -76,6 +76,11 @@ if hyp candle_poly_diff_valid <> [] ||
    hyp candle_poly_diff2_value_list <> [] ||
    hyp candle_poly_diff_compile_real_program <> [] ||
    hyp candle_poly_diff2_compile_real_program <> [] ||
+   hyp candle_poly_gradient_programs_length <> [] ||
+   hyp candle_poly_gradient_programs_el <> [] ||
+   hyp candle_poly_hessian_programs_length <> [] ||
+   hyp candle_poly_hessian_programs_row_length <> [] ||
+   hyp candle_poly_hessian_programs_el <> [] ||
    hyp candle_poly_diff_interval_sound <> [] ||
    hyp candle_poly_diff2_interval_sound <> [] ||
    hyp candle_poly_diff_fixture_first_correct <> [] ||
