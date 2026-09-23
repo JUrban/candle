@@ -135,4 +135,100 @@ let candle_q_dot_abs_upper_sound = prove
      [MATCH_MP_TAC REAL_LE_LMUL THEN ASM_REWRITE_TAC[];
       ASM_REAL_ARITH_TAC]]);;
 
+(* The outer reflected accumulator likewise bounds a complete real Hessian *)
+(* double sum.  This lemma is dimension-independent; the source compiler     *)
+(* supplies the square-matrix shape premises once for every expression.      *)
+
+let candle_q_weighted_rows_abs_upper_sound = prove
+ (`!radii weights value_rows interval_rows.
+     ALL (\r. &0 <= candle_q_real r) radii /\
+     ALL (\w. &0 <= candle_q_real w) weights /\
+     ALL2 candle_q_stack_contains interval_rows value_rows /\
+     LENGTH weights = LENGTH value_rows /\
+     ALL (\values. LENGTH radii = LENGTH values) value_rows
+     ==>
+     ITLIST2
+       (\w values total.
+          candle_q_real w *
+          ITLIST2
+            (\r y subtotal. candle_q_real r * abs y + subtotal)
+            radii values (&0) + total)
+       weights value_rows (&0)
+     <= candle_q_real
+          (candle_q_weighted_rows_abs_upper
+            radii weights interval_rows)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN
+    MP_TAC (ISPEC `value_rows:(real list)list` list_CASES) THEN
+    MP_TAC
+     (ISPEC
+       `interval_rows:((((num#num)#num)#((num#num)#num))list)list`
+       list_CASES) THEN
+    DISCH_THEN
+     (DISJ_CASES_THEN2 SUBST_ALL_TAC
+       (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    DISCH_THEN
+     (DISJ_CASES_THEN2 SUBST_ALL_TAC
+       (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[ALL; ALL2; LENGTH;
+                candle_q_weighted_rows_abs_upper_def; ITLIST2_DEF;
+                candle_q_dim_real_zero; REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "weights_ih") THEN
+    MAP_EVERY X_GEN_TAC
+     [`value_rows:(real list)list`;
+      `interval_rows:((((num#num)#num)#((num#num)#num))list)list`] THEN
+    MP_TAC (ISPEC `value_rows:(real list)list` list_CASES) THEN
+    DISCH_THEN
+     (DISJ_CASES_THEN2 SUBST_ALL_TAC
+       (X_CHOOSE_THEN `values:real list`
+         (X_CHOOSE_THEN `value_tail:(real list)list` SUBST_ALL_TAC))) THEN
+    MP_TAC
+     (ISPEC
+       `interval_rows:((((num#num)#num)#((num#num)#num))list)list`
+       list_CASES) THEN
+    DISCH_THEN
+     (DISJ_CASES_THEN2 SUBST_ALL_TAC
+       (X_CHOOSE_THEN
+         `intervals:(((num#num)#num)#((num#num)#num))list`
+         (X_CHOOSE_THEN
+           `interval_tail:((((num#num)#num)#((num#num)#num))list)list`
+           SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[ALL; ALL2; LENGTH;
+                    candle_q_weighted_rows_abs_upper_def; ITLIST2_DEF;
+                    HD; TL; candle_q_real_add; candle_q_real_mul] THEN
+    REPEAT STRIP_TAC THEN TRY ASM_ARITH_TAC THEN
+    SUBGOAL_THEN
+     `ITLIST2
+        (\r y subtotal. candle_q_real r * abs y + subtotal)
+        radii values (&0)
+      <= candle_q_real (candle_q_dot_abs_upper radii intervals)`
+     (LABEL_TAC "row_bound") THENL
+     [MATCH_MP_TAC candle_q_dot_abs_upper_sound THEN ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `ITLIST2
+        (\w values total.
+           candle_q_real w *
+           ITLIST2
+             (\r y subtotal. candle_q_real r * abs y + subtotal)
+             radii values (&0) + total)
+        t value_tail (&0)
+      <= candle_q_real
+           (candle_q_weighted_rows_abs_upper
+             radii t interval_tail)`
+     (LABEL_TAC "tail_bound") THENL
+     [USE_THEN "weights_ih" MATCH_MP_TAC THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_q_real h *
+        ITLIST2
+          (\r y subtotal. candle_q_real r * abs y + subtotal)
+          radii values (&0)
+      <= candle_q_real h *
+         candle_q_real (candle_q_dot_abs_upper radii intervals)`
+     ASSUME_TAC THENL
+     [MATCH_MP_TAC REAL_LE_LMUL THEN ASM_REWRITE_TAC[];
+      ASM_REAL_ARITH_TAC]]);;
+
 end;;
