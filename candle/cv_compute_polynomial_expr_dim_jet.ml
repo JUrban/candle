@@ -496,4 +496,95 @@ let candle_q_dim_poly_jet_sound = prove
           MATCH_MP_TAC candle_q_interval_mul_sound THEN
           candle_q_dim_jet_assumption_tac]]]]);;
 
+(* The source reifier already authenticates the compact postfix program.      *)
+(* These equations show that executing that one program with dimension jets   *)
+(* is exactly the structurally proved AST evaluator above.                     *)
+
+let candle_q_dim_jet_head_def = define
+ `(candle_q_dim_jet_head nvars [] = candle_q_dim_jet_zero nvars) /\
+  (candle_q_dim_jet_head nvars (CONS h t) = h)`;;
+
+let candle_q_dim_jet_tail_def = define
+ `(candle_q_dim_jet_tail
+     ([]:((((num#num)#num)#((num#num)#num))#
+          ((((num#num)#num)#((num#num)#num))list#
+           ((((num#num)#num)#((num#num)#num))list)list))list) = []) /\
+  (candle_q_dim_jet_tail (CONS h t) = t)`;;
+
+let candle_q_dim_jet_step_def = define
+ `(candle_q_dim_jet_step nvars boxes (Candle_q_push p n d) stack =
+     CONS (candle_q_dim_jet_constant nvars ((p,n),d)) stack) /\
+  (candle_q_dim_jet_step nvars boxes (Candle_q_load i) stack =
+     CONS (candle_q_dim_jet_variable nvars boxes i) stack) /\
+  (candle_q_dim_jet_step nvars boxes Candle_q_neg stack =
+     CONS
+       (candle_q_dim_jet_neg nvars
+         (candle_q_dim_jet_head nvars stack))
+       (candle_q_dim_jet_tail stack)) /\
+  (candle_q_dim_jet_step nvars boxes Candle_q_add stack =
+     CONS
+       (candle_q_dim_jet_add nvars
+         (candle_q_dim_jet_head nvars (candle_q_dim_jet_tail stack))
+         (candle_q_dim_jet_head nvars stack))
+       (candle_q_dim_jet_tail (candle_q_dim_jet_tail stack))) /\
+  (candle_q_dim_jet_step nvars boxes Candle_q_mul stack =
+     CONS
+       (candle_q_dim_jet_mul nvars
+         (candle_q_dim_jet_head nvars (candle_q_dim_jet_tail stack))
+         (candle_q_dim_jet_head nvars stack))
+       (candle_q_dim_jet_tail (candle_q_dim_jet_tail stack))) /\
+  (candle_q_dim_jet_step nvars boxes Candle_q_square stack =
+     CONS
+       (candle_q_dim_jet_mul nvars
+         (candle_q_dim_jet_head nvars stack)
+         (candle_q_dim_jet_head nvars stack))
+       (candle_q_dim_jet_tail stack))`;;
+
+let candle_q_dim_jet_run_def = define
+ `(candle_q_dim_jet_run nvars boxes [] stack = stack) /\
+  (candle_q_dim_jet_run nvars boxes (CONS h t) stack =
+     candle_q_dim_jet_run nvars boxes t
+       (candle_q_dim_jet_step nvars boxes h stack))`;;
+
+let candle_q_dim_jet_program_def = new_definition
+ `candle_q_dim_jet_program nvars boxes program =
+    candle_q_dim_jet_head nvars
+      (candle_q_dim_jet_run nvars boxes program [])`;;
+
+let candle_q_dim_jet_run_append = prove
+ (`!left right nvars boxes stack.
+     candle_q_dim_jet_run nvars boxes (APPEND left right) stack =
+     candle_q_dim_jet_run nvars boxes right
+       (candle_q_dim_jet_run nvars boxes left stack)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[APPEND; candle_q_dim_jet_run_def]);;
+
+let candle_q_dim_poly_compile_jet_run = prove
+ (`!e nvars boxes stack.
+     candle_q_dim_jet_run nvars boxes (candle_poly_compile e) stack =
+     CONS (candle_q_dim_poly_jet nvars boxes e) stack`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_poly_compile_def; candle_q_dim_poly_jet_def;
+                  candle_q_dim_jet_run_append; candle_q_dim_jet_run_def;
+                  candle_q_dim_jet_step_def; candle_q_dim_jet_head_def;
+                  candle_q_dim_jet_tail_def; APPEND]);;
+
+let candle_q_dim_poly_compile_jet_program = prove
+ (`!e nvars boxes.
+     candle_q_dim_jet_program nvars boxes (candle_poly_compile e) =
+     candle_q_dim_poly_jet nvars boxes e`,
+  REWRITE_TAC[candle_q_dim_jet_program_def;
+              candle_q_dim_poly_compile_jet_run;
+              candle_q_dim_jet_head_def]);;
+
+let candle_q_dim_poly_compile_jet_sound = prove
+ (`!e nvars boxes env.
+     candle_q_stack_contains boxes env
+     ==> candle_q_dim_poly_jet_contains nvars
+           (candle_q_dim_jet_program nvars boxes (candle_poly_compile e))
+           env e`,
+  REWRITE_TAC[candle_q_dim_poly_compile_jet_program;
+              candle_q_dim_poly_jet_sound]);;
+
 end;;
