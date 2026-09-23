@@ -8,7 +8,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_polynomial_expr_dim_calculus.ml";;
-needs "candle/cv_compute_whole_box_taylor.ml";;
+needs "candle/cv_compute_whole_box_dim_taylor.ml";;
 
 module Candle_cv_polynomial_expr_diff = struct
 
@@ -16,6 +16,7 @@ open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_whole_box_taylor;;
+open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_whole_box_jet;;
 open Candle_cv_polynomial_expr_jet;;
 open Candle_cv_polynomial_expr_dim_derivatives;;
@@ -294,5 +295,84 @@ let candle_poly_diff2_interval_sound = prove
      candle_q_interval_run_sound) THEN
   ASM_REWRITE_TAC[candle_q_stack_contains_def;
                   candle_poly_diff2_compile_real_program]);;
+
+let candle_all2_list_of_seq = prove
+ (`!P n (f:num->A) (g:num->B).
+     ALL2 P (list_of_seq f n) (list_of_seq g n) <=>
+     (!i. i < n ==> P (f i) (g i))`,
+  REPEAT GEN_TAC THEN
+  SUBGOAL_THEN
+   `MAP (f:num->A) (list_of_seq (I:num->num) n) = list_of_seq f n`
+   (fun th -> ONCE_REWRITE_TAC[GSYM th]) THENL
+   [REWRITE_TAC[MAP_LIST_OF_SEQ; I_O_ID]; ALL_TAC] THEN
+  SUBGOAL_THEN
+   `MAP (g:num->B) (list_of_seq (I:num->num) n) = list_of_seq g n`
+   (fun th -> ONCE_REWRITE_TAC[GSYM th]) THENL
+   [REWRITE_TAC[MAP_LIST_OF_SEQ; I_O_ID]; ALL_TAC] THEN
+  REWRITE_TAC[ALL2_MAP2; ALL2_ALL; GSYM ALL_EL;
+              LENGTH_LIST_OF_SEQ] THEN
+  SIMP_TAC[EL_LIST_OF_SEQ; I_THM]);;
+
+let candle_q_program_interval_list_map = prove
+ (`!ienv programs.
+     candle_q_program_interval_list ienv programs =
+     MAP (candle_q_program_interval ienv) programs`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_q_program_interval_list_def; MAP]);;
+
+let candle_q_program_interval_matrix_map = prove
+ (`!ienv program_matrix.
+     candle_q_program_interval_matrix ienv program_matrix =
+     MAP (candle_q_program_interval_list ienv) program_matrix`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_q_program_interval_matrix_def; MAP]);;
+
+let candle_q_stack_contains_all2 = prove
+ (`!intervals values.
+     candle_q_stack_contains intervals values <=>
+     ALL2 candle_q_interval_contains intervals values`,
+  LIST_INDUCT_TAC THEN
+  X_GEN_TAC `values:real list` THEN
+  MP_TAC (ISPEC `values:real list` list_CASES) THEN
+  DISCH_THEN
+   (DISJ_CASES_THEN2 SUBST_ALL_TAC
+     (X_CHOOSE_THEN `value:real`
+       (X_CHOOSE_THEN `values':real list` SUBST_ALL_TAC))) THEN
+  ASM_REWRITE_TAC[candle_q_stack_contains_def; ALL2]);;
+
+let candle_poly_gradient_programs_interval_sound = prove
+ (`!nvars e ienv env.
+     candle_q_stack_contains ienv env
+     ==>
+     ALL2 candle_q_interval_contains
+       (candle_q_program_interval_list ienv
+         (candle_poly_gradient_programs nvars e))
+       (candle_poly_gradient nvars env e)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_q_program_interval_list_map;
+              candle_poly_gradient_programs_def;
+              candle_poly_gradient_def; MAP_LIST_OF_SEQ; o_THM;
+              candle_all2_list_of_seq] THEN
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_poly_diff_interval_sound THEN ASM_REWRITE_TAC[]);;
+
+let candle_poly_hessian_programs_interval_sound = prove
+ (`!nvars e ienv env.
+     candle_q_stack_contains ienv env
+     ==>
+     ALL2 candle_q_stack_contains
+       (candle_q_program_interval_matrix ienv
+         (candle_poly_hessian_programs nvars e))
+       (candle_poly_hessian nvars env e)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_q_program_interval_matrix_map;
+              candle_poly_hessian_programs_def;
+              candle_poly_hessian_def; MAP_LIST_OF_SEQ; o_THM;
+              candle_all2_list_of_seq] THEN
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_q_program_interval_list_map; MAP_LIST_OF_SEQ; o_THM;
+              candle_q_stack_contains_all2; candle_all2_list_of_seq] THEN
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_poly_diff2_interval_sound THEN ASM_REWRITE_TAC[]);;
 
 end;;

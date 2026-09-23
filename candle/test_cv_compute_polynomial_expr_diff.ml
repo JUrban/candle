@@ -84,6 +84,12 @@ if hyp candle_poly_diff_valid <> [] ||
    hyp candle_poly_interval_sound <> [] ||
    hyp candle_poly_diff_interval_sound <> [] ||
    hyp candle_poly_diff2_interval_sound <> [] ||
+   hyp candle_all2_list_of_seq <> [] ||
+   hyp candle_q_program_interval_list_map <> [] ||
+   hyp candle_q_program_interval_matrix_map <> [] ||
+   hyp candle_q_stack_contains_all2 <> [] ||
+   hyp candle_poly_gradient_programs_interval_sound <> [] ||
+   hyp candle_poly_hessian_programs_interval_sound <> [] ||
    hyp candle_poly_diff_fixture_first_correct <> [] ||
    hyp candle_poly_diff_fixture_second_correct <> []
 then failwith "symbolic polynomial derivative theorem assumptions mismatch";;
