@@ -81,6 +81,7 @@ if hyp candle_poly_diff_valid <> [] ||
    hyp candle_poly_hessian_programs_length <> [] ||
    hyp candle_poly_hessian_programs_row_length <> [] ||
    hyp candle_poly_hessian_programs_el <> [] ||
+   hyp candle_poly_interval_sound <> [] ||
    hyp candle_poly_diff_interval_sound <> [] ||
    hyp candle_poly_diff2_interval_sound <> [] ||
    hyp candle_poly_diff_fixture_first_correct <> [] ||

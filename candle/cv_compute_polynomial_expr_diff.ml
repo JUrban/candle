@@ -216,6 +216,31 @@ let candle_poly_hessian_programs_el = prove
 (* The existing reflected interval evaluator can therefore enclose each      *)
 (* generated component with no expression-specific arithmetic proof.         *)
 
+let candle_poly_interval_sound = prove
+ (`!e ienv env.
+     candle_q_stack_contains ienv env
+     ==> candle_q_interval_contains
+          (candle_q_program_interval ienv (candle_poly_compile e))
+          (candle_poly_value_list env e)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_q_program_interval_def] THEN
+  MATCH_MP_TAC
+   (REWRITE_RULE[candle_q_real_head_def]
+     (SPECL
+       [`candle_q_interval_run ienv (candle_poly_compile e) []`;
+        `[candle_poly_value_list env e]`]
+       candle_q_stack_head_contains)) THEN
+  MP_TAC
+   (SPECL
+     [`candle_poly_compile e`;
+      `ienv:(((num#num)#num)#((num#num)#num))list`;
+      `env:real list`;
+      `[]:(((num#num)#num)#((num#num)#num))list`;
+      `[]:real list`]
+     candle_q_interval_run_sound) THEN
+  ASM_REWRITE_TAC[candle_q_stack_contains_def;
+                  candle_poly_compile_real_program]);;
+
 let candle_poly_diff_interval_sound = prove
  (`!e ienv env di.
      candle_q_stack_contains ienv env
