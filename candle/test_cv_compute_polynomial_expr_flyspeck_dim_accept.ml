@@ -4,7 +4,7 @@ load_path :=
 
 needs "candle/compute.ml";;
 needs "candle/cv_compute_polynomial_expr_flyspeck_dim_sound.ml";;
-needs "candle/cv_compute_polynomial_expr_reify.ml";;
+needs "candle/cv_compute_polynomial_expr_flyspeck_reify.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_exact_rational_core;;
@@ -15,7 +15,7 @@ open Candle_cv_polynomial_expr_jet;;
 open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_dim_check;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
-open Candle_cv_polynomial_expr_reify;;
+open Candle_cv_polynomial_expr_flyspeck_reify;;
 
 let candle_poly_dim_accept_interval_type =
   `:((num#num)#num)#((num#num)#num)`;;
@@ -32,19 +32,18 @@ let candle_poly_dim_accept_boxes_encode_conv boxes =
      candle_cv_q_def; candle_cv_lc_z_def]
     (mk_comb (`candle_cv_q_interval_list`,boxes));;
 
-let candle_poly_dim_accept_variables =
-  [`x1:real`; `x2:real`; `x3:real`; `x4:real`; `x5:real`; `x6:real`];;
+let candle_poly_dim_accept_vector = `p:real^6`;;
 
 let candle_poly_dim_accept_source =
-  `x1 * x6 + x3 pow 2 + -- &1`;;
+  `(p:real^6)$1 * p$6 + p$3 pow 2 + -- &1`;;
 
 let candle_poly_dim_accept_expression,
     candle_poly_dim_accept_reified_valid,
     candle_poly_dim_accept_reified_source,
     candle_poly_dim_accept_reified_program,
     candle_poly_dim_accept_reified_run =
-  candle_poly_reify_real_expression
-    candle_poly_dim_accept_variables candle_poly_dim_accept_source;;
+  candle_poly_reify_vector_expression
+    candle_poly_dim_accept_vector candle_poly_dim_accept_source;;
 
 let candle_poly_dim_accept_box =
  `((((0,0),0),((1,0),7)):
@@ -277,13 +276,19 @@ let candle_poly_dim_accept_original_th =
         candle_poly_dim_whole_box_accept_sound))
     (CONJ candle_poly_dim_accept_length candle_poly_dim_accept_th);;
 
+let candle_poly_dim_accept_original_source_th =
+  REWRITE_RULE
+    [candle_poly_dim_accept_reified_source]
+    candle_poly_dim_accept_original_th;;
+
 if hyp candle_poly_dim_accept_compute_th <> [] ||
    hyp candle_poly_dim_accept_reified_source <> [] ||
    hyp candle_poly_dim_accept_reified_run <> [] ||
    hyp candle_poly_dim_accept_numerical_th <> [] ||
    hyp candle_poly_dim_accept_source_numerical_th <> [] ||
    hyp candle_poly_dim_accept_th <> [] ||
-   hyp candle_poly_dim_accept_original_th <> [] then
+   hyp candle_poly_dim_accept_original_th <> [] ||
+   hyp candle_poly_dim_accept_original_source_th <> [] then
   failwith "computed Flyspeck whole-box handoff assumptions mismatch";;
 
 print_endline
