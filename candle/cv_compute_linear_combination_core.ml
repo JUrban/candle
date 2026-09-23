@@ -36,16 +36,16 @@ let candle_lc_vec_scale_def = define
 let candle_lc_accumulate_def = new_definition
  `candle_lc_accumulate
     (acc:(num#num)list#(num#num))
-    (row:num#((num#num)list#(num#num))) =
+    (lcrow:num#((num#num)list#(num#num))) =
     (candle_lc_vec_add (FST acc)
-       (candle_lc_vec_scale (FST row) (FST (SND row))),
+       (candle_lc_vec_scale (FST lcrow) (FST (SND lcrow))),
      candle_lc_zadd (SND acc)
-       (candle_lc_zscale (FST row) (SND (SND row))))`;;
+       (candle_lc_zscale (FST lcrow) (SND (SND lcrow))))`;;
 
 let candle_lc_fold_def = define
  `(candle_lc_fold acc ([]:(num#((num#num)list#(num#num)))list) = acc) /\
-  (candle_lc_fold acc (CONS row rows) =
-     candle_lc_fold (candle_lc_accumulate acc row) rows)`;;
+  (candle_lc_fold acc (CONS lcrow lcrows) =
+     candle_lc_fold (candle_lc_accumulate acc lcrow) lcrows)`;;
 
 (* cval encodings. Cexp_num 0 is the list terminator and Cexp_pair is CONS. *)
 
@@ -63,14 +63,14 @@ let candle_cv_lc_acc_def = new_definition
     Cexp_pair (candle_cv_lc_vec (FST acc)) (candle_cv_lc_z (SND acc))`;;
 
 let candle_cv_lc_row_def = new_definition
- `candle_cv_lc_row row =
-    Cexp_pair (Cexp_num (FST row)) (candle_cv_lc_acc (SND row))`;;
+ `candle_cv_lc_row lcrow =
+    Cexp_pair (Cexp_num (FST lcrow)) (candle_cv_lc_acc (SND lcrow))`;;
 
 let candle_cv_lc_rows_def = define
  `(candle_cv_lc_rows ([]:(num#((num#num)list#(num#num)))list) =
      Cexp_num 0) /\
-  (candle_cv_lc_rows (CONS row rows) =
-     Cexp_pair (candle_cv_lc_row row) (candle_cv_lc_rows rows))`;;
+  (candle_cv_lc_rows (CONS lcrow lcrows) =
+     Cexp_pair (candle_cv_lc_row lcrow) (candle_cv_lc_rows lcrows))`;;
 
 let candle_cv_lc_num_decode_def = define
  `(candle_cv_lc_num_decode (Cexp_num n) = n) /\
@@ -138,19 +138,19 @@ let candle_cv_lc_vec_scale_def = define
                (candle_cv_lc_vec_scale k xs))`;;
 
 let candle_cv_lc_accumulate_def = new_definition
- `candle_cv_lc_accumulate acc row =
+ `candle_cv_lc_accumulate acc lcrow =
     Cexp_pair
       (candle_cv_lc_vec_add (Cexp_fst acc)
-        (candle_cv_lc_vec_scale (Cexp_fst row)
-          (Cexp_fst (Cexp_snd row))))
+        (candle_cv_lc_vec_scale (Cexp_fst lcrow)
+          (Cexp_fst (Cexp_snd lcrow))))
       (candle_cv_lc_zadd (Cexp_snd acc)
-        (candle_cv_lc_zscale (Cexp_fst row)
-          (Cexp_snd (Cexp_snd row))))`;;
+        (candle_cv_lc_zscale (Cexp_fst lcrow)
+          (Cexp_snd (Cexp_snd lcrow))))`;;
 
 let candle_cv_lc_fold_def = define
  `(candle_cv_lc_fold acc (Cexp_num n) = acc) /\
-  (candle_cv_lc_fold acc (Cexp_pair row rows) =
-     candle_cv_lc_fold (candle_cv_lc_accumulate acc row) rows)`;;
+  (candle_cv_lc_fold acc (Cexp_pair lcrow lcrows) =
+     candle_cv_lc_fold (candle_cv_lc_accumulate acc lcrow) lcrows)`;;
 
 (* All-variable equations are the only user equations supplied to the
    verified evaluator. *)
@@ -182,14 +182,14 @@ let candle_cv_lc_vec_scale_compute = prove
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
 
 let candle_cv_lc_fold_compute = prove
- (`!acc rows. candle_cv_lc_fold acc rows =
-     Cexp_if (Cexp_ispair rows)
+ (`!acc lcrows. candle_cv_lc_fold acc lcrows =
+     Cexp_if (Cexp_ispair lcrows)
        (candle_cv_lc_fold
-         (candle_cv_lc_accumulate acc (Cexp_fst rows))
-         (Cexp_snd rows))
+         (candle_cv_lc_accumulate acc (Cexp_fst lcrows))
+         (Cexp_snd lcrows))
        acc`,
   REPEAT GEN_TAC THEN
-  STRUCT_CASES_TAC (SPEC `rows:cval` (cases "cval")) THEN
+  STRUCT_CASES_TAC (SPEC `lcrows:cval` (cases "cval")) THEN
   REWRITE_TAC[candle_cv_lc_fold_def; cexp_if_def;
               cexp_fst_def; cexp_snd_def; cexp_ispair_def]);;
 
@@ -241,10 +241,10 @@ let candle_cv_lc_vec_scale_correct = prove
                   candle_lc_vec_scale_def; candle_cv_lc_zscale_correct]);;
 
 let candle_cv_lc_accumulate_correct = prove
- (`!acc row.
+ (`!acc lcrow.
      candle_cv_lc_accumulate (candle_cv_lc_acc acc)
-                             (candle_cv_lc_row row) =
-     candle_cv_lc_acc (candle_lc_accumulate acc row)`,
+                             (candle_cv_lc_row lcrow) =
+     candle_cv_lc_acc (candle_lc_accumulate acc lcrow)`,
   REPEAT GEN_TAC THEN
   REWRITE_TAC[candle_cv_lc_accumulate_def; candle_cv_lc_acc_def;
               candle_cv_lc_row_def; candle_lc_accumulate_def;
@@ -255,9 +255,9 @@ let candle_cv_lc_accumulate_correct = prove
               candle_cv_lc_zadd_correct]);;
 
 let candle_cv_lc_fold_correct = prove
- (`!rows acc.
-     candle_cv_lc_fold (candle_cv_lc_acc acc) (candle_cv_lc_rows rows) =
-     candle_cv_lc_acc (candle_lc_fold acc rows)`,
+ (`!lcrows acc.
+     candle_cv_lc_fold (candle_cv_lc_acc acc) (candle_cv_lc_rows lcrows) =
+     candle_cv_lc_acc (candle_lc_fold acc lcrows)`,
   LIST_INDUCT_TAC THEN
   ASM_REWRITE_TAC[candle_cv_lc_rows_def; candle_cv_lc_fold_def;
                   candle_lc_fold_def; candle_cv_lc_accumulate_correct]);;

@@ -152,8 +152,8 @@ let candle_q_jet_tail_def = define
 let candle_q_jet_step_def = define
  `(candle_q_jet_step ix iy (Candle_q_push p n d) stack =
      CONS (candle_q_jet_constant ((p,n),d)) stack) /\
-  (candle_q_jet_step ix iy (Candle_q_load index) stack =
-     CONS (candle_q_jet_variable ix iy index) stack) /\
+  (candle_q_jet_step ix iy (Candle_q_load jetindex) stack =
+     CONS (candle_q_jet_variable ix iy jetindex) stack) /\
   (candle_q_jet_step ix iy Candle_q_neg stack =
      CONS (candle_q_jet_neg (candle_q_jet_head stack))
        (candle_q_jet_tail stack)) /\
@@ -275,8 +275,8 @@ let candle_real_jet_tail_def = define
 let candle_real_jet_step_def = define
  `(candle_real_jet_step x y (Candle_q_push p n d) stack =
      CONS (candle_real_jet_constant ((p,n),d)) stack) /\
-  (candle_real_jet_step x y (Candle_q_load index) stack =
-     CONS (candle_real_jet_variable x y index) stack) /\
+  (candle_real_jet_step x y (Candle_q_load jetindex) stack =
+     CONS (candle_real_jet_variable x y jetindex) stack) /\
   (candle_real_jet_step x y Candle_q_neg stack =
      CONS (candle_real_jet_neg (candle_real_jet_head stack))
        (candle_real_jet_tail stack)) /\
@@ -313,11 +313,11 @@ let candle_real_jet_values_def = define
      CONS (candle_real_jet_f h) (candle_real_jet_values t))`;;
 
 let candle_real_jet_variable_f = prove
- (`!index x y.
-     candle_real_jet_f (candle_real_jet_variable x y index) =
-     candle_q_real_lookup index [x;y]`,
+ (`!jetindex x y.
+     candle_real_jet_f (candle_real_jet_variable x y jetindex) =
+     candle_q_real_lookup jetindex [x;y]`,
   REPEAT GEN_TAC THEN
-  MP_TAC (SPEC `index:num` num_CASES) THEN
+  MP_TAC (SPEC `jetindex:num` num_CASES) THEN
   DISCH_THEN
    (DISJ_CASES_THEN2 SUBST1_TAC (X_CHOOSE_THEN `n:num` SUBST1_TAC)) THENL
    [REWRITE_TAC[candle_real_jet_variable_def; candle_real_jet_x_def;
@@ -476,13 +476,13 @@ let candle_q_jet_zero_contains = prove
               candle_q_zero_interval_contains]);;
 
 let candle_q_jet_variable_contains = prove
- (`!index ix iy x y.
+ (`!jetindex ix iy x y.
      candle_q_interval_contains ix x /\
      candle_q_interval_contains iy y
-     ==> candle_q_jet_contains (candle_q_jet_variable ix iy index)
-           (candle_real_jet_variable x y index)`,
+     ==> candle_q_jet_contains (candle_q_jet_variable ix iy jetindex)
+           (candle_real_jet_variable x y jetindex)`,
   REPEAT GEN_TAC THEN STRIP_TAC THEN
-  MP_TAC (SPEC `index:num` num_CASES) THEN
+  MP_TAC (SPEC `jetindex:num` num_CASES) THEN
   DISCH_THEN
    (DISJ_CASES_THEN2 SUBST1_TAC (X_CHOOSE_THEN `n:num` SUBST1_TAC)) THENL
    [ASM_SIMP_TAC[candle_q_jet_variable_def; candle_real_jet_variable_def;
@@ -723,9 +723,9 @@ let candle_cv_q_jet_y_def = new_definition
       candle_cv_q_zero_interval candle_cv_q_zero_interval`;;
 
 let candle_cv_q_jet_variable_def = new_definition
- `candle_cv_q_jet_variable ix iy index =
-    Cexp_if (Cexp_eq index (Cexp_num 0)) (candle_cv_q_jet_x ix)
-      (Cexp_if (Cexp_eq index (Cexp_num 1)) (candle_cv_q_jet_y iy)
+ `candle_cv_q_jet_variable ix iy jetindex =
+    Cexp_if (Cexp_eq jetindex (Cexp_num 0)) (candle_cv_q_jet_x ix)
+      (Cexp_if (Cexp_eq jetindex (Cexp_num 1)) (candle_cv_q_jet_y iy)
         candle_cv_q_jet_zero)`;;
 
 let candle_cv_q_jet_interval_twice_def = new_definition
@@ -1035,13 +1035,13 @@ let candle_cv_q_jet_y_correct = prove
               candle_cv_q_jet_make_correct]);;
 
 let candle_cv_q_jet_variable_correct = prove
- (`!index ix iy.
+ (`!jetindex ix iy.
      candle_cv_q_jet_variable
        (candle_cv_q_interval ix) (candle_cv_q_interval iy)
-       (Cexp_num index) =
-     candle_cv_q_jet (candle_q_jet_variable ix iy index)`,
+       (Cexp_num jetindex) =
+     candle_cv_q_jet (candle_q_jet_variable ix iy jetindex)`,
   REPEAT GEN_TAC THEN
-  MP_TAC (SPEC `index:num` num_CASES) THEN
+  MP_TAC (SPEC `jetindex:num` num_CASES) THEN
   DISCH_THEN
    (DISJ_CASES_THEN2 SUBST1_TAC (X_CHOOSE_THEN `n:num` SUBST1_TAC)) THENL
    [REWRITE_TAC[candle_cv_q_jet_variable_def; candle_q_jet_variable_def;

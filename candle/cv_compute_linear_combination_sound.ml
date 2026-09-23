@@ -12,24 +12,24 @@ module Candle_cv_linear_combination_sound = struct
 
 let candle_lc_real_accumulate_def = new_definition
  `candle_lc_real_accumulate
-    (acc:real#real) (row:num#(real#real)) =
-    (FST acc + &(FST row) * FST (SND row),
-     SND acc + &(FST row) * SND (SND row))`;;
+    (acc:real#real) (lcrow:num#(real#real)) =
+    (FST acc + &(FST lcrow) * FST (SND lcrow),
+     SND acc + &(FST lcrow) * SND (SND lcrow))`;;
 
 let candle_lc_real_fold_def = define
  `(candle_lc_real_fold (acc:real#real) [] = acc) /\
-  (candle_lc_real_fold acc (CONS (row:num#(real#real)) rows) =
-     candle_lc_real_fold (candle_lc_real_accumulate acc row) rows)`;;
+  (candle_lc_real_fold acc (CONS (lcrow:num#(real#real)) lcrows) =
+     candle_lc_real_fold (candle_lc_real_accumulate acc lcrow) lcrows)`;;
 
 let candle_lc_real_row_holds_def = new_definition
- `candle_lc_real_row_holds (row:num#(real#real)) <=>
-    FST (SND row) <= SND (SND row)`;;
+ `candle_lc_real_row_holds (lcrow:num#(real#real)) <=>
+    FST (SND lcrow) <= SND (SND lcrow)`;;
 
 let candle_lc_real_accumulate_sound = prove
- (`!acc row.
-     FST acc <= SND acc /\ candle_lc_real_row_holds row
-     ==> FST (candle_lc_real_accumulate acc row) <=
-         SND (candle_lc_real_accumulate acc row)`,
+ (`!acc lcrow.
+     FST acc <= SND acc /\ candle_lc_real_row_holds lcrow
+     ==> FST (candle_lc_real_accumulate acc lcrow) <=
+         SND (candle_lc_real_accumulate acc lcrow)`,
   REPEAT GEN_TAC THEN
   REWRITE_TAC[candle_lc_real_accumulate_def;
               candle_lc_real_row_holds_def] THEN
@@ -38,10 +38,10 @@ let candle_lc_real_accumulate_sound = prove
   ASM_REWRITE_TAC[REAL_POS]);;
 
 let candle_lc_real_fold_sound = prove
- (`!rows acc.
-     FST acc <= SND acc /\ ALL candle_lc_real_row_holds rows
-     ==> FST (candle_lc_real_fold acc rows) <=
-         SND (candle_lc_real_fold acc rows)`,
+ (`!lcrows acc.
+     FST acc <= SND acc /\ ALL candle_lc_real_row_holds lcrows
+     ==> FST (candle_lc_real_fold acc lcrows) <=
+         SND (candle_lc_real_fold acc lcrows)`,
   LIST_INDUCT_TAC THENL
    [REWRITE_TAC[candle_lc_real_fold_def; ALL];
     ASM_REWRITE_TAC[candle_lc_real_fold_def; ALL] THEN
@@ -51,10 +51,10 @@ let candle_lc_real_fold_sound = prove
     ASM_REWRITE_TAC[]]);;
 
 let candle_lc_real_fold_from_zero = prove
- (`!rows.
-     ALL candle_lc_real_row_holds rows
-     ==> FST (candle_lc_real_fold (&0,&0) rows) <=
-         SND (candle_lc_real_fold (&0,&0) rows)`,
+ (`!lcrows.
+     ALL candle_lc_real_row_holds lcrows
+     ==> FST (candle_lc_real_fold (&0,&0) lcrows) <=
+         SND (candle_lc_real_fold (&0,&0) lcrows)`,
   GEN_TAC THEN DISCH_TAC THEN
   MATCH_MP_TAC candle_lc_real_fold_sound THEN
   ASM_REWRITE_TAC[REAL_LE_REFL]);;
