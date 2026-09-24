@@ -30,7 +30,7 @@ runner_pid=$!
     tail --pid="$runner_pid" -n +1 -F "$output_dir/candle.log" 2>/dev/null |
       stdbuf -oL tr '\r' '\n' |
       stdbuf -oL grep --line-buffered -E \
-        'CANDLE_CV_REAL_FLYSPECK_DRIVER_(PHASE|RESULT|OK)' |
+        'CANDLE_CV_REAL_FLYSPECK_DRIVER_(PHASE|PROFILE|RESULT|OK)' |
       while IFS= read -r event; do
         printf '%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" "$event"
       done

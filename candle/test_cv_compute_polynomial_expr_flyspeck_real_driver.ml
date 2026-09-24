@@ -73,17 +73,33 @@ if length (dest_list candle_reflected_real_prepared.program_term) <> 87 then
 let candle_reflected_real_leaf_count = ref 0;;
 let candle_reflected_real_precisions = ref ([]:int list);;
 
+let _ =
+  candle_reflected_nl_profile :=
+    (fun event ->
+      print_endline
+        ("CANDLE_CV_REAL_FLYSPECK_DRIVER_PROFILE leaf=" ^
+         string_of_int (!candle_reflected_real_leaf_count + 1) ^
+         " event=" ^ event));;
+
 let candle_reflected_real_leaf_callback
     status function_index raw_flag _ domain_th =
   if raw_flag then
     failwith "reflected real driver: raw pass is unsupported";
   if function_index <> candle_reflected_real_function_index then
     failwith "reflected real driver: unexpected selected function";
+  print_endline
+    ("CANDLE_CV_REAL_FLYSPECK_DRIVER_PROFILE leaf=" ^
+     string_of_int (!candle_reflected_real_leaf_count + 1) ^
+     " event=begin");
   let theorem =
     candle_reflected_nl_source_pass candle_reflected_real_prepared domain_th in
   candle_reflected_real_leaf_count := !candle_reflected_real_leaf_count + 1;
   candle_reflected_real_precisions :=
     status.pp :: !candle_reflected_real_precisions;
+  print_endline
+    ("CANDLE_CV_REAL_FLYSPECK_DRIVER_PROFILE leaf=" ^
+     string_of_int !candle_reflected_real_leaf_count ^
+     " event=end");
   theorem;;
 
 let candle_reflected_real_full_pass =
