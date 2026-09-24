@@ -23,6 +23,14 @@ open Candle_cv_exact_interval_core;;
 (* Ordinary bounded candidate generator and checked normalization.            *)
 (* -------------------------------------------------------------------------- *)
 
+(* The bound is deliberately shared by the ordinary and reflected candidate
+   generators.  It is not trusted: the normalization below still validates
+   every proposed divisor and falls back to the unreduced rational on failure.
+   256 covers the 136 Euclidean steps observed in the six-coordinate
+   prime-denominator stress fixture, while remaining a small fixed cval fuel
+   term. *)
+let candle_num_gcd_fuel_bound = 256;;
+
 let candle_num_gcd_fuel_def = define
  `(candle_num_gcd_fuel 0 a b = 1) /\
   (candle_num_gcd_fuel (SUC fuel) a b =
@@ -30,7 +38,8 @@ let candle_num_gcd_fuel_def = define
 
 let candle_num_gcd_def =
   let fuel_count =
-    itlist (fun _ tail -> mk_comb (`SUC`,tail)) (0--127) `0` in
+    itlist (fun _ tail -> mk_comb (`SUC`,tail))
+      (0--(candle_num_gcd_fuel_bound - 1)) `0` in
   new_definition
     (mk_eq
       (`(candle_num_gcd (a:num) (b:num)):num`,
@@ -215,7 +224,7 @@ let candle_cv_num_gcd_def =
   let fuel =
     itlist
       (fun _ tail -> list_mk_comb (`Cexp_pair`,[`Cexp_num 0`;tail]))
-      (0--127) `Cexp_num 0` in
+      (0--(candle_num_gcd_fuel_bound - 1)) `Cexp_num 0` in
   new_definition
     (mk_eq
       (`(candle_cv_num_gcd (a:cval) (b:cval)):cval`,
@@ -312,13 +321,14 @@ let candle_cv_num_gcd_fuel_correct = prove
     COND_CASES_TAC THEN
     ASM_REWRITE_TAC[cexp_if_def]]);;
 
-let candle_cv_num_fuel_128 =
+let candle_cv_num_fuel_bound =
   let fuel_count =
-    itlist (fun _ tail -> mk_comb (`SUC`,tail)) (0--127) `0`
+    itlist (fun _ tail -> mk_comb (`SUC`,tail))
+      (0--(candle_num_gcd_fuel_bound - 1)) `0`
   and fuel =
     itlist
       (fun _ tail -> list_mk_comb (`Cexp_pair`,[`Cexp_num 0`;tail]))
-      (0--127) `Cexp_num 0` in
+      (0--(candle_num_gcd_fuel_bound - 1)) `Cexp_num 0` in
   prove
    (mk_eq (mk_comb (`candle_cv_num_fuel`,fuel_count),fuel),
     REWRITE_TAC[candle_cv_num_fuel_def]);;
@@ -328,7 +338,7 @@ let candle_cv_num_gcd_correct = prove
      candle_cv_num_gcd (Cexp_num a) (Cexp_num b) =
      Cexp_num (candle_num_gcd a b)`,
   REWRITE_TAC[candle_cv_num_gcd_def; candle_num_gcd_def;
-              GSYM candle_cv_num_fuel_128;
+              GSYM candle_cv_num_fuel_bound;
               candle_cv_num_gcd_fuel_correct]);;
 
 let candle_cv_q_normalize_fallback_correct = prove

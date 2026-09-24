@@ -277,7 +277,9 @@ let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
      " upper_gcd_nontrivial=" ^
        (if gcd_nontrivial then "true" else "false") ^
      " upper_gcd_exceeds_fuel=" ^
-       (if gcd_steps > 128 then "true" else "false") ^
+       (if gcd_steps >
+           Candle_cv_exact_rational_normalize.candle_num_gcd_fuel_bound
+        then "true" else "false") ^
      " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let rec candle_dim_jet_scale_chunks width items =
@@ -454,7 +456,9 @@ let candle_dim_jet_scale_run_box_chunked
      " upper_gcd_nontrivial=" ^
        (if gcd_nontrivial then "true" else "false") ^
      " upper_gcd_exceeds_fuel=" ^
-       (if gcd_steps > 128 then "true" else "false") ^
+       (if gcd_steps >
+           Candle_cv_exact_rational_normalize.candle_num_gcd_fuel_bound
+        then "true" else "false") ^
      " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let candle_dim_jet_scale_run_case_chunked_on_boxes
