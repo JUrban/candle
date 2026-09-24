@@ -14,6 +14,8 @@ exec "$base_dir/restart-with-fragments.sh" \
   "$repo_dir/candle/cv_compute_exact_rational_normalize.ml" \
   "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_compute.ml" \
   "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_representation.ml" \
+  "$repo_dir/candle/cv_compute_polynomial_expr_dim_first_jet_compute.ml" \
+  "$repo_dir/candle/cv_compute_polynomial_expr_dim_first_jet_representation.ml" \
   "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_semantics.ml" \
   "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_check.ml" \
   "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_sound.ml" \

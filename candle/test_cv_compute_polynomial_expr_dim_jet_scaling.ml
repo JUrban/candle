@@ -4,10 +4,12 @@
 needs "candle/compute.ml";;
 needs "candle/cv_compute_exact_interval_reify.ml";;
 needs "candle/cv_compute_polynomial_expr_dim_jet_compute.ml";;
+needs "candle/cv_compute_polynomial_expr_dim_first_jet_compute.ml";;
 
 open Candle_cv_exact_interval_reify;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_polynomial_expr_dim_jet_compute;;
+open Candle_cv_polynomial_expr_dim_first_jet_compute;;
 
 let candle_dim_jet_scale_marker phase case_name box_name event =
   print_endline
@@ -186,11 +188,12 @@ let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
   let boxes_rep = candle_dim_jet_scale_box_rep lower upper in
   let compute_tm =
     list_mk_comb
-      (`candle_cv_q_dim_jet_whole_box_check`,[program_rep;boxes_rep]) in
+      (`candle_cv_q_dim_first_jet_whole_box_check`,
+       [program_rep;boxes_rep]) in
   candle_dim_jet_scale_marker "compute" case_name box_name "begin";
   let started = Unix.gettimeofday () in
   let compute_theorem =
-    compute candle_cv_q_dim_jet_compute_eqs compute_tm in
+    compute candle_cv_q_dim_first_jet_compute_eqs compute_tm in
   let elapsed = Unix.gettimeofday () -. started in
   candle_dim_jet_scale_marker "compute" case_name box_name "end";
   let verdict,upper =
@@ -226,6 +229,15 @@ let candle_dim_jet_scale_compute_ground phase case_name box_name tm =
     failwith "dimension-jet chunk theorem has assumptions";
   rand (concl th);;
 
+let candle_dim_first_jet_scale_compute_ground
+      phase case_name box_name tm =
+  candle_dim_jet_scale_marker phase case_name box_name "begin";
+  let th = compute candle_cv_q_dim_first_jet_compute_eqs tm in
+  candle_dim_jet_scale_marker phase case_name box_name "end";
+  if hyp th <> [] then
+    failwith "dimension first-jet chunk theorem has assumptions";
+  rand (concl th);;
+
 let candle_dim_jet_scale_run_chunks
       case_name box_name boxes_rep encoded_chunks =
   let rec run index stack chunks =
@@ -244,6 +256,77 @@ let candle_dim_jet_scale_run_chunks
                [boxes_rep;chunk;stack])) in
         run (index + 1) next_stack rest in
   run 0 `Cexp_num 0` encoded_chunks;;
+
+let candle_dim_first_jet_scale_run_chunks
+      case_name box_name boxes_rep encoded_chunks =
+  let rec run index stack chunks =
+    match chunks with
+    | [] ->
+        candle_dim_first_jet_scale_compute_ground
+          "first-chunk-head" case_name box_name
+          (list_mk_comb
+            (`candle_cv_q_dim_first_jet_head`,[boxes_rep;stack]))
+    | chunk::rest ->
+        let next_stack =
+          candle_dim_first_jet_scale_compute_ground
+            ("first-chunk-" ^ string_of_int index) case_name box_name
+            (list_mk_comb
+              (`candle_cv_q_dim_first_jet_run`,
+               [boxes_rep;chunk;stack])) in
+        run (index + 1) next_stack rest in
+  run 0 `Cexp_num 0` encoded_chunks;;
+
+let candle_dim_jet_scale_run_center_profile
+      case_name monomials negative_constant chunk_width =
+  let program = candle_dim_jet_scale_program monomials negative_constant in
+  let chunks = candle_dim_jet_scale_chunks chunk_width program in
+  let encoded_chunks =
+    map
+      (fun chunk ->
+        rand
+          (concl
+            (candle_q_program_encode_conv
+              (mk_list (chunk,candle_q_instruction_type)))))
+      chunks in
+  let boxes_rep =
+    candle_dim_jet_scale_box_rep
+      candle_dim_jet_scale_narrow_lower candle_dim_jet_scale_narrow_upper in
+  let center_rep_raw =
+    candle_dim_jet_scale_compute_ground
+      "profile-center-environment" case_name "narrow-binary"
+      (mk_comb (`candle_cv_q_center_environment_list`,boxes_rep)) in
+  let center_rep =
+    candle_dim_jet_scale_compute_ground
+      "profile-center-normalize" case_name "narrow-binary"
+      (mk_comb (`candle_cv_q_interval_list_normalize`,center_rep_raw)) in
+  let first_jet =
+    candle_dim_first_jet_scale_run_chunks
+      case_name "narrow-binary-first" center_rep encoded_chunks in
+  let full_jet =
+    candle_dim_jet_scale_run_chunks
+      case_name "narrow-binary-full" center_rep encoded_chunks in
+  let full_projection =
+    candle_dim_jet_scale_pairc
+      (mk_comb (`Cexp_fst`,full_jet))
+      (mk_comb (`Cexp_fst`,mk_comb (`Cexp_snd`,full_jet))) in
+  let projection_th =
+    compute candle_cv_q_dim_first_jet_compute_eqs full_projection in
+  let projected = rand (concl projection_th) in
+  if hyp projection_th <> [] then
+    failwith "dimension first-jet projection theorem has assumptions";
+  if not (aconv first_jet projected) then
+    failwith "dimension first-jet result differs from full-jet projection";
+  print_endline
+    ("CANDLE_DIM_FIRST_JET_PROFILE case=" ^ case_name ^
+     " box=narrow-binary" ^
+     " instructions=" ^ string_of_int (length program) ^
+     " chunks=" ^ string_of_int (length chunks) ^
+     " first_term_chars=" ^
+       string_of_int (String.length (string_of_term first_jet)) ^
+     " full_term_chars=" ^
+       string_of_int (String.length (string_of_term full_jet)) ^
+     " projection_match=true" ^
+     " authority=universal-projection-proved-separately-development-non-release");;
 
 let candle_dim_jet_scale_run_box_chunked
       case_name box_name encoded_chunks lower upper =
@@ -269,16 +352,16 @@ let candle_dim_jet_scale_run_box_chunked
       "box-valid" case_name box_name
       (mk_comb (`candle_cv_q_box_valid_list`,boxes_rep)) in
   let center_jet =
-    candle_dim_jet_scale_run_chunks
+    candle_dim_first_jet_scale_run_chunks
       case_name (box_name ^ "-center") center_rep encoded_chunks in
   let box_jet =
     candle_dim_jet_scale_run_chunks
       case_name (box_name ^ "-box") boxes_rep encoded_chunks in
   let upper =
-    candle_dim_jet_scale_compute_ground
+    candle_dim_first_jet_scale_compute_ground
       "taylor-handoff" case_name box_name
       (list_mk_comb
-        (`candle_cv_q_dim_jet_taylor_upper`,
+        (`candle_cv_q_dim_first_jet_taylor_upper`,
          [radii_rep;center_jet;box_jet])) in
   let result =
     candle_dim_jet_scale_compute_ground
@@ -397,5 +480,10 @@ let _ =
 let _ =
   candle_dim_jet_scale_run_case_chunked
     "degree2-through5-455" candle_dim_jet_scale_degree2_through5 32768 128;;
+
+let _ =
+  candle_dim_jet_scale_run_center_profile
+    "degree2-through5-455-center-profile"
+    candle_dim_jet_scale_degree2_through5 32768 128;;
 
 print_endline "CANDLE_CV_POLYNOMIAL_EXPR_DIM_JET_SCALING_OK";;

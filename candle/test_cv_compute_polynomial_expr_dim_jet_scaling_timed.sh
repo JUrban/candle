@@ -26,7 +26,7 @@ runner_pid=$!
     tail --pid="$runner_pid" -n +1 -F "$output_dir/candle.log" 2>/dev/null |
       stdbuf -oL tr '\r' '\n' |
       stdbuf -oL grep --line-buffered -E \
-        'CANDLE_DIM_JET_(SCALE phase=|SCALE_PREP|SCALE_RESULT|CHUNKED_PREP|CHUNKED_RESULT)|CANDLE_CV_POLYNOMIAL_EXPR_DIM_JET_SCALING_OK' |
+        'CANDLE_DIM_JET_(SCALE phase=|SCALE_PREP|SCALE_RESULT|CHUNKED_PREP|CHUNKED_RESULT)|CANDLE_DIM_FIRST_JET_PROFILE|CANDLE_CV_POLYNOMIAL_EXPR_DIM_JET_SCALING_OK' |
       while IFS= read -r event; do
         printf '%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" "$event"
       done

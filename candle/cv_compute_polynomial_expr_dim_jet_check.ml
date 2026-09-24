@@ -8,6 +8,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_polynomial_expr_dim_jet_semantics.ml";;
+needs "candle/cv_compute_polynomial_expr_dim_first_jet_representation.ml";;
 needs "candle/cv_compute_whole_box_dim_taylor.ml";;
 needs "candle/cv_compute_whole_box_dim_taylor_sound.ml";;
 
@@ -22,6 +23,8 @@ open Candle_cv_polynomial_expr_dim_jet;;
 open Candle_cv_polynomial_expr_dim_jet_compute;;
 open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
+open Candle_cv_polynomial_expr_dim_first_jet_compute;;
+open Candle_cv_polynomial_expr_dim_first_jet_representation;;
 
 let candle_q_dim_jet_taylor_upper_def = new_definition
  `candle_q_dim_jet_taylor_upper boxes center_jet box_jet =
@@ -40,21 +43,22 @@ let candle_q_dim_poly_jet_whole_box_upper_def = new_definition
       (candle_q_dim_jet_normalized_program boxes
         (candle_poly_compile e))`;;
 
-(* Keeping each computed jet as one call-by-value argument is intentional:  *)
-(* neither traversal may be duplicated for the three projections.           *)
+(* Keeping each computed jet as one call-by-value argument is intentional.   *)
+(* The center traversal computes only value/gradient; the full-box traversal *)
+(* retains the Hessian required by the Taylor remainder.                     *)
 
 let candle_cv_q_jet_upper_pair_def = new_definition
  `candle_cv_q_jet_upper_pair boxes center_jet box_jet =
     candle_cv_q_dim_taylor_upper
       (candle_cv_q_radius_list boxes)
       (Cexp_fst center_jet)
-      (Cexp_fst (Cexp_snd center_jet))
+      (Cexp_snd center_jet)
       (Cexp_snd (Cexp_snd box_jet))`;;
 
 let candle_cv_q_dim_poly_jet_whole_box_upper_def = new_definition
  `candle_cv_q_dim_poly_jet_whole_box_upper program boxes =
     candle_cv_q_jet_upper_pair boxes
-      (candle_cv_q_dim_jet_program
+      (candle_cv_q_dim_first_jet_program
         (candle_cv_q_center_environment_list boxes) program)
       (candle_cv_q_dim_jet_program boxes program)`;;
 
@@ -62,7 +66,7 @@ let candle_cv_q_jet_upper_pair_correct = prove
  (`!boxes center_jet box_jet.
      candle_cv_q_jet_upper_pair
        (candle_cv_q_interval_list boxes)
-       (candle_cv_q_dim_jet_encode center_jet)
+       (candle_cv_q_dim_first_jet_encode center_jet)
        (candle_cv_q_dim_jet_encode box_jet) =
      candle_cv_q
        (candle_q_dim_jet_taylor_upper boxes center_jet box_jet)`,
@@ -70,8 +74,12 @@ let candle_cv_q_jet_upper_pair_correct = prove
   REWRITE_TAC[candle_cv_q_jet_upper_pair_def;
               candle_q_dim_jet_taylor_upper_def;
               candle_cv_q_radius_list_correct;
+              candle_cv_q_dim_first_jet_encode_def;
+              candle_cv_q_dim_first_jet_make_def;
               candle_cv_q_dim_jet_encode_def;
               candle_cv_q_dim_jet_make_def;
+              candle_q_dim_jet_f_def;
+              candle_q_dim_jet_gradient_def;
               cexp_fst_def; cexp_snd_def;
               candle_cv_q_dim_taylor_upper_correct]);;
 
@@ -85,6 +93,7 @@ let candle_cv_q_dim_poly_jet_whole_box_upper_correct = prove
   REWRITE_TAC[candle_cv_q_dim_poly_jet_whole_box_upper_def;
               candle_q_dim_poly_jet_whole_box_upper_def;
               candle_cv_q_center_environment_list_correct;
+              candle_cv_q_dim_first_jet_program_correct;
               candle_cv_q_dim_jet_program_correct;
               candle_cv_q_jet_upper_pair_correct]);;
 
