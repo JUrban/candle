@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 29)
-        self.assertEqual(counts["normalization_operations"], 170)
+        self.assertEqual(counts["normalization_operations"], 171)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -193,7 +193,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 for record in parser_normalized.values()
                 for operation in record["operations"]
             ),
-            45,
+            46,
         )
         self.assertEqual(
             sum(
@@ -210,7 +210,19 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         main = parser_normalized[
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
         ]
-        self.assertEqual(main["operation_count"], 5)
+        self.assertEqual(main["operation_count"], 6)
+        main_q_variable = next(
+            operation for operation in main["operations"]
+            if operation["kind"] == "main-q-variable-tuple-grouping"
+        )
+        self.assertIn(
+            'let variable_name = "Q" ^ string_of_int i in',
+            main_q_variable["after"],
+        )
+        self.assertIn(
+            "mk_var (variable_name, real_ty)",
+            main_q_variable["after"],
+        )
 
         m_taylor = parser_normalized[
             "flyspeck:formal_ineqs/taylor/m_taylor.hl"

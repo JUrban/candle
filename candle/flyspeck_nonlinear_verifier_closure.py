@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v21"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v22"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -92,7 +92,8 @@ NORMALIZATION_SEMANTIC_RULE = (
     "define_finite_type call uses HOL Light's canonical modern equivalent, "
     "HAS_SIZE_DIMINDEX_RULE over mk_finty, which produces the same size "
     "theorem without the deleted type-definition side effects; the Taylor "
-    "component-variable constructors bind their concatenated names before "
+    "component-variable constructors and the main verifier's generated Q "
+    "variable bind their concatenated names before "
     "passing the `(string,hol_type)` pair, making native OCaml's tuple and "
     "application grouping explicit. The five integer Stdlib succ calls in "
     "certificate statistics and the informal natural-number implementation "
@@ -150,8 +151,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "rewrites cover exactly exp_eval's native double and informal_exp's "
     "explicit Stdlib native double; they do not rewrite the distinct local "
     "ifloat abs_float operation. The component-variable "
-    "rewrites are confined to one `mk_var` call in `gen_comp_thm` and four "
-    "generated-variable helpers in `m_verifier.hl`; they preserve the exact "
+    "rewrites are confined to one `mk_var` call in `gen_comp_thm`, four "
+    "generated-variable helpers in `m_verifier.hl`, and one generated Q "
+    "variable in `m_verifier_main.hl`; they preserve the exact "
     "generated names, real types, returned HOL terms, and theorem "
     "construction. "
     "The succ rewrites are confined to local nonnegative integer counters; "
@@ -270,6 +272,12 @@ def normalize_nested_array_access(
 
 
 MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
+    (
+        "main-q-variable-tuple-grouping",
+        b'''\t\t     let var = mk_var ("Q" ^ string_of_int i, real_ty) in''',
+        b'''\t\t     let variable_name = "Q" ^ string_of_int i in
+\t\t     let var = mk_var (variable_name, real_ty) in''',
+    ),
     (
         "typed-informal-verification-record",
         b'''      {
