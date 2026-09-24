@@ -49,6 +49,8 @@ let rec candle_poly_ast_of_real_expression variables tm =
   | Some index -> candle_poly_var_term index
   | None ->
       if is_ratconst tm then candle_poly_const_term (rat_of_term tm)
+      else if candle_q_is_binary `DECIMAL` tm then
+        candle_poly_const_term (candle_q_decimal_rational tm)
       else if candle_q_is_unary `(--):real->real` tm then
         candle_poly_neg_term
           (candle_poly_ast_of_real_expression variables

@@ -80,6 +80,15 @@ let candle_q_is_binary operator tm =
   try let _ = candle_q_dest_binary operator tm in true
   with Failure _ -> false;;
 
+let candle_q_decimal_rational tm =
+  let numerator_tm,denominator_tm =
+    candle_q_dest_binary `DECIMAL` tm in
+  let numerator = dest_numeral numerator_tm and
+      denominator = dest_numeral denominator_tm in
+  if Num.eq_num denominator (Num.num_of_int 0) then
+    failwith "candle_q reifier: zero decimal denominator";
+  Num.div_num numerator denominator;;
+
 let rec candle_q_repeat_program base count =
   if count = 0 then [candle_q_push_term (Num.num_of_int 1)]
   else if count = 1 then base
@@ -92,6 +101,8 @@ let rec candle_q_compile_real_expression variables tm =
   | Some index -> [candle_q_load_term index]
   | None ->
       if is_ratconst tm then [candle_q_push_term (rat_of_term tm)]
+      else if candle_q_is_binary `DECIMAL` tm then
+        [candle_q_push_term (candle_q_decimal_rational tm)]
       else if candle_q_is_unary `(--):real->real` tm then
         candle_q_compile_real_expression variables
           (candle_q_dest_unary `(--):real->real` tm) @
@@ -251,6 +262,13 @@ let rec candle_q_compile_proved_expression variables tm =
   | None ->
       if is_ratconst tm then
         candle_q_rational_component variables tm (rat_of_term tm)
+      else if candle_q_is_binary `DECIMAL` tm then
+        let decimal_th = REWRITE_CONV[DECIMAL] tm in
+        let normalized_tm = rand (concl decimal_th) in
+        let program,_,normalized_th =
+          candle_q_rational_component variables normalized_tm
+            (candle_q_decimal_rational tm) in
+        program,tm,REWRITE_RULE[SYM decimal_th] normalized_th
       else if candle_q_is_unary `(--):real->real` tm then
         let child = candle_q_dest_unary `(--):real->real` tm in
         candle_q_unary_component variables

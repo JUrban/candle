@@ -50,6 +50,44 @@ if not
            candle_poly_reified_source_expected) then
   failwith "polynomial source reifier theorem mismatch";;
 
+(* Flyspeck source commonly spells exact rationals with DECIMAL, including
+   integral values such as #4.0.  Preserve that lexical source term in the
+   proved correspondence while compiling its exact rational value. *)
+let candle_poly_decimal_source = `#4.0 * x1`;;
+
+let candle_poly_decimal_ast,
+    candle_poly_decimal_valid,
+    candle_poly_decimal_source_th,
+    candle_poly_decimal_program,
+    candle_poly_decimal_run =
+  candle_poly_reify_real_expression
+    candle_poly_reify_variables candle_poly_decimal_source;;
+
+let candle_poly_decimal_expected_ast =
+  `Candle_poly_mul
+     (Candle_poly_const 4 0 0)
+     (Candle_poly_var 0)`;;
+
+if not (aconv candle_poly_decimal_ast candle_poly_decimal_expected_ast) ||
+   hyp candle_poly_decimal_valid <> [] ||
+   hyp candle_poly_decimal_source_th <> [] ||
+   hyp candle_poly_decimal_run <> [] ||
+   length (dest_list candle_poly_decimal_program) <> 3 then
+  failwith "polynomial decimal source reifier mismatch";;
+
+let candle_poly_decimal_source_expected =
+  mk_eq
+    (list_mk_comb
+      (`candle_poly_value_list`,
+       [mk_list (candle_poly_reify_variables,`:real`);
+        candle_poly_decimal_ast]),
+     candle_poly_decimal_source);;
+
+if not
+    (aconv (concl candle_poly_decimal_source_th)
+           candle_poly_decimal_source_expected) then
+  failwith "polynomial decimal source theorem mismatch";;
+
 if !Cakeml.pendingLoadedSourceIds <> [] then
   failwith "polynomial source reifier source identities remain pending";;
 
