@@ -1,0 +1,172 @@
+(* ========================================================================== *)
+(* End-to-end reflected execution of one nested analytic-expression program. *)
+(* ========================================================================== *)
+
+load_path :=
+  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
+
+needs "candle/cv_compute_analytic_expr_program_compute.ml";;
+
+open Candle_cv_linear_combination_core;;
+open Candle_cv_linear_combination_realize;;
+open Candle_cv_exact_rational_core;;
+open Candle_cv_exact_interval_core;;
+open Candle_cv_exact_interval_program;;
+open Candle_cv_whole_box_dim_taylor;;
+open Candle_cv_polynomial_expr_jet;;
+open Candle_cv_polynomial_expr_dim_jet;;
+open Candle_cv_polynomial_expr_dim_jet_compute;;
+open Candle_cv_polynomial_expr_dim_jet_representation;;
+open Candle_cv_analytic_expr_jet;;
+open Candle_cv_analytic_expr_program;;
+open Candle_cv_analytic_expr_program_compute;;
+
+let candle_analytic_expr_program_compute_axioms_before = axioms ();;
+
+let candle_analytic_expr_program_compute_nested =
+ `Candle_analytic_sqrt 2 0 0 2 0 0
+    (Candle_analytic_add
+      (Candle_analytic_inv
+        (Candle_analytic_poly
+          (Candle_poly_add
+            (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+      (Candle_analytic_poly (Candle_poly_const 3 0 0)))`;;
+
+let candle_analytic_expr_program_compute_boxes =
+ `[(((((0,0),0),((0,0),0))):
+      ((num#num)#num)#((num#num)#num))]`;;
+
+let candle_analytic_expr_program_compute_expected_jet =
+ `candle_q_dim_jet_make
+    (((2,0),0),((2,0),0))
+    [(((0,1),3),((0,1),3))]
+    [[(((15,0),31),((15,0),31))]]`;;
+
+let candle_analytic_expr_program_compute_boxes_encoded =
+  rand
+    (concl
+      (REWRITE_CONV
+        [candle_cv_q_interval_list_def; candle_cv_q_interval_def;
+         candle_cv_q_def; candle_cv_lc_z_def; FST; SND]
+        (mk_comb (`candle_cv_q_interval_list`,
+          candle_analytic_expr_program_compute_boxes))));;
+
+let candle_analytic_expr_program_compute_program_encoded =
+  rand
+    (concl
+      (REWRITE_CONV
+        [candle_analytic_compile_def; candle_poly_compile_def; APPEND;
+         candle_cv_analytic_instruction_list_def;
+         candle_cv_analytic_instruction_def;
+         candle_cv_q_instruction_list_def; candle_cv_q_instruction_def;
+         candle_analytic_sqrt_interval_def;
+         candle_cv_q_interval_def; candle_cv_q_def; candle_cv_lc_z_def;
+         FST; SND]
+        (mk_comb (`candle_cv_analytic_instruction_list`,
+          mk_comb (`candle_analytic_compile`,
+            candle_analytic_expr_program_compute_nested)))));;
+
+let candle_analytic_expr_program_compute_expected =
+  rand
+    (concl
+      (REWRITE_CONV
+        [candle_cv_q_dim_analytic_result_encode_def;
+         candle_cv_q_dim_analytic_result_make_def; candle_cv_bool_def;
+         candle_cv_q_dim_jet_encode_def; candle_cv_q_dim_jet_make_def;
+         candle_cv_q_interval_matrix_def; candle_cv_q_interval_list_def;
+         candle_cv_q_interval_def; candle_cv_q_def; candle_cv_lc_z_def;
+         candle_q_dim_jet_make_def; candle_q_dim_jet_f_def;
+         candle_q_dim_jet_gradient_def; candle_q_dim_jet_hessian_def;
+         ARITH_RULE `SUC 0 = 1`; FST; SND]
+        (mk_comb (`candle_cv_q_dim_analytic_result_encode`,
+          mk_pair (`T`,candle_analytic_expr_program_compute_expected_jet)))));;
+
+let candle_analytic_expr_program_compute_result =
+  Kernel.compute
+    (COMPUTE_INIT_THMS,candle_cv_q_dim_analytic_program_compute_eqs)
+    (list_mk_comb
+      (`candle_cv_q_dim_analytic_program`,
+       [candle_analytic_expr_program_compute_boxes_encoded;
+        candle_analytic_expr_program_compute_program_encoded]));;
+
+if not
+    (aconv (rand (concl candle_analytic_expr_program_compute_result))
+      candle_analytic_expr_program_compute_expected) then
+  failwith "analytic expression program: reflected result mismatch";;
+
+let candle_analytic_expr_program_compute_representation =
+  REWRITE_RULE
+    [candle_cv_q_interval_list_def; candle_cv_q_interval_def;
+     candle_cv_q_def; candle_cv_lc_z_def;
+     candle_analytic_compile_def; candle_poly_compile_def; APPEND;
+     candle_cv_analytic_instruction_list_def;
+     candle_cv_analytic_instruction_def;
+     candle_cv_q_instruction_list_def; candle_cv_q_instruction_def;
+     candle_analytic_sqrt_interval_def; FST; SND]
+    (SPECL
+      [candle_analytic_expr_program_compute_nested;
+       candle_analytic_expr_program_compute_boxes]
+      candle_cv_q_dim_analytic_compile_program_correct);;
+
+let candle_analytic_expr_program_compute_data =
+  TRANS (SYM candle_analytic_expr_program_compute_representation)
+    candle_analytic_expr_program_compute_result;;
+
+let candle_analytic_expr_program_bool_decision = prove
+ (`!p. ((if p then 1 else 0) = 1) <=> p`,
+  GEN_TAC THEN BOOL_CASES_TAC `p:bool` THEN REWRITE_TAC[] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_analytic_expr_program_compute_domain =
+  let result =
+    REWRITE_RULE
+      [candle_cv_q_dim_analytic_result_encode_def;
+       candle_cv_q_dim_analytic_result_make_def; candle_cv_bool_def;
+       candle_cv_q_dim_jet_encode_def; candle_cv_q_dim_jet_make_def;
+       candle_cv_q_interval_matrix_def; candle_cv_q_interval_list_def;
+       candle_cv_q_interval_def; candle_cv_q_def; candle_cv_lc_z_def;
+       candle_q_dim_jet_make_def; candle_q_dim_jet_f_def;
+       candle_q_dim_jet_gradient_def; candle_q_dim_jet_hessian_def;
+       ARITH_RULE `SUC 0 = 1`; injectivity "cval"; FST; SND]
+      candle_analytic_expr_program_compute_data in
+  REWRITE_RULE[candle_analytic_expr_program_bool_decision]
+    (CONJUNCT1 result);;
+
+let candle_analytic_expr_program_compute_stack = prove
+ (`candle_q_stack_contains
+    [(((((0,0),0),((0,0),0))):
+       ((num#num)#num)#((num#num)#num))]
+    [&0]`,
+  REWRITE_TAC[candle_q_stack_contains_def;
+              candle_q_interval_contains_def; candle_q_real_def;
+              candle_q_den_def; candle_lc_zreal_def; FST; SND] THEN
+  REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV);;
+
+let candle_analytic_expr_program_compute_sound =
+  MATCH_MP
+    (SPECL
+      [candle_analytic_expr_program_compute_nested;
+       candle_analytic_expr_program_compute_boxes; `[&0]`]
+      candle_q_dim_analytic_jet_sound)
+    (CONJ candle_analytic_expr_program_compute_stack
+      candle_analytic_expr_program_compute_domain);;
+
+if hyp candle_analytic_expr_program_compute_result <> [] ||
+   hyp candle_analytic_expr_program_compute_representation <> [] ||
+   hyp candle_analytic_expr_program_compute_domain <> [] ||
+   hyp candle_analytic_expr_program_compute_sound <> [] then
+  failwith "analytic expression program: proof assumptions";;
+
+let candle_analytic_expr_program_compute_axioms_after = axioms ();;
+if length candle_analytic_expr_program_compute_axioms_after <>
+     length candle_analytic_expr_program_compute_axioms_before ||
+   not
+     (List.for_all
+       (fun th -> List.mem th candle_analytic_expr_program_compute_axioms_before)
+       candle_analytic_expr_program_compute_axioms_after) then
+  failwith "analytic expression program: changed the global axiom set";;
+
+let _ = print_endline
+  "CANDLE_CV_ANALYTIC_EXPR_PROGRAM_COMPUTE_RESULT dimensions=1 analytic_instructions=5 domain=1 value=2 gradient=-1/4 hessian=15/32 semantic=1";;
+let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_PROGRAM_COMPUTE_OK";;
