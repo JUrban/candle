@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v14"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v15"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -98,7 +98,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "frontend tuple/append inference trigger. The certificate subdomain "
     "fold's native float-specialized <= is expressed with Candle's IEEE "
     "float ordering helper, avoiding integer defaulting while preserving "
-    "finite, infinity, signed-zero, and false-on-NaN behavior"
+    "finite, infinity, signed-zero, and false-on-NaN behavior. Native "
+    "OCaml's Division_by_zero catch sites use CakeML's corresponding Div "
+    "constructor, which is raised by Candle's arbitrary-precision integer "
+    "division"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -135,7 +138,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "the exact generated `x1` through `xN` terms and theorem construction. "
     "The succ rewrites are confined to local nonnegative integer counters; "
     "x + 1 preserves their values, recursion order, table mutation order, "
-    "contents, effects, and exceptions. "
+    "contents, effects, and exceptions. The division-exception rewrite is "
+    "confined to four catch alternatives in the two informal verifier/search "
+    "sources; it preserves the caught integer-division failure and does not "
+    "broaden any catch to unrelated exceptions. "
     "The two accumulator rewrites name the already evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
     "tree identity, result shape, effects, and exceptions. The one subdomain "
@@ -545,6 +551,12 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     ),
     "flyspeck:formal_ineqs/informal/informal_search.hl": (
         _replacement(
+            "search-division-exception",
+            b'Division_by_zero',
+            b'Div',
+            3,
+        ),
+        _replacement(
             "search-progress",
             b'Printf.sprintf "%d " !last_report',
             b'string_of_int !last_report ^ " "',
@@ -597,6 +609,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_verifier.hl": (
+        _replacement(
+            "informal-verifier-division-exception",
+            b'| Division_by_zero ->',
+            b'| Div ->',
+        ),
         _replacement(
             "informal-testing-precision",
             b'sprintf "Testing p = %d (other: %d)" p (length ps)',

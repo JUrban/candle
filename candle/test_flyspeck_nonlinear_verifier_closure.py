@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 156)
+        self.assertEqual(counts["normalization_operations"], 158)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -249,6 +249,32 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertEqual(selected[0]["before"], "succ c")
         self.assertEqual(selected[0]["after"], "c + 1")
         self.assertEqual(selected[0]["replacement_count"], 1)
+
+    def test_native_division_exceptions_use_cakeml_constructor(self) -> None:
+        expected = {
+            "flyspeck:formal_ineqs/informal/informal_search.hl":
+                ("search-division-exception", 3),
+            "flyspeck:formal_ineqs/informal/informal_verifier.hl":
+                ("informal-verifier-division-exception", 1),
+        }
+        for source_key, (kind, count) in expected.items():
+            operations = self.payload["source_nodes"][source_key][
+                "normalization"
+            ]["operations"]
+            selected = [
+                operation for operation in operations
+                if operation["kind"] == kind
+            ]
+            self.assertEqual(len(selected), 1)
+            if source_key.endswith("informal_verifier.hl"):
+                self.assertEqual(
+                    selected[0]["before"], "| Division_by_zero ->",
+                )
+                self.assertEqual(selected[0]["after"], "| Div ->")
+            else:
+                self.assertEqual(selected[0]["before"], "Division_by_zero")
+                self.assertEqual(selected[0]["after"], "Div")
+            self.assertEqual(selected[0]["replacement_count"], count)
 
     def test_informal_nat_integer_successors_are_explicit(self) -> None:
         operations = self.payload["source_nodes"][
