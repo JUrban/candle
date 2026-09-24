@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_dir=$(cd "$(dirname "$0")/.." && pwd)
 flyspeck_dir=${CANDLE_ACTION296_FLYSPECK_DIR:-/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6}
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-reflected-driver-checkpoint-v2}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-reflected-support-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-polynomial-expression-action296-source-inventory-v1-run-001}
 
 python3 "$repo_dir/candle/flyspeck_nonlinear_action296_leaf_target.py" \
@@ -35,8 +35,6 @@ PY
 CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   "$repo_dir/candle/restart_real_functions_with_fragments.sh" \
   "$output_dir" CANDLE_CV_ACTION296_SOURCE_INVENTORY_OK \
-  "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_prove.ml" \
-  "$repo_dir/candle/cv_compute_flyspeck_nonlinear_driver.ml" \
   "$repo_dir/candle/test_cv_compute_polynomial_expr_action296_source_inventory.ml"
 
 printf 'CANDLE_CV_ACTION296_SOURCE_INVENTORY_WRAPPER_OK output=%s\n' \

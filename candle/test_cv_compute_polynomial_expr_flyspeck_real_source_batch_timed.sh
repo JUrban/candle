@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_dir=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-reflected-driver-checkpoint-v2}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-reflected-support-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-polynomial-expression-flyspeck-real-source-batch-timed-v1-run-001}
 runner="$repo_dir/candle/restart_real_functions_with_fragments.sh"
 telemetry_tmp=$(mktemp)
@@ -19,8 +19,6 @@ printf '%s\trun-start\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" >>"$telemetry_tmp"
 CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   /usr/bin/time -v -o "$resource_tmp" \
   "$runner" "$output_dir" CANDLE_CV_REAL_SOURCE_BATCH_OK \
-  "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_prove.ml" \
-  "$repo_dir/candle/cv_compute_flyspeck_nonlinear_driver.ml" \
   "$repo_dir/candle/test_cv_compute_polynomial_expr_flyspeck_real_source_batch.ml" &
 runner_pid=$!
 
