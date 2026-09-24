@@ -33,10 +33,6 @@ exec 9>"$base_dir/restart.lock"
 flock 9
 
 mkdir -p "$run_dir/checkpoint" "$run_dir/dmtcp-tmp"
-skip_needs=
-for fragment in "${fragments[@]}"; do
-  skip_needs+="candle/$(basename "$fragment")"$'\n'
-done
 {
   printf 'print_endline "%s";;\n' "$input_ack"
   printf 'load_path := ["/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6/formal_ineqs"; "%s"] @ !load_path;;\n' "$repo_dir"
@@ -44,17 +40,11 @@ done
     fragment_sha256=$(sha256sum "$fragment" | awk '{print $1}')
     printf 'print_endline "CANDLE_RESTORE_FRAGMENT_BEGIN sha256=%s file=%s";;\n' \
       "$fragment_sha256" "$(basename "$fragment")"
-    awk -v skip_needs="$skip_needs" '
-      BEGIN {
-        count = split(skip_needs, paths, "\n")
-        for (i = 1; i <= count; i++) if (paths[i] != "") skip[paths[i]] = 1
-      }
+    awk '
       {
         candidate = $0
         if (candidate ~ /^needs "[^"]+";;$/) {
-          sub(/^needs "/, "", candidate)
-          sub(/";;$/, "", candidate)
-          if (candidate in skip) next
+          next
         }
         print
       }
