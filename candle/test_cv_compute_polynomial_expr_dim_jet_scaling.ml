@@ -1,5 +1,5 @@
-(* Larger six-coordinate throughput probe for the one-program reflected jet. *)
-(* DEVELOPMENT / NON-RELEASE: cval representation correctness is pending.    *)
+(* Larger six-coordinate throughput probe for the reflected shared jets.      *)
+(* DEVELOPMENT / NON-RELEASE: final analytic acceptance is still pending.     *)
 
 needs "candle/compute.ml";;
 needs "candle/cv_compute_exact_interval_reify.ml";;
@@ -51,6 +51,15 @@ let candle_dim_jet_scale_dense =
   candle_dim_jet_scale_quadratic @
   candle_dim_jet_scale_choose_repeated 0 3 @
   candle_dim_jet_scale_choose_distinct 0 4;;
+
+let candle_dim_jet_scale_degree2_through4 =
+  candle_dim_jet_scale_quadratic @
+  candle_dim_jet_scale_choose_repeated 0 3 @
+  candle_dim_jet_scale_choose_repeated 0 4;;
+
+let candle_dim_jet_scale_degree2_through5 =
+  candle_dim_jet_scale_degree2_through4 @
+  candle_dim_jet_scale_choose_repeated 0 5;;
 
 let candle_dim_jet_scale_coefficient indices =
   1 + itlist (fun index total -> index + 1 + total) indices 0;;
@@ -200,7 +209,7 @@ let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
      " upper_p_bits=" ^ string_of_int p_bits ^
      " upper_n_bits=" ^ string_of_int n_bits ^
      " upper_d_bits=" ^ string_of_int d_bits ^
-     " authority=cval-representation-proof-pending");;
+     " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let rec candle_dim_jet_scale_chunks width items =
   if items = [] then []
@@ -291,7 +300,7 @@ let candle_dim_jet_scale_run_box_chunked
      " upper_p_bits=" ^ string_of_int p_bits ^
      " upper_n_bits=" ^ string_of_int n_bits ^
      " upper_d_bits=" ^ string_of_int d_bits ^
-     " authority=cval-representation-proof-pending");;
+     " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let candle_dim_jet_scale_run_case_chunked
       case_name monomials negative_constant chunk_width =
@@ -319,7 +328,7 @@ let candle_dim_jet_scale_run_case_chunked
            (fun chunk total ->
              String.length (string_of_term chunk) + total)
            encoded_chunks 0) ^
-     " authority=cval-representation-proof-pending");
+     " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");
   List.iter
     (fun (box_name,lower,upper) ->
       candle_dim_jet_scale_run_box_chunked
@@ -339,7 +348,7 @@ let candle_dim_jet_scale_run_case_on_boxes
      " instructions=" ^ string_of_int (length program) ^
      " encoded_term_chars=" ^
        string_of_int (String.length (string_of_term program_rep)) ^
-     " authority=cval-representation-proof-pending");
+     " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");
   List.iter
     (fun (box_name,lower,upper) ->
       candle_dim_jet_scale_run_box
@@ -375,5 +384,18 @@ let _ =
 let _ =
   candle_dim_jet_scale_run_case_chunked
     "dense-92" candle_dim_jet_scale_dense 2048 128;;
+
+(* These deliberately synthetic Flyspeck-shaped polynomials contain every   *)
+(* repeated monomial in six coordinates through degrees four and five.  They *)
+(* exercise every Hessian entry and reuse one encoded expression over three  *)
+(* boxes with very different rational-denominator behaviour.                 *)
+
+let _ =
+  candle_dim_jet_scale_run_case_chunked
+    "degree2-through4-203" candle_dim_jet_scale_degree2_through4 8192 128;;
+
+let _ =
+  candle_dim_jet_scale_run_case_chunked
+    "degree2-through5-455" candle_dim_jet_scale_degree2_through5 32768 128;;
 
 print_endline "CANDLE_CV_POLYNOMIAL_EXPR_DIM_JET_SCALING_OK";;
