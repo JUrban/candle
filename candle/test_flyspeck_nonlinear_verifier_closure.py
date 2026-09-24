@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 161)
+        self.assertEqual(counts["normalization_operations"], 165)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -210,7 +210,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         main = parser_normalized[
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
         ]
-        self.assertEqual(main["operation_count"], 4)
+        self.assertEqual(main["operation_count"], 5)
 
         m_taylor = parser_normalized[
             "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -261,8 +261,34 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertIn(finite_type[0]["after"], canonical_modern_source)
         self.assertEqual(
             {operation["kind"] for operation in main["operations"]},
-            {kind for kind, _, _ in subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS},
+            {
+                *(kind for kind, _, _ in
+                  subject.MAIN_VERIFIER_GROUPING_REPLACEMENTS),
+                "array-to-list-compatibility",
+            },
         )
+
+    def test_array_to_list_uses_are_lowered_to_the_authenticated_helper(
+        self,
+    ) -> None:
+        for source_key, count in (
+            subject.ARRAY_TO_LIST_COMPATIBILITY_COUNTS.items()
+        ):
+            node = self.payload["source_nodes"][source_key]
+            operation = next(
+                operation
+                for operation in node["normalization"]["operations"]
+                if operation["kind"] == "array-to-list-compatibility"
+            )
+            self.assertEqual(operation["before"], "Array.to_list")
+            self.assertEqual(operation["after"], "candle_array_to_list")
+            self.assertEqual(operation["replacement_count"], count)
+            normalized, _ = subject.normalize_source(
+                source_key,
+                (FLYSPECK_ROOT / node["logical_relative_path"]).read_bytes(),
+            )
+            self.assertNotIn(b"Array.to_list", normalized)
+            self.assertEqual(normalized.count(b"candle_array_to_list"), count)
 
     def test_extension_formatting_inventory_is_complete(self) -> None:
         normalized = {

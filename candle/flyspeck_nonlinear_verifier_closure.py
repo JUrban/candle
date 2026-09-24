@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v17"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v18"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -104,7 +104,11 @@ NORMALIZATION_SEMANTIC_RULE = (
     "finite, infinity, signed-zero, and false-on-NaN behavior. Native "
     "OCaml's Division_by_zero catch sites use CakeML's corresponding Div "
     "constructor, which is raised by Candle's arbitrary-precision integer "
-    "division"
+    "division. The twelve selected uses of Array.to_list route through one "
+    "source-authenticated compatibility helper with the same index-order "
+    "traversal; this lets the preserved pre-runtime-repair analytic checkpoint "
+    "load the remaining verifier suffix without changing array contents or "
+    "the resulting lists"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -150,7 +154,12 @@ NORMALIZATION_SCOPE_LIMIT = (
     "confined to four catch alternatives in the two informal verifier/search "
     "sources; it preserves the caught integer-division failure and does not "
     "broaden any catch to unrelated exceptions. "
-    "The two accumulator rewrites name the already evaluated pure list append "
+    "The Array.to_list rewrites are confined to the exact three m_taylor, one "
+    "cos_eval, six m_verifier, and two m_verifier_main uses. The helper reads "
+    "each immutable input position exactly once from last to first while "
+    "prepending, producing the native forward-order list and preserving array "
+    "bounds behavior. The two accumulator rewrites name the already "
+    "evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
     "tree identity, result shape, effects, and exceptions. The one subdomain "
     "rewrite is confined to elementwise ordering of the authenticated double "
@@ -1023,6 +1032,23 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
         ),
     ),
 }
+
+ARRAY_TO_LIST_COMPATIBILITY_COUNTS = {
+    "flyspeck:formal_ineqs/taylor/m_taylor.hl": 3,
+    "flyspeck:formal_ineqs/trig/cos_eval.hl": 1,
+    "flyspeck:formal_ineqs/verifier/m_verifier.hl": 6,
+    "flyspeck:formal_ineqs/verifier/m_verifier_main.hl": 2,
+}
+for _source_key, _count in ARRAY_TO_LIST_COMPATIBILITY_COUNTS.items():
+    EXTENSION_COMPATIBILITY_REPLACEMENTS[_source_key] = (
+        EXTENSION_COMPATIBILITY_REPLACEMENTS.get(_source_key, ())
+        + (_replacement(
+            "array-to-list-compatibility",
+            b"Array.to_list",
+            b"candle_array_to_list",
+            _count,
+        ),)
+    )
 
 
 def normalize_source(

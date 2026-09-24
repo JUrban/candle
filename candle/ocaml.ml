@@ -759,6 +759,15 @@ module Str = struct
   let first_chars text count = String.sub text 0 count
 end;;
 
+(* CANDLE_OCAML_ARRAY_TO_LIST_BEGIN *)
+let candle_array_to_list a =
+  let rec collect index result =
+    if index < 0 then result
+    else collect (index - 1) (Cake.Array.sub a index :: result) in
+  collect (Cake.Array.length a - 1) []
+;;
+(* CANDLE_OCAML_ARRAY_TO_LIST_END *)
+
 module Array = struct
   let make n x = Cake.Array.array n x
   let init n f =
@@ -771,11 +780,7 @@ module Array = struct
     with Subscript -> raise (Invalid_argument "Array.get")
   let fold_left f init a = Cake.Array.foldl (fun x y -> f y x) init a
   let of_list l = Cake.Array.fromList l
-  let to_list a =
-    let rec collect index result =
-      if index < 0 then result
-      else collect (index - 1) (get a index :: result) in
-    collect (length a - 1) []
+  let to_list = candle_array_to_list
   let map f a =
     Cake.Array.tabulate (Cake.Array.length a) (fun i -> f (Cake.Array.sub a i))
 end;;
