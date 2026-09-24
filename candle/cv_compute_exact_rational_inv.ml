@@ -26,6 +26,13 @@ let candle_q_inv_def = new_definition
       ((candle_q_den q,0),FST (FST q) - SND (FST q) - 1)
     else (((0,0),0):(num#num)#num)`;;
 
+let candle_q_nonzero_real = prove
+ (`!q. candle_q_nonzero q <=> ~(candle_q_real q = &0)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_nonzero_def; candle_q_real_def; candle_q_den_def;
+              candle_lc_zreal_def; FST; SND; REAL_DIV_EQ_0;
+              REAL_SUB_0; REAL_OF_NUM_EQ; NOT_SUC]);;
+
 let candle_real_neg_div_neg = prove
  (`!d x:real. --d / x = d / --x`,
   REPEAT GEN_TAC THEN
