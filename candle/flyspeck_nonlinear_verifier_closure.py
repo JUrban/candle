@@ -79,7 +79,7 @@ NORMALIZATION_SEMANTIC_RULE = (
     "tests through float_ieee_equal, preserving OCaml float equality despite "
     "CakeML generic equality's representation semantics; their adjacent "
     "native float orderings use typed IEEE helpers instead of Candle's "
-    "integer-only unqualified operators. The thirteen active raw-double "
+    "integer-only unqualified operators. The fourteen active raw-double "
     "threshold and angle-reduction comparisons use the same typed IEEE "
     "helpers. The four active cosine-table uses of OCaml's unavailable "
     "atan compute only 2 * atan(1); they use the bit-identical binary64 "
@@ -136,8 +136,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "more_float and informal_float; they preserve signed-zero equality, NaN "
     "inequality, infinity equality, and every finite nonzero comparison. The "
     "typed ordering rewrites cover exactly the three adjacent split branches "
-    "in each implementation plus thirteen raw-double threshold, progress, "
-    "and angle branches in eight authenticated sources; they preserve native "
+    "in each implementation plus fourteen raw-double threshold, search, "
+    "progress, and angle branches in eight authenticated sources; they "
+    "preserve native "
     "false-on-NaN behavior. The atan rewrite is confined to the four exact "
     "2.0 *. atan 1.0 table-bound expressions in two authenticated sources; "
     "it does not introduce a general atan implementation. The "
@@ -612,6 +613,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
         ),
     ),
     "flyspeck:formal_ineqs/informal/informal_search.hl": (
+        _replacement(
+            "search-width-ieee-maximum-order",
+            b'if x > m then',
+            b'if float_ieee_gt x m then',
+        ),
         _replacement(
             "search-progress-ieee-volume-order",
             b'if !info_print_level > 0 && !total_vol > 0.0 then',
