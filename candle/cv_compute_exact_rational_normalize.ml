@@ -26,25 +26,49 @@ open Candle_cv_exact_interval_core;;
 (* The bound is deliberately shared by the ordinary and reflected candidate
    generators.  It is not trusted: the normalization below still validates
    every proposed divisor and falls back to the unreduced rational on failure.
-   256 covers the 136 Euclidean steps observed in the six-coordinate
-   prime-denominator stress fixture, while remaining a small fixed cval fuel
-   term. *)
-let candle_num_gcd_fuel_bound = 256;;
+
+   Keep the evaluator-facing fuel in 128-step chunks.  The common case carries
+   only the original small term; a genuinely unfinished Euclidean state is
+   resumed for one more chunk.  The 256-step total still covers the 136 steps
+   observed in the six-coordinate prime-denominator stress fixture. *)
+let candle_num_gcd_fuel_chunk = 128;;
+let candle_num_gcd_fuel_bound = 2 * candle_num_gcd_fuel_chunk;;
 
 let candle_num_gcd_fuel_def = define
  `(candle_num_gcd_fuel 0 a b = 1) /\
   (candle_num_gcd_fuel (SUC fuel) a b =
      if b = 0 then a else candle_num_gcd_fuel fuel b (a MOD b))`;;
 
-let candle_num_gcd_def =
+let candle_num_gcd_state_fuel_def = define
+ `(candle_num_gcd_state_fuel 0 a b = (a,b)) /\
+  (candle_num_gcd_state_fuel (SUC fuel) a b =
+     if b = 0 then (a,b)
+     else candle_num_gcd_state_fuel fuel b (a MOD b))`;;
+
+let candle_num_gcd_state_chunk_def =
   let fuel_count =
     itlist (fun _ tail -> mk_comb (`SUC`,tail))
-      (0--(candle_num_gcd_fuel_bound - 1)) `0` in
+      (0--(candle_num_gcd_fuel_chunk - 1)) `0` in
   new_definition
     (mk_eq
-      (`(candle_num_gcd (a:num) (b:num)):num`,
+      (`(candle_num_gcd_state_chunk (a:num) (b:num)):num#num`,
        list_mk_comb
-        (`candle_num_gcd_fuel`,[fuel_count;`a:num`;`b:num`])));;
+        (`candle_num_gcd_state_fuel`,[fuel_count;`a:num`;`b:num`])));;
+
+let candle_num_gcd_state_resume_def = new_definition
+ `candle_num_gcd_state_resume state =
+    if SND state = 0 then state
+    else candle_num_gcd_state_chunk (FST state) (SND state)`;;
+
+let candle_num_gcd_state_finish_def = new_definition
+ `candle_num_gcd_state_finish state =
+    if SND state = 0 then FST state else 1`;;
+
+let candle_num_gcd_def = new_definition
+ `candle_num_gcd a b =
+    candle_num_gcd_state_finish
+      (candle_num_gcd_state_resume
+        (candle_num_gcd_state_chunk a b))`;;
 
 let candle_q_normalize_fallback_def = new_definition
  `candle_q_normalize_fallback (z:num#num) denominator =
@@ -220,15 +244,57 @@ let candle_cv_num_gcd_fuel_compute = prove
   REWRITE_TAC[candle_cv_num_gcd_fuel_def; cexp_if_def;
               cexp_ispair_def; cexp_snd_def]);;
 
-let candle_cv_num_gcd_def =
+let candle_cv_num_gcd_state_fuel_def = define
+ `(candle_cv_num_gcd_state_fuel (Cexp_num n) a b =
+     Cexp_pair a b) /\
+  (candle_cv_num_gcd_state_fuel (Cexp_pair h t) a b =
+     Cexp_if (Cexp_eq b (Cexp_num 0)) (Cexp_pair a b)
+       (candle_cv_num_gcd_state_fuel t b (Cexp_mod a b)))`;;
+
+let candle_cv_num_gcd_state_fuel_compute = prove
+ (`!fuel a b.
+     candle_cv_num_gcd_state_fuel fuel a b =
+     Cexp_if (Cexp_ispair fuel)
+       (Cexp_if (Cexp_eq b (Cexp_num 0)) (Cexp_pair a b)
+         (candle_cv_num_gcd_state_fuel
+           (Cexp_snd fuel) b (Cexp_mod a b)))
+       (Cexp_pair a b)`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC (SPEC `fuel:cval` (cases "cval")) THEN
+  REWRITE_TAC[candle_cv_num_gcd_state_fuel_def; cexp_if_def;
+              cexp_ispair_def; cexp_snd_def]);;
+
+let candle_cv_num_gcd_state_chunk_def =
   let fuel =
     itlist
       (fun _ tail -> list_mk_comb (`Cexp_pair`,[`Cexp_num 0`;tail]))
-      (0--(candle_num_gcd_fuel_bound - 1)) `Cexp_num 0` in
+      (0--(candle_num_gcd_fuel_chunk - 1)) `Cexp_num 0` in
   new_definition
     (mk_eq
-      (`(candle_cv_num_gcd (a:cval) (b:cval)):cval`,
-       list_mk_comb (`candle_cv_num_gcd_fuel`,[fuel;`a:cval`;`b:cval`])));;
+      (`(candle_cv_num_gcd_state_chunk (a:cval) (b:cval)):cval`,
+       list_mk_comb
+         (`candle_cv_num_gcd_state_fuel`,[fuel;`a:cval`;`b:cval`])));;
+
+let candle_cv_num_gcd_state_def = new_definition
+ `candle_cv_num_gcd_state state =
+    Cexp_pair (Cexp_num (FST state)) (Cexp_num (SND state))`;;
+
+let candle_cv_num_gcd_state_resume_def = new_definition
+ `candle_cv_num_gcd_state_resume state =
+    Cexp_if (Cexp_eq (Cexp_snd state) (Cexp_num 0)) state
+      (candle_cv_num_gcd_state_chunk
+        (Cexp_fst state) (Cexp_snd state))`;;
+
+let candle_cv_num_gcd_state_finish_def = new_definition
+ `candle_cv_num_gcd_state_finish state =
+    Cexp_if (Cexp_eq (Cexp_snd state) (Cexp_num 0))
+      (Cexp_fst state) (Cexp_num 1)`;;
+
+let candle_cv_num_gcd_def = new_definition
+ `candle_cv_num_gcd a b =
+    candle_cv_num_gcd_state_finish
+      (candle_cv_num_gcd_state_resume
+        (candle_cv_num_gcd_state_chunk a b))`;;
 
 let candle_cv_q_normalize_fallback_def = new_definition
  `candle_cv_q_normalize_fallback z denominator =
@@ -296,6 +362,10 @@ let candle_cv_q_normalized_compute_eqs =
   map SPEC_ALL
    [candle_cv_lc_znormalize_def;
     candle_cv_num_gcd_fuel_compute;
+    candle_cv_num_gcd_state_fuel_compute;
+    candle_cv_num_gcd_state_chunk_def;
+    candle_cv_num_gcd_state_resume_def;
+    candle_cv_num_gcd_state_finish_def;
     candle_cv_num_gcd_def;
     candle_cv_q_normalize_fallback_def;
     candle_cv_q_normalize_divide_def;
@@ -321,25 +391,80 @@ let candle_cv_num_gcd_fuel_correct = prove
     COND_CASES_TAC THEN
     ASM_REWRITE_TAC[cexp_if_def]]);;
 
-let candle_cv_num_fuel_bound =
+let candle_cv_num_gcd_state_fuel_correct = prove
+ (`!fuel a b.
+     candle_cv_num_gcd_state_fuel
+       (candle_cv_num_fuel fuel) (Cexp_num a) (Cexp_num b) =
+     Cexp_pair
+       (Cexp_num (FST (candle_num_gcd_state_fuel fuel a b)))
+       (Cexp_num (SND (candle_num_gcd_state_fuel fuel a b)))`,
+  INDUCT_TAC THENL
+   [REWRITE_TAC[candle_cv_num_fuel_def;
+                candle_cv_num_gcd_state_fuel_def;
+                candle_num_gcd_state_fuel_def; FST; SND];
+    REPEAT GEN_TAC THEN
+    REWRITE_TAC[candle_cv_num_fuel_def;
+                candle_cv_num_gcd_state_fuel_def;
+                candle_num_gcd_state_fuel_def;
+                cexp_eq_def; injectivity "cval"; cexp_mod_def] THEN
+    COND_CASES_TAC THEN
+    ASM_REWRITE_TAC[cexp_if_def; FST; SND]]);;
+
+let candle_cv_num_fuel_chunk =
   let fuel_count =
     itlist (fun _ tail -> mk_comb (`SUC`,tail))
-      (0--(candle_num_gcd_fuel_bound - 1)) `0`
+      (0--(candle_num_gcd_fuel_chunk - 1)) `0`
   and fuel =
     itlist
       (fun _ tail -> list_mk_comb (`Cexp_pair`,[`Cexp_num 0`;tail]))
-      (0--(candle_num_gcd_fuel_bound - 1)) `Cexp_num 0` in
+      (0--(candle_num_gcd_fuel_chunk - 1)) `Cexp_num 0` in
   prove
    (mk_eq (mk_comb (`candle_cv_num_fuel`,fuel_count),fuel),
     REWRITE_TAC[candle_cv_num_fuel_def]);;
+
+let candle_cv_num_gcd_state_chunk_correct = prove
+ (`!a b.
+     candle_cv_num_gcd_state_chunk (Cexp_num a) (Cexp_num b) =
+     candle_cv_num_gcd_state (candle_num_gcd_state_chunk a b)`,
+  REWRITE_TAC[candle_cv_num_gcd_state_chunk_def;
+              candle_num_gcd_state_chunk_def;
+              candle_cv_num_gcd_state_def;
+              GSYM candle_cv_num_fuel_chunk;
+              candle_cv_num_gcd_state_fuel_correct]);;
+
+let candle_cv_num_gcd_state_resume_correct = prove
+ (`!state.
+     candle_cv_num_gcd_state_resume (candle_cv_num_gcd_state state) =
+     candle_cv_num_gcd_state (candle_num_gcd_state_resume state)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_num_gcd_state_resume_def;
+              candle_num_gcd_state_resume_def;
+              candle_cv_num_gcd_state_def;
+              candle_cv_num_gcd_state_chunk_correct;
+              cexp_fst_def; cexp_snd_def; cexp_eq_def;
+              injectivity "cval"; cexp_if_def; FST; SND] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]);;
+
+let candle_cv_num_gcd_state_finish_correct = prove
+ (`!state.
+     candle_cv_num_gcd_state_finish (candle_cv_num_gcd_state state) =
+     Cexp_num (candle_num_gcd_state_finish state)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_num_gcd_state_finish_def;
+              candle_num_gcd_state_finish_def;
+              candle_cv_num_gcd_state_def;
+              cexp_fst_def; cexp_snd_def; cexp_eq_def;
+              injectivity "cval"; cexp_if_def; FST; SND] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]);;
 
 let candle_cv_num_gcd_correct = prove
  (`!a b.
      candle_cv_num_gcd (Cexp_num a) (Cexp_num b) =
      Cexp_num (candle_num_gcd a b)`,
-  REWRITE_TAC[candle_cv_num_gcd_def; candle_num_gcd_def;
-              GSYM candle_cv_num_fuel_bound;
-              candle_cv_num_gcd_fuel_correct]);;
+  REWRITE_TAC[candle_cv_num_gcd_def; candle_num_gcd_def] THEN
+  REWRITE_TAC[candle_cv_num_gcd_state_chunk_correct;
+              candle_cv_num_gcd_state_resume_correct;
+              candle_cv_num_gcd_state_finish_correct]);;
 
 let candle_cv_q_normalize_fallback_correct = prove
  (`!z denominator.
