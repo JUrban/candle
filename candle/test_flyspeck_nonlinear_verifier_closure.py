@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 29)
-        self.assertEqual(counts["normalization_operations"], 171)
+        self.assertEqual(counts["normalization_operations"], 172)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -597,6 +597,9 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 "informal-cos-ieee-reduction-upper-order",
                 "informal-cos-ieee-tail-order",
             },
+            "flyspeck:formal_ineqs/informal/informal_search.hl": {
+                "search-progress-ieee-volume-order",
+            },
             "flyspeck:formal_ineqs/trig/atn_eval.hl": {
                 "atn-eval-ieee-tail-order",
             },
@@ -628,7 +631,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             for source_operations in selected.values()
             for operation in source_operations.values()
         ]
-        self.assertEqual(len(operations), 12)
+        self.assertEqual(len(operations), 13)
         self.assertTrue(all(
             operation["replacement_count"] == 1 and
             "float_ieee_" in operation["after"]
