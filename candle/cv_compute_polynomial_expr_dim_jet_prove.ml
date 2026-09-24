@@ -38,6 +38,11 @@ type candle_q_dim_poly_jet_prepared_six = {
   program_representation_term : term;
 };;
 
+let candle_q_dim_poly_jet_profile = ref (fun (_:string) -> ());;
+
+let candle_q_dim_poly_jet_profile_event event =
+  (!candle_q_dim_poly_jet_profile) event;;
+
 let candle_q_dim_poly_jet_program_encode_conv program =
   REWRITE_CONV
     [candle_cv_q_instruction_list_def; candle_cv_q_instruction_def;
@@ -70,6 +75,15 @@ let candle_q_dim_poly_jet_sound_six =
       [`:6`,`:N`]
       candle_q_dim_poly_jet_whole_box_accept_sound);;
 
+let candle_q_dim_poly_jet_compute_eqs =
+  map (REWRITE_RULE [LET_END_DEF])
+    candle_cv_q_dim_first_jet_compute_eqs;;
+
+let candle_q_dim_poly_jet_upper_compute_eqs =
+  candle_q_dim_poly_jet_compute_eqs @
+  [REWRITE_RULE [LET_END_DEF]
+    (SPEC_ALL candle_cv_q_jet_upper_pair_def)];;
+
 let candle_q_dim_poly_jet_prepare_six function_tm =
   let vector,source = dest_abs function_tm in
   if type_of vector <> `:real^6` || type_of source <> `:real` then
@@ -101,7 +115,7 @@ let candle_q_dim_poly_jet_prepare_six function_tm =
   };;
 
 let candle_q_dim_poly_jet_compute equations tm =
-  let th = compute equations tm in
+  let th = Kernel.compute (COMPUTE_INIT_THMS,equations) tm in
   if hyp th <> [] then
     failwith "shared-jet prover: computed theorem has assumptions";
   th;;
@@ -114,56 +128,62 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
     candle_q_dim_poly_jet_boxes_encode_conv boxes in
   let boxes_representation_term =
     rand (concl boxes_representation) in
+  let _ = candle_q_dim_poly_jet_profile_event "boxes-encoded" in
 
   let center_environment_theorem =
     candle_q_dim_poly_jet_compute
-      candle_cv_q_dim_first_jet_compute_eqs
+      candle_q_dim_poly_jet_compute_eqs
       (mk_comb
         (`candle_cv_q_center_environment_list`,
          boxes_representation_term)) in
   let center_environment =
     rand (concl center_environment_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "center-environment-computed" in
 
   let center_theorem =
     candle_q_dim_poly_jet_compute
-      candle_cv_q_dim_first_jet_compute_eqs
+      candle_q_dim_poly_jet_compute_eqs
       (list_mk_comb
         (`candle_cv_q_dim_first_jet_program`,
          [center_environment;prepared.program_representation_term])) in
   let center = rand (concl center_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "center-jet-computed" in
 
   let box_theorem =
     candle_q_dim_poly_jet_compute
-      candle_cv_q_dim_first_jet_compute_eqs
+      candle_q_dim_poly_jet_compute_eqs
       (list_mk_comb
         (`candle_cv_q_dim_jet_program`,
          [boxes_representation_term;
           prepared.program_representation_term])) in
   let box = rand (concl box_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "box-jet-computed" in
 
   let upper_theorem =
     candle_q_dim_poly_jet_compute
-      (candle_cv_q_dim_first_jet_compute_eqs @
-       [SPEC_ALL candle_cv_q_jet_upper_pair_def])
+      candle_q_dim_poly_jet_upper_compute_eqs
       (list_mk_comb
         (`candle_cv_q_jet_upper_pair`,
          [boxes_representation_term;center;box])) in
   let upper = rand (concl upper_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "upper-computed" in
 
   let valid_theorem =
     candle_q_dim_poly_jet_compute
-      candle_cv_q_dim_first_jet_compute_eqs
+      candle_q_dim_poly_jet_compute_eqs
       (mk_comb (`candle_cv_q_box_valid_list`,
                 boxes_representation_term)) in
   let valid = rand (concl valid_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "box-validity-computed" in
 
   let finish_theorem =
     candle_q_dim_poly_jet_compute
-      candle_cv_q_dim_first_jet_compute_eqs
+      candle_q_dim_poly_jet_compute_eqs
       (list_mk_comb
         (`candle_cv_q_dim_whole_box_finish`,
          [`Cexp_num 1`;valid;upper])) in
   let finish = rand (concl finish_theorem) in
+  let _ = candle_q_dim_poly_jet_profile_event "finish-computed" in
   let verdict,_ = candle_q_dim_poly_jet_dest_pair finish in
   if not (aconv verdict `Cexp_num 1`) then
     failwith "shared-jet prover: box rejected";
@@ -178,6 +198,7 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
       [candle_cv_q_dim_poly_jet_whole_box_check_def;
        candle_cv_q_dim_poly_jet_whole_box_upper_def]
       compute_tm in
+  let _ = candle_q_dim_poly_jet_profile_event "checker-expanded" in
   let evaluation_theorem =
     REWRITE_CONV
       [center_environment_theorem;center_theorem;box_theorem;
@@ -185,9 +206,11 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
       (rand (concl expansion_theorem)) in
   let compute_theorem =
     TRANS expansion_theorem evaluation_theorem in
+  let _ = candle_q_dim_poly_jet_profile_event "checker-evaluation-linked" in
   let correctness =
     SPECL [prepared.expression_term;boxes]
       candle_cv_q_dim_poly_jet_whole_box_check_correct in
+  let _ = candle_q_dim_poly_jet_profile_event "checker-correctness-instantiated" in
   let abstract_compute_theorem =
     let th =
       PURE_REWRITE_RULE
@@ -195,6 +218,7 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
          SYM boxes_representation]
         compute_theorem in
     PURE_REWRITE_RULE [SYM prepared.compile_theorem] th in
+  let _ = candle_q_dim_poly_jet_profile_event "checker-representation-abstracted" in
   if not
       (aconv (lhand (concl abstract_compute_theorem))
              (lhand (concl correctness))) then
@@ -209,6 +233,7 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
     PURE_REWRITE_RULE [candle_q_dim_poly_jet_suc_one]
       (REWRITE_RULE [cexp_fst_def]
         (AP_TERM `Cexp_fst` accept_encoding_theorem)) in
+  let _ = candle_q_dim_poly_jet_profile_event "abstract-verdict-derived" in
   let computed_verdict_theorem =
     REWRITE_RULE [cexp_fst_def]
       (AP_TERM `Cexp_fst` finish_theorem) in
@@ -232,6 +257,7 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
     MATCH_MP
       (SPEC numerical_goal candle_q_dim_poly_jet_flag_accept)
       flag_theorem in
+  let _ = candle_q_dim_poly_jet_profile_event "numerical-acceptance-derived" in
   let length_six =
     prove
       (mk_eq
@@ -240,14 +266,17 @@ let candle_q_dim_poly_jet_prove_box_six prepared lower upper =
            boxes),
          `6`),
        REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV) in
+  let _ = candle_q_dim_poly_jet_profile_event "box-length-derived" in
   let vector_theorem =
     MATCH_MP
       (SPECL [prepared.expression_term;boxes]
         candle_q_dim_poly_jet_sound_six)
       (CONJ prepared.valid_theorem
         (CONJ length_six numerical_theorem)) in
+  let _ = candle_q_dim_poly_jet_profile_event "soundness-instantiated" in
   let source_theorem =
     REWRITE_RULE [prepared.source_theorem] vector_theorem in
+  let _ = candle_q_dim_poly_jet_profile_event "source-rewritten" in
   let point,body = dest_forall (concl source_theorem) in
   let _,claim = dest_imp body in
   let partial,zero = dest_comb claim in

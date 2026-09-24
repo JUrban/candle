@@ -16,8 +16,10 @@ trap cleanup EXIT
 printf 'timestamp_utc\tevent\n' >"$telemetry_tmp"
 printf '%s\trun-start\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" >>"$telemetry_tmp"
 
-CANDLE_FRAGMENT_BASE_DIR="$base_dir" /usr/bin/time -v -o "$resource_tmp" \
+CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
+  /usr/bin/time -v -o "$resource_tmp" \
   "$runner" "$output_dir" CANDLE_CV_REAL_FLYSPECK_DRIVER_OK \
+  "$repo_dir/candle/cv_compute_polynomial_expr_dim_jet_prove.ml" \
   "$repo_dir/candle/cv_compute_flyspeck_nonlinear_driver.ml" \
   "$repo_dir/candle/test_cv_compute_polynomial_expr_flyspeck_real_driver.ml" &
 runner_pid=$!

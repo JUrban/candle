@@ -79,7 +79,9 @@ let _ =
       print_endline
         ("CANDLE_CV_REAL_FLYSPECK_DRIVER_PROFILE leaf=" ^
          string_of_int (!candle_reflected_real_leaf_count + 1) ^
-         " event=" ^ event));;
+         " event=" ^ event));
+  candle_q_dim_poly_jet_profile :=
+    (fun event -> candle_reflected_nl_profile_event ("jet-" ^ event));;
 
 let candle_reflected_real_leaf_callback
     status function_index raw_flag _ domain_th =

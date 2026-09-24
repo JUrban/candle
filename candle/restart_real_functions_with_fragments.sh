@@ -49,6 +49,8 @@ while read -r expected path; do
 done <"$base_dir/input-files.sha256"
 
 skip_needs=$'candle/cv_compute_polynomial_expr_dim_jet_prove.ml\n'
+skip_all_needs=${CANDLE_FRAGMENT_SKIP_ALL_NEEDS:-0}
+[[ "$skip_all_needs" == 0 || "$skip_all_needs" == 1 ]]
 for fragment in "${fragments[@]}"; do
   if [[ $(basename "$(dirname "$fragment")") == candle ]]; then
     skip_needs+="candle/$(basename "$fragment")"$'\n'
@@ -62,7 +64,7 @@ done
     fragment_sha256=$(sha256sum "$fragment" | awk '{print $1}')
     printf 'print_endline "CANDLE_RESTORE_FRAGMENT_BEGIN sha256=%s file=%s";;\n' \
       "$fragment_sha256" "$(basename "$fragment")"
-    awk -v skip_needs="$skip_needs" '
+    awk -v skip_needs="$skip_needs" -v skip_all_needs="$skip_all_needs" '
       BEGIN {
         count = split(skip_needs, paths, "\n")
         for (i = 1; i <= count; i++) if (paths[i] != "") skip[paths[i]] = 1
@@ -72,7 +74,7 @@ done
         if (candidate ~ /^needs "[^"]+";;$/) {
           sub(/^needs "/, "", candidate)
           sub(/";;$/, "", candidate)
-          if (candidate in skip) next
+          if (skip_all_needs == 1 || candidate in skip) next
         }
         print
       }
