@@ -195,7 +195,15 @@ module Float = struct
 end;;
 
 let frexp = Float.frexp;;
-let abs_float = Float.abs;;
+
+(* CANDLE_OCAML_BINARY64_ABS_BEGIN *)
+(* Standalone form used by authenticated late-state compatibility overlays. *)
+let candle_binary64_abs (x:double) : double =
+  Cake.Double.construct (Cake.Word64.fromInt 0)
+    (Cake.Double.exponent x) (Cake.Double.significand x);;
+(* CANDLE_OCAML_BINARY64_ABS_END *)
+
+let abs_float = candle_binary64_abs;;
 
 (* OCaml floating-point compatibility used by Flyspeck's interval seed.
    [ceil] is derived from the primitive, correctly-rounded [floor]. *)

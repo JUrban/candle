@@ -64,7 +64,13 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             set(self.big_int_record["assert_helper"]["overlay_members"]),
             subject.ASSERT_HELPER_MEMBERS,
         )
+        self.assertEqual(
+            set(self.big_int_record["binary64_abs"]["overlay_members"]),
+            subject.BINARY64_ABS_MEMBERS,
+        )
         self.assertIn("Assert_failure", self.big_int_compatibility)
+        self.assertIn("candle_binary64_abs", self.big_int_compatibility)
+        self.assertIn("Cake.Double.significand x", self.big_int_compatibility)
         self.assertEqual(
             set(self.big_int_record["float_constants"][
                 "closure_selected_members"

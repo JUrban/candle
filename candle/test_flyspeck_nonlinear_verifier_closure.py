@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 159)
+        self.assertEqual(counts["normalization_operations"], 161)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -134,6 +134,37 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             ("flyspeck:formal_ineqs/trig/cos_bounds_eval.hl", 109),
             ("flyspeck:formal_ineqs/trig/cos_bounds_eval.hl", 119),
         })
+
+    def test_binary64_absolute_sites_use_the_authenticated_helper(self) -> None:
+        expected = {
+            "flyspeck:formal_ineqs/trig/exp_eval.hl": (
+                "exp-eval-binary64-absolute",
+                "abs_float (float_of_float_tm x_tm)",
+                "candle_binary64_abs (float_of_float_tm x_tm)",
+                345,
+            ),
+            "flyspeck:formal_ineqs/informal/informal_exp.hl": (
+                "informal-exp-binary64-absolute",
+                "Stdlib.abs_float (float_of_ifloat x)",
+                "candle_binary64_abs (float_of_ifloat x)",
+                133,
+            ),
+        }
+        for source_key, (kind, before, after, line) in expected.items():
+            node = self.payload["source_nodes"][source_key]
+            operations = [
+                operation
+                for operation in node["normalization"]["operations"]
+                if operation["kind"] == kind
+            ]
+            self.assertEqual(len(operations), 1, source_key)
+            self.assertEqual(operations[0]["before"], before)
+            self.assertEqual(operations[0]["after"], after)
+            self.assertEqual(operations[0]["line"], line)
+            self.assertEqual(operations[0]["replacement_count"], 1)
+            self.assertEqual(
+                node["normalization"]["id"], subject.SOURCE_NORMALIZATION,
+            )
 
     def test_nested_array_grouping_is_lowered_exactly(self) -> None:
         normalized = {

@@ -42,6 +42,7 @@ def build_post_analytic_suffix(
     overlays: list[dict[str, str]],
     target: dict[str, Any],
     support_records: list[dict[str, Any]],
+    binary64_abs_compatibility: str,
 ) -> str:
     """Build the authenticated verifier/support suffix for the Taylor base.
 
@@ -77,14 +78,6 @@ def build_post_analytic_suffix(
         if record["source_key"]
         == "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
     )
-    direct_record = next(
-        record for record in records
-        if record["source_key"] == POST_ANALYTIC_DIRECT_SOURCE_KEY
-    )
-    direct_overlay = next(
-        record for record in overlays
-        if record["source_key"] == POST_ANALYTIC_DIRECT_SOURCE_KEY
-    )
     analytic_identity = "(%s,%s)" % (
         smoke._ocaml_string(analytic_record["basename"]),
         smoke._ocaml_string(analytic_record["md5"]),
@@ -93,13 +86,47 @@ def build_post_analytic_suffix(
         smoke._ocaml_string(root_record["basename"]),
         smoke._ocaml_string(root_record["md5"]),
     )
-    direct_identity = "(%s,%s)" % (
-        smoke._ocaml_string(direct_record["basename"]),
-        smoke._ocaml_string(direct_record["md5"]),
+    direct_specs = (
+        (
+            "flyspeck:formal_ineqs/trig/exp_eval.hl",
+            "Exp_eval.float_exp_hi",
+            "exp-eval",
+        ),
+        (
+            "flyspeck:formal_ineqs/informal/informal_exp.hl",
+            "Informal_exp.exp_float_hi",
+            "informal-exp",
+        ),
+        (
+            POST_ANALYTIC_DIRECT_SOURCE_KEY,
+            "M_verifier.m_verify_disj_raw0",
+            "m-verifier",
+        ),
     )
-    direct_normalized_path = smoke._ocaml_string(
-        direct_overlay["normalized_path"],
-    )
+    direct_blocks = []
+    for source_key, export_probe, label in direct_specs:
+        record = next(
+            item for item in records if item["source_key"] == source_key
+        )
+        overlay = next(
+            item for item in overlays if item["source_key"] == source_key
+        )
+        identity = "(%s,%s)" % (
+            smoke._ocaml_string(record["basename"]),
+            smoke._ocaml_string(record["md5"]),
+        )
+        normalized_path = smoke._ocaml_string(overlay["normalized_path"])
+        direct_blocks.append(f'''if List.mem {identity} !Cakeml.loadedSourceIds then
+  failwith "post-analytic direct source was already loaded: {label}"
+else ();;
+#use {normalized_path};;
+if !Cakeml.pendingLoadedSourceIds <> [] then
+  failwith "post-analytic direct source dependency did not commit: {label}"
+else
+  let _ = {export_probe} in
+  Cakeml.loadedSourceIds :=
+    {identity} :: !Cakeml.loadedSourceIds;;''')
+    direct_loads = "\n".join(direct_blocks)
     candle = smoke._ocaml_string(str(candle_root.resolve()))
     flyspeck = smoke._ocaml_string(str(flyspeck_root.resolve()))
     closure_ready_ref = POST_ANALYTIC_CLOSURE_READY_REF
@@ -137,10 +164,10 @@ List.iter candle_nonlinear_post_analytic_check_overlay
 
 (* Loader configuration is immutable by design.  Reauthenticate the overlay
    table inherited from the frozen checkpoint.  Its already-loaded analytic
-   sources and all unchanged suffix sources remain valid.  The one newly
-   corrected source below is loaded directly from its separately authenticated
-   v16 overlay and commits the same original logical identity only after its
-   module export exists. *)
+   sources and all unchanged suffix sources remain valid.  The three changed
+   sources below are loaded directly from their separately authenticated
+   current overlays and commit their original logical identities only after
+   their module exports exist. *)
 List.iter candle_nonlinear_check_overlay candle_nonlinear_overlay_rows;;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||
@@ -160,18 +187,14 @@ List.iter candle_nonlinear_post_analytic_add_load_path
      "formal_ineqs";
    Filename.concat candle_nonlinear_post_analytic_flyspeck_root "jHOLLight"];;
 
+(* The preserved analytic checkpoint predates the current central binary64
+   compatibility binding.  This exact marked block was authenticated from
+   candle/ocaml.ml by the bundle controller. *)
+{binary64_abs_compatibility}
+
 needs "arith_options.hl";;
 Arith_options.base := 200;;
-if List.mem {direct_identity} !Cakeml.loadedSourceIds then
-  failwith "post-analytic direct verifier source was already loaded"
-else ();;
-#use {direct_normalized_path};;
-if !Cakeml.pendingLoadedSourceIds <> [] then
-  failwith "post-analytic direct verifier dependency did not commit"
-else
-  let _ = M_verifier.m_verify_disj_raw0 in
-  Cakeml.loadedSourceIds :=
-    {direct_identity} :: !Cakeml.loadedSourceIds;;
+{direct_loads}
 needs "verifier/m_verifier_main.hl";;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||
@@ -226,6 +249,9 @@ def prepare(
     big_int_compatibility, big_int_record = (
         smoke.authenticate_big_int_compatibility(candle_root)
     )
+    binary64_abs_compatibility, binary64_abs_record = (
+        smoke.authenticate_binary64_abs_compatibility(candle_root)
+    )
 
     output_root.mkdir(parents=True)
     overlays = smoke.materialize_normalizations(output_root, records)
@@ -274,6 +300,7 @@ def prepare(
             overlays,
             target,
             support_records,
+            binary64_abs_compatibility,
         ),
         encoding="ascii",
         newline="\n",
@@ -325,6 +352,7 @@ def prepare(
             for record in support_records
         ],
         "big_int_compatibility": big_int_record,
+        "post_analytic_binary64_abs_compatibility": binary64_abs_record,
         "runtime": smoke._record_file(runtime),
         "generated_insulation_input": smoke._record_file(
             generated_insulate

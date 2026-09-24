@@ -63,6 +63,8 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
             self.assertIn("#use", setup)
             self.assertIn(str(ROOT.resolve()), setup)
             self.assertNotIn('#use "hol.ml"', suffix)
+            self.assertIn("let candle_binary64_abs", suffix)
+            self.assertIn("Cake.Double.significand x", suffix)
             self.assertIn(
                 "post-analytic checkpoint source identity mismatch", suffix,
             )
@@ -95,6 +97,32 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 ),
                 suffix,
             )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/trig/"
+                    "exp_eval.hl"
+                ),
+                suffix,
+            )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/informal/"
+                    "informal_exp.hl"
+                ),
+                suffix,
+            )
+            self.assertEqual(
+                suffix.count("post-analytic direct source was already loaded:"),
+                3,
+            )
+            self.assertEqual(
+                suffix.count(
+                    "post-analytic direct source dependency did not commit:"
+                ),
+                3,
+            )
+            self.assertIn("Exp_eval.float_exp_hi", suffix)
+            self.assertIn("Informal_exp.exp_float_hi", suffix)
             self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
             self.assertNotIn("Break_case.ineqm_conv", suffix)
             self.assertEqual(suffix.count("M_verifier_main.verify_ineq"), 1)
@@ -115,6 +143,12 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                     (output / "post-analytic-suffix.ml").read_bytes()
                 ).hexdigest(),
                 receipt["post_analytic_suffix"]["sha256"],
+            )
+            self.assertEqual(
+                set(receipt[
+                    "post_analytic_binary64_abs_compatibility"
+                ]["overlay_members"]),
+                smoke.BINARY64_ABS_MEMBERS,
             )
 
     def test_refuses_to_overwrite_an_existing_output_root(self) -> None:

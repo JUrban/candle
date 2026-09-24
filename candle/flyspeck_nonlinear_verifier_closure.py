@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v16"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v17"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -83,7 +83,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "atan compute only 2 * atan(1); they use the bit-identical binary64 "
     "pi/2 literal. All 14 "
     "active native assert sites call one condition-preserving helper that "
-    "raises the existing distinct Assert_failure on false. The obsolete "
+    "raises the existing distinct Assert_failure on false. The two native "
+    "binary64 absolute-value sites use one authenticated central helper that "
+    "clears only the sign bit while preserving the exponent, significand, "
+    "signed zeros, infinities, and NaN payloads. The obsolete "
     "define_finite_type call uses HOL Light's canonical modern equivalent, "
     "HAS_SIZE_DIMINDEX_RULE over mk_finty, which produces the same size "
     "theorem without the deleted type-definition side effects; the Taylor "
@@ -133,7 +136,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "rewrite is confined to the authenticated max-dimension table in "
     "m_taylor.hl and is byte-identical to the replacement shipped in Candle's "
     "modern HOL Light Formal_ineqs copy; it changes neither the resulting "
-    "HAS_SIZE theorem nor downstream vector types. The component-variable "
+    "HAS_SIZE theorem nor downstream vector types. The binary64 absolute "
+    "rewrites cover exactly exp_eval's native double and informal_exp's "
+    "explicit Stdlib native double; they do not rewrite the distinct local "
+    "ifloat abs_float operation. The component-variable "
     "rewrites are confined to one `mk_var` call in `gen_comp_thm` and four "
     "generated-variable helpers in `m_verifier.hl`; they preserve the exact "
     "generated names, real types, returned HOL terms, and theorem "
@@ -533,6 +539,11 @@ EXTENSION_COMPATIBILITY_REPLACEMENTS = {
     ),
     "flyspeck:formal_ineqs/informal/informal_exp.hl": (
         _replacement(
+            "informal-exp-binary64-absolute",
+            b'Stdlib.abs_float (float_of_ifloat x)',
+            b'candle_binary64_abs (float_of_ifloat x)',
+        ),
+        _replacement(
             "informal-exp-ieee-tail-order",
             b'if r <= t then i else try_i (i + 1)',
             b'if float_ieee_le r t then i else try_i (i + 1)',
@@ -820,6 +831,11 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
         ),
     ),
     "flyspeck:formal_ineqs/trig/exp_eval.hl": (
+        _replacement(
+            "exp-eval-binary64-absolute",
+            b'abs_float (float_of_float_tm x_tm)',
+            b'candle_binary64_abs (float_of_float_tm x_tm)',
+        ),
         _replacement(
             "exp-eval-ieee-tail-order",
             b'if r <= t then i else try_i (i + 1)',

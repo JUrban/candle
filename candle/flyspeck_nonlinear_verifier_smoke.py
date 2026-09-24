@@ -86,6 +86,7 @@ FLOAT_NATIVE_MEMBER_RE = re.compile(
     r"(?<![A-Za-z0-9_'])(infinity|neg_infinity|nan)(?![A-Za-z0-9_'])"
 )
 ASSERT_HELPER_MEMBERS = {"candle_assert"}
+BINARY64_ABS_MEMBERS = {"candle_binary64_abs"}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -126,6 +127,58 @@ def _logical_path(value: object, label: str) -> str:
     if not path.parts:
         raise ValueError(f"empty logical path: {label}")
     return value
+
+
+def authenticate_binary64_abs_compatibility(
+    candle_root: Path,
+) -> tuple[str, dict[str, Any]]:
+    """Extract the central standalone binary64 absolute-value helper."""
+
+    candle_root = candle_root.resolve()
+    source_path = candle_root / FLOAT_CONSTANT_SOURCE
+    _ordinary_file(source_path, "binary64 absolute compatibility source")
+    source = source_path.read_bytes()
+    begin = b"(* CANDLE_OCAML_BINARY64_ABS_BEGIN *)\n"
+    end = b"(* CANDLE_OCAML_BINARY64_ABS_END *)"
+    if source.count(begin) != 1 or source.count(end) != 1:
+        raise ValueError("binary64 absolute compatibility boundary drift")
+    start = source.index(begin) + len(begin)
+    finish = source.index(end, start)
+    helper = source[start:finish]
+    if not helper.isascii():
+        raise ValueError("binary64 absolute compatibility is not ASCII")
+    text = helper.decode("ascii")
+    members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", text,
+            flags=re.MULTILINE,
+        )
+    }
+    if members != BINARY64_ABS_MEMBERS:
+        raise ValueError(
+            "binary64 absolute compatibility member inventory drift: "
+            f"{sorted(members)}"
+        )
+    required = (
+        "Cake.Double.construct (Cake.Word64.fromInt 0)",
+        "Cake.Double.exponent x",
+        "Cake.Double.significand x",
+    )
+    if any(text.count(fragment) != 1 for fragment in required):
+        raise ValueError("binary64 absolute compatibility semantics drift")
+    return text, {
+        "source": FLOAT_CONSTANT_SOURCE.as_posix(),
+        "source_bytes": len(source),
+        "source_sha256": hashlib.sha256(source).hexdigest(),
+        "bytes": len(helper),
+        "sha256": hashlib.sha256(helper).hexdigest(),
+        "overlay_members": sorted(members),
+        "semantics": (
+            "clear only the IEEE-754 binary64 sign bit; preserve exponent "
+            "and significand including zeros, infinities, and NaN payloads"
+        ),
+    }
 
 
 def authenticate_big_int_compatibility(
@@ -183,6 +236,9 @@ def authenticate_big_int_compatibility(
             "assert compatibility helper member inventory drift: "
             f"{sorted(assert_members)}"
         )
+    binary64_abs, binary64_abs_record = (
+        authenticate_binary64_abs_compatibility(candle_root)
+    )
 
     source_path = candle_root / BIG_INT_SOURCE
     _ordinary_file(source_path, "Big_int compatibility source")
@@ -269,7 +325,8 @@ def authenticate_big_int_compatibility(
             f"{sorted(export_members)}"
         )
     overlay = (
-        assert_helper + b"\n" + float_constants + b"\n" + module + b"\n\n"
+        assert_helper + b"\n" + float_constants + b"\n"
+        + binary64_abs.encode("ascii") + b"\n" + module + b"\n\n"
         + bridge + b"\n" + exports
     )
     return overlay.decode("ascii"), {
@@ -291,6 +348,7 @@ def authenticate_big_int_compatibility(
             "overlay_members": sorted(assert_members),
             "semantics": "condition or distinct Assert_failure",
         },
+        "binary64_abs": binary64_abs_record,
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),
             "bytes": len(source),

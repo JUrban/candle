@@ -35,7 +35,26 @@ let expected_nan =
 let negative_zero =
   Cake.Double.construct (Cake.Word64.fromInt 1) (Cake.Word64.fromInt 0)
     (Cake.Word64.fromInt 0);;
+let negative_nan =
+  Cake.Double.construct (Cake.Word64.fromInt 1) (Cake.Word64.fromInt 2047)
+    (Cake.Word64.fromInt 17);;
 require (same_float_bits nan expected_nan) "NaN bits mismatch";;
+List.iter
+  (fun value ->
+    require
+      (same_float_bits (candle_binary64_abs value) (Float.abs value) &&
+       same_float_bits (abs_float value) (Float.abs value) &&
+       same_float_bits (Stdlib.abs_float value) (Float.abs value))
+      "binary64 absolute-value compatibility mismatch")
+  [Float.of_string "-1.25"; negative_zero; neg_infinity; negative_nan];;
+require
+  (Cake.Double.sign (candle_binary64_abs negative_nan) =
+     Cake.Word64.fromInt 0 &&
+   Cake.Double.exponent (candle_binary64_abs negative_nan) =
+     Cake.Double.exponent negative_nan &&
+   Cake.Double.significand (candle_binary64_abs negative_nan) =
+     Cake.Double.significand negative_nan)
+  "binary64 absolute-value NaN payload mismatch";;
 require (not (float_ieee_equal nan nan)) "NaN equality mismatch";;
 require (float_ieee_equal infinity infinity) "infinity equality mismatch";;
 require (float_ieee_lt (Float.of_string "0.5") (Float.of_string "1.0"))
