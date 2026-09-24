@@ -265,6 +265,10 @@ let ldexp value scale =
 type float = Float.float;;
 let float_of_string = Float.of_string;;
 
+(* CANDLE_OCAML_IGNORE_BEGIN *)
+let candle_ignore _ = ();;
+(* CANDLE_OCAML_IGNORE_END *)
+
 (* Selected Flyspeck sources qualify the ordinary OCaml I/O and square-root
    operations through [Stdlib].  Deliberately omit polymorphic [compare]: each
    selected comparison must be normalized to a type-specific comparator. *)
@@ -279,7 +283,7 @@ module Stdlib = struct
   let abs_float (x:double) : double =
     Cake.Double.construct (Cake.Word64.fromInt 0)
       (Cake.Double.exponent x) (Cake.Double.significand x)
-  let ignore _ = ()
+  let ignore = candle_ignore
   let open_in = open_in
   let open_out = open_out
   let input_line = input_line

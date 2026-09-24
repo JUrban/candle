@@ -88,6 +88,7 @@ FLOAT_NATIVE_MEMBER_RE = re.compile(
 ASSERT_HELPER_MEMBERS = {"candle_assert"}
 BINARY64_ABS_MEMBERS = {"candle_binary64_abs"}
 ARRAY_TO_LIST_MEMBERS = {"candle_array_to_list"}
+IGNORE_MEMBERS = {"candle_ignore"}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -234,6 +235,45 @@ def authenticate_array_to_list_compatibility(
     }
 
 
+def authenticate_ignore_compatibility(
+    candle_root: Path,
+) -> tuple[str, dict[str, Any]]:
+    """Extract the central standalone ordinary discard helper."""
+
+    candle_root = candle_root.resolve()
+    source_path = candle_root / FLOAT_CONSTANT_SOURCE
+    _ordinary_file(source_path, "ignore compatibility source")
+    source = source_path.read_bytes()
+    begin = b"(* CANDLE_OCAML_IGNORE_BEGIN *)\n"
+    end = b"(* CANDLE_OCAML_IGNORE_END *)"
+    if source.count(begin) != 1 or source.count(end) != 1:
+        raise ValueError("ignore compatibility boundary drift")
+    start = source.index(begin) + len(begin)
+    finish = source.index(end, start)
+    helper = source[start:finish]
+    if not helper.isascii():
+        raise ValueError("ignore compatibility is not ASCII")
+    text = helper.decode("ascii")
+    members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", text,
+            flags=re.MULTILINE,
+        )
+    }
+    if members != IGNORE_MEMBERS or text.count("let candle_ignore _ = ()") != 1:
+        raise ValueError("ignore compatibility semantics drift")
+    return text, {
+        "source": FLOAT_CONSTANT_SOURCE.as_posix(),
+        "source_bytes": len(source),
+        "source_sha256": hashlib.sha256(source).hexdigest(),
+        "bytes": len(helper),
+        "sha256": hashlib.sha256(helper).hexdigest(),
+        "overlay_members": sorted(members),
+        "semantics": "evaluate and discard the argument, returning unit",
+    }
+
+
 def authenticate_big_int_compatibility(
     candle_root: Path,
 ) -> tuple[str, dict[str, Any]]:
@@ -295,6 +335,7 @@ def authenticate_big_int_compatibility(
     array_to_list, array_to_list_record = (
         authenticate_array_to_list_compatibility(candle_root)
     )
+    ignore, ignore_record = authenticate_ignore_compatibility(candle_root)
 
     source_path = candle_root / BIG_INT_SOURCE
     _ordinary_file(source_path, "Big_int compatibility source")
@@ -383,7 +424,8 @@ def authenticate_big_int_compatibility(
     overlay = (
         assert_helper + b"\n" + float_constants + b"\n"
         + binary64_abs.encode("ascii") + b"\n"
-        + array_to_list.encode("ascii") + b"\n" + module + b"\n\n"
+        + array_to_list.encode("ascii") + b"\n"
+        + ignore.encode("ascii") + b"\n" + module + b"\n\n"
         + bridge + b"\n" + exports
     )
     return overlay.decode("ascii"), {
@@ -407,6 +449,7 @@ def authenticate_big_int_compatibility(
         },
         "binary64_abs": binary64_abs_record,
         "array_to_list": array_to_list_record,
+        "ignore": ignore_record,
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),
             "bytes": len(source),

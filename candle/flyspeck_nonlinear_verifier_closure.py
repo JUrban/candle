@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v18"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v19"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -108,7 +108,8 @@ NORMALIZATION_SEMANTIC_RULE = (
     "source-authenticated compatibility helper with the same index-order "
     "traversal; this lets the preserved pre-runtime-repair analytic checkpoint "
     "load the remaining verifier suffix without changing array contents or "
-    "the resulting lists"
+    "the resulting lists. The one selected qualified Stdlib.ignore use routes "
+    "through an authenticated ordinary discard helper"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -158,7 +159,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "cos_eval, six m_verifier, and two m_verifier_main uses. The helper reads "
     "each immutable input position exactly once from last to first while "
     "prepending, producing the native forward-order list and preserving array "
-    "bounds behavior. The two accumulator rewrites name the already "
+    "bounds behavior. The Stdlib.ignore rewrite is confined to report_error's "
+    "already evaluated boolean guard; it preserves guard evaluation, the "
+    "possible Fatal exception, and the unit result. The two accumulator "
+    "rewrites name the already "
     "evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
     "tree identity, result shape, effects, and exceptions. The one subdomain "
@@ -1046,6 +1050,20 @@ for _source_key, _count in ARRAY_TO_LIST_COMPATIBILITY_COUNTS.items():
             "array-to-list-compatibility",
             b"Array.to_list",
             b"candle_array_to_list",
+            _count,
+        ),)
+    )
+
+IGNORE_COMPATIBILITY_COUNTS = {
+    "flyspeck:formal_ineqs/misc/report.hl": 1,
+}
+for _source_key, _count in IGNORE_COMPATIBILITY_COUNTS.items():
+    EXTENSION_COMPATIBILITY_REPLACEMENTS[_source_key] = (
+        EXTENSION_COMPATIBILITY_REPLACEMENTS.get(_source_key, ())
+        + (_replacement(
+            "qualified-ignore-compatibility",
+            b"Stdlib.ignore",
+            b"candle_ignore",
             _count,
         ),)
     )

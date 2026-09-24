@@ -77,6 +77,11 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             set(self.big_int_record["array_to_list"]["overlay_members"]),
             subject.ARRAY_TO_LIST_MEMBERS,
         )
+        self.assertIn("let candle_ignore _ = ()", self.big_int_compatibility)
+        self.assertEqual(
+            set(self.big_int_record["ignore"]["overlay_members"]),
+            subject.IGNORE_MEMBERS,
+        )
         self.assertEqual(
             set(self.big_int_record["float_constants"][
                 "closure_selected_members"

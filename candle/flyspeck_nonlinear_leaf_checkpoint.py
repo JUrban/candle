@@ -52,6 +52,10 @@ POST_ANALYTIC_OVERLAY_DELTA_SPECS = (
         "informal-search",
     ),
     (
+        "flyspeck:formal_ineqs/misc/report.hl",
+        "report-qualified-ignore",
+    ),
+    (
         "flyspeck:formal_ineqs/taylor/m_taylor.hl",
         "m-taylor-array-to-list",
     ),
@@ -82,6 +86,7 @@ def build_post_analytic_suffix(
     support_records: list[dict[str, Any]],
     binary64_abs_compatibility: str,
     array_to_list_compatibility: str,
+    ignore_compatibility: str,
 ) -> str:
     """Build the authenticated verifier/support suffix for the Taylor base.
 
@@ -280,6 +285,9 @@ List.iter candle_nonlinear_post_analytic_add_load_path
    sources use this exact source-authenticated implementation. *)
 {array_to_list_compatibility}
 
+(* The same preserved checkpoint also predates Stdlib.ignore. *)
+{ignore_compatibility}
+
 needs "arith_options.hl";;
 Arith_options.base := 200;;
 needs "verifier/m_verifier_main.hl";;
@@ -342,6 +350,9 @@ def prepare(
     array_to_list_compatibility, array_to_list_record = (
         smoke.authenticate_array_to_list_compatibility(candle_root)
     )
+    ignore_compatibility, ignore_record = (
+        smoke.authenticate_ignore_compatibility(candle_root)
+    )
 
     output_root.mkdir(parents=True)
     overlays = smoke.materialize_normalizations(output_root, records)
@@ -392,6 +403,7 @@ def prepare(
             support_records,
             binary64_abs_compatibility,
             array_to_list_compatibility,
+            ignore_compatibility,
         ),
         encoding="ascii",
         newline="\n",
@@ -445,6 +457,7 @@ def prepare(
         "big_int_compatibility": big_int_record,
         "post_analytic_binary64_abs_compatibility": binary64_abs_record,
         "post_analytic_array_to_list_compatibility": array_to_list_record,
+        "post_analytic_ignore_compatibility": ignore_record,
         "runtime": smoke._record_file(runtime),
         "generated_insulation_input": smoke._record_file(
             generated_insulate

@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 165)
+        self.assertEqual(counts["normalization_operations"], 166)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -289,6 +289,26 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             )
             self.assertNotIn(b"Array.to_list", normalized)
             self.assertEqual(normalized.count(b"candle_array_to_list"), count)
+
+    def test_qualified_ignore_uses_the_authenticated_discard_helper(
+        self,
+    ) -> None:
+        for source_key, count in subject.IGNORE_COMPATIBILITY_COUNTS.items():
+            node = self.payload["source_nodes"][source_key]
+            operation = next(
+                operation
+                for operation in node["normalization"]["operations"]
+                if operation["kind"] == "qualified-ignore-compatibility"
+            )
+            self.assertEqual(operation["before"], "Stdlib.ignore")
+            self.assertEqual(operation["after"], "candle_ignore")
+            self.assertEqual(operation["replacement_count"], count)
+            normalized, _ = subject.normalize_source(
+                source_key,
+                (FLYSPECK_ROOT / node["logical_relative_path"]).read_bytes(),
+            )
+            self.assertNotIn(b"Stdlib.ignore", normalized)
+            self.assertEqual(normalized.count(b"candle_ignore"), count)
 
     def test_extension_formatting_inventory_is_complete(self) -> None:
         normalized = {
