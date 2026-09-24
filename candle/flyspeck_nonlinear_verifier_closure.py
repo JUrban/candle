@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v15"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v16"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -87,7 +87,7 @@ NORMALIZATION_SEMANTIC_RULE = (
     "define_finite_type call uses HOL Light's canonical modern equivalent, "
     "HAS_SIZE_DIMINDEX_RULE over mk_finty, which produces the same size "
     "theorem without the deleted type-definition side effects; the Taylor "
-    "component-variable constructor binds its concatenated name before "
+    "component-variable constructors bind their concatenated names before "
     "passing the `(string,hol_type)` pair, making native OCaml's tuple and "
     "application grouping explicit. The five integer Stdlib succ calls in "
     "certificate statistics and the informal natural-number implementation "
@@ -134,8 +134,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "m_taylor.hl and is byte-identical to the replacement shipped in Candle's "
     "modern HOL Light Formal_ineqs copy; it changes neither the resulting "
     "HAS_SIZE theorem nor downstream vector types. The component-variable "
-    "rewrite is confined to one `mk_var` call in `gen_comp_thm`; it preserves "
-    "the exact generated `x1` through `xN` terms and theorem construction. "
+    "rewrites are confined to one `mk_var` call in `gen_comp_thm` and four "
+    "generated-variable helpers in `m_verifier.hl`; they preserve the exact "
+    "generated names, real types, returned HOL terms, and theorem "
+    "construction. "
     "The succ rewrites are confined to local nonnegative integer counters; "
     "x + 1 preserves their values, recursion order, table mutation order, "
     "contents, effects, and exceptions. The division-exception rewrite is "
@@ -921,6 +923,13 @@ let log_fmt name = let _ = name in candle_disabled_log ();;''',
             "verifier-variable-name",
             b'sprintf "%s%d" name i',
             b'name ^ string_of_int i',
+            4,
+        ),
+        _replacement(
+            "verifier-variable-tuple-grouping",
+            b'mk_var (name ^ string_of_int i, real_ty)',
+            b'let variable_name = name ^ string_of_int i in '
+            b'mk_var (variable_name, real_ty)',
             4,
         ),
         _replacement(
