@@ -62,8 +62,8 @@ FLOAT_RUNTIME_IDENTIFIER_RESOLUTION = {
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
     "Array.get/Array.set with parenthesized indices; module-qualified record "
-    "constructors and projections are confined to a nested helper that opens "
-    "only the original record module and exposes ordinary functions; generated "
+    "constructors and projections are confined to nested helpers that open "
+    "only the original record modules and expose ordinary functions; generated "
     "Taylor arithmetic variable names are bound before their "
     "(string,hol_type) tuples are passed to mk_var; and a ref assignment's "
     "conditional RHS is parenthesized. The "
@@ -162,7 +162,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "five active qualified projections in `m_verifier_main.hl`; one nested "
     "helper opens only `Informal_verifier`, constructs the same record with "
     "the same two always-failing dummy derivative fields, and returns each "
-    "selected real field through ordinary functions. "
+    "selected real field through ordinary functions. The two informal-search "
+    "option constructors use a second local helper that opens only "
+    "`Informal_search` and preserves all five field values. "
     "The succ rewrites are confined to local nonnegative integer counters; "
     "x + 1 preserves their values, recursion order, table mutation order, "
     "contents, effects, and exceptions. The division-exception rewrite is "
@@ -294,6 +296,17 @@ module Candle_informal_verifier_record = struct
   };;
   let taylor value = value.taylor;;
   let f value = value.f;;
+end;;
+
+module Candle_informal_search_options = struct
+  open Informal_search;;
+  let make raw_intervals0 max_width max_depth pp mono_depth = {
+    raw_intervals0=raw_intervals0;
+    max_width=max_width;
+    max_depth=max_depth;
+    pp=pp;
+    mono_depth=mono_depth
+  };;
 end;;''',
     ),
     (
@@ -349,13 +362,9 @@ end;;''',
 \tInformal_search.pp = pp;
 \tInformal_search.mono_depth = if !params.allow_derivatives then 200 else 0;
       } in''',
-        b'''      let opt0 = ({
-\traw_intervals0 = !params.raw_intervals0;
-\tmax_width = 1e-10;
-\tmax_depth = 200;
-\tpp = pp;
-\tmono_depth = if !params.allow_derivatives then 200 else 0;
-      } : Informal_search.search_options) in''',
+        b'''      let opt0 = Candle_informal_search_options.make
+        !params.raw_intervals0 1e-10 200 pp
+        (if !params.allow_derivatives then 200 else 0) in''',
     ),
     (
         "typed-informal-search-record-fixed",
@@ -366,13 +375,8 @@ end;;''',
 \tInformal_search.pp = pp;
 \tInformal_search.mono_depth = 0;
       } in''',
-        b'''      let opt0 = ({
-\traw_intervals0 = !params.raw_intervals0;
-\tmax_width = 1e-10;
-\tmax_depth = 200;
-\tpp = pp;
-\tmono_depth = 0;
-      } : Informal_search.search_options) in''',
+        b'''      let opt0 = Candle_informal_search_options.make
+        !params.raw_intervals0 1e-10 200 pp 0 in''',
     ),
 )
 

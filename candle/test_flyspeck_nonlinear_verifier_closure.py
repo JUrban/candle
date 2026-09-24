@@ -254,6 +254,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         self.assertIn("let make taylor f", helper["after"])
         self.assertIn('failwith "dummy df"', helper["after"])
         self.assertIn('failwith "dummy ddf"', helper["after"])
+        self.assertIn("module Candle_informal_search_options", helper["after"])
+        self.assertIn("open Informal_search", helper["after"])
 
         m_taylor = parser_normalized[
             "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -939,12 +941,18 @@ module Candle_informal_verifier_record = struct
   let taylor value = value.taylor;;
   let f value = value.f;;
 end;;
+module Candle_informal_search_options = struct
+  open Informal_search;;
+  let make raw_intervals0 max_width max_depth pp mono_depth = {
+    raw_intervals0=raw_intervals0; max_width=max_width;
+    max_depth=max_depth; pp=pp; mono_depth=mono_depth
+  };;
+end;;
 let r2 = Candle_informal_verifier_record.make 1 2;;
 let o1 = {Informal_search.raw_intervals0=true;
           Informal_search.max_width=1e-10; Informal_search.max_depth=200;
           Informal_search.pp=6; Informal_search.mono_depth=0};;
-let o2 = ({raw_intervals0=true; max_width=1e-10; max_depth=200;
-           pp=6; mono_depth=0} : Informal_search.search_options);;
+let o2 = Candle_informal_search_options.make true 1e-10 200 6 0;;
 let p1 = r1.Informal_verifier.taylor, r1.Informal_verifier.f;;
 let p2 = Candle_informal_verifier_record.taylor r2,
          Candle_informal_verifier_record.f r2;;
