@@ -39,6 +39,13 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
             cls.support_records,
             subject.SUPPORT_READY_MARKER,
         )
+        cls.guarded_checkpoint_prelude = subject.build_target_prelude(
+            cls.target,
+            FLYSPECK_ROOT,
+            cls.support_records,
+            subject.SUPPORT_READY_MARKER,
+            required_ready_ref="candle_test_prior_ready",
+        )
 
     def test_exact_support_is_wrapped_and_authenticated(self) -> None:
         self.assertEqual(len(self.support_records), 3)
@@ -108,6 +115,21 @@ class NonlinearFirstLeafRunnerTest(unittest.TestCase):
             self.checkpoint_prelude.index("candle_nonlinear_first_leaf_support_ids"),
             self.checkpoint_prelude.index(subject.SUPPORT_READY_MARKER),
         )
+
+    def test_checkpoint_prelude_can_require_a_prior_loader_gate(self) -> None:
+        self.assertIn(
+            "if not !candle_test_prior_ready ||\n"
+            "   !Cakeml.pendingLoadedSourceIds <> [] ||",
+            self.guarded_checkpoint_prelude,
+        )
+        with self.assertRaisesRegex(ValueError, "readiness reference"):
+            subject.build_target_prelude(
+                self.target,
+                FLYSPECK_ROOT,
+                self.support_records,
+                subject.SUPPORT_READY_MARKER,
+                required_ready_ref="bad || true",
+            )
 
     def test_action296_profile_authenticates_a_distinct_real_target(self) -> None:
         _, target, records = subject.authenticate_target(

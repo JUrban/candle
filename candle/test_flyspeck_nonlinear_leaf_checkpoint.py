@@ -36,6 +36,9 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 FLYSPECK_ROOT, RUNTIME, GENERATED_INSULATE, output,
             )
             driver = (output / "driver.ml").read_text(encoding="ascii")
+            suffix = (output / "post-analytic-suffix.ml").read_text(
+                encoding="ascii",
+            )
             setup = (output / "setup.ml").read_text(encoding="ascii")
             receipt_data = (output / "input-receipt.json").read_bytes()
             receipt = json.loads(receipt_data)
@@ -59,6 +62,23 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
             )
             self.assertIn("#use", setup)
             self.assertIn(str(ROOT.resolve()), setup)
+            self.assertNotIn('#use "hol.ml"', suffix)
+            self.assertIn(
+                "post-analytic checkpoint source identity mismatch", suffix,
+            )
+            self.assertIn(
+                "post-analytic verifier loader identity did not commit", suffix,
+            )
+            self.assertIn(
+                subject.POST_ANALYTIC_CLOSURE_READY_REF, suffix,
+            )
+            self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
+            self.assertNotIn("Break_case.ineqm_conv", suffix)
+            self.assertEqual(suffix.count("M_verifier_main.verify_ineq"), 1)
+            self.assertLess(
+                suffix.index(smoke.LOAD_MARKER),
+                suffix.index(first_leaf.SUPPORT_READY_MARKER),
+            )
             self.assertEqual(
                 hashlib.sha256((output / "driver.ml").read_bytes()).hexdigest(),
                 receipt["driver"]["sha256"],
@@ -66,6 +86,12 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
             self.assertEqual(
                 hashlib.sha256((output / "setup.ml").read_bytes()).hexdigest(),
                 receipt["setup"]["sha256"],
+            )
+            self.assertEqual(
+                hashlib.sha256(
+                    (output / "post-analytic-suffix.ml").read_bytes()
+                ).hexdigest(),
+                receipt["post_analytic_suffix"]["sha256"],
             )
 
     def test_refuses_to_overwrite_an_existing_output_root(self) -> None:

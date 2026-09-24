@@ -256,14 +256,22 @@ def build_target_prelude(
     flyspeck_root: Path,
     support_records: list[dict[str, Any]],
     ready_marker: str | None = None,
+    required_ready_ref: str | None = None,
 ) -> str:
     """Load the authenticated reconstruction modules and bind the target.
 
     This is also the durable checkpoint boundary for focused first-leaf
     experiments: all source identities are configured by the caller before
     this text runs, but no reconstruction, search, or formal leaf proof has
-    begun yet.
+    begun yet.  When ``required_ready_ref`` is supplied, the final readiness
+    marker additionally depends on that previously established loader gate.
     """
+
+    if (
+        required_ready_ref is not None
+        and re.fullmatch(r"[a-z][a-zA-Z0-9_']*", required_ready_ref) is None
+    ):
+        raise ValueError("invalid prior loader readiness reference")
 
     theorem_text = target["target"]["legacy_ineqm_text"]
     if not isinstance(theorem_text, str) or "`" in theorem_text:
@@ -282,6 +290,10 @@ def build_target_prelude(
         if ready_marker is not None else
         "else ();;"
     )
+    prior_guard = (
+        f"not !{required_ready_ref} ||\n   "
+        if required_ready_ref is not None else ""
+    )
     return f'''
 
 let candle_nonlinear_first_leaf_add_load_path path =
@@ -296,7 +308,7 @@ let candle_nonlinear_first_leaf_support_ids =
   [{support_ids}];;
 let candle_nonlinear_first_leaf_target =
   `{theorem_text}`;;
-if !Cakeml.pendingLoadedSourceIds <> [] ||
+if {prior_guard}!Cakeml.pendingLoadedSourceIds <> [] ||
    not (List.for_all
           (fun source_id -> List.mem source_id !Cakeml.loadedSourceIds)
           candle_nonlinear_first_leaf_support_ids) then
