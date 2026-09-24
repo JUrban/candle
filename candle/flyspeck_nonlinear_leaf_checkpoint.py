@@ -68,6 +68,10 @@ POST_ANALYTIC_OVERLAY_DELTA_SPECS = (
         "m-taylor-array-to-list",
     ),
     (
+        "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl",
+        "m-taylor-arith-variable-grouping",
+    ),
+    (
         "flyspeck:formal_ineqs/trig/cos_eval.hl",
         "cos-eval-array-to-list",
     ),

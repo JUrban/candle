@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v20"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v21"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -63,7 +63,9 @@ NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
     "Array.get/Array.set with parenthesized indices; module-qualified record "
     "labels use the same unqualified labels under an explicit original record "
-    "type; and a ref assignment's conditional RHS is parenthesized. The "
+    "type; generated Taylor arithmetic variable names are bound before their "
+    "(string,hol_type) tuples are passed to mk_var; and a ref assignment's "
+    "conditional RHS is parenthesized. The "
     "complete remaining top-level Hashtbl.create inventory states the exact "
     "key and value types already forced by its uses. The "
     "closed verifier extension's fixed %d/%s/%b diagnostic formats use exact "
@@ -169,7 +171,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "informal_interval printer bindings; the already-loaded ssreflect source "
     "and its authenticated physical identity remain untouched. They preserve "
     "one shared formatter object and change no mathematical computation. The "
-    "two accumulator "
+    "two Taylor-arithmetic variable rewrites bind the already computed "
+    "concatenated name immediately before the same mk_var call, preserving "
+    "the exact terms and iteration order. The two accumulator "
     "rewrites name the already "
     "evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
@@ -333,6 +337,22 @@ def _replacement(
 
 
 EXTENSION_COMPATIBILITY_REPLACEMENTS = {
+    "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl": (
+        _replacement(
+            "taylor-arith-all-variable-tuple-grouping",
+            b'let a_vars = map (fun i -> mk_var ("a"^string_of_int i, aty)) (1--m) in',
+            b'let a_vars = map (fun i ->\n'
+            b'    let variable_name = "a" ^ string_of_int i in\n'
+            b'    mk_var (variable_name, aty)) (1--m) in',
+        ),
+        _replacement(
+            "taylor-arith-build-variable-tuple-grouping",
+            b'a_vars0 = map (fun i -> mk_var ("a"^string_of_int i, ty)) (1--n) in',
+            b'a_vars0 = map (fun i ->\n'
+            b'        let variable_name = "a" ^ string_of_int i in\n'
+            b'        mk_var (variable_name, ty)) (1--n) in',
+        ),
+    ),
     "flyspeck:formal_ineqs/arith/float_pow.hl": (
         _replacement(
             "float-pow-assert-gt2",

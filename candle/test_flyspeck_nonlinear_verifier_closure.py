@@ -44,8 +44,8 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "candle": 0,
             "flyspeck": 56,
         })
-        self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 168)
+        self.assertEqual(counts["normalized_sources"], 29)
+        self.assertEqual(counts["normalization_operations"], 170)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -339,6 +339,33 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             {operation["kind"] for operation in
              ssreflect["normalization"]["operations"]},
         )
+
+    def test_taylor_arithmetic_variable_tuples_are_grouped_explicitly(
+        self,
+    ) -> None:
+        source_key = "flyspeck:formal_ineqs/taylor/m_taylor_arith.hl"
+        node = self.payload["source_nodes"][source_key]
+        operations = {
+            operation["kind"]: operation
+            for operation in node["normalization"]["operations"]
+        }
+        expected = {
+            "taylor-arith-all-variable-tuple-grouping",
+            "taylor-arith-build-variable-tuple-grouping",
+        }
+        self.assertEqual(set(operations), expected)
+        for kind in expected:
+            self.assertIn(
+                'let variable_name = "a" ^ string_of_int i in',
+                operations[kind]["after"],
+            )
+            self.assertEqual(operations[kind]["replacement_count"], 1)
+        normalized, _ = subject.normalize_source(
+            source_key,
+            (FLYSPECK_ROOT / node["logical_relative_path"]).read_bytes(),
+        )
+        self.assertEqual(normalized.count(b"let variable_name ="), 2)
+        self.assertNotIn(b'mk_var ("a"^string_of_int i', normalized)
 
     def test_extension_formatting_inventory_is_complete(self) -> None:
         normalized = {

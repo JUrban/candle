@@ -152,7 +152,7 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 1,
             )
             self.assertEqual(
-                len(subject.POST_ANALYTIC_OVERLAY_DELTA_SPECS), 12,
+                len(subject.POST_ANALYTIC_OVERLAY_DELTA_SPECS), 13,
             )
             self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
             self.assertNotIn("Break_case.ineqm_conv", suffix)
