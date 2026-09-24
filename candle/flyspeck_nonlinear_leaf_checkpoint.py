@@ -27,6 +27,9 @@ POST_ANALYTIC_SOURCE_KEY = (
     "flyspeck:formal_ineqs/taylor/theory/"
     "multivariate_taylor-compiled.hl"
 )
+POST_ANALYTIC_DIRECT_SOURCE_KEY = (
+    "flyspeck:formal_ineqs/verifier/m_verifier.hl"
+)
 POST_ANALYTIC_CLOSURE_READY_REF = (
     "candle_nonlinear_post_analytic_closure_ready"
 )
@@ -74,6 +77,14 @@ def build_post_analytic_suffix(
         if record["source_key"]
         == "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
     )
+    direct_record = next(
+        record for record in records
+        if record["source_key"] == POST_ANALYTIC_DIRECT_SOURCE_KEY
+    )
+    direct_overlay = next(
+        record for record in overlays
+        if record["source_key"] == POST_ANALYTIC_DIRECT_SOURCE_KEY
+    )
     analytic_identity = "(%s,%s)" % (
         smoke._ocaml_string(analytic_record["basename"]),
         smoke._ocaml_string(analytic_record["md5"]),
@@ -81,6 +92,13 @@ def build_post_analytic_suffix(
     root_identity = "(%s,%s)" % (
         smoke._ocaml_string(root_record["basename"]),
         smoke._ocaml_string(root_record["md5"]),
+    )
+    direct_identity = "(%s,%s)" % (
+        smoke._ocaml_string(direct_record["basename"]),
+        smoke._ocaml_string(direct_record["md5"]),
+    )
+    direct_normalized_path = smoke._ocaml_string(
+        direct_overlay["normalized_path"],
     )
     candle = smoke._ocaml_string(str(candle_root.resolve()))
     flyspeck = smoke._ocaml_string(str(flyspeck_root.resolve()))
@@ -100,9 +118,10 @@ let candle_nonlinear_post_analytic_check_source (path,_,expected_md5) =
 
 List.iter candle_nonlinear_post_analytic_check_source
   candle_nonlinear_post_analytic_source_rows;;
-Cakeml.configureSourceIdentities
-  (map (fun (path,basename,digest) -> path,(basename,digest))
-       candle_nonlinear_post_analytic_source_rows);;
+if candle_nonlinear_post_analytic_source_rows <>
+     candle_nonlinear_source_rows then
+  failwith "post-analytic inherited source identity table mismatch"
+else ();;
 
 let candle_nonlinear_post_analytic_overlay_rows =
   [{overlay_rows}];;
@@ -115,9 +134,14 @@ let candle_nonlinear_post_analytic_check_overlay (_,path,expected_md5) =
 
 List.iter candle_nonlinear_post_analytic_check_overlay
   candle_nonlinear_post_analytic_overlay_rows;;
-Cakeml.configureNormalizationOverlay
-  (map (fun (original,normalized,_) -> original,normalized)
-       candle_nonlinear_post_analytic_overlay_rows);;
+
+(* Loader configuration is immutable by design.  Reauthenticate the overlay
+   table inherited from the frozen checkpoint.  Its already-loaded analytic
+   sources and all unchanged suffix sources remain valid.  The one newly
+   corrected source below is loaded directly from its separately authenticated
+   v16 overlay and commits the same original logical identity only after its
+   module export exists. *)
+List.iter candle_nonlinear_check_overlay candle_nonlinear_overlay_rows;;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||
    not (List.mem {analytic_identity} !Cakeml.loadedSourceIds) then
@@ -138,6 +162,16 @@ List.iter candle_nonlinear_post_analytic_add_load_path
 
 needs "arith_options.hl";;
 Arith_options.base := 200;;
+if List.mem {direct_identity} !Cakeml.loadedSourceIds then
+  failwith "post-analytic direct verifier source was already loaded"
+else ();;
+#use {direct_normalized_path};;
+if !Cakeml.pendingLoadedSourceIds <> [] then
+  failwith "post-analytic direct verifier dependency did not commit"
+else
+  let _ = M_verifier.m_verify_disj_raw0 in
+  Cakeml.loadedSourceIds :=
+    {direct_identity} :: !Cakeml.loadedSourceIds;;
 needs "verifier/m_verifier_main.hl";;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||

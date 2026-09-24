@@ -72,6 +72,29 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
             self.assertIn(
                 subject.POST_ANALYTIC_CLOSURE_READY_REF, suffix,
             )
+            self.assertNotIn("Cakeml.configureSourceIdentities", suffix)
+            self.assertNotIn("Cakeml.configureNormalizationOverlay", suffix)
+            self.assertIn(
+                "post-analytic inherited source identity table mismatch",
+                suffix,
+            )
+            self.assertIn(
+                "List.iter candle_nonlinear_check_overlay "
+                "candle_nonlinear_overlay_rows",
+                suffix,
+            )
+            self.assertIn(
+                ':: !Cakeml.loadedSourceIds;;\nneeds '
+                '"verifier/m_verifier_main.hl"',
+                suffix,
+            )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/verifier/"
+                    "m_verifier.hl"
+                ),
+                suffix,
+            )
             self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
             self.assertNotIn("Break_case.ineqm_conv", suffix)
             self.assertEqual(suffix.count("M_verifier_main.verify_ineq"), 1)
