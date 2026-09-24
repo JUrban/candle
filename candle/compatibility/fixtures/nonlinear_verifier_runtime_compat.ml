@@ -11,18 +11,24 @@ let candle_nonlinear_verifier_empty_print =
   Format.pp_print_string candle_nonlinear_verifier_formatter "";;
 
 module Candle_nonlinear_informal_verifier = struct
-  type verification_funs = {taylor:int; f:int; df:int; ddf:int};;
+  type verification_funs = {
+    taylor:int; f:int; df:int -> int; ddf:int -> int -> int
+  };;
 end;;
 
 module Candle_nonlinear_informal_record = struct
   open Candle_nonlinear_informal_verifier;;
-  let make taylor f df ddf = {taylor=taylor; f=f; df=df; ddf=ddf};;
+  let make taylor f = {
+    taylor=taylor; f=f;
+    df=(fun _ -> failwith "dummy df");
+    ddf=(fun _ _ -> failwith "dummy ddf")
+  };;
   let taylor value = value.taylor;;
   let f value = value.f;;
 end;;
 
 let candle_nonlinear_verifier_record =
-  Candle_nonlinear_informal_record.make 11 13 17 19;;
+  Candle_nonlinear_informal_record.make 11 13;;
 let candle_nonlinear_verifier_projections =
   Candle_nonlinear_informal_record.taylor candle_nonlinear_verifier_record,
   Candle_nonlinear_informal_record.f candle_nonlinear_verifier_record;;

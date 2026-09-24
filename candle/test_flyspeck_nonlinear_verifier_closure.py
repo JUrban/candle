@@ -251,7 +251,9 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             if operation["kind"] == "informal-verifier-record-helper"
         )
         self.assertIn("open Informal_verifier", helper["after"])
-        self.assertIn("let make taylor f df ddf", helper["after"])
+        self.assertIn("let make taylor f", helper["after"])
+        self.assertIn('failwith "dummy df"', helper["after"])
+        self.assertIn('failwith "dummy ddf"', helper["after"])
 
         m_taylor = parser_normalized[
             "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -916,22 +918,28 @@ let () =
 
     def test_main_verifier_grouping_preserves_native_behavior(self) -> None:
         source = b'''module Informal_verifier = struct
-  type verification_funs = {taylor:int; f:int; df:int; ddf:int}
+  type verification_funs = {
+    taylor:int; f:int; df:int -> int; ddf:int -> int -> int
+  }
 end;;
 module Informal_search = struct
   type search_options = {raw_intervals0:bool; max_width:float;
                          max_depth:int; pp:int; mono_depth:int}
 end;;
 let r1 = {Informal_verifier.taylor=1; Informal_verifier.f=2;
-          Informal_verifier.df=3; Informal_verifier.ddf=4};;
-let r2 = ({taylor=1; f=2; df=3; ddf=4} :
-          Informal_verifier.verification_funs);;
+          Informal_verifier.df=(fun _ -> failwith "dummy df");
+          Informal_verifier.ddf=(fun _ _ -> failwith "dummy ddf")};;
 module Candle_informal_verifier_record = struct
   open Informal_verifier;;
-  let make taylor f df ddf = {taylor=taylor; f=f; df=df; ddf=ddf};;
+  let make taylor f = {
+    taylor=taylor; f=f;
+    df=(fun _ -> failwith "dummy df");
+    ddf=(fun _ _ -> failwith "dummy ddf")
+  };;
   let taylor value = value.taylor;;
   let f value = value.f;;
 end;;
+let r2 = Candle_informal_verifier_record.make 1 2;;
 let o1 = {Informal_search.raw_intervals0=true;
           Informal_search.max_width=1e-10; Informal_search.max_depth=200;
           Informal_search.pp=6; Informal_search.mono_depth=0};;
@@ -940,12 +948,19 @@ let o2 = ({raw_intervals0=true; max_width=1e-10; max_depth=200;
 let p1 = r1.Informal_verifier.taylor, r1.Informal_verifier.f;;
 let p2 = Candle_informal_verifier_record.taylor r2,
          Candle_informal_verifier_record.f r2;;
+let failure operation =
+  try let _ = operation() in "returned" with Failure message -> message;;
 let a = ref 0 and b = ref 0;;
 let flag = true;;
 let _ = a := if flag then 7 else 9;;
 let _ = b := (if flag then 7 else 9);;
 let () = Printf.printf "%b\n"
-  (r1 = r2 && p1 = p2 && o1 = o2 && !a = !b);;
+  (p1 = p2 &&
+   failure (fun () -> r1.Informal_verifier.df 0) =
+     failure (fun () -> r2.Informal_verifier.df 0) &&
+   failure (fun () -> r1.Informal_verifier.ddf 0 0) =
+     failure (fun () -> r2.Informal_verifier.ddf 0 0) &&
+   o1 = o2 && !a = !b);;
 '''
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -160,8 +160,9 @@ NORMALIZATION_SCOPE_LIMIT = (
     "construction. "
     "The informal-verifier record rewrites cover its one constructor and all "
     "five active qualified projections in `m_verifier_main.hl`; one nested "
-    "helper opens only `Informal_verifier`, constructs the same record, and "
-    "returns each selected field through ordinary functions. "
+    "helper opens only `Informal_verifier`, constructs the same record with "
+    "the same two always-failing dummy derivative fields, and returns each "
+    "selected real field through ordinary functions. "
     "The succ rewrites are confined to local nonnegative integer counters; "
     "x + 1 preserves their values, recursion order, table mutation order, "
     "contents, effects, and exceptions. The division-exception rewrite is "
@@ -285,7 +286,12 @@ MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
 
 module Candle_informal_verifier_record = struct
   open Informal_verifier;;
-  let make taylor f df ddf = {taylor=taylor; f=f; df=df; ddf=ddf};;
+  let make taylor f = {
+    taylor=taylor;
+    f=f;
+    df=(fun i pp lo hi -> failwith "dummy df");
+    ddf=(fun i j pp lo hi -> failwith "dummy ddf")
+  };;
   let taylor value = value.taylor;;
   let f value = value.f;;
 end;;''',
@@ -304,8 +310,7 @@ end;;''',
 \tInformal_verifier.df = dummy_df;
 \tInformal_verifier.ddf = dummy_ddf
       };;''',
-        b'''      Candle_informal_verifier_record.make
-        eval_ti eval0_informal dummy_df dummy_ddf;;''',
+        b'''      Candle_informal_verifier_record.make eval_ti eval0_informal;;''',
     ),
     (
         "typed-informal-taylor-projection",
