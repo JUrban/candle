@@ -27,38 +27,32 @@ POST_ANALYTIC_SOURCE_KEY = (
     "flyspeck:formal_ineqs/taylor/theory/"
     "multivariate_taylor-compiled.hl"
 )
-POST_ANALYTIC_DIRECT_SOURCE_KEY = (
+POST_ANALYTIC_DELTA_SOURCE_KEY = (
     "flyspeck:formal_ineqs/verifier/m_verifier.hl"
 )
-POST_ANALYTIC_DIRECT_SPECS = (
+POST_ANALYTIC_OVERLAY_DELTA_SPECS = (
     (
         "flyspeck:formal_ineqs/informal/informal_nat.hl",
-        "Informal_nat.arith_base",
         "informal-nat",
     ),
     (
         "flyspeck:formal_ineqs/trig/exp_eval.hl",
-        "Exp_eval.float_exp_hi",
         "exp-eval",
     ),
     (
         "flyspeck:formal_ineqs/informal/informal_exp.hl",
-        "Informal_exp.exp_float_hi",
         "informal-exp",
     ),
     (
         "flyspeck:formal_ineqs/informal/informal_verifier.hl",
-        "Informal_verifier.m_taylor_cell_pass",
         "informal-verifier",
     ),
     (
         "flyspeck:formal_ineqs/informal/informal_search.hl",
-        "Informal_search.find_max",
         "informal-search",
     ),
     (
-        POST_ANALYTIC_DIRECT_SOURCE_KEY,
-        "M_verifier.m_verify_disj_raw0",
+        POST_ANALYTIC_DELTA_SOURCE_KEY,
         "m-verifier",
     ),
 )
@@ -118,30 +112,31 @@ def build_post_analytic_suffix(
         smoke._ocaml_string(root_record["basename"]),
         smoke._ocaml_string(root_record["md5"]),
     )
-    direct_blocks = []
-    for source_key, export_probe, label in POST_ANALYTIC_DIRECT_SPECS:
+    delta_source_keys = {
+        source_key for source_key, _ in POST_ANALYTIC_OVERLAY_DELTA_SPECS
+    }
+    delta_rows = []
+    delta_identities = []
+    for overlay in overlays:
+        source_key = overlay["source_key"]
+        if source_key not in delta_source_keys:
+            continue
         record = next(
             item for item in records if item["source_key"] == source_key
-        )
-        overlay = next(
-            item for item in overlays if item["source_key"] == source_key
         )
         identity = "(%s,%s)" % (
             smoke._ocaml_string(record["basename"]),
             smoke._ocaml_string(record["md5"]),
         )
-        normalized_path = smoke._ocaml_string(overlay["normalized_path"])
-        direct_blocks.append(f'''if List.mem {identity} !Cakeml.loadedSourceIds then
-  failwith "post-analytic direct source was already loaded: {label}"
-else ();;
-#use {normalized_path};;
-if !Cakeml.pendingLoadedSourceIds <> [] then
-  failwith "post-analytic direct source dependency did not commit: {label}"
-else
-  let _ = {export_probe} in
-  Cakeml.loadedSourceIds :=
-    {identity} :: !Cakeml.loadedSourceIds;;''')
-    direct_loads = "\n".join(direct_blocks)
+        delta_rows.append("(%s,%s)" % (
+            smoke._ocaml_string(overlay["original_path"]),
+            smoke._ocaml_string(overlay["normalized_md5"]),
+        ))
+        delta_identities.append(identity)
+    if len(delta_rows) != len(POST_ANALYTIC_OVERLAY_DELTA_SPECS):
+        raise ValueError("post-analytic overlay delta inventory mismatch")
+    delta_rows_text = ";\n   ".join(delta_rows)
+    delta_identities_text = ";\n   ".join(delta_identities)
     candle = smoke._ocaml_string(str(candle_root.resolve()))
     flyspeck = smoke._ocaml_string(str(flyspeck_root.resolve()))
     closure_ready_ref = POST_ANALYTIC_CLOSURE_READY_REF
@@ -177,14 +172,74 @@ let candle_nonlinear_post_analytic_check_overlay (_,path,expected_md5) =
 List.iter candle_nonlinear_post_analytic_check_overlay
   candle_nonlinear_post_analytic_overlay_rows;;
 
-(* Loader configuration is immutable by design.  Reauthenticate the overlay
-   table inherited from the frozen checkpoint.  Its already-loaded analytic
-   sources and all unchanged suffix sources remain valid.  The bounded set of
-   overlays added or changed since that checkpoint is loaded directly in
-   dependency order from the separately authenticated current bundle.  Each
-   source commits its original logical identity only after its module export
-   exists. *)
+(* Reauthenticate the overlay table inherited from the frozen checkpoint.
+   Preserve every byte-identical inherited physical path so the loader's
+   private loaded-path set continues to recognize the analytic state.  Replace
+   only the exact, authenticated hash delta below, all of which must still be
+   unloaded.  Any unexpected added, removed, or changed overlay fails closed. *)
 List.iter candle_nonlinear_check_overlay candle_nonlinear_overlay_rows;;
+
+let candle_nonlinear_post_analytic_expected_delta =
+  [{delta_rows_text}];;
+let candle_nonlinear_post_analytic_delta_source_ids =
+  [{delta_identities_text}];;
+
+let rec candle_nonlinear_post_analytic_find_overlay original rows =
+  match rows with
+  | [] -> None
+  | (candidate,path,digest)::rest ->
+      if candidate = original then Some (path,digest)
+      else candle_nonlinear_post_analytic_find_overlay original rest;;
+
+let candle_nonlinear_post_analytic_overlay_changed
+      (original,_,current_digest) =
+  match candle_nonlinear_post_analytic_find_overlay
+          original candle_nonlinear_overlay_rows with
+  | None -> true
+  | Some (_,inherited_digest) -> inherited_digest <> current_digest;;
+
+let candle_nonlinear_post_analytic_actual_delta =
+  map
+    (fun (original,_,digest) -> original,digest)
+    (List.filter candle_nonlinear_post_analytic_overlay_changed
+       candle_nonlinear_post_analytic_overlay_rows);;
+
+if candle_nonlinear_post_analytic_actual_delta <>
+     candle_nonlinear_post_analytic_expected_delta ||
+   not
+     (List.for_all
+       (fun (original,_,_) ->
+         List.exists
+           (fun (candidate,_,_) -> candidate = original)
+           candle_nonlinear_post_analytic_overlay_rows)
+       candle_nonlinear_overlay_rows) ||
+   List.exists
+     (fun source_id -> List.mem source_id !Cakeml.loadedSourceIds)
+     candle_nonlinear_post_analytic_delta_source_ids then
+  failwith "post-analytic overlay delta contract mismatch"
+else ();;
+
+let candle_nonlinear_post_analytic_merged_overlay =
+  map
+    (fun (original,current_path,current_digest) ->
+      match candle_nonlinear_post_analytic_find_overlay
+              original candle_nonlinear_overlay_rows with
+      | Some (inherited_path,inherited_digest) ->
+          if inherited_digest = current_digest then
+            original,inherited_path
+          else original,current_path
+      | None -> original,current_path)
+    candle_nonlinear_post_analytic_overlay_rows;;
+
+let candle_nonlinear_post_analytic_inherited_overlay =
+  map (fun (original,path,_) -> original,path)
+    candle_nonlinear_overlay_rows;;
+if !Cakeml.normalizationOverlay <>
+     Some candle_nonlinear_post_analytic_inherited_overlay then
+  failwith "post-analytic inherited loader overlay mismatch"
+else
+  Cakeml.normalizationOverlay :=
+    Some candle_nonlinear_post_analytic_merged_overlay;;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||
    not (List.mem {analytic_identity} !Cakeml.loadedSourceIds) then
@@ -210,7 +265,6 @@ List.iter candle_nonlinear_post_analytic_add_load_path
 
 needs "arith_options.hl";;
 Arith_options.base := 200;;
-{direct_loads}
 needs "verifier/m_verifier_main.hl";;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||

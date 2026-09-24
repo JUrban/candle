@@ -86,9 +86,13 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 suffix,
             )
             self.assertIn(
-                ':: !Cakeml.loadedSourceIds;;\nneeds '
-                '"verifier/m_verifier_main.hl"',
-                suffix,
+                "Cakeml.normalizationOverlay :=", suffix,
+            )
+            self.assertIn(
+                "post-analytic inherited loader overlay mismatch", suffix,
+            )
+            self.assertIn(
+                "post-analytic overlay delta contract mismatch", suffix,
             )
             self.assertIn(
                 str(
@@ -132,32 +136,20 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 ),
                 suffix,
             )
-            self.assertEqual(
-                suffix.count("post-analytic direct source was already loaded:"),
-                len(subject.POST_ANALYTIC_DIRECT_SPECS),
+            self.assertNotIn(
+                "post-analytic direct source was already loaded:", suffix,
+            )
+            self.assertNotIn(
+                "post-analytic direct source dependency did not commit:",
+                suffix,
             )
             self.assertEqual(
-                suffix.count(
-                    "post-analytic direct source dependency did not commit:"
-                ),
-                len(subject.POST_ANALYTIC_DIRECT_SPECS),
+                suffix.count("post-analytic overlay delta contract mismatch"),
+                1,
             )
-            direct_offsets = [
-                suffix.index("post-analytic direct source was already loaded: "
-                             + label)
-                for _, _, label in subject.POST_ANALYTIC_DIRECT_SPECS
-            ]
-            self.assertEqual(direct_offsets, sorted(direct_offsets))
-            self.assertLess(
-                suffix.index("Informal_nat.arith_base"),
-                suffix.index("Informal_exp.exp_float_hi"),
+            self.assertEqual(
+                len(subject.POST_ANALYTIC_OVERLAY_DELTA_SPECS), 6,
             )
-            self.assertLess(
-                suffix.index("Informal_verifier.m_taylor_cell_pass"),
-                suffix.index("Informal_search.find_max"),
-            )
-            self.assertIn("Exp_eval.float_exp_hi", suffix)
-            self.assertIn("Informal_exp.exp_float_hi", suffix)
             self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
             self.assertNotIn("Break_case.ineqm_conv", suffix)
             self.assertEqual(suffix.count("M_verifier_main.verify_ineq"), 1)
