@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 29)
-        self.assertEqual(counts["normalization_operations"], 173)
+        self.assertEqual(counts["normalization_operations"], 177)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -193,7 +193,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
                 for record in parser_normalized.values()
                 for operation in record["operations"]
             ),
-            46,
+            50,
         )
         self.assertEqual(
             sum(
@@ -210,7 +210,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
         main = parser_normalized[
             "flyspeck:formal_ineqs/verifier/m_verifier_main.hl"
         ]
-        self.assertEqual(main["operation_count"], 6)
+        self.assertEqual(main["operation_count"], 10)
         main_q_variable = next(
             operation for operation in main["operations"]
             if operation["kind"] == "main-q-variable-tuple-grouping"
@@ -223,6 +223,35 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "mk_var (variable_name, real_ty)",
             main_q_variable["after"],
         )
+        projection_operations = {
+            operation["kind"]: operation
+            for operation in main["operations"]
+            if operation["kind"].startswith("typed-informal-") and (
+                operation["kind"].endswith("projection") or
+                operation["kind"].endswith("projections")
+            )
+        }
+        self.assertEqual(set(projection_operations), {
+            "typed-informal-taylor-projection",
+            "typed-informal-singleton-projections",
+            "typed-informal-list-projections",
+        })
+        self.assertEqual(
+            sum(operation["before"].count(".Informal_verifier.")
+                for operation in projection_operations.values()),
+            5,
+        )
+        self.assertTrue(all(
+            ".Informal_verifier." not in operation["after"] and
+            "Candle_informal_verifier_record." in operation["after"]
+            for operation in projection_operations.values()
+        ))
+        helper = next(
+            operation for operation in main["operations"]
+            if operation["kind"] == "informal-verifier-record-helper"
+        )
+        self.assertIn("open Informal_verifier", helper["after"])
+        self.assertIn("let make taylor f df ddf", helper["after"])
 
         m_taylor = parser_normalized[
             "flyspeck:formal_ineqs/taylor/m_taylor.hl"
@@ -897,17 +926,26 @@ let r1 = {Informal_verifier.taylor=1; Informal_verifier.f=2;
           Informal_verifier.df=3; Informal_verifier.ddf=4};;
 let r2 = ({taylor=1; f=2; df=3; ddf=4} :
           Informal_verifier.verification_funs);;
+module Candle_informal_verifier_record = struct
+  open Informal_verifier;;
+  let make taylor f df ddf = {taylor=taylor; f=f; df=df; ddf=ddf};;
+  let taylor value = value.taylor;;
+  let f value = value.f;;
+end;;
 let o1 = {Informal_search.raw_intervals0=true;
           Informal_search.max_width=1e-10; Informal_search.max_depth=200;
           Informal_search.pp=6; Informal_search.mono_depth=0};;
 let o2 = ({raw_intervals0=true; max_width=1e-10; max_depth=200;
            pp=6; mono_depth=0} : Informal_search.search_options);;
+let p1 = r1.Informal_verifier.taylor, r1.Informal_verifier.f;;
+let p2 = Candle_informal_verifier_record.taylor r2,
+         Candle_informal_verifier_record.f r2;;
 let a = ref 0 and b = ref 0;;
 let flag = true;;
 let _ = a := if flag then 7 else 9;;
 let _ = b := (if flag then 7 else 9);;
 let () = Printf.printf "%b\n"
-  (r1 = r2 && o1 = o2 && !a = !b);;
+  (r1 = r2 && p1 = p2 && o1 = o2 && !a = !b);;
 '''
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

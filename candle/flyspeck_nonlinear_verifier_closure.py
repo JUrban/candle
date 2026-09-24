@@ -62,8 +62,9 @@ FLOAT_RUNTIME_IDENTIFIER_RESOLUTION = {
 NORMALIZATION_SEMANTIC_RULE = (
     "make native OCaml grouping explicit: chained array accesses use "
     "Array.get/Array.set with parenthesized indices; module-qualified record "
-    "labels use the same unqualified labels under an explicit original record "
-    "type; generated Taylor arithmetic variable names are bound before their "
+    "constructors and projections are confined to a nested helper that opens "
+    "only the original record module and exposes ordinary functions; generated "
+    "Taylor arithmetic variable names are bound before their "
     "(string,hol_type) tuples are passed to mk_var; and a ref assignment's "
     "conditional RHS is parenthesized. The "
     "complete remaining top-level Hashtbl.create inventory states the exact "
@@ -157,6 +158,10 @@ NORMALIZATION_SCOPE_LIMIT = (
     "variable in `m_verifier_main.hl`; they preserve the exact "
     "generated names, real types, returned HOL terms, and theorem "
     "construction. "
+    "The informal-verifier record rewrites cover its one constructor and all "
+    "five active qualified projections in `m_verifier_main.hl`; one nested "
+    "helper opens only `Informal_verifier`, constructs the same record, and "
+    "returns each selected field through ordinary functions. "
     "The succ rewrites are confined to local nonnegative integer counters; "
     "x + 1 preserves their values, recursion order, table mutation order, "
     "contents, effects, and exceptions. The division-exception rewrite is "
@@ -274,6 +279,18 @@ def normalize_nested_array_access(
 
 MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
     (
+        "informal-verifier-record-helper",
+        b'''open Verifier_options;;''',
+        b'''open Verifier_options;;
+
+module Candle_informal_verifier_record = struct
+  open Informal_verifier;;
+  let make taylor f df ddf = {taylor=taylor; f=f; df=df; ddf=ddf};;
+  let taylor value = value.taylor;;
+  let f value = value.f;;
+end;;''',
+    ),
+    (
         "main-q-variable-tuple-grouping",
         b'''\t\t     let var = mk_var ("Q" ^ string_of_int i, real_ty) in''',
         b'''\t\t     let variable_name = "Q" ^ string_of_int i in
@@ -287,12 +304,31 @@ MAIN_VERIFIER_GROUPING_REPLACEMENTS = (
 \tInformal_verifier.df = dummy_df;
 \tInformal_verifier.ddf = dummy_ddf
       };;''',
-        b'''      ({
-\ttaylor = eval_ti;
-\tf = eval0_informal;
-\tdf = dummy_df;
-\tddf = dummy_ddf
-      } : Informal_verifier.verification_funs);;''',
+        b'''      Candle_informal_verifier_record.make
+        eval_ti eval0_informal dummy_df dummy_ddf;;''',
+    ),
+    (
+        "typed-informal-taylor-projection",
+        b'''\t  let eval_fs, ti = mk_verification_functions_poly pp fun_tm in
+\t    eval_fs.taylor, ti.Informal_verifier.taylor''',
+        b'''\t  let eval_fs, ti = mk_verification_functions_poly pp fun_tm in
+\t    eval_fs.taylor, Candle_informal_verifier_record.taylor ti''',
+    ),
+    (
+        "typed-informal-singleton-projections",
+        b'''      let fs_inf = map (fun f -> f.Informal_verifier.f, f.Informal_verifier.taylor) [ti] in''',
+        b'''      let fs_inf = map
+        (fun f -> Candle_informal_verifier_record.f f,
+          Candle_informal_verifier_record.taylor f)
+        [ti] in''',
+    ),
+    (
+        "typed-informal-list-projections",
+        b'''      let fs_inf = map (fun f -> f.Informal_verifier.f, f.Informal_verifier.taylor) ti_list in''',
+        b'''      let fs_inf = map
+        (fun f -> Candle_informal_verifier_record.f f,
+          Candle_informal_verifier_record.taylor f)
+        ti_list in''',
     ),
     (
         "parenthesized-assignment-conditional",
