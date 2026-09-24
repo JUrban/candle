@@ -1,9 +1,10 @@
 (* ========================================================================== *)
-(* One-pass reflected whole-box Taylor arithmetic for polynomial jets.       *)
+(* Shared-jet reflected whole-box Taylor arithmetic for polynomials.          *)
 (*                                                                            *)
-(* DEVELOPMENT / NON-RELEASE.  The source expression is compiled once and   *)
-(* evaluated once at the box center.  Its value, gradient, and Hessian remain *)
-(* ordinary data until the final dimension-generic Taylor accumulator.        *)
+(* DEVELOPMENT / NON-RELEASE.  The source expression is compiled once and    *)
+(* evaluated once at the box center and once over the full box.  The center   *)
+(* value/gradient and box Hessian remain ordinary data until the final        *)
+(* dimension-generic Taylor accumulator.                                      *)
 (* ========================================================================== *)
 
 needs "candle/cv_compute_polynomial_expr_dim_jet_semantics.ml";;
@@ -21,45 +22,50 @@ open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
 
 let candle_q_dim_jet_taylor_upper_def = new_definition
- `candle_q_dim_jet_taylor_upper boxes jet =
+ `candle_q_dim_jet_taylor_upper boxes center_jet box_jet =
     candle_q_dim_taylor_upper
       (candle_q_radius_list boxes)
-      (candle_q_dim_jet_f jet)
-      (candle_q_dim_jet_gradient jet)
-      (candle_q_dim_jet_hessian jet)`;;
+      (candle_q_dim_jet_f center_jet)
+      (candle_q_dim_jet_gradient center_jet)
+      (candle_q_dim_jet_hessian box_jet)`;;
 
 let candle_q_dim_poly_jet_whole_box_upper_def = new_definition
  `candle_q_dim_poly_jet_whole_box_upper e boxes =
     candle_q_dim_jet_taylor_upper boxes
       (candle_q_dim_jet_normalized_program
         (candle_q_center_environment_list boxes)
+        (candle_poly_compile e))
+      (candle_q_dim_jet_normalized_program boxes
         (candle_poly_compile e))`;;
 
-(* Keeping the computed jet as one call-by-value argument is intentional:   *)
-(* the program traversal must not be duplicated for the three projections.  *)
+(* Keeping each computed jet as one call-by-value argument is intentional:  *)
+(* neither traversal may be duplicated for the three projections.           *)
 
-let candle_cv_q_jet_upper_once_def = new_definition
- `candle_cv_q_jet_upper_once boxes jet =
+let candle_cv_q_jet_upper_pair_def = new_definition
+ `candle_cv_q_jet_upper_pair boxes center_jet box_jet =
     candle_cv_q_dim_taylor_upper
       (candle_cv_q_radius_list boxes)
-      (Cexp_fst jet)
-      (Cexp_fst (Cexp_snd jet))
-      (Cexp_snd (Cexp_snd jet))`;;
+      (Cexp_fst center_jet)
+      (Cexp_fst (Cexp_snd center_jet))
+      (Cexp_snd (Cexp_snd box_jet))`;;
 
 let candle_cv_q_dim_poly_jet_whole_box_upper_def = new_definition
  `candle_cv_q_dim_poly_jet_whole_box_upper program boxes =
-    candle_cv_q_jet_upper_once boxes
+    candle_cv_q_jet_upper_pair boxes
       (candle_cv_q_dim_jet_program
-        (candle_cv_q_center_environment_list boxes) program)`;;
+        (candle_cv_q_center_environment_list boxes) program)
+      (candle_cv_q_dim_jet_program boxes program)`;;
 
-let candle_cv_q_jet_upper_once_correct = prove
- (`!boxes jet.
-     candle_cv_q_jet_upper_once
+let candle_cv_q_jet_upper_pair_correct = prove
+ (`!boxes center_jet box_jet.
+     candle_cv_q_jet_upper_pair
        (candle_cv_q_interval_list boxes)
-       (candle_cv_q_dim_jet_encode jet) =
-     candle_cv_q (candle_q_dim_jet_taylor_upper boxes jet)`,
+       (candle_cv_q_dim_jet_encode center_jet)
+       (candle_cv_q_dim_jet_encode box_jet) =
+     candle_cv_q
+       (candle_q_dim_jet_taylor_upper boxes center_jet box_jet)`,
   REPEAT GEN_TAC THEN
-  REWRITE_TAC[candle_cv_q_jet_upper_once_def;
+  REWRITE_TAC[candle_cv_q_jet_upper_pair_def;
               candle_q_dim_jet_taylor_upper_def;
               candle_cv_q_radius_list_correct;
               candle_cv_q_dim_jet_encode_def;
@@ -78,30 +84,36 @@ let candle_cv_q_dim_poly_jet_whole_box_upper_correct = prove
               candle_q_dim_poly_jet_whole_box_upper_def;
               candle_cv_q_center_environment_list_correct;
               candle_cv_q_dim_jet_program_correct;
-              candle_cv_q_jet_upper_once_correct]);;
+              candle_cv_q_jet_upper_pair_correct]);;
 
 let candle_q_dim_poly_jet_whole_box_upper_source = prove
  (`!e boxes.
      candle_q_dim_poly_jet_whole_box_upper e boxes =
      candle_q_dim_jet_taylor_upper boxes
        (candle_q_dim_poly_jet_normalized
-         (candle_q_center_environment_list boxes) e)`,
+         (candle_q_center_environment_list boxes) e)
+       (candle_q_dim_poly_jet_normalized boxes e)`,
   REWRITE_TAC[candle_q_dim_poly_jet_whole_box_upper_def;
               candle_q_dim_poly_compile_normalized_jet_program]);;
 
 let candle_cv_q_dim_poly_jet_whole_box_upper_sound_data = prove
  (`!e boxes.
-     ?jet.
+     ?center_jet box_jet.
        candle_cv_q_dim_poly_jet_whole_box_upper
          (candle_cv_q_instruction_list (candle_poly_compile e))
          (candle_cv_q_interval_list boxes) =
-       candle_cv_q (candle_q_dim_jet_taylor_upper boxes jet) /\
-       candle_q_dim_poly_jet_contains (LENGTH boxes) jet
-         (MAP (\i. candle_q_real (candle_q_midpoint i)) boxes) e`,
+       candle_cv_q
+         (candle_q_dim_jet_taylor_upper boxes center_jet box_jet) /\
+       candle_q_dim_poly_jet_contains (LENGTH boxes) center_jet
+         (MAP (\i. candle_q_real (candle_q_midpoint i)) boxes) e /\
+       (!env. candle_q_stack_contains boxes env
+              ==> candle_q_dim_poly_jet_contains (LENGTH boxes)
+                    box_jet env e)`,
   REPEAT GEN_TAC THEN
   EXISTS_TAC
    `candle_q_dim_poly_jet_normalized
       (candle_q_center_environment_list boxes) e` THEN
+  EXISTS_TAC `candle_q_dim_poly_jet_normalized boxes e` THEN
   CONJ_TAC THENL
    [REWRITE_TAC[candle_cv_q_dim_poly_jet_whole_box_upper_correct;
                 candle_q_dim_poly_jet_whole_box_upper_source];
@@ -111,6 +123,11 @@ let candle_cv_q_dim_poly_jet_whole_box_upper_sound_data = prove
        `MAP (\i. candle_q_real (candle_q_midpoint i)) boxes`]
       candle_q_dim_poly_jet_normalized_sound) THEN
     REWRITE_TAC[candle_q_center_environment_list_contains;
-                candle_q_center_environment_list_length]]);;
+                candle_q_center_environment_list_length] THEN
+    DISCH_TAC THEN CONJ_TAC THENL
+     [ASM_REWRITE_TAC[];
+      REPEAT STRIP_TAC THEN
+      MATCH_MP_TAC candle_q_dim_poly_jet_normalized_sound THEN
+      ASM_REWRITE_TAC[]]]);;
 
 end;;

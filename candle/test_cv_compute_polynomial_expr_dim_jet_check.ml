@@ -12,13 +12,17 @@ let candle_dim_jet_whole_box_compute_probe = prove
 
 let candle_dim_jet_whole_box_sound_data_probe = prove
  (`!e boxes.
-     ?jet.
+     ?center_jet box_jet.
        candle_cv_q_dim_poly_jet_whole_box_upper
          (candle_cv_q_instruction_list (candle_poly_compile e))
          (candle_cv_q_interval_list boxes) =
-       candle_cv_q (candle_q_dim_jet_taylor_upper boxes jet) /\
-       candle_q_dim_poly_jet_contains (LENGTH boxes) jet
-         (MAP (\i. candle_q_real (candle_q_midpoint i)) boxes) e`,
+       candle_cv_q
+         (candle_q_dim_jet_taylor_upper boxes center_jet box_jet) /\
+       candle_q_dim_poly_jet_contains (LENGTH boxes) center_jet
+         (MAP (\i. candle_q_real (candle_q_midpoint i)) boxes) e /\
+       (!env. candle_q_stack_contains boxes env
+              ==> candle_q_dim_poly_jet_contains (LENGTH boxes)
+                    box_jet env e)`,
   REWRITE_TAC[candle_cv_q_dim_poly_jet_whole_box_upper_sound_data]);;
 
 if hyp candle_dim_jet_whole_box_compute_probe = [] &&
