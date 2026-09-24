@@ -45,7 +45,7 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             "flyspeck": 56,
         })
         self.assertEqual(counts["normalized_sources"], 28)
-        self.assertEqual(counts["normalization_operations"], 166)
+        self.assertEqual(counts["normalization_operations"], 168)
 
     def test_every_source_action_is_exactly_resolved(self) -> None:
         selected = set(self.payload["source_nodes"])
@@ -309,6 +309,36 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             )
             self.assertNotIn(b"Stdlib.ignore", normalized)
             self.assertEqual(normalized.count(b"candle_ignore"), count)
+
+    def test_late_printers_use_the_authenticated_standard_formatter(
+        self,
+    ) -> None:
+        for source_key, count in (
+            subject.STD_FORMATTER_COMPATIBILITY_COUNTS.items()
+        ):
+            node = self.payload["source_nodes"][source_key]
+            operation = next(
+                operation
+                for operation in node["normalization"]["operations"]
+                if operation["kind"] == "standard-formatter-compatibility"
+            )
+            self.assertEqual(operation["before"], "Format.std_formatter")
+            self.assertEqual(operation["after"], "candle_std_formatter")
+            self.assertEqual(operation["replacement_count"], count)
+            normalized, _ = subject.normalize_source(
+                source_key,
+                (FLYSPECK_ROOT / node["logical_relative_path"]).read_bytes(),
+            )
+            self.assertNotIn(b"Format.std_formatter", normalized)
+            self.assertEqual(normalized.count(b"candle_std_formatter"), count)
+        ssreflect = self.payload["source_nodes"][
+            "flyspeck:formal_ineqs/lib/ssreflect/ssreflect.hl"
+        ]
+        self.assertNotIn(
+            "standard-formatter-compatibility",
+            {operation["kind"] for operation in
+             ssreflect["normalization"]["operations"]},
+        )
 
     def test_extension_formatting_inventory_is_complete(self) -> None:
         normalized = {

@@ -82,6 +82,11 @@ class NonlinearVerifierSmokeTest(unittest.TestCase):
             set(self.big_int_record["ignore"]["overlay_members"]),
             subject.IGNORE_MEMBERS,
         )
+        self.assertIn("let candle_std_formatter", self.big_int_compatibility)
+        self.assertEqual(
+            set(self.big_int_record["std_formatter"]["overlay_members"]),
+            subject.STD_FORMATTER_MEMBERS,
+        )
         self.assertEqual(
             set(self.big_int_record["float_constants"][
                 "closure_selected_members"

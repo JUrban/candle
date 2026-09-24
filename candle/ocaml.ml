@@ -929,13 +929,17 @@ module Printexc = struct
   let to_string (e: exn) = "TODO stub (Printexc.to_string)"
 end;;
 
+(* CANDLE_OCAML_STD_FORMATTER_BEGIN *)
+let candle_std_formatter = Pretty_imp.empty ();;
+(* CANDLE_OCAML_STD_FORMATTER_END *)
+
 module Format = struct
   type formatter = Pretty_imp.state;;
 
   (* The formal nonlinear library binds diagnostic printers against the
      standard formatter.  Candle does not install those OCaml toplevel
      printers, but it must preserve the formatter value and callback types. *)
-  let std_formatter = Pretty_imp.empty ();;
+  let std_formatter = candle_std_formatter;;
 
   let set_margin n =
     if n < 1 then failwith "set_margin: must be positive";

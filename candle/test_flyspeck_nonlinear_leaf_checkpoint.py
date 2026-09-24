@@ -68,6 +68,7 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
             self.assertIn("let candle_array_to_list", suffix)
             self.assertIn("Cake.Array.sub a index", suffix)
             self.assertIn("let candle_ignore _ = ()", suffix)
+            self.assertIn("let candle_std_formatter", suffix)
             self.assertIn(
                 "post-analytic checkpoint source identity mismatch", suffix,
             )
@@ -151,7 +152,7 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 1,
             )
             self.assertEqual(
-                len(subject.POST_ANALYTIC_OVERLAY_DELTA_SPECS), 10,
+                len(subject.POST_ANALYTIC_OVERLAY_DELTA_SPECS), 12,
             )
             self.assertIn(first_leaf.SUPPORT_READY_MARKER, suffix)
             self.assertNotIn("Break_case.ineqm_conv", suffix)
@@ -191,6 +192,12 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                     "post_analytic_ignore_compatibility"
                 ]["overlay_members"]),
                 smoke.IGNORE_MEMBERS,
+            )
+            self.assertEqual(
+                set(receipt[
+                    "post_analytic_std_formatter_compatibility"
+                ]["overlay_members"]),
+                smoke.STD_FORMATTER_MEMBERS,
             )
 
     def test_refuses_to_overwrite_an_existing_output_root(self) -> None:

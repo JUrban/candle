@@ -31,7 +31,7 @@ OUTPUT = Path("candle/flyspeck_nonlinear_verifier_closure.json")
 VERIFIER_ROOT = flyspeck_manifest.SourceRef(
     "flyspeck", "formal_ineqs/verifier/m_verifier_main.hl",
 )
-SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v19"
+SOURCE_NORMALIZATION = "candle-flyspeck-nonlinear-closure-compatibility-v20"
 NESTED_ARRAY_NORMALIZATION = SOURCE_NORMALIZATION
 DIRECT_NORMALIZATION_ALIAS = (
     "candle-flyspeck-direct-normalization-derived-alias-v1"
@@ -109,7 +109,10 @@ NORMALIZATION_SEMANTIC_RULE = (
     "traversal; this lets the preserved pre-runtime-repair analytic checkpoint "
     "load the remaining verifier suffix without changing array contents or "
     "the resulting lists. The one selected qualified Stdlib.ignore use routes "
-    "through an authenticated ordinary discard helper"
+    "through an authenticated ordinary discard helper. The two selected "
+    "late diagnostic-printer bindings use one source-authenticated standard "
+    "formatter state because the preserved checkpoint predates that Format "
+    "module member"
 )
 NORMALIZATION_SCOPE_LIMIT = (
     "This bounded parser normalization is confined to the authenticated "
@@ -161,7 +164,12 @@ NORMALIZATION_SCOPE_LIMIT = (
     "prepending, producing the native forward-order list and preserving array "
     "bounds behavior. The Stdlib.ignore rewrite is confined to report_error's "
     "already evaluated boolean guard; it preserves guard evaluation, the "
-    "possible Fatal exception, and the unit result. The two accumulator "
+    "possible Fatal exception, and the unit result. The standard-formatter "
+    "rewrites are confined to the still-unloaded informal_float and "
+    "informal_interval printer bindings; the already-loaded ssreflect source "
+    "and its authenticated physical identity remain untouched. They preserve "
+    "one shared formatter object and change no mathematical computation. The "
+    "two accumulator "
     "rewrites name the already "
     "evaluated pure list append "
     "immediately before returning the same triple; they preserve append order, "
@@ -1064,6 +1072,21 @@ for _source_key, _count in IGNORE_COMPATIBILITY_COUNTS.items():
             "qualified-ignore-compatibility",
             b"Stdlib.ignore",
             b"candle_ignore",
+            _count,
+        ),)
+    )
+
+STD_FORMATTER_COMPATIBILITY_COUNTS = {
+    "flyspeck:formal_ineqs/informal/informal_float.hl": 1,
+    "flyspeck:formal_ineqs/informal/informal_interval.hl": 1,
+}
+for _source_key, _count in STD_FORMATTER_COMPATIBILITY_COUNTS.items():
+    EXTENSION_COMPATIBILITY_REPLACEMENTS[_source_key] = (
+        EXTENSION_COMPATIBILITY_REPLACEMENTS.get(_source_key, ())
+        + (_replacement(
+            "standard-formatter-compatibility",
+            b"Format.std_formatter",
+            b"candle_std_formatter",
             _count,
         ),)
     )

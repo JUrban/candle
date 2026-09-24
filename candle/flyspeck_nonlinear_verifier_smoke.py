@@ -89,6 +89,7 @@ ASSERT_HELPER_MEMBERS = {"candle_assert"}
 BINARY64_ABS_MEMBERS = {"candle_binary64_abs"}
 ARRAY_TO_LIST_MEMBERS = {"candle_array_to_list"}
 IGNORE_MEMBERS = {"candle_ignore"}
+STD_FORMATTER_MEMBERS = {"candle_std_formatter"}
 
 
 def _hash_file(path: Path, algorithm: str) -> str:
@@ -274,6 +275,48 @@ def authenticate_ignore_compatibility(
     }
 
 
+def authenticate_std_formatter_compatibility(
+    candle_root: Path,
+) -> tuple[str, dict[str, Any]]:
+    """Extract the central standalone diagnostic formatter binding."""
+
+    candle_root = candle_root.resolve()
+    source_path = candle_root / FLOAT_CONSTANT_SOURCE
+    _ordinary_file(source_path, "standard formatter compatibility source")
+    source = source_path.read_bytes()
+    begin = b"(* CANDLE_OCAML_STD_FORMATTER_BEGIN *)\n"
+    end = b"(* CANDLE_OCAML_STD_FORMATTER_END *)"
+    if source.count(begin) != 1 or source.count(end) != 1:
+        raise ValueError("standard formatter compatibility boundary drift")
+    start = source.index(begin) + len(begin)
+    finish = source.index(end, start)
+    helper = source[start:finish]
+    if not helper.isascii():
+        raise ValueError("standard formatter compatibility is not ASCII")
+    text = helper.decode("ascii")
+    members = {
+        match.group(1)
+        for match in re.finditer(
+            r"^let(?: rec)? ([a-z0-9_]+)\b", text,
+            flags=re.MULTILINE,
+        )
+    }
+    if (
+        members != STD_FORMATTER_MEMBERS
+        or text.count("let candle_std_formatter = Pretty_imp.empty ()") != 1
+    ):
+        raise ValueError("standard formatter compatibility semantics drift")
+    return text, {
+        "source": FLOAT_CONSTANT_SOURCE.as_posix(),
+        "source_bytes": len(source),
+        "source_sha256": hashlib.sha256(source).hexdigest(),
+        "bytes": len(helper),
+        "sha256": hashlib.sha256(helper).hexdigest(),
+        "overlay_members": sorted(members),
+        "semantics": "one shared Pretty_imp formatter state",
+    }
+
+
 def authenticate_big_int_compatibility(
     candle_root: Path,
 ) -> tuple[str, dict[str, Any]]:
@@ -336,6 +379,9 @@ def authenticate_big_int_compatibility(
         authenticate_array_to_list_compatibility(candle_root)
     )
     ignore, ignore_record = authenticate_ignore_compatibility(candle_root)
+    std_formatter, std_formatter_record = (
+        authenticate_std_formatter_compatibility(candle_root)
+    )
 
     source_path = candle_root / BIG_INT_SOURCE
     _ordinary_file(source_path, "Big_int compatibility source")
@@ -425,7 +471,8 @@ def authenticate_big_int_compatibility(
         assert_helper + b"\n" + float_constants + b"\n"
         + binary64_abs.encode("ascii") + b"\n"
         + array_to_list.encode("ascii") + b"\n"
-        + ignore.encode("ascii") + b"\n" + module + b"\n\n"
+        + ignore.encode("ascii") + b"\n"
+        + std_formatter.encode("ascii") + b"\n" + module + b"\n\n"
         + bridge + b"\n" + exports
     )
     return overlay.decode("ascii"), {
@@ -450,6 +497,7 @@ def authenticate_big_int_compatibility(
         "binary64_abs": binary64_abs_record,
         "array_to_list": array_to_list_record,
         "ignore": ignore_record,
+        "std_formatter": std_formatter_record,
         "source": {
             "path": BIG_INT_SOURCE.as_posix(),
             "bytes": len(source),
