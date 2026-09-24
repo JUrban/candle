@@ -63,6 +63,14 @@ let candle_dim_jet_scale_degree2_through5 =
   candle_dim_jet_scale_degree2_through4 @
   candle_dim_jet_scale_choose_repeated 0 5;;
 
+let candle_dim_jet_scale_degree2_through6 =
+  candle_dim_jet_scale_degree2_through5 @
+  candle_dim_jet_scale_choose_repeated 0 6;;
+
+let candle_dim_jet_scale_degree2_through7 =
+  candle_dim_jet_scale_degree2_through6 @
+  candle_dim_jet_scale_choose_repeated 0 7;;
+
 let candle_dim_jet_scale_coefficient indices =
   1 + itlist (fun index total -> index + 1 + total) indices 0;;
 
@@ -148,6 +156,12 @@ let candle_dim_jet_scale_boxes =
                     candle_dim_jet_scale_narrow_upper);
    ("asymmetric-primes",candle_dim_jet_scale_prime_lower,
                          candle_dim_jet_scale_prime_upper);
+   ("wide-binary",candle_dim_jet_scale_wide_lower,
+                  candle_dim_jet_scale_wide_upper)];;
+
+let candle_dim_jet_scale_binary_boxes =
+  [("narrow-binary",candle_dim_jet_scale_narrow_lower,
+                    candle_dim_jet_scale_narrow_upper);
    ("wide-binary",candle_dim_jet_scale_wide_lower,
                   candle_dim_jet_scale_wide_upper)];;
 
@@ -385,8 +399,8 @@ let candle_dim_jet_scale_run_box_chunked
      " upper_d_bits=" ^ string_of_int d_bits ^
      " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
-let candle_dim_jet_scale_run_case_chunked
-      case_name monomials negative_constant chunk_width =
+let candle_dim_jet_scale_run_case_chunked_on_boxes
+      case_name monomials negative_constant chunk_width boxes =
   candle_dim_jet_scale_marker "chunk-prepare" case_name "all" "begin";
   let program = candle_dim_jet_scale_program monomials negative_constant in
   let chunks = candle_dim_jet_scale_chunks chunk_width program in
@@ -416,6 +430,12 @@ let candle_dim_jet_scale_run_case_chunked
     (fun (box_name,lower,upper) ->
       candle_dim_jet_scale_run_box_chunked
         case_name box_name encoded_chunks lower upper)
+    boxes;;
+
+let candle_dim_jet_scale_run_case_chunked
+      case_name monomials negative_constant chunk_width =
+  candle_dim_jet_scale_run_case_chunked_on_boxes
+    case_name monomials negative_constant chunk_width
     candle_dim_jet_scale_boxes;;
 
 let candle_dim_jet_scale_run_case_on_boxes
@@ -485,5 +505,20 @@ let _ =
   candle_dim_jet_scale_run_center_profile
     "degree2-through5-455-center-profile"
     candle_dim_jet_scale_degree2_through5 32768 128;;
+
+(* Larger synthetic stress cases retain the same supported expression       *)
+(* language and six-coordinate derivative surface.  The degree-six program  *)
+(* is reused over all three boxes.  Degree seven uses the two binary boxes:   *)
+(* the corresponding prime-denominator stress case is deliberately separate *)
+(* because its exact rationals exceed the practical Taylor-handoff boundary. *)
+
+let _ =
+  candle_dim_jet_scale_run_case_chunked
+    "degree2-through6-917" candle_dim_jet_scale_degree2_through6 131072 128;;
+
+let _ =
+  candle_dim_jet_scale_run_case_chunked_on_boxes
+    "degree2-through7-1709" candle_dim_jet_scale_degree2_through7 524288 128
+    candle_dim_jet_scale_binary_boxes;;
 
 print_endline "CANDLE_CV_POLYNOMIAL_EXPR_DIM_JET_SCALING_OK";;
