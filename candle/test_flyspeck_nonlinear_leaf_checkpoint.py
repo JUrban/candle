@@ -111,15 +111,50 @@ class NonlinearLeafCheckpointInputTest(unittest.TestCase):
                 ),
                 suffix,
             )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/informal/"
+                    "informal_nat.hl"
+                ),
+                suffix,
+            )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/informal/"
+                    "informal_search.hl"
+                ),
+                suffix,
+            )
+            self.assertIn(
+                str(
+                    output / "overlay/flyspeck/formal_ineqs/informal/"
+                    "informal_verifier.hl"
+                ),
+                suffix,
+            )
             self.assertEqual(
                 suffix.count("post-analytic direct source was already loaded:"),
-                3,
+                len(subject.POST_ANALYTIC_DIRECT_SPECS),
             )
             self.assertEqual(
                 suffix.count(
                     "post-analytic direct source dependency did not commit:"
                 ),
-                3,
+                len(subject.POST_ANALYTIC_DIRECT_SPECS),
+            )
+            direct_offsets = [
+                suffix.index("post-analytic direct source was already loaded: "
+                             + label)
+                for _, _, label in subject.POST_ANALYTIC_DIRECT_SPECS
+            ]
+            self.assertEqual(direct_offsets, sorted(direct_offsets))
+            self.assertLess(
+                suffix.index("Informal_nat.arith_base"),
+                suffix.index("Informal_exp.exp_float_hi"),
+            )
+            self.assertLess(
+                suffix.index("Informal_verifier.m_taylor_cell_pass"),
+                suffix.index("Informal_search.find_max"),
             )
             self.assertIn("Exp_eval.float_exp_hi", suffix)
             self.assertIn("Informal_exp.exp_float_hi", suffix)

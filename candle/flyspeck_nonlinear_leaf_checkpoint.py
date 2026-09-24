@@ -30,6 +30,38 @@ POST_ANALYTIC_SOURCE_KEY = (
 POST_ANALYTIC_DIRECT_SOURCE_KEY = (
     "flyspeck:formal_ineqs/verifier/m_verifier.hl"
 )
+POST_ANALYTIC_DIRECT_SPECS = (
+    (
+        "flyspeck:formal_ineqs/informal/informal_nat.hl",
+        "Informal_nat.arith_base",
+        "informal-nat",
+    ),
+    (
+        "flyspeck:formal_ineqs/trig/exp_eval.hl",
+        "Exp_eval.float_exp_hi",
+        "exp-eval",
+    ),
+    (
+        "flyspeck:formal_ineqs/informal/informal_exp.hl",
+        "Informal_exp.exp_float_hi",
+        "informal-exp",
+    ),
+    (
+        "flyspeck:formal_ineqs/informal/informal_verifier.hl",
+        "Informal_verifier.m_taylor_cell_pass",
+        "informal-verifier",
+    ),
+    (
+        "flyspeck:formal_ineqs/informal/informal_search.hl",
+        "Informal_search.find_max",
+        "informal-search",
+    ),
+    (
+        POST_ANALYTIC_DIRECT_SOURCE_KEY,
+        "M_verifier.m_verify_disj_raw0",
+        "m-verifier",
+    ),
+)
 POST_ANALYTIC_CLOSURE_READY_REF = (
     "candle_nonlinear_post_analytic_closure_ready"
 )
@@ -86,25 +118,8 @@ def build_post_analytic_suffix(
         smoke._ocaml_string(root_record["basename"]),
         smoke._ocaml_string(root_record["md5"]),
     )
-    direct_specs = (
-        (
-            "flyspeck:formal_ineqs/trig/exp_eval.hl",
-            "Exp_eval.float_exp_hi",
-            "exp-eval",
-        ),
-        (
-            "flyspeck:formal_ineqs/informal/informal_exp.hl",
-            "Informal_exp.exp_float_hi",
-            "informal-exp",
-        ),
-        (
-            POST_ANALYTIC_DIRECT_SOURCE_KEY,
-            "M_verifier.m_verify_disj_raw0",
-            "m-verifier",
-        ),
-    )
     direct_blocks = []
-    for source_key, export_probe, label in direct_specs:
+    for source_key, export_probe, label in POST_ANALYTIC_DIRECT_SPECS:
         record = next(
             item for item in records if item["source_key"] == source_key
         )
@@ -164,10 +179,11 @@ List.iter candle_nonlinear_post_analytic_check_overlay
 
 (* Loader configuration is immutable by design.  Reauthenticate the overlay
    table inherited from the frozen checkpoint.  Its already-loaded analytic
-   sources and all unchanged suffix sources remain valid.  The three changed
-   sources below are loaded directly from their separately authenticated
-   current overlays and commit their original logical identities only after
-   their module exports exist. *)
+   sources and all unchanged suffix sources remain valid.  The bounded set of
+   overlays added or changed since that checkpoint is loaded directly in
+   dependency order from the separately authenticated current bundle.  Each
+   source commits its original logical identity only after its module export
+   exists. *)
 List.iter candle_nonlinear_check_overlay candle_nonlinear_overlay_rows;;
 
 if !Cakeml.pendingLoadedSourceIds <> [] ||
