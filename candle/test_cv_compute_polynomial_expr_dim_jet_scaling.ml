@@ -5,11 +5,13 @@ needs "candle/compute.ml";;
 needs "candle/cv_compute_exact_interval_reify.ml";;
 needs "candle/cv_compute_polynomial_expr_dim_jet_compute.ml";;
 needs "candle/cv_compute_polynomial_expr_dim_first_jet_compute.ml";;
+needs "candle/cv_compute_polynomial_expr_flyspeck_fixture.ml";;
 
 open Candle_cv_exact_interval_reify;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_polynomial_expr_dim_jet_compute;;
 open Candle_cv_polynomial_expr_dim_first_jet_compute;;
+open Candle_cv_polynomial_expr_flyspeck_fixture;;
 
 let candle_dim_jet_scale_marker phase case_name box_name event =
   print_endline
@@ -165,6 +167,38 @@ let candle_dim_jet_scale_binary_boxes =
    ("wide-binary",candle_dim_jet_scale_wide_lower,
                   candle_dim_jet_scale_wide_upper)];;
 
+(* A source-authenticated instance of the polynomial [--delta_x] used by   *)
+(* Flyspeck.  The three exact boxes lie in the usual squared-edge range     *)
+(* [4,(2.52)^2].  They are profiling candidates, not claimed certificate    *)
+(* leaves; in particular the complete range need not pass the Taylor test.  *)
+
+let candle_dim_jet_scale_delta_variables =
+  [`x1:real`;`x2:real`;`x3:real`;`x4:real`;`x5:real`;`x6:real`];;
+
+let candle_dim_jet_scale_neg_delta_source =
+  `--(x1*x4*(--x1 + x2 + x3 - x4 + x5 + x6) +
+      x2*x5*(x1 - x2 + x3 + x4 - x5 + x6) +
+      x3*x6*(x1 + x2 - x3 + x4 + x5 - x6) -
+      x2*x3*x4 - x1*x3*x5 - x1*x2*x6 - x4*x5*x6)`;;
+
+let candle_dim_jet_scale_edge_lower =
+  replicate (candle_dim_jet_scale_q 4 1) 6;;
+let candle_dim_jet_scale_edge_tight_upper =
+  replicate (candle_dim_jet_scale_q 81 20) 6;;
+let candle_dim_jet_scale_edge_mixed_upper =
+  map (fun (n,d) -> candle_dim_jet_scale_q n d)
+    [(81,20);(9,2);(5,1);(11,2);(6,1);(3969,625)];;
+let candle_dim_jet_scale_edge_full_upper =
+  replicate (candle_dim_jet_scale_q 3969 625) 6;;
+
+let candle_dim_jet_scale_flyspeck_delta_boxes =
+  [("squared-edge-tight",candle_dim_jet_scale_edge_lower,
+                           candle_dim_jet_scale_edge_tight_upper);
+   ("squared-edge-mixed",candle_dim_jet_scale_edge_lower,
+                           candle_dim_jet_scale_edge_mixed_upper);
+   ("squared-edge-full",candle_dim_jet_scale_edge_lower,
+                          candle_dim_jet_scale_edge_full_upper)];;
+
 let candle_dim_jet_scale_dest_pair tm =
   let partial,right = dest_comb tm in
   let operator,left = dest_comb partial in
@@ -187,6 +221,13 @@ let candle_dim_jet_scale_num_bits n =
     else loop (Num.quo_num value two) (bits + 1) in
   loop n 0;;
 
+let candle_dim_jet_scale_gcd_profile numerator denominator =
+  let zero = Num.num_of_int 0 in
+  let rec loop steps a b =
+    if Num.eq_num b zero then steps,a
+    else loop (steps + 1) b (Num.mod_num a b) in
+  loop 0 numerator denominator;;
+
 let candle_dim_jet_scale_upper_metrics upper =
   let z,d_encoded = candle_dim_jet_scale_dest_pair upper in
   let p_encoded,n_encoded = candle_dim_jet_scale_dest_pair z in
@@ -194,9 +235,14 @@ let candle_dim_jet_scale_upper_metrics upper =
       n = candle_dim_jet_scale_dest_num n_encoded and
       d = Num.add_num (candle_dim_jet_scale_dest_num d_encoded)
                       (Num.num_of_int 1) in
+  let gcd_steps,gcd =
+    candle_dim_jet_scale_gcd_profile (Num.add_num p n) d in
   candle_dim_jet_scale_num_bits p,
   candle_dim_jet_scale_num_bits n,
-  candle_dim_jet_scale_num_bits d;;
+  candle_dim_jet_scale_num_bits d,
+  gcd_steps,
+  candle_dim_jet_scale_num_bits gcd,
+  Num.gt_num gcd (Num.num_of_int 1);;
 
 let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
   let boxes_rep = candle_dim_jet_scale_box_rep lower upper in
@@ -212,7 +258,7 @@ let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
   candle_dim_jet_scale_marker "compute" case_name box_name "end";
   let verdict,upper =
     candle_dim_jet_scale_dest_pair (rand (concl compute_theorem)) in
-  let p_bits,n_bits,d_bits =
+  let p_bits,n_bits,d_bits,gcd_steps,gcd_bits,gcd_nontrivial =
     candle_dim_jet_scale_upper_metrics upper in
   if hyp compute_theorem <> [] then
     failwith "dimension-jet scaling compute theorem has assumptions";
@@ -226,6 +272,12 @@ let candle_dim_jet_scale_run_box case_name box_name program_rep lower upper =
      " upper_p_bits=" ^ string_of_int p_bits ^
      " upper_n_bits=" ^ string_of_int n_bits ^
      " upper_d_bits=" ^ string_of_int d_bits ^
+     " upper_gcd_steps=" ^ string_of_int gcd_steps ^
+     " upper_gcd_bits=" ^ string_of_int gcd_bits ^
+     " upper_gcd_nontrivial=" ^
+       (if gcd_nontrivial then "true" else "false") ^
+     " upper_gcd_exceeds_fuel=" ^
+       (if gcd_steps > 128 then "true" else "false") ^
      " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let rec candle_dim_jet_scale_chunks width items =
@@ -384,7 +436,7 @@ let candle_dim_jet_scale_run_box_chunked
         (`candle_cv_q_dim_whole_box_finish`,
          [`Cexp_num 1`;valid_rep;upper])) in
   let verdict,final_upper = candle_dim_jet_scale_dest_pair result in
-  let p_bits,n_bits,d_bits =
+  let p_bits,n_bits,d_bits,gcd_steps,gcd_bits,gcd_nontrivial =
     candle_dim_jet_scale_upper_metrics final_upper in
   print_endline
     ("CANDLE_DIM_JET_CHUNKED_RESULT case=" ^ case_name ^
@@ -397,6 +449,12 @@ let candle_dim_jet_scale_run_box_chunked
      " upper_p_bits=" ^ string_of_int p_bits ^
      " upper_n_bits=" ^ string_of_int n_bits ^
      " upper_d_bits=" ^ string_of_int d_bits ^
+     " upper_gcd_steps=" ^ string_of_int gcd_steps ^
+     " upper_gcd_bits=" ^ string_of_int gcd_bits ^
+     " upper_gcd_nontrivial=" ^
+       (if gcd_nontrivial then "true" else "false") ^
+     " upper_gcd_exceeds_fuel=" ^
+       (if gcd_steps > 128 then "true" else "false") ^
      " authority=cval-and-source-jet-semantics-proved-analytic-finish-pending");;
 
 let candle_dim_jet_scale_run_case_chunked_on_boxes
@@ -437,6 +495,61 @@ let candle_dim_jet_scale_run_case_chunked
   candle_dim_jet_scale_run_case_chunked_on_boxes
     case_name monomials negative_constant chunk_width
     candle_dim_jet_scale_boxes;;
+
+let candle_dim_jet_scale_prepare_flyspeck_source case_name source =
+  candle_dim_jet_scale_marker "source-reify" case_name "all" "begin";
+  let lower = map term_of_rat candle_dim_jet_scale_edge_lower and
+      upper = map term_of_rat candle_dim_jet_scale_edge_tight_upper in
+  let vector_source,_,expression,valid,source_theorem,program,run_theorem =
+    candle_poly_prepare_scalar_fixture
+      `p:real^6` candle_dim_jet_scale_delta_variables source lower upper in
+  candle_dim_jet_scale_marker "source-reify" case_name "all" "end";
+  if hyp valid <> [] || hyp source_theorem <> [] || hyp run_theorem <> [] then
+    failwith "Flyspeck source reifier returned assumptions";
+  let instructions = dest_list program in
+  print_endline
+    ("CANDLE_DIM_JET_SOURCE_PREP case=" ^ case_name ^
+     " instructions=" ^ string_of_int (length instructions) ^
+     " source_term_chars=" ^ string_of_int (String.length (string_of_term source)) ^
+     " vector_source_chars=" ^
+       string_of_int (String.length (string_of_term vector_source)) ^
+     " expression_chars=" ^
+       string_of_int (String.length (string_of_term expression)) ^
+     " source_theorem_chars=" ^
+       string_of_int (String.length (string_of_thm source_theorem)) ^
+     " authority=assumption-free-kernel-source-reifier-development-non-release");
+  instructions;;
+
+let candle_dim_jet_scale_run_source_chunked_on_boxes
+      case_name program chunk_width boxes =
+  candle_dim_jet_scale_marker "source-chunk-prepare" case_name "all" "begin";
+  let chunks = candle_dim_jet_scale_chunks chunk_width program in
+  let encoded_chunks =
+    map
+      (fun chunk ->
+        rand
+          (concl
+            (candle_q_program_encode_conv
+              (mk_list (chunk,candle_q_instruction_type)))))
+      chunks in
+  candle_dim_jet_scale_marker "source-chunk-prepare" case_name "all" "end";
+  print_endline
+    ("CANDLE_DIM_JET_SOURCE_CHUNKED_PREP case=" ^ case_name ^
+     " instructions=" ^ string_of_int (length program) ^
+     " chunk_width=" ^ string_of_int chunk_width ^
+     " chunks=" ^ string_of_int (length chunks) ^
+     " encoded_term_chars=" ^
+       string_of_int
+         (itlist
+           (fun chunk total ->
+             String.length (string_of_term chunk) + total)
+           encoded_chunks 0) ^
+     " authority=assumption-free-kernel-source-reifier-development-non-release");
+  List.iter
+    (fun (box_name,lower,upper) ->
+      candle_dim_jet_scale_run_box_chunked
+        case_name box_name encoded_chunks lower upper)
+    boxes;;
 
 let candle_dim_jet_scale_run_case_on_boxes
       case_name monomials negative_constant boxes =
@@ -487,6 +600,15 @@ let _ =
 let _ =
   candle_dim_jet_scale_run_case_chunked
     "dense-92" candle_dim_jet_scale_dense 2048 128;;
+
+let candle_dim_jet_scale_neg_delta_program =
+  candle_dim_jet_scale_prepare_flyspeck_source
+    "flyspeck-neg-delta-x" candle_dim_jet_scale_neg_delta_source;;
+
+let _ =
+  candle_dim_jet_scale_run_source_chunked_on_boxes
+    "flyspeck-neg-delta-x" candle_dim_jet_scale_neg_delta_program 128
+    candle_dim_jet_scale_flyspeck_delta_boxes;;
 
 (* These deliberately synthetic Flyspeck-shaped polynomials contain every   *)
 (* repeated monomial in six coordinates through degrees four and five.  They *)
