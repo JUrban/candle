@@ -17,8 +17,15 @@ let candle_dim_jet_source_program_probe = prove
        (candle_q_dim_poly_jet_normalized boxes e)`,
   REWRITE_TAC[candle_cv_q_dim_poly_compile_program_correct]);;
 
+let candle_dim_jet_source_shape_probe = prove
+ (`!e boxes.
+     candle_q_dim_jet_shape (LENGTH boxes)
+       (candle_q_dim_poly_jet_normalized boxes e)`,
+  REWRITE_TAC[candle_q_dim_poly_jet_normalized_shape]);;
+
 if hyp candle_dim_jet_normalized_interval_probe = [] &&
-   hyp candle_dim_jet_source_program_probe = [] then
+   hyp candle_dim_jet_source_program_probe = [] &&
+   hyp candle_dim_jet_source_shape_probe = [] then
   print_endline "CANDLE_CV_DIM_JET_SEMANTICS_OK"
 else
   failwith "dimension-jet semantic bridge theorem has assumptions";;
