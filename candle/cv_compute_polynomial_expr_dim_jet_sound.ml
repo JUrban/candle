@@ -14,6 +14,7 @@ module Candle_cv_polynomial_expr_dim_jet_sound = struct
 
 open Multivariate_taylor;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_exact_rational_order_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
@@ -848,5 +849,55 @@ let candle_q_dim_poly_jet_whole_box_upper_sound = prove
   ACCEPT_TAC
    (CONJ center_shape_th
      (CONJ center_sound_th (CONJ box_shape_th box_sound_th))));;
+
+let candle_q_dim_poly_jet_whole_box_accept_sound = prove
+ (`!e boxes.
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_dim_poly_jet_whole_box_numerical_accept e boxes
+     ==>
+     !(p:real^N). p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+       ==>
+       candle_poly_denote_dim e (p:real^N) < &0`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_dim_poly_jet_whole_box_numerical_accept_def] THEN
+  STRIP_TAC THEN
+  X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+  let upper_th =
+    MATCH_MP
+     (SPECL
+       [`e:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`]
+       candle_q_dim_poly_jet_whole_box_upper_sound)
+     (CONJ
+       (ASSUME `candle_poly_valid_dim (dimindex (:N)) e`)
+       (CONJ
+         (ASSUME
+           `LENGTH
+             (boxes:(((num#num)#num)#((num#num)#num))list) =
+            dimindex (:N)`)
+         (ASSUME `candle_q_box_valid_list boxes`))) in
+  let upper_at_p =
+    MATCH_MP (SPEC `p:real^N` upper_th)
+     (ASSUME
+       `(p:real^N) IN interval
+         [candle_q_box_lower_vector boxes,
+          candle_q_box_upper_vector boxes]`) in
+  let upper_negative =
+    REWRITE_RULE[candle_q_le_real; candle_q_dim_real_zero; REAL_NOT_LE]
+     (ASSUME
+       `~(candle_q_le candle_q_zero
+           (candle_q_dim_poly_jet_whole_box_upper e boxes))`) in
+  ACCEPT_TAC
+   (MATCH_MP
+     (ISPECL
+       [`candle_poly_denote_dim e (p:real^N)`;
+        `candle_q_real
+          (candle_q_dim_poly_jet_whole_box_upper e boxes)`;
+        `&0`]
+       REAL_LET_TRANS)
+     (CONJ upper_at_p upper_negative)));;
 
 end;;

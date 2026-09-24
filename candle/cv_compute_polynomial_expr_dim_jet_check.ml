@@ -14,6 +14,8 @@ needs "candle/cv_compute_whole_box_dim_taylor_sound.ml";;
 module Candle_cv_polynomial_expr_dim_jet_check = struct
 
 open Candle_cv_exact_interval_program;;
+open Candle_cv_exact_rational_order_core;;
+open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_dim_jet;;
@@ -129,5 +131,46 @@ let candle_cv_q_dim_poly_jet_whole_box_upper_sound_data = prove
       REPEAT STRIP_TAC THEN
       MATCH_MP_TAC candle_q_dim_poly_jet_normalized_sound THEN
       ASM_REWRITE_TAC[]]]);;
+
+(* The reflected checker deliberately treats source validity separately.     *)
+(* The source reifier proves that once for the expression; the recurring     *)
+(* numerical check validates the box and the sign of the computed bound.     *)
+
+let candle_q_dim_poly_jet_whole_box_numerical_accept_def = new_definition
+ `candle_q_dim_poly_jet_whole_box_numerical_accept e boxes <=>
+    candle_q_box_valid_list boxes /\
+    ~(candle_q_le candle_q_zero
+       (candle_q_dim_poly_jet_whole_box_upper e boxes))`;;
+
+let candle_cv_q_dim_poly_jet_whole_box_check_def = new_definition
+ `candle_cv_q_dim_poly_jet_whole_box_check program boxes =
+    candle_cv_q_dim_whole_box_finish
+      (Cexp_num (SUC 0))
+      (candle_cv_q_box_valid_list boxes)
+      (candle_cv_q_dim_poly_jet_whole_box_upper program boxes)`;;
+
+let candle_cv_q_dim_poly_jet_whole_box_check_correct = prove
+ (`!e boxes.
+     candle_cv_q_dim_poly_jet_whole_box_check
+       (candle_cv_q_instruction_list (candle_poly_compile e))
+       (candle_cv_q_interval_list boxes) =
+     Cexp_pair
+       (Cexp_num
+         (if candle_q_dim_poly_jet_whole_box_numerical_accept e boxes
+          then SUC 0 else 0))
+       (candle_cv_q (candle_q_dim_poly_jet_whole_box_upper e boxes))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_q_dim_poly_jet_whole_box_check_def;
+              candle_cv_q_box_valid_list_correct;
+              candle_cv_q_dim_poly_jet_whole_box_upper_correct;
+              candle_q_dim_poly_jet_whole_box_numerical_accept_def] THEN
+  let finish_th =
+    SPECL
+     [`T`;
+      `candle_q_box_valid_list
+        (boxes:(((num#num)#num)#((num#num)#num))list)`;
+     `candle_q_dim_poly_jet_whole_box_upper e boxes`]
+     candle_cv_q_dim_whole_box_finish_correct in
+  ACCEPT_TAC (REWRITE_RULE[] finish_th));;
 
 end;;
