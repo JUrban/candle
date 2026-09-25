@@ -18,6 +18,7 @@ open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_jet;;
 
 let candle_analytic_instruction_INDUCT,
@@ -30,7 +31,9 @@ let candle_analytic_instruction_INDUCT,
      | Candle_analytic_program_square
      | Candle_analytic_program_inv
      | Candle_analytic_program_sqrt
-         (((num#num)#num)#((num#num)#num))";;
+         (((num#num)#num)#((num#num)#num))
+     | Candle_analytic_program_atn
+     | Candle_analytic_program_pi_half";;
 
 let candle_q_dim_analytic_result_domain_def = new_definition
  `candle_q_dim_analytic_result_domain result = FST result`;;
@@ -131,7 +134,22 @@ let candle_q_dim_analytic_program_step_def = define
         candle_q_dim_jet_sqrt_with s
           (candle_q_dim_analytic_result_jet
             (candle_q_dim_analytic_result_head boxes stack)))
-       (candle_q_dim_analytic_result_tail stack))`;;
+       (candle_q_dim_analytic_result_tail stack)) /\
+  (candle_q_dim_analytic_program_step boxes
+     Candle_analytic_program_atn stack =
+     CONS
+       ((candle_q_dim_analytic_result_domain
+           (candle_q_dim_analytic_result_head boxes stack) /\
+         candle_q_dim_jet_atn_domain
+           (candle_q_dim_analytic_result_jet
+             (candle_q_dim_analytic_result_head boxes stack))),
+        candle_q_dim_jet_atn
+          (candle_q_dim_analytic_result_jet
+            (candle_q_dim_analytic_result_head boxes stack)))
+       (candle_q_dim_analytic_result_tail stack)) /\
+  (candle_q_dim_analytic_program_step boxes
+     Candle_analytic_program_pi_half stack =
+     CONS (T,candle_q_dim_jet_pi_half boxes) stack)`;;
 
 let candle_q_dim_analytic_program_run_def = define
  `(candle_q_dim_analytic_program_run boxes [] stack = stack) /\
@@ -171,7 +189,12 @@ let candle_analytic_compile_def = define
       (Candle_analytic_sqrt lp ln ld up un ud a) =
      APPEND (candle_analytic_compile a)
        [Candle_analytic_program_sqrt
-         (candle_analytic_sqrt_interval lp ln ld up un ud)])`;;
+         (candle_analytic_sqrt_interval lp ln ld up un ud)]) /\
+  (candle_analytic_compile (Candle_analytic_atn a) =
+     APPEND (candle_analytic_compile a)
+       [Candle_analytic_program_atn]) /\
+  (candle_analytic_compile Candle_analytic_pi_half =
+     [Candle_analytic_program_pi_half])`;;
 
 let candle_q_dim_analytic_compile_run = prove
  (`!e boxes stack.

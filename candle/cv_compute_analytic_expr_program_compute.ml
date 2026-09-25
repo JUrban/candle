@@ -18,6 +18,7 @@ open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_program;;
 
@@ -106,6 +107,21 @@ let candle_cv_q_dim_analytic_result_sqrt_def = new_definition
       (candle_cv_q_dim_jet_sqrt_with s
         (candle_cv_q_dim_analytic_result_jet result))`;;
 
+let candle_cv_q_dim_analytic_result_atn_def = new_definition
+ `candle_cv_q_dim_analytic_result_atn result =
+    candle_cv_q_dim_analytic_result_make
+      (candle_cv_bool_and
+        (candle_cv_q_dim_analytic_result_domain result)
+        (candle_cv_q_dim_jet_atn_domain
+          (candle_cv_q_dim_analytic_result_jet result)))
+      (candle_cv_q_dim_jet_atn
+        (candle_cv_q_dim_analytic_result_jet result))`;;
+
+let candle_cv_q_dim_analytic_result_pi_half_def = new_definition
+ `candle_cv_q_dim_analytic_result_pi_half boxes =
+    candle_cv_q_dim_analytic_result_make (Cexp_num 1)
+      (candle_cv_q_dim_jet_pi_half boxes)`;;
+
 let candle_cv_analytic_instruction_def = define
  `(candle_cv_analytic_instruction
      (Candle_analytic_push_poly program) =
@@ -121,7 +137,11 @@ let candle_cv_analytic_instruction_def = define
   (candle_cv_analytic_instruction Candle_analytic_program_inv =
      Cexp_num 6) /\
   (candle_cv_analytic_instruction (Candle_analytic_program_sqrt s) =
-     Cexp_pair (Cexp_num 1) (candle_cv_q_interval s))`;;
+     Cexp_pair (Cexp_num 1) (candle_cv_q_interval s)) /\
+  (candle_cv_analytic_instruction Candle_analytic_program_atn =
+     Cexp_num 7) /\
+  (candle_cv_analytic_instruction Candle_analytic_program_pi_half =
+     Cexp_num 8)`;;
 
 let candle_cv_analytic_instruction_list_def = define
  `(candle_cv_analytic_instruction_list [] = Cexp_num 0) /\
@@ -187,9 +207,17 @@ let candle_cv_q_dim_analytic_program_step_def = new_definition
                   (candle_cv_q_dim_analytic_result_inv
                     (candle_cv_q_dim_analytic_result_head boxes stack))
                   (candle_cv_q_dim_analytic_result_tail stack))
-                (Cexp_pair
-                  (candle_cv_q_dim_analytic_result_default boxes)
-                  stack))))))`;;
+                (Cexp_if (Cexp_eq instruction (Cexp_num 7))
+                  (Cexp_pair
+                    (candle_cv_q_dim_analytic_result_atn
+                      (candle_cv_q_dim_analytic_result_head boxes stack))
+                    (candle_cv_q_dim_analytic_result_tail stack))
+                  (Cexp_if (Cexp_eq instruction (Cexp_num 8))
+                    (Cexp_pair
+                      (candle_cv_q_dim_analytic_result_pi_half boxes) stack)
+                    (Cexp_pair
+                      (candle_cv_q_dim_analytic_result_default boxes)
+                      stack))))))))`;;
 
 let candle_cv_q_dim_analytic_program_run_def = define
  `(candle_cv_q_dim_analytic_program_run boxes (Cexp_num n) stack = stack) /\
@@ -214,6 +242,7 @@ let candle_cv_q_dim_analytic_program_def = new_definition
  `candle_cv_q_dim_analytic_program boxes program =
     candle_cv_q_dim_analytic_result_head boxes
       (candle_cv_q_dim_analytic_program_run boxes program (Cexp_num 0))`;;
+
 
 let candle_cv_bool_and_correct = prove
  (`!a b.
@@ -262,7 +291,7 @@ let candle_cv_q_dim_analytic_result_default_correct = prove
               candle_cv_q_dim_jet_zero_correct;
               candle_cv_q_dim_analytic_result_encode_def;
               candle_cv_q_dim_analytic_result_make_def;
-              candle_cv_bool_def; FST; SND]);;
+              candle_cv_bool_def; ARITH_RULE `SUC 0 = 1`; FST; SND]);;
 let candle_cv_q_dim_analytic_result_head_correct = prove
  (`!boxes stack.
      candle_cv_q_dim_analytic_result_head
@@ -365,6 +394,14 @@ let candle_cv_q_dim_jet_sqrt_domain_bool_correct = prove
   REWRITE_TAC[candle_cv_q_dim_jet_sqrt_domain_correct;
               candle_cv_bool_def; ARITH_RULE `1 = SUC 0`]);;
 
+let candle_cv_q_dim_jet_atn_domain_bool_correct = prove
+ (`!jet.
+     candle_cv_q_dim_jet_atn_domain (candle_cv_q_dim_jet_encode jet) =
+     candle_cv_bool (candle_q_dim_jet_atn_domain jet)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_q_dim_jet_atn_domain_correct;
+              candle_cv_bool_def; ARITH_RULE `1 = SUC 0`]);;
+
 let candle_cv_q_dim_analytic_result_inv_correct = prove
  (`!result.
      candle_cv_q_dim_analytic_result_inv
@@ -400,10 +437,49 @@ let candle_cv_q_dim_analytic_result_sqrt_correct = prove
               candle_cv_bool_and_correct;
               candle_cv_q_dim_jet_sqrt_with_correct;
               candle_cv_q_dim_analytic_result_make_correct]);;
+let candle_cv_q_dim_analytic_result_atn_correct = prove
+ (`!result.
+     candle_cv_q_dim_analytic_result_atn
+       (candle_cv_q_dim_analytic_result_encode result) =
+     candle_cv_q_dim_analytic_result_encode
+       ((candle_q_dim_analytic_result_domain result /\
+         candle_q_dim_jet_atn_domain
+           (candle_q_dim_analytic_result_jet result)),
+        candle_q_dim_jet_atn
+          (candle_q_dim_analytic_result_jet result))`,
+  REWRITE_TAC[candle_cv_q_dim_analytic_result_atn_def;
+              candle_cv_q_dim_analytic_result_domain_correct;
+              candle_cv_q_dim_analytic_result_jet_correct;
+              candle_cv_q_dim_jet_atn_domain_bool_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_q_dim_jet_atn_correct;
+              candle_cv_q_dim_analytic_result_make_correct]);;
+let candle_cv_q_dim_analytic_result_pi_half_correct = prove
+ (`!boxes.
+     candle_cv_q_dim_analytic_result_pi_half
+       (candle_cv_q_interval_list boxes) =
+     candle_cv_q_dim_analytic_result_encode
+       (T,candle_q_dim_jet_pi_half boxes)`,
+  REWRITE_TAC[candle_cv_q_dim_analytic_result_pi_half_def;
+              candle_cv_q_dim_jet_pi_half_correct;
+              candle_cv_q_dim_analytic_result_encode_def;
+              candle_cv_q_dim_analytic_result_make_def;
+              candle_cv_bool_def; ARITH_RULE `SUC 0 = 1`; FST; SND]);;
 let candle_six_ne_two = EQT_ELIM (NUM_REDUCE_CONV `~(6 = 2)`);;
 let candle_six_ne_three = EQT_ELIM (NUM_REDUCE_CONV `~(6 = 3)`);;
 let candle_six_ne_four = EQT_ELIM (NUM_REDUCE_CONV `~(6 = 4)`);;
 let candle_six_ne_five = EQT_ELIM (NUM_REDUCE_CONV `~(6 = 5)`);;
+let candle_seven_ne_two = EQT_ELIM (NUM_REDUCE_CONV `~(7 = 2)`);;
+let candle_seven_ne_three = EQT_ELIM (NUM_REDUCE_CONV `~(7 = 3)`);;
+let candle_seven_ne_four = EQT_ELIM (NUM_REDUCE_CONV `~(7 = 4)`);;
+let candle_seven_ne_five = EQT_ELIM (NUM_REDUCE_CONV `~(7 = 5)`);;
+let candle_seven_ne_six = EQT_ELIM (NUM_REDUCE_CONV `~(7 = 6)`);;
+let candle_eight_ne_two = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 2)`);;
+let candle_eight_ne_three = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 3)`);;
+let candle_eight_ne_four = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 4)`);;
+let candle_eight_ne_five = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 5)`);;
+let candle_eight_ne_six = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 6)`);;
+let candle_eight_ne_seven = EQT_ELIM (NUM_REDUCE_CONV `~(8 = 7)`);;
 
 let candle_cv_q_dim_analytic_step_correct_rewrites =
  [candle_cv_q_dim_analytic_program_step_def;
@@ -419,6 +495,12 @@ let candle_cv_q_dim_analytic_step_correct_rewrites =
   candle_five_ne_four; candle_six_ne_two;
   candle_six_ne_three; candle_six_ne_four;
   candle_six_ne_five;
+  candle_seven_ne_two; candle_seven_ne_three;
+  candle_seven_ne_four; candle_seven_ne_five;
+  candle_seven_ne_six;
+  candle_eight_ne_two; candle_eight_ne_three;
+  candle_eight_ne_four; candle_eight_ne_five;
+  candle_eight_ne_six; candle_eight_ne_seven;
   candle_cv_q_dim_analytic_result_head_correct;
   candle_cv_q_dim_analytic_result_tail_correct];;
 
@@ -455,7 +537,13 @@ let candle_cv_q_dim_analytic_program_step_correct = prove
       [candle_cv_q_dim_analytic_result_inv_correct]);
     REWRITE_TAC
      (candle_cv_q_dim_analytic_step_correct_rewrites @
-      [candle_cv_q_dim_analytic_result_sqrt_correct])]);;
+      [candle_cv_q_dim_analytic_result_sqrt_correct]);
+    REWRITE_TAC
+     (candle_cv_q_dim_analytic_step_correct_rewrites @
+      [candle_cv_q_dim_analytic_result_atn_correct]);
+    REWRITE_TAC
+     (candle_cv_q_dim_analytic_step_correct_rewrites @
+      [candle_cv_q_dim_analytic_result_pi_half_correct])]);;
 let candle_cv_q_dim_analytic_program_run_correct = prove
  (`!program boxes stack.
      candle_cv_q_dim_analytic_program_run
@@ -496,6 +584,25 @@ let candle_cv_q_dim_analytic_compile_program_correct = prove
 let candle_cv_q_dim_analytic_program_compute_eqs =
   candle_cv_q_dim_jet_sqrt_compute_eqs @
   map SPEC_ALL
+   [candle_cv_q_atn_zero_compute; candle_cv_q_atn_one_compute;
+    candle_cv_q_atn_neg_one_compute; candle_cv_q_atn_third_compute;
+    candle_cv_q_atn_fifth_compute; candle_cv_q_atn_seventh_compute;
+    candle_cv_q_atn_ninth_compute; candle_cv_q_atn_eleventh_compute;
+    candle_cv_q_atn_thirteenth_compute;
+    candle_cv_q_atn_pos_lower_compute; candle_cv_q_atn_pos_upper_compute;
+    candle_cv_q_atn_lower_def; candle_cv_q_atn_upper_def;
+    candle_cv_q_interval_atn_series_def;
+    candle_cv_q_interval_atn_series_domain_def;
+    candle_cv_q_atn_one_interval_def;
+    candle_cv_q_dim_jet_atn_denominator_def;
+    candle_cv_q_dim_jet_atn_d_def;
+    candle_cv_q_dim_jet_atn_dd_def;
+    candle_cv_q_dim_jet_atn_with_def;
+    candle_cv_q_dim_jet_atn_def;
+    candle_cv_q_dim_jet_atn_domain_def;
+    candle_cv_q_pi_half_interval_compute;
+    candle_cv_q_dim_jet_pi_half_def] @
+  map SPEC_ALL
    [candle_cv_bool_and_def;
     candle_cv_q_dim_analytic_result_make_def;
     candle_cv_q_dim_analytic_result_domain_def;
@@ -509,6 +616,8 @@ let candle_cv_q_dim_analytic_program_compute_eqs =
     candle_cv_q_dim_analytic_result_square_def;
     candle_cv_q_dim_analytic_result_inv_def;
     candle_cv_q_dim_analytic_result_sqrt_def;
+    candle_cv_q_dim_analytic_result_atn_def;
+    candle_cv_q_dim_analytic_result_pi_half_def;
     candle_cv_q_dim_analytic_program_step_def;
     candle_cv_q_dim_analytic_program_run_compute;
     candle_cv_q_dim_analytic_program_def];;
