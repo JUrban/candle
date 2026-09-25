@@ -104,6 +104,17 @@ let rec candle_analytic_replace_sqrt_intervals intervals expression =
   else
     failwith "analytic certificate variant: unsupported AST";;
 
+let candle_q_dim_taylor_model_variant_record_six
+    base_prepared expression compile_theorem program_representation =
+  {
+    variant_function_term = base_prepared.function_term;
+    variant_expression_term = expression;
+    variant_compile_theorem = compile_theorem;
+    variant_program_representation = program_representation;
+    variant_program_representation_term =
+      rand (concl program_representation);
+  };;
+
 let candle_q_dim_taylor_model_prepare_variant_six
     base_prepared intervals =
   let expression,remaining =
@@ -120,14 +131,8 @@ let candle_q_dim_taylor_model_prepare_variant_six
     candle_q_dim_analytic_jet_program_encode_conv program in
   if hyp compile_theorem <> [] || hyp program_representation <> [] then
     failwith "analytic certificate variant: program assumptions";
-  {
-    variant_function_term = base_prepared.function_term;
-    variant_expression_term = expression;
-    variant_compile_theorem = compile_theorem;
-    variant_program_representation = program_representation;
-    variant_program_representation_term =
-      rand (concl program_representation);
-  };;
+  candle_q_dim_taylor_model_variant_record_six
+    base_prepared expression compile_theorem program_representation;;
 
 let candle_q_dim_taylor_model_prepare_point_variant_six
     base_prepared lower upper =

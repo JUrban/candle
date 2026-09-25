@@ -33,7 +33,57 @@ let candle_q_point_sqrt_interval rational =
      candle_q_term
       (Num.div_num (Num.num_of_int upper_integer) denominator));;
 
-let candle_q_point_sqrt_callback variables values tm =
+(* Certificate preparation is untrusted: only the reflected checker can turn *)
+(* a proposed interval into a theorem.  Evaluate exact rational source syntax *)
+(* directly here instead of constructing a REAL_RAT_REDUCE_CONV theorem that *)
+(* would immediately be discarded.  Keep the old proof-producing callback as *)
+(* an oracle for focused equivalence tests.                                   *)
+
+let rec candle_q_point_rational_eval_with environment tm =
+  try rat_of_term (assoc tm environment) with Failure _ ->
+  if is_ratconst tm then rat_of_term tm
+  else if candle_q_is_unary `(--):real->real` tm then
+    Num.minus_num
+      (candle_q_point_rational_eval_with environment
+        (candle_q_dest_unary `(--):real->real` tm))
+  else if candle_q_is_binary `(+):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(+):real->real->real` tm in
+    Num.add_num
+      (candle_q_point_rational_eval_with environment left)
+      (candle_q_point_rational_eval_with environment right)
+  else if candle_q_is_binary `(-):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(-):real->real->real` tm in
+    Num.sub_num
+      (candle_q_point_rational_eval_with environment left)
+      (candle_q_point_rational_eval_with environment right)
+  else if candle_q_is_binary `(*):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(*):real->real->real` tm in
+    Num.mul_num
+      (candle_q_point_rational_eval_with environment left)
+      (candle_q_point_rational_eval_with environment right)
+  else if candle_q_is_binary `(/):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(/):real->real->real` tm in
+    Num.div_num
+      (candle_q_point_rational_eval_with environment left)
+      (candle_q_point_rational_eval_with environment right)
+  else if candle_q_is_unary `inv:real->real` tm then
+    Num.div_num (Num.num_of_int 1)
+      (candle_q_point_rational_eval_with environment
+        (candle_q_dest_unary `inv:real->real` tm))
+  else if candle_q_is_binary `(pow):real->num->real` tm then
+    let base,exponent = candle_q_dest_binary `(pow):real->num->real` tm in
+    Num.power_num
+      (candle_q_point_rational_eval_with environment base)
+      (Num.num_of_int (dest_small_numeral exponent))
+  else
+    failwith "analytic point certificate: non-rational square-root argument";;
+
+let candle_q_point_rational_eval variables values tm =
+  if length variables <> length values then
+    failwith "analytic point certificate: substitution shape";
+  candle_q_point_rational_eval_with (zip variables values) tm;;
+
+let candle_q_point_sqrt_callback_proof variables values tm =
   if length variables <> length values then
     failwith "analytic point certificate: substitution shape";
   let operator,argument = dest_comb tm in
@@ -44,6 +94,15 @@ let candle_q_point_sqrt_callback variables values tm =
       argument in
   let reduced = rand (concl (REAL_RAT_REDUCE_CONV instantiated)) in
   candle_q_point_sqrt_interval (rat_of_term reduced);;
+
+let candle_q_point_sqrt_callback variables values tm =
+  if length variables <> length values then
+    failwith "analytic point certificate: substitution shape";
+  let operator,argument = dest_comb tm in
+  if not (aconv operator `sqrt:real->real`) then
+    failwith "analytic point certificate: expected square root";
+  candle_q_point_sqrt_interval
+    (candle_q_point_rational_eval variables values argument);;
 
 let candle_q_point_centers lower upper =
   if length lower <> length upper then
