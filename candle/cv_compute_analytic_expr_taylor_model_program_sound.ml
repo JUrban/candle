@@ -24,6 +24,7 @@ open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_calculus;;
+open Candle_cv_analytic_expr_partials;;
 open Candle_cv_analytic_expr_domain;;
 open Candle_cv_analytic_expr_flyspeck_bridge;;
 open Candle_cv_analytic_expr_extended_taylor;;
@@ -1862,20 +1863,25 @@ let candle_q_dim_taylor_model_result_add_analytic_invariant = prove
     REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
     ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
     POP_ASSUM (LABEL_TAC "right_box_contains_all") THEN
-    REPEAT CONJ_TAC THENL
-     [ASM_REWRITE_TAC[candle_analytic_regular_at_def];
-      ASM_REWRITE_TAC[candle_analytic_regular_at_def];
-      MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
-      ASM_REWRITE_TAC[];
-      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+    CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_analytic_regular_at_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      ASM_MESON_TAC[candle_analytic_regular_at_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
+      ASM_REWRITE_TAC[]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_q_dim_analytic_contains_def;
                   candle_analytic_value_def;
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_add_components_sound THEN
-      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
-      MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
-      ASM_REWRITE_TAC[];
-      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
+      ASM_REWRITE_TAC[]; ALL_TAC] THEN
+    X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
       USE_THEN "left_box_contains_all"
         (fun th ->
           ASSUME_TAC
@@ -1897,7 +1903,7 @@ let candle_q_dim_taylor_model_result_add_analytic_invariant = prove
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_add_components_sound THEN
-      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]]);;
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]);;
 
 let candle_q_dim_taylor_model_result_mul_analytic_invariant = prove
  (`!center_a center_b box_a box_b boxes left right
@@ -1945,20 +1951,25 @@ let candle_q_dim_taylor_model_result_mul_analytic_invariant = prove
     REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
     ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
     POP_ASSUM (LABEL_TAC "right_box_contains_all") THEN
-    REPEAT CONJ_TAC THENL
-     [ASM_REWRITE_TAC[candle_analytic_regular_at_def];
-      ASM_REWRITE_TAC[candle_analytic_regular_at_def];
-      MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
-      ASM_REWRITE_TAC[];
-      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+    CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_analytic_regular_at_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      ASM_MESON_TAC[candle_analytic_regular_at_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
+      ASM_REWRITE_TAC[]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_q_dim_analytic_contains_def;
                   candle_analytic_value_def;
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_mul_components_sound THEN
-      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
-      MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
-      ASM_REWRITE_TAC[];
-      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]; ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
+      ASM_REWRITE_TAC[]; ALL_TAC] THEN
+    X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
       USE_THEN "left_box_contains_all"
         (fun th ->
           ASSUME_TAC
@@ -1980,7 +1991,7 @@ let candle_q_dim_taylor_model_result_mul_analytic_invariant = prove
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_mul_components_sound THEN
-      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]]);;
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]);;
 
 let candle_q_dim_taylor_model_result_square_analytic_invariant = prove
  (`!center_e box_e boxes result (type_witness:real^N).
@@ -2043,84 +2054,89 @@ let candle_q_dim_taylor_model_result_inv_analytic_invariant = prove
     ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
     ASM_REWRITE_TAC[];
     ASM_REWRITE_TAC[];
-    STRIP_TAC THEN
+    DISCH_THEN
+      (CONJUNCTS_THEN2 (LABEL_TAC "input_domain")
+        (CONJUNCTS_THEN2 (LABEL_TAC "center_inv_domain")
+          (LABEL_TAC "proxy_inv_domain"))) THEN
+    USE_THEN "input_domain" ASSUME_TAC THEN
     USE_THEN "input_invariant" MP_TAC THEN
     REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
     ASM_REWRITE_TAC[] THEN
-    STRIP_TAC THEN
-    REPEAT CONJ_TAC THENL
+    DISCH_THEN
+      (CONJUNCTS_THEN2 (LABEL_TAC "center_regular")
+        (CONJUNCTS_THEN2 (LABEL_TAC "box_regular")
+          (CONJUNCTS_THEN2 (LABEL_TAC "center_shape")
+            (CONJUNCTS_THEN2 (LABEL_TAC "center_contains")
+              (CONJUNCTS_THEN2 (LABEL_TAC "proxy_shape")
+                (LABEL_TAC "box_contains_all")))))) THEN
+    CONJ_TAC THENL
      [REWRITE_TAC[candle_analytic_regular_at_def] THEN
       CONJ_TAC THENL
        [ASM_REWRITE_TAC[];
-        MP_TAC
-          (ASSUME
-            `candle_q_dim_analytic_contains (dimindex (:N))
-              (candle_q_dim_taylor_model_result_center result)
-              (list_of_seq
-                (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
-                (dimindex (:N))) center_e`) THEN
-        REWRITE_TAC[candle_q_dim_analytic_contains_def;
-                    candle_q_dim_jet_contains_components_def;
-                    candle_q_dim_jet_inv_domain_def] THEN
-        ASM_MESON_TAC[candle_q_interval_not_zero_contains_nonzero]];
-      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
-      let regular_at_p =
-        MATCH_MP
-          (SPEC `p:real^N`
-            (ASSUME
-              `!(p:real^N). p IN interval
+        USE_THEN "center_contains" (fun center_contains_th ->
+          USE_THEN "center_inv_domain" (fun center_inv_domain_th ->
+            let value_contains_th =
+              CONJUNCT1
+                (REWRITE_RULE[candle_q_dim_analytic_contains_def;
+                              candle_q_dim_jet_contains_components_def]
+                  center_contains_th) in
+            let not_zero_th =
+              REWRITE_RULE[candle_q_dim_jet_inv_domain_def]
+                center_inv_domain_th in
+            ACCEPT_TAC
+              (MATCH_MP
+                candle_q_interval_not_zero_contains_nonzero
+                (CONJ not_zero_th value_contains_th))))];
+      ALL_TAC] THEN
+    CONJ_TAC THENL
+     [X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      USE_THEN "box_regular" (fun box_regular_th ->
+        USE_THEN "box_contains_all" (fun box_contains_all_th ->
+          USE_THEN "proxy_inv_domain" (fun proxy_inv_domain_th ->
+            let p_in_box =
+              ASSUME
+                `(p:real^N) IN interval
                   [candle_q_box_lower_vector boxes,
-                   candle_q_box_upper_vector boxes]
-                ==> candle_analytic_regular_at
-                      (list_of_seq (\k. p$(k + 1)) (dimindex (:N)))
-                      box_e`))
-          (ASSUME
-            `(p:real^N) IN interval
-              [candle_q_box_lower_vector boxes,
-               candle_q_box_upper_vector boxes]`) in
-      let contains_at_p =
-        MATCH_MP
-          (SPEC `p:real^N`
-            (ASSUME
-              `!(p:real^N). p IN interval
-                  [candle_q_box_lower_vector boxes,
-                   candle_q_box_upper_vector boxes]
-                ==> candle_q_dim_analytic_contains (dimindex (:N))
-                      (candle_q_dim_taylor_model_proxy result)
-                      (list_of_seq (\k. p$(k + 1)) (dimindex (:N)))
-                      box_e`))
-          (ASSUME
-            `(p:real^N) IN interval
-              [candle_q_box_lower_vector boxes,
-               candle_q_box_upper_vector boxes]`) in
-      REWRITE_TAC[candle_analytic_regular_at_def] THEN
-      CONJ_TAC THENL
-       [ACCEPT_TAC regular_at_p;
-        MP_TAC contains_at_p THEN
-        REWRITE_TAC[candle_q_dim_analytic_contains_def;
-                    candle_q_dim_jet_contains_components_def;
-                    candle_q_dim_jet_inv_domain_def] THEN
-        ASM_MESON_TAC[candle_q_interval_not_zero_contains_nonzero]];
-      MATCH_MP_TAC candle_q_dim_jet_inv_shape THEN ASM_REWRITE_TAC[];
-      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                   candle_q_box_upper_vector boxes]` in
+            let regular_at_p =
+              MATCH_MP (SPEC `p:real^N` box_regular_th) p_in_box in
+            let contains_at_p =
+              MATCH_MP (SPEC `p:real^N` box_contains_all_th) p_in_box in
+            let value_contains_th =
+              CONJUNCT1
+                (REWRITE_RULE[candle_q_dim_analytic_contains_def;
+                              candle_q_dim_jet_contains_components_def]
+                  contains_at_p) in
+            let not_zero_th =
+              REWRITE_RULE[candle_q_dim_jet_inv_domain_def]
+                proxy_inv_domain_th in
+            REWRITE_TAC[candle_analytic_regular_at_def] THEN
+            CONJ_TAC THENL
+             [ACCEPT_TAC regular_at_p;
+              ACCEPT_TAC
+                (MATCH_MP
+                  candle_q_interval_not_zero_contains_nonzero
+                  (CONJ not_zero_th value_contains_th))])));
+      ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_inv_shape THEN ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_q_dim_analytic_contains_def;
                   candle_analytic_value_def;
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_inv_components_sound THEN
       ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
-      MATCH_MP_TAC candle_q_dim_jet_inv_shape THEN ASM_REWRITE_TAC[];
-      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      ALL_TAC] THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_jet_inv_shape THEN ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+    USE_THEN "box_contains_all" (fun box_contains_all_th ->
       let contains_at_p =
         MATCH_MP
-          (SPEC `p:real^N`
-            (ASSUME
-              `!(p:real^N). p IN interval
-                  [candle_q_box_lower_vector boxes,
-                   candle_q_box_upper_vector boxes]
-                ==> candle_q_dim_analytic_contains (dimindex (:N))
-                      (candle_q_dim_taylor_model_proxy result)
-                      (list_of_seq (\k. p$(k + 1)) (dimindex (:N)))
-                      box_e`))
+          (SPEC `p:real^N` box_contains_all_th)
           (ASSUME
             `(p:real^N) IN interval
               [candle_q_box_lower_vector boxes,
@@ -2130,7 +2146,12 @@ let candle_q_dim_taylor_model_result_inv_analytic_invariant = prove
                   candle_analytic_d_def;
                   candle_analytic_dd_def] THEN
       MATCH_MP_TAC candle_q_dim_jet_inv_components_sound THEN
-      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def;
-                      contains_at_p]]]);;
+      CONJ_TAC THENL
+       [USE_THEN "proxy_shape" ACCEPT_TAC; ALL_TAC] THEN
+      CONJ_TAC THENL
+       [USE_THEN "proxy_inv_domain" ACCEPT_TAC;
+        ACCEPT_TAC
+          (REWRITE_RULE[candle_q_dim_analytic_contains_def]
+            contains_at_p)])]);;
 
 end;;
