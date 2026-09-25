@@ -79,12 +79,23 @@ let candle_analytic_polynomial_candidate variables tm =
 let candle_analytic_is_pi_half tm =
   aconv tm `pi / &2`;;
 
+let candle_analytic_is_pi_half_expanded tm =
+  aconv tm `pi * inv (&2)`;;
+
+let candle_analytic_pi_half_source variables tm =
+  let lhs =
+    candle_analytic_source_lhs variables candle_analytic_pi_half_term in
+  let compact = REWRITE_CONV[candle_analytic_value_def] lhs in
+  if candle_analytic_is_pi_half tm then compact
+  else if candle_analytic_is_pi_half_expanded tm then
+    TRANS compact (REWRITE_CONV[real_div] `pi / &2`)
+  else failwith "candle analytic reifier: internal pi/2 mismatch";;
+
 let rec candle_analytic_reify_real_expression_with sqrt_interval variables tm =
-  if candle_analytic_is_pi_half tm then
+  if candle_analytic_is_pi_half tm ||
+     candle_analytic_is_pi_half_expanded tm then
     candle_analytic_finish_source variables candle_analytic_pi_half_term tm
-      (REWRITE_CONV[candle_analytic_value_def]
-        (candle_analytic_source_lhs variables
-          candle_analytic_pi_half_term))
+      (candle_analytic_pi_half_source variables tm)
   else if candle_analytic_polynomial_candidate variables tm then
     let poly,valid_th,poly_source_th,_,_ =
       candle_poly_reify_real_expression variables tm in

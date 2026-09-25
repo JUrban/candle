@@ -8,6 +8,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_first_center_check.ml";;
+needs "candle/cv_compute_analytic_expr_reify.ml";;
 needs "candle/cv_compute_polynomial_expr_flyspeck_fixture.ml";;
 
 module Candle_cv_analytic_expr_jet_prove = struct
@@ -24,6 +25,7 @@ open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_program;;
 open Candle_cv_analytic_expr_program_compute;;
+open Candle_cv_analytic_expr_reify;;
 open Candle_cv_analytic_expr_calculus;;
 open Candle_cv_analytic_expr_jet_check;;
 open Candle_cv_analytic_expr_first_jet_program_compute;;
@@ -33,11 +35,9 @@ type candle_q_dim_analytic_jet_prepared_six = {
   function_term : term;
   vector_term : term;
   source_term : term;
-  polynomial_term : term;
   expression_term : term;
   valid_theorem : thm;
   source_theorem : thm;
-  polynomial_program_term : term;
   program_term : term;
   compile_theorem : thm;
   program_representation : thm;
@@ -54,7 +54,9 @@ let candle_q_dim_analytic_jet_program_encode_conv program =
     [candle_cv_analytic_instruction_list_def;
      candle_cv_analytic_instruction_def;
      candle_cv_q_instruction_list_def; candle_cv_q_instruction_def;
-     candle_cv_q_def; candle_cv_lc_z_def; FST; SND]
+     candle_analytic_sqrt_interval_def;
+     candle_cv_q_interval_def; candle_cv_q_def; candle_cv_lc_z_def;
+     FST; SND]
     (mk_comb (`candle_cv_analytic_instruction_list`,program));;
 
 let candle_q_dim_analytic_jet_boxes_encode_conv boxes =
@@ -83,28 +85,39 @@ let candle_q_dim_analytic_jet_sound_six =
       [`:6`,`:N`]
       candle_q_dim_analytic_jet_whole_box_accept_sound);;
 
-let candle_q_dim_analytic_jet_prepare_six function_tm =
+let candle_q_dim_analytic_jet_prepare_six_with
+    sqrt_interval function_tm =
   let vector,source = dest_abs function_tm in
   if type_of vector <> `:real^6` || type_of source <> `:real` then
     failwith "analytic shared-jet prover: expected real^6 -> real source";
-  let polynomial,polynomial_valid,polynomial_source,polynomial_program,
-      polynomial_run =
-    candle_poly_reify_vector_expression vector source in
-  let expression = mk_comb (`Candle_analytic_poly`,polynomial) in
+  let variables = candle_poly_vector_components vector 6 in
+  let expression,reified_source =
+    candle_analytic_reify_real_expression
+      sqrt_interval variables source in
   let valid = prove
     (list_mk_comb
       (`candle_analytic_valid_dim`,[`6`;expression]),
-     REWRITE_TAC[candle_analytic_valid_dim_def] THEN
-     ACCEPT_TAC polynomial_valid) in
-  let polynomial_bridge =
-    MATCH_MP
-      (ISPEC polynomial
-        (REWRITE_RULE
-          [candle_q_dim_analytic_jet_dim_six]
-          (INST_TYPE [`:6`,`:N`] candle_analytic_denote_dim_poly)))
-      polynomial_valid in
+     REWRITE_TAC
+       [candle_analytic_valid_dim_def; candle_poly_valid_dim_def] THEN
+     CONV_TAC NUM_REDUCE_CONV) in
+  let denotation_term =
+    mk_icomb (mk_icomb (`candle_analytic_denote_dim`,expression),vector) in
+  let denotation_theorem =
+    let expanded =
+      REWRITE_CONV
+        [candle_analytic_denote_dim_def;
+         candle_q_dim_analytic_jet_dim_six]
+        denotation_term in
+    let listed =
+      CONV_RULE (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) expanded in
+    let beta = CONV_RULE (DEPTH_CONV BETA_CONV) listed in
+    CONV_RULE (DEPTH_CONV NUM_ADD_CONV) beta in
+  if not
+      (aconv (rand (concl denotation_theorem))
+             (lhand (concl reified_source))) then
+    failwith "analytic shared-jet prover: vector environment mismatch";
   let source_theorem =
-    TRANS (AP_THM polynomial_bridge vector) polynomial_source in
+    TRANS denotation_theorem reified_source in
   let compile_theorem =
     REWRITE_CONV
       [candle_analytic_compile_def; candle_poly_compile_def; APPEND]
@@ -112,26 +125,28 @@ let candle_q_dim_analytic_jet_prepare_six function_tm =
   let program = rand (concl compile_theorem) in
   let program_representation =
     candle_q_dim_analytic_jet_program_encode_conv program in
-  if hyp polynomial_valid <> [] || hyp polynomial_source <> [] ||
-     hyp polynomial_run <> [] || hyp valid <> [] ||
+  if hyp reified_source <> [] || hyp valid <> [] ||
      hyp source_theorem <> [] || hyp compile_theorem <> [] ||
-     hyp program_representation <> [] ||
-     length (dest_list program) <> 1 then
+     hyp program_representation <> [] then
     failwith "analytic shared-jet prover: prepared source mismatch";
   {
     function_term = function_tm;
     vector_term = vector;
     source_term = source;
-    polynomial_term = polynomial;
     expression_term = expression;
     valid_theorem = valid;
     source_theorem = source_theorem;
-    polynomial_program_term = polynomial_program;
     program_term = program;
     compile_theorem = compile_theorem;
     program_representation = program_representation;
     program_representation_term = rand (concl program_representation);
   };;
+
+let candle_q_dim_analytic_jet_prepare_six function_tm =
+  candle_q_dim_analytic_jet_prepare_six_with
+    (fun _ ->
+      failwith "analytic shared-jet prover: square-root enclosure required")
+    function_tm;;
 
 let candle_q_dim_analytic_jet_compute equations tm =
   let th = Kernel.compute (COMPUTE_INIT_THMS,equations) tm in

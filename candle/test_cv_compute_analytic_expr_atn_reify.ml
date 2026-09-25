@@ -31,6 +31,13 @@ let candle_analytic_expr_atn_reified_ast,
     [candle_analytic_expr_atn_reify_x]
     candle_analytic_expr_atn_reify_source;;
 
+let candle_analytic_expr_atn_reify_expanded_ast,
+    candle_analytic_expr_atn_reify_expanded_source =
+  candle_analytic_reify_real_expression
+    candle_analytic_expr_atn_reify_no_sqrt
+    [candle_analytic_expr_atn_reify_x]
+    `pi * inv (&2) + atn x`;;
+
 let candle_analytic_expr_atn_reify_expected_ast =
  `Candle_analytic_add Candle_analytic_pi_half
     (Candle_analytic_atn
@@ -48,6 +55,19 @@ if not
               (Candle_analytic_poly (Candle_poly_var 0)))) =
         pi / &2 + atn x`) then
   failwith "analytic atn reifier: authenticated source mismatch";;
+
+if not
+    (aconv candle_analytic_expr_atn_reify_expanded_ast
+      candle_analytic_expr_atn_reify_expected_ast) ||
+   hyp candle_analytic_expr_atn_reify_expanded_source <> [] ||
+   not
+     (aconv (concl candle_analytic_expr_atn_reify_expanded_source)
+       `candle_analytic_value [x]
+          (Candle_analytic_add Candle_analytic_pi_half
+            (Candle_analytic_atn
+              (Candle_analytic_poly (Candle_poly_var 0)))) =
+        pi * inv (&2) + atn x`) then
+  failwith "analytic atn reifier: expanded pi/2 source mismatch";;
 
 let candle_analytic_expr_atn_reify_boxes =
  `([(((1,0),1),((1,0),1))]:

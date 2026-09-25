@@ -173,11 +173,6 @@ let _ =
      string_of_int
        (length
          (dest_list candle_analytic_matched_prepared.program_term)) ^
-     " polynomial_instructions=" ^
-     string_of_int
-       (length
-         (dest_list
-           candle_analytic_matched_prepared.polynomial_program_term)) ^
      " leaves=" ^ string_of_int !candle_analytic_matched_leaf_count ^
      " glues=15 theorem_md5=" ^
      Digest.to_hex
