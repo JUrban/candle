@@ -52,14 +52,22 @@ let _ =
   candle_q_dim_analytic_jet_profile :=
     (fun event ->
       candle_action296_first_leaf_profile_events :=
-        event :: !candle_action296_first_leaf_profile_events);;
+        event :: !candle_action296_first_leaf_profile_events;
+      print_endline
+        ("CANDLE_CV_ACTION296_ANALYTIC_FIRST_LEAF_STAGE event=" ^ event));;
 
 let candle_action296_first_leaf_theorem =
-  candle_reflected_nl_source_pass_with
-    candle_action296_analytic_function
-    (candle_q_dim_analytic_jet_prove_box_six
-      candle_action296_plan_prepared)
-    candle_action296_first_leaf_domain;;
+  try
+    candle_reflected_nl_source_pass_with
+      candle_action296_analytic_function
+      (candle_q_dim_analytic_jet_prove_box_six
+        candle_action296_plan_prepared)
+      candle_action296_first_leaf_domain
+  with Failure message ->
+    print_endline
+      ("CANDLE_CV_ACTION296_ANALYTIC_FIRST_LEAF_FAILURE message=" ^
+       message);
+    failwith message;;
 
 let candle_action296_first_leaf_functions,
     candle_action296_first_leaf_proved_domain =
