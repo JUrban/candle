@@ -6,12 +6,74 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_action296_plan.ml";;
+needs "candle/cv_compute_exact_rational_normalize_extended.ml";;
 
 open Certificate;;
 open Candle_cv_flyspeck_nonlinear_driver;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_first_center_check;;
 open Candle_cv_analytic_expr_action296_plan;;
+open Candle_cv_exact_rational_normalize_extended;;
+
+let candle_action296_probe_variable_sqrt_intervals =
+ [`((((589,0),249),((2399,0),999)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2,0),0),((2047,0),999)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2,0),0),((2047,0),999)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2,0),0),((1033,0),499)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2,0),0),((1033,0),499)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2,0),0),((1033,0),499)):
+     ((num#num)#num)#((num#num)#num))`];;
+
+let candle_action296_probe_center_sqrt_intervals =
+ [`((((2377,0),999),((1189,0),499)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2023,0),999),((253,0),124)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((2023,0),999),((253,0),124)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((254,0),124),((2033,0),999)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((254,0),124),((2033,0),999)):
+     ((num#num)#num)#((num#num)#num))`;
+  `((((254,0),124),((2033,0),999)):
+     ((num#num)#num)#((num#num)#num))`];;
+
+let candle_action296_probe_choose_sqrt_interval fallback intervals tm =
+  let rec find variables candidates =
+    match variables,candidates with
+    | variable :: variable_tail,interval :: interval_tail ->
+        if aconv tm variable then interval
+        else find variable_tail interval_tail
+    | [],[] -> fallback
+    | _ -> failwith "action296 normalized probe: sqrt interval shape" in
+  find candle_action296_plan_sqrt_variables intervals;;
+
+let candle_action296_probe_sqrt_interval tm =
+  candle_action296_probe_choose_sqrt_interval
+    `((((56,0),0),((63,0),0)):
+      ((num#num)#num)#((num#num)#num))`
+    candle_action296_probe_variable_sqrt_intervals tm;;
+
+let candle_action296_probe_center_sqrt_interval tm =
+  candle_action296_probe_choose_sqrt_interval
+    `((((593,0),9),((297,0),4)):
+      ((num#num)#num)#((num#num)#num))`
+    candle_action296_probe_center_sqrt_intervals tm;;
+
+let candle_action296_probe_prepared =
+  candle_q_dim_analytic_jet_prepare_six_with
+    candle_action296_probe_sqrt_interval
+    candle_action296_plan_prepared.function_term;;
+
+let candle_action296_probe_center_prepared =
+  candle_q_dim_analytic_jet_prepare_six_with
+    candle_action296_probe_center_sqrt_interval
+    candle_action296_plan_prepared.function_term;;
 
 let candle_action296_probe_root_domain =
   M_taylor.mk_m_center_domain
@@ -68,7 +130,8 @@ let candle_action296_probe_compute stage tm =
      "-begin");
   let theorem =
     candle_q_dim_analytic_jet_compute
-      candle_cv_q_dim_analytic_first_center_compute_eqs tm in
+      (candle_cv_q_extended_normalized_compute_eqs @
+       candle_cv_q_dim_analytic_first_center_compute_eqs) tm in
   print_endline
     ("CANDLE_CV_ACTION296_NORMALIZED_PROBE_STAGE event=" ^ stage ^
      "-end");
@@ -84,6 +147,70 @@ let rec candle_action296_probe_dest_cexp_list tm =
   else if aconv operator `Cexp_num` then []
   else failwith "action296 normalized probe: malformed cexp list";;
 
+let candle_action296_probe_dest_cexp_pair tm =
+  let operator,arguments = strip_comb tm in
+  if aconv operator `Cexp_pair` then
+    match arguments with
+    | [left;right] -> left,right
+    | _ -> failwith "action296 normalized probe: malformed cexp pair"
+  else failwith "action296 normalized probe: expected cexp pair";;
+
+let candle_action296_probe_dest_cexp_num tm =
+  let operator,arguments = strip_comb tm in
+  if aconv operator `Cexp_num` then
+    match arguments with
+    | [value] -> dest_numeral value
+    | _ -> failwith "action296 normalized probe: malformed cexp num"
+  else failwith "action296 normalized probe: expected cexp num";;
+
+let candle_action296_probe_num_bits value =
+  let zero = Num.num_of_int 0 and two = Num.num_of_int 2 in
+  let rec loop n bits =
+    if Num.eq_num n zero then bits
+    else loop (Num.quo_num n two) (bits + 1) in
+  loop value 0;;
+
+let candle_action296_probe_gcd_profile numerator denominator =
+  let zero = Num.num_of_int 0 in
+  let rec loop steps a b =
+    if Num.eq_num b zero then steps,a
+    else loop (steps + 1) b (Num.mod_num a b) in
+  loop 0 numerator denominator;;
+
+let candle_action296_probe_rational_profile label value =
+  let z,denominator_predecessor =
+    candle_action296_probe_dest_cexp_pair value in
+  let positive_term,negative_term =
+    candle_action296_probe_dest_cexp_pair z in
+  let positive = candle_action296_probe_dest_cexp_num positive_term and
+      negative = candle_action296_probe_dest_cexp_num negative_term and
+      denominator =
+        Num.add_num
+          (candle_action296_probe_dest_cexp_num denominator_predecessor)
+          (Num.num_of_int 1) in
+  let normalized_numerator =
+    if Num.ge_num positive negative then Num.sub_num positive negative
+    else Num.sub_num negative positive in
+  let gcd_steps,gcd =
+    candle_action296_probe_gcd_profile normalized_numerator denominator in
+  let signed_numerator = Num.sub_num positive negative in
+  let approximate =
+    Num.float_of_num (Num.div_num signed_numerator denominator) in
+  print_endline
+    ("CANDLE_CV_ACTION296_NORMALIZED_PROBE_RATIONAL label=" ^ label ^
+     " positive_bits=" ^
+       string_of_int (candle_action296_probe_num_bits positive) ^
+     " negative_bits=" ^
+       string_of_int (candle_action296_probe_num_bits negative) ^
+     " normalized_numerator_bits=" ^
+       string_of_int (candle_action296_probe_num_bits normalized_numerator) ^
+     " denominator_bits=" ^
+       string_of_int (candle_action296_probe_num_bits denominator) ^
+     " gcd_steps=" ^ string_of_int gcd_steps ^
+     " gcd_bits=" ^
+       string_of_int (candle_action296_probe_num_bits gcd) ^
+     " approximate=" ^ string_of_float approximate);;
+
 let candle_action296_probe_verdict,
     candle_action296_probe_upper_chars =
   let center_environment_theorem =
@@ -95,16 +222,16 @@ let candle_action296_probe_verdict,
   let center_theorem =
     candle_action296_probe_compute "center-jet"
       (list_mk_comb
-        (`candle_cv_q_dim_analytic_first_program`,
+         (`candle_cv_q_dim_analytic_first_program`,
          [center_environment;
-          candle_action296_plan_prepared.program_representation_term])) in
+          candle_action296_probe_center_prepared.program_representation_term])) in
   let center = rand (concl center_theorem) in
   let box_theorem =
     candle_action296_probe_compute "box-jet"
       (list_mk_comb
-        (`candle_cv_q_dim_analytic_program`,
+         (`candle_cv_q_dim_analytic_program`,
          [candle_action296_probe_boxes_term;
-          candle_action296_plan_prepared.program_representation_term])) in
+          candle_action296_probe_prepared.program_representation_term])) in
   let box = rand (concl box_theorem) in
   let domain_theorem =
     candle_action296_probe_compute "domain"
@@ -133,6 +260,7 @@ let candle_action296_probe_verdict,
       (mk_comb
         (`Cexp_snd`,mk_comb (`candle_cv_q_dim_first_jet_f`,center_jet))) in
   let center_value = rand (concl center_value_theorem) in
+  candle_action296_probe_rational_profile "center-value-upper" center_value;
   let center_gradient_theorem =
     candle_action296_probe_compute "center-gradient"
       (mk_comb (`candle_cv_q_dim_first_jet_gradient`,center_jet)) in
@@ -147,6 +275,7 @@ let candle_action296_probe_verdict,
         (`candle_cv_q_dot_abs_upper_normalized`,
          [radii;center_gradient])) in
   let gradient_upper = rand (concl gradient_upper_theorem) in
+  candle_action296_probe_rational_profile "gradient-upper" gradient_upper;
   let radius_values = candle_action296_probe_dest_cexp_list radii in
   let hessian_rows =
     candle_action296_probe_dest_cexp_list box_hessian in
@@ -160,18 +289,30 @@ let candle_action296_probe_verdict,
     let scaled_theorem =
       candle_action296_probe_compute (label ^ "-scale")
         (list_mk_comb
-          (`candle_cv_q_mul_normalized`,[weight;dot])) in
+          (`candle_cv_q_mul_normalized_extended`,[weight;dot])) in
     rand (concl scaled_theorem) in
   let rec accumulate_rows index weights rows accumulator =
     match weights,rows with
     | [],[] -> accumulator
     | weight :: weight_tail,row :: row_tail ->
         let scaled = compute_weighted_row index weight row in
+        candle_action296_probe_rational_profile
+          ("hessian-row-" ^ string_of_int index ^ "-scaled") scaled;
+        candle_action296_probe_rational_profile
+          ("hessian-row-" ^ string_of_int index ^ "-accumulator")
+          accumulator;
+        let raw_sum_theorem =
+          candle_action296_probe_compute
+            ("hessian-row-" ^ string_of_int index ^ "-raw-sum")
+            (list_mk_comb (`candle_cv_q_add`,[scaled;accumulator])) in
+        let raw_sum = rand (concl raw_sum_theorem) in
+        candle_action296_probe_rational_profile
+          ("hessian-row-" ^ string_of_int index ^ "-raw-sum") raw_sum;
         let sum_theorem =
           candle_action296_probe_compute
             ("hessian-row-" ^ string_of_int index ^ "-sum")
             (list_mk_comb
-              (`candle_cv_q_add_normalized`,[scaled;accumulator])) in
+              (`candle_cv_q_add_normalized_extended`,[scaled;accumulator])) in
         accumulate_rows (index + 1) weight_tail row_tail
           (rand (concl sum_theorem))
     | _ -> failwith "action296 normalized probe: Hessian shape mismatch" in
@@ -181,23 +322,27 @@ let candle_action296_probe_verdict,
         accumulate_rows 1 weight_tail row_tail
           (compute_weighted_row 0 first_weight first_row)
     | _ -> failwith "action296 normalized probe: empty Hessian" in
+  candle_action296_probe_rational_profile "hessian-upper" hessian_upper;
   let half_hessian_theorem =
     candle_action296_probe_compute "half-hessian"
       (list_mk_comb
-        (`candle_cv_q_mul_normalized`,
+        (`candle_cv_q_mul_normalized_extended`,
          [`candle_cv_q_half`;hessian_upper])) in
   let half_hessian = rand (concl half_hessian_theorem) in
+  candle_action296_probe_rational_profile "half-hessian" half_hessian;
   let remainder_theorem =
     candle_action296_probe_compute "remainder"
       (list_mk_comb
-        (`candle_cv_q_add_normalized`,
+        (`candle_cv_q_add_normalized_extended`,
          [gradient_upper;half_hessian])) in
   let remainder = rand (concl remainder_theorem) in
+  candle_action296_probe_rational_profile "remainder" remainder;
   let upper_theorem =
     candle_action296_probe_compute "normalized-upper"
       (list_mk_comb
-        (`candle_cv_q_add_normalized`,[center_value;remainder])) in
+        (`candle_cv_q_add_normalized_extended`,[center_value;remainder])) in
   let upper = rand (concl upper_theorem) in
+  candle_action296_probe_rational_profile "final-upper" upper;
   let finish_theorem =
     candle_action296_probe_compute "finish"
       (list_mk_comb
