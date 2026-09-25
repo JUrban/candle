@@ -14,6 +14,7 @@ case "$mode" in
     fragments=(
       "$repo_root/candle/cv_compute_analytic_expr_taylor_model_certified_prove.ml"
       "$repo_root/candle/cv_compute_analytic_expr_box_certificate_prepare.ml"
+      "$repo_root/candle/cv_compute_analytic_expr_certificate_variant_prepare.ml"
       "$repo_root/candle/test_cv_compute_analytic_expr_action296_certified_taylor_batch.ml"
     )
     ;;

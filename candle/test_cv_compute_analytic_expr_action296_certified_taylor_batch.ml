@@ -11,6 +11,7 @@ needs "candle/cv_compute_analytic_expr_action296_plan.ml";;
 needs "candle/cv_compute_analytic_expr_point_certificate_prepare.ml";;
 needs "candle/cv_compute_analytic_expr_box_certificate_prepare.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_certified_prove.ml";;
+needs "candle/cv_compute_analytic_expr_certificate_variant_prepare.ml";;
 
 open Certificate;;
 open M_verifier_build;;
@@ -20,6 +21,7 @@ open Candle_cv_analytic_expr_action296_plan;;
 open Candle_cv_analytic_expr_point_certificate_prepare;;
 open Candle_cv_analytic_expr_box_certificate_prepare;;
 open Candle_cv_analytic_expr_taylor_model_certified_prove;;
+open Candle_cv_analytic_expr_certificate_variant_prepare;;
 
 let candle_action296_certified_batch_axioms_before = axioms ();;
 let candle_action296_certified_batch_size = 4;;
@@ -183,11 +185,11 @@ let candle_action296_certified_batch_prove_cell
     candle_reflected_nl_source_pass_with
       candle_action296_plan_prepared.function_term
       (fun lower upper ->
-        let center_prepared =
-          candle_q_dim_analytic_jet_prepare_point_six
-            candle_action296_plan_prepared.function_term lower upper in
-        candle_q_dim_taylor_model_certified_prove_box_six
-          center_prepared box_prepared
+        let center_variant =
+          candle_q_dim_taylor_model_prepare_point_variant_six
+            box_prepared lower upper in
+        candle_q_dim_taylor_model_certified_prove_box_variant_six
+          center_variant box_prepared
           lower upper)
       domain_th in
   candle_action296_certified_batch_accepted_cells :=

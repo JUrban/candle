@@ -24,6 +24,24 @@ open Candle_cv_analytic_expr_taylor_model_program_compile_sound;;
 
 exception Candle_q_dim_taylor_model_certified_rejected of term * term;;
 
+type candle_q_dim_taylor_model_program_variant_six = {
+  variant_function_term : term;
+  variant_expression_term : term;
+  variant_compile_theorem : thm;
+  variant_program_representation : thm;
+  variant_program_representation_term : term;
+};;
+
+let candle_q_dim_taylor_model_variant_of_prepared_six prepared =
+  {
+    variant_function_term = prepared.function_term;
+    variant_expression_term = prepared.expression_term;
+    variant_compile_theorem = prepared.compile_theorem;
+    variant_program_representation = prepared.program_representation;
+    variant_program_representation_term =
+      prepared.program_representation_term;
+  };;
+
 let candle_q_dim_taylor_model_certified_sound_six =
   REWRITE_RULE
     [candle_q_dim_analytic_jet_dim_six]
@@ -31,17 +49,18 @@ let candle_q_dim_taylor_model_certified_sound_six =
       [`:6`,`:N`]
       candle_q_dim_taylor_model_certified_accept_sound);;
 
-let candle_q_dim_taylor_model_certified_prove_box_six
-    center_prepared box_prepared lower upper =
+let candle_q_dim_taylor_model_certified_prove_box_variant_six
+    center_variant box_prepared lower upper =
   if length lower <> 6 || length upper <> 6 then
     failwith "certified Taylor-model prover: expected six coordinates";
   if not
-      (aconv center_prepared.function_term box_prepared.function_term) then
+      (aconv center_variant.variant_function_term
+        box_prepared.function_term) then
     failwith "certified Taylor-model prover: source-function mismatch";
   let erased_center =
     mk_comb
       (`candle_analytic_erase_sqrt_certificates`,
-       center_prepared.expression_term) in
+       center_variant.variant_expression_term) in
   let erased_box =
     mk_comb
       (`candle_analytic_erase_sqrt_certificates`,
@@ -67,7 +86,7 @@ let candle_q_dim_taylor_model_certified_prove_box_six
       candle_cv_q_dim_taylor_model_certified_compute_eqs
       (list_mk_comb
         (`candle_cv_q_dim_taylor_model_program`,
-         [center_prepared.program_representation_term;
+         [center_variant.variant_program_representation_term;
           box_prepared.program_representation_term;
           boxes_representation_term])) in
   let program_result = rand (concl program_theorem) in
@@ -94,7 +113,7 @@ let candle_q_dim_taylor_model_certified_prove_box_six
   let compute_tm =
     list_mk_comb
       (`candle_cv_q_dim_taylor_model_certified_check`,
-       [center_prepared.program_representation_term;
+       [center_variant.variant_program_representation_term;
         box_prepared.program_representation_term;
         boxes_representation_term]) in
   let expansion_theorem =
@@ -105,7 +124,7 @@ let candle_q_dim_taylor_model_certified_prove_box_six
     TRANS
       (candle_q_dim_analytic_jet_congr_apps
         (REFL `candle_cv_q_dim_taylor_model_program`)
-        [REFL center_prepared.program_representation_term;
+        [REFL center_variant.variant_program_representation_term;
          REFL box_prepared.program_representation_term;
          REFL boxes_representation_term])
       program_theorem in
@@ -127,14 +146,14 @@ let candle_q_dim_taylor_model_certified_prove_box_six
 
   let correctness =
     SPECL
-      [center_prepared.expression_term;
+      [center_variant.variant_expression_term;
        box_prepared.expression_term;boxes]
       candle_cv_q_dim_taylor_model_certified_check_correct in
   let center_program_encoding =
     TRANS
       (AP_TERM `candle_cv_analytic_instruction_list`
-        center_prepared.compile_theorem)
-      center_prepared.program_representation in
+        center_variant.variant_compile_theorem)
+      center_variant.variant_program_representation in
   let box_program_encoding =
     TRANS
       (AP_TERM `candle_cv_analytic_instruction_list`
@@ -175,7 +194,7 @@ let candle_q_dim_taylor_model_certified_prove_box_six
   let numerical_goal =
     list_mk_comb
       (`candle_q_dim_taylor_model_certified_accept`,
-       [center_prepared.expression_term;
+       [center_variant.variant_expression_term;
         box_prepared.expression_term;boxes]) in
   let numerical_theorem =
     prove
@@ -197,7 +216,7 @@ let candle_q_dim_taylor_model_certified_prove_box_six
   let vector_theorem =
     MATCH_MP
       (SPECL
-        [center_prepared.expression_term;
+        [center_variant.variant_expression_term;
          box_prepared.expression_term;boxes]
         candle_q_dim_taylor_model_certified_sound_six)
       (CONJ box_prepared.valid_theorem
@@ -220,5 +239,11 @@ let candle_q_dim_taylor_model_certified_prove_box_six
                 box_prepared.function_term) then
     failwith "certified Taylor-model prover: source theorem mismatch";
   source_theorem;;
+
+let candle_q_dim_taylor_model_certified_prove_box_six
+    center_prepared box_prepared lower upper =
+  candle_q_dim_taylor_model_certified_prove_box_variant_six
+    (candle_q_dim_taylor_model_variant_of_prepared_six center_prepared)
+    box_prepared lower upper;;
 
 end;;
