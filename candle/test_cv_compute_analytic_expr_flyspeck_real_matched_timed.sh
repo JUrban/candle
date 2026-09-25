@@ -5,15 +5,22 @@ repo_root=$(cd "$(dirname "$0")/.." && pwd)
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-driver-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-analytic-flyspeck-real-matched-timed-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
+first_program="$repo_root/candle/cv_compute_analytic_expr_first_jet_program_compute.ml"
+first_check="$repo_root/candle/cv_compute_analytic_expr_first_center_check.ml"
 prover="$repo_root/candle/cv_compute_analytic_expr_jet_prove.ml"
 driver="$repo_root/candle/cv_compute_flyspeck_nonlinear_driver.ml"
 test_fragment="$repo_root/candle/test_cv_compute_analytic_expr_flyspeck_real_matched.ml"
-fragments=("$test_fragment")
-if [[ ! -f "$base_dir/input-files.sha256" ]] ||
-   ! grep -Fq "  $prover" "$base_dir/input-files.sha256" ||
-   ! grep -Fq "  $driver" "$base_dir/input-files.sha256"; then
-  fragments=("$prover" "$driver" "$test_fragment")
-fi
+fragments=()
+checkpoint_has_exact_file() {
+  [[ -f "$base_dir/input-files.sha256" ]] &&
+    sha256sum "$1" | grep -Fqx -f - "$base_dir/input-files.sha256"
+}
+for fragment in "$first_program" "$first_check" "$prover" "$driver"; do
+  if ! checkpoint_has_exact_file "$fragment"; then
+    fragments+=("$fragment")
+  fi
+done
+fragments+=("$test_fragment")
 telemetry_tmp=$(mktemp)
 resource_tmp=$(mktemp)
 
