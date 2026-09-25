@@ -154,7 +154,8 @@ let candle_reflected_nl_normalize_vector vector_tm =
     failwith "reflected nonlinear driver: endpoint normalization mismatch";
   normalized_components,vector_theorem;;
 
-let candle_reflected_nl_source_pass prepared domain_th =
+let candle_reflected_nl_source_pass_with
+    function_term prove_box domain_th =
   let domain,_,_ = M_taylor.dest_m_cell_domain (concl domain_th) in
   let actual_lower,actual_upper = dest_pair domain in
   let lower,actual_lower_theorem =
@@ -164,8 +165,7 @@ let candle_reflected_nl_source_pass prepared domain_th =
     candle_reflected_nl_normalize_vector actual_upper in
   let _ = candle_reflected_nl_profile_event "normalize-upper-complete" in
   let boxes = candle_poly_fixture_q_boxes lower upper in
-  let source_theorem =
-    candle_q_dim_poly_jet_prove_box_six prepared lower upper in
+  let source_theorem = prove_box lower upper in
   let _ = candle_reflected_nl_profile_event "source-proof-complete" in
   let lower_selector =
     `candle_q_box_lower_vector:
@@ -191,12 +191,12 @@ let candle_reflected_nl_source_pass prepared domain_th =
   let relation_args = snd (strip_comb claim) in
   let source_at_point = hd relation_args in
   let function_tm = mk_abs (point,source_at_point) in
-  if not (aconv function_tm prepared.function_term) ||
+  if not (aconv function_tm function_term) ||
      hyp domain_th <> [] || hyp live_source_theorem <> [] then
     failwith "reflected nonlinear driver: live source mismatch";
   let cell_goal =
     list_mk_comb (`m_cell_pass:(real^6->real)->(real^6#real^6)->bool`,
-                  [prepared.function_term;domain]) in
+                  [function_term;domain]) in
   let cell_expansion = REWRITE_CONV [M_verifier.m_cell_pass] cell_goal in
   if not (aconv (rand (concl cell_expansion))
                  (concl live_source_theorem)) then
@@ -207,10 +207,16 @@ let candle_reflected_nl_source_pass prepared domain_th =
   let _ = candle_reflected_nl_profile_event "cell-handoff-complete" in
   let functions,proved_domain =
     M_verifier.dest_m_cell_list_pass (concl list_theorem) in
-  if functions <> [prepared.function_term] ||
+  if functions <> [function_term] ||
      not (aconv proved_domain domain) || hyp list_theorem <> [] then
     failwith "reflected nonlinear driver: leaf result mismatch";
   list_theorem;;
+
+let candle_reflected_nl_source_pass prepared domain_th =
+  candle_reflected_nl_source_pass_with
+    prepared.function_term
+    (candle_q_dim_poly_jet_prove_box_six prepared)
+    domain_th;;
 
 let candle_reflected_nl_verify_disj_raw
     _ n p_split fs_list leaf_check certificate domain_th0 th_list =
