@@ -20,15 +20,19 @@ let candle_analytic_first_axioms_before = axioms ();;
 
 let candle_analytic_first_expression =
  `Candle_analytic_add
-    (Candle_analytic_sqrt 2 0 0 2 0 0
-      (Candle_analytic_add
-        (Candle_analytic_inv
-          (Candle_analytic_poly
-            (Candle_poly_add
-              (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+    (Candle_analytic_add
+      (Candle_analytic_sqrt 2 0 0 2 0 0
+        (Candle_analytic_add
+          (Candle_analytic_inv
+            (Candle_analytic_poly
+              (Candle_poly_add
+                (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+          (Candle_analytic_poly (Candle_poly_const 3 0 0))))
+      (Candle_analytic_neg
         (Candle_analytic_poly (Candle_poly_const 3 0 0))))
-    (Candle_analytic_neg
-      (Candle_analytic_poly (Candle_poly_const 3 0 0)))`;;
+    (Candle_analytic_add Candle_analytic_pi_half
+      (Candle_analytic_atn
+        (Candle_analytic_poly (Candle_poly_var 0))))`;;
 
 let candle_analytic_first_boxes =
  `[(((((0,0),0),((0,0),0))):
@@ -107,7 +111,7 @@ if hyp candle_analytic_first_center_environment_theorem <> [] ||
   failwith "analytic first-center behavioral proof mismatch";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_FIRST_JET_RESULT dimensions=1 analytic_instructions=8 domain=1";;
+  "CANDLE_CV_ANALYTIC_FIRST_JET_RESULT dimensions=1 analytic_instructions=13 domain=1 atn=1 pi_half=1";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_FIRST_JET_OK";;
 
 end;;
