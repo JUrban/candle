@@ -92,9 +92,33 @@ let candle_q_dim_analytic_split_certificate_prove_box_six
   let finish = rand (concl finish_theorem) in
   let _ =
     candle_q_dim_analytic_jet_profile_event "split-finish-computed" in
-  let verdict,_ = candle_q_dim_analytic_jet_dest_pair finish in
-  if not (aconv verdict `Cexp_num 1`) then
-    failwith "analytic split-certificate prover: box rejected";
+  let verdict,upper = candle_q_dim_analytic_jet_dest_pair finish in
+  if not (aconv verdict `Cexp_num 1`) then (
+    let center_domain =
+      rand
+        (concl
+          (candle_q_dim_analytic_jet_compute
+            candle_cv_q_dim_analytic_split_certificate_compute_eqs
+            (mk_comb
+              (`candle_cv_q_dim_analytic_first_result_domain`,center)))) in
+    let box_domain =
+      rand
+        (concl
+          (candle_q_dim_analytic_jet_compute
+            candle_cv_q_dim_analytic_split_certificate_compute_eqs
+            (mk_comb (`candle_cv_q_dim_analytic_result_domain`,box)))) in
+    let box_valid =
+      rand
+        (concl
+          (candle_q_dim_analytic_jet_compute
+            candle_cv_q_dim_analytic_split_certificate_compute_eqs
+            (mk_comb
+              (`candle_cv_q_box_valid_list`,boxes_representation_term)))) in
+    failwith
+      ("analytic split-certificate prover: box rejected center_domain=" ^
+       string_of_term center_domain ^ " box_domain=" ^
+       string_of_term box_domain ^ " box_valid=" ^
+       string_of_term box_valid ^ " upper=" ^ string_of_term upper));
 
   let compute_tm =
     list_mk_comb
