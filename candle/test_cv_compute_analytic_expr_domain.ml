@@ -3,7 +3,7 @@
 (* ========================================================================== *)
 
 load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
+  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
 
 needs "candle/cv_compute_analytic_expr_domain.ml";;
 
@@ -42,5 +42,5 @@ if length candle_analytic_domain_axioms_after <>
   failwith "analytic domain regularity: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_RESULT constructors=7 inv=1 sqrt=1 universal=1";;
+  "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_RESULT constructors=9 inv=1 sqrt=1 atn=1 pi_half=1 universal=1";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_OK";;

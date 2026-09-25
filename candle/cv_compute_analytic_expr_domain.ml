@@ -249,6 +249,26 @@ let candle_q_dim_analytic_domain_regular = prove
               `candle_q_dim_jet_sqrt_domain
                 (candle_analytic_sqrt_interval lp ln ld up un ud)
                 (candle_q_dim_analytic_jet boxes a)`)
-            contains_th))]]);;
+            contains_th))];
+    X_GEN_TAC `a:candle_analytic_expr` THEN DISCH_THEN
+      (LABEL_TAC "ih") THEN
+    MAP_EVERY X_GEN_TAC
+      [`boxes:(((num#num)#num)#((num#num)#num))list`; `env:real list`] THEN
+    REWRITE_TAC[candle_q_dim_analytic_domain_def;
+                candle_analytic_regular_at_def] THEN
+    STRIP_TAC THEN
+    USE_THEN "ih" (fun ih ->
+      ACCEPT_TAC
+        (MATCH_MP
+          (SPECL
+            [`boxes:(((num#num)#num)#((num#num)#num))list`;
+             `env:real list`] ih)
+          (CONJ
+            (ASSUME `candle_q_stack_contains boxes env`)
+            (ASSUME `candle_q_dim_analytic_domain boxes a`))));
+    MAP_EVERY X_GEN_TAC
+      [`boxes:(((num#num)#num)#((num#num)#num))list`; `env:real list`] THEN
+    REWRITE_TAC[candle_q_dim_analytic_domain_def;
+                candle_analytic_regular_at_def]]);;
 
 end;;
