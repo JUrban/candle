@@ -7,6 +7,8 @@ run_dir=${1:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-driver-checkpoi
 input_ack=CANDLE_NL_ANALYTIC_DRIVER_BUILD_INPUT_ACK
 ready_marker=CANDLE_NL_ANALYTIC_DRIVER_CHECKPOINT_READY
 fragments=(
+  "$repo_root/candle/cv_compute_analytic_expr_first_jet_program_compute.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_first_center_check.ml"
   "$repo_root/candle/cv_compute_analytic_expr_jet_prove.ml"
   "$repo_root/candle/cv_compute_flyspeck_nonlinear_driver.ml"
 )

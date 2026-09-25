@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-driver-checkpoint-v1}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-driver-checkpoint-v3}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-analytic-flyspeck-real-matched-timed-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 first_program="$repo_root/candle/cv_compute_analytic_expr_first_jet_program_compute.ml"
