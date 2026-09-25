@@ -2,9 +2,18 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-checker-checkpoint-v1}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-driver-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-analytic-flyspeck-real-matched-timed-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
+prover="$repo_root/candle/cv_compute_analytic_expr_jet_prove.ml"
+driver="$repo_root/candle/cv_compute_flyspeck_nonlinear_driver.ml"
+test_fragment="$repo_root/candle/test_cv_compute_analytic_expr_flyspeck_real_matched.ml"
+fragments=("$test_fragment")
+if [[ ! -f "$base_dir/input-files.sha256" ]] ||
+   ! grep -Fq "  $prover" "$base_dir/input-files.sha256" ||
+   ! grep -Fq "  $driver" "$base_dir/input-files.sha256"; then
+  fragments=("$prover" "$driver" "$test_fragment")
+fi
 telemetry_tmp=$(mktemp)
 resource_tmp=$(mktemp)
 
@@ -20,9 +29,7 @@ printf '%s\trun-start\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" \
 CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   /usr/bin/time -v -o "$resource_tmp" \
   "$runner" "$output_dir" CANDLE_CV_ANALYTIC_MATCHED_OK \
-  "$repo_root/candle/cv_compute_analytic_expr_jet_prove.ml" \
-  "$repo_root/candle/cv_compute_flyspeck_nonlinear_driver.ml" \
-  "$repo_root/candle/test_cv_compute_analytic_expr_flyspeck_real_matched.ml" &
+  "${fragments[@]}" &
 runner_pid=$!
 
 (
