@@ -109,21 +109,56 @@ let candle_action296_probe_verdict,
       (mk_comb
         (`candle_cv_q_box_valid_list`,candle_action296_probe_boxes_term)) in
   let valid = rand (concl valid_theorem) in
+  let center_jet =
+    mk_comb (`candle_cv_q_dim_analytic_first_result_jet`,center) in
+  let box_jet =
+    mk_comb (`candle_cv_q_dim_analytic_result_jet`,box) in
+  let radii_theorem =
+    candle_action296_probe_compute "radii"
+      (mk_comb
+        (`candle_cv_q_radius_list`,candle_action296_probe_boxes_term)) in
+  let radii = rand (concl radii_theorem) in
+  let center_value_theorem =
+    candle_action296_probe_compute "center-value-upper"
+      (mk_comb
+        (`Cexp_snd`,mk_comb (`candle_cv_q_dim_first_jet_f`,center_jet))) in
+  let center_value = rand (concl center_value_theorem) in
+  let center_gradient_theorem =
+    candle_action296_probe_compute "center-gradient"
+      (mk_comb (`candle_cv_q_dim_first_jet_gradient`,center_jet)) in
+  let center_gradient = rand (concl center_gradient_theorem) in
+  let box_hessian_theorem =
+    candle_action296_probe_compute "box-hessian"
+      (mk_comb (`candle_cv_q_dim_jet_hessian`,box_jet)) in
+  let box_hessian = rand (concl box_hessian_theorem) in
+  let gradient_upper_theorem =
+    candle_action296_probe_compute "gradient-upper"
+      (list_mk_comb
+        (`candle_cv_q_dot_abs_upper_normalized`,
+         [radii;center_gradient])) in
+  let gradient_upper = rand (concl gradient_upper_theorem) in
+  let hessian_upper_theorem =
+    candle_action296_probe_compute "hessian-upper"
+      (list_mk_comb
+        (`candle_cv_q_weighted_rows_abs_upper_normalized`,
+         [radii;radii;box_hessian])) in
+  let hessian_upper = rand (concl hessian_upper_theorem) in
+  let half_hessian_theorem =
+    candle_action296_probe_compute "half-hessian"
+      (list_mk_comb
+        (`candle_cv_q_mul_normalized`,
+         [`candle_cv_q_half`;hessian_upper])) in
+  let half_hessian = rand (concl half_hessian_theorem) in
+  let remainder_theorem =
+    candle_action296_probe_compute "remainder"
+      (list_mk_comb
+        (`candle_cv_q_add_normalized`,
+         [gradient_upper;half_hessian])) in
+  let remainder = rand (concl remainder_theorem) in
   let upper_theorem =
     candle_action296_probe_compute "normalized-upper"
       (list_mk_comb
-        (`candle_cv_q_dim_taylor_upper_normalized`,
-         [mk_comb
-           (`candle_cv_q_radius_list`,candle_action296_probe_boxes_term);
-          mk_comb
-           (`candle_cv_q_dim_first_jet_f`,
-            mk_comb (`candle_cv_q_dim_analytic_first_result_jet`,center));
-          mk_comb
-           (`candle_cv_q_dim_first_jet_gradient`,
-            mk_comb (`candle_cv_q_dim_analytic_first_result_jet`,center));
-          mk_comb
-           (`candle_cv_q_dim_jet_hessian`,
-            mk_comb (`candle_cv_q_dim_analytic_result_jet`,box))])) in
+        (`candle_cv_q_add_normalized`,[center_value;remainder])) in
   let upper = rand (concl upper_theorem) in
   let finish_theorem =
     candle_action296_probe_compute "finish"
