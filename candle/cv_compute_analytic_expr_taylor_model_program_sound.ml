@@ -16,6 +16,7 @@ open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_jet;;
+open Candle_cv_analytic_expr_calculus;;
 open Candle_cv_analytic_expr_domain;;
 open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
@@ -131,5 +132,82 @@ let candle_q_dim_taylor_model_complete_analytic_invariant = prove
     ASM_REWRITE_TAC[] THEN
     MATCH_MP_TAC candle_q_dim_analytic_taylor_model_proxy_contains THEN
     ASM_REWRITE_TAC[center_contains_box_e]]);;
+
+let candle_q_dim_taylor_model_proxy_neg_hessian = prove
+ (`!result.
+     candle_q_dim_jet_hessian
+       (candle_q_dim_jet_normalized_neg
+         (candle_q_dim_taylor_model_proxy result)) =
+     candle_q_dim_interval_matrix_neg
+       (candle_q_dim_taylor_model_result_hessian result)`,
+  REWRITE_TAC[candle_q_dim_jet_normalized_neg_def;
+              candle_q_dim_taylor_model_proxy_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def; FST; SND]);;
+
+let candle_q_dim_taylor_model_result_neg_analytic_invariant = prove
+ (`!center_e box_e boxes result (type_witness:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes result center_e box_e
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_neg
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         result)
+       (Candle_analytic_neg center_e) (Candle_analytic_neg box_e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  POP_ASSUM (LABEL_TAC "input_invariant") THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_neg_def] THEN
+  ONCE_REWRITE_TAC[GSYM candle_q_dim_taylor_model_proxy_neg_hessian] THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_complete_analytic_invariant THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_analytic_valid_dim_def];
+    ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    DISCH_TAC THEN
+    USE_THEN "input_invariant" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
+    ASM_REWRITE_TAC[] THEN
+    STRIP_TAC THEN
+    POP_ASSUM (LABEL_TAC "box_contains_all") THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_neg_shape THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_neg_components_sound THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_neg_shape THEN
+      ASM_REWRITE_TAC[];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      USE_THEN "box_contains_all"
+        (fun th ->
+          ASSUME_TAC
+            (MATCH_MP (SPEC `p:real^N` th)
+              (ASSUME
+                `(p:real^N) IN interval
+                  [candle_q_box_lower_vector boxes,
+                   candle_q_box_upper_vector boxes]`))) THEN
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_neg_components_sound THEN
+      CONJ_TAC THENL
+       [ASM_REWRITE_TAC[];
+        REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
+        ASM_REWRITE_TAC[]]]]);;
 
 end;;
