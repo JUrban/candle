@@ -1657,13 +1657,13 @@ let candle_q_dim_taylor_model_certified_upper_def = new_definition
 
 let candle_q_dim_taylor_model_certified_accept_def = new_definition
  `candle_q_dim_taylor_model_certified_accept center_e box_e boxes <=>
-    candle_q_box_valid_list boxes /\
-    candle_analytic_erase_sqrt_certificates center_e =
-      candle_analytic_erase_sqrt_certificates box_e /\
     candle_q_dim_taylor_model_result_domain
       (candle_q_dim_taylor_model_program
         (candle_analytic_compile center_e)
         (candle_analytic_compile box_e) boxes) /\
+    candle_q_box_valid_list boxes /\
+    candle_analytic_erase_sqrt_certificates center_e =
+      candle_analytic_erase_sqrt_certificates box_e /\
     ~(candle_q_le candle_q_zero
        (candle_q_dim_taylor_model_certified_upper
          (candle_q_dim_taylor_model_program
