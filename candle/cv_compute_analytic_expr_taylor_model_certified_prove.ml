@@ -18,6 +18,12 @@ open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_certified_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_compile_sound;;
 
+(* Rejection is not a proof failure.  Preserve the computed result so an     *)
+(* untrusted subdivision policy can inspect its certified gradient cache and *)
+(* propose the next box.  Every eventual child is still proved independently. *)
+
+exception Candle_q_dim_taylor_model_certified_rejected of term * term;;
+
 let candle_q_dim_taylor_model_certified_sound_six =
   REWRITE_RULE
     [candle_q_dim_analytic_jet_dim_six]
@@ -81,9 +87,9 @@ let candle_q_dim_taylor_model_certified_prove_box_six
       "certified-taylor-finish-computed" in
   let verdict,upper = candle_q_dim_analytic_jet_dest_pair finish in
   if not (aconv verdict `Cexp_num 1`) then
-    failwith
-      ("certified Taylor-model prover: box rejected upper=" ^
-       string_of_term upper);
+    raise
+      (Candle_q_dim_taylor_model_certified_rejected
+        (program_result,upper));
 
   let compute_tm =
     list_mk_comb
