@@ -74,91 +74,71 @@ let candle_action296_probe_compute stage tm =
      "-end");
   theorem;;
 
-let candle_action296_probe_center_environment_theorem =
-  candle_action296_probe_compute "center-environment"
-    (mk_comb
-      (`candle_cv_q_center_environment_list`,
-       candle_action296_probe_boxes_term));;
-let candle_action296_probe_center_environment =
-  rand (concl candle_action296_probe_center_environment_theorem);;
-let candle_action296_probe_center_theorem =
-  candle_action296_probe_compute "center-jet"
-    (list_mk_comb
-      (`candle_cv_q_dim_analytic_first_program`,
-       [candle_action296_probe_center_environment;
-        candle_action296_plan_prepared.program_representation_term]));;
-let candle_action296_probe_center =
-  rand (concl candle_action296_probe_center_theorem);;
-let candle_action296_probe_box_theorem =
-  candle_action296_probe_compute "box-jet"
-    (list_mk_comb
-      (`candle_cv_q_dim_analytic_program`,
-       [candle_action296_probe_boxes_term;
-        candle_action296_plan_prepared.program_representation_term]));;
-let candle_action296_probe_box =
-  rand (concl candle_action296_probe_box_theorem);;
-
-let candle_action296_probe_domain_theorem =
-  candle_action296_probe_compute "domain"
-    (list_mk_comb
-      (`candle_cv_bool_and`,
-       [mk_comb
-         (`candle_cv_q_dim_analytic_first_result_domain`,
-          candle_action296_probe_center);
-        mk_comb
-         (`candle_cv_q_dim_analytic_result_domain`,
-          candle_action296_probe_box)]));;
-let candle_action296_probe_domain_value =
-  rand (concl candle_action296_probe_domain_theorem);;
-let candle_action296_probe_valid_theorem =
-  candle_action296_probe_compute "box-validity"
-    (mk_comb
-      (`candle_cv_q_box_valid_list`,candle_action296_probe_boxes_term));;
-let candle_action296_probe_valid =
-  rand (concl candle_action296_probe_valid_theorem);;
-
-let candle_action296_probe_upper_theorem =
-  candle_action296_probe_compute "normalized-upper"
-    (list_mk_comb
-      (`candle_cv_q_dim_taylor_upper_normalized`,
-       [mk_comb
-         (`candle_cv_q_radius_list`,candle_action296_probe_boxes_term);
-        mk_comb
-         (`candle_cv_q_dim_first_jet_f`,
-          mk_comb
-            (`candle_cv_q_dim_analytic_first_result_jet`,
-             candle_action296_probe_center));
-        mk_comb
-         (`candle_cv_q_dim_first_jet_gradient`,
-          mk_comb
-            (`candle_cv_q_dim_analytic_first_result_jet`,
-             candle_action296_probe_center));
-        mk_comb
-         (`candle_cv_q_dim_jet_hessian`,
-          mk_comb
-            (`candle_cv_q_dim_analytic_result_jet`,
-             candle_action296_probe_box))]));;
-let candle_action296_probe_upper =
-  rand (concl candle_action296_probe_upper_theorem);;
-
-let candle_action296_probe_finish_theorem =
-  candle_action296_probe_compute "finish"
-    (list_mk_comb
-      (`candle_cv_q_dim_whole_box_finish`,
-       [candle_action296_probe_domain_value;
-        candle_action296_probe_valid;
-        candle_action296_probe_upper]));;
-let candle_action296_probe_finish =
-  rand (concl candle_action296_probe_finish_theorem);;
 let candle_action296_probe_verdict,
-    candle_action296_probe_final_upper =
-  candle_q_dim_analytic_jet_dest_pair candle_action296_probe_finish;;
+    candle_action296_probe_upper_chars =
+  let center_environment_theorem =
+    candle_action296_probe_compute "center-environment"
+      (mk_comb
+        (`candle_cv_q_center_environment_list`,
+         candle_action296_probe_boxes_term)) in
+  let center_environment = rand (concl center_environment_theorem) in
+  let center_theorem =
+    candle_action296_probe_compute "center-jet"
+      (list_mk_comb
+        (`candle_cv_q_dim_analytic_first_program`,
+         [center_environment;
+          candle_action296_plan_prepared.program_representation_term])) in
+  let center = rand (concl center_theorem) in
+  let box_theorem =
+    candle_action296_probe_compute "box-jet"
+      (list_mk_comb
+        (`candle_cv_q_dim_analytic_program`,
+         [candle_action296_probe_boxes_term;
+          candle_action296_plan_prepared.program_representation_term])) in
+  let box = rand (concl box_theorem) in
+  let domain_theorem =
+    candle_action296_probe_compute "domain"
+      (list_mk_comb
+        (`candle_cv_bool_and`,
+         [mk_comb
+           (`candle_cv_q_dim_analytic_first_result_domain`,center);
+          mk_comb (`candle_cv_q_dim_analytic_result_domain`,box)])) in
+  let domain_value = rand (concl domain_theorem) in
+  let valid_theorem =
+    candle_action296_probe_compute "box-validity"
+      (mk_comb
+        (`candle_cv_q_box_valid_list`,candle_action296_probe_boxes_term)) in
+  let valid = rand (concl valid_theorem) in
+  let upper_theorem =
+    candle_action296_probe_compute "normalized-upper"
+      (list_mk_comb
+        (`candle_cv_q_dim_taylor_upper_normalized`,
+         [mk_comb
+           (`candle_cv_q_radius_list`,candle_action296_probe_boxes_term);
+          mk_comb
+           (`candle_cv_q_dim_first_jet_f`,
+            mk_comb (`candle_cv_q_dim_analytic_first_result_jet`,center));
+          mk_comb
+           (`candle_cv_q_dim_first_jet_gradient`,
+            mk_comb (`candle_cv_q_dim_analytic_first_result_jet`,center));
+          mk_comb
+           (`candle_cv_q_dim_jet_hessian`,
+            mk_comb (`candle_cv_q_dim_analytic_result_jet`,box))])) in
+  let upper = rand (concl upper_theorem) in
+  let finish_theorem =
+    candle_action296_probe_compute "finish"
+      (list_mk_comb
+        (`candle_cv_q_dim_whole_box_finish`,
+         [domain_value;valid;upper])) in
+  let finish = rand (concl finish_theorem) in
+  let verdict,final_upper =
+    candle_q_dim_analytic_jet_dest_pair finish in
+  verdict,String.length (string_of_term final_upper);;
 
 print_endline
   ("CANDLE_CV_ACTION296_NORMALIZED_PROBE_RESULT verdict=" ^
    (if aconv candle_action296_probe_verdict `Cexp_num 1`
     then "accept" else "reject") ^
    " upper_term_chars=" ^
-   string_of_int
-     (String.length (string_of_term candle_action296_probe_final_upper)));
+   string_of_int candle_action296_probe_upper_chars);
 print_endline "CANDLE_CV_ACTION296_NORMALIZED_PROBE_OK";;
