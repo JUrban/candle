@@ -14,6 +14,7 @@ open Candle_cv_polynomial_expr_dim_jet_sound;;
 open Candle_cv_analytic_poly_inv;;
 open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_jet;;
+open Candle_cv_analytic_expr_program;;
 open Candle_cv_analytic_expr_calculus;;
 open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
@@ -640,5 +641,299 @@ let candle_q_dim_taylor_model_result_pi_half_analytic_invariant = prove
                 candle_analytic_d_def;
                 candle_analytic_dd_def] THEN
     ASM_MESON_TAC[candle_q_dim_jet_pi_half_components_sound]]);;
+
+let candle_analytic_compile_length_erase = prove
+ (`!e.
+     LENGTH (candle_analytic_compile e) =
+     LENGTH
+       (candle_analytic_compile
+         (candle_analytic_erase_sqrt_certificates e))`,
+  MATCH_MP_TAC candle_analytic_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_analytic_compile_def;
+                  candle_analytic_erase_sqrt_certificates_def;
+                  LENGTH; LENGTH_APPEND]);;
+
+let candle_analytic_compile_length_certificate_equivalent = prove
+ (`!center_e box_e.
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e
+     ==> LENGTH (candle_analytic_compile center_e) =
+         LENGTH (candle_analytic_compile box_e)`,
+  MESON_TAC[candle_analytic_compile_length_erase]);;
+
+let candle_analytic_erase_poly_eq = prove
+ (`!center_e p.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_poly p
+     <=> center_e = Candle_analytic_poly p`,
+  GEN_TAC THEN GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"]);;
+
+let candle_analytic_erase_neg_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_neg
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?center_a.
+           center_e = Candle_analytic_neg center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  GEN_TAC THEN GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_add_eq = prove
+ (`!center_e a b.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_add
+         (candle_analytic_erase_sqrt_certificates a)
+         (candle_analytic_erase_sqrt_certificates b)
+     <=> ?center_a center_b.
+           center_e = Candle_analytic_add center_a center_b /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a /\
+           candle_analytic_erase_sqrt_certificates center_b =
+             candle_analytic_erase_sqrt_certificates b`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_mul_eq = prove
+ (`!center_e a b.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_mul
+         (candle_analytic_erase_sqrt_certificates a)
+         (candle_analytic_erase_sqrt_certificates b)
+     <=> ?center_a center_b.
+           center_e = Candle_analytic_mul center_a center_b /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a /\
+           candle_analytic_erase_sqrt_certificates center_b =
+             candle_analytic_erase_sqrt_certificates b`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_square_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_square
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?center_a.
+           center_e = Candle_analytic_square center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_inv_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_inv
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?center_a.
+           center_e = Candle_analytic_inv center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_sqrt_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_sqrt 0 0 0 0 0 0
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?lp ln ld up un ud center_a.
+           center_e = Candle_analytic_sqrt lp ln ld up un ud center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_atn_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_atn
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?center_a.
+           center_e = Candle_analytic_atn center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_erase_pi_half_eq = prove
+ (`!center_e.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_pi_half
+     <=> center_e = Candle_analytic_pi_half`,
+  GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"]);;
+
+let candle_q_dim_taylor_model_program_step_poly = prove
+ (`!program center_boxes boxes radii stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       (Candle_analytic_push_poly program)
+       (Candle_analytic_push_poly program) stack =
+     CONS
+       (candle_q_dim_taylor_model_poly_program
+         center_boxes boxes radii program) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_analytic_instruction_poly_def]);;
+
+let candle_q_dim_taylor_model_program_step_neg = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_neg Candle_analytic_program_neg
+       (CONS inner stack) =
+     CONS (candle_q_dim_taylor_model_result_neg radii inner) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_add = prove
+ (`!center_boxes boxes radii left right stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_add Candle_analytic_program_add
+       (CONS right (CONS left stack)) =
+     CONS (candle_q_dim_taylor_model_result_add radii left right) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_mul = prove
+ (`!center_boxes boxes radii left right stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_mul Candle_analytic_program_mul
+       (CONS right (CONS left stack)) =
+     CONS (candle_q_dim_taylor_model_result_mul radii left right) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_square = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_square Candle_analytic_program_square
+       (CONS inner stack) =
+     CONS (candle_q_dim_taylor_model_result_square radii inner) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_inv = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_inv Candle_analytic_program_inv
+       (CONS inner stack) =
+     CONS (candle_q_dim_taylor_model_result_inv radii inner) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_sqrt = prove
+ (`!clp cln cld cup cun cud blp bln bld bup bun bud
+      center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       (Candle_analytic_program_sqrt
+         (candle_analytic_sqrt_interval clp cln cld cup cun cud))
+       (Candle_analytic_program_sqrt
+         (candle_analytic_sqrt_interval blp bln bld bup bun bud))
+       (CONS inner stack) =
+     CONS
+       (candle_q_dim_taylor_model_result_sqrt radii
+         (candle_analytic_sqrt_interval clp cln cld cup cun cud)
+         (candle_analytic_sqrt_interval blp bln bld bup bun bud)
+         inner) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_analytic_instruction_sqrt_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_atn = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_atn Candle_analytic_program_atn
+       (CONS inner stack) =
+     CONS (candle_q_dim_taylor_model_result_atn radii inner) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_pi_half = prove
+ (`!center_boxes boxes radii stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_pi_half Candle_analytic_program_pi_half stack =
+     CONS
+       (candle_q_dim_taylor_model_result_pi_half
+         radii center_boxes boxes) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
 
 end;;
