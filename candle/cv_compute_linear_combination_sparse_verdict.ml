@@ -115,10 +115,9 @@ let candle_cv_lc_sparse_master_def =
   new_recursive_definition list_RECURSION
    `(candle_cv_lc_sparse_master
        ([]:((num#(num#num))list#(num#num))list) = Cexp_num 0) /\
-    (!master_row master_tail.
-       candle_cv_lc_sparse_master (CONS master_row master_tail) =
-       Cexp_pair (candle_cv_lc_sparse_acc master_row)
-                 (candle_cv_lc_sparse_master master_tail))`;;
+    (!row rows. candle_cv_lc_sparse_master (CONS row rows) =
+       Cexp_pair (candle_cv_lc_sparse_acc row)
+                 (candle_cv_lc_sparse_master rows))`;;
 
 let candle_cv_lc_sparse_entry_decode_def = new_definition
  `candle_cv_lc_sparse_entry_decode x =
@@ -141,11 +140,9 @@ let candle_cv_lc_sparse_acc_decode_def = define
 let candle_cv_lc_sparse_master_decode_def =
   new_recursive_definition cval_RECURSION
    `(!n. candle_cv_lc_sparse_master_decode (Cexp_num n) = []) /\
-    (!master_row master_tail.
-       candle_cv_lc_sparse_master_decode
-         (Cexp_pair master_row master_tail) =
-       CONS (candle_cv_lc_sparse_acc_decode master_row)
-            (candle_cv_lc_sparse_master_decode master_tail))`;;
+    (!row rows. candle_cv_lc_sparse_master_decode (Cexp_pair row rows) =
+       CONS (candle_cv_lc_sparse_acc_decode row)
+            (candle_cv_lc_sparse_master_decode rows))`;;
 
 let candle_cv_lc_sparse_entry_roundtrip = prove
  (`!x:num#(num#num).
@@ -174,9 +171,9 @@ let candle_cv_lc_sparse_acc_roundtrip = prove
               candle_cv_lc_z_roundtrip]);;
 
 let candle_cv_lc_sparse_master_roundtrip = prove
- (`!master_rows:((num#(num#num))list#(num#num))list.
+ (`!rows:((num#(num#num))list#(num#num))list.
      candle_cv_lc_sparse_master_decode
-       (candle_cv_lc_sparse_master master_rows) = master_rows`,
+       (candle_cv_lc_sparse_master rows) = rows`,
   LIST_INDUCT_TAC THEN
   ASM_REWRITE_TAC[candle_cv_lc_sparse_master_decode_def;
                   candle_cv_lc_sparse_master_def;
