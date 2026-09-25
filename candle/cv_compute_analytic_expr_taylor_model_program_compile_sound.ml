@@ -12,12 +12,14 @@ open Candle_cv_polynomial_expr_dim_derivatives;;
 open Candle_cv_polynomial_expr_dim_jet;;
 open Candle_cv_polynomial_expr_dim_jet_sound;;
 open Candle_cv_analytic_poly_inv;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_calculus;;
 open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_nonlinear_sound;;
+open Candle_cv_whole_box_dim_taylor_sound;;
 
 let candle_q_dim_taylor_model_result_poly_analytic_invariant = prove
  (`!e boxes (type_witness:real^N).
@@ -530,5 +532,113 @@ let candle_q_dim_taylor_model_poly_compile_run_analytic_invariant = prove
                       candle_analytic_valid_dim_def;
                       candle_analytic_erase_sqrt_certificates_def]]] THEN
   ASM_MESON_TAC[candle_poly_valid_dim_def]);;
+
+let candle_q_dim_taylor_model_poly_compile_analytic_invariant = prove
+ (`!e boxes (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_poly_program
+         (candle_q_center_environment_list boxes) boxes
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         (candle_poly_compile e))
+       (Candle_analytic_poly e) (Candle_analytic_poly e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (ISPECL
+      [`e:candle_poly_expr`;
+       `boxes:(((num#num)#num)#((num#num)#num))list`;
+       `[]:
+          (bool#
+           ((((num#num)#num)#(num#num)#num)#
+            (((num#num)#num)#(num#num)#num)list#
+            ((((num#num)#num)#(num#num)#num)list)list)#
+           (((num#num)#num)#(num#num)#num)#
+           (((num#num)#num)#(num#num)#num)list#
+           ((((num#num)#num)#(num#num)#num)list)list)list`;
+       `type_witness:real^N`]
+      candle_q_dim_taylor_model_poly_compile_run_analytic_invariant) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN
+    (X_CHOOSE_THEN
+      `result:
+         bool#
+         ((((num#num)#num)#(num#num)#num)#
+          (((num#num)#num)#(num#num)#num)list#
+          ((((num#num)#num)#(num#num)#num)list)list)#
+         (((num#num)#num)#(num#num)#num)#
+         (((num#num)#num)#(num#num)#num)list#
+         ((((num#num)#num)#(num#num)#num)list)list`
+      STRIP_ASSUME_TAC) THEN
+  ASM_REWRITE_TAC[candle_q_dim_taylor_model_poly_program_def;
+                  candle_q_dim_taylor_model_result_head_def]);;
+
+let candle_q_dim_taylor_model_program_run_append = prove
+ (`!center_left box_left center_right box_right center_boxes boxes radii stack.
+     LENGTH center_left = LENGTH box_left
+     ==>
+     candle_q_dim_taylor_model_program_run center_boxes boxes radii
+       (APPEND center_left center_right) (APPEND box_left box_right) stack =
+     candle_q_dim_taylor_model_program_run center_boxes boxes radii
+       center_right box_right
+       (candle_q_dim_taylor_model_program_run center_boxes boxes radii
+         center_left box_left stack)`,
+  LIST_INDUCT_TAC THENL
+   [LIST_INDUCT_TAC THEN REPEAT GEN_TAC THEN
+    REWRITE_TAC[LENGTH; APPEND; candle_q_dim_taylor_model_program_run_def] THEN
+    ARITH_TAC;
+    LIST_INDUCT_TAC THENL
+     [REPEAT GEN_TAC THEN REWRITE_TAC[LENGTH] THEN ARITH_TAC;
+      REPEAT GEN_TAC THEN
+      REWRITE_TAC[LENGTH; SUC_INJ; APPEND;
+                  candle_q_dim_taylor_model_program_run_def] THEN
+      DISCH_TAC THEN FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_q_dim_taylor_model_pi_half_hessian = prove
+ (`!boxes.
+     candle_q_dim_interval_zero_matrix_like boxes boxes =
+     candle_q_dim_jet_hessian (candle_q_dim_jet_pi_half boxes)`,
+  REWRITE_TAC[candle_q_dim_jet_pi_half_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def; FST; SND]);;
+
+let candle_q_dim_taylor_model_result_pi_half_analytic_invariant = prove
+ (`!boxes (type_witness:real^N).
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_pi_half
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         (candle_q_center_environment_list boxes) boxes)
+       Candle_analytic_pi_half Candle_analytic_pi_half`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_pi_half_def;
+              candle_q_dim_taylor_model_pi_half_hessian] THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_complete_analytic_invariant THEN
+  ASM_REWRITE_TAC[candle_analytic_valid_dim_def;
+                  candle_analytic_erase_sqrt_certificates_def] THEN
+  REPEAT CONJ_TAC THENL
+   [REWRITE_TAC[candle_analytic_regular_at_def];
+    REWRITE_TAC[candle_analytic_regular_at_def];
+    ASM_MESON_TAC[candle_q_dim_jet_pi_half_shape;
+                  candle_q_center_environment_list_length];
+    REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                candle_analytic_value_def;
+                candle_analytic_d_def;
+                candle_analytic_dd_def] THEN
+    ASM_MESON_TAC[candle_q_dim_jet_pi_half_components_sound;
+                  candle_q_center_environment_list_length];
+    ASM_MESON_TAC[candle_q_dim_jet_pi_half_shape];
+    REPEAT STRIP_TAC THEN
+    REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                candle_analytic_value_def;
+                candle_analytic_d_def;
+                candle_analytic_dd_def] THEN
+    ASM_MESON_TAC[candle_q_dim_jet_pi_half_components_sound]]);;
 
 end;;
