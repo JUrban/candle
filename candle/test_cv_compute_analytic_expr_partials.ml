@@ -3,7 +3,7 @@
 (* ========================================================================== *)
 
 load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
+  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
 
 needs "candle/cv_compute_analytic_expr_partials.ml";;
 
@@ -19,13 +19,15 @@ open Candle_cv_analytic_expr_partials;;
 let candle_analytic_partials_axioms_before = axioms ();;
 
 let candle_analytic_partials_fixture =
- `Candle_analytic_sqrt 2 0 0 2 0 0
-    (Candle_analytic_add
-      (Candle_analytic_inv
-        (Candle_analytic_poly
-          (Candle_poly_add
-            (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
-      (Candle_analytic_poly (Candle_poly_const 3 0 0)))`;;
+ `Candle_analytic_add Candle_analytic_pi_half
+    (Candle_analytic_atn
+      (Candle_analytic_sqrt 2 0 0 2 0 0
+        (Candle_analytic_add
+          (Candle_analytic_inv
+            (Candle_analytic_poly
+              (Candle_poly_add
+                (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+          (Candle_analytic_poly (Candle_poly_const 3 0 0)))))`;;
 
 let candle_analytic_partials_valid = prove
  (list_mk_comb
@@ -52,7 +54,7 @@ let candle_analytic_partials_exact_d = prove
  (mk_eq
     (list_mk_comb
       (`candle_analytic_d`, [`0`;`[(&0)]`;candle_analytic_partials_fixture]),
-     `--(&1 / &4)`),
+     `--(&1 / &20)`),
   REWRITE_TAC[candle_analytic_d_def; candle_analytic_value_def;
               candle_poly_d_list_def; candle_poly_value_list_def;
               candle_q_real_def; candle_q_den_def; candle_lc_zreal_def;
@@ -96,5 +98,5 @@ if length candle_analytic_partials_axioms_after <>
   failwith "analytic partial bridge: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_RESULT constructors=7 partial=-1/4";;
+  "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_RESULT constructors=9 partial=-1/20";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_OK";;

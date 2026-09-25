@@ -339,6 +339,54 @@ let candle_analytic_denote_dim_partial = prove
     ASM_SIMP_TAC[candle_analytic_denote_dim_sqrt; candle_analytic_d_def;
                  derivative_sqrt;
                  REAL_ARITH `&2 * x = x + x`] THEN
-    REWRITE_TAC[candle_analytic_denote_dim_def]]);;
+    REWRITE_TAC[candle_analytic_denote_dim_def];
+    X_GEN_TAC `a:candle_analytic_expr` THEN DISCH_THEN
+      (LABEL_TAC "ih") THEN
+    MAP_EVERY X_GEN_TAC [`z:real^N`; `i:num`] THEN
+    REWRITE_TAC[candle_analytic_valid_dim_def;
+                candle_analytic_regular_at_def] THEN
+    STRIP_TAC THEN
+    USE_THEN "ih" (fun ih ->
+      ASSUME_TAC
+       (MATCH_MP (SPECL [`z:real^N`; `i:num`] ih)
+         (CONJ
+           (ASSUME `candle_analytic_valid_dim (dimindex (:N)) a`)
+           (CONJ
+             (ASSUME
+               `candle_analytic_regular_at
+                 (list_of_seq (\k. (z:real^N)$(k + 1))
+                   (dimindex (:N))) a`)
+             (ASSUME `i IN 1..dimindex (:N)`))))) THEN
+    ASSUME_TAC
+     (MATCH_MP
+       (SPECL [`a:candle_analytic_expr`; `z:real^N`]
+         candle_analytic_denote_dim_diff2c)
+       (CONJ
+         (ASSUME `candle_analytic_valid_dim (dimindex (:N)) a`)
+         (ASSUME
+           `candle_analytic_regular_at
+             (list_of_seq (\k. (z:real^N)$(k + 1))
+               (dimindex (:N))) a`))) THEN
+    ASSUME_TAC
+     (MATCH_MP candle_dim_diff2c_imp_differentiable
+       (ASSUME
+         `diff2c ((candle_analytic_denote_dim a):real^N->real)
+           (z:real^N)`)) THEN
+    MP_TAC
+     (SPECL
+       [`i:num`; `(candle_analytic_denote_dim a):real^N->real`; `z:real^N`]
+       partial_uni_compose) THEN
+    ASM_REWRITE_TAC[] THEN DISCH_THEN (MP_TAC o SPEC `atn`) THEN
+    ANTS_TAC THENL
+     [REWRITE_TAC[REAL_DIFFERENTIABLE_AT_ATN];
+      REWRITE_TAC[o_DEF] THEN DISCH_TAC] THEN
+    ASM_SIMP_TAC[candle_analytic_denote_dim_atn; candle_analytic_d_def;
+                 derivative_atn] THEN
+    REWRITE_TAC[candle_analytic_denote_dim_def];
+    MAP_EVERY X_GEN_TAC [`z:real^N`; `i:num`] THEN
+    REWRITE_TAC[candle_analytic_valid_dim_def;
+                candle_analytic_regular_at_def;
+                candle_analytic_denote_dim_pi_half;
+                candle_analytic_d_def; partial_const]]);;
 
 end;;

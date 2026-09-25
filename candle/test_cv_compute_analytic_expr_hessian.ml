@@ -3,7 +3,7 @@
 (* ========================================================================== *)
 
 load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
+  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
 
 needs "candle/cv_compute_analytic_expr_hessian.ml";;
 
@@ -20,13 +20,15 @@ open Candle_cv_analytic_expr_hessian;;
 let candle_analytic_hessian_axioms_before = axioms ();;
 
 let candle_analytic_hessian_fixture =
- `Candle_analytic_sqrt 2 0 0 2 0 0
-    (Candle_analytic_add
-      (Candle_analytic_inv
-        (Candle_analytic_poly
-          (Candle_poly_add
-            (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
-      (Candle_analytic_poly (Candle_poly_const 3 0 0)))`;;
+ `Candle_analytic_add Candle_analytic_pi_half
+    (Candle_analytic_atn
+      (Candle_analytic_sqrt 2 0 0 2 0 0
+        (Candle_analytic_add
+          (Candle_analytic_inv
+            (Candle_analytic_poly
+              (Candle_poly_add
+                (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+          (Candle_analytic_poly (Candle_poly_const 3 0 0)))))`;;
 
 let candle_analytic_hessian_valid = prove
  (list_mk_comb
@@ -54,7 +56,7 @@ let candle_analytic_hessian_exact_dd = prove
     (list_mk_comb
       (`candle_analytic_dd`,
        [`0`;`0`;`[(&0)]`;candle_analytic_hessian_fixture]),
-     `&15 / &32`),
+     `&67 / &800`),
   REWRITE_TAC[candle_analytic_dd_def; candle_analytic_d_def;
               candle_analytic_value_def; candle_poly_dd_list_def;
               candle_poly_d_list_def; candle_poly_value_list_def;
@@ -99,5 +101,5 @@ if length candle_analytic_hessian_axioms_after <>
   failwith "analytic Hessian bridge: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_HESSIAN_RESULT constructors=7 second_partial=15/32";;
+  "CANDLE_CV_ANALYTIC_EXPR_HESSIAN_RESULT constructors=9 second_partial=67/800";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_HESSIAN_OK";;

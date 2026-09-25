@@ -398,6 +398,63 @@ let candle_analytic_denote_dim_second_partial = prove
                  REAL_ARITH `&4 * (s * x) = (s + s) * (x + x)`] THEN
     REWRITE_TAC[candle_analytic_denote_dim_def] THEN
     MATCH_MP_TAC (REAL_ARITH `(x:real) = y ==> x + z = y + z`) THEN
-    MESON_TAC[REAL_MUL_ASSOC; REAL_MUL_SYM]]);;
+    MESON_TAC[REAL_MUL_ASSOC; REAL_MUL_SYM];
+    X_GEN_TAC `a:candle_analytic_expr` THEN DISCH_THEN
+      (LABEL_TAC "ih") THEN
+    MAP_EVERY X_GEN_TAC [`z:real^N`; `i:num`; `j:num`] THEN
+    REWRITE_TAC[candle_analytic_valid_dim_def;
+                candle_analytic_regular_at_def] THEN
+    STRIP_TAC THEN
+    USE_THEN "ih" (fun ih ->
+      ASSUME_TAC
+       (MATCH_MP (SPECL [`z:real^N`; `i:num`; `j:num`] ih)
+         (CONJ
+           (ASSUME `candle_analytic_valid_dim (dimindex (:N)) a`)
+           (CONJ
+             (ASSUME
+               `candle_analytic_regular_at
+                 (list_of_seq (\k. (z:real^N)$(k + 1))
+                   (dimindex (:N))) a`)
+             (CONJ
+               (ASSUME `i IN 1..dimindex (:N)`)
+               (ASSUME `j IN 1..dimindex (:N)`)))))) THEN
+    MP_TAC
+     (SPECL [`a:candle_analytic_expr`; `z:real^N`; `i:num`]
+       candle_analytic_denote_dim_partial) THEN
+    ASM_REWRITE_TAC[] THEN DISCH_TAC THEN
+    MP_TAC
+     (SPECL [`a:candle_analytic_expr`; `z:real^N`; `j:num`]
+       candle_analytic_denote_dim_partial) THEN
+    ASM_REWRITE_TAC[] THEN DISCH_TAC THEN
+    ASSUME_TAC
+     (MATCH_MP diff2c_imp_diff2
+       (MATCH_MP
+         (SPECL [`a:candle_analytic_expr`; `z:real^N`]
+           candle_analytic_denote_dim_diff2c)
+         (CONJ
+           (ASSUME `candle_analytic_valid_dim (dimindex (:N)) a`)
+           (ASSUME
+             `candle_analytic_regular_at
+               (list_of_seq (\k. (z:real^N)$(k + 1))
+                 (dimindex (:N))) a`)))) THEN
+    MP_TAC
+     (SPECL
+       [`z:real^N`; `j:num`; `i:num`;
+        `(candle_analytic_denote_dim a):real^N->real`]
+       second_partial_uni_compose) THEN
+    ASM_REWRITE_TAC[] THEN DISCH_THEN (MP_TAC o SPEC `atn`) THEN
+    ANTS_TAC THENL
+     [MATCH_ACCEPT_TAC diff2_atn;
+      REWRITE_TAC[o_DEF] THEN DISCH_TAC] THEN
+    ASM_SIMP_TAC[candle_analytic_denote_dim_atn; candle_analytic_dd_def;
+                 nth_derivative2; second_derivative_atn; derivative_atn;
+                 REAL_POW_2] THEN
+    REWRITE_TAC[candle_analytic_denote_dim_def] THEN
+    CONV_TAC REAL_RING;
+    MAP_EVERY X_GEN_TAC [`z:real^N`; `i:num`; `j:num`] THEN
+    REWRITE_TAC[candle_analytic_valid_dim_def;
+                candle_analytic_regular_at_def;
+                candle_analytic_denote_dim_pi_half;
+                candle_analytic_dd_def; partial2; partial_const]]);;
 
 end;;
