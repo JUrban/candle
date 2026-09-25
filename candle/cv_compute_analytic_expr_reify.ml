@@ -34,6 +34,11 @@ let candle_analytic_square_term child =
 let candle_analytic_inv_term child =
   mk_comb (`Candle_analytic_inv`,child);;
 
+let candle_analytic_atn_term child =
+  mk_comb (`Candle_analytic_atn`,child);;
+
+let candle_analytic_pi_half_term = `Candle_analytic_pi_half`;;
+
 let candle_analytic_q_components q =
   let signed,denominator_predecessor = dest_pair q in
   let positive,negative = dest_pair signed in
@@ -71,8 +76,16 @@ let candle_analytic_polynomial_candidate variables tm =
     true
   with Failure _ -> false;;
 
+let candle_analytic_is_pi_half tm =
+  aconv tm `pi / &2`;;
+
 let rec candle_analytic_reify_real_expression_with sqrt_interval variables tm =
-  if candle_analytic_polynomial_candidate variables tm then
+  if candle_analytic_is_pi_half tm then
+    candle_analytic_finish_source variables candle_analytic_pi_half_term tm
+      (REWRITE_CONV[candle_analytic_value_def]
+        (candle_analytic_source_lhs variables
+          candle_analytic_pi_half_term))
+  else if candle_analytic_polynomial_candidate variables tm then
     let poly,valid_th,poly_source_th,_,_ =
       candle_poly_reify_real_expression variables tm in
     if hyp valid_th <> [] then
@@ -164,6 +177,14 @@ let rec candle_analytic_reify_real_expression_with sqrt_interval variables tm =
        `:((num#num)#num)#((num#num)#num)` then
       failwith "candle analytic reifier: bad square-root enclosure type";
     let ast = candle_analytic_sqrt_term interval child in
+    candle_analytic_finish_source variables ast tm
+      (candle_analytic_unfold_source variables ast [child_th])
+  else if candle_q_is_unary `atn:real->real` tm then
+    let child_tm = candle_q_dest_unary `atn:real->real` tm in
+    let child,child_th =
+      candle_analytic_reify_real_expression_with
+        sqrt_interval variables child_tm in
+    let ast = candle_analytic_atn_term child in
     candle_analytic_finish_source variables ast tm
       (candle_analytic_unfold_source variables ast [child_th])
   else if candle_q_is_binary `(pow):real->num->real` tm then
