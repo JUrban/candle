@@ -106,6 +106,100 @@ let candle_cv_lc_sparse_rows_def = new_recursive_definition list_RECURSION
                (candle_cv_lc_sparse_rows lcrows))`;;
 
 
+(* An unweighted master table contains the reusable coefficient/rhs pair of
+   every source row.  Keep its representation separate from weighted terminal
+   rows so one computed equality can authenticate an externally prepared
+   table before any terminal multiplier is applied. *)
+
+let candle_cv_lc_sparse_master_def =
+  new_recursive_definition list_RECURSION
+   `(candle_cv_lc_sparse_master
+       ([]:((num#(num#num))list#(num#num))list) = Cexp_num 0) /\
+    (!row rows. candle_cv_lc_sparse_master (CONS row rows) =
+       Cexp_pair (candle_cv_lc_sparse_acc row)
+                 (candle_cv_lc_sparse_master rows))`;;
+
+let candle_cv_lc_sparse_entry_decode_def = new_definition
+ `candle_cv_lc_sparse_entry_decode x =
+    (candle_cv_lc_num_decode (Cexp_fst x),
+     candle_cv_lc_z_decode (Cexp_snd x))`;;
+
+let candle_cv_lc_sparse_vec_decode_def =
+  new_recursive_definition cval_RECURSION
+   `(!n. candle_cv_lc_sparse_vec_decode (Cexp_num n) = []) /\
+    (!x xs. candle_cv_lc_sparse_vec_decode (Cexp_pair x xs) =
+       CONS (candle_cv_lc_sparse_entry_decode x)
+            (candle_cv_lc_sparse_vec_decode xs))`;;
+
+let candle_cv_lc_sparse_acc_decode_def = define
+ `(!n. candle_cv_lc_sparse_acc_decode (Cexp_num n) =
+        (([]:(num#(num#num))list),(0,0))) /\
+  (!xs rhs. candle_cv_lc_sparse_acc_decode (Cexp_pair xs rhs) =
+     (candle_cv_lc_sparse_vec_decode xs,candle_cv_lc_z_decode rhs))`;;
+
+let candle_cv_lc_sparse_master_decode_def =
+  new_recursive_definition cval_RECURSION
+   `(!n. candle_cv_lc_sparse_master_decode (Cexp_num n) = []) /\
+    (!row rows. candle_cv_lc_sparse_master_decode (Cexp_pair row rows) =
+       CONS (candle_cv_lc_sparse_acc_decode row)
+            (candle_cv_lc_sparse_master_decode rows))`;;
+
+let candle_cv_lc_sparse_entry_roundtrip = prove
+ (`!x:num#(num#num).
+     candle_cv_lc_sparse_entry_decode (candle_cv_lc_sparse_entry x) = x`,
+  REWRITE_TAC[FORALL_PAIR_THM;
+              candle_cv_lc_sparse_entry_decode_def;
+              candle_cv_lc_sparse_entry_def;
+              cexp_fst_def; cexp_snd_def;
+              candle_cv_lc_num_decode_def;
+              candle_cv_lc_z_roundtrip]);;
+
+let candle_cv_lc_sparse_vec_roundtrip = prove
+ (`!xs:(num#(num#num))list.
+     candle_cv_lc_sparse_vec_decode (candle_cv_lc_sparse_vec xs) = xs`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_lc_sparse_vec_decode_def;
+                  candle_cv_lc_sparse_vec_def;
+                  candle_cv_lc_sparse_entry_roundtrip]);;
+
+let candle_cv_lc_sparse_acc_roundtrip = prove
+ (`!acc:(num#(num#num))list#(num#num).
+     candle_cv_lc_sparse_acc_decode (candle_cv_lc_sparse_acc acc) = acc`,
+  REWRITE_TAC[candle_cv_lc_sparse_acc_decode_def;
+              candle_cv_lc_sparse_acc_def;
+              candle_cv_lc_sparse_vec_roundtrip;
+              candle_cv_lc_z_roundtrip]);;
+
+let candle_cv_lc_sparse_master_roundtrip = prove
+ (`!rows:((num#(num#num))list#(num#num))list.
+     candle_cv_lc_sparse_master_decode
+       (candle_cv_lc_sparse_master rows) = rows`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_lc_sparse_master_decode_def;
+                  candle_cv_lc_sparse_master_def;
+                  candle_cv_lc_sparse_acc_roundtrip]);;
+
+let candle_cv_lc_sparse_master_injective = prove
+ (`!left right:((num#(num#num))list#(num#num))list.
+     candle_cv_lc_sparse_master left =
+     candle_cv_lc_sparse_master right
+     ==> left = right`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (AP_TERM `candle_cv_lc_sparse_master_decode`
+      (ASSUME
+        `candle_cv_lc_sparse_master
+           (left:((num#(num#num))list#(num#num))list) =
+         candle_cv_lc_sparse_master right`)) THEN
+  REWRITE_TAC[candle_cv_lc_sparse_master_roundtrip]);;
+
+let candle_cv_lc_eq_true = prove
+ (`!x y. Cexp_eq x y = Cexp_num (SUC 0) ==> x = y`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[cexp_eq_def; injectivity "cval"] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[] THEN ARITH_TAC);;
+
+
 let candle_cv_lc_sparse_insert_def = new_recursive_definition cval_RECURSION
  `(!x n. candle_cv_lc_sparse_insert x (Cexp_num n) =
      Cexp_pair x (Cexp_num 0)) /\
