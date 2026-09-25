@@ -18,9 +18,11 @@ open Candle_cv_exact_rational_order_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
+open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_dim_jet;;
 open Candle_cv_polynomial_expr_dim_jet_compute;;
 open Candle_cv_polynomial_expr_dim_first_jet_representation;;
+open Candle_cv_polynomial_expr_dim_jet_check;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_program;;
 open Candle_cv_analytic_expr_program_compute;;
@@ -43,6 +45,14 @@ let candle_q_dim_analytic_split_certificate_upper_def = new_definition
           (candle_q_center_environment_list boxes) center_e))
       (candle_q_dim_jet_hessian
         (candle_q_dim_analytic_jet boxes box_e))`;;
+
+let candle_q_dim_jet_taylor_upper_extended_def = new_definition
+ `candle_q_dim_jet_taylor_upper_extended boxes center_jet box_jet =
+    candle_q_dim_taylor_upper_extended
+      (candle_q_radius_list boxes)
+      (candle_q_dim_jet_f center_jet)
+      (candle_q_dim_jet_gradient center_jet)
+      (candle_q_dim_jet_hessian box_jet)`;;
 
 let candle_q_dim_analytic_split_certificate_accept_def = new_definition
  `candle_q_dim_analytic_split_certificate_accept center_e box_e boxes <=>
@@ -95,7 +105,7 @@ let candle_cv_q_dim_analytic_split_certificate_upper_pair_correct = prove
        (candle_cv_q_dim_analytic_first_result_encode center_result)
        (candle_cv_q_dim_analytic_result_encode box_result) =
      candle_cv_q
-       (candle_q_dim_taylor_upper_extended (candle_q_radius_list boxes)
+       (candle_q_dim_jet_taylor_upper_extended boxes
          (candle_q_dim_analytic_result_jet center_result)
          (candle_q_dim_analytic_result_jet box_result))`,
   REPEAT GEN_TAC THEN
@@ -106,7 +116,8 @@ let candle_cv_q_dim_analytic_split_certificate_upper_pair_correct = prove
               candle_cv_q_dim_first_jet_f_correct;
               candle_cv_q_dim_first_jet_gradient_correct;
               candle_cv_q_dim_jet_hessian_correct;
-              candle_cv_q_dim_taylor_upper_extended_correct]);;
+              candle_cv_q_dim_taylor_upper_extended_correct;
+              candle_q_dim_jet_taylor_upper_extended_def]);;
 
 let candle_cv_q_dim_analytic_split_certificate_finish_correct = prove
  (`!boxes center_result box_result.
@@ -120,13 +131,12 @@ let candle_cv_q_dim_analytic_split_certificate_finish_correct = prove
              candle_q_dim_analytic_result_domain center_result /\
              candle_q_dim_analytic_result_domain box_result /\
              ~(candle_q_le candle_q_zero
-                (candle_q_dim_taylor_upper_extended
-                  (candle_q_radius_list boxes)
+                (candle_q_dim_jet_taylor_upper_extended boxes
                   (candle_q_dim_analytic_result_jet center_result)
                   (candle_q_dim_analytic_result_jet box_result)))
           then SUC 0 else 0))
        (candle_cv_q
-         (candle_q_dim_taylor_upper_extended (candle_q_radius_list boxes)
+         (candle_q_dim_jet_taylor_upper_extended boxes
            (candle_q_dim_analytic_result_jet center_result)
            (candle_q_dim_analytic_result_jet box_result)))`,
   REPEAT GEN_TAC THEN
@@ -172,7 +182,8 @@ let candle_cv_q_dim_analytic_split_certificate_check_correct = prove
               candle_cv_q_dim_analytic_split_certificate_finish_correct;
               candle_q_dim_analytic_result_domain_def;
               candle_q_dim_analytic_result_jet_def;
-              candle_q_dim_analytic_split_certificate_upper_def]);;
+              candle_q_dim_analytic_split_certificate_upper_def;
+              candle_q_dim_jet_taylor_upper_extended_def]);;
 
 let candle_cv_q_dim_analytic_split_certificate_compute_eqs =
   union candle_cv_q_extended_taylor_compute_eqs
@@ -275,7 +286,8 @@ let candle_q_dim_analytic_split_certificate_upper_sound = prove
               (CONJ center_shape_th
                 (CONJ center_sound_box_e
                   (CONJ box_shape_th box_sound_th)))))))) THEN
-  REWRITE_TAC[candle_q_dim_taylor_upper_extended_real]);;
+  REWRITE_TAC[candle_q_dim_taylor_upper_extended_real;
+              candle_q_dim_jet_taylor_upper_def]);;
 
 let candle_q_dim_analytic_split_certificate_accept_sound = prove
  (`!center_e box_e boxes.
