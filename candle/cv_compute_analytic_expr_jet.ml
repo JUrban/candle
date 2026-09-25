@@ -8,6 +8,7 @@
 
 needs "candle/cv_compute_analytic_poly_inv.ml";;
 needs "candle/cv_compute_analytic_poly_sqrt.ml";;
+needs "candle/cv_compute_analytic_dim_jet_pi_half.ml";;
 
 module Candle_cv_analytic_expr_jet = struct
 
@@ -20,6 +21,7 @@ open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_poly_inv;;
 
 let candle_analytic_expr_INDUCT,candle_analytic_expr_RECURSION = define_type
@@ -30,7 +32,9 @@ let candle_analytic_expr_INDUCT,candle_analytic_expr_RECURSION = define_type
      | Candle_analytic_mul candle_analytic_expr candle_analytic_expr
      | Candle_analytic_square candle_analytic_expr
      | Candle_analytic_inv candle_analytic_expr
-     | Candle_analytic_sqrt num num num num num num candle_analytic_expr";;
+     | Candle_analytic_sqrt num num num num num num candle_analytic_expr
+     | Candle_analytic_atn candle_analytic_expr
+     | Candle_analytic_pi_half";;
 
 let candle_analytic_sqrt_interval_def = new_definition
  `candle_analytic_sqrt_interval lp ln ld up un ud =
@@ -51,7 +55,10 @@ let candle_analytic_value_def = define
      inv (candle_analytic_value env a)) /\
   (candle_analytic_value env
       (Candle_analytic_sqrt lp ln ld up un ud a) =
-     sqrt (candle_analytic_value env a))`;;
+     sqrt (candle_analytic_value env a)) /\
+  (candle_analytic_value env (Candle_analytic_atn a) =
+     atn (candle_analytic_value env a)) /\
+  (candle_analytic_value env Candle_analytic_pi_half = pi / &2)`;;
 
 let candle_analytic_d_def = define
  `(candle_analytic_d i env (Candle_analytic_poly p) =
@@ -74,7 +81,12 @@ let candle_analytic_d_def = define
       (Candle_analytic_sqrt lp ln ld up un ud a) =
      inv (sqrt (candle_analytic_value env a) +
           sqrt (candle_analytic_value env a)) *
-     candle_analytic_d i env a)`;;
+     candle_analytic_d i env a) /\
+  (candle_analytic_d i env (Candle_analytic_atn a) =
+     inv (&1 + candle_analytic_value env a *
+                candle_analytic_value env a) *
+     candle_analytic_d i env a) /\
+  (candle_analytic_d i env Candle_analytic_pi_half = &0)`;;
 
 let candle_analytic_dd_def = define
  `(candle_analytic_dd i j env (Candle_analytic_poly p) =
@@ -113,7 +125,18 @@ let candle_analytic_dd_def = define
        (candle_analytic_d i env a * candle_analytic_d j env a) +
      inv (sqrt (candle_analytic_value env a) +
           sqrt (candle_analytic_value env a)) *
-       candle_analytic_dd i j env a)`;;
+       candle_analytic_dd i j env a) /\
+  (candle_analytic_dd i j env (Candle_analytic_atn a) =
+     (--((candle_analytic_value env a + candle_analytic_value env a) *
+          (inv (&1 + candle_analytic_value env a *
+                     candle_analytic_value env a) *
+           inv (&1 + candle_analytic_value env a *
+                     candle_analytic_value env a)))) *
+       (candle_analytic_d i env a * candle_analytic_d j env a) +
+     inv (&1 + candle_analytic_value env a *
+                candle_analytic_value env a) *
+       candle_analytic_dd i j env a) /\
+  (candle_analytic_dd i j env Candle_analytic_pi_half = &0)`;;
 
 let candle_q_dim_analytic_jet_def = define
  `(candle_q_dim_analytic_jet boxes (Candle_analytic_poly p) =
@@ -139,7 +162,11 @@ let candle_q_dim_analytic_jet_def = define
       (Candle_analytic_sqrt lp ln ld up un ud a) =
      candle_q_dim_jet_sqrt_with
        (candle_analytic_sqrt_interval lp ln ld up un ud)
-       (candle_q_dim_analytic_jet boxes a))`;;
+       (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_jet boxes (Candle_analytic_atn a) =
+     candle_q_dim_jet_atn (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_jet boxes Candle_analytic_pi_half =
+     candle_q_dim_jet_pi_half boxes)`;;
 
 let candle_q_dim_analytic_domain_def = define
  `(candle_q_dim_analytic_domain boxes (Candle_analytic_poly p) <=> T) /\
@@ -161,7 +188,12 @@ let candle_q_dim_analytic_domain_def = define
      candle_q_dim_analytic_domain boxes a /\
      candle_q_dim_jet_sqrt_domain
        (candle_analytic_sqrt_interval lp ln ld up un ud)
-       (candle_q_dim_analytic_jet boxes a))`;;
+       (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_domain boxes (Candle_analytic_atn a) <=>
+     candle_q_dim_analytic_domain boxes a /\
+     candle_q_dim_jet_atn_domain
+       (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_domain boxes Candle_analytic_pi_half <=> T)`;;
 
 let candle_q_dim_analytic_contains_def = new_definition
  `candle_q_dim_analytic_contains n jet env e <=>
@@ -182,7 +214,9 @@ let candle_q_dim_analytic_jet_shape = prove
                 candle_q_dim_jet_normalized_add_shape;
                 candle_q_dim_jet_normalized_mul_shape;
                 candle_q_dim_jet_inv_shape;
-                candle_q_dim_jet_sqrt_shape]);;
+                candle_q_dim_jet_sqrt_shape;
+                candle_q_dim_jet_atn_shape;
+                candle_q_dim_jet_pi_half_shape]);;
 
 let candle_q_dim_jet_neg_components_sound = prove
  (`!n a value gradient hessian.
@@ -369,6 +403,13 @@ let candle_q_dim_analytic_jet_sound = prove
      [MATCH_ACCEPT_TAC candle_q_dim_analytic_jet_shape;
       ASM_REWRITE_TAC[];
       REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
-      ASM_SIMP_TAC[]]]);;
+      ASM_SIMP_TAC[]];
+    MATCH_MP_TAC candle_q_dim_jet_atn_components_sound THEN
+    REPEAT CONJ_TAC THENL
+     [MATCH_ACCEPT_TAC candle_q_dim_analytic_jet_shape;
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
+      ASM_SIMP_TAC[]];
+    MATCH_ACCEPT_TAC candle_q_dim_jet_pi_half_components_sound]);;
 
 end;;
