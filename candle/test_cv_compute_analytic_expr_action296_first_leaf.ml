@@ -47,7 +47,7 @@ if candle_action296_first_leaf_raw ||
    candle_action296_first_leaf_function_index <> 0 then
   failwith "action296 first leaf: unexpected pass selection";;
 
-let candle_action296_first_leaf_profile_events = ref [];;
+let candle_action296_first_leaf_profile_events : string list ref = ref [];;
 let _ =
   candle_q_dim_analytic_jet_profile :=
     (fun event ->
