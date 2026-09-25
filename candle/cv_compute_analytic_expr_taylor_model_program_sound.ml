@@ -210,4 +210,186 @@ let candle_q_dim_taylor_model_result_neg_analytic_invariant = prove
         REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
         ASM_REWRITE_TAC[]]]]);;
 
+let candle_q_dim_taylor_model_proxy_add_hessian = prove
+ (`!left right.
+     candle_q_dim_jet_hessian
+       (candle_q_dim_jet_normalized_add
+         (candle_q_dim_taylor_model_proxy left)
+         (candle_q_dim_taylor_model_proxy right)) =
+     candle_q_dim_interval_matrix_add_normalized
+       (candle_q_dim_taylor_model_result_hessian left)
+       (candle_q_dim_taylor_model_result_hessian right)`,
+  REWRITE_TAC[candle_q_dim_jet_normalized_add_def;
+              candle_q_dim_taylor_model_proxy_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def; FST; SND]);;
+
+let candle_q_dim_taylor_model_result_add_analytic_invariant = prove
+ (`!center_a center_b box_a box_b boxes left right
+      (type_witness:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) box_a /\
+     candle_analytic_valid_dim (dimindex (:N)) box_b /\
+     candle_analytic_erase_sqrt_certificates center_a =
+       candle_analytic_erase_sqrt_certificates box_a /\
+     candle_analytic_erase_sqrt_certificates center_b =
+       candle_analytic_erase_sqrt_certificates box_b /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes left center_a box_a /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes right center_b box_b
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_add
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         left right)
+       (Candle_analytic_add center_a center_b)
+       (Candle_analytic_add box_a box_b)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  POP_ASSUM
+    (fun right_th ->
+      POP_ASSUM
+        (fun left_th ->
+          LABEL_TAC "left_invariant" left_th THEN
+          LABEL_TAC "right_invariant" right_th)) THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_add_def] THEN
+  ONCE_REWRITE_TAC[GSYM candle_q_dim_taylor_model_proxy_add_hessian] THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_complete_analytic_invariant THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_analytic_valid_dim_def];
+    ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    STRIP_TAC THEN
+    USE_THEN "left_invariant" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
+    ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+    POP_ASSUM (LABEL_TAC "left_box_contains_all") THEN
+    USE_THEN "right_invariant" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
+    ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+    POP_ASSUM (LABEL_TAC "right_box_contains_all") THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_add_components_sound THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_add_shape THEN
+      ASM_REWRITE_TAC[];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      USE_THEN "left_box_contains_all"
+        (fun th ->
+          ASSUME_TAC
+            (MATCH_MP (SPEC `p:real^N` th)
+              (ASSUME
+                `(p:real^N) IN interval
+                  [candle_q_box_lower_vector boxes,
+                   candle_q_box_upper_vector boxes]`))) THEN
+      USE_THEN "right_box_contains_all"
+        (fun th ->
+          ASSUME_TAC
+            (MATCH_MP (SPEC `p:real^N` th)
+              (ASSUME
+                `(p:real^N) IN interval
+                  [candle_q_box_lower_vector boxes,
+                   candle_q_box_upper_vector boxes]`))) THEN
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_add_components_sound THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]]);;
+
+let candle_q_dim_taylor_model_result_mul_analytic_invariant = prove
+ (`!center_a center_b box_a box_b boxes left right
+      (type_witness:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) box_a /\
+     candle_analytic_valid_dim (dimindex (:N)) box_b /\
+     candle_analytic_erase_sqrt_certificates center_a =
+       candle_analytic_erase_sqrt_certificates box_a /\
+     candle_analytic_erase_sqrt_certificates center_b =
+       candle_analytic_erase_sqrt_certificates box_b /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes left center_a box_a /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes right center_b box_b
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_mul
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         left right)
+       (Candle_analytic_mul center_a center_b)
+       (Candle_analytic_mul box_a box_b)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  POP_ASSUM
+    (fun right_th ->
+      POP_ASSUM
+        (fun left_th ->
+          LABEL_TAC "left_invariant" left_th THEN
+          LABEL_TAC "right_invariant" right_th)) THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_mul_def] THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_complete_analytic_invariant THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_analytic_valid_dim_def];
+    ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    STRIP_TAC THEN
+    USE_THEN "left_invariant" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
+    ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+    POP_ASSUM (LABEL_TAC "left_box_contains_all") THEN
+    USE_THEN "right_invariant" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def] THEN
+    ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+    POP_ASSUM (LABEL_TAC "right_box_contains_all") THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      ASM_REWRITE_TAC[candle_q_dim_analytic_domain_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_mul_components_sound THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def];
+      MATCH_MP_TAC candle_q_dim_jet_normalized_mul_shape THEN
+      ASM_REWRITE_TAC[];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      USE_THEN "left_box_contains_all"
+        (fun th ->
+          ASSUME_TAC
+            (MATCH_MP (SPEC `p:real^N` th)
+              (ASSUME
+                `(p:real^N) IN interval
+                  [candle_q_box_lower_vector boxes,
+                   candle_q_box_upper_vector boxes]`))) THEN
+      USE_THEN "right_box_contains_all"
+        (fun th ->
+          ASSUME_TAC
+            (MATCH_MP (SPEC `p:real^N` th)
+              (ASSUME
+                `(p:real^N) IN interval
+                  [candle_q_box_lower_vector boxes,
+                   candle_q_box_upper_vector boxes]`))) THEN
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MATCH_MP_TAC candle_q_dim_jet_mul_components_sound THEN
+      ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]]);;
+
 end;;
