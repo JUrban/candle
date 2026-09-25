@@ -89,6 +89,16 @@ let _ =
   candle_action296_batch_scaling_marker
     "shared" "whole-box-source-preparation" "end";;
 
+let _ =
+  candle_action296_batch_scaling_marker
+    "shared" "point-plan-compilation" "begin";;
+let candle_action296_batch_scaling_point_plan =
+  candle_q_dim_taylor_model_point_plan_six
+    candle_action296_batch_scaling_box_prepared;;
+let _ =
+  candle_action296_batch_scaling_marker
+    "shared" "point-plan-compilation" "end";;
+
 let candle_action296_batch_scaling_split axis domain_th =
   let left,right =
     M_verifier.split_domain
@@ -115,8 +125,9 @@ let candle_action296_batch_scaling_domains_64 =
 let candle_action296_batch_scaling_cell domain_th =
   let lower,upper = candle_action296_batch_scaling_domain_bounds domain_th in
   let center_variant =
-    candle_q_dim_taylor_model_prepare_point_variant_six
-      candle_action296_batch_scaling_box_prepared lower upper in
+    candle_q_dim_taylor_model_prepare_point_variant_with_plan_six
+      candle_action296_batch_scaling_box_prepared
+      candle_action296_batch_scaling_point_plan lower upper in
   {
     batch_center_variant = center_variant;
     batch_lower = lower;

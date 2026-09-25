@@ -83,6 +83,97 @@ let candle_q_point_rational_eval variables values tm =
     failwith "analytic point certificate: substitution shape";
   candle_q_point_rational_eval_with (zip variables values) tm;;
 
+(* Compile the supported rational fragment once when many box centers share  *)
+(* the same source expression.  This remains untrusted certificate           *)
+(* preparation: the reflected checker validates every resulting endpoint.   *)
+
+type candle_q_point_rational_program =
+  | Candle_q_point_rational_constant of num
+  | Candle_q_point_rational_variable of int
+  | Candle_q_point_rational_neg of candle_q_point_rational_program
+  | Candle_q_point_rational_add of
+      candle_q_point_rational_program * candle_q_point_rational_program
+  | Candle_q_point_rational_sub of
+      candle_q_point_rational_program * candle_q_point_rational_program
+  | Candle_q_point_rational_mul of
+      candle_q_point_rational_program * candle_q_point_rational_program
+  | Candle_q_point_rational_div of
+      candle_q_point_rational_program * candle_q_point_rational_program
+  | Candle_q_point_rational_inv of candle_q_point_rational_program
+  | Candle_q_point_rational_pow of
+      candle_q_point_rational_program * num;;
+
+let rec candle_q_point_rational_variable_index tm index = function
+  | [] -> failwith "analytic point certificate: non-rational program"
+  | variable :: remaining ->
+      if aconv tm variable then index
+      else candle_q_point_rational_variable_index tm (index + 1) remaining;;
+
+let rec candle_q_point_rational_compile variables tm =
+  if List.exists (fun variable -> aconv tm variable) variables then
+    Candle_q_point_rational_variable
+      (candle_q_point_rational_variable_index tm 0 variables)
+  else if is_ratconst tm then
+    Candle_q_point_rational_constant (rat_of_term tm)
+  else if candle_q_is_unary `(--):real->real` tm then
+    Candle_q_point_rational_neg
+      (candle_q_point_rational_compile variables
+        (candle_q_dest_unary `(--):real->real` tm))
+  else if candle_q_is_binary `(+):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(+):real->real->real` tm in
+    Candle_q_point_rational_add
+      (candle_q_point_rational_compile variables left,
+       candle_q_point_rational_compile variables right)
+  else if candle_q_is_binary `(-):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(-):real->real->real` tm in
+    Candle_q_point_rational_sub
+      (candle_q_point_rational_compile variables left,
+       candle_q_point_rational_compile variables right)
+  else if candle_q_is_binary `(*):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(*):real->real->real` tm in
+    Candle_q_point_rational_mul
+      (candle_q_point_rational_compile variables left,
+       candle_q_point_rational_compile variables right)
+  else if candle_q_is_binary `(/):real->real->real` tm then
+    let left,right = candle_q_dest_binary `(/):real->real->real` tm in
+    Candle_q_point_rational_div
+      (candle_q_point_rational_compile variables left,
+       candle_q_point_rational_compile variables right)
+  else if candle_q_is_unary `inv:real->real` tm then
+    Candle_q_point_rational_inv
+      (candle_q_point_rational_compile variables
+        (candle_q_dest_unary `inv:real->real` tm))
+  else if candle_q_is_binary `(pow):real->num->real` tm then
+    let base,exponent = candle_q_dest_binary `(pow):real->num->real` tm in
+    Candle_q_point_rational_pow
+      (candle_q_point_rational_compile variables base,
+       Num.num_of_int (dest_small_numeral exponent))
+  else
+    failwith "analytic point certificate: non-rational program";;
+
+let candle_q_point_rational_program_value values program =
+  let rec lookup index = function
+    | [] -> failwith "analytic point certificate: program value shape"
+    | value :: remaining ->
+        if index = 0 then value else lookup (index - 1) remaining in
+  let rec evaluate = function
+    | Candle_q_point_rational_constant value -> value
+    | Candle_q_point_rational_variable index -> lookup index values
+    | Candle_q_point_rational_neg child -> Num.minus_num (evaluate child)
+    | Candle_q_point_rational_add (left,right) ->
+        Num.add_num (evaluate left) (evaluate right)
+    | Candle_q_point_rational_sub (left,right) ->
+        Num.sub_num (evaluate left) (evaluate right)
+    | Candle_q_point_rational_mul (left,right) ->
+        Num.mul_num (evaluate left) (evaluate right)
+    | Candle_q_point_rational_div (left,right) ->
+        Num.div_num (evaluate left) (evaluate right)
+    | Candle_q_point_rational_inv child ->
+        Num.div_num (Num.num_of_int 1) (evaluate child)
+    | Candle_q_point_rational_pow (base,exponent) ->
+        Num.power_num (evaluate base) exponent in
+  evaluate program;;
+
 let candle_q_point_sqrt_callback_proof variables values tm =
   if length variables <> length values then
     failwith "analytic point certificate: substitution shape";

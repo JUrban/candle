@@ -31,6 +31,11 @@ let candle_q_point_prepare_test_compare expression =
     candle_q_point_rational_eval
       candle_q_point_prepare_test_variables
       candle_q_point_prepare_test_values expression in
+  let compiled =
+    candle_q_point_rational_program_value
+      (map rat_of_term candle_q_point_prepare_test_values)
+      (candle_q_point_rational_compile
+        candle_q_point_prepare_test_variables expression) in
   let instantiated =
     subst
       (map2 (fun variable value -> value,variable)
@@ -39,7 +44,7 @@ let candle_q_point_prepare_test_compare expression =
       expression in
   let oracle =
     rat_of_term (rand (concl (REAL_RAT_REDUCE_CONV instantiated))) in
-  if not (Num.eq_num fast oracle) then
+  if not (Num.eq_num fast oracle) || not (Num.eq_num compiled oracle) then
     failwith
       ("analytic point certificate evaluator mismatch: " ^
        string_of_term expression);;
@@ -60,4 +65,4 @@ if length candle_q_point_prepare_test_axioms_after <>
   failwith "analytic point certificate evaluator changed the axiom set";;
 
 print_endline
-  "CANDLE_CV_ANALYTIC_POINT_CERTIFICATE_PREPARE_OK cases=9";;
+  "CANDLE_CV_ANALYTIC_POINT_CERTIFICATE_PREPARE_OK cases=9 compiled=9";;

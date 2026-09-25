@@ -75,6 +75,10 @@ let candle_action296_tree_verdict_box_prepared =
     candle_action296_tree_verdict_parent_lower
     candle_action296_tree_verdict_parent_upper;;
 
+let candle_action296_tree_verdict_point_plan =
+  candle_q_dim_taylor_model_point_plan_six
+    candle_action296_tree_verdict_box_prepared;;
+
 let candle_action296_tree_verdict_left_domain,
     candle_action296_tree_verdict_right_domain =
   M_verifier.split_domain candle_action296_plan_dimension 6 4
@@ -83,8 +87,9 @@ let candle_action296_tree_verdict_left_domain,
 let candle_action296_tree_verdict_cell domain_th =
   let lower,upper = candle_action296_tree_verdict_domain_bounds domain_th in
   let center_variant =
-    candle_q_dim_taylor_model_prepare_point_variant_six
-      candle_action296_tree_verdict_box_prepared lower upper in
+    candle_q_dim_taylor_model_prepare_point_variant_with_plan_six
+      candle_action296_tree_verdict_box_prepared
+      candle_action296_tree_verdict_point_plan lower upper in
   {
     batch_center_variant = center_variant;
     batch_lower = lower;

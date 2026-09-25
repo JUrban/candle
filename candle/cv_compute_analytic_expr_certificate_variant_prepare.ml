@@ -134,6 +134,51 @@ let candle_q_dim_taylor_model_prepare_variant_six
   candle_q_dim_taylor_model_variant_record_six
     base_prepared expression compile_theorem program_representation;;
 
+type candle_q_dim_taylor_model_point_plan_six = {
+  point_plan_function_term : term;
+  point_plan_source_term : term;
+  point_plan_programs : candle_q_point_rational_program list;
+};;
+
+let candle_q_dim_taylor_model_point_plan_six base_prepared =
+  let variables = candle_poly_vector_components base_prepared.vector_term 6 in
+  let square_roots =
+    candle_analytic_collect_sqrt_intervals
+      (fun square_root -> square_root)
+      variables base_prepared.source_term in
+  let programs =
+    map
+      (fun square_root ->
+        let operator,argument = dest_comb square_root in
+        if not (aconv operator `sqrt:real->real`) then
+          failwith "analytic certificate variant: point-plan square root";
+        candle_q_point_rational_compile variables argument)
+      square_roots in
+  {point_plan_function_term = base_prepared.function_term;
+   point_plan_source_term = base_prepared.source_term;
+   point_plan_programs = programs};;
+
+let candle_q_dim_taylor_model_point_plan_intervals_six
+    plan lower upper =
+  if length lower <> 6 || length upper <> 6 then
+    failwith "analytic certificate variant: expected six coordinates";
+  let values = map rat_of_term (candle_q_point_centers lower upper) in
+  map
+    (fun program ->
+      candle_q_point_sqrt_interval
+        (candle_q_point_rational_program_value values program))
+    plan.point_plan_programs;;
+
+let candle_q_dim_taylor_model_prepare_point_variant_with_plan_six
+    base_prepared plan lower upper =
+  if not
+      (aconv base_prepared.function_term plan.point_plan_function_term) ||
+     not (aconv base_prepared.source_term plan.point_plan_source_term) then
+    failwith "analytic certificate variant: point-plan source mismatch";
+  candle_q_dim_taylor_model_prepare_variant_six base_prepared
+    (candle_q_dim_taylor_model_point_plan_intervals_six
+      plan lower upper);;
+
 let candle_q_dim_taylor_model_prepare_point_variant_six
     base_prepared lower upper =
   if length lower <> 6 || length upper <> 6 then
