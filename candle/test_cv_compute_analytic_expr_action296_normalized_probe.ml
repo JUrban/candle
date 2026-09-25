@@ -74,6 +74,16 @@ let candle_action296_probe_compute stage tm =
      "-end");
   theorem;;
 
+let rec candle_action296_probe_dest_cexp_list tm =
+  let operator,arguments = strip_comb tm in
+  if aconv operator `Cexp_pair` then
+    match arguments with
+    | [head;tail] ->
+        head :: candle_action296_probe_dest_cexp_list tail
+    | _ -> failwith "action296 normalized probe: malformed cexp pair"
+  else if aconv operator `Cexp_num` then []
+  else failwith "action296 normalized probe: malformed cexp list";;
+
 let candle_action296_probe_verdict,
     candle_action296_probe_upper_chars =
   let center_environment_theorem =
@@ -137,12 +147,40 @@ let candle_action296_probe_verdict,
         (`candle_cv_q_dot_abs_upper_normalized`,
          [radii;center_gradient])) in
   let gradient_upper = rand (concl gradient_upper_theorem) in
-  let hessian_upper_theorem =
-    candle_action296_probe_compute "hessian-upper"
-      (list_mk_comb
-        (`candle_cv_q_weighted_rows_abs_upper_normalized`,
-         [radii;radii;box_hessian])) in
-  let hessian_upper = rand (concl hessian_upper_theorem) in
+  let radius_values = candle_action296_probe_dest_cexp_list radii in
+  let hessian_rows =
+    candle_action296_probe_dest_cexp_list box_hessian in
+  let compute_weighted_row index weight row =
+    let label = "hessian-row-" ^ string_of_int index in
+    let dot_theorem =
+      candle_action296_probe_compute (label ^ "-dot")
+        (list_mk_comb
+          (`candle_cv_q_dot_abs_upper_normalized`,[radii;row])) in
+    let dot = rand (concl dot_theorem) in
+    let scaled_theorem =
+      candle_action296_probe_compute (label ^ "-scale")
+        (list_mk_comb
+          (`candle_cv_q_mul_normalized`,[weight;dot])) in
+    rand (concl scaled_theorem) in
+  let rec accumulate_rows index weights rows accumulator =
+    match weights,rows with
+    | [],[] -> accumulator
+    | weight :: weight_tail,row :: row_tail ->
+        let scaled = compute_weighted_row index weight row in
+        let sum_theorem =
+          candle_action296_probe_compute
+            ("hessian-row-" ^ string_of_int index ^ "-sum")
+            (list_mk_comb
+              (`candle_cv_q_add_normalized`,[scaled;accumulator])) in
+        accumulate_rows (index + 1) weight_tail row_tail
+          (rand (concl sum_theorem))
+    | _ -> failwith "action296 normalized probe: Hessian shape mismatch" in
+  let hessian_upper =
+    match radius_values,hessian_rows with
+    | first_weight :: weight_tail,first_row :: row_tail ->
+        accumulate_rows 1 weight_tail row_tail
+          (compute_weighted_row 0 first_weight first_row)
+    | _ -> failwith "action296 normalized probe: empty Hessian" in
   let half_hessian_theorem =
     candle_action296_probe_compute "half-hessian"
       (list_mk_comb
