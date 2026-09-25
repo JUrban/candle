@@ -20,6 +20,8 @@ open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_polynomial_expr_dim_jet_representation;;
 open Candle_cv_polynomial_expr_dim_first_jet_compute;;
 open Candle_cv_polynomial_expr_dim_first_jet_representation;;
+open Candle_cv_analytic_dim_jet_inv;;
+open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_first_jet_program_compute;;
 open Candle_cv_exact_rational_normalize_extended;;
@@ -513,5 +515,206 @@ let candle_cv_q_dim_taylor_model_result_square_correct = prove
   REWRITE_TAC[candle_cv_q_dim_taylor_model_result_square_def;
               candle_q_dim_taylor_model_result_square_def;
               candle_cv_q_dim_taylor_model_result_mul_correct]);;
+
+(* Ordinary stack structure and the remaining analytic result constructors. *)
+
+let candle_q_dim_taylor_model_result_default_def = new_definition
+ `candle_q_dim_taylor_model_result_default center_boxes boxes =
+    candle_q_dim_taylor_model_result_make F
+      (candle_q_dim_jet_normalized_zero center_boxes)
+      candle_q_zero_interval
+      (candle_q_dim_interval_zeros_like boxes)
+      (candle_q_dim_interval_zero_matrix_like boxes boxes)`;;
+
+let candle_q_dim_taylor_model_result_head_def = define
+ `(candle_q_dim_taylor_model_result_head center_boxes boxes [] =
+     candle_q_dim_taylor_model_result_default center_boxes boxes) /\
+  (candle_q_dim_taylor_model_result_head center_boxes boxes (CONS h t) = h)`;;
+
+let candle_q_dim_taylor_model_result_tail_def = define
+ `(candle_q_dim_taylor_model_result_tail [] = []) /\
+  (candle_q_dim_taylor_model_result_tail (CONS h t) = t)`;;
+
+let candle_cv_q_dim_taylor_model_result_list_encode_def = define
+ `(candle_cv_q_dim_taylor_model_result_list_encode [] = Cexp_num 0) /\
+  (candle_cv_q_dim_taylor_model_result_list_encode (CONS h t) =
+     Cexp_pair (candle_cv_q_dim_taylor_model_result_encode h)
+       (candle_cv_q_dim_taylor_model_result_list_encode t))`;;
+
+let candle_cv_q_zero_interval_correct = prove
+ (`candle_cv_q_zero_interval =
+   candle_cv_q_interval candle_q_zero_interval`,
+  REWRITE_TAC[candle_cv_q_zero_interval_def]);;
+
+let candle_cv_bool_true_encoding = prove
+ (`Cexp_num 1 = candle_cv_bool T`,
+  REWRITE_TAC[candle_cv_bool_def; ARITH_RULE `1 = SUC 0`]);;
+
+let candle_cv_q_dim_taylor_model_result_default_correct = prove
+ (`!center_boxes boxes.
+     candle_cv_q_dim_taylor_model_result_default
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list boxes) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_result_default center_boxes boxes)`,
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_result_default_def;
+              candle_q_dim_taylor_model_result_default_def;
+              candle_cv_q_dim_first_jet_zero_correct;
+              candle_cv_q_zero_interval_correct;
+              candle_cv_q_dim_interval_zeros_correct;
+              candle_cv_q_dim_interval_zero_matrix_correct;
+              candle_cv_q_dim_taylor_model_result_encode_def;
+              candle_cv_q_dim_taylor_model_result_make_def;
+              candle_q_dim_taylor_model_result_make_def;
+              candle_q_dim_taylor_model_result_domain_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_value_bound_def;
+              candle_q_dim_taylor_model_result_gradient_bounds_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_cv_bool_def; FST; SND]);;
+
+let candle_cv_q_dim_taylor_model_result_head_correct = prove
+ (`!center_boxes boxes stack.
+     candle_cv_q_dim_taylor_model_result_head
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list boxes)
+       (candle_cv_q_dim_taylor_model_result_list_encode stack) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_result_head center_boxes boxes stack)`,
+  GEN_TAC THEN GEN_TAC THEN LIST_INDUCT_TAC THEN
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_head_def;
+              candle_cv_q_dim_taylor_model_result_list_encode_def;
+              cexp_if_def; cexp_ispair_def; cexp_fst_def;
+              candle_cv_q_dim_taylor_model_result_default_correct]);;
+
+let candle_cv_q_dim_taylor_model_result_tail_correct = prove
+ (`!stack.
+     candle_cv_q_dim_taylor_model_result_tail
+       (candle_cv_q_dim_taylor_model_result_list_encode stack) =
+     candle_cv_q_dim_taylor_model_result_list_encode
+       (candle_q_dim_taylor_model_result_tail stack)`,
+  LIST_INDUCT_TAC THEN
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_result_tail_def;
+              candle_q_dim_taylor_model_result_tail_def;
+              candle_cv_q_dim_taylor_model_result_list_encode_def;
+              cexp_if_def; cexp_ispair_def; cexp_snd_def]);;
+
+let candle_q_dim_taylor_model_result_inv_def = new_definition
+ `candle_q_dim_taylor_model_result_inv radii result =
+    candle_q_dim_taylor_model_result_complete radii
+      (candle_q_dim_taylor_model_result_domain result /\
+       candle_q_dim_jet_inv_domain
+         (candle_q_dim_taylor_model_result_center result) /\
+       candle_q_dim_jet_inv_domain
+         (candle_q_dim_taylor_model_proxy result))
+      (candle_q_dim_jet_inv
+        (candle_q_dim_taylor_model_result_center result))
+      (candle_q_dim_jet_hessian
+        (candle_q_dim_jet_inv
+          (candle_q_dim_taylor_model_proxy result)))`;;
+
+let candle_q_dim_taylor_model_result_sqrt_def = new_definition
+ `candle_q_dim_taylor_model_result_sqrt
+      radii center_s box_s result =
+    candle_q_dim_taylor_model_result_complete radii
+      (candle_q_dim_taylor_model_result_domain result /\
+       candle_q_dim_jet_sqrt_domain center_s
+         (candle_q_dim_taylor_model_result_center result) /\
+       candle_q_dim_jet_sqrt_domain box_s
+         (candle_q_dim_taylor_model_proxy result))
+      (candle_q_dim_jet_sqrt_with center_s
+        (candle_q_dim_taylor_model_result_center result))
+      (candle_q_dim_jet_hessian
+        (candle_q_dim_jet_sqrt_with box_s
+          (candle_q_dim_taylor_model_proxy result)))`;;
+
+let candle_cv_q_dim_taylor_model_result_inv_correct = prove
+ (`!radii result.
+     candle_cv_q_dim_taylor_model_result_inv
+       (candle_cv_q_list radii)
+       (candle_cv_q_dim_taylor_model_result_encode result) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_result_inv radii result)`,
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_result_inv_def;
+              candle_q_dim_taylor_model_result_inv_def;
+              candle_cv_q_dim_taylor_model_result_domain_correct;
+              candle_cv_q_dim_analytic_first_jet_inv_domain_correct;
+              candle_cv_q_dim_taylor_model_result_center_correct;
+              candle_cv_q_dim_taylor_model_proxy_correct;
+              candle_cv_q_dim_jet_inv_domain_bool_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_q_dim_analytic_first_jet_inv_correct;
+              candle_cv_q_dim_jet_inv_correct;
+              candle_cv_q_dim_jet_hessian_correct;
+              candle_cv_q_dim_taylor_model_result_complete_correct]);;
+
+let candle_cv_q_dim_taylor_model_result_sqrt_correct = prove
+ (`!radii center_s box_s result.
+     candle_cv_q_dim_taylor_model_result_sqrt
+       (candle_cv_q_list radii)
+       (candle_cv_q_interval center_s)
+       (candle_cv_q_interval box_s)
+       (candle_cv_q_dim_taylor_model_result_encode result) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_result_sqrt
+         radii center_s box_s result)`,
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_result_sqrt_def;
+              candle_q_dim_taylor_model_result_sqrt_def;
+              candle_cv_q_dim_taylor_model_result_domain_correct;
+              candle_cv_q_dim_analytic_first_jet_sqrt_domain_correct;
+              candle_cv_q_dim_taylor_model_result_center_correct;
+              candle_cv_q_dim_taylor_model_proxy_correct;
+              candle_cv_q_dim_jet_sqrt_domain_bool_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_q_dim_analytic_first_jet_sqrt_with_correct;
+              candle_cv_q_dim_jet_sqrt_with_correct;
+              candle_cv_q_dim_jet_hessian_correct;
+              candle_cv_q_dim_taylor_model_result_complete_correct]);;
+
+let candle_q_dim_taylor_model_poly_constant_def = new_definition
+ `candle_q_dim_taylor_model_poly_constant center_boxes boxes radii q =
+    candle_q_dim_taylor_model_result_complete radii T
+      (candle_q_dim_jet_normalized_constant center_boxes q)
+      (candle_q_dim_interval_zero_matrix_like boxes boxes)`;;
+
+let candle_q_dim_taylor_model_poly_variable_def = new_definition
+ `candle_q_dim_taylor_model_poly_variable
+      center_boxes boxes radii variable =
+    candle_q_dim_taylor_model_result_complete radii T
+      (candle_q_dim_jet_normalized_variable center_boxes variable)
+      (candle_q_dim_interval_zero_matrix_like boxes boxes)`;;
+
+let candle_cv_q_dim_taylor_model_poly_constant_correct = prove
+ (`!center_boxes boxes radii q.
+     candle_cv_q_dim_taylor_model_poly_constant
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list boxes)
+       (candle_cv_q_list radii) (candle_cv_q q) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_poly_constant
+         center_boxes boxes radii q)`,
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_poly_constant_def;
+              candle_q_dim_taylor_model_poly_constant_def;
+              candle_cv_q_dim_first_jet_constant_correct;
+              candle_cv_q_dim_interval_zero_matrix_correct;
+              candle_cv_bool_true_encoding;
+              candle_cv_q_dim_taylor_model_result_complete_correct]);;
+
+let candle_cv_q_dim_taylor_model_poly_variable_correct = prove
+ (`!center_boxes boxes radii variable.
+     candle_cv_q_dim_taylor_model_poly_variable
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list boxes)
+       (candle_cv_q_list radii) (Cexp_num variable) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_q_dim_taylor_model_poly_variable
+         center_boxes boxes radii variable)`,
+  REWRITE_TAC[candle_cv_q_dim_taylor_model_poly_variable_def;
+              candle_q_dim_taylor_model_poly_variable_def;
+              candle_cv_q_dim_first_jet_variable_correct;
+              candle_cv_q_dim_interval_zero_matrix_correct;
+              candle_cv_bool_true_encoding;
+              candle_cv_q_dim_taylor_model_result_complete_correct]);;
 
 end;;
