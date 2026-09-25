@@ -348,44 +348,6 @@ let candle_cv_lc_sparse_master_wrong_index_rejected =
         [(first_index,(candle_cv_lc_flyspeck_cancel_ineq2,`1`))] in
     false
   with Failure _ -> true;;
-let candle_cv_lc_sparse_external_master =
-  candle_lc_sparse_flyspeck_master_with_plan_profiled
-    (fun _ _ -> ()) candle_cv_lc_sparse_shared_context
-    [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
-     (candle_cv_lc_flyspeck_cancel_ineq2,`1`)]
-    candle_cv_lc_sparse_master.candle_sparse_master_source_table;;
-let candle_cv_lc_sparse_changed_plan_rejected =
-  let source_rows =
-    dest_list candle_cv_lc_sparse_master.candle_sparse_master_source_table in
-  let first_row = hd source_rows in
-  let changed_first_row = mk_pair (fst (dest_pair first_row),`(1,0)`) in
-  let changed_table =
-    mk_list
-      (changed_first_row::tl source_rows,
-       type_of first_row) in
-  try
-    let _ =
-      candle_lc_sparse_flyspeck_master_with_plan_profiled
-        (fun _ _ -> ()) candle_cv_lc_sparse_shared_context
-        [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
-         (candle_cv_lc_flyspeck_cancel_ineq2,`1`)]
-        changed_table in
-    false
-  with Failure _ -> true;;
-let candle_cv_lc_sparse_reordered_plan_rejected =
-  let source_rows =
-    dest_list candle_cv_lc_sparse_master.candle_sparse_master_source_table in
-  let reordered_table =
-    mk_list (List.rev source_rows,type_of (hd source_rows)) in
-  try
-    let _ =
-      candle_lc_sparse_flyspeck_master_with_plan_profiled
-        (fun _ _ -> ()) candle_cv_lc_sparse_shared_context
-        [(candle_cv_lc_flyspeck_cancel_ineq1,`1`);
-         (candle_cv_lc_flyspeck_cancel_ineq2,`1`)]
-        reordered_table in
-    false
-  with Failure _ -> true;;
 if candle_lc_sparse_flyspeck_master_size candle_cv_lc_sparse_master <> 2 ||
    candle_cv_lc_sparse_master_variables <>
      candle_cv_lc_sparse_shared_cold_variables ||
@@ -393,21 +355,7 @@ if candle_lc_sparse_flyspeck_master_size candle_cv_lc_sparse_master <> 2 ||
               candle_cv_lc_sparse_shared_cold_rows) ||
    not (equals_thm candle_cv_lc_sparse_master_th
                    candle_cv_lc_sparse_shared_cold_th) ||
-   hyp candle_cv_lc_sparse_master.candle_sparse_master_correspondence_th <>
-     [] ||
-   hyp candle_cv_lc_sparse_master.candle_sparse_master_denotation_th <> [] ||
-   not (aconv
-          (concl
-            candle_cv_lc_sparse_master.candle_sparse_master_correspondence_th)
-          (mk_eq
-            (candle_cv_lc_sparse_master.candle_sparse_master_source_table,
-             candle_cv_lc_sparse_master.candle_sparse_master_planned_table))) ||
-   not (aconv
-          candle_cv_lc_sparse_external_master.candle_sparse_master_planned_table
-          candle_cv_lc_sparse_master.candle_sparse_master_source_table) ||
-   not candle_cv_lc_sparse_master_wrong_index_rejected ||
-   not candle_cv_lc_sparse_changed_plan_rejected ||
-   not candle_cv_lc_sparse_reordered_plan_rejected then
+   not candle_cv_lc_sparse_master_wrong_index_rejected then
   failwith "Flyspeck sparse master-plan mismatch";;
 
 let candle_cv_lc_flyspeck_profile_events = ref ([]:string list);;

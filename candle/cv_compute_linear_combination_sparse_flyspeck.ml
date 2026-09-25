@@ -23,11 +23,6 @@ open Candle_cv_linear_combination_sparse_sound;;
 let candle_lc_sparse_flyspeck_entry_type = `:num#(num#num)`;;
 let candle_lc_sparse_flyspeck_row_type =
   `:num#((num#(num#num))list#(num#num))`;;
-let candle_lc_sparse_flyspeck_master_row_type =
-  `:(num#(num#num))list#(num#num)`;;
-let candle_lc_sparse_flyspeck_master_type =
-  `:((num#(num#num))list#(num#num))list`;;
-let candle_lc_sparse_flyspeck_source_pair_type = `:real#real`;;
 let candle_lc_sparse_flyspeck_zero_acc =
   `(([]:(num#(num#num))list),(0,0))`;;
 let candle_lc_sparse_flyspeck_all_const =
@@ -387,108 +382,20 @@ let candle_lc_reify_sparse_flyspeck_row context (inequality,weight) =
 
 type candle_lc_sparse_flyspeck_master_entry = {
   candle_sparse_source_conclusion: term;
-  candle_sparse_master_row: term;
-  candle_sparse_source_pair: term;
-  candle_sparse_source_pair_th: thm
+  candle_sparse_source_entries: term;
+  candle_sparse_source_lhs_th: thm;
+  candle_sparse_source_integer: term;
+  candle_sparse_source_rhs_th: thm;
+  candle_sparse_source_row_th: thm
 };;
 
 type candle_lc_sparse_flyspeck_master = {
   candle_sparse_master_context: candle_lc_sparse_flyspeck_context;
   candle_sparse_master_entries: candle_lc_sparse_flyspeck_master_entry array;
-  candle_sparse_master_indices: (term,int * term) Hashtbl.t;
-  candle_sparse_master_source_table: term;
-  candle_sparse_master_planned_table: term;
-  candle_sparse_master_source_pairs: term;
-  candle_sparse_master_correspondence_th: thm;
-  candle_sparse_master_denotation_th: thm
+  candle_sparse_master_indices: (term,int * term) Hashtbl.t
 };;
 
-let candle_lc_sparse_flyspeck_acc_real_map_const =
-  rator
-    (rator
-      `MAP
-        (candle_lc_sparse_acc_real ([]:real list))
-        ([]:((num#(num#num))list#(num#num))list)`);;
-
-let candle_lc_sparse_flyspeck_acc_real_map variables_tm table_tm =
-  let acc_real =
-    mk_comb (`candle_lc_sparse_acc_real`,variables_tm) in
-  mk_comb
-    (mk_comb (candle_lc_sparse_flyspeck_acc_real_map_const,acc_real),
-     table_tm);;
-
-let candle_lc_sparse_flyspeck_table_denotation entries variables_tm =
-  let empty_table =
-    mk_list ([],candle_lc_sparse_flyspeck_master_row_type) and
-      empty_pairs =
-        mk_list ([],candle_lc_sparse_flyspeck_source_pair_type) in
-  let empty_th =
-    REWRITE_CONV[MAP]
-      (candle_lc_sparse_flyspeck_acc_real_map variables_tm empty_table) in
-  List.fold_right
-    (fun entry (table,pairs,table_th) ->
-       let row = entry.candle_sparse_master_row and
-           source_pair = entry.candle_sparse_source_pair in
-       let next_table = mk_cons row table and
-           next_pairs = mk_cons source_pair pairs in
-       let map_expansion =
-         ONCE_REWRITE_CONV[MAP]
-           (candle_lc_sparse_flyspeck_acc_real_map
-             variables_tm next_table) in
-       let cons_th =
-         MK_BINOP
-           `(CONS):(real#real)->(real#real)list->(real#real)list`
-           (entry.candle_sparse_source_pair_th,table_th) in
-       next_table,next_pairs,TRANS map_expansion cons_th)
-    entries (empty_table,empty_pairs,empty_th);;
-
-let candle_lc_sparse_flyspeck_compute_master_correspondence
-      source_table planned_table =
-  let encode table =
-    REWRITE_CONV
-      [candle_cv_lc_sparse_master_def;
-       candle_cv_lc_sparse_acc_def;
-       candle_cv_lc_sparse_vec_def;
-       candle_cv_lc_sparse_entry_def;
-       candle_cv_lc_z_def]
-      (mk_comb (`candle_cv_lc_sparse_master`,table)) in
-  let source_rep = encode source_table in
-  let planned_rep =
-    if aconv source_table planned_table then source_rep
-    else encode planned_table in
-  let concrete =
-    mk_comb
-      (mk_comb (`Cexp_eq:cval->cval->cval`,rand (concl source_rep)),
-       rand (concl planned_rep)) in
-  let computed = compute candle_cv_lc_sparse_compute_eqs concrete in
-  let logical_call =
-    MK_COMB
-      (AP_TERM `Cexp_eq:cval->cval->cval` source_rep,planned_rep) in
-  let logical = TRANS logical_call computed in
-  if hyp logical <> [] || not (aconv (rand (concl logical)) `Cexp_num 1`) then
-    failwith "sparse Flyspeck master: table correspondence rejected";
-  let logical_suc =
-    TRANS logical (AP_TERM `Cexp_num` (ARITH_RULE `1 = SUC 0`)) in
-  let representation_eq =
-    MATCH_MP
-      (SPECL
-        [mk_comb (`candle_cv_lc_sparse_master`,source_table);
-         mk_comb (`candle_cv_lc_sparse_master`,planned_table)]
-        candle_cv_lc_eq_true)
-      logical_suc in
-  let table_eq =
-    MATCH_MP
-      (SPECL [source_table;planned_table]
-        candle_cv_lc_sparse_master_injective)
-      representation_eq in
-  if hyp table_eq <> [] ||
-     not
-       (aconv (concl table_eq)
-         (mk_eq (source_table,planned_table))) then
-    failwith "sparse Flyspeck master: invalid correspondence theorem";
-  table_eq;;
-
-let candle_lc_sparse_flyspeck_master_source_profiled
+let candle_lc_sparse_flyspeck_master_profiled
       profile context weighted_inequalities =
   profile "sparse-master-row-preparation" "begin";
   profile "sparse-master-source-deduplication" "begin";
@@ -515,68 +422,26 @@ let candle_lc_sparse_flyspeck_master_source_profiled
         exact_rhs = mk_comb (`candle_lc_zreal`,integer) in
     candle_lc_check_reification "master sparse lhs" exact_lhs lhs lhs_th;
     candle_lc_check_reification "master sparse rhs" exact_rhs rhs rhs_th;
-    let master_row = mk_pair (entries,integer) and
-        source_pair = mk_pair (lhs,rhs) in
-    let acc_real_tm =
-      mk_comb
-        (mk_comb
-          (`candle_lc_sparse_acc_real`,
-           context.candle_sparse_variables_tm),
-         master_row) in
-    let acc_expansion =
-      REWRITE_CONV[candle_lc_sparse_acc_real_def] acc_real_tm in
-    let source_pair_th =
-      TRANS acc_expansion (candle_lc_pair_rule lhs_th rhs_th) in
-    if hyp source_pair_th <> [] ||
-       not (aconv (concl source_pair_th)
-              (mk_eq (acc_real_tm,source_pair))) then
-      failwith "sparse Flyspeck master: source-pair theorem mismatch";
+    let weight_var =
+      variant (frees source_conclusion)
+        (mk_var ("candle_sparse_weight",`:num`)) in
+    let row_th =
+      GEN weight_var
+        (candle_lc_sparse_flyspeck_row_denotation
+          context.candle_sparse_variables_tm entries lhs_th integer rhs_th
+          weight_var) in
+    if hyp row_th <> [] then
+      failwith "sparse Flyspeck master: row theorem has assumptions";
     {candle_sparse_source_conclusion = source_conclusion;
-     candle_sparse_master_row = master_row;
-     candle_sparse_source_pair = source_pair;
-     candle_sparse_source_pair_th = source_pair_th} in
+     candle_sparse_source_entries = entries;
+     candle_sparse_source_lhs_th = lhs_th;
+     candle_sparse_source_integer = integer;
+     candle_sparse_source_rhs_th = rhs_th;
+     candle_sparse_source_row_th = row_th} in
   profile "sparse-master-authenticated-row-theorems" "begin";
   let entry_list = map make_entry source_conclusions in
   profile "sparse-master-authenticated-row-theorems" "end";
-  profile "sparse-master-table-denotation" "begin";
-  let source_table,source_pairs,source_denotation_th =
-    candle_lc_sparse_flyspeck_table_denotation
-      entry_list context.candle_sparse_variables_tm in
-  profile "sparse-master-table-denotation" "end";
-  entry_list,source_table,source_pairs,source_denotation_th;;
-
-let candle_lc_sparse_flyspeck_finish_master_profiled
-      profile context entry_list source_table source_pairs
-      source_denotation_th planned_table =
-  profile "sparse-master-table-correspondence" "begin";
-  let correspondence_th =
-    candle_lc_sparse_flyspeck_compute_master_correspondence
-      source_table planned_table in
-  let map_fun =
-    rator (lhand (concl source_denotation_th)) in
-  let mapped_correspondence = AP_TERM map_fun correspondence_th in
-  let planned_denotation_th =
-    TRANS (SYM mapped_correspondence) source_denotation_th in
-  let planned_rows = dest_list planned_table in
-  if List.length planned_rows <> List.length entry_list then
-    failwith "sparse Flyspeck master: planned table length mismatch";
-  let rec pair_entries entries rows =
-    match entries,rows with
-    | [],[] -> []
-    | entry::more_entries,planned_row::more_rows ->
-        if not (aconv entry.candle_sparse_master_row planned_row) then
-          failwith "sparse Flyspeck master: planned row mismatch";
-        {candle_sparse_source_conclusion =
-           entry.candle_sparse_source_conclusion;
-         candle_sparse_master_row = planned_row;
-         candle_sparse_source_pair = entry.candle_sparse_source_pair;
-         candle_sparse_source_pair_th =
-           entry.candle_sparse_source_pair_th}::
-        pair_entries more_entries more_rows
-    | _ -> failwith "sparse Flyspeck master: planned table length mismatch" in
-  let planned_entries = pair_entries entry_list planned_rows in
-  profile "sparse-master-table-correspondence" "end";
-  let entries = Array.of_list planned_entries and
+  let entries = Array.of_list entry_list and
       indices = Hashtbl.create (List.length entry_list) in
   let rec add_indices index = function
     | [] -> ()
@@ -584,34 +449,11 @@ let candle_lc_sparse_flyspeck_finish_master_profiled
         Hashtbl.add indices entry.candle_sparse_source_conclusion
           (index,entry.candle_sparse_source_conclusion);
         add_indices (index + 1) rest in
-  add_indices 0 planned_entries;
+  add_indices 0 entry_list;
   profile "sparse-master-row-preparation" "end";
   {candle_sparse_master_context = context;
    candle_sparse_master_entries = entries;
-   candle_sparse_master_indices = indices;
-   candle_sparse_master_source_table = source_table;
-   candle_sparse_master_planned_table = planned_table;
-   candle_sparse_master_source_pairs = source_pairs;
-   candle_sparse_master_correspondence_th = correspondence_th;
-   candle_sparse_master_denotation_th = planned_denotation_th};;
-
-let candle_lc_sparse_flyspeck_master_with_plan_profiled
-      profile context weighted_inequalities planned_table =
-  let entry_list,source_table,source_pairs,source_denotation_th =
-    candle_lc_sparse_flyspeck_master_source_profiled
-      profile context weighted_inequalities in
-  candle_lc_sparse_flyspeck_finish_master_profiled
-    profile context entry_list source_table source_pairs
-    source_denotation_th planned_table;;
-
-let candle_lc_sparse_flyspeck_master_profiled
-      profile context weighted_inequalities =
-  let entry_list,source_table,source_pairs,source_denotation_th =
-    candle_lc_sparse_flyspeck_master_source_profiled
-      profile context weighted_inequalities in
-  candle_lc_sparse_flyspeck_finish_master_profiled
-    profile context entry_list source_table source_pairs
-    source_denotation_th source_table;;
+   candle_sparse_master_indices = indices};;
 
 let candle_lc_sparse_flyspeck_master context weighted_inequalities =
   candle_lc_sparse_flyspeck_master_profiled
@@ -649,25 +491,12 @@ let candle_lc_reify_resolved_sparse_flyspeck_master_row
       master (entry,(inequality,weight)) =
   let exact_row =
     mk_pair
-      (weight,entry.candle_sparse_master_row) and
+      (weight,
+       mk_pair
+         (entry.candle_sparse_source_entries,
+          entry.candle_sparse_source_integer)) and
       raw_row = candle_lc_row_of_inequality weight inequality in
-  let row_real_tm =
-    mk_comb
-      (mk_comb
-        (`candle_lc_sparse_row_real`,
-         master.candle_sparse_master_context.candle_sparse_variables_tm),
-       exact_row) in
-  let row_expansion =
-    REWRITE_CONV
-      [candle_lc_sparse_row_real_def]
-      row_real_tm in
-  let expanded_source_pair_th =
-    REWRITE_RULE[candle_lc_sparse_acc_real_def]
-      entry.candle_sparse_source_pair_th in
-  let row_contents =
-    candle_lc_pair_rule (REFL weight)
-      expanded_source_pair_th in
-  let row_th = TRANS row_expansion row_contents in
+  let row_th = SPEC weight entry.candle_sparse_source_row_th in
   if hyp row_th <> [] ||
      not (aconv (rand (concl row_th)) raw_row) then
     failwith "sparse Flyspeck master: row denotation mismatch";
