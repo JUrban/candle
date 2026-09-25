@@ -3,6 +3,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_taylor_model_program_nonlinear_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_certified_compute.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_compile_sound = struct
 
@@ -21,6 +22,7 @@ open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_nonlinear_sound;;
+open Candle_cv_analytic_expr_taylor_model_certified_compute;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
@@ -1667,24 +1669,6 @@ let candle_q_dim_taylor_model_certified_accept_def = new_definition
          (candle_q_dim_taylor_model_program
            (candle_analytic_compile center_e)
            (candle_analytic_compile box_e) boxes)))`;;
-
-let candle_cv_q_dim_taylor_model_certified_upper_def = new_definition
- `candle_cv_q_dim_taylor_model_certified_upper result =
-    Cexp_snd (candle_cv_q_dim_taylor_model_result_value_bound result)`;;
-
-let candle_cv_q_dim_taylor_model_certified_finish_def = new_definition
- `candle_cv_q_dim_taylor_model_certified_finish boxes result =
-    candle_cv_q_dim_whole_box_finish
-      (candle_cv_q_dim_taylor_model_result_domain result)
-      (candle_cv_q_box_valid_list boxes)
-      (candle_cv_q_dim_taylor_model_certified_upper result)`;;
-
-let candle_cv_q_dim_taylor_model_certified_check_def = new_definition
- `candle_cv_q_dim_taylor_model_certified_check
-      center_program box_program boxes =
-    candle_cv_q_dim_taylor_model_certified_finish boxes
-      (candle_cv_q_dim_taylor_model_program
-        center_program box_program boxes)`;;
 
 let candle_cv_q_dim_taylor_model_certified_upper_correct = prove
  (`!result.
