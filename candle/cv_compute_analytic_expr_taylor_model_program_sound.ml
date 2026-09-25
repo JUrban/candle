@@ -392,4 +392,40 @@ let candle_q_dim_taylor_model_result_mul_analytic_invariant = prove
       MATCH_MP_TAC candle_q_dim_jet_mul_components_sound THEN
       ASM_REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def]]]);;
 
+let candle_q_dim_taylor_model_result_square_analytic_invariant = prove
+ (`!center_e box_e boxes result (type_witness:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes result center_e box_e
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_square
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         result)
+       (Candle_analytic_square center_e) (Candle_analytic_square box_e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_q_dim_taylor_model_result_analytic_invariant
+      (type_witness:real^N) boxes
+      (candle_q_dim_taylor_model_result_square
+        (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+        result)
+      (Candle_analytic_mul center_e center_e)
+      (Candle_analytic_mul box_e box_e)`
+   MP_TAC THENL
+   [REWRITE_TAC[candle_q_dim_taylor_model_result_square_def] THEN
+    MATCH_MP_TAC candle_q_dim_taylor_model_result_mul_analytic_invariant THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def;
+                candle_q_dim_analytic_domain_def;
+                candle_q_dim_analytic_contains_def;
+                candle_analytic_value_def;
+                candle_analytic_d_def;
+                candle_analytic_dd_def]]);;
+
 end;;
