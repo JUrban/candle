@@ -10,6 +10,7 @@ needs "candle/cv_compute_analytic_expr_action296_plan.ml";;
 open Certificate;;
 open Candle_cv_flyspeck_nonlinear_driver;;
 open Candle_cv_analytic_expr_jet_prove;;
+open Candle_cv_analytic_expr_first_center_check;;
 open Candle_cv_analytic_expr_action296_plan;;
 
 let candle_action296_probe_root_domain =
