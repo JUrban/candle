@@ -139,6 +139,13 @@ let candle_q_dim_analytic_jet_compute equations tm =
     failwith "analytic shared-jet prover: computed theorem has assumptions";
   th;;
 
+let rec candle_q_dim_analytic_jet_congr_apps function_theorem arguments =
+  match arguments with
+  | [] -> function_theorem
+  | argument_theorem :: remaining ->
+      candle_q_dim_analytic_jet_congr_apps
+        (MK_COMB (function_theorem,argument_theorem)) remaining;;
+
 let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
   if length lower <> 6 || length upper <> 6 then
     failwith "analytic shared-jet prover: expected six box coordinates";
@@ -179,42 +186,12 @@ let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
   let box = rand (concl box_theorem) in
   let _ = candle_q_dim_analytic_jet_profile_event "box-jet-computed" in
 
-  let domain_theorem =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_q_dim_analytic_first_center_compute_eqs
-      (list_mk_comb
-        (`candle_cv_bool_and`,
-         [mk_comb
-           (`candle_cv_q_dim_analytic_first_result_domain`,center);
-          mk_comb
-           (`candle_cv_q_dim_analytic_result_domain`,box)])) in
-  let domain = rand (concl domain_theorem) in
-  let _ = candle_q_dim_analytic_jet_profile_event "domain-computed" in
-
-  let upper_theorem =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_q_dim_analytic_first_center_compute_eqs
-      (list_mk_comb
-        (`candle_cv_q_dim_analytic_first_center_upper_pair`,
-         [boxes_representation_term;center;box])) in
-  let upper = rand (concl upper_theorem) in
-  let _ = candle_q_dim_analytic_jet_profile_event "upper-computed" in
-
-  let valid_theorem =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_q_dim_analytic_first_center_compute_eqs
-      (mk_comb
-        (`candle_cv_q_box_valid_list`,boxes_representation_term)) in
-  let valid = rand (concl valid_theorem) in
-  let _ =
-    candle_q_dim_analytic_jet_profile_event "box-validity-computed" in
-
   let finish_theorem =
     candle_q_dim_analytic_jet_compute
       candle_cv_q_dim_analytic_first_center_compute_eqs
       (list_mk_comb
-        (`candle_cv_q_dim_whole_box_finish`,
-         [domain;valid;upper])) in
+        (`candle_cv_q_dim_analytic_first_center_finish`,
+         [boxes_representation_term;center;box])) in
   let finish = rand (concl finish_theorem) in
   let _ = candle_q_dim_analytic_jet_profile_event "finish-computed" in
   let verdict,_ = candle_q_dim_analytic_jet_dest_pair finish in
@@ -228,15 +205,28 @@ let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
         boxes_representation_term]) in
   let expansion_theorem =
     REWRITE_CONV
-      [candle_cv_q_dim_analytic_first_center_check_def;
-       candle_cv_q_dim_analytic_first_center_finish_def]
+      [candle_cv_q_dim_analytic_first_center_check_def]
       compute_tm in
   let _ = candle_q_dim_analytic_jet_profile_event "checker-expanded" in
-  let evaluation_theorem =
-    REWRITE_CONV
-      [center_environment_theorem;center_theorem;box_theorem;
-       domain_theorem;upper_theorem;valid_theorem;finish_theorem]
-      (rand (concl expansion_theorem)) in
+  let center_call_theorem =
+    TRANS
+      (candle_q_dim_analytic_jet_congr_apps
+        (REFL `candle_cv_q_dim_analytic_first_program`)
+        [center_environment_theorem;
+         REFL prepared.program_representation_term])
+      center_theorem in
+  let finish_call_theorem =
+    TRANS
+      (candle_q_dim_analytic_jet_congr_apps
+        (REFL `candle_cv_q_dim_analytic_first_center_finish`)
+        [REFL boxes_representation_term;
+         center_call_theorem;box_theorem])
+      finish_theorem in
+  if not
+      (aconv (lhand (concl finish_call_theorem))
+             (rand (concl expansion_theorem))) then
+    failwith "analytic shared-jet prover: checker evaluation mismatch";
+  let evaluation_theorem = finish_call_theorem in
   let compute_theorem = TRANS expansion_theorem evaluation_theorem in
   let _ =
     candle_q_dim_analytic_jet_profile_event
@@ -248,12 +238,16 @@ let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
     candle_q_dim_analytic_jet_profile_event
       "checker-correctness-instantiated" in
   let abstract_compute_theorem =
-    let th =
-      PURE_REWRITE_RULE
-        [SYM prepared.program_representation;
-         SYM boxes_representation]
-        compute_theorem in
-    PURE_REWRITE_RULE [SYM prepared.compile_theorem] th in
+    let program_encoding =
+      TRANS
+        (AP_TERM `candle_cv_analytic_instruction_list`
+          prepared.compile_theorem)
+        prepared.program_representation in
+    let call_encoding =
+      candle_q_dim_analytic_jet_congr_apps
+        (REFL `candle_cv_q_dim_analytic_first_center_check`)
+        [program_encoding;boxes_representation] in
+    TRANS call_encoding compute_theorem in
   let _ =
     candle_q_dim_analytic_jet_profile_event
       "checker-representation-abstracted" in
