@@ -77,6 +77,33 @@ let candle_fs_gradient_bound_raw_real = prove
               candle_fs_raw_product_neg_real] THEN
   REAL_ARITH_TAC);;
 
+let candle_fs_gradient_bound_contains_error = prove
+ (`!radii center_interval interval_row target.
+     candle_fs_real (FST center_interval) -
+       candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+         (candle_fs_dot_abs_upper radii interval_row) <= target /\
+     target <= candle_fs_real (SND center_interval) +
+       candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+         (candle_fs_dot_abs_upper radii interval_row)
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_gradient_bound radii center_interval interval_row)
+       target`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_gradient_bound_def] THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  CONJ_TAC THENL
+   [MATCH_ACCEPT_TAC candle_fs_scale_pos;
+    REWRITE_TAC[candle_fs_raw_interval_contains_def] THEN
+    MP_TAC
+      (SPECL
+        [`radii:(num#num)list`;
+         `center_interval:(num#num)#(num#num)`;
+         `interval_row:((num#num)#(num#num))list`]
+        candle_fs_gradient_bound_raw_real) THEN
+    REWRITE_TAC[LET_DEF; LET_END_DEF] THEN
+    ASM_REAL_ARITH_TAC]);;
+
 let candle_fs_gradient_bound_contains = prove
  (`!radii values intervals center_interval target.
      ALL (\r. &0 <= candle_fs_real r) radii /\
@@ -258,6 +285,41 @@ let candle_fs_value_bound_raw_real = prove
               candle_fs_raw_value_center_scale_real;
               candle_fs_raw_value_neg_real] THEN
   REAL_ARITH_TAC);;
+
+let candle_fs_value_bound_contains_error = prove
+ (`!radii center_value gradient hessian target.
+     candle_fs_real (FST center_value) -
+       candle_fs_raw_real
+         (candle_fs_two_scale_squared * candle_fs_scale)
+         (candle_fs_value_error_raw radii gradient hessian) <= target /\
+     target <= candle_fs_real (SND center_value) +
+       candle_fs_raw_real
+         (candle_fs_two_scale_squared * candle_fs_scale)
+         (candle_fs_value_error_raw radii gradient hessian)
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_value_bound radii center_value gradient hessian)
+       target`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_value_bound_def] THEN
+  MATCH_MP_TAC
+    (REWRITE_RULE[candle_fs_two_scale_squared_pos]
+      (SPECL
+        [`candle_fs_two_scale_squared`;
+         `candle_fs_value_bound_raw
+            radii center_value gradient hessian`;
+         `target:real`]
+        candle_fs_raw_interval_round_sound)) THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def] THEN
+  MP_TAC
+    (SPECL
+      [`radii:(num#num)list`;
+       `center_value:(num#num)#(num#num)`;
+       `gradient:((num#num)#(num#num))list`;
+       `hessian:(((num#num)#(num#num))list)list`]
+      candle_fs_value_bound_raw_real) THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF] THEN
+  ASM_REAL_ARITH_TAC);;
 
 let candle_fs_value_bound_contains = prove
  (`!radii gradient_values gradient_intervals
