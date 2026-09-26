@@ -25,6 +25,14 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_q_dim_jet_components_gradient_contains <> [] ||
    hyp candle_q_dim_jet_components_hessian_contains <> [] ||
    hyp candle_fs_result_complete_poly_invariant <> [] ||
+   hyp candle_fs_interval_zeros_length <> [] ||
+   hyp candle_fs_interval_unit_length <> [] ||
+   hyp candle_fs_interval_zero_matrix_shape <> [] ||
+   hyp candle_fs_interval_zero_matrix_rows_width <> [] ||
+   hyp candle_fs_interval_zero_contains <> [] ||
+   hyp candle_fs_interval_zeros_contains <> [] ||
+   hyp candle_fs_interval_zero_matrix_contains <> [] ||
+   hyp candle_fs_result_constant_poly_invariant <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
