@@ -3,6 +3,15 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_invariant.ml";;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
 
 if hyp candle_fs_dot_list_real_vector_sum <> [] ||
+   hyp candle_fs_list_of_q_length <> [] ||
+   hyp candle_fs_list_of_q_map <> [] ||
+   hyp candle_fs_fixed_round_upper_real <> [] ||
+   hyp candle_fs_rounded_list_map_real <> [] ||
+   hyp candle_fs_rounded_list_real_vector <> [] ||
+   hyp candle_fs_rounded_list_nonnegative <> [] ||
+   hyp candle_fs_rounded_radii_m_cell_domain <> [] ||
+   hyp candle_fs_interval_list_of_q_contains <> [] ||
+   hyp candle_fs_center_environment_contains <> [] ||
    hyp candle_fs_dot_list_real_vector_sum_shifted <> [] ||
    hyp candle_fs_weighted_rows_list_real_vector_sum <> [] ||
    hyp candle_fs_complete_m_taylor_error_sound <> [] ||

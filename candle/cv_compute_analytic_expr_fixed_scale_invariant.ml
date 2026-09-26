@@ -11,6 +11,7 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_complete_sound.ml";;
 module Candle_cv_analytic_expr_fixed_scale_invariant = struct
 
 open Multivariate_taylor;;
+open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
@@ -30,6 +31,170 @@ let candle_fs_list_real_vector_component = prove
      ==> (candle_fs_list_real_vector zs : real^N)$i =
          candle_fs_real (EL (i - 1) zs)`,
   SIMP_TAC[candle_fs_list_real_vector_def; LAMBDA_BETA]);;
+
+(* The polynomial backend receives the already outward-rounded rational     *)
+(* radii and drops only their fixed denominator before entering the hot     *)
+(* signed-integer path.  Record once that this changes representation, not  *)
+(* the real cell used by the Taylor theorem.                                 *)
+
+let candle_fs_list_of_q_length = prove
+ (`!items. LENGTH (candle_fs_list_of_q items) = LENGTH items`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_list_of_q_def; LENGTH]);;
+
+let candle_fs_list_of_q_map = prove
+ (`!items. candle_fs_list_of_q items = MAP FST items`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_list_of_q_def; MAP]);;
+
+let candle_fs_fixed_round_upper_real = prove
+ (`!q.
+     candle_fs_real (FST (candle_q_fixed_round_upper q)) =
+     candle_q_real (candle_q_fixed_round_upper q)`,
+  REWRITE_TAC[GSYM candle_fs_of_q_upper_def;
+              candle_fs_of_q_upper_real]);;
+
+let candle_fs_rounded_list_map_real = prove
+ (`!items.
+     MAP candle_fs_real
+       (candle_fs_list_of_q
+         (candle_q_fixed_list_round_upper items)) =
+     MAP candle_q_real (candle_q_fixed_list_round_upper items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_q_fixed_list_round_upper_def;
+                  candle_fs_list_of_q_def; MAP;
+                  candle_fs_fixed_round_upper_real]);;
+
+let candle_fs_rounded_list_real_vector = prove
+ (`!items.
+     LENGTH items = dimindex (:N)
+     ==>
+     (candle_fs_list_real_vector
+        (candle_fs_list_of_q
+          (candle_q_fixed_list_round_upper items)) : real^N) =
+     candle_q_list_real_vector
+       (candle_q_fixed_list_round_upper items)`,
+  REPEAT STRIP_TAC THEN REWRITE_TAC[CART_EQ] THEN
+  X_GEN_TAC `i:num` THEN STRIP_TAC THEN
+  SUBGOAL_THEN `1 <= i /\ i <= dimindex (:N)` STRIP_ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[IN_NUMSEG]; ALL_TAC] THEN
+  SUBGOAL_THEN `i - 1 < dimindex (:N)` ASSUME_TAC THENL
+   [ASM_ARITH_TAC; ALL_TAC] THEN
+  ASM_SIMP_TAC[candle_fs_list_real_vector_component;
+               candle_q_list_real_vector_component] THEN
+  let list_th = SPEC `items:((num#num)#num)list`
+    candle_fs_rounded_list_map_real in
+  let el_th = AP_TERM `(\xs:real list. EL (i - 1) xs)` list_th in
+  MP_TAC el_th THEN
+  ASM_SIMP_TAC[EL_MAP; candle_fs_list_of_q_length;
+               candle_q_fixed_list_round_upper_length]);;
+
+let candle_fs_rounded_list_nonnegative = prove
+ (`!items.
+     ALL (\q. &0 <= candle_q_real q)
+       (candle_q_fixed_list_round_upper items)
+     ==>
+     ALL (\z. &0 <= candle_fs_real z)
+       (candle_fs_list_of_q
+         (candle_q_fixed_list_round_upper items))`,
+  REPEAT STRIP_TAC THEN REWRITE_TAC[GSYM ALL_EL] THEN
+  X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+  SUBGOAL_THEN
+   `i < LENGTH (candle_q_fixed_list_round_upper items)`
+   ASSUME_TAC THENL
+   [UNDISCH_TAC
+      `i < LENGTH
+        (candle_fs_list_of_q
+          (candle_q_fixed_list_round_upper items))` THEN
+    REWRITE_TAC[candle_fs_list_of_q_length];
+    ALL_TAC] THEN
+  let list_th = SPEC `items:((num#num)#num)list`
+    candle_fs_rounded_list_map_real in
+  let el_th = AP_TERM `(\xs:real list. EL i xs)` list_th in
+  SUBGOAL_THEN
+   `candle_fs_real
+      (EL i
+        (candle_fs_list_of_q
+          (candle_q_fixed_list_round_upper items))) =
+    candle_q_real
+      (EL i (candle_q_fixed_list_round_upper items))`
+   SUBST1_TAC THENL
+   [MP_TAC el_th THEN ASM_SIMP_TAC[EL_MAP]; ALL_TAC] THEN
+  MP_TAC (REWRITE_RULE[GSYM ALL_EL]
+    (ASSUME
+      `ALL (\q. &0 <= candle_q_real q)
+        (candle_q_fixed_list_round_upper items)`)) THEN
+  DISCH_THEN MATCH_MP_TAC THEN ASM_REWRITE_TAC[]);;
+
+let candle_fs_rounded_radii_m_cell_domain = prove
+ (`!boxes.
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     m_cell_domain
+       (candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes : real^N)
+       (candle_q_box_center_vector boxes)
+       (candle_fs_list_real_vector
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes))))`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `LENGTH (candle_q_radius_list boxes) = dimindex (:N)`
+   ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[candle_q_radius_list_length]; ALL_TAC] THEN
+  let vector_th = MATCH_MP
+    (ISPEC `candle_q_radius_list boxes`
+      candle_fs_rounded_list_real_vector)
+    (ASSUME
+      `LENGTH (candle_q_radius_list boxes) = dimindex (:N)`) in
+  ONCE_REWRITE_TAC[vector_th] THEN
+  MATCH_MP_TAC candle_q_fixed_list_round_upper_m_cell_domain THEN
+  ASM_REWRITE_TAC[]);;
+
+(* Fixed conversion of source intervals is outward.  This is the center     *)
+(* environment bridge used by constants and variables in the postfix proof. *)
+
+let candle_fs_interval_list_of_q_contains = prove
+ (`!intervals values.
+     candle_q_stack_contains intervals values
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_interval_list_of_q intervals) values`,
+  LIST_INDUCT_TAC THENL
+   [GEN_TAC THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[candle_q_stack_contains_def;
+                candle_fs_interval_list_of_q_def; ALL2];
+    GEN_TAC THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[candle_q_stack_contains_def;
+                    candle_fs_interval_list_of_q_def; ALL2] THEN
+    STRIP_TAC THEN CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_interval_of_q_sound THEN ASM_REWRITE_TAC[];
+      FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_center_environment_contains = prove
+ (`!boxes.
+     LENGTH boxes = dimindex (:N)
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_interval_list_of_q
+         (candle_q_center_environment_list boxes))
+       (list_of_seq
+         (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+         (dimindex (:N)))`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_interval_list_of_q_contains THEN
+  MATCH_MP_TAC candle_q_center_environment_vector_contains THEN
+  ASM_REWRITE_TAC[]);;
 
 let candle_fs_dot_list_real_vector_sum = prove
  (`!radii (g:num->real).
