@@ -198,6 +198,150 @@ let candle_fs_complete_m_taylor_partial_error_sound = prove
   ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
   FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]);;
 
+let candle_fs_dot_list_real_vector_sum_shifted = prove
+ (`!radii (h:num->real).
+     LENGTH radii = dimindex (:N)
+     ==>
+     ITLIST2
+       (\r value total. candle_fs_real r * abs value + total)
+       radii
+       (list_of_seq (\di. h (di + 1)) (dimindex (:N))) (&0) =
+     sum (1..dimindex (:N))
+       (\i. (candle_fs_list_real_vector radii : real^N)$i * abs (h i))`,
+  REPEAT STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_fs_dot_list_real_vector_sum] THEN
+  MATCH_MP_TAC SUM_EQ THEN
+  X_GEN_TAC `i:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+  ASM_SIMP_TAC[ARITH_RULE `1 <= i ==> i - 1 + 1 = i`]);;
+
+let candle_fs_complete_gradient_error_sound = prove
+ (`!f (y:real^N) radii gradient.
+     LENGTH radii = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     ALL2 candle_fs_interval_contains gradient
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N)))
+     ==>
+     sum (1..dimindex (:N))
+       (\i. (candle_fs_list_real_vector radii : real^N)$i *
+            abs (partial i f y)) <=
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+       (candle_fs_dot_abs_upper radii gradient)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  ASM_SIMP_TAC[GSYM candle_fs_dot_list_real_vector_sum_shifted] THEN
+  MATCH_MP_TAC candle_fs_dot_abs_upper_sound THEN
+  ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ]);;
+
+let candle_m_bounded_on_int_contains = prove
+  (`!(f:real^N->real) (domain:real^N#real^N) lo hi (p:real^N).
+     m_bounded_on_int f domain (lo,hi) /\
+     p IN interval [domain]
+     ==> lo <= f p /\ f p <= hi`,
+  REWRITE_TAC[m_bounded_on_int; Interval_arith.interval_arith] THEN
+  REPEAT STRIP_TAC THEN ASM_MESON_TAC[]);;
+
+let candle_fs_complete_value_bound_contains = prove
+ (`!(f:real^N->real) (domain:real^N#real^N) (y:real^N) radii
+       center_value gradient hessian (p:real^N).
+     LENGTH radii = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     m_cell_domain domain y (candle_fs_list_real_vector radii) /\
+     diff2_domain domain f /\
+     candle_fs_interval_contains center_value (f y) /\
+     ALL2 candle_fs_interval_contains gradient
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N))) /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 (ALL2 candle_fs_interval_contains) hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N)))) /\
+     p IN interval [FST domain,SND domain]
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_value_bound
+         radii center_value gradient hessian)
+       (f p)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  ABBREV_TAC
+   `hessian_error =
+      candle_fs_raw_real
+        (candle_fs_scale *
+          (candle_fs_scale * candle_fs_scale))
+        (candle_fs_weighted_rows_abs_upper
+          radii radii hessian)` THEN
+  ABBREV_TAC
+   `total_error =
+      candle_fs_raw_real
+        (candle_fs_two_scale_squared * candle_fs_scale)
+        (candle_fs_value_error_raw radii gradient hessian)` THEN
+  MATCH_MP_TAC candle_fs_value_bound_contains_error THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC candle_m_bounded_on_int_contains THEN
+  (fun ((asl,_) as goal) ->
+     let vars =
+       itlist
+         (fun (_,th) acc -> union (frees (concl th)) acc)
+         asl [] in
+     let domain_term =
+       find
+         (fun tm -> is_var tm && fst (dest_var tm) = "domain")
+         vars in
+     EXISTS_TAC domain_term goal) THEN
+  let bounds_th =
+    ISPECL
+     [`domain:real^N#real^N`;
+      `y:real^N`;
+      `(candle_fs_list_real_vector radii : real^N)`;
+      `f:real^N->real`;
+      `hessian_error:real`;
+      `candle_fs_real
+         (FST (center_value:(num#num)#(num#num)))`;
+      `candle_fs_real
+         (SND (center_value:(num#num)#(num#num)))`;
+      `total_error:real`;
+      `candle_fs_real
+         (FST (center_value:(num#num)#(num#num))) - total_error`;
+      `candle_fs_real
+         (SND (center_value:(num#num)#(num#num))) + total_error`]
+     m_taylor_bounds in
+  (fun ((asl,w) as goal) ->
+     let bounds_th = REWRITE_RULE[IMP_IMP] bounds_th in
+     let antecedent,_ = dest_imp (concl bounds_th) in
+     let _,point_goal = dest_conj w in
+     SUBGOAL_THEN antecedent
+      (fun antecedent_th ->
+         let bounded_th = MATCH_MP bounds_th antecedent_th in
+         let _,point_th =
+           find
+            (fun (_,th) ->
+               aconv
+                (concl (REWRITE_RULE[PAIR] th))
+                point_goal)
+            asl in
+         let point_th = REWRITE_RULE[PAIR] point_th in
+         MATCH_ACCEPT_TAC (CONJ bounded_th point_th)) goal) THEN
+  ASM_REWRITE_TAC[candle_fs_interval_contains_def;
+                  Interval_arith.interval_arith;
+                  REAL_LE_REFL] THEN
+  CONJ_TAC THENL
+   [EXPAND_TAC "hessian_error" THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_complete_m_taylor_error_sound THEN
+      ASM_REWRITE_TAC[];
+      FIRST_ASSUM
+       (fun th ->
+          MATCH_ACCEPT_TAC
+           (REWRITE_RULE[candle_fs_interval_contains_def] th))];
+    EXPAND_TAC "hessian_error" THEN EXPAND_TAC "total_error" THEN
+    REWRITE_TAC[candle_fs_value_error_raw_real; REAL_LE_RADD] THEN
+    MATCH_MP_TAC candle_fs_complete_gradient_error_sound THEN
+    ASM_REWRITE_TAC[]]);;
+
 let candle_fs_gradient_bounds_map2 = prove
  (`!radii gradients rows.
      LENGTH gradients = LENGTH rows
