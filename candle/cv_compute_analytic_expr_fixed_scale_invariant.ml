@@ -1521,4 +1521,406 @@ let candle_fs_result_variable_center_poly_invariant = prove
   MATCH_MP_TAC candle_fs_center_environment_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* Operation closure consumes the invariant through these fixed-data views. *)
+(* They expose only the enclosures needed by the next postfix node.          *)
+
+let candle_fs_result_poly_center_shape = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     candle_q_dim_jet_shape (dimindex (:N))
+       (candle_fs_first_to_q
+         (candle_fs_result_center result)
+         (candle_fs_result_hessian result))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def;
+              candle_fs_result_to_q_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_make_def; FST; SND] THEN
+  MESON_TAC[]);;
+
+let candle_fs_result_poly_center_components = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     candle_q_dim_jet_contains_components (dimindex (:N))
+       (candle_fs_first_to_q
+         (candle_fs_result_center result)
+         (candle_fs_result_hessian result))
+       (candle_poly_denote_dim e
+         (candle_q_box_center_vector boxes : real^N))
+       (\di. partial (di + 1) (candle_poly_denote_dim e)
+         (candle_q_box_center_vector boxes : real^N))
+       (\di dj. partial2 (dj + 1) (di + 1)
+         (candle_poly_denote_dim e)
+         (candle_q_box_center_vector boxes : real^N))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def;
+              candle_fs_result_to_q_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_make_def; FST; SND] THEN
+  MESON_TAC[]);;
+
+let candle_fs_result_poly_center_value_contains = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_first_value (candle_fs_result_center result))
+       (candle_poly_denote_dim e
+         (candle_q_box_center_vector boxes : real^N))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_center_components) THEN
+  ASM_REWRITE_TAC[candle_q_dim_jet_contains_components_def;
+                  candle_fs_first_to_q_def;
+                  candle_q_dim_jet_make_def; candle_q_dim_jet_f_def;
+                  candle_fs_interval_to_q_contains; FST; SND] THEN
+  MESON_TAC[]);;
+
+let candle_fs_result_poly_center_gradient_contains = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient (candle_fs_result_center result))
+       (list_of_seq
+         (\di. partial (di + 1) (candle_poly_denote_dim e)
+           (candle_q_box_center_vector boxes : real^N))
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let shape_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_center_shape)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (ASSUME
+       `candle_fs_result_domain
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)`)) in
+  let components_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_center_components)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (ASSUME
+       `candle_fs_result_domain
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)`)) in
+  let center_jet = rand (concl shape_th) in
+  let gradient_th = MATCH_MP
+   (ISPECL
+     [`dimindex (:N)`;
+      center_jet;
+      `candle_poly_denote_dim e
+        (candle_q_box_center_vector boxes : real^N)`;
+      `(\di. partial (di + 1) (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N)):num->real`;
+      `(\di dj. partial2 (dj + 1) (di + 1)
+        (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N)):num->num->real`]
+     candle_q_dim_jet_components_gradient_contains)
+   (CONJ shape_th components_th) in
+  ACCEPT_TAC
+   (REWRITE_RULE
+     [candle_fs_first_to_q_def;
+      candle_q_dim_jet_make_def; candle_q_dim_jet_gradient_def;
+      candle_fs_interval_list_to_q_contains; FST; SND]
+     gradient_th));;
+
+let candle_fs_result_poly_center_hessian_contains = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_result_hessian result)
+       (list_of_seq
+         (\di. list_of_seq
+           (\dj. partial2 (dj + 1) (di + 1)
+             (candle_poly_denote_dim e)
+             (candle_q_box_center_vector boxes : real^N))
+           (dimindex (:N)))
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let shape_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_center_shape)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (ASSUME
+       `candle_fs_result_domain
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)`)) in
+  let components_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_center_components)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (ASSUME
+       `candle_fs_result_domain
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)`)) in
+  let center_jet = rand (concl shape_th) in
+  let hessian_th = MATCH_MP
+   (ISPECL
+     [`dimindex (:N)`;
+      center_jet;
+      `candle_poly_denote_dim e
+        (candle_q_box_center_vector boxes : real^N)`;
+      `(\di. partial (di + 1) (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N)):num->real`;
+      `(\di dj. partial2 (dj + 1) (di + 1)
+        (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N)):num->num->real`]
+     candle_q_dim_jet_components_hessian_contains)
+   (CONJ shape_th components_th) in
+  ACCEPT_TAC
+   (REWRITE_RULE
+     [candle_fs_first_to_q_def;
+      candle_q_dim_jet_make_def; candle_q_dim_jet_hessian_def;
+      candle_fs_interval_matrix_to_q_contains; FST; SND]
+     hessian_th));;
+
+let candle_fs_result_poly_proxy_shape = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result
+     ==>
+     candle_q_dim_jet_shape (dimindex (:N))
+       (candle_q_dim_taylor_model_proxy
+         (candle_fs_result_to_q result))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def] THEN
+  MESON_TAC[]);;
+
+let candle_fs_result_poly_proxy_components = prove
+ (`!e boxes result (type_witness:real^N) (p:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result /\
+     p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+     ==>
+     candle_q_dim_jet_contains_components (dimindex (:N))
+       (candle_q_dim_taylor_model_proxy
+         (candle_fs_result_to_q result))
+       (candle_poly_denote_dim e p)
+       (\di. partial (di + 1) (candle_poly_denote_dim e) p)
+       (\di dj. partial2 (dj + 1) (di + 1)
+         (candle_poly_denote_dim e) p)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def] THEN
+  MESON_TAC[]);;
+
+let candle_fs_result_poly_box_hessian_contains = prove
+ (`!e boxes result (type_witness:real^N) (p:real^N).
+     candle_fs_result_poly_invariant type_witness boxes result e /\
+     candle_fs_result_domain result /\
+     p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_result_hessian result)
+       (list_of_seq
+         (\di. list_of_seq
+           (\dj. partial2 (dj + 1) (di + 1)
+             (candle_poly_denote_dim e) p)
+           (dimindex (:N)))
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let shape_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`]
+     candle_fs_result_poly_proxy_shape)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (ASSUME
+       `candle_fs_result_domain
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)`)) in
+  let components_th = MATCH_MP
+   (ISPECL
+     [`e:candle_poly_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`;
+      `p:real^N`]
+     candle_fs_result_poly_proxy_components)
+   (CONJ
+     (ASSUME
+       `candle_fs_result_poly_invariant
+         (type_witness:real^N) boxes
+         (result:
+           bool#
+           (((num#num)#(num#num))#((num#num)#(num#num))list)#
+           ((num#num)#(num#num))#
+           ((num#num)#(num#num))list#
+           (((num#num)#(num#num))list)list)
+         e`)
+     (CONJ
+       (ASSUME
+         `candle_fs_result_domain
+           (result:
+             bool#
+             (((num#num)#(num#num))#((num#num)#(num#num))list)#
+             ((num#num)#(num#num))#
+             ((num#num)#(num#num))list#
+             (((num#num)#(num#num))list)list)`)
+       (ASSUME
+         `(p:real^N) IN interval
+           [candle_q_box_lower_vector boxes,
+            candle_q_box_upper_vector boxes]`))) in
+  let proxy_jet = rand (concl shape_th) in
+  let hessian_th = MATCH_MP
+   (ISPECL
+     [`dimindex (:N)`;
+      proxy_jet;
+      `candle_poly_denote_dim e (p:real^N)`;
+      `(\di. partial (di + 1) (candle_poly_denote_dim e)
+        (p:real^N)):num->real`;
+      `(\di dj. partial2 (dj + 1) (di + 1)
+        (candle_poly_denote_dim e) (p:real^N)):num->num->real`]
+     candle_q_dim_jet_components_hessian_contains)
+   (CONJ shape_th components_th) in
+  let final_th =
+   REWRITE_RULE
+    [candle_q_dim_taylor_model_proxy_def;
+     candle_fs_result_to_q_def;
+     candle_q_dim_taylor_model_result_hessian_def;
+     candle_q_dim_taylor_model_result_make_def;
+     candle_q_dim_jet_make_def; candle_q_dim_jet_hessian_def;
+     candle_fs_interval_matrix_to_q_contains; FST; SND]
+    hessian_th in
+  ACCEPT_TAC final_th);;
+
 end;;

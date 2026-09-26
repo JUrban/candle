@@ -41,6 +41,14 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_center_dimensions_length <> [] ||
    hyp candle_fs_result_constant_center_poly_invariant <> [] ||
    hyp candle_fs_result_variable_center_poly_invariant <> [] ||
+   hyp candle_fs_result_poly_center_shape <> [] ||
+   hyp candle_fs_result_poly_center_components <> [] ||
+   hyp candle_fs_result_poly_center_value_contains <> [] ||
+   hyp candle_fs_result_poly_center_gradient_contains <> [] ||
+   hyp candle_fs_result_poly_center_hessian_contains <> [] ||
+   hyp candle_fs_result_poly_proxy_shape <> [] ||
+   hyp candle_fs_result_poly_proxy_components <> [] ||
+   hyp candle_fs_result_poly_box_hessian_contains <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
