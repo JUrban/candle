@@ -2963,4 +2963,263 @@ let candle_fs_result_add_poly_invariant = prove
                 candle_fs_result_complete_domain] THEN
     ASM_REWRITE_TAC[]]);;
 
+(* Multiplication accumulates products at denominator scale squared and only *)
+(* rounds once at the completed-result boundary.  Keep the corresponding     *)
+(* list and matrix facts outside the evaluator so the hot path remains data. *)
+
+let candle_fs_raw_interval_add_sound = prove
+ (`!left right x y.
+     candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale) left x /\
+     candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale) right y
+     ==> candle_fs_raw_interval_contains
+           (candle_fs_scale * candle_fs_scale)
+           (candle_fs_raw_interval_add left right) (x + y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_raw_interval_add_def;
+              candle_fs_raw_product_add_real; FST; SND] THEN
+  REAL_ARITH_TAC);;
+
+let candle_fs_raw_interval_list_add_length = prove
+ (`!xs ys.
+     LENGTH xs = LENGTH ys
+     ==> LENGTH (candle_fs_raw_interval_list_add xs ys) = LENGTH xs`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; NOT_SUC; SUC_INJ;
+                  candle_fs_raw_interval_list_add_def]);;
+
+let candle_fs_raw_interval_list_scale_length = prove
+ (`!scalar items.
+     LENGTH (candle_fs_raw_interval_list_scale scalar items) = LENGTH items`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; candle_fs_raw_interval_list_scale_def]);;
+
+let candle_fs_raw_interval_matrix_add_length = prove
+ (`!xs ys.
+     LENGTH xs = LENGTH ys
+     ==> LENGTH (candle_fs_raw_interval_matrix_add xs ys) = LENGTH xs`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; NOT_SUC; SUC_INJ;
+                  candle_fs_raw_interval_matrix_add_def]);;
+
+let candle_fs_raw_interval_matrix_add_rows_width = prove
+ (`!width xs ys.
+     LENGTH xs = LENGTH ys /\
+     ALL (\row. LENGTH row = width) xs /\
+     ALL (\row. LENGTH row = width) ys
+     ==> ALL (\row. LENGTH row = width)
+           (candle_fs_raw_interval_matrix_add xs ys)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; ALL; NOT_SUC; SUC_INJ;
+                  candle_fs_raw_interval_matrix_add_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_list_add_length]);;
+
+let candle_fs_raw_interval_matrix_scale_length = prove
+ (`!scalar rows.
+     LENGTH (candle_fs_raw_interval_matrix_scale scalar rows) = LENGTH rows`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; candle_fs_raw_interval_matrix_scale_def]);;
+
+let candle_fs_raw_interval_matrix_scale_rows_width = prove
+ (`!scalar rows width.
+     ALL (\row. LENGTH row = width) rows
+     ==> ALL (\row. LENGTH row = width)
+           (candle_fs_raw_interval_matrix_scale scalar rows)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[ALL; candle_fs_raw_interval_matrix_scale_def];
+    GEN_TAC THEN
+    REWRITE_TAC[ALL; candle_fs_raw_interval_matrix_scale_def] THEN
+    STRIP_TAC THEN CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_fs_raw_interval_list_scale_length];
+      FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_raw_interval_matrix_scale_shape = prove
+ (`!scalar rows width.
+     ALL (\row. LENGTH row = width) rows
+     ==>
+     LENGTH (candle_fs_raw_interval_matrix_scale scalar rows) = LENGTH rows /\
+     ALL (\row. LENGTH row = width)
+       (candle_fs_raw_interval_matrix_scale scalar rows)`,
+  MESON_TAC[candle_fs_raw_interval_matrix_scale_length;
+            candle_fs_raw_interval_matrix_scale_rows_width]);;
+
+let candle_fs_raw_interval_outer_shape = prove
+ (`!xs ys.
+     LENGTH (candle_fs_raw_interval_outer xs ys) = LENGTH xs /\
+     ALL (\row. LENGTH row = LENGTH ys)
+       (candle_fs_raw_interval_outer xs ys)`,
+  LIST_INDUCT_TAC THEN GEN_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; ALL; candle_fs_raw_interval_outer_def;
+                  candle_fs_raw_interval_list_scale_length]);;
+
+let candle_fs_raw_interval_list_round_length = prove
+ (`!denominator items.
+     LENGTH (candle_fs_raw_interval_list_round denominator items) =
+     LENGTH items`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; candle_fs_raw_interval_list_round_def]);;
+
+let candle_fs_raw_interval_matrix_round_length = prove
+ (`!denominator rows.
+     LENGTH (candle_fs_raw_interval_matrix_round denominator rows) =
+     LENGTH rows`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; candle_fs_raw_interval_matrix_round_def]);;
+
+let candle_fs_raw_interval_matrix_round_rows_width = prove
+ (`!denominator rows width.
+     ALL (\row. LENGTH row = width) rows
+     ==> ALL (\row. LENGTH row = width)
+           (candle_fs_raw_interval_matrix_round denominator rows)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[ALL; candle_fs_raw_interval_matrix_round_def];
+    GEN_TAC THEN
+    REWRITE_TAC[ALL; candle_fs_raw_interval_matrix_round_def] THEN
+    STRIP_TAC THEN CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_fs_raw_interval_list_round_length];
+      FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_raw_interval_matrix_round_shape = prove
+ (`!denominator rows width.
+     ALL (\row. LENGTH row = width) rows
+     ==>
+     LENGTH (candle_fs_raw_interval_matrix_round denominator rows) =
+       LENGTH rows /\
+     ALL (\row. LENGTH row = width)
+       (candle_fs_raw_interval_matrix_round denominator rows)`,
+  MESON_TAC[candle_fs_raw_interval_matrix_round_length;
+            candle_fs_raw_interval_matrix_round_rows_width]);;
+
+let candle_fs_raw_interval_list_add_contains = prove
+ (`!left_intervals left_values right_intervals right_values.
+     LENGTH left_intervals = LENGTH right_intervals /\
+     ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))
+       left_intervals left_values /\
+     ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))
+       right_intervals right_values
+     ==>
+     ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))
+       (candle_fs_raw_interval_list_add left_intervals right_intervals)
+       (MAP2 (\x y:real. x + y) left_values right_values)`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_SIMP_TAC[LENGTH; NOT_SUC; SUC_INJ; ALL2; MAP2; MAP2_DEF;
+               candle_fs_raw_interval_list_add_def;
+               candle_fs_raw_interval_add_sound]);;
+
+let candle_fs_raw_interval_list_scale_contains = prove
+ (`!scalar scalar_value intervals values.
+     candle_fs_interval_contains scalar scalar_value /\
+     ALL2 candle_fs_interval_contains intervals values
+     ==>
+     ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))
+       (candle_fs_raw_interval_list_scale scalar intervals)
+       (MAP (\x:real. scalar_value * x) values)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MAP_EVERY UNDISCH_TAC
+   [`ALL2 candle_fs_interval_contains intervals values`;
+    `candle_fs_interval_contains scalar scalar_value`] THEN
+  SPEC_TAC (`values:real list`,`values:real list`) THEN
+  SPEC_TAC
+   (`intervals:((num#num)#(num#num))list`,
+    `intervals:((num#num)#(num#num))list`) THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; MAP; candle_fs_raw_interval_list_scale_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_mul_sound]);;
+
+let candle_fs_raw_interval_matrix_add_contains = prove
+ (`!width left_intervals left_values right_intervals right_values.
+     LENGTH left_intervals = LENGTH right_intervals /\
+     ALL (\row. LENGTH row = width) left_intervals /\
+     ALL (\row. LENGTH row = width) right_intervals /\
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       left_intervals left_values /\
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       right_intervals right_values
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_matrix_add left_intervals right_intervals)
+       (MAP2 (MAP2 (\x y:real. x + y)) left_values right_values)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_SIMP_TAC[LENGTH; ALL; NOT_SUC; SUC_INJ; ALL2; MAP2; MAP2_DEF;
+               candle_fs_raw_interval_matrix_add_def;
+               candle_fs_raw_interval_list_add_contains]);;
+
+let candle_fs_raw_interval_matrix_scale_contains = prove
+ (`!scalar scalar_value intervals values.
+     candle_fs_interval_contains scalar scalar_value /\
+     ALL2 (ALL2 candle_fs_interval_contains) intervals values
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_matrix_scale scalar intervals)
+       (MAP (MAP (\x:real. scalar_value * x)) values)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MAP_EVERY UNDISCH_TAC
+   [`ALL2 (ALL2 candle_fs_interval_contains) intervals values`;
+    `candle_fs_interval_contains scalar scalar_value`] THEN
+  SPEC_TAC (`values:(real list)list`,`values:(real list)list`) THEN
+  SPEC_TAC
+   (`intervals:(((num#num)#(num#num))list)list`,
+    `intervals:(((num#num)#(num#num))list)list`) THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; MAP; candle_fs_raw_interval_matrix_scale_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_list_scale_contains]);;
+
+let candle_fs_raw_interval_outer_contains = prove
+ (`!left_intervals left_values right_intervals right_values.
+     ALL2 candle_fs_interval_contains left_intervals left_values /\
+     ALL2 candle_fs_interval_contains right_intervals right_values
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_outer left_intervals right_intervals)
+       (MAP (\x:real. MAP (\y:real. x * y) right_values) left_values)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MAP_EVERY UNDISCH_TAC
+   [`ALL2 candle_fs_interval_contains left_intervals left_values`;
+    `ALL2 candle_fs_interval_contains right_intervals right_values`] THEN
+  SPEC_TAC (`left_values:real list`,`left_values:real list`) THEN
+  SPEC_TAC
+   (`left_intervals:((num#num)#(num#num))list`,
+    `left_intervals:((num#num)#(num#num))list`) THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; MAP; candle_fs_raw_interval_outer_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_list_scale_contains]);;
+
+let candle_fs_raw_interval_list_round_contains = prove
+ (`!intervals values.
+     ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)) intervals values
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_raw_interval_list_round candle_fs_scale intervals)
+       values`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; candle_fs_raw_interval_list_round_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_round_sound;
+                candle_fs_scale_pos]);;
+
+let candle_fs_raw_interval_matrix_round_contains = prove
+ (`!intervals values.
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))) intervals values
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_raw_interval_matrix_round candle_fs_scale intervals)
+       values`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; candle_fs_raw_interval_matrix_round_def] THEN
+  ASM_MESON_TAC[candle_fs_raw_interval_list_round_contains]);;
+
 end;;

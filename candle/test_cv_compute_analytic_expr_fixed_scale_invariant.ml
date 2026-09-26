@@ -74,6 +74,26 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_poly_denote_dim_add_partial2 <> [] ||
    hyp candle_poly_denote_dim_add_hessian <> [] ||
    hyp candle_fs_result_add_poly_invariant <> [] ||
+   hyp candle_fs_raw_interval_add_sound <> [] ||
+   hyp candle_fs_raw_interval_list_add_length <> [] ||
+   hyp candle_fs_raw_interval_list_scale_length <> [] ||
+   hyp candle_fs_raw_interval_matrix_add_length <> [] ||
+   hyp candle_fs_raw_interval_matrix_add_rows_width <> [] ||
+   hyp candle_fs_raw_interval_matrix_scale_length <> [] ||
+   hyp candle_fs_raw_interval_matrix_scale_rows_width <> [] ||
+   hyp candle_fs_raw_interval_matrix_scale_shape <> [] ||
+   hyp candle_fs_raw_interval_outer_shape <> [] ||
+   hyp candle_fs_raw_interval_list_round_length <> [] ||
+   hyp candle_fs_raw_interval_matrix_round_length <> [] ||
+   hyp candle_fs_raw_interval_matrix_round_rows_width <> [] ||
+   hyp candle_fs_raw_interval_matrix_round_shape <> [] ||
+   hyp candle_fs_raw_interval_list_add_contains <> [] ||
+   hyp candle_fs_raw_interval_list_scale_contains <> [] ||
+   hyp candle_fs_raw_interval_matrix_add_contains <> [] ||
+   hyp candle_fs_raw_interval_matrix_scale_contains <> [] ||
+   hyp candle_fs_raw_interval_outer_contains <> [] ||
+   hyp candle_fs_raw_interval_list_round_contains <> [] ||
+   hyp candle_fs_raw_interval_matrix_round_contains <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
