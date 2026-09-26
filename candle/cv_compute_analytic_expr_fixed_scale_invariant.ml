@@ -10,10 +10,193 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_complete_sound.ml";;
 
 module Candle_cv_analytic_expr_fixed_scale_invariant = struct
 
+open Multivariate_taylor;;
+open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_complete_sound;;
+
+let candle_fs_list_real_vector_def = new_definition
+ `candle_fs_list_real_vector zs : real^N =
+    lambda i. candle_fs_real (EL (i - 1) zs)`;;
+
+let candle_fs_list_real_vector_component = prove
+ (`!zs i.
+     1 <= i /\ i <= dimindex (:N)
+     ==> (candle_fs_list_real_vector zs : real^N)$i =
+         candle_fs_real (EL (i - 1) zs)`,
+  SIMP_TAC[candle_fs_list_real_vector_def; LAMBDA_BETA]);;
+
+let candle_fs_dot_list_real_vector_sum = prove
+ (`!radii (g:num->real).
+     LENGTH radii = dimindex (:N)
+     ==>
+     ITLIST2
+       (\r y total. candle_fs_real r * abs y + total)
+       radii (list_of_seq g (dimindex (:N))) (&0) =
+     sum (1..dimindex (:N))
+       (\i. (candle_fs_list_real_vector radii : real^N)$i *
+            abs (g (i - 1)))`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (ISPECL
+      [`\r y. candle_fs_real r * abs y`;
+       `radii:(num#num)list`;
+       `list_of_seq (g:num->real) (dimindex (:N))`]
+      candle_itlist2_eq_sum) THEN
+  ANTS_TAC THENL
+   [ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ; LE_REFL];
+    DISCH_THEN (fun th -> ONCE_REWRITE_TAC[BETA_RULE th])] THEN
+  ASM_REWRITE_TAC[] THEN MATCH_MP_TAC SUM_EQ THEN
+  X_GEN_TAC `i:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+  SUBGOAL_THEN `i - 1 < dimindex (:N)` ASSUME_TAC THENL
+   [ASM_ARITH_TAC;
+    ASM_SIMP_TAC[candle_fs_list_real_vector_component;
+                 EL_LIST_OF_SEQ]]);;
+
+let candle_fs_weighted_rows_list_real_vector_sum = prove
+ (`!radii (h:num->num->real).
+     LENGTH radii = dimindex (:N)
+     ==>
+     ITLIST2
+       (\w values total.
+          candle_fs_real w *
+          ITLIST2
+            (\r y subtotal. candle_fs_real r * abs y + subtotal)
+            radii values (&0) + total)
+       radii
+       (list_of_seq
+         (\di. list_of_seq (h di) (dimindex (:N)))
+         (dimindex (:N))) (&0) =
+     sum (1..dimindex (:N))
+       (\i. (candle_fs_list_real_vector radii : real^N)$i *
+            sum (1..dimindex (:N))
+              (\j. (candle_fs_list_real_vector radii : real^N)$j *
+                   abs (h (i - 1) (j - 1))))`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (ISPECL
+      [`\w values.
+         candle_fs_real w *
+         ITLIST2
+           (\r y subtotal. candle_fs_real r * abs y + subtotal)
+           radii values (&0)`;
+       `radii:(num#num)list`;
+       `list_of_seq
+         (\di. list_of_seq ((h:num->num->real) di) (dimindex (:N)))
+         (dimindex (:N))`]
+      candle_itlist2_eq_sum) THEN
+  ANTS_TAC THENL
+   [ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ; LE_REFL];
+    DISCH_THEN (fun th -> ONCE_REWRITE_TAC[BETA_RULE th])] THEN
+  ASM_REWRITE_TAC[] THEN MATCH_MP_TAC SUM_EQ THEN
+  X_GEN_TAC `i:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+  SUBGOAL_THEN `i - 1 < dimindex (:N)` ASSUME_TAC THENL
+   [ASM_ARITH_TAC;
+    ASM_SIMP_TAC[candle_fs_list_real_vector_component;
+                 EL_LIST_OF_SEQ;
+                 candle_fs_dot_list_real_vector_sum]]);;
+
+let candle_fs_complete_m_taylor_error_sound = prove
+ (`!f (domain:real^N#real^N) radii hessian.
+     LENGTH radii = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 (ALL2 candle_fs_interval_contains) hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N))))
+     ==>
+     m_taylor_error f domain
+       (candle_fs_list_real_vector radii)
+       (candle_fs_raw_real
+         (candle_fs_scale *
+           (candle_fs_scale * candle_fs_scale))
+         (candle_fs_weighted_rows_abs_upper radii radii hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[m_taylor_error] THEN
+  X_GEN_TAC `z:real^N` THEN DISCH_TAC THEN
+  REWRITE_TAC[GSYM partial2] THEN
+  SUBGOAL_THEN
+   `sum (1..dimindex (:N))
+      (\i. (candle_fs_list_real_vector radii : real^N)$i *
+           sum (1..dimindex (:N))
+             (\j. (candle_fs_list_real_vector radii : real^N)$j *
+                  abs (partial2 j i (f:real^N->real) (z:real^N)))) =
+    sum (1..dimindex (:N))
+      (\i. (candle_fs_list_real_vector radii : real^N)$i *
+           sum (1..dimindex (:N))
+             (\j. (candle_fs_list_real_vector radii : real^N)$j *
+                  abs
+                    (partial2 ((j - 1) + 1) ((i - 1) + 1)
+                      f z)))`
+   SUBST1_TAC THENL
+   [MATCH_MP_TAC SUM_EQ THEN
+    X_GEN_TAC `i:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+    AP_TERM_TAC THEN MATCH_MP_TAC SUM_EQ THEN
+    X_GEN_TAC `j:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+    ASM_SIMP_TAC[SUB_ADD];
+    ALL_TAC] THEN
+  let sum_th =
+    MATCH_MP
+      (ISPECL
+        [`radii:(num#num)list`;
+         `(\di dj. partial2 (dj + 1) (di + 1)
+            (f:real^N->real) (z:real^N)):num->num->real`]
+        candle_fs_weighted_rows_list_real_vector_sum)
+      (ASSUME `LENGTH (radii:(num#num)list) = dimindex (:N)`) in
+  ONCE_REWRITE_TAC[GSYM (BETA_RULE sum_th)] THEN
+  MATCH_MP_TAC candle_fs_weighted_rows_abs_upper_sound THEN
+  ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
+  REWRITE_TAC[GSYM ALL_EL; LENGTH_LIST_OF_SEQ] THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ; LENGTH_LIST_OF_SEQ]);;
+
+let candle_fs_complete_m_taylor_partial_error_sound = prove
+ (`!f i (domain:real^N#real^N) radii interval_row.
+     LENGTH radii = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 candle_fs_interval_contains interval_row
+             (list_of_seq
+               (\dj. partial2 (dj + 1) i f z)
+               (dimindex (:N))))
+     ==>
+     m_taylor_partial_error f i domain
+       (candle_fs_list_real_vector radii)
+       (candle_fs_raw_real
+         (candle_fs_scale * candle_fs_scale)
+         (candle_fs_dot_abs_upper radii interval_row))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[m_taylor_partial_error] THEN
+  X_GEN_TAC `z:real^N` THEN DISCH_TAC THEN
+  REWRITE_TAC[GSYM partial2] THEN
+  SUBGOAL_THEN
+   `sum (1..dimindex (:N))
+      (\j. (candle_fs_list_real_vector radii : real^N)$j *
+           abs (partial2 j i (f:real^N->real) (z:real^N))) =
+    sum (1..dimindex (:N))
+      (\j. (candle_fs_list_real_vector radii : real^N)$j *
+           abs (partial2 ((j - 1) + 1) i f z))`
+   SUBST1_TAC THENL
+   [MATCH_MP_TAC SUM_EQ THEN
+    X_GEN_TAC `j:num` THEN REWRITE_TAC[IN_NUMSEG] THEN STRIP_TAC THEN
+    ASM_SIMP_TAC[SUB_ADD];
+    ALL_TAC] THEN
+  let sum_th =
+    MATCH_MP
+      (ISPECL
+        [`radii:(num#num)list`;
+         `(\dj. partial2 (dj + 1) i
+            (f:real^N->real) (z:real^N)):num->real`]
+        candle_fs_dot_list_real_vector_sum)
+      (ASSUME `LENGTH (radii:(num#num)list) = dimindex (:N)`) in
+  ONCE_REWRITE_TAC[GSYM (BETA_RULE sum_th)] THEN
+  MATCH_MP_TAC candle_fs_dot_abs_upper_sound THEN
+  ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
+  FIRST_X_ASSUM MATCH_MP_TAC THEN ASM_REWRITE_TAC[]);;
 
 let candle_fs_gradient_bounds_map2 = prove
  (`!radii gradients rows.
