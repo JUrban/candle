@@ -647,4 +647,67 @@ let candle_fs_complete_gradient_bounds_contains = prove
       let row_contains = REWRITE_RULE[] row_contains in
       MATCH_ACCEPT_TAC row_contains goal)]);;
 
+let candle_fs_result_complete_proxy_contains = prove
+ (`!(f:real^N->real) (domain:real^N#real^N) (y:real^N) radii
+       center hessian (domain_ok:bool) (p:real^N).
+     LENGTH radii = dimindex (:N) /\
+     LENGTH (candle_fs_first_gradient center) = dimindex (:N) /\
+     LENGTH hessian = dimindex (:N) /\
+     ALL (\row. LENGTH row = dimindex (:N)) hessian /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     m_cell_domain domain y (candle_fs_list_real_vector radii) /\
+     diff2_domain domain f /\
+     candle_fs_interval_contains (candle_fs_first_value center) (f y) /\
+     ALL2 candle_fs_interval_contains (candle_fs_first_gradient center)
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N))) /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 (ALL2 candle_fs_interval_contains) hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N)))) /\
+     p IN interval [FST domain,SND domain]
+     ==>
+     candle_q_dim_jet_contains_components (dimindex (:N))
+       (candle_q_dim_taylor_model_proxy
+         (candle_fs_result_to_q
+           (candle_fs_result_complete_rounded
+             radii domain_ok center hessian)))
+       (f p)
+       (\di. partial (di + 1) f p)
+       (\di dj. partial2 (dj + 1) (di + 1) f p)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_q_dim_jet_contains_components_of_stacks THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_result_complete_proxy_shape THEN
+    REWRITE_TAC[candle_fs_first_to_q_shape] THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_result_complete_proxy;
+                candle_q_dim_jet_make_def;
+                candle_q_dim_jet_f_def; FST; SND;
+                candle_fs_interval_to_q_contains] THEN
+    MATCH_MP_TAC candle_fs_complete_value_bound_contains THEN
+    MAP_EVERY EXISTS_TAC [`domain:real^N#real^N`; `y:real^N`] THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_result_complete_proxy;
+                candle_q_dim_jet_make_def;
+                candle_q_dim_jet_gradient_def; FST; SND;
+                candle_fs_interval_list_to_q_contains] THEN
+    MATCH_MP_TAC candle_fs_complete_gradient_bounds_contains THEN
+    MAP_EVERY EXISTS_TAC [`domain:real^N#real^N`; `y:real^N`] THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_result_complete_proxy;
+                candle_q_dim_jet_make_def;
+                candle_q_dim_jet_hessian_def; FST; SND;
+                candle_fs_interval_matrix_to_q_contains] THEN
+    FIRST_ASSUM
+     (fun th ->
+       if is_forall (concl th) then
+         MATCH_MP_TAC (SPEC `p:real^N` th)
+       else failwith "not a universal assumption") THEN
+    ASM_REWRITE_TAC[]]);;
+
 end;;
