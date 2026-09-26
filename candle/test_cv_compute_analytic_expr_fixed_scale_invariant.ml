@@ -111,6 +111,7 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_raw_interval_outer_contains_list_of_seq <> [] ||
    hyp candle_fs_raw_interval_matrix_add_contains_list_of_seq <> [] ||
    hyp candle_fs_raw_mul_hessian_contains <> [] ||
+   hyp candle_fs_raw_mul_complete_shape <> [] ||
    hyp candle_poly_denote_dim_mul_partial <> [] ||
    hyp candle_poly_denote_dim_mul_partial2 <> [] ||
    hyp candle_poly_denote_dim_mul_hessian <> [] ||
