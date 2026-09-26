@@ -13,6 +13,8 @@ module Candle_cv_analytic_expr_fixed_scale_invariant = struct
 open Multivariate_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_diff;;
+open Candle_cv_polynomial_expr_dim_jet_sound;;
+open Candle_cv_polynomial_expr_flyspeck_dim_bridge;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_semantics;;
@@ -874,5 +876,217 @@ let candle_fs_result_complete_proxy_contains = prove
          MATCH_MP_TAC (SPEC `p:real^N` th)
        else failwith "not a universal assumption") THEN
     ASM_REWRITE_TAC[]]);;
+
+(* Recover list-level containment from the pointwise jet predicate.  The     *)
+(* established arithmetic soundness lemmas consume lists, while the public  *)
+(* source invariant deliberately exposes only the dimension-generic jet     *)
+(* contract.                                                                 *)
+
+let candle_q_dim_jet_components_gradient_contains = prove
+ (`!n jet value gradient hessian.
+     candle_q_dim_jet_shape n jet /\
+     candle_q_dim_jet_contains_components n jet value gradient hessian
+     ==>
+     candle_q_stack_contains
+       (candle_q_dim_jet_gradient jet) (list_of_seq gradient n)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_q_dim_jet_gradient jet =
+    list_of_seq (\i. candle_q_dim_jet_gradient_at jet i) n`
+   SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_q_dim_jet_gradient_list_of_seq THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_q_stack_contains_all2;
+                candle_all2_list_of_seq] THEN
+    ASM_MESON_TAC[candle_q_dim_jet_contains_components_def]]);;
+
+let candle_q_dim_jet_components_hessian_contains = prove
+ (`!n jet value gradient hessian.
+     candle_q_dim_jet_shape n jet /\
+     candle_q_dim_jet_contains_components n jet value gradient hessian
+     ==>
+     ALL2 candle_q_stack_contains
+       (candle_q_dim_jet_hessian jet)
+       (list_of_seq (\i. list_of_seq (hessian i) n) n)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_q_dim_jet_hessian jet =
+    list_of_seq
+      (\i. list_of_seq
+        (\j. candle_q_dim_jet_hessian_at jet i j) n)
+      n`
+   SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_q_dim_jet_hessian_list_of_seq THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_all2_list_of_seq] THEN REPEAT STRIP_TAC THEN
+    REWRITE_TAC[candle_q_stack_contains_all2;
+                candle_all2_list_of_seq] THEN
+    ASM_MESON_TAC[candle_q_dim_jet_contains_components_def]]);;
+
+(* Polynomial postfix nodes have no analytic side conditions.  This compact *)
+(* invariant states exactly what later Taylor acceptance needs at the center *)
+(* and throughout the box, while keeping every intermediate numerical jet   *)
+(* behind the fixed-result conversion boundary.                              *)
+
+let candle_fs_result_poly_invariant_def = new_definition
+ `candle_fs_result_poly_invariant
+      (type_witness:real^N)
+      (boxes:(((num#num)#num)#((num#num)#num))list) result e <=>
+    candle_fs_result_domain result
+    ==>
+    candle_q_dim_jet_shape (dimindex (:N))
+      (candle_q_dim_taylor_model_result_center
+        (candle_fs_result_to_q result)) /\
+    candle_q_dim_jet_contains_components (dimindex (:N))
+      (candle_q_dim_taylor_model_result_center
+        (candle_fs_result_to_q result))
+      (candle_poly_denote_dim e
+        (candle_q_box_center_vector boxes : real^N))
+      (\di. partial (di + 1) (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N))
+      (\di dj. partial2 (dj + 1) (di + 1)
+        (candle_poly_denote_dim e)
+        (candle_q_box_center_vector boxes : real^N)) /\
+    candle_q_dim_jet_shape (dimindex (:N))
+      (candle_q_dim_taylor_model_proxy
+        (candle_fs_result_to_q result)) /\
+    (!(p:real^N). p IN interval
+          [candle_q_box_lower_vector boxes,
+           candle_q_box_upper_vector boxes]
+        ==> candle_q_dim_jet_contains_components (dimindex (:N))
+              (candle_q_dim_taylor_model_proxy
+                (candle_fs_result_to_q result))
+              (candle_poly_denote_dim e p)
+              (\di. partial (di + 1) (candle_poly_denote_dim e) p)
+              (\di dj. partial2 (dj + 1) (di + 1)
+                (candle_poly_denote_dim e) p))`;;
+
+let candle_fs_result_complete_poly_invariant = prove
+ (`!e boxes center hessian (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_jet_shape (dimindex (:N))
+       (candle_fs_first_to_q center hessian) /\
+     candle_q_dim_jet_contains_components (dimindex (:N))
+       (candle_fs_first_to_q center hessian)
+       (candle_poly_denote_dim e
+         (candle_q_box_center_vector boxes : real^N))
+       (\di. partial (di + 1) (candle_poly_denote_dim e)
+         (candle_q_box_center_vector boxes : real^N))
+       (\di dj. partial2 (dj + 1) (di + 1)
+         (candle_poly_denote_dim e)
+         (candle_q_box_center_vector boxes : real^N)) /\
+     (!(z:real^N). z IN interval
+          [candle_q_box_lower_vector boxes,
+           candle_q_box_upper_vector boxes]
+        ==> ALL2 (ALL2 candle_fs_interval_contains) hessian
+              (list_of_seq
+                (\di. list_of_seq
+                  (\dj. partial2 (dj + 1) (di + 1)
+                    (candle_poly_denote_dim e) z)
+                  (dimindex (:N)))
+                (dimindex (:N))))
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_complete_rounded
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         T center hessian) e`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def;
+              candle_fs_result_complete_domain] THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_fs_result_complete_center];
+    ASM_REWRITE_TAC[candle_fs_result_complete_center];
+    MATCH_MP_TAC candle_fs_result_complete_proxy_shape THEN
+    ASM_REWRITE_TAC[];
+    X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+    MATCH_MP_TAC candle_fs_result_complete_proxy_contains THEN
+    MAP_EVERY EXISTS_TAC
+      [`((candle_q_box_lower_vector boxes : real^N),
+         (candle_q_box_upper_vector boxes : real^N))`;
+       `(candle_q_box_center_vector boxes : real^N)`] THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_fs_list_of_q_length;
+                     candle_q_fixed_list_round_upper_length;
+                     candle_q_radius_list_length];
+      MP_TAC
+        (REWRITE_RULE[candle_fs_first_to_q_shape]
+          (ASSUME
+            `candle_q_dim_jet_shape (dimindex (:N))
+              (candle_fs_first_to_q center hessian)`)) THEN
+      MESON_TAC[];
+      MP_TAC
+        (REWRITE_RULE[candle_fs_first_to_q_shape]
+          (ASSUME
+            `candle_q_dim_jet_shape (dimindex (:N))
+              (candle_fs_first_to_q center hessian)`)) THEN
+      MESON_TAC[];
+      MP_TAC
+        (REWRITE_RULE[candle_fs_first_to_q_shape]
+          (ASSUME
+            `candle_q_dim_jet_shape (dimindex (:N))
+              (candle_fs_first_to_q center hessian)`)) THEN
+      MESON_TAC[];
+      ASM_MESON_TAC[candle_fs_rounded_list_nonnegative;
+                    candle_q_fixed_list_round_upper_nonnegative;
+                    candle_q_radius_list_nonnegative];
+      ASM_MESON_TAC[candle_fs_rounded_radii_m_cell_domain];
+      REWRITE_TAC[diff2_domain] THEN
+      ASM_MESON_TAC[diff2c_imp_diff2;
+                    candle_poly_denote_dim_diff2c];
+      MP_TAC
+        (REWRITE_RULE
+          [candle_q_dim_jet_contains_components_def;
+           candle_fs_first_to_q_def;
+           candle_q_dim_jet_make_def; candle_q_dim_jet_f_def;
+           candle_fs_interval_to_q_contains; FST; SND]
+          (ASSUME
+            `candle_q_dim_jet_contains_components (dimindex (:N))
+              (candle_fs_first_to_q center hessian)
+              (candle_poly_denote_dim e
+                (candle_q_box_center_vector boxes : real^N))
+              (\di. partial (di + 1) (candle_poly_denote_dim e)
+                (candle_q_box_center_vector boxes : real^N))
+              (\di dj. partial2 (dj + 1) (di + 1)
+                (candle_poly_denote_dim e)
+                (candle_q_box_center_vector boxes : real^N))`)) THEN
+      MESON_TAC[];
+      (let gradient_th = MATCH_MP
+         (ISPECL
+           [`dimindex (:N)`;
+            `candle_fs_first_to_q center hessian`;
+            `candle_poly_denote_dim e
+              (candle_q_box_center_vector boxes : real^N)`;
+            `(\di. partial (di + 1) (candle_poly_denote_dim e)
+              (candle_q_box_center_vector boxes : real^N)):num->real`;
+            `(\di dj. partial2 (dj + 1) (di + 1)
+              (candle_poly_denote_dim e)
+              (candle_q_box_center_vector boxes : real^N)):num->num->real`]
+           candle_q_dim_jet_components_gradient_contains)
+         (CONJ
+           (ASSUME
+             `candle_q_dim_jet_shape (dimindex (:N))
+               (candle_fs_first_to_q center hessian)`)
+           (ASSUME
+             `candle_q_dim_jet_contains_components (dimindex (:N))
+               (candle_fs_first_to_q center hessian)
+               (candle_poly_denote_dim e
+                 (candle_q_box_center_vector boxes : real^N))
+               (\di. partial (di + 1) (candle_poly_denote_dim e)
+                 (candle_q_box_center_vector boxes : real^N))
+               (\di dj. partial2 (dj + 1) (di + 1)
+                 (candle_poly_denote_dim e)
+                 (candle_q_box_center_vector boxes : real^N))`)) in
+       ACCEPT_TAC
+         (REWRITE_RULE
+           [candle_fs_first_to_q_def;
+            candle_q_dim_jet_make_def; candle_q_dim_jet_gradient_def;
+            candle_fs_interval_list_to_q_contains; FST; SND]
+           gradient_th));
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[]]]);;
 
 end;;
