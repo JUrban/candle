@@ -18,9 +18,13 @@ open Candle_cv_exact_rational_core;;
 open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
+open Candle_cv_polynomial_expr_dim_jet;;
+open Candle_cv_polynomial_expr_dim_first_jet_compute;;
+open Candle_cv_polynomial_expr_dim_first_jet_representation;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
+open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
 
 (* -------------------------------------------------------------------------- *)
@@ -555,6 +559,55 @@ let candle_fs_poly_program_def = new_definition
     candle_fs_poly_program_fixed
       (candle_fs_interval_list_of_q center_boxes)
       (candle_fs_list_of_q radii) program`;;
+
+(* The conversion is outside the hot arithmetic path.  It gives the fixed
+   result the established ordinary rational Taylor-model interface used by
+   the universal analytic invariant.  The whole-box Hessian is also a valid
+   center Hessian enclosure, and the executable first-jet encoding erases
+   this otherwise unobservable component. *)
+
+let candle_fs_interval_to_q_def = new_definition
+ `candle_fs_interval_to_q (i:(num#num)#(num#num)) =
+    (candle_fs_to_q (FST i),candle_fs_to_q (SND i))`;;
+
+let candle_fs_interval_list_to_q_def = define
+ `(candle_fs_interval_list_to_q
+     ([]:((num#num)#(num#num))list) = []) /\
+  (candle_fs_interval_list_to_q (CONS h t) =
+     CONS (candle_fs_interval_to_q h)
+       (candle_fs_interval_list_to_q t))`;;
+
+let candle_fs_interval_matrix_to_q_def = define
+ `(candle_fs_interval_matrix_to_q
+     ([]:(((num#num)#(num#num))list)list) = []) /\
+  (candle_fs_interval_matrix_to_q (CONS h t) =
+     CONS (candle_fs_interval_list_to_q h)
+       (candle_fs_interval_matrix_to_q t))`;;
+
+let candle_fs_first_to_q_def = new_definition
+ `candle_fs_first_to_q first hessian =
+    candle_q_dim_jet_make
+      (candle_fs_interval_to_q (candle_fs_first_value first))
+      (candle_fs_interval_list_to_q (candle_fs_first_gradient first))
+      (candle_fs_interval_matrix_to_q hessian)`;;
+
+let candle_fs_result_to_q_def = new_definition
+ `candle_fs_result_to_q result =
+    candle_q_dim_taylor_model_result_make
+      (candle_fs_result_domain result)
+      (candle_fs_first_to_q
+        (candle_fs_result_center result)
+        (candle_fs_result_hessian result))
+      (candle_fs_interval_to_q (candle_fs_result_value_bound result))
+      (candle_fs_interval_list_to_q
+        (candle_fs_result_gradient_bounds result))
+      (candle_fs_interval_matrix_to_q
+        (candle_fs_result_hessian result))`;;
+
+let candle_fs_poly_program_to_q_def = new_definition
+ `candle_fs_poly_program_to_q center_boxes radii program =
+    candle_fs_result_to_q
+      (candle_fs_poly_program center_boxes radii program)`;;
 
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
@@ -1533,6 +1586,106 @@ let candle_cv_fs_poly_program_correct = prove
               candle_cv_fs_interval_list_of_q_correct;
               candle_cv_fs_list_of_q_correct;
               candle_cv_fs_poly_program_fixed_correct]);;
+
+let candle_cv_fs_interval_to_q_correct = prove
+ (`!i.
+     candle_cv_fs_interval_to_q (candle_cv_fs_interval i) =
+     candle_cv_q_interval (candle_fs_interval_to_q i)`,
+  REWRITE_TAC[candle_cv_fs_interval_to_q_def;
+              candle_fs_interval_to_q_def;
+              candle_cv_fs_interval_def; candle_cv_q_interval_def;
+              cexp_fst_def; cexp_snd_def;
+              candle_cv_fs_to_q_correct; FST; SND]);;
+
+let candle_cv_fs_interval_list_to_q_correct = prove
+ (`!items.
+     candle_cv_fs_interval_list_to_q
+       (candle_cv_fs_interval_list items) =
+     candle_cv_q_interval_list
+       (candle_fs_interval_list_to_q items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_list_def;
+                  candle_cv_fs_interval_list_to_q_def;
+                  candle_cv_q_interval_list_def;
+                  candle_fs_interval_list_to_q_def;
+                  candle_cv_fs_interval_to_q_correct]);;
+
+let candle_cv_fs_interval_matrix_to_q_correct = prove
+ (`!row_lists.
+     candle_cv_fs_interval_matrix_to_q
+       (candle_cv_fs_interval_matrix row_lists) =
+     candle_cv_q_interval_matrix
+       (candle_fs_interval_matrix_to_q row_lists)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_matrix_def;
+                  candle_cv_fs_interval_matrix_to_q_def;
+                  candle_cv_q_interval_matrix_def;
+                  candle_fs_interval_matrix_to_q_def;
+                  candle_cv_fs_interval_list_to_q_correct]);;
+
+let candle_cv_fs_first_to_q_correct = prove
+ (`!first hessian.
+     candle_cv_q_dim_first_jet_make
+       (candle_cv_fs_interval_to_q
+         (candle_cv_fs_first_value (candle_cv_fs_first first)))
+       (candle_cv_fs_interval_list_to_q
+         (candle_cv_fs_first_gradient (candle_cv_fs_first first))) =
+     candle_cv_q_dim_first_jet_encode
+       (candle_fs_first_to_q first hessian)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_first_value_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_fs_interval_list_to_q_correct;
+              candle_fs_first_to_q_def] THEN
+  MATCH_ACCEPT_TAC candle_cv_q_dim_first_jet_make_correct);;
+
+let candle_cv_fs_result_to_q_correct = prove
+ (`!result.
+     candle_cv_fs_result_to_q (candle_cv_fs_result result) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_fs_result_to_q result)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_result_to_q_def;
+              candle_fs_result_to_q_def;
+              candle_cv_fs_result_domain_correct;
+              candle_cv_fs_result_center_correct;
+              candle_cv_fs_result_value_bound_correct;
+              candle_cv_fs_result_gradient_bounds_correct;
+              candle_cv_fs_result_hessian_correct;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_fs_interval_list_to_q_correct;
+              candle_cv_fs_interval_matrix_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_encode_def;
+              candle_cv_q_dim_taylor_model_result_make_def;
+              candle_q_dim_taylor_model_result_domain_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_value_bound_def;
+              candle_q_dim_taylor_model_result_gradient_bounds_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_q_dim_taylor_model_result_make_def;
+              candle_cv_q_dim_first_jet_encode_def;
+              candle_cv_q_dim_first_jet_make_def;
+              candle_fs_first_to_q_def;
+              candle_q_dim_jet_make_def;
+              candle_q_dim_jet_f_def;
+              candle_q_dim_jet_gradient_def; FST; SND]);;
+
+let candle_cv_fs_poly_program_to_q_correct = prove
+ (`!program center_boxes radii.
+     candle_cv_fs_poly_program_to_q
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_list radii)
+       (candle_cv_q_instruction_list program) =
+     candle_cv_q_dim_taylor_model_result_encode
+       (candle_fs_poly_program_to_q center_boxes radii program)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_poly_program_to_q_def;
+              candle_fs_poly_program_to_q_def;
+              candle_cv_fs_poly_program_correct;
+              candle_cv_fs_result_to_q_correct]);;
 
 (* -------------------------------------------------------------------------- *)
 (* Real denotation.                                                           *)
