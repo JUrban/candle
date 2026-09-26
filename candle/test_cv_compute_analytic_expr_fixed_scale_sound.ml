@@ -61,6 +61,8 @@ if hyp candle_cv_fs_sound_test <> [] ||
    hyp candle_fs_interval_to_q_contains <> [] ||
    hyp candle_fs_interval_list_to_q_contains <> [] ||
    hyp candle_fs_interval_matrix_to_q_contains <> [] ||
+   hyp candle_fs_result_complete_center_shape <> [] ||
+   hyp candle_fs_result_complete_proxy_shape <> [] ||
    hyp candle_fs_dot_abs_upper_sound <> [] ||
    hyp candle_fs_weighted_rows_abs_upper_sound <> [] then
   failwith "fixed-scale soundness substrate test has assumptions";;

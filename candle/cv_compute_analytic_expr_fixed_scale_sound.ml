@@ -9,6 +9,7 @@
 
 needs "candle/cv_compute_exact_interval_mul_core.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_compute.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_sound.ml";;
 
 module Candle_cv_analytic_expr_fixed_scale_sound = struct
 
@@ -19,12 +20,15 @@ open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_polynomial_expr_dim_jet;;
+open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_polynomial_expr_dim_first_jet_compute;;
 open Candle_cv_polynomial_expr_dim_first_jet_representation;;
+open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
+open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
 
 (* -------------------------------------------------------------------------- *)
@@ -1832,6 +1836,100 @@ let candle_fs_interval_matrix_to_q_contains = prove
         (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
     ASM_REWRITE_TAC[candle_fs_interval_matrix_to_q_def; ALL2;
                     candle_fs_interval_list_to_q_contains]]);;
+
+let candle_fs_interval_matrix_to_q_rows_width = prove
+ (`!n row_lists.
+     candle_q_dim_interval_rows_width n
+       (candle_fs_interval_matrix_to_q row_lists) <=>
+     ALL (\row. LENGTH row = n) row_lists`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_q_dim_interval_rows_width_def;
+                  candle_fs_interval_matrix_to_q_def; ALL;
+                  candle_fs_interval_list_to_q_length]);;
+
+let candle_fs_interval_matrix_to_q_shape = prove
+ (`!n row_lists.
+     candle_q_dim_interval_matrix_shape n
+       (candle_fs_interval_matrix_to_q row_lists) <=>
+     LENGTH row_lists = n /\ ALL (\row. LENGTH row = n) row_lists`,
+  REWRITE_TAC[candle_q_dim_interval_matrix_shape_def;
+              candle_fs_interval_matrix_to_q_length;
+              candle_fs_interval_matrix_to_q_rows_width]);;
+
+let candle_fs_first_to_q_shape = prove
+ (`!n first hessian.
+     candle_q_dim_jet_shape n (candle_fs_first_to_q first hessian) <=>
+     LENGTH (candle_fs_first_gradient first) = n /\
+     LENGTH hessian = n /\ ALL (\row. LENGTH row = n) hessian`,
+  REWRITE_TAC[candle_q_dim_jet_shape_def;
+              candle_fs_first_to_q_def;
+              candle_q_dim_jet_make_def;
+              candle_q_dim_jet_gradient_def;
+              candle_q_dim_jet_hessian_def;
+              candle_fs_interval_list_to_q_length;
+              candle_fs_interval_matrix_to_q_shape; FST; SND]);;
+
+let candle_fs_gradient_bounds_length = prove
+ (`!radii gradients row_lists.
+     LENGTH gradients = LENGTH row_lists
+     ==> LENGTH (candle_fs_gradient_bounds radii gradients row_lists) =
+         LENGTH gradients`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [GEN_TAC THEN
+    REWRITE_TAC[candle_fs_gradient_bounds_def; LENGTH];
+    X_GEN_TAC `row_lists:(((num#num)#(num#num))list)list` THEN
+    MP_TAC
+      (ISPEC `row_lists:(((num#num)#(num#num))list)list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[candle_fs_gradient_bounds_def;
+                    LENGTH; SUC_INJ; NOT_SUC]]);;
+
+let candle_fs_result_complete_center_shape = prove
+  (`!n radii domain center hessian.
+     candle_q_dim_jet_shape n (candle_fs_first_to_q center hessian)
+     ==> candle_q_dim_jet_shape n
+           (candle_q_dim_taylor_model_result_center
+             (candle_fs_result_to_q
+               (candle_fs_result_complete_rounded
+                 radii domain center hessian)))`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_result_to_q_def;
+              candle_fs_result_complete_rounded_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_make_def;
+              candle_fs_result_center_def;
+              candle_fs_result_hessian_def;
+              candle_fs_result_make_def; FST; SND] THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_result_complete_proxy_shape = prove
+ (`!n radii domain center hessian.
+     candle_q_dim_jet_shape n (candle_fs_first_to_q center hessian)
+     ==> candle_q_dim_jet_shape n
+           (candle_q_dim_taylor_model_proxy
+             (candle_fs_result_to_q
+               (candle_fs_result_complete_rounded
+                 radii domain center hessian)))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape] THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_q_dim_jet_shape_def;
+              candle_q_dim_taylor_model_proxy_def;
+              candle_fs_result_to_q_def;
+              candle_fs_result_complete_rounded_def;
+              candle_q_dim_taylor_model_result_make_def;
+              candle_q_dim_taylor_model_result_gradient_bounds_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_q_dim_jet_make_def;
+              candle_q_dim_jet_gradient_def;
+              candle_q_dim_jet_hessian_def;
+              candle_fs_result_gradient_bounds_def;
+              candle_fs_result_hessian_def;
+              candle_fs_result_make_def; FST; SND;
+              candle_fs_interval_list_to_q_length;
+              candle_fs_interval_matrix_to_q_shape] THEN
+  ASM_MESON_TAC[candle_fs_gradient_bounds_length]);;
 
 let candle_fs_raw_le_real = prove
  (`!x y. candle_fs_raw_le x y <=>
