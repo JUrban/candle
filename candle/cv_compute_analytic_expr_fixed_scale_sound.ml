@@ -7,6 +7,7 @@
 (* reusable proof; no theorem here is tied to a particular Flyspeck formula.  *)
 (* ========================================================================== *)
 
+needs "candle/cv_compute_exact_interval_mul_core.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_compute.ml";;
 
 module Candle_cv_analytic_expr_fixed_scale_sound = struct
@@ -14,6 +15,7 @@ module Candle_cv_analytic_expr_fixed_scale_sound = struct
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
@@ -27,6 +29,10 @@ let candle_fs_scale_def = new_definition
 
 let candle_fs_real_def = new_definition
  `candle_fs_real (z:num#num) = candle_lc_zreal z / &candle_fs_scale`;;
+
+let candle_fs_raw_real_def = new_definition
+ `candle_fs_raw_real denominator (z:num#num) =
+    candle_lc_zreal z / &denominator`;;
 
 let candle_fs_raw_neg_def = new_definition
  `candle_fs_raw_neg (z:num#num) = (SND z,FST z)`;;
@@ -150,6 +156,12 @@ let candle_fs_interval_abs_upper_def = new_definition
 let candle_fs_interval_contains_def = new_definition
  `candle_fs_interval_contains (i:(num#num)#(num#num)) (x:real) <=>
     candle_fs_real (FST i) <= x /\ x <= candle_fs_real (SND i)`;;
+
+let candle_fs_raw_interval_contains_def = new_definition
+ `candle_fs_raw_interval_contains denominator
+    (i:(num#num)#(num#num)) (x:real) <=>
+    candle_fs_raw_real denominator (FST i) <= x /\
+    x <= candle_fs_raw_real denominator (SND i)`;;
 
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
@@ -495,6 +507,98 @@ let candle_fs_raw_le_real = prove
   REWRITE_TAC[GSYM REAL_OF_NUM_ADD] THEN
   EQ_TAC THEN REAL_ARITH_TAC);;
 
+let candle_fs_raw_le_scaled = prove
+ (`!denominator x y. 0 < denominator
+     ==> (candle_fs_raw_le x y <=>
+          candle_fs_raw_real denominator x <=
+          candle_fs_raw_real denominator y)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def] THEN
+  ASM_SIMP_TAC[REAL_LE_DIV2_EQ; REAL_OF_NUM_LT;
+               candle_fs_raw_le_real]);;
+
+let candle_fs_raw_min_real = prove
+ (`!denominator x y. 0 < denominator
+     ==> candle_fs_raw_real denominator (candle_fs_raw_min x y) =
+         min (candle_fs_raw_real denominator x)
+             (candle_fs_raw_real denominator y)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_min_def] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[] THEN
+  MP_TAC
+    (SPECL [`denominator:num`; `x:num#num`; `y:num#num`]
+      candle_fs_raw_le_scaled) THEN
+  ASM_REWRITE_TAC[] THEN REAL_ARITH_TAC);;
+
+let candle_fs_raw_max_real = prove
+ (`!denominator x y. 0 < denominator
+     ==> candle_fs_raw_real denominator (candle_fs_raw_max x y) =
+         max (candle_fs_raw_real denominator x)
+             (candle_fs_raw_real denominator y)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_max_def] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[] THEN
+  MP_TAC
+    (SPECL [`denominator:num`; `x:num#num`; `y:num#num`]
+      candle_fs_raw_le_scaled) THEN
+  ASM_REWRITE_TAC[] THEN REAL_ARITH_TAC);;
+
+let candle_fs_product_denominator_pos = prove
+ (`0 < candle_fs_scale * candle_fs_scale`,
+  REWRITE_TAC[LT_MULT; candle_fs_scale_pos]);;
+
+let candle_fs_raw_product_real = prove
+ (`!x y.
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+       (candle_q_zmul x y) =
+     candle_fs_real x * candle_fs_real y`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def; candle_fs_real_def;
+              candle_q_zreal_mul; GSYM REAL_OF_NUM_MUL] THEN
+  MP_TAC candle_fs_scale_pos THEN
+  REWRITE_TAC[GSYM REAL_OF_NUM_LT] THEN
+  CONV_TAC REAL_FIELD);;
+
+let candle_fs_raw_product_min_real = prove
+ (`!x y.
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+       (candle_fs_raw_min x y) =
+     min
+       (candle_fs_raw_real (candle_fs_scale * candle_fs_scale) x)
+       (candle_fs_raw_real (candle_fs_scale * candle_fs_scale) y)`,
+  REPEAT GEN_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_min_real THEN
+  MATCH_ACCEPT_TAC candle_fs_product_denominator_pos);;
+
+let candle_fs_raw_product_max_real = prove
+ (`!x y.
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+       (candle_fs_raw_max x y) =
+     max
+       (candle_fs_raw_real (candle_fs_scale * candle_fs_scale) x)
+       (candle_fs_raw_real (candle_fs_scale * candle_fs_scale) y)`,
+  REPEAT GEN_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_max_real THEN
+  MATCH_ACCEPT_TAC candle_fs_product_denominator_pos);;
+
+let candle_fs_raw_interval_mul_sound = prove
+ (`!i j x y.
+     candle_fs_interval_contains i x /\
+     candle_fs_interval_contains j y
+     ==> candle_fs_raw_interval_contains
+           (candle_fs_scale * candle_fs_scale)
+           (candle_fs_raw_interval_mul i j) (x * y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_raw_interval_contains_def;
+              candle_fs_raw_interval_mul_def;
+              candle_fs_raw_product_min_real;
+              candle_fs_raw_product_max_real;
+              candle_fs_raw_product_real; FST; SND] THEN
+  STRIP_TAC THEN
+  MATCH_MP_TAC candle_real_interval_mul THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_fs_fixed_make_real = prove
  (`!positive negative.
      candle_fs_real (positive,negative) =
@@ -657,5 +761,80 @@ let candle_fs_ceil_div_sound = prove
       candle_nat_le_ceil_div) THEN
     ASM_REWRITE_TAC[] THEN
     REWRITE_TAC[real_div] THEN ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_raw_real_divide = prove
+ (`!denominator z. 0 < denominator
+     ==> candle_fs_raw_real (denominator * candle_fs_scale) z =
+         (candle_lc_zreal z / &denominator) / &candle_fs_scale`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def; GSYM REAL_OF_NUM_MUL] THEN
+  MP_TAC candle_fs_scale_pos THEN
+  ASM_REWRITE_TAC[GSYM REAL_OF_NUM_LT] THEN
+  CONV_TAC REAL_FIELD);;
+
+let candle_fs_floor_div_scaled_sound = prove
+ (`!z denominator. 0 < denominator
+     ==> candle_fs_real (candle_fs_floor_div z denominator) <=
+         candle_fs_raw_real (denominator * candle_fs_scale) z`,
+  REPEAT STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_fs_real_def; candle_fs_raw_real_divide] THEN
+  SUBGOAL_THEN `&0 < &(candle_fs_scale)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LT; candle_fs_scale_pos];
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_LE_DIV2_EQ] THEN
+  MATCH_MP_TAC candle_fs_floor_div_sound THEN ASM_ARITH_TAC);;
+
+let candle_fs_ceil_div_scaled_sound = prove
+ (`!z denominator. 0 < denominator
+     ==> candle_fs_raw_real (denominator * candle_fs_scale) z <=
+         candle_fs_real (candle_fs_ceil_div z denominator)`,
+  REPEAT STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_fs_real_def; candle_fs_raw_real_divide] THEN
+  SUBGOAL_THEN `&0 < &(candle_fs_scale)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LT; candle_fs_scale_pos];
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_LE_DIV2_EQ] THEN
+  MATCH_MP_TAC candle_fs_ceil_div_sound THEN ASM_ARITH_TAC);;
+
+let candle_fs_raw_interval_round_sound = prove
+ (`!denominator i x. 0 < denominator /\
+     candle_fs_raw_interval_contains
+       (denominator * candle_fs_scale) i x
+     ==> candle_fs_interval_contains
+           (candle_fs_raw_interval_round denominator i) x`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_interval_contains_def;
+              candle_fs_raw_interval_round_def; FST; SND] THEN
+  STRIP_TAC THEN CONJ_TAC THENL
+   [MATCH_MP_TAC REAL_LE_TRANS THEN
+    EXISTS_TAC
+      `candle_fs_raw_real (denominator * candle_fs_scale)
+        (FST (i:(num#num)#(num#num)))` THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC candle_fs_floor_div_scaled_sound THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC REAL_LE_TRANS THEN
+    EXISTS_TAC
+      `candle_fs_raw_real (denominator * candle_fs_scale)
+        (SND (i:(num#num)#(num#num)))` THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC candle_fs_ceil_div_scaled_sound THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_interval_mul_sound = prove
+ (`!i j x y.
+     candle_fs_interval_contains i x /\
+     candle_fs_interval_contains j y
+     ==> candle_fs_interval_contains
+           (candle_fs_raw_interval_round candle_fs_scale
+             (candle_fs_raw_interval_mul i j))
+           (x * y)`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  CONJ_TAC THENL
+   [MATCH_ACCEPT_TAC candle_fs_scale_pos;
+    MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+    ASM_REWRITE_TAC[]]);;
 
 end;;

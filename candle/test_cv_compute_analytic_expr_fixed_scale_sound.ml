@@ -36,12 +36,27 @@ let candle_cv_fs_add_sound_test =
       (SPEC `((11,3),5):(num#num)#num`
         candle_fs_interval_constant_sound));;
 
+let candle_cv_fs_mul_sound_test =
+  MP
+    (SPECL
+      [`candle_fs_interval_constant (((7,2),4):(num#num)#num)`;
+       `candle_fs_interval_constant (((11,3),5):(num#num)#num)`;
+       `candle_q_real (((7,2),4):(num#num)#num)`;
+       `candle_q_real (((11,3),5):(num#num)#num)`]
+      candle_fs_interval_mul_sound)
+    (CONJ
+      (SPEC `((7,2),4):(num#num)#num`
+        candle_fs_interval_constant_sound)
+      (SPEC `((11,3),5):(num#num)#num`
+        candle_fs_interval_constant_sound));;
+
 if hyp candle_cv_fs_sound_test <> [] ||
    hyp candle_cv_fs_floor_sound_test <> [] ||
    hyp candle_cv_fs_ceil_sound_test <> [] ||
    hyp candle_cv_fs_to_q_sound_test <> [] ||
    hyp candle_cv_fs_constant_sound_test <> [] ||
-   hyp candle_cv_fs_add_sound_test <> [] then
+   hyp candle_cv_fs_add_sound_test <> [] ||
+   hyp candle_cv_fs_mul_sound_test <> [] then
   failwith "fixed-scale soundness substrate test has assumptions";;
 
 print_endline "CANDLE_CV_ANALYTIC_EXPR_FIXED_SCALE_SOUND_OK";;
