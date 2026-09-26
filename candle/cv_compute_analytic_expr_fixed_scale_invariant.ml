@@ -3398,4 +3398,96 @@ let candle_fs_raw_interval_matrix_round_contains = prove
   ASM_REWRITE_TAC[ALL2; candle_fs_raw_interval_matrix_round_def] THEN
   ASM_MESON_TAC[candle_fs_raw_interval_list_round_contains]);;
 
+let candle_fs_raw_mul_gradient_length = prove
+ (`!n right_value left_gradient left_value right_gradient.
+     LENGTH left_gradient = n /\ LENGTH right_gradient = n
+     ==>
+     LENGTH
+       (candle_fs_raw_interval_list_round candle_fs_scale
+         (candle_fs_raw_interval_list_add
+           (candle_fs_raw_interval_list_scale right_value left_gradient)
+           (candle_fs_raw_interval_list_scale left_value right_gradient))) = n`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_fs_raw_interval_list_round_length;
+               candle_fs_raw_interval_list_add_length;
+               candle_fs_raw_interval_list_scale_length]);;
+
+let candle_all2_length = prove
+ (`!P (xs:A list) (ys:B list).
+     ALL2 P xs ys ==> LENGTH xs = LENGTH ys`,
+  STRIP_TAC THEN
+  REPEAT LIST_INDUCT_TAC THEN REWRITE_TAC[ALL2; LENGTH] THEN
+  ASM_MESON_TAC[]);;
+
+let candle_fs_raw_mul_center_value_gradient_contains = prove
+ (`!n left_value_interval right_value_interval
+      left_gradient_intervals right_gradient_intervals
+      left_value right_value left_gradient right_gradient.
+     candle_fs_interval_contains left_value_interval left_value /\
+     candle_fs_interval_contains right_value_interval right_value /\
+     ALL2 candle_fs_interval_contains left_gradient_intervals
+       (list_of_seq left_gradient n) /\
+     ALL2 candle_fs_interval_contains right_gradient_intervals
+       (list_of_seq right_gradient n)
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_raw_interval_round candle_fs_scale
+         (candle_fs_raw_interval_mul
+           left_value_interval right_value_interval))
+       (left_value * right_value) /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_raw_interval_list_round candle_fs_scale
+         (candle_fs_raw_interval_list_add
+           (candle_fs_raw_interval_list_scale
+             right_value_interval left_gradient_intervals)
+           (candle_fs_raw_interval_list_scale
+             left_value_interval right_gradient_intervals)))
+       (list_of_seq
+         (\i. right_value * left_gradient i +
+              left_value * right_gradient i) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let left_length_th = MATCH_MP
+   (ISPECL
+     [`candle_fs_interval_contains`;
+      `left_gradient_intervals:((num#num)#(num#num))list`;
+      `list_of_seq (left_gradient:num->real) n`]
+     candle_all2_length)
+   (ASSUME
+     `ALL2 candle_fs_interval_contains left_gradient_intervals
+       (list_of_seq left_gradient n)`) in
+  let right_length_th = MATCH_MP
+   (ISPECL
+     [`candle_fs_interval_contains`;
+      `right_gradient_intervals:((num#num)#(num#num))list`;
+      `list_of_seq (right_gradient:num->real) n`]
+     candle_all2_length)
+   (ASSUME
+     `ALL2 candle_fs_interval_contains right_gradient_intervals
+       (list_of_seq right_gradient n)`) in
+  ASSUME_TAC (REWRITE_RULE[LENGTH_LIST_OF_SEQ] left_length_th) THEN
+  ASSUME_TAC (REWRITE_RULE[LENGTH_LIST_OF_SEQ] right_length_th) THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_mul_sound THEN ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_raw_interval_list_round_contains THEN
+    MP_TAC
+     (ISPECL
+       [`candle_fs_raw_interval_list_scale
+          right_value_interval left_gradient_intervals`;
+        `MAP (\x:real. right_value * x)
+          (list_of_seq left_gradient n)`;
+        `candle_fs_raw_interval_list_scale
+          left_value_interval right_gradient_intervals`;
+        `MAP (\x:real. left_value * x)
+          (list_of_seq right_gradient n)`]
+       candle_fs_raw_interval_list_add_contains) THEN
+    ANTS_TAC THENL
+     [REPEAT CONJ_TAC THENL
+       [ASM_REWRITE_TAC[candle_fs_raw_interval_list_scale_length];
+        MATCH_MP_TAC candle_fs_raw_interval_list_scale_contains THEN
+        ASM_REWRITE_TAC[];
+        MATCH_MP_TAC candle_fs_raw_interval_list_scale_contains THEN
+        ASM_REWRITE_TAC[]];
+      REWRITE_TAC[MAP_LIST_OF_SEQ; o_THM;
+                  candle_map2_list_of_seq]]]);;
+
 end;;
