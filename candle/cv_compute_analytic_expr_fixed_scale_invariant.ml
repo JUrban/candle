@@ -2358,4 +2358,174 @@ let candle_map2_matrix_list_of_seq = prove
   REPEAT GEN_TAC THEN
   REWRITE_TAC[candle_map2_list_of_seq]);;
 
+let candle_fs_first_add_shape = prove
+ (`!n left_first left_hessian right_first right_hessian.
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q left_first left_hessian) /\
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q right_first right_hessian)
+     ==>
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q
+         (candle_fs_first_make
+           (candle_fs_interval_add
+             (candle_fs_first_value left_first)
+             (candle_fs_first_value right_first))
+           (candle_fs_interval_list_add
+             (candle_fs_first_gradient left_first)
+             (candle_fs_first_gradient right_first)))
+         (candle_fs_interval_matrix_add
+           left_hessian right_hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  RULE_ASSUM_TAC (REWRITE_RULE[candle_fs_first_to_q_shape]) THEN
+  RULE_ASSUM_TAC (REWRITE_RULE[candle_fs_first_gradient_def]) THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def; FST; SND] THEN
+  REPEAT CONJ_TAC THENL
+   [MP_TAC
+     (ISPECL
+       [`SND
+          (left_first:
+            ((num#num)#(num#num))#((num#num)#(num#num))list)`;
+        `SND
+          (right_first:
+            ((num#num)#(num#num))#((num#num)#(num#num))list)`]
+       candle_fs_interval_list_add_length) THEN
+    ASM_REWRITE_TAC[];
+    MP_TAC
+     (ISPECL
+       [`left_hessian:(((num#num)#(num#num))list)list`;
+        `right_hessian:(((num#num)#(num#num))list)list`]
+       candle_fs_interval_matrix_add_length) THEN
+    ASM_REWRITE_TAC[];
+    MP_TAC
+     (ISPECL
+       [`n:num`;
+        `left_hessian:(((num#num)#(num#num))list)list`;
+       `right_hessian:(((num#num)#(num#num))list)list`]
+       candle_fs_interval_matrix_add_rows_width) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_first_add_components = prove
+ (`!n left_first left_hessian right_first right_hessian
+      left_value right_value left_gradient right_gradient
+      left_hessian_value right_hessian_value.
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q left_first left_hessian) /\
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q right_first right_hessian) /\
+     candle_fs_interval_contains
+       (candle_fs_first_value left_first) left_value /\
+     candle_fs_interval_contains
+       (candle_fs_first_value right_first) right_value /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient left_first)
+       (list_of_seq left_gradient n) /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient right_first)
+       (list_of_seq right_gradient n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) left_hessian
+       (list_of_seq
+         (\i. list_of_seq (left_hessian_value i) n) n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) right_hessian
+       (list_of_seq
+         (\i. list_of_seq (right_hessian_value i) n) n)
+     ==>
+     candle_q_dim_jet_contains_components n
+       (candle_fs_first_to_q
+         (candle_fs_first_make
+           (candle_fs_interval_add
+             (candle_fs_first_value left_first)
+             (candle_fs_first_value right_first))
+           (candle_fs_interval_list_add
+             (candle_fs_first_gradient left_first)
+             (candle_fs_first_gradient right_first)))
+         (candle_fs_interval_matrix_add
+           left_hessian right_hessian))
+       (left_value + right_value)
+       (\i. left_gradient i + right_gradient i)
+       (\i j. left_hessian_value i j + right_hessian_value i j)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  RULE_ASSUM_TAC (REWRITE_RULE[candle_fs_first_to_q_shape]) THEN
+  RULE_ASSUM_TAC
+   (REWRITE_RULE[candle_fs_first_value_def;
+                 candle_fs_first_gradient_def]) THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_first_add_shape THEN
+    ASM_REWRITE_TAC[candle_fs_first_to_q_shape;
+                    candle_fs_first_gradient_def];
+    REWRITE_TAC[candle_fs_first_make_def;
+                candle_fs_first_value_def; FST; SND] THEN
+    MATCH_MP_TAC candle_fs_interval_add_sound THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_first_make_def;
+                candle_fs_first_gradient_def; FST; SND] THEN
+    MP_TAC
+     (ISPECL
+       [`candle_fs_first_gradient
+          (left_first:
+            ((num#num)#(num#num))#((num#num)#(num#num))list)`;
+        `list_of_seq (left_gradient:num->real) n`;
+        `candle_fs_first_gradient
+          (right_first:
+            ((num#num)#(num#num))#((num#num)#(num#num))list)`;
+       `list_of_seq (right_gradient:num->real) n`]
+       candle_fs_interval_list_add_contains) THEN
+    ASM_REWRITE_TAC[candle_fs_first_gradient_def;
+                    candle_map2_list_of_seq];
+    MP_TAC
+     (ISPECL
+       [`n:num`;
+        `left_hessian:(((num#num)#(num#num))list)list`;
+        `list_of_seq
+          (\i. list_of_seq
+            ((left_hessian_value:num->num->real) i) n) n`;
+        `right_hessian:(((num#num)#(num#num))list)list`;
+       `list_of_seq
+          (\i. list_of_seq
+            ((right_hessian_value:num->num->real) i) n) n`]
+       candle_fs_interval_matrix_add_contains) THEN
+    ASM_REWRITE_TAC[candle_map2_matrix_list_of_seq]]);;
+
+let candle_poly_denote_dim_add_partial = prove
+ (`!left right (z:real^N) i.
+     candle_poly_valid_dim (dimindex (:N)) left /\
+     candle_poly_valid_dim (dimindex (:N)) right
+     ==>
+     partial i
+       (candle_poly_denote_dim (Candle_poly_add left right)) z =
+     partial i (candle_poly_denote_dim left) z +
+     partial i (candle_poly_denote_dim right) z`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_add] THEN
+  MP_TAC
+   (SPECL
+     [`(candle_poly_denote_dim left):real^N->real`; `i:num`;
+      `(candle_poly_denote_dim right):real^N->real`; `z:real^N`]
+     partial_add) THEN
+  ASM_SIMP_TAC[candle_poly_denote_dim_diff2c;
+               candle_dim_diff2c_imp_differentiable]);;
+
+let candle_poly_denote_dim_add_partial2 = prove
+ (`!left right (z:real^N) i j.
+     candle_poly_valid_dim (dimindex (:N)) left /\
+     candle_poly_valid_dim (dimindex (:N)) right
+     ==>
+     partial2 j i
+       (candle_poly_denote_dim (Candle_poly_add left right)) z =
+     partial2 j i (candle_poly_denote_dim left) z +
+     partial2 j i (candle_poly_denote_dim right) z`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_add] THEN
+  MP_TAC
+   (SPECL
+     [`z:real^N`; `j:num`; `i:num`;
+      `(candle_poly_denote_dim left):real^N->real`;
+      `(candle_poly_denote_dim right):real^N->real`]
+     second_partial_add) THEN
+  ASM_SIMP_TAC[candle_poly_denote_dim_diff2c;
+               diff2c_imp_diff2]);;
+
 end;;
