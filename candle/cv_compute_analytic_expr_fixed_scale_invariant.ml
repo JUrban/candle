@@ -4904,4 +4904,58 @@ let candle_fs_result_mul_poly_invariant = prove
          candle_fs_result_mul_hessian_contains) THEN
       ASM_MESON_TAC[]]);;
 
+let candle_fs_result_square_poly_invariant = prove
+ (`!expr boxes result (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) expr /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_fs_result_poly_invariant
+       type_witness boxes result expr
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_square
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         result)
+       (Candle_poly_square expr)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_result_square_def] THEN
+  MP_TAC
+   (MATCH_MP
+     (ISPECL
+       [`expr:candle_poly_expr`; `expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_mul_poly_invariant)
+     (end_itlist CONJ
+       [ASSUME `candle_poly_valid_dim (dimindex (:N)) expr`;
+        ASSUME `candle_poly_valid_dim (dimindex (:N)) expr`;
+        ASSUME
+         `LENGTH
+           (boxes:(((num#num)#num)#((num#num)#num))list) =
+          dimindex (:N)`;
+        ASSUME `candle_q_box_valid_list boxes`;
+        ASSUME
+         `candle_fs_result_poly_invariant
+           (type_witness:real^N) boxes result expr`;
+        ASSUME
+         `candle_fs_result_poly_invariant
+           (type_witness:real^N) boxes result expr`])) THEN
+  REWRITE_TAC[candle_fs_result_poly_invariant_def;
+              candle_poly_denote_dim_mul;
+              candle_poly_denote_dim_square]);;
+
 end;;
