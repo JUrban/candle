@@ -458,4 +458,92 @@ let candle_fs_result_complete_proxy = prove
               candle_q_dim_taylor_model_result_hessian_def;
               candle_q_dim_taylor_model_result_make_def; FST; SND]);;
 
+let candle_fs_complete_gradient_bound_contains = prove
+ (`!(f:real^N->real) i (domain:real^N#real^N) (y:real^N) radii
+       center_interval interval_row (p:real^N).
+     LENGTH radii = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     m_cell_domain domain y (candle_fs_list_real_vector radii) /\
+     diff2_domain domain f /\
+     candle_fs_interval_contains center_interval (partial i f y) /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 candle_fs_interval_contains interval_row
+             (list_of_seq
+               (\dj. partial2 (dj + 1) i f z)
+               (dimindex (:N)))) /\
+     p IN interval [FST domain,SND domain]
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_gradient_bound radii center_interval interval_row)
+       (partial i f p)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  ABBREV_TAC
+   `partial_error =
+      candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+        (candle_fs_dot_abs_upper radii interval_row)` THEN
+  MATCH_MP_TAC candle_fs_gradient_bound_contains_error THEN
+  MATCH_MP_TAC candle_m_bounded_on_int_contains THEN
+  (fun ((asl,_) as goal) ->
+     let vars =
+       itlist
+         (fun (_,th) acc -> union (frees (concl th)) acc)
+         asl [] in
+     let domain_term =
+       find
+         (fun tm -> is_var tm && fst (dest_var tm) = "domain")
+         vars in
+     EXISTS_TAC domain_term goal) THEN
+  (fun ((asl,w) as goal) ->
+     let bounds_th =
+       ISPECL
+        [`domain:real^N#real^N`;
+         `y:real^N`;
+         `(candle_fs_list_real_vector radii : real^N)`;
+         `f:real^N->real`;
+         `i:num`;
+         `partial_error:real`;
+         `candle_fs_real
+            (FST (center_interval:(num#num)#(num#num)))`;
+         `candle_fs_real
+            (SND (center_interval:(num#num)#(num#num)))`;
+         `candle_fs_real
+            (FST (center_interval:(num#num)#(num#num))) - partial_error`;
+         `candle_fs_real
+            (SND (center_interval:(num#num)#(num#num))) + partial_error`]
+        m_taylor_partial_bounds in
+     let bounds_th = REWRITE_RULE[IMP_IMP] bounds_th in
+     let antecedent,_ = dest_imp (concl bounds_th) in
+     let _,point_goal = dest_conj w in
+     SUBGOAL_THEN antecedent
+      (fun antecedent_th ->
+         let bounded_th = MATCH_MP bounds_th antecedent_th in
+         let bounded_th =
+           REWRITE_RULE
+             [SYM
+               (ASSUME
+                 `candle_fs_raw_real
+                    (candle_fs_scale * candle_fs_scale)
+                    (candle_fs_dot_abs_upper radii interval_row) =
+                  partial_error`)]
+             bounded_th in
+         let _,point_th =
+           find
+            (fun (_,th) ->
+               aconv
+                (concl (REWRITE_RULE[PAIR] th))
+                point_goal)
+            asl in
+         let point_th = REWRITE_RULE[PAIR] point_th in
+         MATCH_ACCEPT_TAC (CONJ bounded_th point_th)) goal) THEN
+  ASM_REWRITE_TAC[candle_fs_interval_contains_def;
+                  Interval_arith.interval_arith; REAL_LE_REFL] THEN
+  EXPAND_TAC "partial_error" THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_complete_m_taylor_partial_error_sound THEN
+    ASM_REWRITE_TAC[];
+    FIRST_ASSUM
+      (fun th ->
+         MATCH_ACCEPT_TAC
+           (REWRITE_RULE[candle_fs_interval_contains_def] th))]);;
+
 end;;

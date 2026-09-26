@@ -10,6 +10,7 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_complete_gradient_error_sound <> [] ||
    hyp candle_m_bounded_on_int_contains <> [] ||
    hyp candle_fs_complete_value_bound_contains <> [] ||
+   hyp candle_fs_complete_gradient_bound_contains <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
