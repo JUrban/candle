@@ -4045,4 +4045,81 @@ let candle_fs_raw_mul_hessian_contains = prove
   MATCH_MP_TAC candle_fs_raw_interval_matrix_round_contains THEN
   ACCEPT_TAC total_contains_th);;
 
+let candle_poly_denote_dim_mul_partial = prove
+ (`!left right (z:real^N) i.
+     candle_poly_valid_dim (dimindex (:N)) left /\
+     candle_poly_valid_dim (dimindex (:N)) right
+     ==>
+     partial i
+       (candle_poly_denote_dim (Candle_poly_mul left right)) z =
+     candle_poly_denote_dim right z *
+       partial i (candle_poly_denote_dim left) z +
+     candle_poly_denote_dim left z *
+       partial i (candle_poly_denote_dim right) z`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_mul] THEN
+  MP_TAC
+   (SPECL
+     [`(candle_poly_denote_dim left):real^N->real`; `i:num`;
+      `(candle_poly_denote_dim right):real^N->real`; `z:real^N`]
+     partial_mul) THEN
+  ASM_SIMP_TAC[candle_poly_denote_dim_diff2c;
+               candle_dim_diff2c_imp_differentiable] THEN
+  REAL_ARITH_TAC);;
+
+let candle_poly_denote_dim_mul_partial2 = prove
+ (`!left right (z:real^N) i j.
+     candle_poly_valid_dim (dimindex (:N)) left /\
+     candle_poly_valid_dim (dimindex (:N)) right
+     ==>
+     partial2 j i
+       (candle_poly_denote_dim (Candle_poly_mul left right)) z =
+     (candle_poly_denote_dim right z *
+        partial2 j i (candle_poly_denote_dim left) z +
+      partial i (candle_poly_denote_dim left) z *
+        partial j (candle_poly_denote_dim right) z) +
+     (partial i (candle_poly_denote_dim right) z *
+        partial j (candle_poly_denote_dim left) z +
+      candle_poly_denote_dim left z *
+        partial2 j i (candle_poly_denote_dim right) z)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_mul] THEN
+  MP_TAC
+   (SPECL
+     [`z:real^N`; `j:num`; `i:num`;
+      `(candle_poly_denote_dim left):real^N->real`;
+      `(candle_poly_denote_dim right):real^N->real`]
+     second_partial_mul) THEN
+  ASM_SIMP_TAC[candle_poly_denote_dim_diff2c; diff2c_imp_diff2] THEN
+  REAL_ARITH_TAC);;
+
+let candle_poly_denote_dim_mul_hessian = prove
+ (`!left right (z:real^N).
+     candle_poly_valid_dim (dimindex (:N)) left /\
+     candle_poly_valid_dim (dimindex (:N)) right
+     ==>
+     list_of_seq
+       (\i. list_of_seq
+         (\j. partial2 (j + 1) (i + 1)
+           (candle_poly_denote_dim (Candle_poly_mul left right)) z)
+         (dimindex (:N)))
+       (dimindex (:N)) =
+     list_of_seq
+       (\i. list_of_seq
+         (\j.
+           (candle_poly_denote_dim right z *
+              partial2 (j + 1) (i + 1)
+                (candle_poly_denote_dim left) z +
+            partial (i + 1) (candle_poly_denote_dim left) z *
+              partial (j + 1) (candle_poly_denote_dim right) z) +
+           (partial (i + 1) (candle_poly_denote_dim right) z *
+              partial (j + 1) (candle_poly_denote_dim left) z +
+            candle_poly_denote_dim left z *
+              partial2 (j + 1) (i + 1)
+                (candle_poly_denote_dim right) z))
+         (dimindex (:N)))
+       (dimindex (:N))`,
+  REPEAT STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_poly_denote_dim_mul_partial2]);;
+
 end;;
