@@ -2241,4 +2241,33 @@ let candle_fs_result_neg_poly_invariant = prove
                 candle_fs_result_complete_domain] THEN
     ASM_REWRITE_TAC[]]);;
 
+(* A constructor-facing form of the component invariant.  Operation closure *)
+(* can prove fixed-data enclosures with ALL2 and recover the rational-jet    *)
+(* interface here, without repeating lookup reasoning for every operation.   *)
+
+let candle_fs_first_components_from_data = prove
+ (`!n first hessian value gradient hessian_value.
+     candle_q_dim_jet_shape n (candle_fs_first_to_q first hessian) /\
+     candle_fs_interval_contains (candle_fs_first_value first) value /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient first)
+       (list_of_seq gradient n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) hessian
+       (list_of_seq (\i. list_of_seq (hessian_value i) n) n)
+     ==>
+     candle_q_dim_jet_contains_components n
+       (candle_fs_first_to_q first hessian)
+       value gradient hessian_value`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_q_dim_jet_contains_components_of_stacks THEN
+  ASM_REWRITE_TAC[candle_fs_first_to_q_def;
+                  candle_q_dim_jet_make_def;
+                  candle_q_dim_jet_f_def;
+                  candle_q_dim_jet_gradient_def;
+                  candle_q_dim_jet_hessian_def;
+                  candle_fs_interval_to_q_contains;
+                  candle_fs_interval_list_to_q_contains;
+                  candle_fs_interval_matrix_to_q_contains;
+                  FST; SND]);;
+
 end;;

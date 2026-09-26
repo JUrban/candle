@@ -60,6 +60,7 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_q_dim_jet_components_neg_sound <> [] ||
    hyp candle_map_neg_matrix_list_of_seq <> [] ||
    hyp candle_fs_result_neg_poly_invariant <> [] ||
+   hyp candle_fs_first_components_from_data <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
