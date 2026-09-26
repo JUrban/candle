@@ -28,6 +28,12 @@ open Candle_cv_analytic_expr_fixed_scale_compute;;
 let candle_fs_scale_def = new_definition
  `candle_fs_scale = 1000000000000`;;
 
+let candle_fs_scale_squared_def = new_definition
+ `candle_fs_scale_squared = candle_fs_scale * candle_fs_scale`;;
+
+let candle_fs_two_scale_squared_def = new_definition
+ `candle_fs_two_scale_squared = 2 * candle_fs_scale_squared`;;
+
 let candle_fs_real_def = new_definition
  `candle_fs_real (z:num#num) = candle_lc_zreal z / &candle_fs_scale`;;
 
@@ -304,6 +310,105 @@ let candle_fs_weighted_rows_abs_upper_def = define
        (candle_q_zmul w (candle_fs_dot_abs_upper radii interval_row))
        (candle_fs_weighted_rows_abs_upper radii ws row_tail))`;;
 
+let candle_fs_first_make_def = new_definition
+ `candle_fs_first_make value gradient = (value,gradient)`;;
+
+let candle_fs_first_value_def = new_definition
+ `candle_fs_first_value first = FST first`;;
+
+let candle_fs_first_gradient_def = new_definition
+ `candle_fs_first_gradient first = SND first`;;
+
+let candle_cv_fs_first_def = new_definition
+ `candle_cv_fs_first first =
+    Cexp_pair (candle_cv_fs_interval (candle_fs_first_value first))
+      (candle_cv_fs_interval_list (candle_fs_first_gradient first))`;;
+
+let candle_fs_result_make_def = new_definition
+ `candle_fs_result_make domain center value_bound gradient_bounds hessian =
+    (domain,(center,(value_bound,(gradient_bounds,hessian))))`;;
+
+let candle_fs_result_domain_def = new_definition
+ `candle_fs_result_domain result = FST result`;;
+
+let candle_fs_result_center_def = new_definition
+ `candle_fs_result_center result = FST (SND result)`;;
+
+let candle_fs_result_value_bound_def = new_definition
+ `candle_fs_result_value_bound result = FST (SND (SND result))`;;
+
+let candle_fs_result_gradient_bounds_def = new_definition
+ `candle_fs_result_gradient_bounds result =
+    FST (SND (SND (SND result)))`;;
+
+let candle_fs_result_hessian_def = new_definition
+ `candle_fs_result_hessian result = SND (SND (SND (SND result)))`;;
+
+let candle_cv_fs_result_def = new_definition
+ `candle_cv_fs_result result =
+    candle_cv_fs_result_make
+      (candle_cv_bool (candle_fs_result_domain result))
+      (candle_cv_fs_first (candle_fs_result_center result))
+      (candle_cv_fs_interval (candle_fs_result_value_bound result))
+      (candle_cv_fs_interval_list
+        (candle_fs_result_gradient_bounds result))
+      (candle_cv_fs_interval_matrix (candle_fs_result_hessian result))`;;
+
+let candle_cv_fs_result_list_def = define
+ `(candle_cv_fs_result_list [] = Cexp_num 0) /\
+  (candle_cv_fs_result_list (CONS h t) =
+     Cexp_pair (candle_cv_fs_result h) (candle_cv_fs_result_list t))`;;
+
+let candle_fs_gradient_bounds_def = define
+ `(candle_fs_gradient_bounds radii [] row_lists = []) /\
+  (candle_fs_gradient_bounds radii (CONS g gs) [] = []) /\
+  (candle_fs_gradient_bounds radii (CONS g gs)
+      (CONS interval_row row_lists) =
+     CONS
+       (candle_fs_raw_interval_round candle_fs_scale
+         (candle_fs_raw_interval_add
+           (candle_lc_zscale candle_fs_scale (FST g),
+            candle_lc_zscale candle_fs_scale (SND g))
+           (candle_fs_raw_neg
+              (candle_fs_dot_abs_upper radii interval_row),
+            candle_fs_dot_abs_upper radii interval_row)))
+       (candle_fs_gradient_bounds radii gs row_lists))`;;
+
+let candle_fs_result_complete_rounded_def = new_definition
+ `candle_fs_result_complete_rounded radii domain center hessian =
+    candle_fs_result_make domain center
+      (candle_fs_raw_interval_round candle_fs_two_scale_squared
+        (candle_fs_raw_interval_add
+          (candle_lc_zscale candle_fs_two_scale_squared
+             (FST (candle_fs_first_value center)),
+           candle_lc_zscale candle_fs_two_scale_squared
+             (SND (candle_fs_first_value center)))
+          (candle_fs_raw_neg
+             (candle_lc_zadd
+               (candle_lc_zscale (2 * candle_fs_scale)
+                 (candle_fs_dot_abs_upper radii
+                   (candle_fs_first_gradient center)))
+               (candle_fs_weighted_rows_abs_upper radii radii hessian)),
+           candle_lc_zadd
+             (candle_lc_zscale (2 * candle_fs_scale)
+               (candle_fs_dot_abs_upper radii
+                 (candle_fs_first_gradient center)))
+             (candle_fs_weighted_rows_abs_upper radii radii hessian))))
+      (candle_fs_gradient_bounds
+        radii (candle_fs_first_gradient center) hessian)
+      hessian`;;
+
+let candle_fs_result_complete_raw_def = new_definition
+ `candle_fs_result_complete_raw radii domain raw_center raw_hessian =
+    candle_fs_result_complete_rounded radii domain
+      (candle_fs_first_make
+        (candle_fs_raw_interval_round candle_fs_scale
+          (candle_fs_first_value raw_center))
+        (candle_fs_raw_interval_list_round candle_fs_scale
+          (candle_fs_first_gradient raw_center)))
+      (candle_fs_raw_interval_matrix_round
+        candle_fs_scale raw_hessian)`;;
+
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
 (* -------------------------------------------------------------------------- *)
@@ -311,6 +416,19 @@ let candle_fs_weighted_rows_abs_upper_def = define
 let candle_cv_fs_scale_correct = prove
  (`candle_cv_fs_scale = Cexp_num candle_fs_scale`,
   REWRITE_TAC[candle_cv_fs_scale_def; candle_fs_scale_def]);;
+
+let candle_cv_fs_scale_squared_correct = prove
+ (`candle_cv_fs_scale_squared = Cexp_num candle_fs_scale_squared`,
+  REWRITE_TAC[candle_cv_fs_scale_squared_def;
+              candle_fs_scale_squared_def;
+              candle_cv_fs_scale_correct; cexp_mul_def]);;
+
+let candle_cv_fs_two_scale_squared_correct = prove
+ (`candle_cv_fs_two_scale_squared =
+   Cexp_num candle_fs_two_scale_squared`,
+  REWRITE_TAC[candle_cv_fs_two_scale_squared_def;
+              candle_fs_two_scale_squared_def;
+              candle_cv_fs_scale_squared_correct; cexp_mul_def]);;
 
 let candle_cv_fs_zero_correct = prove
  (`candle_cv_fs_zero = candle_cv_lc_z (0,0)`,
@@ -590,6 +708,22 @@ let candle_cv_fs_interval_abs_upper_correct = prove
               candle_cv_fs_raw_abs_correct;
               candle_cv_fs_raw_max_correct; FST; SND]);;
 
+let candle_cv_fs_interval_fst_correct = prove
+ (`!i. Cexp_fst (candle_cv_fs_interval i) =
+       candle_cv_lc_z (FST i)`,
+  REWRITE_TAC[candle_cv_fs_interval_def; cexp_fst_def]);;
+
+let candle_cv_fs_interval_snd_correct = prove
+ (`!i. Cexp_snd (candle_cv_fs_interval i) =
+       candle_cv_lc_z (SND i)`,
+  REWRITE_TAC[candle_cv_fs_interval_def; cexp_snd_def]);;
+
+let candle_cv_fs_interval_pair_correct = prove
+ (`!lower upper.
+     Cexp_pair (candle_cv_lc_z lower) (candle_cv_lc_z upper) =
+     candle_cv_fs_interval (lower,upper)`,
+  REWRITE_TAC[candle_cv_fs_interval_def; FST; SND]);;
+
 let candle_cv_fs_interval_lookup_correct = prove
  (`!variable items.
      candle_cv_fs_interval_lookup (Cexp_num variable)
@@ -841,6 +975,163 @@ let candle_cv_fs_weighted_rows_abs_upper_correct = prove
                     candle_cv_fs_dot_abs_upper_correct;
                     candle_cv_fs_raw_mul_correct;
                     candle_cv_fs_raw_add_correct]]);;
+
+let candle_cv_fs_first_make_correct = prove
+ (`!value gradient.
+     candle_cv_fs_first_make
+       (candle_cv_fs_interval value)
+       (candle_cv_fs_interval_list gradient) =
+     candle_cv_fs_first (candle_fs_first_make value gradient)`,
+  REWRITE_TAC[candle_cv_fs_first_make_def; candle_cv_fs_first_def;
+              candle_fs_first_make_def; candle_fs_first_value_def;
+              candle_fs_first_gradient_def; FST; SND]);;
+
+let candle_cv_fs_first_value_correct = prove
+ (`!first.
+     candle_cv_fs_first_value (candle_cv_fs_first first) =
+     candle_cv_fs_interval (candle_fs_first_value first)`,
+  REWRITE_TAC[candle_cv_fs_first_value_def; candle_cv_fs_first_def;
+              cexp_fst_def]);;
+
+let candle_cv_fs_first_gradient_correct = prove
+ (`!first.
+     candle_cv_fs_first_gradient (candle_cv_fs_first first) =
+     candle_cv_fs_interval_list (candle_fs_first_gradient first)`,
+  REWRITE_TAC[candle_cv_fs_first_gradient_def; candle_cv_fs_first_def;
+              cexp_snd_def]);;
+
+let candle_cv_fs_result_make_correct = prove
+ (`!domain center value_bound gradient_bounds hessian.
+     candle_cv_fs_result_make
+       (candle_cv_bool domain) (candle_cv_fs_first center)
+       (candle_cv_fs_interval value_bound)
+       (candle_cv_fs_interval_list gradient_bounds)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_result
+       (candle_fs_result_make domain center value_bound
+         gradient_bounds hessian)`,
+  REWRITE_TAC[candle_cv_fs_result_def; candle_cv_fs_result_make_def;
+              candle_fs_result_make_def; candle_fs_result_domain_def;
+              candle_fs_result_center_def;
+              candle_fs_result_value_bound_def;
+              candle_fs_result_gradient_bounds_def;
+              candle_fs_result_hessian_def; FST; SND]);;
+
+let candle_cv_fs_result_domain_correct = prove
+ (`!result.
+     candle_cv_fs_result_domain (candle_cv_fs_result result) =
+     candle_cv_bool (candle_fs_result_domain result)`,
+  REWRITE_TAC[candle_cv_fs_result_domain_def; candle_cv_fs_result_def;
+              candle_cv_fs_result_make_def; cexp_fst_def]);;
+
+let candle_cv_fs_result_center_correct = prove
+ (`!result.
+     candle_cv_fs_result_center (candle_cv_fs_result result) =
+     candle_cv_fs_first (candle_fs_result_center result)`,
+  REWRITE_TAC[candle_cv_fs_result_center_def; candle_cv_fs_result_def;
+              candle_cv_fs_result_make_def; cexp_fst_def; cexp_snd_def]);;
+
+let candle_cv_fs_result_value_bound_correct = prove
+ (`!result.
+     candle_cv_fs_result_value_bound (candle_cv_fs_result result) =
+     candle_cv_fs_interval (candle_fs_result_value_bound result)`,
+  REWRITE_TAC[candle_cv_fs_result_value_bound_def; candle_cv_fs_result_def;
+              candle_cv_fs_result_make_def; cexp_fst_def; cexp_snd_def]);;
+
+let candle_cv_fs_result_gradient_bounds_correct = prove
+ (`!result.
+     candle_cv_fs_result_gradient_bounds (candle_cv_fs_result result) =
+     candle_cv_fs_interval_list
+       (candle_fs_result_gradient_bounds result)`,
+  REWRITE_TAC[candle_cv_fs_result_gradient_bounds_def;
+              candle_cv_fs_result_def; candle_cv_fs_result_make_def;
+              cexp_fst_def; cexp_snd_def]);;
+
+let candle_cv_fs_result_hessian_correct = prove
+ (`!result.
+     candle_cv_fs_result_hessian (candle_cv_fs_result result) =
+     candle_cv_fs_interval_matrix (candle_fs_result_hessian result)`,
+  REWRITE_TAC[candle_cv_fs_result_hessian_def; candle_cv_fs_result_def;
+              candle_cv_fs_result_make_def; cexp_snd_def]);;
+
+let candle_cv_fs_gradient_bounds_correct = prove
+ (`!radii gradients row_lists.
+     candle_cv_fs_gradient_bounds
+       (candle_cv_lc_vec radii)
+       (candle_cv_fs_interval_list gradients)
+       (candle_cv_fs_interval_matrix row_lists) =
+     candle_cv_fs_interval_list
+       (candle_fs_gradient_bounds radii gradients row_lists)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [LIST_INDUCT_TAC THEN
+    REWRITE_TAC[candle_cv_fs_interval_list_def;
+                candle_cv_fs_interval_matrix_def;
+                candle_cv_fs_gradient_bounds_def;
+                candle_fs_gradient_bounds_def];
+    LIST_INDUCT_TAC THEN
+    ASM_REWRITE_TAC[candle_cv_fs_interval_list_def;
+                    candle_cv_fs_interval_matrix_def;
+                    candle_cv_fs_gradient_bounds_def;
+                    candle_fs_gradient_bounds_def;
+                    candle_cv_fs_scale_correct;
+                    candle_cv_fs_raw_scale_correct;
+                    candle_cv_fs_dot_abs_upper_correct;
+                    candle_cv_fs_raw_neg_correct;
+                    candle_cv_fs_raw_interval_add_correct;
+                    candle_cv_fs_raw_interval_round_correct;
+                    candle_cv_fs_interval_fst_correct;
+                    candle_cv_fs_interval_snd_correct;
+                    candle_cv_fs_interval_pair_correct; FST; SND]]);;
+
+let candle_cv_fs_result_complete_rounded_correct = prove
+ (`!radii domain center hessian.
+     candle_cv_fs_result_complete_rounded
+       (candle_cv_lc_vec radii) (candle_cv_bool domain)
+       (candle_cv_fs_first center)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_result
+       (candle_fs_result_complete_rounded
+         radii domain center hessian)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_result_complete_rounded_def;
+              candle_fs_result_complete_rounded_def;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fs_two_scale_squared_correct;
+              candle_cv_fs_scale_correct;
+              candle_cv_fs_raw_scale_correct;
+              candle_cv_fs_dot_abs_upper_correct;
+              candle_cv_fs_weighted_rows_abs_upper_correct;
+              candle_cv_fs_raw_neg_correct;
+              candle_cv_fs_raw_add_correct;
+              candle_cv_fs_raw_interval_add_correct;
+              candle_cv_fs_raw_interval_round_correct;
+              candle_cv_fs_gradient_bounds_correct;
+              candle_cv_fs_result_make_correct;
+              candle_cv_fs_interval_fst_correct;
+              candle_cv_fs_interval_snd_correct;
+              candle_cv_fs_interval_pair_correct;
+              cexp_mul_def; FST; SND]);;
+
+let candle_cv_fs_result_complete_raw_correct = prove
+ (`!radii domain raw_center raw_hessian.
+     candle_cv_fs_result_complete_raw
+       (candle_cv_lc_vec radii) (candle_cv_bool domain)
+       (candle_cv_fs_first raw_center)
+       (candle_cv_fs_interval_matrix raw_hessian) =
+     candle_cv_fs_result
+       (candle_fs_result_complete_raw
+         radii domain raw_center raw_hessian)`,
+  REWRITE_TAC[candle_cv_fs_result_complete_raw_def;
+              candle_fs_result_complete_raw_def;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fs_scale_correct;
+              candle_cv_fs_raw_interval_round_correct;
+              candle_cv_fs_raw_interval_list_round_correct;
+              candle_cv_fs_raw_interval_matrix_round_correct;
+              candle_cv_fs_first_make_correct;
+              candle_cv_fs_result_complete_rounded_correct]);;
 
 (* -------------------------------------------------------------------------- *)
 (* Real denotation.                                                           *)
