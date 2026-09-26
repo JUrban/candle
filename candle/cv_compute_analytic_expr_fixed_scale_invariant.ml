@@ -1923,4 +1923,322 @@ let candle_fs_result_poly_box_hessian_contains = prove
     hessian_th in
   ACCEPT_TAC final_th);;
 
+(* Fixed negation is exact at the chosen scale.  These conversion lemmas   *)
+(* let the operation reuse the generic rational-jet shape proof while its  *)
+(* enclosures remain fixed data.                                           *)
+
+let candle_fs_interval_to_q_neg = prove
+ (`!i. candle_fs_interval_to_q (candle_fs_interval_neg i) =
+       candle_q_interval_neg (candle_fs_interval_to_q i)`,
+  REWRITE_TAC[FORALL_PAIR_THM;
+              candle_fs_interval_to_q_def;
+              candle_fs_interval_neg_def;
+              candle_fs_to_q_def; candle_fs_raw_neg_def;
+              candle_q_interval_neg_def; candle_q_neg_def; FST; SND]);;
+
+let candle_fs_interval_list_to_q_neg = prove
+ (`!items.
+     candle_fs_interval_list_to_q (candle_fs_interval_list_neg items) =
+     candle_q_dim_interval_list_neg
+       (candle_fs_interval_list_to_q items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_list_neg_def;
+                  candle_fs_interval_list_to_q_def;
+                  candle_q_dim_interval_list_neg_def;
+                  candle_fs_interval_to_q_neg]);;
+
+let candle_fs_interval_matrix_to_q_neg = prove
+ (`!rows.
+     candle_fs_interval_matrix_to_q (candle_fs_interval_matrix_neg rows) =
+     candle_q_dim_interval_matrix_neg
+       (candle_fs_interval_matrix_to_q rows)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_matrix_neg_def;
+                  candle_fs_interval_matrix_to_q_def;
+                  candle_q_dim_interval_matrix_neg_def;
+                  candle_fs_interval_list_to_q_neg]);;
+
+let candle_fs_first_to_q_neg = prove
+ (`!first hessian.
+     candle_fs_first_to_q
+       (candle_fs_first_make
+         (candle_fs_interval_neg (candle_fs_first_value first))
+         (candle_fs_interval_list_neg
+           (candle_fs_first_gradient first)))
+       (candle_fs_interval_matrix_neg hessian) =
+     candle_q_dim_jet_normalized_neg
+       (candle_fs_first_to_q first hessian)`,
+  REWRITE_TAC[candle_fs_first_to_q_def;
+              candle_q_dim_jet_normalized_neg_def;
+              candle_fs_first_make_def;
+              candle_fs_first_value_def; candle_fs_first_gradient_def;
+              candle_q_dim_jet_f_def; candle_q_dim_jet_gradient_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def;
+              candle_fs_interval_to_q_neg;
+              candle_fs_interval_list_to_q_neg;
+              candle_fs_interval_matrix_to_q_neg; FST; SND]);;
+
+let candle_fs_interval_list_neg_contains = prove
+ (`!intervals values.
+     ALL2 candle_fs_interval_contains intervals values
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_interval_list_neg intervals)
+       (MAP (\x:real. --x) values)`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; MAP; candle_fs_interval_list_neg_def] THEN
+  ASM_MESON_TAC[candle_fs_interval_neg_sound]);;
+
+let candle_fs_interval_matrix_neg_contains = prove
+ (`!intervals values.
+     ALL2 (ALL2 candle_fs_interval_contains) intervals values
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_interval_matrix_neg intervals)
+       (MAP (MAP (\x:real. --x)) values)`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; MAP; candle_fs_interval_matrix_neg_def] THEN
+  ASM_MESON_TAC[candle_fs_interval_list_neg_contains]);;
+
+let candle_poly_denote_dim_neg_partial = prove
+ (`!e (z:real^N) i.
+     candle_poly_valid_dim (dimindex (:N)) e
+     ==>
+     partial i (candle_poly_denote_dim (Candle_poly_neg e)) z =
+     --(partial i (candle_poly_denote_dim e) z)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_neg] THEN
+  MATCH_MP_TAC partial_neg THEN
+  MATCH_MP_TAC candle_dim_diff2c_imp_differentiable THEN
+  MATCH_MP_TAC candle_poly_denote_dim_diff2c THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_poly_denote_dim_neg_partial2 = prove
+ (`!e (z:real^N) i j.
+     candle_poly_valid_dim (dimindex (:N)) e
+     ==>
+     partial2 j i (candle_poly_denote_dim (Candle_poly_neg e)) z =
+     --(partial2 j i (candle_poly_denote_dim e) z)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_poly_denote_dim_neg] THEN
+  MATCH_MP_TAC second_partial_neg THEN
+  MATCH_MP_TAC diff2c_imp_diff2 THEN
+  MATCH_MP_TAC candle_poly_denote_dim_diff2c THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_dim_jet_components_neg_sound = prove
+ (`!e jet (z:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     candle_q_dim_jet_shape (dimindex (:N)) jet /\
+     candle_q_dim_jet_contains_components (dimindex (:N)) jet
+       (candle_poly_denote_dim e z)
+       (\di. partial (di + 1) (candle_poly_denote_dim e) z)
+       (\di dj. partial2 (dj + 1) (di + 1)
+         (candle_poly_denote_dim e) z)
+     ==>
+     candle_q_dim_jet_contains_components (dimindex (:N))
+       (candle_q_dim_jet_normalized_neg jet)
+       (candle_poly_denote_dim (Candle_poly_neg e) z)
+       (\di. partial (di + 1)
+         (candle_poly_denote_dim (Candle_poly_neg e)) z)
+       (\di dj. partial2 (dj + 1) (di + 1)
+         (candle_poly_denote_dim (Candle_poly_neg e)) z)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_dim_jet_contains_components_def] THEN
+  STRIP_TAC THEN REPEAT CONJ_TAC THENL
+   [REWRITE_TAC[candle_q_dim_jet_normalized_neg_def;
+                candle_q_dim_jet_f_def; candle_q_dim_jet_make_def;
+                candle_poly_denote_dim_neg; FST; SND] THEN
+    MATCH_MP_TAC candle_q_interval_neg_sound THEN
+    ASM_REWRITE_TAC[GSYM candle_q_dim_jet_f_def];
+    X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `candle_q_dim_jet_gradient_at
+        (candle_q_dim_jet_normalized_neg jet) i =
+      candle_q_interval_neg (candle_q_dim_jet_gradient_at jet i)`
+     SUBST1_TAC THENL
+     [MATCH_MP_TAC
+        (SPEC `dimindex (:N)`
+          candle_q_dim_jet_normalized_neg_gradient_at) THEN
+      ASM_REWRITE_TAC[];
+      ASM_SIMP_TAC[candle_poly_denote_dim_neg_partial] THEN
+      MATCH_MP_TAC candle_q_interval_neg_sound THEN
+      ASM_MESON_TAC[]];
+    MAP_EVERY X_GEN_TAC [`i:num`; `j:num`] THEN STRIP_TAC THEN
+    SUBGOAL_THEN
+     `candle_q_dim_jet_hessian_at
+        (candle_q_dim_jet_normalized_neg jet) i j =
+      candle_q_interval_neg (candle_q_dim_jet_hessian_at jet i j)`
+     SUBST1_TAC THENL
+     [MATCH_MP_TAC
+        (SPEC `dimindex (:N)`
+          candle_q_dim_jet_normalized_neg_hessian_at) THEN
+      ASM_REWRITE_TAC[];
+      ASM_SIMP_TAC[candle_poly_denote_dim_neg_partial2] THEN
+      MATCH_MP_TAC candle_q_interval_neg_sound THEN
+      ASM_MESON_TAC[]]]);;
+
+let candle_map_neg_matrix_list_of_seq = prove
+ (`!n (f:num->num->real).
+     MAP (MAP (\x:real. --x))
+       (list_of_seq (\i. list_of_seq (f i) n) n) =
+     list_of_seq (\i. list_of_seq (\j. --(f i j)) n) n`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[MAP_LIST_OF_SEQ] THEN
+  REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+   [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+    X_GEN_TAC `i:num` THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+    ASM_SIMP_TAC[EL_LIST_OF_SEQ; o_THM] THEN
+    REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+     [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+      X_GEN_TAC `j:num` THEN
+      REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+      SUBGOAL_THEN
+       `EL j
+          (MAP (\x:real. --x)
+            (list_of_seq ((f:num->num->real) i) n)) =
+       --(EL j (list_of_seq ((f:num->num->real) i) n))`
+       SUBST1_TAC THENL
+       [ASM_SIMP_TAC[EL_MAP; LENGTH_LIST_OF_SEQ];
+        ASM_SIMP_TAC[EL_LIST_OF_SEQ]]]]);;
+
+let candle_fs_result_neg_poly_invariant = prove
+ (`!e boxes result (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_fs_result_poly_invariant type_witness boxes result e
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_neg
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         result)
+       (Candle_poly_neg e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_result_neg_def] THEN
+  ASM_CASES_TAC
+   `candle_fs_result_domain
+     (result:
+       bool#
+       (((num#num)#(num#num))#((num#num)#(num#num))list)#
+       ((num#num)#(num#num))#
+       ((num#num)#(num#num))list#
+       (((num#num)#(num#num))list)list)` THENL
+   [ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC candle_fs_result_complete_poly_invariant THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_poly_valid_dim_def];
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_fs_first_to_q_neg] THEN
+      MATCH_MP_TAC candle_q_dim_jet_normalized_neg_shape THEN
+      MATCH_MP_TAC
+       (ISPECL
+         [`e:candle_poly_expr`;
+          `boxes:(((num#num)#num)#((num#num)#num))list`;
+          `result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list`;
+          `type_witness:real^N`]
+         candle_fs_result_poly_center_shape) THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_fs_first_to_q_neg] THEN
+      MATCH_MP_TAC candle_q_dim_jet_components_neg_sound THEN
+      REPEAT CONJ_TAC THENL
+       [ASM_REWRITE_TAC[];
+        MATCH_MP_TAC
+         (ISPECL
+           [`e:candle_poly_expr`;
+            `boxes:(((num#num)#num)#((num#num)#num))list`;
+            `result:
+              bool#
+              (((num#num)#(num#num))#((num#num)#(num#num))list)#
+              ((num#num)#(num#num))#
+              ((num#num)#(num#num))list#
+              (((num#num)#(num#num))list)list`;
+            `type_witness:real^N`]
+           candle_fs_result_poly_center_shape) THEN
+        ASM_REWRITE_TAC[];
+        MATCH_MP_TAC
+         (ISPECL
+           [`e:candle_poly_expr`;
+            `boxes:(((num#num)#num)#((num#num)#num))list`;
+            `result:
+              bool#
+              (((num#num)#(num#num))#((num#num)#(num#num))list)#
+              ((num#num)#(num#num))#
+              ((num#num)#(num#num))list#
+              (((num#num)#(num#num))list)list`;
+            `type_witness:real^N`]
+           candle_fs_result_poly_center_components) THEN
+        ASM_REWRITE_TAC[]];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      let source_th = MATCH_MP
+       (ISPECL
+         [`e:candle_poly_expr`;
+          `boxes:(((num#num)#num)#((num#num)#num))list`;
+          `result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list`;
+          `type_witness:real^N`;
+          `p:real^N`]
+         candle_fs_result_poly_box_hessian_contains)
+       (CONJ
+         (ASSUME
+           `candle_fs_result_poly_invariant
+             (type_witness:real^N) boxes
+             (result:
+               bool#
+               (((num#num)#(num#num))#((num#num)#(num#num))list)#
+               ((num#num)#(num#num))#
+               ((num#num)#(num#num))list#
+               (((num#num)#(num#num))list)list)
+             e`)
+         (CONJ
+           (ASSUME
+             `candle_fs_result_domain
+               (result:
+                 bool#
+                 (((num#num)#(num#num))#((num#num)#(num#num))list)#
+                 ((num#num)#(num#num))#
+                 ((num#num)#(num#num))list#
+                 (((num#num)#(num#num))list)list)`)
+           (ASSUME
+             `(p:real^N) IN interval
+               [candle_q_box_lower_vector boxes,
+                candle_q_box_upper_vector boxes]`))) in
+      let neg_th = MATCH_MP
+       (ISPECL
+         [`candle_fs_result_hessian
+            (result:
+              bool#
+              (((num#num)#(num#num))#((num#num)#(num#num))list)#
+              ((num#num)#(num#num))#
+              ((num#num)#(num#num))list#
+              (((num#num)#(num#num))list)list)`;
+          `list_of_seq
+            (\di. list_of_seq
+              (\dj. partial2 (dj + 1) (di + 1)
+                (candle_poly_denote_dim e) (p:real^N))
+              (dimindex (:N)))
+            (dimindex (:N))`]
+         candle_fs_interval_matrix_neg_contains)
+      source_th in
+      MP_TAC neg_th THEN
+      ASM_SIMP_TAC[candle_map_neg_matrix_list_of_seq;
+                   candle_poly_denote_dim_neg_partial2]];
+    REWRITE_TAC[candle_fs_result_poly_invariant_def;
+                candle_fs_result_complete_domain] THEN
+    ASM_REWRITE_TAC[]]);;
+
 end;;
