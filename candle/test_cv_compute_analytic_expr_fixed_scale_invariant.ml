@@ -27,12 +27,20 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_result_complete_poly_invariant <> [] ||
    hyp candle_fs_interval_zeros_length <> [] ||
    hyp candle_fs_interval_unit_length <> [] ||
+   hyp candle_fs_interval_list_of_q_length <> [] ||
+   hyp candle_fs_interval_lookup_contains <> [] ||
    hyp candle_fs_interval_zero_matrix_shape <> [] ||
    hyp candle_fs_interval_zero_matrix_rows_width <> [] ||
    hyp candle_fs_interval_zero_contains <> [] ||
+   hyp candle_fs_interval_one_contains <> [] ||
    hyp candle_fs_interval_zeros_contains <> [] ||
+   hyp candle_fs_interval_unit_contains <> [] ||
    hyp candle_fs_interval_zero_matrix_contains <> [] ||
    hyp candle_fs_result_constant_poly_invariant <> [] ||
+   hyp candle_fs_result_variable_poly_invariant <> [] ||
+   hyp candle_fs_center_dimensions_length <> [] ||
+   hyp candle_fs_result_constant_center_poly_invariant <> [] ||
+   hyp candle_fs_result_variable_center_poly_invariant <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then

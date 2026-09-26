@@ -13,6 +13,7 @@ module Candle_cv_analytic_expr_fixed_scale_invariant = struct
 open Multivariate_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_jet;;
+open Candle_cv_polynomial_expr_dim_derivatives;;
 open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_dim_jet_sound;;
 open Candle_cv_polynomial_expr_flyspeck_dim_bridge;;
@@ -1106,6 +1107,30 @@ let candle_fs_interval_unit_length = prove
   ASM_REWRITE_TAC[candle_fs_interval_unit_def;
                   candle_fs_interval_zeros_length; LENGTH]);;
 
+let candle_fs_interval_list_of_q_length = prove
+ (`!items.
+     LENGTH (candle_fs_interval_list_of_q items) = LENGTH items`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_list_of_q_def; LENGTH]);;
+
+let candle_fs_interval_lookup_contains = prove
+ (`!variable intervals values.
+     ALL2 candle_fs_interval_contains intervals values /\
+     variable < LENGTH intervals
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup variable intervals)
+       (EL variable values)`,
+  INDUCT_TAC THEN
+  LIST_INDUCT_TAC THEN GEN_TAC THEN
+  MP_TAC (ISPEC `values:real list` list_CASES) THEN
+  DISCH_THEN
+    (DISJ_CASES_THEN2 SUBST_ALL_TAC
+      (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+  ASM_REWRITE_TAC[candle_fs_interval_lookup_def; ALL2; LENGTH;
+                  EL; HD; TL; LT_SUC; CONJUNCT1 LT] THEN
+  ASM_MESON_TAC[]);;
+
 let candle_fs_interval_zero_matrix_shape = prove
  (`!(width:((num#num)#(num#num))list)
       (items:((num#num)#(num#num))list).
@@ -1135,6 +1160,16 @@ let candle_fs_interval_zero_contains = prove
               candle_lc_zreal_def; FST; SND] THEN
   REAL_ARITH_TAC);;
 
+let candle_fs_interval_one_contains = prove
+ (`candle_fs_interval_contains candle_fs_interval_one (&1)`,
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_interval_one_def; candle_fs_real_def;
+              candle_lc_zreal_def; FST; SND] THEN
+  SUBGOAL_THEN `~(&(candle_fs_scale) = &0)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_EQ] THEN
+    MP_TAC candle_fs_scale_pos THEN ARITH_TAC;
+    ASM_SIMP_TAC[REAL_SUB_RZERO; REAL_DIV_REFL; REAL_LE_REFL]]);;
+
 let candle_fs_interval_zeros_contains = prove
  (`!items.
      ALL2 candle_fs_interval_contains
@@ -1148,6 +1183,66 @@ let candle_fs_interval_zeros_contains = prove
    (`((\i:num. (&0:real)) o SUC) = (\i. (&0:real))`,
     REWRITE_TAC[FUN_EQ_THM; o_THM]) in
   ONCE_REWRITE_TAC[zero_shift] THEN ASM_REWRITE_TAC[]);;
+
+let candle_fs_interval_unit_contains = prove
+ (`!variable items.
+     variable < LENGTH items
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_interval_unit variable items)
+       (list_of_seq
+         (\i. if i = variable then &1 else &0)
+         (LENGTH items))`,
+  INDUCT_TAC THENL
+   [GEN_TAC THEN
+    MP_TAC
+     (ISPEC `items:((num#num)#(num#num))list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THENL
+     [REWRITE_TAC[LENGTH; CONJUNCT1 LT];
+      DISCH_TAC THEN
+      REWRITE_TAC[candle_fs_interval_unit_def; LENGTH;
+                  LIST_OF_SEQ; o_THM; ALL2;
+                  candle_fs_interval_one_contains] THEN
+      let zero_shift = prove
+       (`((\i:num. if i = 0 then (&1:real) else &0) o SUC =
+         (\i. (&0:real)))`,
+        REWRITE_TAC[FUN_EQ_THM; o_THM; NOT_SUC]) in
+      ONCE_REWRITE_TAC[zero_shift] THEN
+      MATCH_ACCEPT_TAC (SPEC
+        `t:((num#num)#(num#num))list`
+        candle_fs_interval_zeros_contains)];
+    GEN_TAC THEN
+    MP_TAC
+     (ISPEC `items:((num#num)#(num#num))list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THENL
+     [REWRITE_TAC[LENGTH; CONJUNCT1 LT];
+      DISCH_TAC THEN
+      REWRITE_TAC[candle_fs_interval_unit_def; LENGTH;
+                  LIST_OF_SEQ; o_THM; ALL2;
+                  candle_fs_interval_zero_contains] THEN
+      let unit_shift = prove
+       (`((\i:num. if i = SUC variable then (&1:real) else &0) o SUC =
+         (\i. if i = variable then &1 else &0))`,
+        REWRITE_TAC[FUN_EQ_THM; o_THM; SUC_INJ]) in
+      ONCE_REWRITE_TAC[unit_shift] THEN
+      CONJ_TAC THENL
+       [REWRITE_TAC[ARITH_RULE `~(0 = SUC variable)`;
+                    candle_fs_interval_zero_contains];
+        (fun ((assumptions,_) as goal) ->
+           let _,ih =
+             find (fun (_,th) -> is_forall (concl th)) assumptions in
+           let _,bound =
+             find (fun (_,th) -> not (is_forall (concl th)))
+               assumptions in
+           let bound = REWRITE_RULE[LENGTH; LT_SUC] bound in
+           MATCH_ACCEPT_TAC
+             (MATCH_MP
+               (SPEC `t:((num#num)#(num#num))list` ih)
+               bound) goal)]]]);;
 
 let candle_fs_interval_zero_matrix_contains = prove
  (`!(width:((num#num)#(num#num))list)
@@ -1250,5 +1345,180 @@ let candle_fs_result_constant_poly_invariant = prove
        `dimensions:((num#num)#(num#num))list`]
        candle_fs_interval_zero_matrix_contains) THEN
     ASM_REWRITE_TAC[]]);;
+
+let candle_fs_result_variable_poly_invariant = prove
+ (`!variable boxes dimensions (type_witness:real^N).
+     variable < dimindex (:N) /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     LENGTH dimensions = dimindex (:N) /\
+     ALL2 candle_fs_interval_contains dimensions
+       (list_of_seq
+         (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+         (dimindex (:N)))
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_variable dimensions
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         variable)
+       (Candle_poly_var variable)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_result_variable_def] THEN
+  MATCH_MP_TAC candle_fs_result_complete_poly_invariant THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_poly_valid_dim_def];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_first_to_q_shape;
+                candle_fs_first_make_def;
+                candle_fs_first_gradient_def; FST; SND;
+                candle_fs_interval_unit_length;
+                candle_fs_interval_zero_matrix_shape] THEN
+    MP_TAC
+     (SPECL
+       [`dimensions:((num#num)#(num#num))list`;
+        `dimensions:((num#num)#(num#num))list`]
+       candle_fs_interval_zero_matrix_rows_width) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_dim_jet_contains_components_of_stacks THEN
+    REPEAT CONJ_TAC THENL
+     [REWRITE_TAC[candle_fs_first_to_q_shape;
+                  candle_fs_first_make_def;
+                  candle_fs_first_gradient_def; FST; SND;
+                  candle_fs_interval_unit_length;
+                  candle_fs_interval_zero_matrix_shape] THEN
+      MP_TAC
+       (SPECL
+         [`dimensions:((num#num)#(num#num))list`;
+          `dimensions:((num#num)#(num#num))list`]
+         candle_fs_interval_zero_matrix_rows_width) THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_fs_first_to_q_def;
+                  candle_fs_first_make_def; candle_fs_first_value_def;
+                  candle_q_dim_jet_make_def;
+                  candle_q_dim_jet_f_def; FST; SND;
+                  candle_fs_interval_to_q_contains;
+                  candle_poly_denote_dim_var] THEN
+      SUBGOAL_THEN
+       `(candle_q_box_center_vector boxes : real^N)$(variable + 1) =
+        EL variable
+          (list_of_seq
+            (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+            (dimindex (:N)))`
+       SUBST1_TAC THENL
+       [ASM_SIMP_TAC[EL_LIST_OF_SEQ];
+        MATCH_MP_TAC candle_fs_interval_lookup_contains THEN
+        ASM_REWRITE_TAC[]];
+      REWRITE_TAC[candle_fs_first_to_q_def;
+                  candle_fs_first_make_def; candle_fs_first_gradient_def;
+                  candle_q_dim_jet_make_def;
+                  candle_q_dim_jet_gradient_def; FST; SND;
+                  candle_fs_interval_list_to_q_contains] THEN
+      MP_TAC
+       (ISPECL
+         [`Candle_poly_var variable`;
+          `(candle_q_box_center_vector boxes : real^N)`]
+         candle_poly_gradient_flyspeck_partials) THEN
+      ASM_REWRITE_TAC[candle_poly_valid_dim_def] THEN
+      DISCH_THEN (fun th -> ONCE_REWRITE_TAC[GSYM th]) THEN
+      REWRITE_TAC[candle_poly_gradient_def; candle_poly_d_list_def] THEN
+      SUBGOAL_THEN
+       `list_of_seq
+          (\di. if variable = di then &1 else &0)
+          (dimindex (:N)) =
+        list_of_seq
+          (\di. if di = variable then &1 else &0)
+          (dimindex (:N))`
+       SUBST1_TAC THENL
+       [REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+        X_GEN_TAC `di:num` THEN DISCH_TAC THEN
+        ASM_SIMP_TAC[EL_LIST_OF_SEQ; EQ_SYM_EQ];
+        MP_TAC
+         (SPECL
+           [`variable:num`;
+            `dimensions:((num#num)#(num#num))list`]
+           candle_fs_interval_unit_contains) THEN
+        ASM_REWRITE_TAC[]];
+      REWRITE_TAC[candle_fs_first_to_q_def;
+                  candle_q_dim_jet_make_def;
+                  candle_q_dim_jet_hessian_def; FST; SND;
+                  candle_fs_interval_matrix_to_q_contains] THEN
+      MP_TAC
+       (ISPECL
+         [`Candle_poly_var variable`;
+          `(candle_q_box_center_vector boxes : real^N)`]
+         candle_poly_hessian_flyspeck_partials) THEN
+      ASM_REWRITE_TAC[candle_poly_valid_dim_def] THEN
+      DISCH_THEN (fun th -> ONCE_REWRITE_TAC[GSYM th]) THEN
+      REWRITE_TAC[candle_poly_hessian_def; candle_poly_dd_list_def] THEN
+      MP_TAC
+       (SPECL
+         [`dimensions:((num#num)#(num#num))list`;
+          `dimensions:((num#num)#(num#num))list`]
+         candle_fs_interval_zero_matrix_contains) THEN
+      ASM_REWRITE_TAC[]];
+    X_GEN_TAC `z:real^N` THEN DISCH_TAC THEN
+    MP_TAC
+     (ISPECL
+       [`Candle_poly_var variable`; `z:real^N`]
+       candle_poly_hessian_flyspeck_partials) THEN
+    ASM_REWRITE_TAC[candle_poly_valid_dim_def] THEN
+    DISCH_THEN (fun th -> ONCE_REWRITE_TAC[GSYM th]) THEN
+    REWRITE_TAC[candle_poly_hessian_def; candle_poly_dd_list_def] THEN
+    MP_TAC
+     (SPECL
+       [`dimensions:((num#num)#(num#num))list`;
+        `dimensions:((num#num)#(num#num))list`]
+       candle_fs_interval_zero_matrix_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_center_dimensions_length = prove
+ (`!boxes.
+     LENGTH
+       (candle_fs_interval_list_of_q
+         (candle_q_center_environment_list boxes)) = LENGTH boxes`,
+  REWRITE_TAC[candle_fs_interval_list_of_q_length;
+              candle_q_center_environment_list_length]);;
+
+let candle_fs_result_constant_center_poly_invariant = prove
+ (`!p n d boxes (type_witness:real^N).
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_constant
+         (candle_fs_interval_list_of_q
+           (candle_q_center_environment_list boxes))
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         ((p,n),d))
+       (Candle_poly_const p n d)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_result_constant_poly_invariant THEN
+  ASM_REWRITE_TAC[candle_fs_center_dimensions_length]);;
+
+let candle_fs_result_variable_center_poly_invariant = prove
+ (`!variable boxes (type_witness:real^N).
+     variable < dimindex (:N) /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_variable
+         (candle_fs_interval_list_of_q
+           (candle_q_center_environment_list boxes))
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         variable)
+       (Candle_poly_var variable)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_result_variable_poly_invariant THEN
+  ASM_REWRITE_TAC[candle_fs_center_dimensions_length] THEN
+  MATCH_MP_TAC candle_fs_center_environment_contains THEN
+  ASM_REWRITE_TAC[]);;
 
 end;;
