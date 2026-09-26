@@ -72,6 +72,8 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_first_add_components <> [] ||
    hyp candle_poly_denote_dim_add_partial <> [] ||
    hyp candle_poly_denote_dim_add_partial2 <> [] ||
+   hyp candle_poly_denote_dim_add_hessian <> [] ||
+   hyp candle_fs_result_add_poly_invariant <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then
