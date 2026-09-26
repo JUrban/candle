@@ -1765,6 +1765,74 @@ let candle_fs_to_q_real = prove
    [MP_TAC candle_fs_scale_pos THEN ARITH_TAC;
     REFL_TAC]);;
 
+(* Converting a fixed-scale result to the established rational Taylor-model
+   interface changes only its representation.  In particular it preserves
+   interval denotations and all outer list/matrix dimensions. *)
+
+let candle_fs_interval_to_q_contains = prove
+ (`!i x.
+     candle_q_interval_contains (candle_fs_interval_to_q i) x <=>
+     candle_fs_interval_contains i x`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_interval_contains_def;
+              candle_fs_interval_contains_def;
+              candle_fs_interval_to_q_def;
+              candle_fs_to_q_real; FST; SND]);;
+
+let candle_fs_interval_list_to_q_length = prove
+ (`!items.
+     LENGTH (candle_fs_interval_list_to_q items) = LENGTH items`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_list_to_q_def; LENGTH]);;
+
+let candle_fs_interval_matrix_to_q_length = prove
+ (`!rows.
+     LENGTH (candle_fs_interval_matrix_to_q rows) = LENGTH rows`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_matrix_to_q_def; LENGTH]);;
+
+let candle_fs_interval_list_to_q_contains = prove
+ (`!intervals values.
+     candle_q_stack_contains
+       (candle_fs_interval_list_to_q intervals) values <=>
+     ALL2 candle_fs_interval_contains intervals values`,
+  LIST_INDUCT_TAC THENL
+   [GEN_TAC THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[candle_fs_interval_list_to_q_def;
+                candle_q_stack_contains_def; ALL2];
+    GEN_TAC THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[candle_fs_interval_list_to_q_def;
+                    candle_q_stack_contains_def; ALL2;
+                    candle_fs_interval_to_q_contains]]);;
+
+let candle_fs_interval_matrix_to_q_contains = prove
+ (`!rows values.
+     ALL2 candle_q_stack_contains
+       (candle_fs_interval_matrix_to_q rows) values <=>
+     ALL2 (ALL2 candle_fs_interval_contains) rows values`,
+  LIST_INDUCT_TAC THENL
+   [GEN_TAC THEN
+    MP_TAC (ISPEC `values:(real list)list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[candle_fs_interval_matrix_to_q_def; ALL2];
+    GEN_TAC THEN
+    MP_TAC (ISPEC `values:(real list)list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[candle_fs_interval_matrix_to_q_def; ALL2;
+                    candle_fs_interval_list_to_q_contains]]);;
+
 let candle_fs_raw_le_real = prove
  (`!x y. candle_fs_raw_le x y <=>
          candle_lc_zreal x <= candle_lc_zreal y`,
