@@ -26,7 +26,7 @@ runner_pid=$!
     tail --pid="$runner_pid" -n +1 -F "$output_dir/candle.log" 2>/dev/null |
       stdbuf -oL tr '\r' '\n' |
       stdbuf -oL grep --line-buffered -E \
-        'CANDLE_CV_REAL_FLYSPECK_(FIXED_PROVED_BATCH|FIXED_PROVED_CERTIFICATE)( phase=|_RESULT|_STATS|_OK)' |
+        'CANDLE_CV_REAL_FLYSPECK_(FIXED_PROVED_BATCH|FIXED_PROVED_CERTIFICATE|JET_CERTIFICATE)( phase=|_RESULT|_STATS|_OK)' |
       while IFS= read -r event; do
         printf '%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%S.%NZ)" "$event"
       done

@@ -172,7 +172,7 @@ let candle_real_jet_certificate_vector_identity selector boxes components =
       subgoals;
     failwith "shared-jet certificate vector identity failed";;
 
-let candle_real_jet_certificate_leaf_pass source_th (lower,upper) =
+let candle_real_jet_certificate_leaf_equalities (lower,upper) =
   let boxes = candle_poly_fixture_q_boxes lower upper in
   let lower_selector =
     `candle_q_box_lower_vector:
@@ -186,14 +186,26 @@ let candle_real_jet_certificate_leaf_pass source_th (lower,upper) =
   let upper_eq =
     candle_real_jet_certificate_vector_identity
       upper_selector boxes upper in
+  lower_eq,upper_eq;;
+
+let candle_real_jet_certificate_leaf_pass_with_equalities
+    source_th (lower_eq,upper_eq) =
   let explicit_source_th =
     REWRITE_RULE [lower_eq;upper_eq] source_th in
   explicit_source_th;;
 
-let candle_real_jet_certificate_leaf_passes =
-  map2 candle_real_jet_certificate_leaf_pass
-    candle_real_jet_batch_theorems
+let candle_real_jet_certificate_leaf_pass source_th bounds =
+  candle_real_jet_certificate_leaf_pass_with_equalities source_th
+    (candle_real_jet_certificate_leaf_equalities bounds);;
+
+let candle_real_jet_certificate_leaf_vector_equalities =
+  map candle_real_jet_certificate_leaf_equalities
     candle_real_jet_batch_box_sources;;
+
+let candle_real_jet_certificate_leaf_passes =
+  map2 candle_real_jet_certificate_leaf_pass_with_equalities
+    candle_real_jet_batch_theorems
+    candle_real_jet_certificate_leaf_vector_equalities;;
 
 let _ = print_endline "CANDLE_CV_REAL_FLYSPECK_JET_CERTIFICATE leaf-adapters-ready";;
 
@@ -433,6 +445,7 @@ let _,_,candle_real_jet_certificate_last_upper =
     (List.nth candle_real_jet_certificate_leaf_passes 15);;
 
 if length candle_real_jet_certificate_leaf_passes <> 16 ||
+   length candle_real_jet_certificate_leaf_vector_equalities <> 16 ||
    candle_real_jet_certificate_leaf_indices <> (0--15) ||
    candle_real_jet_certificate_glue_count <> 15 ||
    hyp candle_real_jet_certificate_root_pass <> [] ||

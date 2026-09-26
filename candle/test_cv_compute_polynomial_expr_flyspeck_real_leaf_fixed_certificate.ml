@@ -16,9 +16,9 @@ open Candle_cv_real_flyspeck_leaf_jet_certificate_test;;
 module Candle_cv_real_flyspeck_leaf_fixed_certificate_test = struct
 
 let candle_real_fixed_certificate_leaf_passes =
-  map2 candle_real_jet_certificate_leaf_pass
+  map2 candle_real_jet_certificate_leaf_pass_with_equalities
     candle_real_fixed_batch_theorems
-    candle_real_jet_batch_box_sources;;
+    candle_real_jet_certificate_leaf_vector_equalities;;
 
 let _ =
   print_endline
