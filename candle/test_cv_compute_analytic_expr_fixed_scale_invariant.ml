@@ -48,6 +48,10 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_result_poly_center_hessian_contains <> [] ||
    hyp candle_fs_result_poly_proxy_shape <> [] ||
    hyp candle_fs_result_poly_proxy_components <> [] ||
+   hyp candle_fs_result_proxy_to_q_shape <> [] ||
+   hyp candle_fs_result_poly_proxy_data_shape <> [] ||
+   hyp candle_fs_result_poly_proxy_value_contains <> [] ||
+   hyp candle_fs_result_poly_proxy_gradient_contains <> [] ||
    hyp candle_fs_result_poly_box_hessian_contains <> [] ||
    hyp candle_fs_interval_to_q_neg <> [] ||
    hyp candle_fs_interval_list_to_q_neg <> [] ||
