@@ -187,4 +187,110 @@ let candle_fs_poly_numerical_accept_sound = prove
         REAL_LET_TRANS)
       (CONJ upper_at_p upper_negative)));;
 
+(* A batch keeps one source polynomial fixed and checks many exact boxes with *)
+(* one evaluator entry.  The reflected checker returns only one Boolean      *)
+(* verdict; the following ordinary definitions and theorems recover the      *)
+(* semantic fact for every member box without trusting the batch encoder.    *)
+
+let candle_fs_poly_batch_numerical_accept_def = define
+ `(candle_fs_poly_batch_numerical_accept e [] <=> T) /\
+  (candle_fs_poly_batch_numerical_accept e (CONS boxes batch) <=>
+     candle_fs_poly_numerical_accept e boxes /\
+     candle_fs_poly_batch_numerical_accept e batch)`;;
+
+let candle_fs_poly_batch_numerical_accept_mem = prove
+ (`!batch e boxes.
+     candle_fs_poly_batch_numerical_accept e batch /\
+     MEM boxes batch
+     ==> candle_fs_poly_numerical_accept e boxes`,
+  LIST_INDUCT_TAC THEN
+  REWRITE_TAC[candle_fs_poly_batch_numerical_accept_def; MEM] THEN
+  REPEAT STRIP_TAC THEN ASM_MESON_TAC[]);;
+
+let candle_fs_poly_batch_covers_def = new_definition
+ `candle_fs_poly_batch_covers
+      (type_witness:real^N) root_boxes batch <=>
+    !(p:real^N).
+      p IN interval
+        [candle_q_box_lower_vector root_boxes,
+         candle_q_box_upper_vector root_boxes]
+      ==> ?boxes. MEM boxes batch /\
+            p IN interval
+              [candle_q_box_lower_vector boxes,
+               candle_q_box_upper_vector boxes]`;;
+
+let candle_fs_poly_batch_sound = prove
+ (`!e root_boxes batch (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     candle_fs_poly_batch_numerical_accept e batch /\
+     (!boxes. MEM boxes batch ==> LENGTH boxes = dimindex (:N)) /\
+     candle_fs_poly_batch_covers type_witness root_boxes batch
+     ==> !(p:real^N).
+       p IN interval
+         [candle_q_box_lower_vector root_boxes,
+          candle_q_box_upper_vector root_boxes]
+       ==> candle_poly_denote_dim e p < &0`,
+  REWRITE_TAC[candle_fs_poly_batch_covers_def] THEN
+  MESON_TAC[candle_fs_poly_batch_numerical_accept_mem;
+            candle_fs_poly_numerical_accept_sound]);;
+
+let candle_cv_fs_poly_batch_boxes_def = define
+ `(candle_cv_fs_poly_batch_boxes [] = Cexp_num 0) /\
+  (candle_cv_fs_poly_batch_boxes (CONS boxes batch) =
+     Cexp_pair
+       (candle_cv_q_interval_list boxes)
+       (candle_cv_fs_poly_batch_boxes batch))`;;
+
+let candle_cv_fs_poly_batch_check_def = define
+ `(candle_cv_fs_poly_batch_check program (Cexp_num n) = Cexp_num 1) /\
+  (candle_cv_fs_poly_batch_check program (Cexp_pair boxes batch) =
+     Cexp_if
+       (Cexp_fst (candle_cv_fs_poly_check program boxes))
+       (candle_cv_fs_poly_batch_check program batch)
+       (Cexp_num 0))`;;
+
+let candle_cv_fs_poly_batch_check_compute = prove
+ (`!program batch.
+     candle_cv_fs_poly_batch_check program batch =
+     Cexp_if (Cexp_ispair batch)
+       (Cexp_if
+         (Cexp_fst
+           (candle_cv_fs_poly_check program (Cexp_fst batch)))
+         (candle_cv_fs_poly_batch_check program (Cexp_snd batch))
+         (Cexp_num 0))
+       (Cexp_num 1)`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC (SPEC `batch:cval` (cases "cval")) THEN
+  REWRITE_TAC[candle_cv_fs_poly_batch_check_def;
+              cexp_if_def; cexp_fst_def; cexp_snd_def;
+              cexp_ispair_def]);;
+
+let candle_cv_fs_poly_batch_bool_and = prove
+ (`!p q.
+     Cexp_if (Cexp_num (if p then SUC 0 else 0))
+       (Cexp_num (if q then SUC 0 else 0)) (Cexp_num 0) =
+     Cexp_num (if p /\ q then SUC 0 else 0)`,
+  REPEAT GEN_TAC THEN BOOL_CASES_TAC `p:bool` THEN
+  BOOL_CASES_TAC `q:bool` THEN REWRITE_TAC[cexp_if_def]);;
+
+let candle_cv_fs_poly_batch_check_correct = prove
+ (`!batch e.
+     candle_cv_fs_poly_batch_check
+       (candle_cv_q_instruction_list (candle_poly_compile e))
+       (candle_cv_fs_poly_batch_boxes batch) =
+     Cexp_num
+       (if candle_fs_poly_batch_numerical_accept e batch
+        then SUC 0 else 0)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_poly_batch_boxes_def;
+                  candle_cv_fs_poly_batch_check_def;
+                  candle_fs_poly_batch_numerical_accept_def;
+                  cexp_fst_def; cexp_snd_def;
+                  candle_cv_fs_poly_check_correct] THEN
+  REWRITE_TAC[ONE; candle_cv_fs_poly_batch_bool_and; CONJ_ASSOC]);;
+
+let candle_cv_fs_poly_batch_compute_eqs =
+  union candle_cv_fs_poly_compute_eqs
+    [SPEC_ALL candle_cv_fs_poly_batch_check_compute];;
+
 end;;
