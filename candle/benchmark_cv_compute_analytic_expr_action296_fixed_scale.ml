@@ -11,6 +11,7 @@ needs "candle/cv_compute_analytic_expr_action296_plan.ml";;
 needs "candle/cv_compute_analytic_expr_box_certificate_prepare.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_certified_compute.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_diagnostic.ml";;
+needs "candle/cv_compute_analytic_expr_fixed_scale_compute.ml";;
 
 open Certificate;;
 open M_verifier_build;;
@@ -21,6 +22,7 @@ open Candle_cv_analytic_expr_action296_plan;;
 open Candle_cv_analytic_expr_box_certificate_prepare;;
 open Candle_cv_analytic_expr_taylor_model_certified_compute;;
 open Candle_cv_analytic_expr_fixed_scale_diagnostic;;
+open Candle_cv_analytic_expr_fixed_scale_compute;;
 
 let candle_action296_fixed_scale_marker scope phase event =
   print_endline
@@ -69,6 +71,9 @@ let rec candle_action296_fixed_scale_subdivide axes domains =
 let candle_action296_fixed_scale_compute tm =
   candle_q_dim_analytic_jet_compute
     candle_cv_q_dim_taylor_model_certified_compute_eqs tm;;
+
+let candle_action296_reflected_fixed_scale_compute tm =
+  candle_q_dim_analytic_jet_compute candle_cv_fs_compute_eqs tm;;
 
 let candle_action296_fixed_scale_poly_payload instruction =
   let tag,payload = candle_cv_fixed_term_pair instruction in
@@ -200,6 +205,24 @@ let candle_action296_fixed_scale_run () =
               case.candle_action296_fixed_scale_radii_term;block33])))
       cases in
   candle_action296_fixed_scale_marker "boxes-8" "kernel-blocks" "end";
+  candle_action296_fixed_scale_marker
+    "boxes-8" "reflected-fixed-blocks" "begin";
+  let reflected_fixed_theorems =
+    map
+      (fun case ->
+        candle_action296_reflected_fixed_scale_compute
+          (list_mk_comb
+            (`candle_cv_fs_poly_program_to_q`,
+             [case.candle_action296_fixed_scale_center_boxes_term;
+              case.candle_action296_fixed_scale_radii_term;block32])),
+        candle_action296_reflected_fixed_scale_compute
+          (list_mk_comb
+            (`candle_cv_fs_poly_program_to_q`,
+             [case.candle_action296_fixed_scale_center_boxes_term;
+              case.candle_action296_fixed_scale_radii_term;block33])))
+      cases in
+  candle_action296_fixed_scale_marker
+    "boxes-8" "reflected-fixed-blocks" "end";
   let rec validate_exact count fixed_remaining kernel_remaining =
     match fixed_remaining,kernel_remaining with
     | [],[] -> count
@@ -212,6 +235,12 @@ let candle_action296_fixed_scale_run () =
         validate_exact (count + 2) fixed_tail kernel_tail
     | _ -> failwith "action296 fixed scale: comparison cardinality drift" in
   let exact = validate_exact 0 fixed_terms kernel_theorems in
+  let reflected_exact =
+    validate_exact 0
+      (map
+        (fun (left,right) -> rand (concl left),rand (concl right))
+        reflected_fixed_theorems)
+      kernel_theorems in
   let repetitions = 100 in
   candle_action296_fixed_scale_marker
     "boxes-8x100" "fixed-scale-repeat" "begin";
@@ -232,7 +261,12 @@ let candle_action296_fixed_scale_run () =
   candle_action296_fixed_scale_marker
     "boxes-8x100" "fixed-scale-repeat" "end";
   let axioms_after = axioms () in
-  if exact <> 16 || Num.eq_num !checksum candle_cv_fixed_zero ||
+  if exact <> 16 || reflected_exact <> 16 ||
+     not
+       (List.for_all
+         (fun (left,right) -> hyp left = [] && hyp right = [])
+         reflected_fixed_theorems) ||
+     Num.eq_num !checksum candle_cv_fixed_zero ||
      length axioms_after <> length axioms_before ||
      not
        (List.for_all
@@ -241,7 +275,8 @@ let candle_action296_fixed_scale_run () =
   candle_action296_fixed_scale_marker "batch" "profiled-run" "end";
   print_endline
     ("CANDLE_CV_ACTION296_FIXED_SCALE_RESULT boxes=8 blocks=2" ^
-     " instructions=39,85 exact_outputs=" ^ string_of_int exact ^
+     " instructions=39,85 host_exact_outputs=" ^ string_of_int exact ^
+     " reflected_exact_outputs=" ^ string_of_int reflected_exact ^
      " repeat_batches=" ^ string_of_int repetitions);
   print_endline
     "CANDLE_CV_ACTION296_FIXED_SCALE_OK DEVELOPMENT_NON_RELEASE";;
