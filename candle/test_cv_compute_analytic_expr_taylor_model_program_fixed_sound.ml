@@ -2,16 +2,21 @@
 (* Structural test for the fixed-polynomial analytic-invariant bridge.       *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_compile_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_compile_sound;;
 
 let candle_fixed_program_sound_axioms_before = axioms ();;
 
 let candle_fixed_program_sound_test =
   candle_fs_poly_program_to_q_analytic_invariant;;
 
-if hyp candle_fixed_program_sound_test <> [] then
+let candle_fixed_program_compile_sound_test =
+  candle_q_dim_taylor_model_fixed_compile_run_analytic_invariant;;
+
+if hyp candle_fixed_program_sound_test <> [] ||
+   hyp candle_fixed_program_compile_sound_test <> [] then
   failwith "fixed program sound: unexpected theorem assumptions";;
 
 let candle_fixed_program_sound_axioms_after = axioms ();;
