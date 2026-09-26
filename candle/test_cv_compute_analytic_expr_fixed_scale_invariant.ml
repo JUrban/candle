@@ -118,6 +118,12 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_result_mul_hessian_contains <> [] ||
    hyp candle_fs_result_mul_poly_invariant <> [] ||
    hyp candle_fs_result_square_poly_invariant <> [] ||
+   hyp candle_fs_poly_run_append <> [] ||
+   hyp candle_fs_poly_eval_def <> [] ||
+   hyp candle_fs_poly_compile_run <> [] ||
+   hyp candle_fs_poly_program_compile <> [] ||
+   hyp candle_fs_poly_eval_poly_invariant <> [] ||
+   hyp candle_fs_poly_compile_poly_invariant <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then

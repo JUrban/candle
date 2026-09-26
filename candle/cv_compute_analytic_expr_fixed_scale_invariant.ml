@@ -4958,4 +4958,131 @@ let candle_fs_result_square_poly_invariant = prove
               candle_poly_denote_dim_mul;
               candle_poly_denote_dim_square]);;
 
+let candle_fs_poly_run_append = prove
+ (`!left right dimensions radii stack.
+     candle_fs_poly_run dimensions radii (APPEND left right) stack =
+     candle_fs_poly_run dimensions radii right
+       (candle_fs_poly_run dimensions radii left stack)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[APPEND; candle_fs_poly_run_def]);;
+
+let candle_fs_poly_eval_def = define
+ `(candle_fs_poly_eval dimensions radii (Candle_poly_const p n d) =
+     candle_fs_result_constant dimensions radii ((p,n),d)) /\
+  (candle_fs_poly_eval dimensions radii (Candle_poly_var variable) =
+     candle_fs_result_variable dimensions radii variable) /\
+  (candle_fs_poly_eval dimensions radii (Candle_poly_neg expr) =
+     candle_fs_result_neg radii
+       (candle_fs_poly_eval dimensions radii expr)) /\
+  (candle_fs_poly_eval dimensions radii (Candle_poly_add left right) =
+     candle_fs_result_add radii
+       (candle_fs_poly_eval dimensions radii left)
+       (candle_fs_poly_eval dimensions radii right)) /\
+  (candle_fs_poly_eval dimensions radii (Candle_poly_mul left right) =
+     candle_fs_result_mul radii
+       (candle_fs_poly_eval dimensions radii left)
+       (candle_fs_poly_eval dimensions radii right)) /\
+  (candle_fs_poly_eval dimensions radii (Candle_poly_square expr) =
+     candle_fs_result_square radii
+       (candle_fs_poly_eval dimensions radii expr))`;;
+
+let candle_fs_poly_compile_run = prove
+ (`!expr dimensions radii stack.
+     candle_fs_poly_run dimensions radii
+       (candle_poly_compile expr) stack =
+     CONS
+       (candle_fs_poly_eval dimensions radii expr)
+       stack`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_poly_eval_def; candle_poly_compile_def;
+                  candle_fs_poly_run_append;
+                  candle_fs_poly_run_def; candle_fs_poly_step_def;
+                  candle_fs_result_head_def; candle_fs_result_tail_def;
+                  APPEND]);;
+
+let candle_fs_poly_program_compile = prove
+ (`!expr dimensions radii.
+     candle_fs_poly_program_fixed dimensions radii
+       (candle_poly_compile expr) =
+     candle_fs_poly_eval dimensions radii expr`,
+  REWRITE_TAC[candle_fs_poly_program_fixed_def;
+              candle_fs_poly_compile_run;
+              candle_fs_result_head_def]);;
+
+let candle_fs_poly_eval_poly_invariant = prove
+ (`!expr boxes (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) expr /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_poly_eval
+         (candle_fs_interval_list_of_q
+           (candle_q_center_environment_list boxes))
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         expr)
+       expr`,
+  MATCH_MP_TAC candle_poly_expr_INDUCT THEN
+  REPEAT CONJ_TAC THENL
+   [MAP_EVERY X_GEN_TAC [`p:num`; `n:num`; `d:num`] THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_constant_center_poly_invariant THEN
+    ASM_REWRITE_TAC[];
+    X_GEN_TAC `variable:num` THEN REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_variable_center_poly_invariant THEN
+    ASM_MESON_TAC[candle_poly_valid_dim_def];
+    X_GEN_TAC `expr:candle_poly_expr` THEN
+    DISCH_THEN (LABEL_TAC "ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_neg_poly_invariant THEN
+    ASM_MESON_TAC[candle_poly_valid_dim_def];
+    MAP_EVERY X_GEN_TAC
+      [`left:candle_poly_expr`; `right:candle_poly_expr`] THEN
+    DISCH_THEN
+      (CONJUNCTS_THEN2 (LABEL_TAC "left_ih") (LABEL_TAC "right_ih")) THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_add_poly_invariant THEN
+    ASM_MESON_TAC[candle_poly_valid_dim_def];
+    MAP_EVERY X_GEN_TAC
+      [`left:candle_poly_expr`; `right:candle_poly_expr`] THEN
+    DISCH_THEN
+      (CONJUNCTS_THEN2 (LABEL_TAC "left_ih") (LABEL_TAC "right_ih")) THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_mul_poly_invariant THEN
+    ASM_MESON_TAC[candle_poly_valid_dim_def];
+    X_GEN_TAC `expr:candle_poly_expr` THEN
+    DISCH_THEN (LABEL_TAC "ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_poly_eval_def] THEN
+    MATCH_MP_TAC candle_fs_result_square_poly_invariant THEN
+    ASM_MESON_TAC[candle_poly_valid_dim_def]]);;
+
+let candle_fs_poly_compile_poly_invariant = prove
+ (`!expr boxes (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) expr /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_poly_program_fixed
+         (candle_fs_interval_list_of_q
+           (candle_q_center_environment_list boxes))
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         (candle_poly_compile expr))
+       expr`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_poly_program_compile] THEN
+  MATCH_MP_TAC candle_fs_poly_eval_poly_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
 end;;
