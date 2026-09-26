@@ -16,6 +16,7 @@ open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
 open Candle_cv_exact_interval_mul_core;;
+open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
@@ -162,6 +163,85 @@ let candle_fs_raw_interval_contains_def = new_definition
     (i:(num#num)#(num#num)) (x:real) <=>
     candle_fs_raw_real denominator (FST i) <= x /\
     x <= candle_fs_raw_real denominator (SND i)`;;
+
+let candle_cv_fs_interval_list_def = define
+ `(candle_cv_fs_interval_list [] = Cexp_num 0) /\
+  (candle_cv_fs_interval_list (CONS h t) =
+     Cexp_pair (candle_cv_fs_interval h)
+       (candle_cv_fs_interval_list t))`;;
+
+let candle_cv_fs_interval_matrix_def = define
+ `(candle_cv_fs_interval_matrix [] = Cexp_num 0) /\
+  (candle_cv_fs_interval_matrix (CONS h t) =
+     Cexp_pair (candle_cv_fs_interval_list h)
+       (candle_cv_fs_interval_matrix t))`;;
+
+let candle_fs_interval_lookup_def = define
+ `(candle_fs_interval_lookup variable
+     ([]:((num#num)#(num#num))list) = candle_fs_interval_zero) /\
+  (candle_fs_interval_lookup 0 (CONS h t) = h) /\
+  (candle_fs_interval_lookup (SUC n) (CONS h t) =
+     candle_fs_interval_lookup n t)`;;
+
+let candle_fs_interval_zeros_def = define
+ `(candle_fs_interval_zeros
+     ([]:((num#num)#(num#num))list) = []) /\
+  (candle_fs_interval_zeros (CONS h t) =
+     CONS candle_fs_interval_zero (candle_fs_interval_zeros t))`;;
+
+let candle_fs_interval_unit_def = define
+ `(candle_fs_interval_unit variable
+     ([]:((num#num)#(num#num))list) = []) /\
+  (candle_fs_interval_unit 0 (CONS h t) =
+     CONS candle_fs_interval_one (candle_fs_interval_zeros t)) /\
+  (candle_fs_interval_unit (SUC n) (CONS h t) =
+     CONS candle_fs_interval_zero (candle_fs_interval_unit n t))`;;
+
+let candle_fs_interval_zero_matrix_def = define
+ `(candle_fs_interval_zero_matrix width [] = []) /\
+  (candle_fs_interval_zero_matrix width (CONS h t) =
+     CONS (candle_fs_interval_zeros width)
+       (candle_fs_interval_zero_matrix width t))`;;
+
+let candle_fs_interval_list_of_q_def = define
+ `(candle_fs_interval_list_of_q
+     ([]:(((num#num)#num)#((num#num)#num))list) = []) /\
+  (candle_fs_interval_list_of_q (CONS h t) =
+     CONS (candle_fs_interval_of_q h)
+       (candle_fs_interval_list_of_q t))`;;
+
+let candle_fs_list_of_q_def = define
+ `(candle_fs_list_of_q ([]:((num#num)#num)list) = []) /\
+  (candle_fs_list_of_q (CONS h t) =
+     CONS (FST h) (candle_fs_list_of_q t))`;;
+
+let candle_fs_interval_list_neg_def = define
+ `(candle_fs_interval_list_neg
+     ([]:((num#num)#(num#num))list) = []) /\
+  (candle_fs_interval_list_neg (CONS h t) =
+     CONS (candle_fs_interval_neg h)
+       (candle_fs_interval_list_neg t))`;;
+
+let candle_fs_interval_list_add_def = define
+ `(candle_fs_interval_list_add
+     ([]:((num#num)#(num#num))list) ys = []) /\
+  (candle_fs_interval_list_add (CONS x xs) [] = []) /\
+  (candle_fs_interval_list_add (CONS x xs) (CONS y ys) =
+     CONS (candle_fs_interval_add x y)
+       (candle_fs_interval_list_add xs ys))`;;
+
+let candle_fs_interval_matrix_neg_def = define
+ `(candle_fs_interval_matrix_neg [] = []) /\
+  (candle_fs_interval_matrix_neg (CONS h t) =
+     CONS (candle_fs_interval_list_neg h)
+       (candle_fs_interval_matrix_neg t))`;;
+
+let candle_fs_interval_matrix_add_def = define
+ `(candle_fs_interval_matrix_add [] ys = []) /\
+  (candle_fs_interval_matrix_add (CONS x xs) [] = []) /\
+  (candle_fs_interval_matrix_add (CONS x xs) (CONS y ys) =
+     CONS (candle_fs_interval_list_add x y)
+       (candle_fs_interval_matrix_add xs ys))`;;
 
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
@@ -448,6 +528,125 @@ let candle_cv_fs_interval_abs_upper_correct = prove
               candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
               candle_cv_fs_raw_abs_correct;
               candle_cv_fs_raw_max_correct; FST; SND]);;
+
+let candle_cv_fs_interval_lookup_correct = prove
+ (`!variable items.
+     candle_cv_fs_interval_lookup (Cexp_num variable)
+       (candle_cv_fs_interval_list items) =
+     candle_cv_fs_interval (candle_fs_interval_lookup variable items)`,
+  INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_lookup_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_fs_interval_lookup_def;
+                  candle_cv_fs_interval_zero_correct]);;
+
+let candle_cv_fs_interval_zeros_correct = prove
+ (`!items.
+     candle_cv_fs_interval_zeros (candle_cv_fs_interval_list items) =
+     candle_cv_fs_interval_list (candle_fs_interval_zeros items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_zeros_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_fs_interval_zeros_def;
+                  candle_cv_fs_interval_zero_correct]);;
+
+let candle_cv_fs_interval_unit_correct = prove
+ (`!variable items.
+     candle_cv_fs_interval_unit (Cexp_num variable)
+       (candle_cv_fs_interval_list items) =
+     candle_cv_fs_interval_list (candle_fs_interval_unit variable items)`,
+  INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_unit_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_fs_interval_unit_def;
+                  candle_cv_fs_interval_zeros_correct;
+                  candle_cv_fs_interval_zero_correct;
+                  candle_cv_fs_interval_one_correct]);;
+
+let candle_cv_fs_interval_zero_matrix_correct = prove
+ (`!width rows.
+     candle_cv_fs_interval_zero_matrix
+       (candle_cv_fs_interval_list width)
+       (candle_cv_fs_interval_matrix rows) =
+     candle_cv_fs_interval_matrix
+       (candle_fs_interval_zero_matrix width rows)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_zero_matrix_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_cv_fs_interval_matrix_def;
+                  candle_fs_interval_zero_matrix_def;
+                  candle_cv_fs_interval_zeros_correct]);;
+
+let candle_cv_fs_interval_list_of_q_correct = prove
+ (`!items.
+     candle_cv_fs_interval_list_of_q (candle_cv_q_interval_list items) =
+     candle_cv_fs_interval_list (candle_fs_interval_list_of_q items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_list_of_q_def;
+                  candle_cv_q_interval_list_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_fs_interval_list_of_q_def;
+                  candle_cv_fs_interval_of_q_correct]);;
+
+let candle_cv_fs_list_of_q_correct = prove
+ (`!items.
+     candle_cv_fs_list_of_q (candle_cv_q_list items) =
+     candle_cv_lc_vec (candle_fs_list_of_q items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_list_of_q_def;
+                  candle_cv_q_list_def; candle_cv_lc_vec_def;
+                  candle_cv_q_def; candle_fs_list_of_q_def;
+                  cexp_fst_def]);;
+
+let candle_cv_fs_interval_list_neg_correct = prove
+ (`!items.
+     candle_cv_fs_interval_list_neg (candle_cv_fs_interval_list items) =
+     candle_cv_fs_interval_list (candle_fs_interval_list_neg items)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_list_neg_def;
+                  candle_cv_fs_interval_list_def;
+                  candle_fs_interval_list_neg_def;
+                  candle_cv_fs_interval_neg_correct]);;
+
+let candle_cv_fs_interval_list_add_correct = prove
+ (`!xs ys.
+     candle_cv_fs_interval_list_add
+       (candle_cv_fs_interval_list xs) (candle_cv_fs_interval_list ys) =
+     candle_cv_fs_interval_list (candle_fs_interval_list_add xs ys)`,
+  LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[candle_cv_fs_interval_list_def;
+                candle_cv_fs_interval_list_add_def;
+                candle_fs_interval_list_add_def];
+    LIST_INDUCT_TAC THEN
+    ASM_REWRITE_TAC[candle_cv_fs_interval_list_def;
+                    candle_cv_fs_interval_list_add_def;
+                    candle_fs_interval_list_add_def;
+                    candle_cv_fs_interval_add_correct]]);;
+
+let candle_cv_fs_interval_matrix_neg_correct = prove
+ (`!rows.
+     candle_cv_fs_interval_matrix_neg (candle_cv_fs_interval_matrix rows) =
+     candle_cv_fs_interval_matrix (candle_fs_interval_matrix_neg rows)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_matrix_neg_def;
+                  candle_cv_fs_interval_matrix_def;
+                  candle_fs_interval_matrix_neg_def;
+                  candle_cv_fs_interval_list_neg_correct]);;
+
+let candle_cv_fs_interval_matrix_add_correct = prove
+ (`!xs ys.
+     candle_cv_fs_interval_matrix_add
+       (candle_cv_fs_interval_matrix xs) (candle_cv_fs_interval_matrix ys) =
+     candle_cv_fs_interval_matrix (candle_fs_interval_matrix_add xs ys)`,
+  LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[candle_cv_fs_interval_matrix_def;
+                candle_cv_fs_interval_matrix_add_def;
+                candle_fs_interval_matrix_add_def];
+    LIST_INDUCT_TAC THEN
+    ASM_REWRITE_TAC[candle_cv_fs_interval_matrix_def;
+                    candle_cv_fs_interval_matrix_add_def;
+                    candle_fs_interval_matrix_add_def;
+                    candle_cv_fs_interval_list_add_correct]]);;
 
 (* -------------------------------------------------------------------------- *)
 (* Real denotation.                                                           *)
