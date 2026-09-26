@@ -55,6 +55,64 @@ let candle_fs_ceil_div_def = new_definition
 let candle_fs_to_q_def = new_definition
  `candle_fs_to_q (z:num#num) = (z,candle_fs_scale - 1)`;;
 
+let candle_fs_raw_le_def = new_definition
+ `candle_fs_raw_le (x:num#num) y <=>
+    FST x + SND y <= FST y + SND x`;;
+
+let candle_fs_raw_min_def = new_definition
+ `candle_fs_raw_min (x:num#num) y =
+    if candle_fs_raw_le x y then x else y`;;
+
+let candle_fs_raw_max_def = new_definition
+ `candle_fs_raw_max (x:num#num) y =
+    if candle_fs_raw_le x y then y else x`;;
+
+let candle_fs_raw_abs_def = new_definition
+ `candle_fs_raw_abs (z:num#num) =
+    candle_fs_raw_max z (candle_fs_raw_neg z)`;;
+
+let candle_fs_of_q_lower_def = new_definition
+ `candle_fs_of_q_lower (q:(num#num)#num) =
+    FST (candle_q_fixed_round_lower q)`;;
+
+let candle_fs_of_q_upper_def = new_definition
+ `candle_fs_of_q_upper (q:(num#num)#num) =
+    FST (candle_q_fixed_round_upper q)`;;
+
+let candle_cv_fs_interval_def = new_definition
+ `candle_cv_fs_interval (i:(num#num)#(num#num)) =
+    Cexp_pair (candle_cv_lc_z (FST i)) (candle_cv_lc_z (SND i))`;;
+
+let candle_fs_interval_zero_def = new_definition
+ `candle_fs_interval_zero = ((0,0),(0,0))`;;
+
+let candle_fs_interval_one_def = new_definition
+ `candle_fs_interval_one =
+    ((candle_fs_scale,0),(candle_fs_scale,0))`;;
+
+let candle_fs_interval_of_q_def = new_definition
+ `candle_fs_interval_of_q
+    (i:((num#num)#num)#((num#num)#num)) =
+    (candle_fs_of_q_lower (FST i),
+     candle_fs_of_q_upper (SND i))`;;
+
+let candle_fs_interval_constant_def = new_definition
+ `candle_fs_interval_constant (q:(num#num)#num) =
+    (candle_fs_of_q_lower q,candle_fs_of_q_upper q)`;;
+
+let candle_fs_interval_neg_def = new_definition
+ `candle_fs_interval_neg (i:(num#num)#(num#num)) =
+    (candle_fs_raw_neg (SND i),candle_fs_raw_neg (FST i))`;;
+
+let candle_fs_interval_add_def = new_definition
+ `candle_fs_interval_add (x:(num#num)#(num#num)) y =
+    (candle_fs_add (FST x) (FST y),
+     candle_fs_add (SND x) (SND y))`;;
+
+let candle_fs_interval_contains_def = new_definition
+ `candle_fs_interval_contains (i:(num#num)#(num#num)) (x:real) <=>
+    candle_fs_real (FST i) <= x /\ x <= candle_fs_real (SND i)`;;
+
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
 (* -------------------------------------------------------------------------- *)
@@ -171,6 +229,119 @@ let candle_cv_fs_to_q_correct = prove
               cexp_sub_def; FST; SND] THEN
   CONV_TAC NUM_REDUCE_CONV);;
 
+let candle_cv_fs_raw_le_correct = prove
+ (`!x y.
+     candle_cv_fs_raw_le (candle_cv_lc_z x) (candle_cv_lc_z y) =
+     Cexp_num (if candle_fs_raw_le x y then SUC 0 else 0)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_raw_le_def; candle_fs_raw_le_def;
+              candle_cv_lc_z_def; cexp_fst_def; cexp_snd_def;
+              cexp_add_def; cexp_less_def; FST; SND;
+              GSYM ADD1; LT_SUC_LE]);;
+
+let candle_cv_fs_raw_min_correct = prove
+ (`!x y.
+     candle_cv_fs_raw_min (candle_cv_lc_z x) (candle_cv_lc_z y) =
+     candle_cv_lc_z (candle_fs_raw_min x y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_raw_min_def; candle_fs_raw_min_def;
+              candle_cv_fs_raw_le_correct] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]);;
+
+let candle_cv_fs_raw_max_correct = prove
+ (`!x y.
+     candle_cv_fs_raw_max (candle_cv_lc_z x) (candle_cv_lc_z y) =
+     candle_cv_lc_z (candle_fs_raw_max x y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_raw_max_def; candle_fs_raw_max_def;
+              candle_cv_fs_raw_le_correct] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]);;
+
+let candle_cv_fs_raw_abs_correct = prove
+ (`!z.
+     candle_cv_fs_raw_abs (candle_cv_lc_z z) =
+     candle_cv_lc_z (candle_fs_raw_abs z)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_raw_abs_def; candle_fs_raw_abs_def;
+              candle_cv_fs_raw_neg_correct;
+              candle_cv_fs_raw_max_correct]);;
+
+let candle_cv_fs_of_q_lower_correct = prove
+ (`!q.
+     candle_cv_fs_of_q_lower (candle_cv_q q) =
+     candle_cv_lc_z (candle_fs_of_q_lower q)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_of_q_lower_def; candle_fs_of_q_lower_def;
+              candle_cv_q_fixed_round_lower_correct;
+              candle_cv_q_def; cexp_fst_def]);;
+
+let candle_cv_fs_of_q_upper_correct = prove
+ (`!q.
+     candle_cv_fs_of_q_upper (candle_cv_q q) =
+     candle_cv_lc_z (candle_fs_of_q_upper q)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_of_q_upper_def; candle_fs_of_q_upper_def;
+              candle_cv_q_fixed_round_upper_correct;
+              candle_cv_q_def; cexp_fst_def]);;
+
+let candle_cv_fs_interval_zero_correct = prove
+ (`candle_cv_fs_interval_zero =
+   candle_cv_fs_interval candle_fs_interval_zero`,
+  REWRITE_TAC[candle_cv_fs_interval_zero_def;
+              candle_fs_interval_zero_def; candle_cv_fs_interval_def;
+              candle_cv_fs_zero_correct; FST; SND]);;
+
+let candle_cv_fs_interval_one_correct = prove
+ (`candle_cv_fs_interval_one =
+   candle_cv_fs_interval candle_fs_interval_one`,
+  REWRITE_TAC[candle_cv_fs_interval_one_def;
+              candle_fs_interval_one_def; candle_cv_fs_interval_def;
+              candle_cv_fs_one_correct; FST; SND]);;
+
+let candle_cv_fs_interval_of_q_correct = prove
+ (`!i.
+     candle_cv_fs_interval_of_q (candle_cv_q_interval i) =
+     candle_cv_fs_interval (candle_fs_interval_of_q i)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_interval_of_q_def;
+              candle_fs_interval_of_q_def;
+              candle_cv_q_interval_def; candle_cv_fs_interval_def;
+              cexp_fst_def; cexp_snd_def;
+              candle_cv_fs_of_q_lower_correct;
+              candle_cv_fs_of_q_upper_correct; FST; SND]);;
+
+let candle_cv_fs_interval_constant_correct = prove
+ (`!q.
+     candle_cv_fs_interval_constant (candle_cv_q q) =
+     candle_cv_fs_interval (candle_fs_interval_constant q)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_interval_constant_def;
+              candle_fs_interval_constant_def;
+              candle_cv_fs_interval_def;
+              candle_cv_fs_of_q_lower_correct;
+              candle_cv_fs_of_q_upper_correct; FST; SND]);;
+
+let candle_cv_fs_interval_neg_correct = prove
+ (`!i.
+     candle_cv_fs_interval_neg (candle_cv_fs_interval i) =
+     candle_cv_fs_interval (candle_fs_interval_neg i)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_interval_neg_def;
+              candle_fs_interval_neg_def;
+              candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
+              candle_cv_fs_neg_correct; FST; SND]);;
+
+let candle_cv_fs_interval_add_correct = prove
+ (`!x y.
+     candle_cv_fs_interval_add
+       (candle_cv_fs_interval x) (candle_cv_fs_interval y) =
+     candle_cv_fs_interval (candle_fs_interval_add x y)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_interval_add_def;
+              candle_fs_interval_add_def;
+              candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
+              candle_cv_fs_add_correct; FST; SND]);;
+
 (* -------------------------------------------------------------------------- *)
 (* Real denotation.                                                           *)
 (* -------------------------------------------------------------------------- *)
@@ -219,6 +390,103 @@ let candle_fs_to_q_real = prove
     SUBST1_TAC THENL
    [MP_TAC candle_fs_scale_pos THEN ARITH_TAC;
     REFL_TAC]);;
+
+let candle_fs_raw_le_real = prove
+ (`!x y. candle_fs_raw_le x y <=>
+         candle_lc_zreal x <= candle_lc_zreal y`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_le_def; candle_lc_zreal_def; FST; SND] THEN
+  REWRITE_TAC[GSYM REAL_OF_NUM_LE] THEN
+  REWRITE_TAC[GSYM REAL_OF_NUM_ADD] THEN
+  EQ_TAC THEN REAL_ARITH_TAC);;
+
+let candle_fs_fixed_make_real = prove
+ (`!positive negative.
+     candle_fs_real (positive,negative) =
+     candle_q_real (candle_q_fixed_make positive negative)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_fixed_make_real; candle_fs_real_def;
+              candle_lc_zreal_def; candle_fs_scale_def;
+              candle_q_taylor_model_scale_def; FST; SND]);;
+
+let candle_fs_of_q_lower_real = prove
+ (`!q. candle_fs_real (candle_fs_of_q_lower q) =
+       candle_q_real (candle_q_fixed_round_lower q)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REWRITE_TAC[FORALL_PAIR_THM] THEN
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_of_q_lower_def;
+              candle_q_fixed_round_lower_def] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[candle_q_fixed_make_def; FST;
+                  candle_fs_fixed_make_real]);;
+
+let candle_fs_of_q_upper_real = prove
+ (`!q. candle_fs_real (candle_fs_of_q_upper q) =
+       candle_q_real (candle_q_fixed_round_upper q)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REWRITE_TAC[FORALL_PAIR_THM] THEN
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_of_q_upper_def;
+              candle_q_fixed_round_upper_def] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[candle_q_fixed_make_def; FST;
+                  candle_fs_fixed_make_real]);;
+
+let candle_fs_of_q_lower_sound = prove
+ (`!q. candle_fs_real (candle_fs_of_q_lower q) <= candle_q_real q`,
+  REWRITE_TAC[candle_fs_of_q_lower_real;
+              candle_q_fixed_round_lower_sound]);;
+
+let candle_fs_of_q_upper_sound = prove
+ (`!q. candle_q_real q <= candle_fs_real (candle_fs_of_q_upper q)`,
+  REWRITE_TAC[candle_fs_of_q_upper_real;
+              candle_q_fixed_round_upper_sound]);;
+
+let candle_fs_interval_of_q_sound = prove
+ (`!i x. candle_q_interval_contains i x
+         ==> candle_fs_interval_contains (candle_fs_interval_of_q i) x`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_interval_contains_def;
+              candle_fs_interval_contains_def;
+              candle_fs_interval_of_q_def; FST; SND] THEN
+  STRIP_TAC THEN CONJ_TAC THENL
+   [MP_TAC
+      (SPEC
+        `FST (i:((num#num)#num)#((num#num)#num))`
+        candle_fs_of_q_lower_sound) THEN
+    ASM_REAL_ARITH_TAC;
+    MP_TAC
+      (SPEC
+        `SND (i:((num#num)#num)#((num#num)#num))`
+        candle_fs_of_q_upper_sound) THEN
+    ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_interval_constant_sound = prove
+ (`!q. candle_fs_interval_contains
+         (candle_fs_interval_constant q) (candle_q_real q)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_interval_constant_def; FST; SND;
+              candle_fs_of_q_lower_sound; candle_fs_of_q_upper_sound]);;
+
+let candle_fs_interval_neg_sound = prove
+ (`!i x. candle_fs_interval_contains i x
+         ==> candle_fs_interval_contains (candle_fs_interval_neg i) (--x)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_interval_neg_def; candle_fs_raw_neg_real_scaled;
+              FST; SND] THEN
+  REAL_ARITH_TAC);;
+
+let candle_fs_interval_add_sound = prove
+ (`!i j x y.
+     candle_fs_interval_contains i x /\
+     candle_fs_interval_contains j y
+     ==> candle_fs_interval_contains (candle_fs_interval_add i j) (x + y)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_interval_add_def; candle_fs_add_real;
+              FST; SND] THEN
+  REAL_ARITH_TAC);;
 
 (* Directed division is the only lossy scalar boundary in the polynomial     *)
 (* backend.  These lemmas are independent of the chosen Taylor scale.        *)
