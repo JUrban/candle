@@ -11,8 +11,11 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_complete_sound.ml";;
 module Candle_cv_analytic_expr_fixed_scale_invariant = struct
 
 open Multivariate_taylor;;
+open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
+open Candle_cv_analytic_expr_taylor_model_semantics;;
+open Candle_cv_analytic_expr_taylor_model_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_complete_sound;;
@@ -545,5 +548,103 @@ let candle_fs_complete_gradient_bound_contains = prove
       (fun th ->
          MATCH_ACCEPT_TAC
            (REWRITE_RULE[candle_fs_interval_contains_def] th))]);;
+
+let candle_fs_complete_gradient_bounds_contains = prove
+ (`!(f:real^N->real) (domain:real^N#real^N) (y:real^N) radii
+       center_gradient hessian (p:real^N).
+     LENGTH radii = dimindex (:N) /\
+     LENGTH center_gradient = dimindex (:N) /\
+     LENGTH hessian = dimindex (:N) /\
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     m_cell_domain domain y (candle_fs_list_real_vector radii) /\
+     diff2_domain domain f /\
+     ALL2 candle_fs_interval_contains center_gradient
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N))) /\
+     (!(z:real^N). z IN interval [FST domain,SND domain]
+       ==> ALL2 (ALL2 candle_fs_interval_contains) hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N)))) /\
+     p IN interval [FST domain,SND domain]
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_gradient_bounds radii center_gradient hessian)
+       (list_of_seq
+         (\di. partial (di + 1) f p)
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  (fun goal ->
+    let center_length =
+      ASSUME
+       `LENGTH (center_gradient:((num#num)#(num#num))list) =
+        dimindex (:N)` in
+    let hessian_length =
+      ASSUME
+       `LENGTH (hessian:(((num#num)#(num#num))list)list) =
+        dimindex (:N)` in
+    let matching_lengths = TRANS center_length (SYM hessian_length) in
+    let result_length =
+      MATCH_MP
+       (SPECL
+         [`radii:(num#num)list`;
+          `center_gradient:((num#num)#(num#num))list`;
+          `hessian:(((num#num)#(num#num))list)list`]
+         candle_fs_gradient_bounds_length)
+       matching_lengths in
+    let output_length = TRANS result_length center_length in
+    let sequence_th =
+      MATCH_MP
+       (ISPECL
+         [`dimindex (:N)`;
+          `candle_fs_gradient_bounds radii center_gradient hessian`]
+         candle_list_eq_list_of_seq_el)
+       output_length in
+    ONCE_REWRITE_TAC [sequence_th] goal) THEN
+  REWRITE_TAC[candle_all2_list_of_seq] THEN
+  X_GEN_TAC `di:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[candle_fs_gradient_bounds_el] THEN
+  MATCH_MP_TAC
+   (ISPECL
+     [`f:real^N->real`;
+      `di + 1`;
+      `domain:real^N#real^N`;
+      `y:real^N`;
+      `radii:(num#num)list`;
+      `EL di (center_gradient:((num#num)#(num#num))list)`;
+      `EL di (hessian:(((num#num)#(num#num))list)list)`;
+      `p:real^N`]
+     candle_fs_complete_gradient_bound_contains) THEN
+  ASM_REWRITE_TAC[] THEN
+  CONJ_TAC THENL
+   [ASM_MESON_TAC[candle_all2_right_list_of_seq_el];
+    REPEAT STRIP_TAC THEN
+    (fun ((asl,conclusion) as goal) ->
+      let z =
+        find
+         (fun tm -> is_var tm && fst (dest_var tm) = "z")
+         (frees conclusion) in
+      let _,universal =
+        find
+         (fun (_,th) -> is_forall (concl th))
+         asl in
+      let conditional = REWRITE_RULE[PAIR] (SPEC z universal) in
+      let antecedent,_ = dest_imp (concl conditional) in
+      let _,z_in =
+        find
+         (fun (_,th) -> aconv (concl th) antecedent)
+         asl in
+      let hessian_contains = MATCH_MP conditional z_in in
+      let row_contains =
+        tryfind
+         (fun (_,th) ->
+           MATCH_MP candle_all2_right_list_of_seq_el
+             (CONJ hessian_contains th))
+         asl in
+      let row_contains = REWRITE_RULE[] row_contains in
+      MATCH_ACCEPT_TAC row_contains goal)]);;
 
 end;;
