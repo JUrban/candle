@@ -2270,4 +2270,92 @@ let candle_fs_first_components_from_data = prove
                   candle_fs_interval_matrix_to_q_contains;
                   FST; SND]);;
 
+(* Fixed addition preserves list shape and combines enclosures pointwise. *)
+
+let candle_fs_interval_list_add_length = prove
+ (`!xs ys.
+     LENGTH xs = LENGTH ys
+     ==> LENGTH (candle_fs_interval_list_add xs ys) = LENGTH xs`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; NOT_SUC; SUC_INJ;
+                  candle_fs_interval_list_add_def]);;
+
+let candle_fs_interval_matrix_add_length = prove
+ (`!xs ys.
+     LENGTH xs = LENGTH ys
+     ==> LENGTH (candle_fs_interval_matrix_add xs ys) = LENGTH xs`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; NOT_SUC; SUC_INJ;
+                  candle_fs_interval_matrix_add_def]);;
+
+let candle_fs_interval_matrix_add_rows_width = prove
+ (`!width xs ys.
+     LENGTH xs = LENGTH ys /\
+     ALL (\row. LENGTH row = width) xs /\
+     ALL (\row. LENGTH row = width) ys
+     ==>
+     ALL (\row. LENGTH row = width)
+       (candle_fs_interval_matrix_add xs ys)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LENGTH; ALL; NOT_SUC; SUC_INJ;
+                  candle_fs_interval_matrix_add_def] THEN
+  ASM_MESON_TAC[candle_fs_interval_list_add_length]);;
+
+let candle_fs_interval_list_add_contains = prove
+ (`!left_intervals left_values right_intervals right_values.
+     LENGTH left_intervals = LENGTH right_intervals /\
+     ALL2 candle_fs_interval_contains left_intervals left_values /\
+     ALL2 candle_fs_interval_contains right_intervals right_values
+     ==>
+     ALL2 candle_fs_interval_contains
+       (candle_fs_interval_list_add left_intervals right_intervals)
+       (MAP2 (\x y:real. x + y) left_values right_values)`,
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_SIMP_TAC[LENGTH; NOT_SUC; SUC_INJ;
+               ALL2; MAP2; MAP2_DEF;
+               candle_fs_interval_list_add_def;
+               candle_fs_interval_add_sound]);;
+
+let candle_fs_interval_matrix_add_contains = prove
+ (`!width left_intervals left_values right_intervals right_values.
+     LENGTH left_intervals = LENGTH right_intervals /\
+     ALL (\row. LENGTH row = width) left_intervals /\
+     ALL (\row. LENGTH row = width) right_intervals /\
+     ALL2 (ALL2 candle_fs_interval_contains)
+       left_intervals left_values /\
+     ALL2 (ALL2 candle_fs_interval_contains)
+       right_intervals right_values
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_interval_matrix_add left_intervals right_intervals)
+       (MAP2 (MAP2 (\x y:real. x + y))
+         left_values right_values)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_SIMP_TAC[LENGTH; ALL; NOT_SUC; SUC_INJ;
+               ALL2; MAP2; MAP2_DEF;
+               candle_fs_interval_matrix_add_def;
+               candle_fs_interval_list_add_contains]);;
+
+let candle_map2_list_of_seq = prove
+  (`!n (f:num->A) (g:num->B) (h:A->B->C).
+     MAP2 h (list_of_seq f n) (list_of_seq g n) =
+     list_of_seq (\i. h (f i) (g i)) n`,
+  INDUCT_TAC THEN
+  ASM_REWRITE_TAC[LIST_OF_SEQ; MAP2; MAP2_DEF; o_THM] THEN
+  REPEAT GEN_TAC THEN REWRITE_TAC[CONS_11] THEN
+  REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ; o_THM]);;
+
+let candle_map2_matrix_list_of_seq = prove
+ (`!n (f:num->num->real) g.
+     MAP2 (MAP2 (\x y:real. x + y))
+       (list_of_seq (\i. list_of_seq (f i) n) n)
+       (list_of_seq (\i. list_of_seq (g i) n) n) =
+     list_of_seq
+       (\i. list_of_seq (\j. f i j + g i j) n) n`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_map2_list_of_seq]);;
+
 end;;
