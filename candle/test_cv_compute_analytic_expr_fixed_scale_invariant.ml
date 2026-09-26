@@ -101,6 +101,9 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_raw_mul_gradient_length <> [] ||
    hyp candle_all2_length <> [] ||
    hyp candle_fs_raw_mul_center_value_gradient_contains <> [] ||
+   hyp candle_fs_raw_interval_matrix_add_shape <> [] ||
+   hyp candle_fs_raw_mul_hessian_shape <> [] ||
+   hyp candle_fs_raw_mul_hessian_rounded_shape <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then

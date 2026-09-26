@@ -3490,4 +3490,196 @@ let candle_fs_raw_mul_center_value_gradient_contains = prove
       REWRITE_TAC[MAP_LIST_OF_SEQ; o_THM;
                   candle_map2_list_of_seq]]]);;
 
+let candle_fs_raw_interval_matrix_add_shape = prove
+ (`!n xs ys.
+     LENGTH xs = n /\ ALL (\row. LENGTH row = n) xs /\
+     LENGTH ys = n /\ ALL (\row. LENGTH row = n) ys
+     ==>
+     LENGTH (candle_fs_raw_interval_matrix_add xs ys) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fs_raw_interval_matrix_add xs ys)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN CONJ_TAC THENL
+   [MATCH_MP_TAC EQ_TRANS THEN
+    EXISTS_TAC `LENGTH (xs:(((num#num)#(num#num))list)list)` THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_raw_interval_matrix_add_length THEN
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[]];
+    MATCH_MP_TAC candle_fs_raw_interval_matrix_add_rows_width THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_raw_mul_hessian_shape = prove
+ (`!n left_value right_value left_gradient right_gradient
+      left_hessian right_hessian.
+     LENGTH left_gradient = n /\ LENGTH right_gradient = n /\
+     LENGTH left_hessian = n /\
+     ALL (\row. LENGTH row = n) left_hessian /\
+     LENGTH right_hessian = n /\
+     ALL (\row. LENGTH row = n) right_hessian
+     ==>
+     LENGTH
+       (candle_fs_raw_interval_matrix_add
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_matrix_scale
+             right_value left_hessian)
+           (candle_fs_raw_interval_outer left_gradient right_gradient))
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_outer right_gradient left_gradient)
+           (candle_fs_raw_interval_matrix_scale
+             left_value right_hessian))) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fs_raw_interval_matrix_add
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_matrix_scale
+             right_value left_hessian)
+           (candle_fs_raw_interval_outer left_gradient right_gradient))
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_outer right_gradient left_gradient)
+           (candle_fs_raw_interval_matrix_scale
+             left_value right_hessian)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let left_scale_th = MATCH_MP
+   (SPECL
+     [`right_value:(num#num)#(num#num)`;
+      `left_hessian:(((num#num)#(num#num))list)list`; `n:num`]
+     candle_fs_raw_interval_matrix_scale_shape)
+   (ASSUME
+     `ALL (\row. LENGTH row = n)
+       (left_hessian:(((num#num)#(num#num))list)list)`) in
+  let left_scale_th = REWRITE_RULE
+   [ASSUME `LENGTH
+      (left_hessian:(((num#num)#(num#num))list)list) = n`]
+   left_scale_th in
+  let left_outer_th = REWRITE_RULE
+   [ASSUME `LENGTH
+      (left_gradient:((num#num)#(num#num))list) = n`;
+    ASSUME `LENGTH
+      (right_gradient:((num#num)#(num#num))list) = n`]
+   (SPECL
+     [`left_gradient:((num#num)#(num#num))list`;
+      `right_gradient:((num#num)#(num#num))list`]
+     candle_fs_raw_interval_outer_shape) in
+  let left_sum_th = MATCH_MP
+   (SPECL
+     [`n:num`;
+      `candle_fs_raw_interval_matrix_scale right_value left_hessian`;
+      `candle_fs_raw_interval_outer left_gradient right_gradient`]
+     candle_fs_raw_interval_matrix_add_shape)
+   (end_itlist CONJ
+     [CONJUNCT1 left_scale_th; CONJUNCT2 left_scale_th;
+      CONJUNCT1 left_outer_th; CONJUNCT2 left_outer_th]) in
+  let right_outer_th = REWRITE_RULE
+   [ASSUME `LENGTH
+      (right_gradient:((num#num)#(num#num))list) = n`;
+    ASSUME `LENGTH
+      (left_gradient:((num#num)#(num#num))list) = n`]
+   (SPECL
+     [`right_gradient:((num#num)#(num#num))list`;
+      `left_gradient:((num#num)#(num#num))list`]
+     candle_fs_raw_interval_outer_shape) in
+  let right_scale_th = MATCH_MP
+   (SPECL
+     [`left_value:(num#num)#(num#num)`;
+      `right_hessian:(((num#num)#(num#num))list)list`; `n:num`]
+     candle_fs_raw_interval_matrix_scale_shape)
+   (ASSUME
+     `ALL (\row. LENGTH row = n)
+       (right_hessian:(((num#num)#(num#num))list)list)`) in
+  let right_scale_th = REWRITE_RULE
+   [ASSUME `LENGTH
+      (right_hessian:(((num#num)#(num#num))list)list) = n`]
+   right_scale_th in
+  let right_sum_th = MATCH_MP
+   (SPECL
+     [`n:num`;
+      `candle_fs_raw_interval_outer right_gradient left_gradient`;
+      `candle_fs_raw_interval_matrix_scale left_value right_hessian`]
+     candle_fs_raw_interval_matrix_add_shape)
+   (end_itlist CONJ
+     [CONJUNCT1 right_outer_th; CONJUNCT2 right_outer_th;
+      CONJUNCT1 right_scale_th; CONJUNCT2 right_scale_th]) in
+  MATCH_ACCEPT_TAC
+   (MATCH_MP
+     (SPECL
+       [`n:num`;
+        `candle_fs_raw_interval_matrix_add
+          (candle_fs_raw_interval_matrix_scale right_value left_hessian)
+          (candle_fs_raw_interval_outer left_gradient right_gradient)`;
+        `candle_fs_raw_interval_matrix_add
+          (candle_fs_raw_interval_outer right_gradient left_gradient)
+          (candle_fs_raw_interval_matrix_scale left_value right_hessian)`]
+       candle_fs_raw_interval_matrix_add_shape)
+     (end_itlist CONJ
+       [CONJUNCT1 left_sum_th; CONJUNCT2 left_sum_th;
+        CONJUNCT1 right_sum_th; CONJUNCT2 right_sum_th])));;
+
+let candle_fs_raw_mul_hessian_rounded_shape = prove
+ (`!n left_value right_value left_gradient right_gradient
+      left_hessian right_hessian.
+     LENGTH left_gradient = n /\ LENGTH right_gradient = n /\
+     LENGTH left_hessian = n /\
+     ALL (\row. LENGTH row = n) left_hessian /\
+     LENGTH right_hessian = n /\
+     ALL (\row. LENGTH row = n) right_hessian
+     ==>
+     LENGTH
+       (candle_fs_raw_interval_matrix_round candle_fs_scale
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_matrix_add
+             (candle_fs_raw_interval_matrix_scale
+               right_value left_hessian)
+             (candle_fs_raw_interval_outer left_gradient right_gradient))
+           (candle_fs_raw_interval_matrix_add
+             (candle_fs_raw_interval_outer right_gradient left_gradient)
+             (candle_fs_raw_interval_matrix_scale
+               left_value right_hessian)))) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fs_raw_interval_matrix_round candle_fs_scale
+         (candle_fs_raw_interval_matrix_add
+           (candle_fs_raw_interval_matrix_add
+             (candle_fs_raw_interval_matrix_scale
+               right_value left_hessian)
+             (candle_fs_raw_interval_outer left_gradient right_gradient))
+           (candle_fs_raw_interval_matrix_add
+             (candle_fs_raw_interval_outer right_gradient left_gradient)
+             (candle_fs_raw_interval_matrix_scale
+               left_value right_hessian))))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let raw_shape_th = MATCH_MP
+   (SPECL
+     [`n:num`;
+      `left_value:(num#num)#(num#num)`;
+      `right_value:(num#num)#(num#num)`;
+      `left_gradient:((num#num)#(num#num))list`;
+      `right_gradient:((num#num)#(num#num))list`;
+      `left_hessian:(((num#num)#(num#num))list)list`;
+      `right_hessian:(((num#num)#(num#num))list)list`]
+     candle_fs_raw_mul_hessian_shape)
+   (end_itlist CONJ
+     [ASSUME `LENGTH
+        (left_gradient:((num#num)#(num#num))list) = n`;
+      ASSUME `LENGTH
+        (right_gradient:((num#num)#(num#num))list) = n`;
+      ASSUME `LENGTH
+        (left_hessian:(((num#num)#(num#num))list)list) = n`;
+      ASSUME `ALL (\row. LENGTH row = n)
+        (left_hessian:(((num#num)#(num#num))list)list)`;
+      ASSUME `LENGTH
+        (right_hessian:(((num#num)#(num#num))list)list) = n`;
+      ASSUME `ALL (\row. LENGTH row = n)
+        (right_hessian:(((num#num)#(num#num))list)list)`]) in
+  MP_TAC
+   (SPECL
+     [`candle_fs_scale`;
+      `candle_fs_raw_interval_matrix_add
+        (candle_fs_raw_interval_matrix_add
+          (candle_fs_raw_interval_matrix_scale right_value left_hessian)
+          (candle_fs_raw_interval_outer left_gradient right_gradient))
+        (candle_fs_raw_interval_matrix_add
+          (candle_fs_raw_interval_outer right_gradient left_gradient)
+          (candle_fs_raw_interval_matrix_scale left_value right_hessian))`;
+      `n:num`]
+     candle_fs_raw_interval_matrix_round_shape) THEN
+  ASM_REWRITE_TAC[CONJUNCT1 raw_shape_th; CONJUNCT2 raw_shape_th]);;
+
 end;;
