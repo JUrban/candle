@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-analytic-action296-taylor-certified-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-action296-fixed-scale-reflected-v1-run-001}
-runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
+runner="$repo_root/candle/restart_real_functions_with_fragments_strict.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 marker=CANDLE_CV_ACTION296_FIXED_SCALE_REFLECTED_OK
 fragments=(
