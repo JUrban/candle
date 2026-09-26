@@ -1,0 +1,27 @@
+(* ========================================================================== *)
+(* Structural test for the fixed-polynomial analytic-invariant bridge.       *)
+(* ========================================================================== *)
+
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_sound.ml";;
+
+open Candle_cv_analytic_expr_taylor_model_program_fixed_sound;;
+
+let candle_fixed_program_sound_axioms_before = axioms ();;
+
+let candle_fixed_program_sound_test =
+  candle_fs_poly_program_to_q_analytic_invariant;;
+
+if hyp candle_fixed_program_sound_test <> [] then
+  failwith "fixed program sound: unexpected theorem assumptions";;
+
+let candle_fixed_program_sound_axioms_after = axioms ();;
+
+if length candle_fixed_program_sound_axioms_after <>
+     length candle_fixed_program_sound_axioms_before ||
+   not
+     (List.for_all
+       (fun theorem -> List.mem theorem candle_fixed_program_sound_axioms_before)
+       candle_fixed_program_sound_axioms_after) then
+  failwith "fixed program sound: changed the global axiom set";;
+
+print_endline "CANDLE_CV_FIXED_PROGRAM_SOUND_OK DEVELOPMENT_NON_RELEASE";;
