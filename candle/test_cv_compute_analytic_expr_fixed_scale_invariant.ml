@@ -104,6 +104,12 @@ if hyp candle_fs_dot_list_real_vector_sum <> [] ||
    hyp candle_fs_raw_interval_matrix_add_shape <> [] ||
    hyp candle_fs_raw_mul_hessian_shape <> [] ||
    hyp candle_fs_raw_mul_hessian_rounded_shape <> [] ||
+   hyp candle_map_matrix_scale_list_of_seq <> [] ||
+   hyp candle_map_scale_list_of_seq <> [] ||
+   hyp candle_map_outer_list_of_seq <> [] ||
+   hyp candle_fs_raw_interval_matrix_scale_contains_list_of_seq <> [] ||
+   hyp candle_fs_raw_interval_outer_contains_list_of_seq <> [] ||
+   hyp candle_fs_raw_interval_matrix_add_contains_list_of_seq <> [] ||
    hyp candle_fs_gradient_bounds_el <> [] ||
    hyp candle_fs_result_complete_domain <> [] ||
    hyp candle_fs_result_complete_proxy <> [] then

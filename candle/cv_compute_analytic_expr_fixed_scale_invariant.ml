@@ -3682,4 +3682,148 @@ let candle_fs_raw_mul_hessian_rounded_shape = prove
      candle_fs_raw_interval_matrix_round_shape) THEN
   ASM_REWRITE_TAC[CONJUNCT1 raw_shape_th; CONJUNCT2 raw_shape_th]);;
 
+let candle_map_matrix_scale_list_of_seq = prove
+ (`!n scalar (h:num->num->real).
+     MAP (MAP (\x:real. scalar * x))
+       (list_of_seq (\i. list_of_seq (h i) n) n) =
+     list_of_seq
+       (\i. list_of_seq (\j. scalar * h i j) n) n`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[MAP_LIST_OF_SEQ] THEN
+  REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+   [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+    X_GEN_TAC `i:num` THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+    ASM_SIMP_TAC[EL_LIST_OF_SEQ; o_THM] THEN
+    REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+     [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+      X_GEN_TAC `j:num` THEN
+      REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+      SUBGOAL_THEN
+       `EL j
+          (MAP (\x:real. scalar * x)
+            (list_of_seq ((h:num->num->real) i) n)) =
+        scalar * EL j (list_of_seq ((h:num->num->real) i) n)`
+       SUBST1_TAC THENL
+       [ASM_SIMP_TAC[EL_MAP; LENGTH_LIST_OF_SEQ];
+        ASM_SIMP_TAC[EL_LIST_OF_SEQ]]]]);;
+
+let candle_map_scale_list_of_seq = prove
+ (`!n scalar (values:num->real).
+     MAP (\x:real. scalar * x) (list_of_seq values n) =
+     list_of_seq (\i. scalar * values i) n`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+   [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+    X_GEN_TAC `i:num` THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `EL i
+        (MAP (\x:real. scalar * x)
+          (list_of_seq (values:num->real) n)) =
+      scalar * EL i (list_of_seq values n)`
+     SUBST1_TAC THENL
+     [ASM_SIMP_TAC[EL_MAP; LENGTH_LIST_OF_SEQ];
+      ASM_SIMP_TAC[EL_LIST_OF_SEQ]]]);;
+
+let candle_map_outer_list_of_seq = prove
+ (`!n (left:num->real) (right:num->real).
+     MAP (\x:real. MAP (\y:real. x * y) (list_of_seq right n))
+       (list_of_seq left n) =
+     list_of_seq
+       (\i. list_of_seq (\j. left i * right j) n) n`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LIST_EQ] THEN CONJ_TAC THENL
+   [REWRITE_TAC[LENGTH_MAP; LENGTH_LIST_OF_SEQ];
+    X_GEN_TAC `i:num` THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `EL i
+        (MAP (\x:real. MAP (\y:real. x * y)
+          (list_of_seq (right:num->real) n))
+          (list_of_seq (left:num->real) n)) =
+      MAP (\y:real. left i * y) (list_of_seq right n)`
+     SUBST1_TAC THENL
+     [ASM_SIMP_TAC[EL_MAP; LENGTH_LIST_OF_SEQ; EL_LIST_OF_SEQ];
+      ALL_TAC] THEN
+    ASM_SIMP_TAC[EL_LIST_OF_SEQ; candle_map_scale_list_of_seq]]);;
+
+let candle_fs_raw_interval_matrix_scale_contains_list_of_seq = prove
+ (`!n scalar scalar_value intervals (values:num->num->real).
+     candle_fs_interval_contains scalar scalar_value /\
+     ALL2 (ALL2 candle_fs_interval_contains) intervals
+       (list_of_seq (\i. list_of_seq (values i) n) n)
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_matrix_scale scalar intervals)
+       (list_of_seq
+         (\i. list_of_seq (\j. scalar_value * values i j) n) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+   (ISPECL
+     [`scalar:(num#num)#(num#num)`; `scalar_value:real`;
+      `intervals:(((num#num)#(num#num))list)list`;
+      `list_of_seq
+        (\i. list_of_seq ((values:num->num->real) i) n) n`]
+     candle_fs_raw_interval_matrix_scale_contains) THEN
+  ASM_REWRITE_TAC[candle_map_matrix_scale_list_of_seq]);;
+
+let candle_fs_raw_interval_outer_contains_list_of_seq = prove
+ (`!n left_intervals (left_values:num->real)
+      right_intervals (right_values:num->real).
+     ALL2 candle_fs_interval_contains left_intervals
+       (list_of_seq left_values n) /\
+     ALL2 candle_fs_interval_contains right_intervals
+       (list_of_seq right_values n)
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_outer left_intervals right_intervals)
+       (list_of_seq
+         (\i. list_of_seq
+           (\j. left_values i * right_values j) n) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+   (ISPECL
+     [`left_intervals:((num#num)#(num#num))list`;
+      `list_of_seq (left_values:num->real) n`;
+      `right_intervals:((num#num)#(num#num))list`;
+      `list_of_seq (right_values:num->real) n`]
+     candle_fs_raw_interval_outer_contains) THEN
+  ASM_REWRITE_TAC[candle_map_outer_list_of_seq]);;
+
+let candle_fs_raw_interval_matrix_add_contains_list_of_seq = prove
+ (`!n left_intervals (left_values:num->num->real)
+      right_intervals (right_values:num->num->real).
+     LENGTH left_intervals = n /\
+     ALL (\row. LENGTH row = n) left_intervals /\
+     LENGTH right_intervals = n /\
+     ALL (\row. LENGTH row = n) right_intervals /\
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))) left_intervals
+       (list_of_seq (\i. list_of_seq (left_values i) n) n) /\
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale))) right_intervals
+       (list_of_seq (\i. list_of_seq (right_values i) n) n)
+     ==>
+     ALL2 (ALL2 (candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale)))
+       (candle_fs_raw_interval_matrix_add left_intervals right_intervals)
+       (list_of_seq
+         (\i. list_of_seq
+           (\j. left_values i j + right_values i j) n) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+   (ISPECL
+     [`n:num`;
+      `left_intervals:(((num#num)#(num#num))list)list`;
+      `list_of_seq
+        (\i. list_of_seq ((left_values:num->num->real) i) n) n`;
+      `right_intervals:(((num#num)#(num#num))list)list`;
+      `list_of_seq
+        (\i. list_of_seq ((right_values:num->num->real) i) n) n`]
+     candle_fs_raw_interval_matrix_add_contains) THEN
+  ASM_REWRITE_TAC[candle_map2_matrix_list_of_seq]);;
+
 end;;
