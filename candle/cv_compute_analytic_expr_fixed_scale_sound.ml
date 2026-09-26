@@ -16,6 +16,7 @@ open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
 open Candle_cv_exact_interval_mul_core;;
+open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
@@ -1567,6 +1568,35 @@ let candle_fs_add_real = prove
               candle_fs_canonical_real; candle_lc_zreal_add;
               real_div; REAL_ADD_RDISTRIB]);;
 
+let candle_fs_raw_add_real = prove
+ (`!denominator x y. ~(denominator = 0)
+     ==> candle_fs_raw_real denominator (candle_lc_zadd x y) =
+         candle_fs_raw_real denominator x +
+         candle_fs_raw_real denominator y`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def; candle_lc_zreal_add] THEN
+  REWRITE_TAC[real_div; REAL_ADD_RDISTRIB]);;
+
+let candle_fs_raw_scale_real = prove
+ (`!denominator factor z. ~(denominator = 0)
+     ==> candle_fs_raw_real denominator (candle_lc_zscale factor z) =
+         &factor * candle_fs_raw_real denominator z`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def; candle_lc_zreal_scale;
+              real_div; REAL_MUL_ASSOC]);;
+
+let candle_fs_raw_mul_real = prove
+ (`!left_denominator right_denominator x y.
+     0 < left_denominator /\ 0 < right_denominator
+     ==> candle_fs_raw_real (left_denominator * right_denominator)
+           (candle_q_zmul x y) =
+         candle_fs_raw_real left_denominator x *
+         candle_fs_raw_real right_denominator y`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_real_def; candle_q_zreal_mul;
+              GSYM REAL_OF_NUM_MUL] THEN
+  ASM_REWRITE_TAC[GSYM REAL_OF_NUM_LT] THEN CONV_TAC REAL_FIELD);;
+
 let candle_fs_raw_neg_real_scaled = prove
  (`!z. candle_fs_real (candle_fs_raw_neg z) = --(candle_fs_real z)`,
   REWRITE_TAC[candle_fs_real_def; candle_fs_raw_neg_real;
@@ -1627,6 +1657,52 @@ let candle_fs_raw_max_real = prove
       candle_fs_raw_le_scaled) THEN
   ASM_REWRITE_TAC[] THEN REAL_ARITH_TAC);;
 
+let candle_fs_raw_max_real_scaled = prove
+ (`!x y. candle_fs_real (candle_fs_raw_max x y) =
+         max (candle_fs_real x) (candle_fs_real y)`,
+  REPEAT GEN_TAC THEN
+  MP_TAC
+    (SPECL [`candle_fs_scale`; `x:num#num`; `y:num#num`]
+      candle_fs_raw_max_real) THEN
+  REWRITE_TAC[candle_fs_scale_pos; candle_fs_raw_real_def;
+              GSYM candle_fs_real_def]);;
+
+let candle_fs_raw_abs_real_scaled = prove
+ (`!z. candle_fs_real (candle_fs_raw_abs z) = abs (candle_fs_real z)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_abs_def; candle_fs_raw_max_real_scaled;
+              candle_fs_raw_neg_real_scaled] THEN
+  REAL_ARITH_TAC);;
+
+let candle_fs_interval_abs_upper_sound = prove
+ (`!i x. candle_fs_interval_contains i x
+         ==> abs x <= candle_fs_real (candle_fs_interval_abs_upper i)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_interval_abs_upper_def;
+              candle_fs_raw_max_real_scaled;
+              candle_fs_raw_abs_real_scaled] THEN
+  STRIP_TAC THEN
+  MP_TAC
+    (SPECL
+      [`candle_fs_real (FST (i:(num#num)#(num#num)))`;
+       `candle_fs_real (SND (i:(num#num)#(num#num)))`; `x:real`]
+      candle_real_abs_interval_upper) THEN
+  ASM_REWRITE_TAC[] THEN
+  MP_TAC
+    (SPECL
+      [`candle_fs_real (FST (i:(num#num)#(num#num)))`;
+       `abs (candle_fs_real (FST (i:(num#num)#(num#num))))`]
+      REAL_ABS_BOUNDS) THEN
+  MP_TAC
+    (SPEC `candle_fs_real (SND (i:(num#num)#(num#num)))` REAL_ABS_LE) THEN
+  MP_TAC
+    (SPECL
+      [`abs (candle_fs_real (FST (i:(num#num)#(num#num))))`;
+       `abs (candle_fs_real (SND (i:(num#num)#(num#num))))`]
+      REAL_MAX_MAX) THEN
+  REWRITE_TAC[REAL_LE_REFL] THEN REAL_ARITH_TAC);;
+
 let candle_fs_product_denominator_pos = prove
  (`0 < candle_fs_scale * candle_fs_scale`,
   REWRITE_TAC[LT_MULT; candle_fs_scale_pos]);;
@@ -1642,6 +1718,21 @@ let candle_fs_raw_product_real = prove
   MP_TAC candle_fs_scale_pos THEN
   REWRITE_TAC[GSYM REAL_OF_NUM_LT] THEN
   CONV_TAC REAL_FIELD);;
+
+let candle_fs_raw_zero_real = prove
+ (`!denominator. candle_fs_raw_real denominator (0,0) = &0`,
+  REWRITE_TAC[candle_fs_raw_real_def; candle_lc_zreal_def; FST; SND;
+              REAL_SUB_REFL; real_div; REAL_MUL_LZERO]);;
+
+let candle_fs_raw_product_add_real = prove
+ (`!x y.
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+       (candle_lc_zadd x y) =
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale) x +
+     candle_fs_raw_real (candle_fs_scale * candle_fs_scale) y`,
+  REPEAT GEN_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_add_real THEN
+  MP_TAC candle_fs_product_denominator_pos THEN ARITH_TAC);;
 
 let candle_fs_raw_product_min_real = prove
  (`!x y.
@@ -1682,6 +1773,213 @@ let candle_fs_raw_interval_mul_sound = prove
   STRIP_TAC THEN
   MATCH_MP_TAC candle_real_interval_mul THEN
   ASM_REWRITE_TAC[]);;
+
+(* The fixed-scale dot accumulator bounds the corresponding real first-order
+   Taylor sum.  Its accumulator has denominator scale squared throughout. *)
+
+let candle_fs_dot_abs_upper_sound = prove
+ (`!radii values intervals.
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     ALL2 candle_fs_interval_contains intervals values /\
+     LENGTH radii = LENGTH values
+     ==>
+     ITLIST2
+       (\r y total. candle_fs_real r * abs y + total)
+       radii values (&0)
+     <= candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+          (candle_fs_dot_abs_upper radii intervals)`,
+  LIST_INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    MP_TAC
+      (ISPEC `intervals:((num#num)#(num#num))list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[ALL; ALL2; LENGTH; candle_fs_dot_abs_upper_def;
+                ITLIST2_DEF; candle_fs_raw_zero_real; REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "radii_ih") THEN
+    MAP_EVERY X_GEN_TAC
+      [`values:real list`;
+       `intervals:((num#num)#(num#num))list`] THEN
+    MP_TAC (ISPEC `values:real list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (X_CHOOSE_THEN `y:real`
+          (X_CHOOSE_THEN `ys:real list` SUBST_ALL_TAC))) THEN
+    MP_TAC
+      (ISPEC `intervals:((num#num)#(num#num))list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (X_CHOOSE_THEN `i:(num#num)#(num#num)`
+          (X_CHOOSE_THEN
+            `is:((num#num)#(num#num))list` SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[ALL; ALL2; LENGTH; candle_fs_dot_abs_upper_def;
+                    ITLIST2_DEF; HD; TL;
+                    candle_fs_raw_product_add_real;
+                    candle_fs_raw_product_real] THEN
+    REPEAT STRIP_TAC THEN TRY ASM_ARITH_TAC THEN
+    SUBGOAL_THEN
+      `ITLIST2
+         (\r y total. candle_fs_real r * abs y + total)
+         t ys (&0)
+       <= candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+            (candle_fs_dot_abs_upper t is)`
+      ASSUME_TAC THENL
+     [USE_THEN "radii_ih" MATCH_MP_TAC THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+      `abs y <= candle_fs_real (candle_fs_interval_abs_upper i)`
+      ASSUME_TAC THENL
+     [MATCH_MP_TAC candle_fs_interval_abs_upper_sound THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+      `candle_fs_real h * abs y <=
+       candle_fs_real h * candle_fs_real (candle_fs_interval_abs_upper i)`
+      ASSUME_TAC THENL
+     [MATCH_MP_TAC REAL_LE_LMUL THEN ASM_REWRITE_TAC[];
+      ASM_REAL_ARITH_TAC]]);;
+
+let candle_fs_triple_denominator_pos = prove
+ (`0 < candle_fs_scale * (candle_fs_scale * candle_fs_scale)`,
+  REWRITE_TAC[LT_MULT; candle_fs_scale_pos;
+              candle_fs_product_denominator_pos]);;
+
+let candle_fs_raw_triple_add_real = prove
+ (`!x y.
+     candle_fs_raw_real
+       (candle_fs_scale * (candle_fs_scale * candle_fs_scale))
+       (candle_lc_zadd x y) =
+     candle_fs_raw_real
+       (candle_fs_scale * (candle_fs_scale * candle_fs_scale)) x +
+     candle_fs_raw_real
+       (candle_fs_scale * (candle_fs_scale * candle_fs_scale)) y`,
+  REPEAT GEN_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_add_real THEN
+  MP_TAC candle_fs_triple_denominator_pos THEN ARITH_TAC);;
+
+let candle_fs_raw_weighted_product_real = prove
+ (`!weight accumulated.
+     candle_fs_raw_real
+       (candle_fs_scale * (candle_fs_scale * candle_fs_scale))
+       (candle_q_zmul weight accumulated) =
+     candle_fs_real weight *
+     candle_fs_raw_real
+       (candle_fs_scale * candle_fs_scale) accumulated`,
+  REPEAT GEN_TAC THEN
+  MP_TAC
+    (SPECL
+      [`candle_fs_scale`; `candle_fs_scale * candle_fs_scale`;
+       `weight:num#num`; `accumulated:num#num`]
+      candle_fs_raw_mul_real) THEN
+  REWRITE_TAC[candle_fs_scale_pos; candle_fs_product_denominator_pos;
+              candle_fs_raw_real_def; GSYM candle_fs_real_def]);;
+
+(* The outer fixed-scale accumulator bounds the complete Hessian double sum.
+   Its accumulator has denominator scale cubed. *)
+
+let candle_fs_weighted_rows_abs_upper_sound = prove
+ (`!radii weights value_rows interval_rows.
+     ALL (\r. &0 <= candle_fs_real r) radii /\
+     ALL (\w. &0 <= candle_fs_real w) weights /\
+     ALL2 (ALL2 candle_fs_interval_contains) interval_rows value_rows /\
+     LENGTH weights = LENGTH value_rows /\
+     ALL (\values. LENGTH radii = LENGTH values) value_rows
+     ==>
+     ITLIST2
+       (\w values total.
+          candle_fs_real w *
+          ITLIST2
+            (\r y subtotal. candle_fs_real r * abs y + subtotal)
+            radii values (&0) + total)
+       weights value_rows (&0)
+     <= candle_fs_raw_real
+          (candle_fs_scale * (candle_fs_scale * candle_fs_scale))
+          (candle_fs_weighted_rows_abs_upper
+            radii weights interval_rows)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN
+    MP_TAC (ISPEC `value_rows:(real list)list` list_CASES) THEN
+    MP_TAC
+      (ISPEC
+        `interval_rows:(((num#num)#(num#num))list)list`
+        list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REWRITE_TAC[ALL; ALL2; LENGTH;
+                candle_fs_weighted_rows_abs_upper_def; ITLIST2_DEF;
+                candle_fs_raw_zero_real; REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "weights_ih") THEN
+    MAP_EVERY X_GEN_TAC
+      [`value_rows:(real list)list`;
+       `interval_rows:(((num#num)#(num#num))list)list`] THEN
+    MP_TAC (ISPEC `value_rows:(real list)list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (X_CHOOSE_THEN `values:real list`
+          (X_CHOOSE_THEN `value_tail:(real list)list` SUBST_ALL_TAC))) THEN
+    MP_TAC
+      (ISPEC
+        `interval_rows:(((num#num)#(num#num))list)list`
+        list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (X_CHOOSE_THEN `intervals:((num#num)#(num#num))list`
+          (X_CHOOSE_THEN
+            `interval_tail:(((num#num)#(num#num))list)list`
+            SUBST_ALL_TAC))) THEN
+    ASM_REWRITE_TAC[ALL; ALL2; LENGTH;
+                    candle_fs_weighted_rows_abs_upper_def; ITLIST2_DEF;
+                    HD; TL; candle_fs_raw_triple_add_real;
+                    candle_fs_raw_weighted_product_real] THEN
+    REPEAT STRIP_TAC THEN TRY ASM_ARITH_TAC THEN
+    SUBGOAL_THEN
+      `ITLIST2
+         (\r y subtotal. candle_fs_real r * abs y + subtotal)
+         radii values (&0)
+       <= candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+            (candle_fs_dot_abs_upper radii intervals)`
+      (LABEL_TAC "row_bound") THENL
+     [MATCH_MP_TAC candle_fs_dot_abs_upper_sound THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+      `ITLIST2
+         (\w values total.
+            candle_fs_real w *
+            ITLIST2
+              (\r y subtotal. candle_fs_real r * abs y + subtotal)
+              radii values (&0) + total)
+         t value_tail (&0)
+       <= candle_fs_raw_real
+            (candle_fs_scale *
+              (candle_fs_scale * candle_fs_scale))
+            (candle_fs_weighted_rows_abs_upper
+              radii t interval_tail)`
+      (LABEL_TAC "tail_bound") THENL
+     [USE_THEN "weights_ih" MATCH_MP_TAC THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+      `candle_fs_real h *
+         ITLIST2
+           (\r y subtotal. candle_fs_real r * abs y + subtotal)
+           radii values (&0)
+       <= candle_fs_real h *
+          candle_fs_raw_real (candle_fs_scale * candle_fs_scale)
+            (candle_fs_dot_abs_upper radii intervals)`
+      ASSUME_TAC THENL
+     [MATCH_MP_TAC REAL_LE_LMUL THEN ASM_REWRITE_TAC[];
+      ASM_REAL_ARITH_TAC]]);;
 
 let candle_fs_fixed_make_real = prove
  (`!positive negative.
