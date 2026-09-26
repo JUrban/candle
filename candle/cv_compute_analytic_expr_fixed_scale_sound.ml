@@ -504,6 +504,57 @@ let candle_fs_result_square_def = new_definition
  `candle_fs_result_square radii result =
     candle_fs_result_mul radii result result`;;
 
+let candle_fs_poly_step_def = define
+ `(candle_fs_poly_step dimensions radii
+      (Candle_q_push p n d) stack =
+     CONS
+       (candle_fs_result_constant dimensions radii ((p,n),d)) stack) /\
+  (candle_fs_poly_step dimensions radii
+      (Candle_q_load variable) stack =
+     CONS
+       (candle_fs_result_variable dimensions radii variable) stack) /\
+  (candle_fs_poly_step dimensions radii Candle_q_neg stack =
+     CONS
+       (candle_fs_result_neg radii
+         (candle_fs_result_head dimensions stack))
+       (candle_fs_result_tail stack)) /\
+  (candle_fs_poly_step dimensions radii Candle_q_add stack =
+     CONS
+       (candle_fs_result_add radii
+         (candle_fs_result_head dimensions
+           (candle_fs_result_tail stack))
+         (candle_fs_result_head dimensions stack))
+       (candle_fs_result_tail (candle_fs_result_tail stack))) /\
+  (candle_fs_poly_step dimensions radii Candle_q_mul stack =
+     CONS
+       (candle_fs_result_mul radii
+         (candle_fs_result_head dimensions
+           (candle_fs_result_tail stack))
+         (candle_fs_result_head dimensions stack))
+       (candle_fs_result_tail (candle_fs_result_tail stack))) /\
+  (candle_fs_poly_step dimensions radii Candle_q_square stack =
+     CONS
+       (candle_fs_result_square radii
+         (candle_fs_result_head dimensions stack))
+       (candle_fs_result_tail stack))`;;
+
+let candle_fs_poly_run_def = define
+ `(candle_fs_poly_run dimensions radii [] stack = stack) /\
+  (candle_fs_poly_run dimensions radii (CONS h t) stack =
+     candle_fs_poly_run dimensions radii t
+       (candle_fs_poly_step dimensions radii h stack))`;;
+
+let candle_fs_poly_program_fixed_def = new_definition
+ `candle_fs_poly_program_fixed dimensions radii program =
+    candle_fs_result_head dimensions
+      (candle_fs_poly_run dimensions radii program [])`;;
+
+let candle_fs_poly_program_def = new_definition
+ `candle_fs_poly_program center_boxes radii program =
+    candle_fs_poly_program_fixed
+      (candle_fs_interval_list_of_q center_boxes)
+      (candle_fs_list_of_q radii) program`;;
+
 (* -------------------------------------------------------------------------- *)
 (* Computed-value representation theorems.                                    *)
 (* -------------------------------------------------------------------------- *)
@@ -1407,6 +1458,80 @@ let candle_cv_fs_result_square_correct = prove
   REWRITE_TAC[candle_cv_fs_result_square_def;
               candle_fs_result_square_def;
               candle_cv_fs_result_mul_correct]);;
+
+let candle_cv_fs_poly_step_correct = prove
+ (`!instruction dimensions radii stack.
+     candle_cv_fs_poly_step
+       (candle_cv_fs_interval_list dimensions)
+       (candle_cv_lc_vec radii)
+       (candle_cv_q_instruction instruction)
+       (candle_cv_fs_result_list stack) =
+     candle_cv_fs_result_list
+       (candle_fs_poly_step dimensions radii instruction stack)`,
+  MATCH_MP_TAC candle_q_instruction_INDUCT THEN
+  REPEAT CONJ_TAC THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_poly_step_def; candle_fs_poly_step_def;
+              candle_cv_q_instruction_def;
+              candle_cv_fs_result_list_def;
+              cexp_fst_def; cexp_snd_def; cexp_eq_def; cexp_if_def;
+              cexp_ispair_def; distinctness "cval"; injectivity "cval";
+              NOT_SUC; candle_one_ne_zero; candle_four_ne_two;
+              candle_four_ne_three; candle_three_ne_two;
+              candle_five_ne_two; candle_five_ne_three;
+              candle_five_ne_four;
+              candle_cv_fs_result_constant_correct;
+              candle_cv_fs_result_variable_correct;
+              candle_cv_fs_result_head_correct;
+              candle_cv_fs_result_tail_correct;
+              candle_cv_fs_result_neg_correct;
+              candle_cv_fs_result_add_correct;
+              candle_cv_fs_result_mul_correct;
+              candle_cv_fs_result_square_correct]);;
+
+let candle_cv_fs_poly_run_correct = prove
+ (`!program dimensions radii stack.
+     candle_cv_fs_poly_run
+       (candle_cv_fs_interval_list dimensions)
+       (candle_cv_lc_vec radii)
+       (candle_cv_q_instruction_list program)
+       (candle_cv_fs_result_list stack) =
+     candle_cv_fs_result_list
+       (candle_fs_poly_run dimensions radii program stack)`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_q_instruction_list_def;
+                  candle_cv_fs_poly_run_def;
+                  candle_fs_poly_run_def;
+                  candle_cv_fs_poly_step_correct]);;
+
+let candle_cv_fs_poly_program_fixed_correct = prove
+ (`!program dimensions radii.
+     candle_cv_fs_poly_program_fixed
+       (candle_cv_fs_interval_list dimensions)
+       (candle_cv_lc_vec radii)
+       (candle_cv_q_instruction_list program) =
+     candle_cv_fs_result
+       (candle_fs_poly_program_fixed dimensions radii program)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_poly_program_fixed_def;
+              candle_fs_poly_program_fixed_def;
+              GSYM candle_cv_fs_result_list_def;
+              candle_cv_fs_poly_run_correct;
+              candle_cv_fs_result_head_correct]);;
+
+let candle_cv_fs_poly_program_correct = prove
+ (`!program center_boxes radii.
+     candle_cv_fs_poly_program
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_list radii)
+       (candle_cv_q_instruction_list program) =
+     candle_cv_fs_result
+       (candle_fs_poly_program center_boxes radii program)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_poly_program_def;
+              candle_fs_poly_program_def;
+              candle_cv_fs_interval_list_of_q_correct;
+              candle_cv_fs_list_of_q_correct;
+              candle_cv_fs_poly_program_fixed_correct]);;
 
 (* -------------------------------------------------------------------------- *)
 (* Real denotation.                                                           *)
