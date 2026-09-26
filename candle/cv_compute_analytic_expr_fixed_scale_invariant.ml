@@ -4540,4 +4540,368 @@ let candle_fs_result_mul_hessian_contains = prove
     (AP_TERM contains_pred product_th) in
   MATCH_ACCEPT_TAC (EQ_MP (SYM product_contains_th) raw_th));;
 
+let candle_fs_result_mul_poly_invariant = prove
+ (`!left_expr right_expr boxes left_result right_result
+      (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) left_expr /\
+     candle_poly_valid_dim (dimindex (:N)) right_expr /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_fs_result_poly_invariant
+       type_witness boxes left_result left_expr /\
+     candle_fs_result_poly_invariant
+       type_witness boxes right_result right_expr
+     ==>
+     candle_fs_result_poly_invariant type_witness boxes
+       (candle_fs_result_mul
+         (candle_fs_list_of_q
+           (candle_q_fixed_list_round_upper
+             (candle_q_radius_list boxes)))
+         left_result right_result)
+       (Candle_poly_mul left_expr right_expr)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_result_mul_def] THEN
+  ASM_CASES_TAC
+   `candle_fs_result_domain
+      (left_result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list) /\
+    candle_fs_result_domain
+      (right_result:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list)` THEN
+  TRY
+   (REWRITE_TAC[candle_fs_result_complete_raw_def;
+                candle_fs_result_poly_invariant_def;
+                candle_fs_result_complete_domain] THEN
+    ASM_REWRITE_TAC[] THEN NO_TAC) THEN
+  let domains_th = ASSUME
+     `candle_fs_result_domain
+        (left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list) /\
+      candle_fs_result_domain
+        (right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)` in
+    let left_domain_th = CONJUNCT1 domains_th in
+    let right_domain_th = CONJUNCT2 domains_th in
+    let left_inv_th = ASSUME
+     `candle_fs_result_poly_invariant
+       (type_witness:real^N) boxes left_result left_expr` in
+    let right_inv_th = ASSUME
+     `candle_fs_result_poly_invariant
+       (type_witness:real^N) boxes right_result right_expr` in
+    let left_center_shape_th = MATCH_MP
+     (ISPECL
+       [`left_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_shape)
+     (CONJ left_inv_th left_domain_th) in
+    let right_center_shape_th = MATCH_MP
+     (ISPECL
+       [`right_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_shape)
+     (CONJ right_inv_th right_domain_th) in
+    let left_proxy_shape_th = MATCH_MP
+     (ISPECL
+       [`left_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_proxy_data_shape)
+     (CONJ left_inv_th left_domain_th) in
+    let right_proxy_shape_th = MATCH_MP
+     (ISPECL
+       [`right_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_proxy_data_shape)
+     (CONJ right_inv_th right_domain_th) in
+    let left_center_data_th =
+     REWRITE_RULE[candle_fs_first_to_q_shape] left_center_shape_th in
+    let right_center_data_th =
+     REWRITE_RULE[candle_fs_first_to_q_shape] right_center_shape_th in
+    let output_shape_th = MATCH_MP
+     (ISPECL
+       [`dimindex (:N)`;
+        `candle_fs_result_center
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_center
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_value_bound
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_value_bound
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_gradient_bounds
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_gradient_bounds
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_hessian
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`;
+        `candle_fs_result_hessian
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list)`]
+       candle_fs_raw_mul_complete_shape)
+     (end_itlist CONJ
+       [CONJUNCT1 left_center_data_th;
+        CONJUNCT1 right_center_data_th;
+        CONJUNCT1 left_proxy_shape_th;
+        CONJUNCT1 right_proxy_shape_th;
+        CONJUNCT1 (CONJUNCT2 left_proxy_shape_th);
+        CONJUNCT2 (CONJUNCT2 left_proxy_shape_th);
+        CONJUNCT1 (CONJUNCT2 right_proxy_shape_th);
+        CONJUNCT2 (CONJUNCT2 right_proxy_shape_th)]) in
+    let output_shape_expanded_th = REWRITE_RULE
+     [candle_fs_first_make_def; candle_fs_first_value_def;
+      candle_fs_first_gradient_def; FST; SND]
+     output_shape_th in
+    let left_center_value_th = MATCH_MP
+     (ISPECL
+       [`left_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_value_contains)
+     (CONJ left_inv_th left_domain_th) in
+    let right_center_value_th = MATCH_MP
+     (ISPECL
+       [`right_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_value_contains)
+     (CONJ right_inv_th right_domain_th) in
+    let left_center_gradient_th = MATCH_MP
+     (ISPECL
+       [`left_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_gradient_contains)
+     (CONJ left_inv_th left_domain_th) in
+    let right_center_gradient_th = MATCH_MP
+     (ISPECL
+       [`right_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`]
+       candle_fs_result_poly_center_gradient_contains)
+     (CONJ right_inv_th right_domain_th) in
+    let center_value_gradient_th = MATCH_MP
+     (BETA_RULE (ISPECL
+       [`dimindex (:N)`;
+        `candle_fs_first_value (candle_fs_result_center
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+        `candle_fs_first_value (candle_fs_result_center
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+        `candle_fs_first_gradient (candle_fs_result_center
+          (left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+        `candle_fs_first_gradient (candle_fs_result_center
+          (right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+        `candle_poly_denote_dim left_expr
+          (candle_q_box_center_vector boxes : real^N)`;
+        `candle_poly_denote_dim right_expr
+          (candle_q_box_center_vector boxes : real^N)`;
+        `(\i. partial (i + 1) (candle_poly_denote_dim left_expr)
+          (candle_q_box_center_vector boxes : real^N)):num->real`;
+        `(\i. partial (i + 1) (candle_poly_denote_dim right_expr)
+          (candle_q_box_center_vector boxes : real^N)):num->real`]
+       candle_fs_raw_mul_center_value_gradient_contains))
+     (end_itlist CONJ
+       [left_center_value_th; right_center_value_th;
+        left_center_gradient_th; right_center_gradient_th]) in
+    let center_domain_th = MATCH_MP candle_q_box_m_cell_domain
+     (CONJ
+       (ASSUME
+         `LENGTH
+           (boxes:(((num#num)#num)#((num#num)#num))list) =
+          dimindex (:N)`)
+       (ASSUME `candle_q_box_valid_list boxes`)) in
+    let center_in_box_th = MATCH_MP y_in_domain center_domain_th in
+    let center_hessian_th = MATCH_MP
+     (ISPECL
+       [`left_expr:candle_poly_expr`; `right_expr:candle_poly_expr`;
+        `boxes:(((num#num)#num)#((num#num)#num))list`;
+        `left_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `right_result:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list`;
+        `type_witness:real^N`;
+        `(candle_q_box_center_vector boxes : real^N)`]
+       candle_fs_result_mul_hessian_contains)
+     (end_itlist CONJ
+       [ASSUME `candle_poly_valid_dim (dimindex (:N)) left_expr`;
+        ASSUME `candle_poly_valid_dim (dimindex (:N)) right_expr`;
+        left_inv_th; right_inv_th; left_domain_th; right_domain_th;
+        center_in_box_th]) in
+    ASM_REWRITE_TAC[candle_fs_result_complete_raw_def;
+                    candle_fs_first_make_def;
+                    candle_fs_first_value_def;
+                    candle_fs_first_gradient_def; FST; SND] THEN
+    MATCH_MP_TAC candle_fs_result_complete_poly_invariant THEN
+    REPEAT CONJ_TAC THENL
+     [ASM_REWRITE_TAC[candle_poly_valid_dim_def];
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[];
+      ACCEPT_TAC output_shape_expanded_th;
+      MATCH_MP_TAC candle_fs_first_components_from_data THEN
+      REPEAT CONJ_TAC THENL
+       [ACCEPT_TAC output_shape_expanded_th;
+        MP_TAC (CONJUNCT1 center_value_gradient_th) THEN
+        ASM_SIMP_TAC[candle_poly_denote_dim_mul;
+                     candle_fs_first_value_def; FST];
+        MP_TAC (CONJUNCT2 center_value_gradient_th) THEN
+        ASM_SIMP_TAC[candle_poly_denote_dim_mul_partial;
+                     candle_fs_first_value_def;
+                     candle_fs_first_gradient_def; FST; SND];
+        BETA_TAC THEN
+        ACCEPT_TAC center_hessian_th];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      BETA_TAC THEN
+      MATCH_MP_TAC
+       (ISPECL
+         [`left_expr:candle_poly_expr`; `right_expr:candle_poly_expr`;
+          `boxes:(((num#num)#num)#((num#num)#num))list`;
+          `left_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list`;
+          `right_result:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list`;
+          `type_witness:real^N`; `p:real^N`]
+         candle_fs_result_mul_hessian_contains) THEN
+      ASM_MESON_TAC[]]);;
+
 end;;
