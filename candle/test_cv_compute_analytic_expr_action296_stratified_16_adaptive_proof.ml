@@ -43,7 +43,7 @@ let candle_action296_stratified_16_roots =
    (1027,candle_action296_stratified_16_one_split 1)];;
 
 let candle_action296_stratified_16_result =
-  candle_action296_adaptive_forest_prove
+  candle_action296_adaptive_forest_prove_sequential
     "stratified-16"
     candle_action296_stratified_16_roots
     26

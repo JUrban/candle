@@ -313,4 +313,123 @@ let candle_action296_adaptive_forest_prove
     forest_result_digest = digest;
   };;
 
+let candle_action296_adaptive_forest_prove_one index plan_data =
+  let phase = "leaf-" ^ string_of_int index in
+  let parent = List.nth !candle_action296_leaf_grouping_leaves index in
+  let lower,upper = candle_action296_leaf_grouping_domain_bounds parent in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-source-preparation") "begin" in
+  let prepared =
+    candle_q_dim_analytic_jet_prepare_box_six
+      candle_action296_plan_prepared.function_term lower upper in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-source-preparation") "end" in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-point-plan-compilation") "begin" in
+  let point_plan = candle_q_dim_taylor_model_point_plan_six prepared in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-point-plan-compilation") "end" in
+  let tree = candle_action296_forest_build_tree parent plan_data in
+  let domains = candle_action296_forest_tree_domains tree in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-final-cell-preparation") "begin" in
+  let cells =
+    map
+      (fun domain ->
+        candle_action296_forest_cell
+          (candle_action296_adaptive_grouping_case
+            prepared point_plan domain))
+      domains in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-final-cell-preparation") "end" in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-aggregate-proof") "begin" in
+  let aggregate =
+    candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
+      prepared cells in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-aggregate-proof") "end" in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-source-extraction") "begin" in
+  let sources =
+    map
+      (candle_q_dim_taylor_model_fixed_algebraic_batch_cell_source_six
+        aggregate)
+      cells in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-source-extraction") "end" in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-live-handoff-and-glue") "begin" in
+  let live =
+    candle_action296_forest_map3
+      candle_action296_forest_live cells sources domains in
+  let theorem,remaining = candle_action296_forest_glue tree live in
+  let _ =
+    candle_action296_forest_marker
+      (phase ^ "-live-handoff-and-glue") "end" in
+  if remaining <> [] ||
+     not
+       (candle_action296_forest_validate_results
+         [index,plan_data] [index,theorem] [index,parent]) then
+    failwith
+      ("action296 adaptive forest: invalid sequential root " ^
+       string_of_int index);
+  index,theorem,length cells;;
+
+let candle_action296_adaptive_forest_prove_sequential
+    label roots expected_final_cells expected_digest =
+  if roots = [] ||
+     not (candle_action296_forest_strict_roots (-1) roots) then
+    failwith "action296 adaptive forest: invalid sequential root plan";
+  let axioms_before = axioms () in
+  let _ = candle_action296_forest_marker "sequential-forest" "begin" in
+  let completed =
+    map
+      (fun (index,plan_data) ->
+        candle_action296_adaptive_forest_prove_one index plan_data)
+      roots in
+  let _ = candle_action296_forest_marker "sequential-forest" "end" in
+  let root_results =
+    map (fun (index,theorem,_) -> index,theorem) completed in
+  let final_cell_count =
+    List.fold_left
+      (fun count (_,_,cells) -> count + cells) 0 completed in
+  let digest =
+    Digest.to_hex
+      (Digest.string
+        (String.concat "\n"
+          (map (fun (_,theorem) -> string_of_thm theorem) root_results))) in
+  let axioms_after = axioms () in
+  let digest_matches =
+    match expected_digest with
+    | None -> true
+    | Some expected -> digest = expected in
+  if final_cell_count <> expected_final_cells ||
+     not digest_matches ||
+     length axioms_after <> length axioms_before ||
+     not
+       (List.for_all
+         (fun theorem -> List.mem theorem axioms_before)
+         axioms_after) then
+    failwith
+      ("action296 adaptive forest: sequential validation failed for " ^
+       label);
+  {
+    forest_result_original_roots = length roots;
+    forest_result_final_cells = final_cell_count;
+    forest_result_theorems = root_results;
+    forest_result_digest = digest;
+  };;
+
 end;;

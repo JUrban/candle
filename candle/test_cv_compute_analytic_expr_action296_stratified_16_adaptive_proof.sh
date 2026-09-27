@@ -49,7 +49,7 @@ fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.01 \
-  --stop-key action296-adaptive-forest-proof/forest/live-handoff-and-glue \
+  --stop-key action296-adaptive-forest-proof/forest/sequential-forest \
   --wait-for-log-seconds 1800 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
