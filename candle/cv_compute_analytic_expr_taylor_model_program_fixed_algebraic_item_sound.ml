@@ -122,4 +122,90 @@ let candle_cv_fsa_item_add_correct = prove
               candle_cv_q_dim_taylor_model_result_add_correct;
               cexp_if_def]);;
 
+let candle_cv_fsa_item_mul_correct = prove
+ (`!radii left_tag left_fixed left_q right_tag right_fixed right_q.
+     candle_cv_fsa_item_mul (candle_cv_q_list radii)
+       (candle_cv_fsa_item_encode left_tag left_fixed left_q)
+       (candle_cv_fsa_item_encode right_tag right_fixed right_q) =
+     let result =
+       candle_q_dim_taylor_model_result_mul radii
+         (candle_fsa_item_q_view left_tag left_fixed left_q)
+         (candle_fsa_item_q_view right_tag right_fixed right_q) in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_mul_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_fsa_item_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_mul_correct]);;
+
+let candle_cv_fsa_item_square_correct = prove
+ (`!radii tag fixed q_result.
+     candle_cv_fsa_item_square (candle_cv_q_list radii)
+       (candle_cv_fsa_item_encode tag fixed q_result) =
+     let result =
+       candle_q_dim_taylor_model_result_square radii
+         (candle_fsa_item_q_view tag fixed q_result) in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_square_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_fsa_item_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_square_correct]);;
+
+let candle_cv_fsa_item_sqrt_correct = prove
+ (`!radii center_s box_s tag fixed q_result.
+     candle_cv_fsa_item_sqrt (candle_cv_q_list radii)
+       (candle_cv_q_interval center_s) (candle_cv_q_interval box_s)
+       (candle_cv_fsa_item_encode tag fixed q_result) =
+     let result =
+       candle_q_dim_taylor_model_result_sqrt radii center_s box_s
+         (candle_fsa_item_q_view tag fixed q_result) in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_sqrt_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_fsa_item_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_sqrt_correct]);;
+
+let candle_cv_fsa_item_inv_correct = prove
+ (`!radii tag fixed q_result.
+     candle_cv_fsa_item_inv (candle_cv_q_list radii)
+       (candle_cv_fsa_item_encode tag fixed q_result) =
+     let result =
+       candle_q_dim_taylor_model_result_inv radii
+         (candle_fsa_item_q_view tag fixed q_result) in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_inv_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_fsa_item_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_inv_correct]);;
+
+let candle_cv_fsa_item_atn_correct = prove
+ (`!radii tag fixed q_result.
+     candle_cv_fsa_item_atn (candle_cv_q_list radii)
+       (candle_cv_fsa_item_encode tag fixed q_result) =
+     let result =
+       candle_q_dim_taylor_model_result_atn radii
+         (candle_fsa_item_q_view tag fixed q_result) in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_atn_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_fsa_item_to_q_correct;
+              candle_cv_q_dim_taylor_model_result_atn_correct]);;
+
+let candle_cv_fsa_item_pi_half_correct = prove
+ (`!radii center_boxes boxes.
+     candle_cv_fsa_item_pi_half (candle_cv_q_list radii)
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list boxes) =
+     let result =
+       candle_q_dim_taylor_model_result_pi_half radii center_boxes boxes in
+     candle_cv_fsa_item_encode F (candle_fsa_result_of_q result) result`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF; candle_cv_fsa_item_pi_half_def;
+              candle_cv_fsa_item_encode_def;
+              candle_cv_q_dim_taylor_model_result_pi_half_correct]);;
+
 end;;

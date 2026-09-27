@@ -16,9 +16,21 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_cv_fsa_item_to_fixed_correct <> [] ||
    hyp candle_cv_fsa_item_neg_correct <> [] ||
    hyp candle_cv_fsa_item_add_correct <> [] ||
+   hyp candle_cv_fsa_item_mul_correct <> [] ||
+   hyp candle_cv_fsa_item_square_correct <> [] ||
+   hyp candle_cv_fsa_item_sqrt_correct <> [] ||
+   hyp candle_cv_fsa_item_inv_correct <> [] ||
+   hyp candle_cv_fsa_item_atn_correct <> [] ||
+   hyp candle_cv_fsa_item_pi_half_correct <> [] ||
    hyp candle_fsa_item_fixed_view_analytic_invariant <> [] ||
    hyp candle_fsa_item_neg_analytic_invariant <> [] ||
    hyp candle_fsa_item_add_analytic_invariant <> [] ||
+   hyp candle_fsa_item_mul_analytic_invariant <> [] ||
+   hyp candle_fsa_item_square_analytic_invariant <> [] ||
+   hyp candle_fsa_item_inv_analytic_invariant <> [] ||
+   hyp candle_fsa_item_sqrt_analytic_invariant <> [] ||
+   hyp candle_fsa_item_atn_analytic_invariant <> [] ||
+   hyp candle_fsa_item_pi_half_analytic_invariant <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
