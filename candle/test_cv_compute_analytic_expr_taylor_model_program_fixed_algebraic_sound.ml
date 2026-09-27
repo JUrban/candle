@@ -34,8 +34,17 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fs_result_complete_analytic_invariant <> [] ||
    hyp candle_fs_result_analytic_center_shape <> [] ||
    hyp candle_fs_result_analytic_center_contains <> [] ||
+   hyp candle_fs_result_analytic_center_value_contains <> [] ||
+   hyp candle_fs_result_analytic_center_gradient_contains <> [] ||
+   hyp candle_fs_result_analytic_center_hessian_contains <> [] ||
+   hyp candle_fs_result_analytic_proxy_shape <> [] ||
+   hyp candle_fs_result_analytic_proxy_data_shape <> [] ||
+   hyp candle_fs_result_analytic_box_regular <> [] ||
    hyp candle_fs_result_analytic_box_hessian_contains <> [] ||
-   hyp candle_fs_result_neg_analytic_invariant <> [] then
+   hyp candle_fs_result_neg_analytic_invariant <> [] ||
+   hyp candle_fs_result_add_center_analytic_contains <> [] ||
+   hyp candle_fs_result_add_box_hessian_contains <> [] ||
+   hyp candle_fs_result_add_analytic_invariant <> [] then
   failwith "fixed-algebraic soundness substrate has assumptions";;
 
 let candle_fixed_algebraic_sound_axioms_after = axioms ();;
