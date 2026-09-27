@@ -187,6 +187,13 @@ def validate_range(leaves: list[Leaf], start: int, stop: int) -> None:
         )
 
 
+def select_range(leaves: list[Leaf], start: int, stop: int) -> list[Leaf]:
+    """Select an explicit subrange from an otherwise complete scan."""
+    selected = [leaf for leaf in leaves if start <= leaf.index <= stop]
+    validate_range(selected, start, stop)
+    return selected
+
+
 def _plan(leaf: Leaf) -> str:
     base = "Candle_action296_forest_leaf"
     if leaf.depth == 0:
@@ -281,9 +288,20 @@ def main() -> int:
     parser.add_argument("--ml-name", default="candle_action296_generated")
     parser.add_argument("--expected-digest")
     parser.add_argument("--allow-partial", action="store_true")
+    parser.add_argument(
+        "--select-range",
+        action="store_true",
+        help=(
+            "select START..STOP from complete input logs before validating; "
+            "without this flag, records outside the range remain an error"
+        ),
+    )
     args = parser.parse_args()
     leaves = read_logs(args.log, require_complete=not args.allow_partial)
-    validate_range(leaves, args.start, args.stop)
+    if args.select_range:
+        leaves = select_range(leaves, args.start, args.stop)
+    else:
+        validate_range(leaves, args.start, args.stop)
     args.output_json.write_text(render_json(leaves, args.log), encoding="utf-8")
     if args.output_ml is not None:
         args.output_ml.write_text(

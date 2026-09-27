@@ -72,6 +72,20 @@ class Action296ChunkPolicyTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "range mismatch"):
                 policy.validate_range(leaves, 4, 5)
 
+    def test_explicit_subrange_selection(self) -> None:
+        def direct(index: int) -> policy.Leaf:
+            return policy.parse_leaf(
+                "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t "
+                f"index={index} depth=0 final_cells=1 first_axis=none "
+                "depth1_flags=1,1,1,1,1,1,1,1,1,1,1,1,1 depth2="
+            )
+
+        leaves = [direct(index) for index in range(4, 9)]
+        selected = policy.select_range(leaves, 5, 7)
+        self.assertEqual([leaf.index for leaf in selected], [5, 6, 7])
+        with self.assertRaisesRegex(ValueError, "range mismatch"):
+            policy.select_range(leaves, 7, 9)
+
     def test_multiple_logs_merge_and_duplicate_rejection(self) -> None:
         def record(index: int) -> str:
             return (
