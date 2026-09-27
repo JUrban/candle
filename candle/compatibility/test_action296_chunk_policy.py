@@ -24,6 +24,9 @@ class Action296ChunkPolicyTests(unittest.TestCase):
         ]
         leaves = [policy.parse_leaf(line) for line in lines]
         rendered = policy.render_ml(leaves, "candle_test_plan")
+        self.assertIn(
+            "open Candle_cv_action296_adaptive_forest_prove;;", rendered
+        )
         self.assertIn("(1,Candle_action296_forest_leaf)", rendered)
         self.assertIn("Candle_action296_forest_split (6,", rendered)
         self.assertIn("let candle_test_plan_final_cells = 6;;", rendered)

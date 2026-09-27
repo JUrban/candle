@@ -235,6 +235,7 @@ def render_ml(
     return (
         "(* Generated untrusted action-296 forest plan.  The reflected proof\n"
         "   adapter must recheck every selected final cell. *)\n"
+        "open Candle_cv_action296_adaptive_forest_prove;;\n"
         f"let {name}_roots =\n"
         + "[" + ";\n".join(entries) + "];;\n"
         + f"let {name}_final_cells = {total_cells};;\n"
