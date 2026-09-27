@@ -455,4 +455,111 @@ let candle_fsa_logical_program_step_pi_half = prove
               candle_q_analytic_instruction_tag_def] THEN
   CONV_TAC NUM_REDUCE_CONV);;
 
+(* Append one emitted instruction without losing the suffix-dependent fixed
+   flag.  The premise for the prefix sees the instruction and any still later
+   program; the final step sees only the caller's future flag. *)
+
+let candle_fsa_logical_program_run_with_future_append_single = prove
+ (`!center_program box_program center_instruction box_instruction
+      center_boxes boxes radii stack inner result future_nonlinear.
+     LENGTH center_program = LENGTH box_program /\
+     candle_fsa_logical_program_run_with_future
+       (candle_fsa_program_has_nonlinear [center_instruction] \/
+        future_nonlinear)
+       center_boxes boxes radii center_program box_program stack =
+       CONS inner stack /\
+     candle_fsa_logical_program_step center_boxes boxes radii
+       (~future_nonlinear) center_instruction box_instruction
+       (CONS inner stack) = CONS result stack
+     ==>
+     candle_fsa_logical_program_run_with_future future_nonlinear
+       center_boxes boxes radii
+       (APPEND center_program [center_instruction])
+       (APPEND box_program [box_instruction]) stack = CONS result stack`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii
+      (APPEND center_program [center_instruction])
+      (APPEND box_program [box_instruction]) stack =
+    candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii [center_instruction] [box_instruction]
+      (candle_fsa_logical_program_run_with_future
+        (candle_fsa_program_has_nonlinear [center_instruction] \/
+         future_nonlinear)
+        center_boxes boxes radii center_program box_program stack)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fsa_logical_program_run_with_future_append THEN
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[candle_fsa_logical_program_run_with_future_def;
+                    candle_fsa_program_has_nonlinear_def; OR_CLAUSES]]);;
+
+(* The corresponding binary postfix shape.  Each child is evaluated with the
+   precise remaining suffix visible, and the final instruction consumes the
+   right result above the left result. *)
+
+let candle_fsa_logical_program_run_with_future_append_binary = prove
+ (`!center_left box_left center_right box_right
+      center_instruction box_instruction center_boxes boxes radii stack
+      left right result future_nonlinear.
+     LENGTH center_left = LENGTH box_left /\
+     LENGTH center_right = LENGTH box_right /\
+     candle_fsa_logical_program_run_with_future
+       (candle_fsa_program_has_nonlinear
+          (APPEND center_right [center_instruction]) \/ future_nonlinear)
+       center_boxes boxes radii center_left box_left stack =
+       CONS left stack /\
+     candle_fsa_logical_program_run_with_future
+       (candle_fsa_program_has_nonlinear [center_instruction] \/
+        future_nonlinear)
+       center_boxes boxes radii center_right box_right
+       (CONS left stack) = CONS right (CONS left stack) /\
+     candle_fsa_logical_program_step center_boxes boxes radii
+       (~future_nonlinear) center_instruction box_instruction
+       (CONS right (CONS left stack)) = CONS result stack
+     ==>
+     candle_fsa_logical_program_run_with_future future_nonlinear
+       center_boxes boxes radii
+       (APPEND center_left
+         (APPEND center_right [center_instruction]))
+       (APPEND box_left
+         (APPEND box_right [box_instruction])) stack = CONS result stack`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii
+      (APPEND center_left
+        (APPEND center_right [center_instruction]))
+      (APPEND box_left
+        (APPEND box_right [box_instruction])) stack =
+    candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii
+      (APPEND center_right [center_instruction])
+      (APPEND box_right [box_instruction])
+      (candle_fsa_logical_program_run_with_future
+        (candle_fsa_program_has_nonlinear
+           (APPEND center_right [center_instruction]) \/ future_nonlinear)
+        center_boxes boxes radii center_left box_left stack)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fsa_logical_program_run_with_future_append THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii
+      (APPEND center_right [center_instruction])
+      (APPEND box_right [box_instruction]) (CONS left stack) =
+    candle_fsa_logical_program_run_with_future future_nonlinear
+      center_boxes boxes radii [center_instruction] [box_instruction]
+      (candle_fsa_logical_program_run_with_future
+        (candle_fsa_program_has_nonlinear [center_instruction] \/
+         future_nonlinear)
+        center_boxes boxes radii center_right box_right (CONS left stack))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fsa_logical_program_run_with_future_append THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ASM_REWRITE_TAC[candle_fsa_logical_program_run_with_future_def;
+                  candle_fsa_program_has_nonlinear_def; OR_CLAUSES]);;
+
 end;;

@@ -66,6 +66,8 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fsa_logical_program_step_inv <> [] ||
    hyp candle_fsa_logical_program_step_atn <> [] ||
    hyp candle_fsa_logical_program_step_pi_half <> [] ||
+   hyp candle_fsa_logical_program_run_with_future_append_single <> [] ||
+   hyp candle_fsa_logical_program_run_with_future_append_binary <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
