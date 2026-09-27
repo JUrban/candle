@@ -1,0 +1,44 @@
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_invariant.ml";;
+
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_invariant;;
+
+let candle_fixed_algebraic_sound_axioms_before = axioms ();;
+
+if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
+   hyp candle_cv_fsa_result_of_q_correct <> [] ||
+   hyp candle_fsa_interval_matrix_of_q_length <> [] ||
+   hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
+   hyp candle_fsa_interval_matrix_of_q_map <> [] ||
+   hyp candle_fsa_interval_matrix_of_q_contains <> [] ||
+   hyp candle_fsa_interval_roundtrip_contains <> [] ||
+   hyp candle_fsa_interval_list_roundtrip_length <> [] ||
+   hyp candle_fsa_interval_list_roundtrip_contains <> [] ||
+   hyp candle_fsa_interval_matrix_roundtrip_shape <> [] ||
+   hyp candle_fsa_interval_matrix_roundtrip_contains <> [] ||
+   hyp candle_fsa_jet_of_q_shape <> [] ||
+   hyp candle_fsa_jet_of_q_f_contains <> [] ||
+   hyp candle_fsa_jet_of_q_gradient_contains <> [] ||
+   hyp candle_fsa_jet_of_q_hessian_contains <> [] ||
+   hyp candle_fsa_jet_of_q_contains_components <> [] ||
+   hyp candle_fsa_result_of_q_domain <> [] ||
+   hyp candle_fsa_result_of_q_domain_roundtrip <> [] ||
+   hyp candle_q_dim_taylor_model_proxy_hessian <> [] ||
+   hyp candle_fsa_result_of_q_center <> [] ||
+   hyp candle_fsa_result_of_q_proxy <> [] ||
+   hyp candle_fsa_result_of_q_analytic_invariant <> [] then
+  failwith "fixed-algebraic soundness substrate has assumptions";;
+
+let candle_fixed_algebraic_sound_axioms_after = axioms ();;
+
+if length candle_fixed_algebraic_sound_axioms_after <>
+     length candle_fixed_algebraic_sound_axioms_before ||
+   not
+     (List.for_all
+       (fun theorem ->
+         List.mem theorem candle_fixed_algebraic_sound_axioms_before)
+       candle_fixed_algebraic_sound_axioms_after) then
+  failwith "fixed-algebraic soundness substrate changed axioms";;
+
+print_endline
+  "CANDLE_CV_FIXED_ALGEBRAIC_SOUND_OK DEVELOPMENT_NON_RELEASE";;
