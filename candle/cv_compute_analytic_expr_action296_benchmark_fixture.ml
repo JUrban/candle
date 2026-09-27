@@ -21,6 +21,15 @@ open Candle_cv_analytic_expr_box_certificate_prepare;;
 open Candle_cv_analytic_expr_taylor_model_certified_prove;;
 open Candle_cv_analytic_expr_certificate_variant_prepare;;
 
+let candle_action296_instruction_profile_marker phase event =
+  print_endline
+    ("CANDLE_CERT_PROFILE lane=action296-benchmark-fixture scope=boxes-8" ^
+     " phase=" ^ phase ^ " event=" ^ event);;
+
+let _ =
+  candle_action296_instruction_profile_marker
+    "shared-preparation" "begin";;
+
 let candle_action296_instruction_profile_root_domain =
   M_taylor.mk_m_center_domain
     candle_action296_plan_dimension 6
@@ -99,6 +108,10 @@ let candle_action296_instruction_profile_cases =
           candle_action296_instruction_profile_box_prepared lower upper in
       variant,lower,upper)
     candle_action296_instruction_profile_domains;;
+
+let _ =
+  candle_action296_instruction_profile_marker
+    "shared-preparation" "end";;
 
 type candle_action296_instruction_profile_cval =
   | Candle_action296_instruction_num of num
