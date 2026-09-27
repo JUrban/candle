@@ -1,11 +1,13 @@
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_invariant.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_sound.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_program_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_program_sound;;
 
 let candle_fixed_algebraic_sound_axioms_before = axioms ();;
 
@@ -33,6 +35,14 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fsa_item_atn_analytic_invariant <> [] ||
    hyp candle_fsa_item_pi_half_analytic_invariant <> [] ||
    hyp candle_fsa_poly_item_analytic_invariant <> [] ||
+   hyp candle_cv_fsa_logical_item_default_correct <> [] ||
+   hyp candle_cv_fsa_logical_item_head_correct <> [] ||
+   hyp candle_cv_fsa_logical_item_tail_correct <> [] ||
+   hyp candle_cv_fsa_instruction_is_nonlinear_correct <> [] ||
+   hyp candle_cv_fsa_program_has_nonlinear_correct <> [] ||
+   hyp candle_cv_bool_not <> [] ||
+   hyp candle_cv_fsa_logical_program_step_correct <> [] ||
+   hyp candle_cv_fsa_logical_program_run_correct <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
