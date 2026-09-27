@@ -27,6 +27,24 @@ class Action296ChunkPolicyTests(unittest.TestCase):
         self.assertIn("(1,Candle_action296_forest_leaf)", rendered)
         self.assertIn("Candle_action296_forest_split (6,", rendered)
         self.assertIn("let candle_test_plan_final_cells = 6;;", rendered)
+        self.assertIn("let candle_test_plan_expected_digest = None;;", rendered)
+
+        pinned = policy.render_ml(
+            leaves,
+            "candle_test_plan",
+            expected_digest="0123456789abcdef0123456789abcdef",
+        )
+        self.assertIn(
+            'let candle_test_plan_expected_digest = '
+            'Some "0123456789abcdef0123456789abcdef";;',
+            pinned,
+        )
+        with self.assertRaisesRegex(ValueError, "theorem digest"):
+            policy.render_ml(
+                leaves,
+                "candle_test_plan",
+                expected_digest="not-a-digest",
+            )
 
     def test_wrong_selected_axis_is_rejected(self) -> None:
         line = (

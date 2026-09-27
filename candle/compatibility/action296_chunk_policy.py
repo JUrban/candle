@@ -217,17 +217,28 @@ def _plan(leaf: Leaf) -> str:
     )
 
 
-def render_ml(leaves: list[Leaf], name: str) -> str:
+def render_ml(
+    leaves: list[Leaf], name: str, expected_digest: str | None = None
+) -> str:
     if not re.fullmatch(r"[a-z][a-z0-9_]*", name):
         raise ValueError("ML binding name must be lowercase alphanumeric/underscore")
+    if expected_digest is not None and not re.fullmatch(
+        r"[0-9a-f]{32}", expected_digest
+    ):
+        raise ValueError("expected theorem digest must be 32 lowercase hex digits")
     entries = [f"   ({leaf.index},{_plan(leaf)})" for leaf in leaves]
     total_cells = sum(leaf.final_cells for leaf in leaves)
+    digest = (
+        "None" if expected_digest is None
+        else f'Some "{expected_digest}"'
+    )
     return (
         "(* Generated untrusted action-296 forest plan.  The reflected proof\n"
         "   adapter must recheck every selected final cell. *)\n"
         f"let {name}_roots =\n"
         + "[" + ";\n".join(entries) + "];;\n"
         + f"let {name}_final_cells = {total_cells};;\n"
+        + f"let {name}_expected_digest = {digest};;\n"
     )
 
 
@@ -267,6 +278,7 @@ def main() -> int:
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-ml", type=Path)
     parser.add_argument("--ml-name", default="candle_action296_generated")
+    parser.add_argument("--expected-digest")
     parser.add_argument("--allow-partial", action="store_true")
     args = parser.parse_args()
     leaves = read_logs(args.log, require_complete=not args.allow_partial)
@@ -274,7 +286,10 @@ def main() -> int:
     args.output_json.write_text(render_json(leaves, args.log), encoding="utf-8")
     if args.output_ml is not None:
         args.output_ml.write_text(
-            render_ml(leaves, args.ml_name), encoding="utf-8"
+            render_ml(
+                leaves, args.ml_name, expected_digest=args.expected_digest
+            ),
+            encoding="utf-8",
         )
     return 0
 
