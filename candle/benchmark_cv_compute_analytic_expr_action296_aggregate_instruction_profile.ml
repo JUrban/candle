@@ -3,10 +3,10 @@
 (*                                                                            *)
 (* DEVELOPMENT / NON-RELEASE.  Untrusted preparation captures the authentic  *)
 (* operands presented to every instruction for eight distinct accepted       *)
-(* subboxes.  Polynomial and rational-fallback steps are then evaluated in    *)
-(* separate single Kernel.compute calls.  A force-only batch returns one bit  *)
-(* after checking only the outer result constructor; an exact batch also      *)
-(* compares every result with its previously captured concrete value.         *)
+(* subboxes.  Polynomial, rational-algebraic, and nonlinear-composition steps *)
+(* are evaluated in separate internal Kernel.compute batches.  A force-only   *)
+(* batch returns one bit after checking only the outer result constructor; an  *)
+(* exact batch also compares every result with its captured concrete value.    *)
 (* ========================================================================== *)
 
 needs "candle/benchmark_cv_compute_analytic_expr_action296_fixed_instruction_profile.ml";;
@@ -153,7 +153,7 @@ let candle_action296_aggregate_instruction_profile_capture
   let radii = rand (concl radii_th) in
   let rec capture center_remaining box_remaining value_stack =
     match center_remaining,box_remaining with
-    | [],[] -> [],[]
+    | [],[] -> [],[],[]
     | center_instruction :: center_tail,
       box_instruction :: box_tail ->
         let opcode,_ =
@@ -186,11 +186,15 @@ let candle_action296_aggregate_instruction_profile_capture
         let expected_stack = rand (concl step_th) in
         let result =
           candle_action296_instruction_profile_top expected_stack in
-        let polynomial_tail,fallback_tail =
+        let polynomial_tail,algebraic_tail,nonlinear_tail =
           capture center_tail box_tail (result :: remaining_stack) in
         let job = arguments,expected_stack in
-        if opcode = "poly" then job :: polynomial_tail,fallback_tail
-        else polynomial_tail,job :: fallback_tail
+        if opcode = "poly" then
+          job :: polynomial_tail,algebraic_tail,nonlinear_tail
+        else if opcode = "add" || opcode = "mul" then
+          polynomial_tail,job :: algebraic_tail,nonlinear_tail
+        else
+          polynomial_tail,algebraic_tail,job :: nonlinear_tail
     | _ ->
         failwith "action296 aggregate instruction profile: program mismatch" in
   capture center_instructions box_instructions [];;
@@ -255,14 +259,16 @@ let rec candle_action296_aggregate_instruction_profile_run_chunks
       let chunk = "chunk-" ^ string_of_int chunk_index in
       candle_action296_aggregate_instruction_profile_marker
         chunk "authentic-step-capture" "begin";
-      let first_polynomial,first_fallback =
+      let first_polynomial,first_algebraic,first_nonlinear =
         candle_action296_aggregate_instruction_profile_capture first in
       candle_action296_aggregate_instruction_profile_marker
         chunk "authentic-step-capture" "end";
       candle_action296_aggregate_instruction_profile_run
         ("polynomial-" ^ chunk) first_polynomial 22;
       candle_action296_aggregate_instruction_profile_run
-        ("fallback-" ^ chunk) first_fallback 32;
+        ("algebraic-" ^ chunk) first_algebraic 22;
+      candle_action296_aggregate_instruction_profile_run
+        ("nonlinear-" ^ chunk) first_nonlinear 10;
       candle_action296_aggregate_instruction_profile_run_chunks
         (chunk_index + 1) remaining
   | [] -> ()
@@ -293,6 +299,6 @@ let _ =
     "batch" "profiled-run" "end";;
 
 print_endline
-  "CANDLE_CV_ACTION296_AGGREGATE_INSTRUCTION_PROFILE_RESULT boxes=8 polynomial_jobs=176 fallback_jobs=256 force_passes=2 exact_passes=1";;
+  "CANDLE_CV_ACTION296_AGGREGATE_INSTRUCTION_PROFILE_RESULT boxes=8 polynomial_jobs=176 algebraic_jobs=176 nonlinear_jobs=80 force_passes=2 exact_passes=1";;
 print_endline
   "CANDLE_CV_ACTION296_AGGREGATE_INSTRUCTION_PROFILE_OK DEVELOPMENT_NON_RELEASE";;
