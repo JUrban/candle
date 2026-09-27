@@ -12,6 +12,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_prog
 module Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_compile_sound = struct
 
 open Candle_cv_analytic_expr_program;;
+open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_program_sound;;
 
@@ -332,5 +333,126 @@ let candle_fsa_logical_poly_item_analytic_invariant = prove
               candle_fsa_logical_item_fixed_def;
               candle_fsa_logical_item_q_def] THEN
   MATCH_ACCEPT_TAC candle_fsa_poly_item_analytic_invariant);;
+
+(* Concrete stack effects for instructions emitted by the compiler.  These
+   deliberately state the nonempty stack shapes used by the structural
+   proof, so the evaluator's fail-closed default cases disappear here. *)
+
+let candle_fsa_logical_program_step_poly = prove
+ (`!center_boxes boxes radii use_fixed center_program box_program stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       (Candle_analytic_push_poly center_program)
+       (Candle_analytic_push_poly box_program) stack =
+     CONS
+       (candle_fsa_logical_poly_item center_boxes radii center_program)
+       stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_analytic_instruction_poly_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_sqrt = prove
+ (`!center_boxes boxes radii use_fixed center_s box_s item stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       (Candle_analytic_program_sqrt center_s)
+       (Candle_analytic_program_sqrt box_s) (CONS item stack) =
+     CONS (candle_fsa_logical_item_sqrt radii center_s box_s item) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_analytic_instruction_sqrt_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_neg = prove
+ (`!center_boxes boxes radii use_fixed item stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_neg Candle_analytic_program_neg
+       (CONS item stack) =
+     CONS (candle_fsa_logical_item_neg use_fixed radii item) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_add = prove
+ (`!center_boxes boxes radii use_fixed left right stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_add Candle_analytic_program_add
+       (CONS right (CONS left stack)) =
+     CONS (candle_fsa_logical_item_add use_fixed radii left right) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_mul = prove
+ (`!center_boxes boxes radii use_fixed left right stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_mul Candle_analytic_program_mul
+       (CONS right (CONS left stack)) =
+     CONS (candle_fsa_logical_item_mul radii left right) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_square = prove
+ (`!center_boxes boxes radii use_fixed item stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_square Candle_analytic_program_square
+       (CONS item stack) =
+     CONS (candle_fsa_logical_item_square radii item) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_inv = prove
+ (`!center_boxes boxes radii use_fixed item stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_inv Candle_analytic_program_inv
+       (CONS item stack) =
+     CONS (candle_fsa_logical_item_inv radii item) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_atn = prove
+ (`!center_boxes boxes radii use_fixed item stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_atn Candle_analytic_program_atn
+       (CONS item stack) =
+     CONS (candle_fsa_logical_item_atn radii item) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_head_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fsa_logical_program_step_pi_half = prove
+ (`!center_boxes boxes radii use_fixed stack.
+     candle_fsa_logical_program_step center_boxes boxes radii use_fixed
+       Candle_analytic_program_pi_half Candle_analytic_program_pi_half stack =
+     CONS
+       (candle_fsa_logical_item_pi_half radii center_boxes boxes) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsa_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
 
 end;;
