@@ -1,0 +1,56 @@
+import tempfile
+import unittest
+from pathlib import Path
+import sys
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import action296_chunk_policy as policy
+
+
+class Action296ChunkPolicyTests(unittest.TestCase):
+    def test_direct_one_split_and_depth_two(self) -> None:
+        lines = [
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=1 depth=0 "
+            "final_cells=1 first_axis=none "
+            "depth1_flags=1,1,1,1,1,1,1,1,1,1,1,1,1 depth2=",
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=2 depth=1 "
+            "final_cells=2 first_axis=4 "
+            "depth1_flags=0,0,0,0,0,0,0,1,1,0,0,0,0 depth2=",
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=3 depth=2 "
+            "final_cells=3 first_axis=6 "
+            "depth1_flags=0,0,0,0,0,0,0,0,0,0,0,0,1 "
+            "depth2=0:4:1,1,1,1,1,1,1,1,1,1,1,1",
+        ]
+        leaves = [policy.parse_leaf(line) for line in lines]
+        rendered = policy.render_ml(leaves, "candle_test_plan")
+        self.assertIn("(1,Candle_action296_forest_leaf)", rendered)
+        self.assertIn("Candle_action296_forest_split (6,", rendered)
+        self.assertIn("let candle_test_plan_final_cells = 6;;", rendered)
+
+    def test_wrong_selected_axis_is_rejected(self) -> None:
+        line = (
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=2 depth=1 "
+            "final_cells=2 first_axis=1 "
+            "depth1_flags=0,0,0,0,0,0,0,1,1,0,0,0,0 depth2="
+        )
+        with self.assertRaisesRegex(ValueError, "invalid depth-one"):
+            policy.parse_leaf(line)
+
+    def test_complete_log_and_range(self) -> None:
+        record = (
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=4 depth=0 "
+            "final_cells=1 first_axis=none "
+            "depth1_flags=1,1,1,1,1,1,1,1,1,1,1,1,1 depth2=\n"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "candle.log"
+            path.write_text(record + policy.OK_MARKER + "\n", encoding="utf-8")
+            leaves = policy.read_logs([path])
+            policy.validate_range(leaves, 4, 4)
+            with self.assertRaisesRegex(ValueError, "range mismatch"):
+                policy.validate_range(leaves, 4, 5)
+
+
+if __name__ == "__main__":
+    unittest.main()

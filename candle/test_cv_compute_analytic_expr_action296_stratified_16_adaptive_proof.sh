@@ -9,6 +9,7 @@ profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 marker=CANDLE_CV_ACTION296_STRATIFIED_16_ADAPTIVE_PROOF_OK
 
 fragments=(
+  "$repo_root/candle/cv_compute_analytic_expr_action296_adaptive_forest_prove.ml"
   "$repo_root/candle/test_cv_compute_analytic_expr_action296_stratified_16_adaptive_proof.ml"
 )
 
@@ -48,7 +49,7 @@ fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.01 \
-  --stop-key action296-stratified-16-adaptive-proof/midpoint-leaves/live-handoff-and-glue \
+  --stop-key action296-adaptive-forest-proof/forest/live-handoff-and-glue \
   --wait-for-log-seconds 1800 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
