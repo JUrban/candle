@@ -13,4 +13,7 @@ CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   "$repo_root/candle/cv_compute_analytic_expr_fixed_scale_invariant.ml" \
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_sound.ml" \
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_compile_sound.ml" \
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_compute.ml" \
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_representation.ml" \
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_certified_sound.ml" \
   "$repo_root/candle/test_cv_compute_analytic_expr_taylor_model_program_fixed_sound.ml"
