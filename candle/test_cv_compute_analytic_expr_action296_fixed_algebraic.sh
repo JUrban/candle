@@ -3,19 +3,20 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-fixed-scale-sound-checkpoint-v1}
-output_dir=${1:-/project/flyspeck-candle-runs/cv-action296-aggregate-instruction-profile-v1-run-001}
+output_dir=${1:-/project/flyspeck-candle-runs/cv-action296-fixed-algebraic-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments_strict.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
-marker=CANDLE_CV_ACTION296_AGGREGATE_INSTRUCTION_PROFILE_OK
+marker=CANDLE_CV_ACTION296_FIXED_ALGEBRAIC_OK
 
 fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_compute.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_compute.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_certified_prove.ml"
   "$repo_root/candle/cv_compute_analytic_expr_point_certificate_prepare.ml"
   "$repo_root/candle/cv_compute_analytic_expr_box_certificate_prepare.ml"
   "$repo_root/candle/cv_compute_analytic_expr_certificate_variant_prepare.ml"
   "$repo_root/candle/cv_compute_analytic_expr_action296_benchmark_fixture.ml"
-  "$repo_root/candle/benchmark_cv_compute_analytic_expr_action296_aggregate_instruction_profile.ml"
+  "$repo_root/candle/benchmark_cv_compute_analytic_expr_action296_fixed_algebraic.ml"
 )
 
 is_descendant() {
@@ -48,13 +49,13 @@ done
 
 if [[ -z "$profiled_pid" ]]; then
   wait "$runner_pid"
-  printf '%s\n' 'restored aggregate instruction-profile process was not found' >&2
+  printf '%s\n' 'restored fixed-algebraic process was not found' >&2
   exit 1
 fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.01 \
-  --stop-key action296-aggregate-instruction-profile/batch/profiled-run \
+  --stop-key action296-fixed-algebraic/batch/profiled-run \
   --wait-for-log-seconds 1200 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
@@ -70,4 +71,4 @@ set -e
   sed -n '1,240p' "$output_dir/profile-observer.log" >&2
   exit "$profile_status"
 }
-printf '%s\n' 'CANDLE_CV_ACTION296_AGGREGATE_INSTRUCTION_PROFILE_DRIVER_OK'
+printf '%s\n' 'CANDLE_CV_ACTION296_FIXED_ALGEBRAIC_DRIVER_OK'
