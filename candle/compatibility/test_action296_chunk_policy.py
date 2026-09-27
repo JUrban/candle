@@ -72,6 +72,42 @@ class Action296ChunkPolicyTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "range mismatch"):
                 policy.validate_range(leaves, 4, 5)
 
+    def test_multiple_logs_merge_and_duplicate_rejection(self) -> None:
+        def record(index: int) -> str:
+            return (
+                "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t "
+                f"index={index} depth=0 final_cells=1 first_axis=none "
+                "depth1_flags=1,1,1,1,1,1,1,1,1,1,1,1,1 depth2=\n"
+            )
+
+        with tempfile.TemporaryDirectory() as directory:
+            first = Path(directory) / "first.log"
+            second = Path(directory) / "second.log"
+            first.write_text(
+                record(4) + policy.OK_MARKER + "\n", encoding="utf-8"
+            )
+            second.write_text(
+                record(5) + policy.OK_MARKER + "\n", encoding="utf-8"
+            )
+            leaves = policy.read_logs([second, first])
+            policy.validate_range(leaves, 4, 5)
+            self.assertEqual([leaf.index for leaf in leaves], [4, 5])
+            with self.assertRaisesRegex(ValueError, "duplicate leaf index 4"):
+                policy.read_logs([first, first])
+
+    def test_unresolved_plan_cannot_be_rendered(self) -> None:
+        line = (
+            "CANDLE_CV_ACTION296_CHUNK_SCAN_LEAF label=t index=6 "
+            "depth=unresolved final_cells=0 first_axis=4 "
+            "depth1_flags=0,0,0,0,0,0,0,0,0,0,0,0,0 "
+            "depth2=0:none:0,0,0,0,0,0,0,0,0,0,0,0;"
+            "1:1:1,1,1,1,1,1,1,1,1,1,1,1"
+        )
+        leaf = policy.parse_leaf(line)
+        self.assertIsNone(leaf.depth)
+        with self.assertRaisesRegex(ValueError, "unresolved plan"):
+            policy.render_ml([leaf], "candle_test_plan")
+
 
 if __name__ == "__main__":
     unittest.main()
