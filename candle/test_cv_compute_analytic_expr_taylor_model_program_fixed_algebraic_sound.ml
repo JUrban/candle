@@ -48,6 +48,15 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fsa_program_has_nonlinear_append <> [] ||
    hyp candle_fsa_logical_program_run_with_future_false <> [] ||
    hyp candle_fsa_logical_program_run_with_future_append <> [] ||
+   hyp candle_fsa_logical_item_neg_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_add_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_mul_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_square_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_inv_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_sqrt_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_atn_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_item_pi_half_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_poly_item_analytic_invariant <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
