@@ -1,9 +1,11 @@
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_invariant.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant;;
 
 let candle_fixed_algebraic_sound_axioms_before = axioms ();;
 
@@ -14,6 +16,9 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_cv_fsa_item_to_fixed_correct <> [] ||
    hyp candle_cv_fsa_item_neg_correct <> [] ||
    hyp candle_cv_fsa_item_add_correct <> [] ||
+   hyp candle_fsa_item_fixed_view_analytic_invariant <> [] ||
+   hyp candle_fsa_item_neg_analytic_invariant <> [] ||
+   hyp candle_fsa_item_add_analytic_invariant <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
