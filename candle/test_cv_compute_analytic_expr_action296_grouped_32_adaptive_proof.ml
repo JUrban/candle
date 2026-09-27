@@ -9,8 +9,15 @@
 
 needs "candle/benchmark_cv_compute_analytic_expr_action296_grouped_32_depth2_scan_algebraic.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_tree_prove.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_tree_six_prove.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_tree;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_tree_prove;;
+open Candle_cv_analytic_expr_taylor_model_tree;;
+open Candle_cv_analytic_expr_taylor_model_tree_prove;;
+open Candle_cv_analytic_expr_taylor_model_tree_six_prove;;
 
 let candle_action296_grouped_32_proof_axioms_before = axioms ();;
 
@@ -22,7 +29,7 @@ let candle_action296_grouped_32_proof_marker phase event =
 type candle_action296_grouped_32_proof_tree =
   | Candle_action296_grouped_32_proof_leaf of thm
   | Candle_action296_grouped_32_proof_split of
-      int * candle_action296_grouped_32_proof_tree *
+      thm * int * candle_action296_grouped_32_proof_tree *
       candle_action296_grouped_32_proof_tree;;
 
 type candle_action296_grouped_32_proof_group_six = {
@@ -52,7 +59,7 @@ let candle_action296_grouped_32_proof_split axis domain =
   let left,right =
     M_verifier.split_domain candle_action296_plan_dimension 6 axis domain in
   Candle_action296_grouped_32_proof_split
-    (axis,
+    (domain,axis,
      Candle_action296_grouped_32_proof_leaf left,
      Candle_action296_grouped_32_proof_leaf right);;
 
@@ -87,7 +94,7 @@ let candle_action296_grouped_32_proof_hard_tree index parent first_axis flags =
   match first_flags with
   | left_flag :: right_flag :: _ ->
       Candle_action296_grouped_32_proof_split
-        (first_axis,
+        (parent,first_axis,
          candle_action296_grouped_32_proof_hard_child
            index 0 left left_flag,
          candle_action296_grouped_32_proof_hard_child
@@ -120,7 +127,7 @@ let candle_action296_grouped_32_proof_tree index parent =
 
 let rec candle_action296_grouped_32_proof_tree_domains = function
   | Candle_action296_grouped_32_proof_leaf domain -> [domain]
-  | Candle_action296_grouped_32_proof_split (_,left,right) ->
+  | Candle_action296_grouped_32_proof_split (_,_,left,right) ->
       candle_action296_grouped_32_proof_tree_domains left @
       candle_action296_grouped_32_proof_tree_domains right;;
 
@@ -237,6 +244,115 @@ if length (candle_action296_grouped_32_proof_groups ()) <> 12 ||
    candle_action296_grouped_32_proof_final_cell_count <> 60 then
   failwith "action296 grouped 32 proof: adaptive forest shape";;
 
+type candle_action296_grouped_32_proof_logical_tree_six = {
+  grouped_32_proof_logical_term : term;
+  grouped_32_proof_logical_well_formed : thm;
+  grouped_32_proof_logical_domain : thm;
+  grouped_32_proof_logical_lower : term list;
+  grouped_32_proof_logical_upper : term list;
+  grouped_32_proof_logical_boxes : term;
+  grouped_32_proof_logical_cells :
+    candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six list;
+};;
+
+let rec candle_action296_grouped_32_proof_logical_tree cells = function
+  | Candle_action296_grouped_32_proof_leaf domain ->
+      (match cells with
+       | cell :: remaining ->
+           let lower,upper =
+             candle_action296_leaf_grouping_domain_bounds domain in
+           if not
+               (candle_action296_grouped_32_proof_aconv_lists
+                  lower cell.fixed_algebraic_batch_lower &&
+                candle_action296_grouped_32_proof_aconv_lists
+                  upper cell.fixed_algebraic_batch_upper) then
+             failwith
+               "action296 grouped 32 proof: logical leaf/cell mismatch";
+           let boxes = candle_poly_fixture_q_boxes lower upper in
+           let tree =
+             candle_q_dim_taylor_model_tree_leaf_term
+               cell.fixed_algebraic_batch_center_variant.
+                 variant_expression_term
+               boxes in
+           {
+             grouped_32_proof_logical_term = tree;
+             grouped_32_proof_logical_well_formed =
+               candle_q_dim_taylor_model_tree_leaf_well_formed_six tree;
+             grouped_32_proof_logical_domain = domain;
+             grouped_32_proof_logical_lower = lower;
+             grouped_32_proof_logical_upper = upper;
+             grouped_32_proof_logical_boxes = boxes;
+             grouped_32_proof_logical_cells = [cell];
+           },remaining
+       | [] ->
+           failwith "action296 grouped 32 proof: missing logical leaf cell")
+  | Candle_action296_grouped_32_proof_split
+      (domain,axis,left,right) ->
+      let left_logical,after_left =
+        candle_action296_grouped_32_proof_logical_tree cells left in
+      let right_logical,remaining =
+        candle_action296_grouped_32_proof_logical_tree after_left right in
+      let lower,upper =
+        candle_action296_leaf_grouping_domain_bounds domain in
+      let boxes = candle_poly_fixture_q_boxes lower upper in
+      let tree,well_formed =
+        candle_q_dim_taylor_model_tree_node_well_formed_six
+          axis boxes lower upper
+          left_logical.grouped_32_proof_logical_term
+          left_logical.grouped_32_proof_logical_boxes
+          left_logical.grouped_32_proof_logical_lower
+          left_logical.grouped_32_proof_logical_upper
+          left_logical.grouped_32_proof_logical_well_formed
+          right_logical.grouped_32_proof_logical_term
+          right_logical.grouped_32_proof_logical_boxes
+          right_logical.grouped_32_proof_logical_lower
+          right_logical.grouped_32_proof_logical_upper
+          right_logical.grouped_32_proof_logical_well_formed in
+      {
+        grouped_32_proof_logical_term = tree;
+        grouped_32_proof_logical_well_formed = well_formed;
+        grouped_32_proof_logical_domain = domain;
+        grouped_32_proof_logical_lower = lower;
+        grouped_32_proof_logical_upper = upper;
+        grouped_32_proof_logical_boxes = boxes;
+        grouped_32_proof_logical_cells =
+          left_logical.grouped_32_proof_logical_cells @
+          right_logical.grouped_32_proof_logical_cells;
+      },remaining;;
+
+let rec candle_action296_grouped_32_proof_logical_trees cells = function
+  | [] ->
+      if cells = [] then []
+      else failwith "action296 grouped 32 proof: trailing logical cells"
+  | (index,tree) :: remaining_trees ->
+      let phase = "tree-topology-" ^ string_of_int index in
+      let _ = candle_action296_grouped_32_proof_marker phase "begin" in
+      let logical,remaining_cells =
+        candle_action296_grouped_32_proof_logical_tree cells tree in
+      let _ = candle_action296_grouped_32_proof_marker phase "end" in
+      (index,logical) ::
+      candle_action296_grouped_32_proof_logical_trees
+        remaining_cells remaining_trees;;
+
+let _ = candle_action296_grouped_32_proof_marker "tree-topologies" "begin";;
+let candle_action296_grouped_32_proof_logical_groups_ref :
+    (int * candle_action296_grouped_32_proof_logical_tree_six) list list
+      option ref = ref None;;
+let _ =
+  candle_action296_grouped_32_proof_logical_groups_ref :=
+    Some
+      (map
+        (fun group ->
+          candle_action296_grouped_32_proof_logical_trees
+            group.grouped_32_proof_cells group.grouped_32_proof_trees)
+        (candle_action296_grouped_32_proof_groups ()));;
+let _ = candle_action296_grouped_32_proof_marker "tree-topologies" "end";;
+
+let candle_action296_grouped_32_proof_logical_groups () =
+  match !candle_action296_grouped_32_proof_logical_groups_ref with
+  | Some groups -> groups
+  | None -> failwith "action296 grouped 32 proof: missing logical trees";;
+
 let _ = candle_action296_grouped_32_proof_marker "aggregate-proofs" "begin";;
 let candle_action296_grouped_32_proof_results_ref :
     candle_q_dim_taylor_model_fixed_algebraic_batch_result_six list
@@ -257,92 +373,110 @@ let candle_action296_grouped_32_proof_results () =
   | Some results -> results
   | None -> failwith "action296 grouped 32 proof: missing aggregate results";;
 
-let _ = candle_action296_grouped_32_proof_marker "source-extraction" "begin";;
-let candle_action296_grouped_32_proof_source_groups_ref :
-    thm list list option ref = ref None;;
-let _ =
-  candle_action296_grouped_32_proof_source_groups_ref :=
-    Some
-      (map2
-        (fun result group ->
-          map
-            (candle_q_dim_taylor_model_fixed_algebraic_batch_cell_source_six
-              result)
-            group.grouped_32_proof_cells)
-        (candle_action296_grouped_32_proof_results ())
-        (candle_action296_grouped_32_proof_groups ()));;
-let _ = candle_action296_grouped_32_proof_marker "source-extraction" "end";;
+let candle_action296_grouped_32_proof_append_function =
+  `APPEND:
+     (candle_analytic_expr#
+       (((num#num)#num)#((num#num)#num))list)list->
+     (candle_analytic_expr#
+       (((num#num)#num)#((num#num)#num))list)list->
+     (candle_analytic_expr#
+       (((num#num)#num)#((num#num)#num))list)list`;;
 
-let candle_action296_grouped_32_proof_source_groups () =
-  match !candle_action296_grouped_32_proof_source_groups_ref with
-  | Some groups -> groups
-  | None -> failwith "action296 grouped 32 proof: missing sources";;
+let candle_action296_grouped_32_proof_narrow_result result tree_accept
+    tree_jobs =
+  {
+    fixed_algebraic_batch_box_prepared =
+      result.fixed_algebraic_batch_box_prepared;
+    fixed_algebraic_batch_jobs_term = tree_jobs;
+    fixed_algebraic_batch_encoded_jobs_term =
+      result.fixed_algebraic_batch_encoded_jobs_term;
+    fixed_algebraic_batch_accept_theorem = tree_accept;
+    fixed_algebraic_batch_cells = [];
+  };;
 
-let candle_action296_grouped_32_proof_live cell source domain =
+let candle_action296_grouped_32_proof_root_live source logical =
   candle_reflected_nl_source_pass_with
     candle_action296_plan_prepared.function_term
     (fun lower upper ->
       if not
           (candle_action296_grouped_32_proof_aconv_lists
-             lower cell.fixed_algebraic_batch_lower &&
+             lower logical.grouped_32_proof_logical_lower &&
            candle_action296_grouped_32_proof_aconv_lists
-             upper cell.fixed_algebraic_batch_upper) then
-        failwith "action296 grouped 32 proof: unexpected handoff box";
+             upper logical.grouped_32_proof_logical_upper) then
+        failwith "action296 grouped 32 proof: unexpected root handoff box";
       source)
-    domain;;
+    logical.grouped_32_proof_logical_domain;;
 
-let _ =
-  candle_action296_grouped_32_proof_marker "live-handoff-and-glue" "begin";;
-let candle_action296_grouped_32_proof_live_groups_ref :
-    thm list list option ref = ref None;;
-let _ =
-  candle_action296_grouped_32_proof_live_groups_ref :=
-    Some
-      (candle_action296_grouped_32_proof_map3
-        (fun group sources domains ->
-          candle_action296_grouped_32_proof_map3
-            candle_action296_grouped_32_proof_live
-            group.grouped_32_proof_cells sources domains)
-        (candle_action296_grouped_32_proof_groups ())
-        (candle_action296_grouped_32_proof_source_groups ())
-        (map
-          (fun group -> group.grouped_32_proof_domains)
-          (candle_action296_grouped_32_proof_groups ())));;
-
-let candle_action296_grouped_32_proof_live_groups () =
-  match !candle_action296_grouped_32_proof_live_groups_ref with
-  | Some groups -> groups
-  | None -> failwith "action296 grouped 32 proof: missing live cells";;
-
-let rec candle_action296_grouped_32_proof_glue tree live =
-  match tree with
-  | Candle_action296_grouped_32_proof_leaf _ ->
-      (match live with
-       | theorem :: remaining -> theorem,remaining
-       | [] -> failwith "action296 grouped 32 proof: missing live leaf")
-  | Candle_action296_grouped_32_proof_split (axis,left,right) ->
-      let left_theorem,after_left =
-        candle_action296_grouped_32_proof_glue left live in
-      let right_theorem,remaining =
-        candle_action296_grouped_32_proof_glue right after_left in
-      let glued =
-        M_verifier.m_glue_cells_list candle_action296_plan_dimension axis
-          left_theorem right_theorem in
-      M_verifier.merge_m_cell_list_pass
-        candle_action296_plan_dimension glued,remaining;;
-
-let rec candle_action296_grouped_32_proof_glue_trees trees live =
-  match trees with
+let rec candle_action296_grouped_32_proof_project_trees
+    result remaining_jobs remaining_accept = function
   | [] ->
-      if live = [] then []
-      else failwith "action296 grouped 32 proof: trailing live leaves"
-  | (index,tree) :: remaining_trees ->
-      let theorem,remaining_live =
-        candle_action296_grouped_32_proof_glue tree live in
-      (index,theorem) ::
-      candle_action296_grouped_32_proof_glue_trees
-        remaining_trees remaining_live;;
+      [],remaining_jobs,remaining_accept
+  | (index,logical) :: remaining_trees ->
+      let jobs_call =
+        mk_comb
+          (`candle_q_dim_taylor_model_tree_jobs`,
+           logical.grouped_32_proof_logical_term) in
+      let jobs_expansion =
+        REWRITE_CONV
+          [candle_q_dim_taylor_model_tree_jobs_def;APPEND]
+          jobs_call in
+      let tree_jobs = rand (concl jobs_expansion) in
+      let tree_items = dest_list tree_jobs and
+          remaining_items = dest_list remaining_jobs in
+      let tree_count = length tree_items in
+      if tree_count = 0 || tree_count > length remaining_items ||
+         not
+           (candle_action296_grouped_32_proof_aconv_lists
+             tree_items (fst (chop_list tree_count remaining_items))) then
+        failwith "action296 grouped 32 proof: non-prefix tree jobs";
+      let _,suffix_items = chop_list tree_count remaining_items in
+      let job_type = type_of (hd remaining_items) in
+      let suffix_jobs = mk_list (suffix_items,job_type) in
+      let append_call =
+        list_mk_comb
+          (candle_action296_grouped_32_proof_append_function,
+           [tree_jobs;suffix_jobs]) in
+      let append_expansion = REWRITE_CONV [APPEND] append_call in
+      if hyp append_expansion <> [] ||
+         not (aconv (rand (concl append_expansion)) remaining_jobs) then
+        failwith "action296 grouped 32 proof: append expansion mismatch";
+      let split_accept =
+        REWRITE_RULE
+          [candle_q_dim_taylor_model_fixed_algebraic_batch_accept_append]
+          (REWRITE_RULE [SYM append_expansion] remaining_accept) in
+      let tree_accept,suffix_accept =
+        if suffix_items = [] then begin
+          if remaining_trees <> [] || not (aconv tree_jobs remaining_jobs) then
+            failwith
+              "action296 grouped 32 proof: malformed terminal tree projection";
+          remaining_accept,remaining_accept
+        end else
+          CONJ_PAIR split_accept in
+      let narrowed =
+        candle_action296_grouped_32_proof_narrow_result
+          result tree_accept tree_jobs in
+      let source =
+        candle_q_dim_taylor_model_fixed_algebraic_tree_source_six
+          narrowed logical.grouped_32_proof_logical_term
+          logical.grouped_32_proof_logical_well_formed in
+      let live =
+        candle_action296_grouped_32_proof_root_live source logical in
+      let projected,final_jobs,final_accept =
+        candle_action296_grouped_32_proof_project_trees
+          result suffix_jobs suffix_accept remaining_trees in
+      (index,live) :: projected,final_jobs,final_accept;;
 
+let candle_action296_grouped_32_proof_project_group result logical_trees =
+  let projected,remaining_jobs,_ =
+    candle_action296_grouped_32_proof_project_trees
+      result result.fixed_algebraic_batch_jobs_term
+      result.fixed_algebraic_batch_accept_theorem logical_trees in
+  if dest_list remaining_jobs <> [] then
+    failwith "action296 grouped 32 proof: unconsumed aggregate jobs";
+  projected;;
+
+let _ =
+  candle_action296_grouped_32_proof_marker "tree-root-handoffs" "begin";;
 let candle_action296_grouped_32_proof_leaf_results_ref :
     (int * thm) list option ref = ref None;;
 let _ =
@@ -350,13 +484,11 @@ let _ =
     Some
       (List.flatten
         (candle_action296_grouped_32_split_scan_map2
-          (fun group live ->
-            candle_action296_grouped_32_proof_glue_trees
-              group.grouped_32_proof_trees live)
-          (candle_action296_grouped_32_proof_groups ())
-          (candle_action296_grouped_32_proof_live_groups ())));;
+          candle_action296_grouped_32_proof_project_group
+          (candle_action296_grouped_32_proof_results ())
+          (candle_action296_grouped_32_proof_logical_groups ())));;
 let _ =
-  candle_action296_grouped_32_proof_marker "live-handoff-and-glue" "end";;
+  candle_action296_grouped_32_proof_marker "tree-root-handoffs" "end";;
 
 let candle_action296_grouped_32_proof_leaf_results () =
   match !candle_action296_grouped_32_proof_leaf_results_ref with

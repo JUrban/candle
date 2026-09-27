@@ -2,21 +2,14 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-action296-grouped-32-depth2-checkpoint-v1}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-action296-grouped-32-tree-support-checkpoint-v1}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-action296-grouped-32-adaptive-proof-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments_strict.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 marker=CANDLE_CV_ACTION296_GROUPED_32_ADAPTIVE_PROOF_OK
 
 fragments=(
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_invariant.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_sound.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_program_sound.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_compile_sound.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_certified_sound.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_batch.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_tree_six_prove.ml"
   "$repo_root/candle/test_cv_compute_analytic_expr_action296_grouped_32_adaptive_proof.ml"
 )
 
@@ -56,7 +49,7 @@ fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.01 \
-  --stop-key action296-grouped-32-adaptive-proof/first-32/live-handoff-and-glue \
+  --stop-key action296-grouped-32-adaptive-proof/first-32/tree-root-handoffs \
   --wait-for-log-seconds 1800 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
