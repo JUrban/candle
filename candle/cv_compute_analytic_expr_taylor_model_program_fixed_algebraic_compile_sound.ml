@@ -1063,4 +1063,34 @@ let candle_fsa_logical_compile_run_with_future_analytic_invariant = prove
       MATCH_MP_TAC candle_fsa_logical_item_pi_half_analytic_invariant THEN
       ASM_REWRITE_TAC[]]]);;
 
+(* The executable interpreter has no suffix beyond a complete compiled
+   expression.  Specializing the compositional theorem at [F] exposes the
+   ordinary logical run used by the representation theorem. *)
+
+let candle_fsa_logical_compile_run_analytic_invariant = prove
+ (`!box_e center_e boxes stack (type_witness:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     ?result.
+       candle_fsa_logical_program_run
+         (candle_q_center_environment_list boxes) boxes
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         (candle_analytic_compile center_e)
+         (candle_analytic_compile box_e) stack = CONS result stack /\
+       candle_fsa_logical_item_analytic_invariant
+         type_witness boxes result center_e box_e`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  MP_TAC
+    (ISPECL
+      [`box_e:candle_analytic_expr`; `center_e:candle_analytic_expr`;
+       `boxes:(((num#num)#num)#((num#num)#num))list`;
+       `stack:candle_fsa_logical_item_type list`; `F`;
+       `type_witness:real^N`]
+      candle_fsa_logical_compile_run_with_future_analytic_invariant) THEN
+  ASM_REWRITE_TAC[candle_fsa_logical_program_run_with_future_false]);;
+
 end;;

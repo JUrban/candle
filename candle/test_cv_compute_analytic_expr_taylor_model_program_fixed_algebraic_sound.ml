@@ -3,6 +3,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_program_sound.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_compile_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_certified_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_invariant;;
@@ -10,6 +11,7 @@ open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_compile_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_certified_sound;;
 
 let candle_fixed_algebraic_sound_axioms_before = axioms ();;
 
@@ -69,6 +71,15 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fsa_logical_program_run_with_future_append_single <> [] ||
    hyp candle_fsa_logical_program_run_with_future_append_binary <> [] ||
    hyp candle_fsa_logical_compile_run_with_future_analytic_invariant <> [] ||
+   hyp candle_fsa_logical_compile_run_analytic_invariant <> [] ||
+   hyp candle_cv_fsa_logical_item_to_q_correct <> [] ||
+   hyp candle_cv_fsa_program_correct <> [] ||
+   hyp candle_q_dim_taylor_model_program_fixed_algebraic_result <> [] ||
+   hyp candle_fsa_logical_item_q_view_analytic_invariant <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_algebraic_compile_analytic_invariant <> [] ||
+   hyp candle_cv_fsa_certified_check_correct <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_algebraic_certified_upper_sound <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_algebraic_certified_accept_sound <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||
