@@ -81,6 +81,34 @@ let candle_action296_fixed_algebraic_batch_digest =
         (candle_action296_fixed_algebraic_batch_result ()).
           fixed_algebraic_batch_accept_theorem));;
 
+let _ =
+  candle_action296_fixed_algebraic_batch_marker
+    "cell-source-extraction" "begin";;
+let candle_action296_fixed_algebraic_batch_sources_ref : thm list option ref =
+  ref None;;
+let _ =
+  candle_action296_fixed_algebraic_batch_sources_ref :=
+    Some
+      (map
+        (candle_q_dim_taylor_model_fixed_algebraic_batch_cell_source_six
+          (candle_action296_fixed_algebraic_batch_result ()))
+        candle_action296_fixed_algebraic_batch_cells);;
+let _ =
+  candle_action296_fixed_algebraic_batch_marker
+    "cell-source-extraction" "end";;
+
+let candle_action296_fixed_algebraic_batch_sources () =
+  match !candle_action296_fixed_algebraic_batch_sources_ref with
+  | Some sources -> sources
+  | None -> failwith "action296 fixed algebraic batch: missing sources";;
+
+let candle_action296_fixed_algebraic_batch_source_digest =
+  Digest.to_hex
+    (Digest.string
+      (String.concat "\n"
+        (map string_of_thm
+          (candle_action296_fixed_algebraic_batch_sources ()))));;
+
 let candle_action296_fixed_algebraic_batch_axioms_after = axioms ();;
 
 if length candle_action296_fixed_algebraic_batch_cells <> 8 ||
@@ -89,6 +117,13 @@ if length candle_action296_fixed_algebraic_batch_cells <> 8 ||
        fixed_algebraic_batch_cells <> 8 ||
    candle_action296_fixed_algebraic_batch_digest <>
      "6952df94179b05c1e664b2ad9fe4f838" ||
+   candle_action296_fixed_algebraic_batch_source_digest <>
+     "7ae9333377ccb01b6087a9c71d155779" ||
+   length (candle_action296_fixed_algebraic_batch_sources ()) <> 8 ||
+   not
+     (List.for_all
+       (fun theorem -> hyp theorem = [])
+       (candle_action296_fixed_algebraic_batch_sources ())) ||
    hyp
      (candle_action296_fixed_algebraic_batch_result ()).
        fixed_algebraic_batch_accept_theorem <> [] ||
@@ -104,6 +139,8 @@ if length candle_action296_fixed_algebraic_batch_cells <> 8 ||
 print_endline
   ("CANDLE_CV_ACTION296_FIXED_ALGEBRAIC_BATCH_RESULT boxes=8" ^
    " accepted=8 computes=1 theorem_digest=" ^
-   candle_action296_fixed_algebraic_batch_digest);;
+   candle_action296_fixed_algebraic_batch_digest ^
+   " source_digest=" ^
+   candle_action296_fixed_algebraic_batch_source_digest);;
 print_endline
   "CANDLE_CV_ACTION296_FIXED_ALGEBRAIC_BATCH_OK DEVELOPMENT_NON_RELEASE";;

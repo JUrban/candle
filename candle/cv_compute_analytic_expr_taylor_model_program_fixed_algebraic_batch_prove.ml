@@ -12,6 +12,7 @@ open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_taylor_model_certified_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_batch;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_certified_sound;;
 
 type candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six = {
   fixed_algebraic_batch_center_variant :
@@ -225,5 +226,96 @@ let candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
     fixed_algebraic_batch_cells =
       map (fun (cell,job,_,_) -> cell,job,rand job) prepared;
   };;
+
+let candle_q_dim_taylor_model_fixed_algebraic_batch_cell_accept_six
+    (result:candle_q_dim_taylor_model_fixed_algebraic_batch_result_six)
+    (cell:candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six) =
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-cell-accept-begin";
+  let _,job,_ =
+    try
+      find
+        (fun
+          ((candidate:
+              candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six),
+           _,_) ->
+          candidate.fixed_algebraic_batch_lower =
+            cell.fixed_algebraic_batch_lower &&
+          candidate.fixed_algebraic_batch_upper =
+            cell.fixed_algebraic_batch_upper &&
+          aconv
+            candidate.fixed_algebraic_batch_center_variant.
+              variant_expression_term
+            cell.fixed_algebraic_batch_center_variant.variant_expression_term)
+        result.fixed_algebraic_batch_cells
+    with Not_found ->
+      failwith "fixed algebraic Taylor batch prover: unknown cell" in
+  let membership =
+    EQT_ELIM
+      (REWRITE_CONV[MEM]
+        (list_mk_comb
+          (`MEM:(candle_analytic_expr#
+                 (((num#num)#num)#((num#num)#num))list)->
+                (candle_analytic_expr#
+                 (((num#num)#num)#((num#num)#num))list)list->bool`,
+           [job;result.fixed_algebraic_batch_jobs_term]))) in
+  let implication =
+    ISPECL
+      [result.fixed_algebraic_batch_jobs_term;
+       result.fixed_algebraic_batch_box_prepared.expression_term;job]
+      candle_q_dim_taylor_model_fixed_algebraic_batch_accept_mem in
+  let premise =
+    CONJ result.fixed_algebraic_batch_accept_theorem membership in
+  if not (aconv (fst (dest_imp (concl implication))) (concl premise)) then
+    failwith "fixed algebraic Taylor batch prover: cell premise mismatch";
+  let acceptance = REWRITE_RULE[FST;SND] (MATCH_MP implication premise) in
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-cell-accept-end";
+  acceptance;;
+
+let candle_q_dim_taylor_model_fixed_algebraic_batch_sound_six =
+  REWRITE_RULE
+    [candle_q_dim_analytic_jet_dim_six]
+    (INST_TYPE
+      [`:6`,`:N`]
+      candle_q_dim_taylor_model_fixed_algebraic_certified_accept_sound);;
+
+let candle_q_dim_taylor_model_fixed_algebraic_batch_cell_source_six
+    (result:candle_q_dim_taylor_model_fixed_algebraic_batch_result_six)
+    (cell:candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six) =
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-cell-source-begin";
+  let acceptance =
+    candle_q_dim_taylor_model_fixed_algebraic_batch_cell_accept_six
+      result cell in
+  let boxes =
+    candle_poly_fixture_q_boxes
+      cell.fixed_algebraic_batch_lower cell.fixed_algebraic_batch_upper in
+  let length_six =
+    prove
+      (mk_eq
+        (mk_comb
+          (`LENGTH:(((num#num)#num)#((num#num)#num))list->num`,boxes),
+         `6`),
+       REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV) in
+  let vector_theorem =
+    MATCH_MP
+      (SPECL
+        [cell.fixed_algebraic_batch_center_variant.variant_expression_term;
+         result.fixed_algebraic_batch_box_prepared.expression_term;boxes]
+        candle_q_dim_taylor_model_fixed_algebraic_batch_sound_six)
+      (CONJ result.fixed_algebraic_batch_box_prepared.valid_theorem
+        (CONJ length_six acceptance)) in
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-cell-vector-sound";
+  let source_theorem =
+    REWRITE_RULE
+      [result.fixed_algebraic_batch_box_prepared.source_theorem]
+      vector_theorem in
+  if hyp source_theorem <> [] then
+    failwith "fixed algebraic Taylor batch prover: source theorem assumptions";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-cell-source-end";
+  source_theorem;;
 
 end;;
