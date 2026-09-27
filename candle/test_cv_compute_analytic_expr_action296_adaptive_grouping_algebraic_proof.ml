@@ -26,33 +26,28 @@ let rec candle_action296_adaptive_proof_aconv_lists left right =
       candle_action296_adaptive_proof_aconv_lists left_tail right_tail
   | _ -> false;;
 
-let candle_action296_adaptive_proof_cell prepared plan domain_th =
-  let lower,upper =
-    candle_action296_leaf_grouping_domain_bounds domain_th in
+let candle_action296_adaptive_proof_cell case =
   {
     fixed_algebraic_batch_center_variant =
-      candle_q_dim_taylor_model_prepare_point_variant_with_plan_six
-        prepared plan lower upper;
-    fixed_algebraic_batch_lower = lower;
-    fixed_algebraic_batch_upper = upper;
+      case.adaptive_grouping_center_variant;
+    fixed_algebraic_batch_lower = case.adaptive_grouping_lower;
+    fixed_algebraic_batch_upper = case.adaptive_grouping_upper;
   };;
 
 let _ =
-  candle_action296_adaptive_proof_marker "cell-preparation" "begin";;
+  candle_action296_adaptive_proof_marker "cell-reuse" "begin";;
 let candle_action296_adaptive_proof_cells_ref :
     candle_q_dim_taylor_model_fixed_algebraic_batch_cell_six list list option ref =
   ref None;;
 let _ =
   candle_action296_adaptive_proof_cells_ref :=
     Some
-      (candle_action296_adaptive_grouping_map3
-        (fun prepared plan domains ->
-          map (candle_action296_adaptive_proof_cell prepared plan) domains)
-        (candle_action296_adaptive_grouping_prepared ())
-        (candle_action296_adaptive_grouping_plans ())
-        candle_action296_adaptive_grouping_finals);;
+      (map
+        (fun (_,cases) ->
+          map candle_action296_adaptive_proof_cell cases)
+        (candle_action296_adaptive_grouping_jobs ()));;
 let _ =
-  candle_action296_adaptive_proof_marker "cell-preparation" "end";;
+  candle_action296_adaptive_proof_marker "cell-reuse" "end";;
 
 let candle_action296_adaptive_proof_cells () =
   match !candle_action296_adaptive_proof_cells_ref with

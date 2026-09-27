@@ -74,6 +74,14 @@ let candle_action296_adaptive_grouping_eqs =
   union candle_cv_fsa_compute_eqs
     [SPEC_ALL candle_cv_action296_adaptive_grouping_flags_compute];;
 
+type candle_action296_adaptive_grouping_case_six = {
+  adaptive_grouping_center_variant :
+    candle_q_dim_taylor_model_program_variant_six;
+  adaptive_grouping_lower : term list;
+  adaptive_grouping_upper : term list;
+  adaptive_grouping_encoded_job : term;
+};;
+
 let candle_action296_adaptive_grouping_case prepared plan domain_th =
   let lower,upper =
     candle_action296_leaf_grouping_domain_bounds domain_th in
@@ -83,10 +91,16 @@ let candle_action296_adaptive_grouping_case prepared plan domain_th =
   let boxes = candle_poly_fixture_q_boxes lower upper in
   let boxes_representation =
     candle_q_dim_analytic_jet_boxes_encode_conv boxes in
-  list_mk_comb
-    (`Cexp_pair`,
-     [center_variant.variant_program_representation_term;
-      rand (concl boxes_representation)]);;
+  {
+    adaptive_grouping_center_variant = center_variant;
+    adaptive_grouping_lower = lower;
+    adaptive_grouping_upper = upper;
+    adaptive_grouping_encoded_job =
+      list_mk_comb
+        (`Cexp_pair`,
+         [center_variant.variant_program_representation_term;
+          rand (concl boxes_representation)]);
+  };;
 
 let candle_action296_adaptive_grouping_cases_term cases =
   itlist
@@ -104,13 +118,15 @@ let rec candle_action296_adaptive_grouping_dest_flags tm =
   else failwith "action296 adaptive grouping: malformed flag list";;
 
 let candle_action296_adaptive_grouping_compute (prepared,cases) =
+  let encoded_cases =
+    map (fun case -> case.adaptive_grouping_encoded_job) cases in
   let theorem =
     candle_q_dim_analytic_jet_compute
       candle_action296_adaptive_grouping_eqs
       (list_mk_comb
         (`candle_cv_action296_adaptive_grouping_flags`,
          [prepared.program_representation_term;
-          candle_action296_adaptive_grouping_cases_term cases])) in
+          candle_action296_adaptive_grouping_cases_term encoded_cases])) in
   if hyp theorem <> [] then
     failwith "action296 adaptive grouping: computed theorem assumptions";
   let flags =
@@ -175,7 +191,8 @@ let _ =
   candle_action296_adaptive_grouping_marker
     "per-box-preparation" "begin";;
 let candle_action296_adaptive_grouping_jobs_ref :
-    (candle_q_dim_analytic_jet_prepared_six * term list) list option ref =
+    (candle_q_dim_analytic_jet_prepared_six *
+     candle_action296_adaptive_grouping_case_six list) list option ref =
   ref None;;
 let _ =
   candle_action296_adaptive_grouping_jobs_ref :=
