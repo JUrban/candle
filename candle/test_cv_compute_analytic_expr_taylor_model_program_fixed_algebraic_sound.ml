@@ -22,6 +22,7 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_cv_fsa_item_inv_correct <> [] ||
    hyp candle_cv_fsa_item_atn_correct <> [] ||
    hyp candle_cv_fsa_item_pi_half_correct <> [] ||
+   hyp candle_cv_fsa_poly_item_correct <> [] ||
    hyp candle_fsa_item_fixed_view_analytic_invariant <> [] ||
    hyp candle_fsa_item_neg_analytic_invariant <> [] ||
    hyp candle_fsa_item_add_analytic_invariant <> [] ||
@@ -31,6 +32,7 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_fsa_item_sqrt_analytic_invariant <> [] ||
    hyp candle_fsa_item_atn_analytic_invariant <> [] ||
    hyp candle_fsa_item_pi_half_analytic_invariant <> [] ||
+   hyp candle_fsa_poly_item_analytic_invariant <> [] ||
    hyp candle_fsa_interval_matrix_of_q_length <> [] ||
    hyp candle_fsa_interval_matrix_of_q_rows_width <> [] ||
    hyp candle_fsa_interval_matrix_of_q_map <> [] ||

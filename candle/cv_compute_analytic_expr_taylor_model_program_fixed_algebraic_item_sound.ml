@@ -208,4 +208,18 @@ let candle_cv_fsa_item_pi_half_correct = prove
               candle_cv_fsa_item_encode_def;
               candle_cv_q_dim_taylor_model_result_pi_half_correct]);;
 
+let candle_cv_fsa_poly_item_correct = prove
+ (`!program center_boxes radii.
+     candle_cv_fsa_item_fixed
+       (candle_cv_fs_poly_program
+         (candle_cv_q_interval_list center_boxes)
+         (candle_cv_q_list radii)
+         (candle_cv_q_instruction_list program)) =
+     candle_cv_fsa_item_encode T
+       (candle_fs_poly_program center_boxes radii program)
+       (candle_fs_poly_program_to_q center_boxes radii program)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsa_item_encode_def;
+              candle_cv_fs_poly_program_correct]);;
+
 end;;

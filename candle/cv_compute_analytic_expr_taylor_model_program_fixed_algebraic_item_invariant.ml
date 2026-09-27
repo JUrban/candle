@@ -7,9 +7,11 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_inva
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_invariant = struct
 
+open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_nonlinear_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_compile_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_item_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_invariant;;
@@ -357,6 +359,29 @@ let candle_fsa_item_pi_half_analytic_invariant = prove
               candle_fsa_item_analytic_invariant_def;
               candle_fsa_item_q_view_def] THEN
   MATCH_MP_TAC candle_q_dim_taylor_model_result_pi_half_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fsa_poly_item_analytic_invariant = prove
+ (`!e boxes (type_witness:real^N).
+     candle_poly_valid_dim (dimindex (:N)) e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes
+     ==>
+     candle_fsa_item_analytic_invariant type_witness boxes T
+       (candle_fs_poly_program
+         (candle_q_center_environment_list boxes)
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         (candle_poly_compile e))
+       (candle_fs_poly_program_to_q
+         (candle_q_center_environment_list boxes)
+         (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+         (candle_poly_compile e))
+       (Candle_analytic_poly e) (Candle_analytic_poly e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsa_item_analytic_invariant_def;
+              candle_fsa_item_q_view_def;
+              GSYM candle_fs_poly_program_to_q_def] THEN
+  MATCH_MP_TAC candle_fs_poly_program_to_q_analytic_invariant THEN
   ASM_REWRITE_TAC[]);;
 
 end;;
