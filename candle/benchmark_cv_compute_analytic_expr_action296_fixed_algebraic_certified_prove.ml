@@ -22,34 +22,45 @@ let _ =
   candle_action296_fixed_algebraic_certified_marker
     "proof-producing-batch" "begin";;
 
-let candle_action296_fixed_algebraic_certified_theorems =
-  map
-    (fun (variant,lower,upper) ->
-      candle_q_dim_taylor_model_fixed_algebraic_certified_prove_box_variant_six
-        variant candle_action296_instruction_profile_box_prepared lower upper)
-    candle_action296_instruction_profile_cases;;
+let candle_action296_fixed_algebraic_certified_theorems_ref :
+    thm list option ref = ref None;;
+let _ =
+  candle_action296_fixed_algebraic_certified_theorems_ref :=
+    Some
+      (map
+        (fun (variant,lower,upper) ->
+          candle_q_dim_taylor_model_fixed_algebraic_certified_prove_box_variant_six
+            variant candle_action296_instruction_profile_box_prepared
+            lower upper)
+        candle_action296_instruction_profile_cases);;
 
 let _ =
   candle_action296_fixed_algebraic_certified_marker
     "proof-producing-batch" "end";;
+
+let candle_action296_fixed_algebraic_certified_theorems () =
+  match !candle_action296_fixed_algebraic_certified_theorems_ref with
+  | Some theorems -> theorems
+  | None ->
+      failwith "action296 fixed algebraic certified batch: missing theorems";;
 
 let candle_action296_fixed_algebraic_certified_digest =
   Digest.to_hex
     (Digest.string
       (itlist
         (fun theorem tail -> string_of_thm theorem ^ "\n" ^ tail)
-        candle_action296_fixed_algebraic_certified_theorems ""));;
+        (candle_action296_fixed_algebraic_certified_theorems ()) ""));;
 
 let candle_action296_fixed_algebraic_certified_axioms_after = axioms ();;
 
 if length candle_action296_instruction_profile_cases <> 8 ||
-   length candle_action296_fixed_algebraic_certified_theorems <> 8 ||
+   length (candle_action296_fixed_algebraic_certified_theorems ()) <> 8 ||
    candle_action296_fixed_algebraic_certified_digest <>
      "4debb8d2adc5f5c2504ce2eaf84bf304" ||
    not
      (List.for_all
        (fun theorem -> hyp theorem = [])
-       candle_action296_fixed_algebraic_certified_theorems) ||
+       (candle_action296_fixed_algebraic_certified_theorems ())) ||
    length candle_action296_fixed_algebraic_certified_axioms_after <>
      length candle_action296_fixed_algebraic_certified_axioms_before ||
    not

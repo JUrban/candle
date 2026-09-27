@@ -71,6 +71,8 @@ let candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
             box_prepared.function_term)
         cells) then
     failwith "fixed algebraic Taylor batch prover: source-function mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-preparation-begin";
   let prepared =
     map
       candle_q_dim_taylor_model_fixed_algebraic_batch_cell_prepare_six
@@ -109,6 +111,8 @@ let candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
       (`candle_cv_fsa_batch_check`,
        [box_prepared.program_representation_term;encoded_jobs]) in
   candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-preparation-end";
+  candle_q_dim_analytic_jet_profile_event
     "fixed-algebraic-certified-taylor-batch-compute-begin";
   let concrete_compute =
     candle_q_dim_analytic_jet_compute
@@ -117,6 +121,8 @@ let candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
     "fixed-algebraic-certified-taylor-batch-compute-end";
   if not (aconv (rand (concl concrete_compute)) `Cexp_num 1`) then
     failwith "fixed algebraic Taylor batch prover: numerical batch rejected";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-handoff-begin";
   candle_q_dim_analytic_jet_profile_event
     "fixed-algebraic-certified-taylor-batch-call-encoding-begin";
   let call_encoding =
@@ -209,6 +215,8 @@ let candle_q_dim_taylor_model_fixed_algebraic_batch_prove_six
       (CONJ numerical_theorem erasure_theorem) in
   if hyp accept_theorem <> [] then
     failwith "fixed algebraic Taylor batch prover: acceptance assumptions";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-algebraic-certified-taylor-batch-handoff-end";
   {
     fixed_algebraic_batch_box_prepared = box_prepared;
     fixed_algebraic_batch_jobs_term = jobs;
