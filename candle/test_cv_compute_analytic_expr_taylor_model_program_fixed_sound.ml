@@ -2,12 +2,13 @@
 (* Structural test for the fixed-polynomial analytic-invariant bridge.       *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_certified_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_batch.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_compile_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_representation;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_certified_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_batch;;
 
 let candle_fixed_program_sound_axioms_before = axioms ();;
 
@@ -26,11 +27,19 @@ let candle_fixed_program_certified_check_test =
 let candle_fixed_program_certified_accept_test =
   candle_q_dim_taylor_model_fixed_certified_accept_sound;;
 
+let candle_fixed_program_batch_check_test =
+  candle_cv_fs_q_dim_taylor_model_batch_check_correct;;
+
+let candle_fixed_program_batch_sound_test =
+  candle_q_dim_taylor_model_fixed_batch_sound;;
+
 if hyp candle_fixed_program_sound_test <> [] ||
    hyp candle_fixed_program_compile_sound_test <> [] ||
    hyp candle_fixed_program_representation_test <> [] ||
    hyp candle_fixed_program_certified_check_test <> [] ||
-   hyp candle_fixed_program_certified_accept_test <> [] then
+   hyp candle_fixed_program_certified_accept_test <> [] ||
+   hyp candle_fixed_program_batch_check_test <> [] ||
+   hyp candle_fixed_program_batch_sound_test <> [] then
   failwith "fixed program sound: unexpected theorem assumptions";;
 
 let candle_fixed_program_sound_axioms_after = axioms ();;
