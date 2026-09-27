@@ -26,7 +26,12 @@ if hyp candle_cv_fsa_interval_matrix_of_q_correct <> [] ||
    hyp candle_q_dim_taylor_model_proxy_hessian <> [] ||
    hyp candle_fsa_result_of_q_center <> [] ||
    hyp candle_fsa_result_of_q_proxy <> [] ||
-   hyp candle_fsa_result_of_q_analytic_invariant <> [] then
+   hyp candle_fsa_result_of_q_analytic_invariant <> [] ||
+   hyp candle_q_dim_flyspeck_components_analytic_contains <> [] ||
+   hyp candle_analytic_dd_matrix_flyspeck <> [] ||
+   hyp candle_fs_result_complete_proxy_contains_box <> [] ||
+   hyp candle_fs_result_complete_proxy_analytic_contains_box <> [] ||
+   hyp candle_fs_result_complete_analytic_invariant <> [] then
   failwith "fixed-algebraic soundness substrate has assumptions";;
 
 let candle_fixed_algebraic_sound_axioms_after = axioms ();;
