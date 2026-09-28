@@ -1,10 +1,11 @@
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_certified_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_stable_batch_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_item_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_compile_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_certified_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_stable_batch_sound;;
 
 let candle_fixed_outer_invariant_axioms_before = axioms ();;
 
@@ -45,7 +46,15 @@ if hyp candle_fs_result_analytic_proxy_target_components <> [] ||
    hyp candle_q_dim_taylor_model_fixed_outer_compile_analytic_invariant <> [] ||
    hyp candle_cv_fso_certified_check_correct <> [] ||
    hyp candle_q_dim_taylor_model_fixed_outer_certified_upper_sound <> [] ||
-   hyp candle_q_dim_taylor_model_fixed_outer_certified_accept_sound <> [] then
+   hyp candle_q_dim_taylor_model_fixed_outer_certified_accept_sound <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_batch_accept_iff <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_batch_accept_mem <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_batch_sound <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_stable_jobs_numerical_accept <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_stable_jobs_accept <> [] ||
+   hyp candle_q_dim_taylor_model_fixed_outer_stable_batch_accept <> [] ||
+   hyp candle_cv_fso_stable_jobs_check_correct <> [] ||
+   hyp candle_cv_fso_stable_batch_check_correct <> [] then
   failwith "fixed outer invariant: unexpected theorem hypotheses";;
 
 let candle_fixed_outer_invariant_axioms_after = axioms ();;
