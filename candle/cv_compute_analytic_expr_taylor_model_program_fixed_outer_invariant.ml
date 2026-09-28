@@ -10,6 +10,7 @@ module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant = stru
 open Multivariate_taylor;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_calculus;;
+open Candle_cv_analytic_expr_hessian;;
 open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_invariant;;
@@ -446,5 +447,59 @@ let candle_fs_result_mul_analytic_hessian_contains = prove
       CONJUNCT2 (CONJUNCT2 right_shape_th)]) in
   MP_TAC raw_th THEN
   REWRITE_TAC[candle_fso_analytic_mul_dd_raw]);;
+
+(* Convert the zero-based analytic Hessian view used by the reflected       *)
+(* evaluator to the one-based [partial2] view consumed by Flyspeck Taylor.  *)
+
+let candle_fs_analytic_hessian_flyspeck_contains = prove
+ (`!e hessian (type_witness:real^N) (p:real^N).
+     candle_analytic_valid_dim (dimindex (:N)) e /\
+     candle_analytic_regular_at
+       (list_of_seq (\k. p$(k + 1)) (dimindex (:N))) e /\
+     ALL2 (ALL2 candle_fs_interval_contains) hessian
+       (list_of_seq
+         (\di. list_of_seq
+           (\dj. candle_analytic_dd di dj
+             (list_of_seq (\k. p$(k + 1)) (dimindex (:N))) e)
+           (dimindex (:N)))
+         (dimindex (:N)))
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains) hessian
+       (list_of_seq
+         (\di. list_of_seq
+           (\dj. partial2 (dj + 1) (di + 1)
+             (candle_analytic_denote_dim e) p)
+           (dimindex (:N)))
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `list_of_seq
+      (\di. list_of_seq
+        (\dj. partial2 (dj + 1) (di + 1)
+          (candle_analytic_denote_dim e) (p:real^N))
+        (dimindex (:N)))
+      (dimindex (:N)) =
+    list_of_seq
+      (\di. list_of_seq
+        (\dj. candle_analytic_dd di dj
+          (list_of_seq (\k. p$(k + 1)) (dimindex (:N))) e)
+        (dimindex (:N)))
+      (dimindex (:N))`
+   SUBST1_TAC THENL
+   [REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+    X_GEN_TAC `di:num` THEN DISCH_TAC THEN
+    ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+    REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+    X_GEN_TAC `dj:num` THEN DISCH_TAC THEN
+    ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+    MP_TAC
+     (ISPECL
+       [`e:candle_analytic_expr`; `p:real^N`; `di + 1`; `dj + 1`]
+       candle_analytic_denote_dim_second_partial) THEN
+    ANTS_TAC THENL
+     [ASM_REWRITE_TAC[IN_NUMSEG] THEN ASM_ARITH_TAC;
+      REWRITE_TAC[ARITH_RULE `(di + 1) - 1 = di`;
+                  ARITH_RULE `(dj + 1) - 1 = dj`]];
+    ASM_REWRITE_TAC[]]);;
 
 end;;
