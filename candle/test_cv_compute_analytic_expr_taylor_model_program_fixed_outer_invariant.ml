@@ -1,7 +1,8 @@
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_item_invariant.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_program_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_item_invariant;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_program_sound;;
 
 let candle_fixed_outer_invariant_axioms_before = axioms ();;
 
@@ -16,7 +17,13 @@ if hyp candle_fs_result_analytic_proxy_target_components <> [] ||
    hyp candle_cv_fso_item_mul_correct <> [] ||
    hyp candle_cv_fso_item_square_correct <> [] ||
    hyp candle_fso_item_mul_analytic_invariant <> [] ||
-   hyp candle_fso_item_square_analytic_invariant <> [] then
+   hyp candle_fso_item_square_analytic_invariant <> [] ||
+   hyp candle_cv_fso_item_neg_correct <> [] ||
+   hyp candle_cv_fso_item_add_correct <> [] ||
+   hyp candle_cv_fso_logical_item_mul_correct <> [] ||
+   hyp candle_cv_fso_logical_item_square_correct <> [] ||
+   hyp candle_cv_fso_logical_program_step_correct <> [] ||
+   hyp candle_cv_fso_logical_program_run_correct <> [] then
   failwith "fixed outer invariant: unexpected theorem hypotheses";;
 
 let candle_fixed_outer_invariant_axioms_after = axioms ();;

@@ -11,6 +11,7 @@ fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_invariant.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_item_invariant.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_program_sound.ml"
   "$repo_root/candle/test_cv_compute_analytic_expr_taylor_model_program_fixed_outer_invariant.ml"
 )
 
