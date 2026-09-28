@@ -100,6 +100,8 @@ let candle_q_dim_taylor_model_stable_batch_prepare_cell_six
 let candle_q_dim_taylor_model_stable_batch_prove_six
     prepared box_intervals cells =
   if cells = [] then failwith "stable Taylor batch prover: empty batch";
+  candle_q_dim_analytic_jet_profile_event
+    "stable-certified-taylor-batch-preparation-begin";
   let box_intervals_term =
     mk_list
       (box_intervals,
@@ -145,6 +147,8 @@ let candle_q_dim_taylor_model_stable_batch_prove_six
       (`candle_cv_fsa_stable_batch_check`,
        [prepared.program_representation_term;
         rand (concl box_intervals_encoding);encoded_jobs]) in
+  candle_q_dim_analytic_jet_profile_event
+    "stable-certified-taylor-batch-preparation-end";
   candle_q_dim_analytic_jet_profile_event
     "stable-certified-taylor-batch-compute-begin";
   let concrete_compute =

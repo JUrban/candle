@@ -340,10 +340,11 @@ let candle_cv_fsa_stable_batch_check_correct = prove
      ARITH_RULE `1 = SUC 0`]);;
 
 let candle_cv_fsa_stable_batch_compute_eqs =
-  union candle_cv_fsa_compute_eqs
-    (candle_cv_analytic_program_patch_sqrt_compute_eqs @
-     candle_cv_analytic_program_sqrt_data_exact_compute_eqs @
-     [SPEC_ALL candle_cv_fsa_stable_jobs_check_compute;
-      SPEC_ALL candle_cv_fsa_stable_batch_check_def]);;
+  map (REWRITE_RULE[LET_END_DEF])
+    (union candle_cv_fsa_compute_eqs
+      (candle_cv_analytic_program_patch_sqrt_compute_eqs @
+       candle_cv_analytic_program_sqrt_data_exact_compute_eqs @
+       [SPEC_ALL candle_cv_fsa_stable_jobs_check_compute;
+        SPEC_ALL candle_cv_fsa_stable_batch_check_def]));;
 
 end;;

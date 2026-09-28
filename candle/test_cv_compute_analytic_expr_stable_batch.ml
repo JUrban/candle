@@ -55,7 +55,8 @@ let candle_analytic_stable_batch_test_run intervals =
        [candle_analytic_stable_batch_test_program;
         candle_analytic_stable_batch_test_encode_intervals intervals;
         `Cexp_num 0`]) in
-  compute candle_cv_fsa_stable_batch_compute_eqs call;;
+  candle_q_dim_analytic_jet_compute
+    candle_cv_fsa_stable_batch_compute_eqs call;;
 
 let candle_analytic_stable_batch_test_pass =
   candle_analytic_stable_batch_test_run
