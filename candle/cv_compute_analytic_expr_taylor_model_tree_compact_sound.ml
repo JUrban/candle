@@ -7,6 +7,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_correct.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_tree.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_tree_compact_sound = struct
 
@@ -15,6 +16,7 @@ open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_tree;;
 open Candle_cv_analytic_expr_taylor_model_tree_compact;;
 open Candle_cv_analytic_expr_taylor_model_tree_compact_correct;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_tree;;
 
 let _ = print_endline "CANDLE_COMPACT_TREE_PROOF split-semantics begin";;
 let candle_q_boxes_split_exact_from_lengths = prove
@@ -246,6 +248,24 @@ let candle_cv_q_dim_taylor_model_tree_compact_sound = prove
   MESON_TAC
     [candle_cv_q_dim_taylor_model_tree_topology_accept_sound;
      candle_q_dim_taylor_model_tree_sound]);;
+
+let candle_cv_q_dim_taylor_model_fixed_algebraic_tree_compact_sound = prove
+ (`!box_e (type_witness:real^N) tree.
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     candle_q_dim_taylor_model_fixed_algebraic_batch_accept box_e
+       (candle_q_dim_taylor_model_tree_jobs tree) /\
+     candle_cv_q_dim_taylor_model_tree_topology_check
+       (Cexp_num (dimindex (:N)))
+       (candle_cv_q_dim_taylor_model_tree_topology tree) = Cexp_num 1
+     ==> m_cell_pass
+          (candle_analytic_denote_dim box_e)
+          ((candle_q_box_lower_vector
+             (candle_q_dim_taylor_model_tree_root_boxes tree):real^N),
+           (candle_q_box_upper_vector
+             (candle_q_dim_taylor_model_tree_root_boxes tree):real^N))`,
+  MESON_TAC
+    [candle_cv_q_dim_taylor_model_tree_topology_accept_sound;
+     candle_q_dim_taylor_model_fixed_algebraic_tree_sound]);;
 let _ = print_endline "CANDLE_COMPACT_TREE_PROOF compact-tree-sound end";;
 
 print_endline "CANDLE_CV_COMPACT_TREE_SOUND_OK DEVELOPMENT_NON_RELEASE";;
