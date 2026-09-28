@@ -14,10 +14,11 @@ runner="$repo_root/candle/restart_real_functions_with_fragments_strict.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 adapter="$repo_root/candle/cv_compute_analytic_expr_action296_adaptive_forest_prove.ml"
 grouped_adapter="$repo_root/candle/cv_compute_analytic_expr_action296_bounded_grouped_forest_prove.ml"
-test_fragment="$repo_root/candle/test_cv_compute_analytic_expr_action296_bounded_grouped_policy_proof.ml"
+test_fragment=${CANDLE_ACTION296_BOUNDED_TEST_FRAGMENT:-"$repo_root/candle/test_cv_compute_analytic_expr_action296_bounded_grouped_policy_proof.ml"}
 marker=CANDLE_CV_ACTION296_BOUNDED_GROUPED_POLICY_OK
 
 [[ -f "$plan" ]]
+[[ -f "$test_fragment" ]]
 fragments=("$adapter" "$grouped_adapter" "$plan" "$test_fragment")
 
 is_descendant() {
