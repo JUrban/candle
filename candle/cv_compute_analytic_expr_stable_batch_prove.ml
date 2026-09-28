@@ -208,43 +208,47 @@ let candle_q_dim_taylor_model_stable_batch_prove_six
    stable_batch_accept_theorem = accept_theorem;
    stable_batch_prepared_cells = prepared_cells};;
 
+let candle_q_dim_taylor_model_stable_batch_cell_matches left right =
+  left.stable_batch_lower = right.stable_batch_lower &&
+  left.stable_batch_upper = right.stable_batch_upper &&
+  left.stable_batch_center_intervals = right.stable_batch_center_intervals;;
+
+(* Split the accepted materialized list from the head exactly once per cell. *)
+(* Re-proving [MEM] independently for every requested cell is quadratic.     *)
+let candle_q_dim_taylor_model_stable_batch_cell_accepts_six result =
+  let rec extract accepted prepared_cells =
+    match prepared_cells with
+    | [] -> []
+    | prepared_cell :: remaining ->
+        let materialized_head =
+          CONV_RULE
+            (RAND_CONV
+              (REWR_CONV
+                (CONJUNCT2
+                  candle_q_dim_taylor_model_stable_jobs_materialize_def)))
+            accepted in
+        let split =
+          CONV_RULE
+            (REWR_CONV
+              (CONJUNCT2
+                candle_q_dim_taylor_model_fixed_algebraic_batch_accept_def))
+            materialized_head in
+        let cell_acceptance =
+          REWRITE_RULE[FST;SND] (CONJUNCT1 split) in
+        (prepared_cell,cell_acceptance) ::
+        extract (CONJUNCT2 split) remaining in
+  extract result.stable_batch_accept_theorem
+    result.stable_batch_prepared_cells;;
+
 let candle_q_dim_taylor_model_stable_batch_cell_accept_six result cell =
-  let prepared_cell =
-    try
-      find
-        (fun candidate ->
-          candidate.stable_batch_cell.stable_batch_lower =
-            cell.stable_batch_lower &&
-          candidate.stable_batch_cell.stable_batch_upper =
-            cell.stable_batch_upper &&
-          candidate.stable_batch_cell.stable_batch_center_intervals =
-            cell.stable_batch_center_intervals)
-        result.stable_batch_prepared_cells
-    with Not_found -> failwith "stable Taylor batch prover: unknown cell" in
-  let membership =
-    EQT_ELIM
-      (REWRITE_CONV
-        [candle_q_dim_taylor_model_stable_jobs_materialize_def; MEM;
-         FST; SND]
-        (list_mk_comb
-          (`MEM:(candle_analytic_expr#
-                 (((num#num)#num)#((num#num)#num))list)->
-                (candle_analytic_expr#
-                 (((num#num)#num)#((num#num)#num))list)list->bool`,
-           [prepared_cell.stable_batch_materialized_job_term;
-            result.stable_batch_materialized_jobs_term]))) in
-  let implication =
-    SPECL
-      [result.stable_batch_materialized_jobs_term;
-       candle_q_dim_taylor_model_stable_batch_patch_expression
-         result.stable_batch_box_intervals_term
-         result.stable_batch_prepared_source.expression_term;
-       prepared_cell.stable_batch_materialized_job_term]
-      candle_q_dim_taylor_model_fixed_algebraic_batch_accept_mem in
-  let premise = CONJ result.stable_batch_accept_theorem membership in
-  if not (aconv (fst (dest_imp (concl implication))) (concl premise)) then
-    failwith "stable Taylor batch prover: cell premise mismatch";
-  REWRITE_RULE[FST;SND] (MATCH_MP implication premise);;
+  try
+    snd
+      (find
+        (fun (prepared_cell,_) ->
+          candle_q_dim_taylor_model_stable_batch_cell_matches
+            prepared_cell.stable_batch_cell cell)
+        (candle_q_dim_taylor_model_stable_batch_cell_accepts_six result))
+  with Not_found -> failwith "stable Taylor batch prover: unknown cell";;
 
 let candle_q_dim_taylor_model_stable_batch_sound_six =
   REWRITE_RULE
@@ -253,19 +257,8 @@ let candle_q_dim_taylor_model_stable_batch_sound_six =
       [`:6`,`:N`]
       candle_q_dim_taylor_model_fixed_algebraic_certified_accept_sound);;
 
-let candle_q_dim_taylor_model_stable_batch_cell_source_six result cell =
-  let acceptance =
-    candle_q_dim_taylor_model_stable_batch_cell_accept_six result cell in
-  let prepared_cell =
-    find
-      (fun candidate ->
-        candidate.stable_batch_cell.stable_batch_lower =
-          cell.stable_batch_lower &&
-        candidate.stable_batch_cell.stable_batch_upper =
-          cell.stable_batch_upper &&
-        candidate.stable_batch_cell.stable_batch_center_intervals =
-          cell.stable_batch_center_intervals)
-      result.stable_batch_prepared_cells in
+let candle_q_dim_taylor_model_stable_batch_prepared_cell_source_six
+    result prepared_cell acceptance =
   let length_six =
     prove
       (mk_eq
@@ -309,5 +302,24 @@ let candle_q_dim_taylor_model_stable_batch_cell_source_six result cell =
   if hyp source_theorem <> [] then
     failwith "stable Taylor batch prover: source theorem assumptions";
   source_theorem;;
+
+let candle_q_dim_taylor_model_stable_batch_cell_sources_six result =
+  map
+    (fun (prepared_cell,acceptance) ->
+      candle_q_dim_taylor_model_stable_batch_prepared_cell_source_six
+        result prepared_cell acceptance)
+    (candle_q_dim_taylor_model_stable_batch_cell_accepts_six result);;
+
+let candle_q_dim_taylor_model_stable_batch_cell_source_six result cell =
+  try
+    let prepared_cell,acceptance =
+      find
+        (fun (prepared_cell,_) ->
+          candle_q_dim_taylor_model_stable_batch_cell_matches
+            prepared_cell.stable_batch_cell cell)
+        (candle_q_dim_taylor_model_stable_batch_cell_accepts_six result) in
+    candle_q_dim_taylor_model_stable_batch_prepared_cell_source_six
+      result prepared_cell acceptance
+  with Not_found -> failwith "stable Taylor batch prover: unknown cell";;
 
 end;;

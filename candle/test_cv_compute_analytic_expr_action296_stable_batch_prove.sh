@@ -9,6 +9,7 @@ profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 marker=CANDLE_CV_ACTION296_STABLE_BATCH_PROVE_OK
 
 fragments=(
+  "$repo_root/candle/cv_compute_analytic_expr_stable_batch_prove.ml"
   "$repo_root/candle/benchmark_cv_compute_analytic_expr_action296_stable_batch_prove.ml"
 )
 

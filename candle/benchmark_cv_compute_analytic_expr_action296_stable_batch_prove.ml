@@ -264,9 +264,9 @@ let candle_action296_stable_batch_prove_sources scope result cells =
   candle_action296_stable_batch_prove_marker
     scope "source-theorem-extraction" "begin";
   let theorems =
-    map
-      (candle_q_dim_taylor_model_stable_batch_cell_source_six result)
-      cells in
+    candle_q_dim_taylor_model_stable_batch_cell_sources_six result in
+  if length theorems <> length cells then
+    failwith "action296 stable batch proof: source theorem cardinality drift";
   candle_action296_stable_batch_prove_marker
     scope "source-theorem-extraction" "end";
   theorems;;
