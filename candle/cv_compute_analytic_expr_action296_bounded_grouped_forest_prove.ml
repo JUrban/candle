@@ -148,8 +148,8 @@ let candle_action296_bounded_group_prove_attempt attempt roots =
         candle_q_dim_analytic_jet_prepare_box_six
           candle_action296_plan_prepared.function_term lower upper) in
   let point_plan =
-    candle_action296_bounded_group_profile (phase "point-plan-compilation")
-      (fun () -> candle_q_dim_taylor_model_point_plan_six prepared) in
+    candle_action296_bounded_group_profile (phase "point-plan-reuse")
+      (fun () -> candle_action296_forest_point_plan) in
   let grouped_roots,cells =
     candle_action296_bounded_group_profile (phase "final-cell-preparation")
       (fun () ->

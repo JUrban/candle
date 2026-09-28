@@ -61,6 +61,23 @@ let candle_action296_forest_marker phase event =
     ("CANDLE_CERT_PROFILE lane=action296-adaptive-forest-proof" ^
      " scope=forest phase=" ^ phase ^ " event=" ^ event);;
 
+(* The point-certificate programs depend only on the authenticated source    *)
+(* function and its six variables.  Box endpoints and square-root interval   *)
+(* payloads are deliberately absent from the plan.  Compile it once for this *)
+(* expression; every use still checks the exact function/source identity.    *)
+
+let candle_action296_forest_point_plan =
+  let _ =
+    candle_action296_forest_marker
+      "stable-point-plan-compilation" "begin" in
+  let plan =
+    candle_q_dim_taylor_model_point_plan_six
+      candle_action296_plan_prepared in
+  let _ =
+    candle_action296_forest_marker
+      "stable-point-plan-compilation" "end" in
+  plan;;
+
 let rec candle_action296_forest_aconv_lists left right =
   match left,right with
   | [],[] -> true
@@ -204,7 +221,7 @@ let candle_action296_adaptive_forest_prove
       roots parents in
   let _ = candle_action296_forest_marker "source-preparation" "end" in
   let _ =
-    candle_action296_forest_marker "point-plan-compilation" "begin" in
+    candle_action296_forest_marker "point-plan-reuse" "begin" in
   let planned =
     map
       (fun source ->
@@ -214,11 +231,10 @@ let candle_action296_adaptive_forest_prove
           forest_planned_plan_data = source.forest_prepared_plan_data;
           forest_planned_source = source.forest_prepared_source;
           forest_planned_point_plan =
-            candle_q_dim_taylor_model_point_plan_six
-              source.forest_prepared_source;
+            candle_action296_forest_point_plan;
         })
       prepared in
-  let _ = candle_action296_forest_marker "point-plan-compilation" "end" in
+  let _ = candle_action296_forest_marker "point-plan-reuse" "end" in
   let _ = candle_action296_forest_marker "final-cell-preparation" "begin" in
   let groups =
     map
@@ -328,11 +344,11 @@ let candle_action296_adaptive_forest_prove_one index plan_data =
       (phase ^ "-source-preparation") "end" in
   let _ =
     candle_action296_forest_marker
-      (phase ^ "-point-plan-compilation") "begin" in
-  let point_plan = candle_q_dim_taylor_model_point_plan_six prepared in
+      (phase ^ "-point-plan-reuse") "begin" in
+  let point_plan = candle_action296_forest_point_plan in
   let _ =
     candle_action296_forest_marker
-      (phase ^ "-point-plan-compilation") "end" in
+      (phase ^ "-point-plan-reuse") "end" in
   let tree = candle_action296_forest_build_tree parent plan_data in
   let domains = candle_action296_forest_tree_domains tree in
   let _ =
