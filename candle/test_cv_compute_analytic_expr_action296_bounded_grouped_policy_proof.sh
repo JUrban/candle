@@ -15,11 +15,17 @@ profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 adapter="$repo_root/candle/cv_compute_analytic_expr_action296_adaptive_forest_prove.ml"
 grouped_adapter="$repo_root/candle/cv_compute_analytic_expr_action296_bounded_grouped_forest_prove.ml"
 test_fragment=${CANDLE_ACTION296_BOUNDED_TEST_FRAGMENT:-"$repo_root/candle/test_cv_compute_analytic_expr_action296_bounded_grouped_policy_proof.ml"}
+group_schedule=${CANDLE_ACTION296_BOUNDED_GROUP_SCHEDULE:-}
 marker=CANDLE_CV_ACTION296_BOUNDED_GROUPED_POLICY_OK
 
 [[ -f "$plan" ]]
 [[ -f "$test_fragment" ]]
-fragments=("$adapter" "$grouped_adapter" "$plan" "$test_fragment")
+fragments=("$adapter" "$grouped_adapter" "$plan")
+if [[ -n "$group_schedule" ]]; then
+  [[ -f "$group_schedule" ]]
+  fragments+=("$group_schedule")
+fi
+fragments+=("$test_fragment")
 
 is_descendant() {
   local candidate=$1 ancestor=$2 parent
