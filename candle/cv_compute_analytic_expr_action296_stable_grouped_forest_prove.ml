@@ -93,22 +93,10 @@ let _ =
            "-verdict-handoff") "end"
       else ());;
 
-let candle_action296_stable_group_variables =
-  candle_poly_vector_components
-    candle_action296_plan_prepared.vector_term 6;;
-
-let candle_action296_stable_group_box_intervals lower upper =
-  let bounds =
-    map2
-      (fun lower_term upper_term ->
-        rat_of_term lower_term,rat_of_term upper_term)
-      lower upper in
+let candle_action296_stable_group_box_intervals point_plan lower upper =
   let intervals =
-    candle_analytic_collect_sqrt_intervals
-      (candle_q_box_sqrt_callback
-        candle_action296_stable_group_variables bounds)
-      candle_action296_stable_group_variables
-      candle_action296_plan_prepared.source_term in
+    candle_q_box_rational_program_intervals_six
+      point_plan.point_plan_programs lower upper in
   if length intervals <> 7 then
     failwith "action296 stable grouping: square-root slot count drift";
   intervals;;
@@ -196,7 +184,8 @@ let candle_action296_stable_group_prove_attempt
       (fun () ->
         let lower,upper =
           candle_action296_leaf_grouping_envelope (map snd parents) in
-        candle_action296_stable_group_box_intervals lower upper) in
+        candle_action296_stable_group_box_intervals
+          point_plan lower upper) in
   let grouped_roots,cells =
     candle_action296_stable_group_profile (phase "final-cell-data")
       (fun () ->

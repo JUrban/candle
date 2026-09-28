@@ -1,34 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -lt 3 || $# -gt 4 ]]; then
-  printf 'usage: %s POLICY_ML SCHEDULE_ML OUTPUT_DIR [BASE_DIR]\n' "$0" >&2
-  exit 2
-fi
-
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-policy=$1
-schedule=$2
-output_dir=$3
-base_dir=${4:-/project/flyspeck-candle-runs/cv-action296-stable-batch-proof-support-checkpoint-v1}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-action296-stable-batch-proof-support-checkpoint-v1}
+output_dir=${1:-/project/flyspeck-candle-runs/cv-action296-box-plan-v1-run-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
-marker=CANDLE_CV_ACTION296_STABLE_GROUPED_POLICY_OK
+marker=CANDLE_CV_ACTION296_BOX_PLAN_OK
 
 fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_box_certificate_prepare.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_action296_adaptive_forest_prove.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_action296_bounded_grouped_forest_prove.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_stable_batch_prove.ml"
-  "$repo_root/candle/cv_compute_analytic_expr_action296_stable_grouped_forest_prove.ml"
-  "$policy"
-  "$schedule"
-  "$repo_root/candle/test_cv_compute_analytic_expr_action296_stable_grouped_policy_proof.ml"
+  "$repo_root/candle/benchmark_cv_compute_analytic_expr_action296_box_plan.ml"
 )
-
-for fragment in "${fragments[@]}"; do
-  [[ -f "$fragment" ]]
-done
 
 is_descendant() {
   local candidate=$1 ancestor=$2 parent
@@ -60,13 +43,13 @@ done
 
 if [[ -z "$profiled_pid" ]]; then
   wait "$runner_pid"
-  printf '%s\n' 'restored stable grouped proof process was not found' >&2
+  printf '%s\n' 'restored action-296 box-plan process was not found' >&2
   exit 1
 fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.05 \
-  --stop-key action296-stable-grouped-forest-proof/forest/bounded-forest \
+  --stop-key action296-box-plan/boxes-8/comparison \
   --wait-for-log-seconds 43200 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
@@ -85,4 +68,4 @@ set -e
 sha256sum -c "$output_dir/result-files.sha256"
 sha256sum "$output_dir/phase-profile.json" \
   "$output_dir/profile-observer.log" >"$output_dir/profile-files.sha256"
-printf '%s\n' 'CANDLE_CV_ACTION296_STABLE_GROUPED_POLICY_DRIVER_OK'
+printf '%s\n' 'CANDLE_CV_ACTION296_BOX_PLAN_DRIVER_OK'

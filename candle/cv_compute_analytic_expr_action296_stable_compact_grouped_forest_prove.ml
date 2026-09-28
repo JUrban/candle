@@ -279,7 +279,8 @@ let candle_action296_stable_compact_prove_attempt
       (fun () ->
         let lower,upper =
           candle_action296_leaf_grouping_envelope (map snd parents) in
-        candle_action296_stable_group_box_intervals lower upper) in
+        candle_action296_stable_group_box_intervals
+          point_plan lower upper) in
   let grouped_roots,cells =
     candle_action296_stable_compact_profile (phase "final-cell-data")
       (fun () ->
