@@ -74,7 +74,13 @@ let _ =
       (aconv (rand (concl candle_analytic_stable_batch_test_missing))
         `Cexp_num 0`) ||
      hyp candle_cv_fsa_stable_jobs_check_correct <> [] ||
-     hyp candle_cv_fsa_stable_batch_check_correct <> [] then
+     hyp candle_cv_fsa_stable_batch_check_correct <> [] ||
+     hyp candle_q_dim_taylor_model_stable_jobs_numerical_accept <> [] ||
+     hyp candle_q_dim_taylor_model_stable_jobs_erasure <> [] ||
+     hyp candle_q_dim_taylor_model_stable_jobs_accept <> [] ||
+     hyp candle_q_dim_taylor_model_stable_batch_accept <> [] ||
+     hyp candle_analytic_patch_sqrt_certificates_valid_dim <> [] ||
+     hyp candle_analytic_patch_sqrt_certificates_denote_dim <> [] then
     failwith "analytic stable batch test: structural result mismatch";;
 
 let candle_analytic_stable_batch_test_axioms_after = axioms ();;

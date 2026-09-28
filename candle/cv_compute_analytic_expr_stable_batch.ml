@@ -14,6 +14,7 @@ module Candle_cv_analytic_expr_stable_batch = struct
 open Candle_cv_exact_interval_program;;
 open Candle_cv_analytic_expr_program;;
 open Candle_cv_analytic_expr_program_compute;;
+open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_certificate_patch;;
 open Candle_cv_analytic_expr_certificate_patch_compute;;
 open Candle_cv_analytic_expr_certificate_patch_exact;;
@@ -54,6 +55,161 @@ let candle_q_dim_taylor_model_stable_batch_numerical_accept_def =
       box_intervals (candle_analytic_compile source_e) /\
     candle_q_dim_taylor_model_stable_jobs_numerical_accept
       source_e (SND box_patched) jobs`;;
+
+let candle_q_dim_taylor_model_stable_jobs_materialize_def = define
+ `(candle_q_dim_taylor_model_stable_jobs_materialize
+      (source_e:candle_analytic_expr)
+      ([]:(((((num#num)#num)#((num#num)#num))list)#
+           ((((num#num)#num)#((num#num)#num))list))list) =
+     ([]:(candle_analytic_expr#
+          ((((num#num)#num)#((num#num)#num))list))list)) /\
+  (candle_q_dim_taylor_model_stable_jobs_materialize
+      source_e (CONS job jobs) =
+     CONS
+       (SND
+         (candle_analytic_patch_sqrt_certificates (FST job) source_e),
+        SND job)
+       (candle_q_dim_taylor_model_stable_jobs_materialize
+         source_e jobs))`;;
+
+let candle_q_dim_taylor_model_stable_jobs_numerical_accept = prove
+  (`!jobs source_e box_e.
+     candle_q_dim_taylor_model_stable_jobs_numerical_accept
+       source_e box_e jobs
+     ==>
+     candle_q_dim_taylor_model_fixed_algebraic_batch_numerical_accept
+       box_e
+       (candle_q_dim_taylor_model_stable_jobs_materialize source_e jobs)`,
+  LIST_INDUCT_TAC THENL
+   [REWRITE_TAC
+      [candle_q_dim_taylor_model_stable_jobs_numerical_accept_def;
+       candle_q_dim_taylor_model_stable_jobs_materialize_def;
+       candle_q_dim_taylor_model_fixed_algebraic_batch_numerical_accept_def];
+    POP_ASSUM (LABEL_TAC "tail_ih") THEN
+    REPEAT GEN_TAC THEN
+    REWRITE_TAC
+      [candle_q_dim_taylor_model_stable_jobs_numerical_accept_def;
+       candle_q_dim_taylor_model_stable_jobs_materialize_def;
+       candle_q_dim_taylor_model_fixed_algebraic_batch_numerical_accept_def;
+       LET_DEF; LET_END_DEF] THEN
+    DISCH_THEN
+      (CONJUNCTS_THEN2 (LABEL_TAC "exact")
+        (CONJUNCTS_THEN2 (LABEL_TAC "domain")
+          (CONJUNCTS_THEN2 (LABEL_TAC "box")
+            (CONJUNCTS_THEN2 (LABEL_TAC "negative")
+              (LABEL_TAC "tail"))))) THEN
+    (REPEAT CONJ_TAC THENL
+     [USE_THEN "domain" ACCEPT_TAC;
+      USE_THEN "box" ACCEPT_TAC;
+      USE_THEN "negative" ACCEPT_TAC;
+      USE_THEN "tail_ih"
+        (fun ih ->
+          MATCH_MP_TAC
+            (SPECL
+              [`source_e:candle_analytic_expr`;
+               `box_e:candle_analytic_expr`]
+              ih)) THEN
+      USE_THEN "tail" ACCEPT_TAC])]);;
+
+let candle_q_dim_taylor_model_stable_jobs_erasure = prove
+ (`!jobs source_e box_e.
+     candle_analytic_erase_sqrt_certificates box_e =
+       candle_analytic_erase_sqrt_certificates source_e
+     ==>
+     candle_q_dim_taylor_model_fixed_algebraic_batch_erasure
+       box_e
+       (candle_q_dim_taylor_model_stable_jobs_materialize source_e jobs)`,
+  LIST_INDUCT_TAC THENL
+   [REWRITE_TAC
+      [candle_q_dim_taylor_model_stable_jobs_materialize_def;
+       candle_q_dim_taylor_model_fixed_algebraic_batch_erasure_def];
+    POP_ASSUM (LABEL_TAC "tail_ih") THEN
+    REPEAT GEN_TAC THEN
+    REWRITE_TAC
+      [candle_q_dim_taylor_model_stable_jobs_materialize_def;
+       candle_q_dim_taylor_model_fixed_algebraic_batch_erasure_def;
+       candle_analytic_patch_sqrt_certificates_erasure] THEN
+    DISCH_THEN (LABEL_TAC "erasure") THEN
+    CONJ_TAC THENL
+     [USE_THEN "erasure" (ACCEPT_TAC o SYM);
+      USE_THEN "tail_ih" MATCH_MP_TAC THEN
+      USE_THEN "erasure" ACCEPT_TAC]]);;
+
+let candle_q_dim_taylor_model_stable_jobs_accept = prove
+ (`!jobs source_e box_e.
+     candle_analytic_erase_sqrt_certificates box_e =
+       candle_analytic_erase_sqrt_certificates source_e /\
+     candle_q_dim_taylor_model_stable_jobs_numerical_accept
+       source_e box_e jobs
+     ==>
+     candle_q_dim_taylor_model_fixed_algebraic_batch_accept
+       box_e
+       (candle_q_dim_taylor_model_stable_jobs_materialize source_e jobs)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC
+    (snd
+      (EQ_IMP_RULE
+        (ISPECL
+          [`candle_q_dim_taylor_model_stable_jobs_materialize
+              source_e jobs`;
+           `box_e:candle_analytic_expr`]
+          candle_q_dim_taylor_model_fixed_algebraic_batch_accept_iff))) THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_q_dim_taylor_model_stable_jobs_numerical_accept THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_dim_taylor_model_stable_jobs_erasure THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_q_dim_taylor_model_stable_batch_accept = prove
+ (`!source_e box_intervals jobs.
+     candle_q_dim_taylor_model_stable_batch_numerical_accept
+       source_e box_intervals jobs
+     ==>
+     candle_q_dim_taylor_model_fixed_algebraic_batch_accept
+       (SND
+         (candle_analytic_patch_sqrt_certificates
+           box_intervals source_e))
+       (candle_q_dim_taylor_model_stable_jobs_materialize source_e jobs)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC
+    [candle_q_dim_taylor_model_stable_batch_numerical_accept_def;
+     LET_DEF; LET_END_DEF] THEN
+  DISCH_THEN (LABEL_TAC "stable_accept") THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_stable_jobs_accept THEN
+  CONJ_TAC THENL
+   [REWRITE_TAC[candle_analytic_patch_sqrt_certificates_erasure];
+    USE_THEN "stable_accept" (ACCEPT_TAC o CONJUNCT2)]);;
+
+let candle_analytic_patch_sqrt_certificates_valid_dim = prove
+ (`!source_e intervals n.
+     candle_analytic_valid_dim n source_e
+     ==>
+     candle_analytic_valid_dim n
+       (SND
+         (candle_analytic_patch_sqrt_certificates intervals source_e))`,
+  REPEAT GEN_TAC THEN
+  MP_TAC
+    (SPECL
+      [`source_e:candle_analytic_expr`; `n:num`]
+      candle_analytic_erase_valid_dim) THEN
+  MP_TAC
+    (SPECL
+      [`SND
+         (candle_analytic_patch_sqrt_certificates intervals source_e)`;
+       `n:num`]
+      candle_analytic_erase_valid_dim) THEN
+  REWRITE_TAC[candle_analytic_patch_sqrt_certificates_erasure] THEN
+  MESON_TAC[]);;
+
+let candle_analytic_patch_sqrt_certificates_denote_dim = prove
+ (`!source_e intervals.
+     (candle_analytic_denote_dim source_e:real^N->real) =
+     candle_analytic_denote_dim
+       (SND
+         (candle_analytic_patch_sqrt_certificates intervals source_e))`,
+  REPEAT GEN_TAC THEN
+  MATCH_MP_TAC candle_analytic_denote_certificate_transport THEN
+  REWRITE_TAC[candle_analytic_patch_sqrt_certificates_erasure]);;
 
 let candle_cv_q_dim_taylor_model_stable_jobs_def = define
  `(candle_cv_q_dim_taylor_model_stable_jobs [] = Cexp_num 0) /\
