@@ -1,8 +1,9 @@
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_program_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_compile_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_item_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_program_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_compile_sound;;
 
 let candle_fixed_outer_invariant_axioms_before = axioms ();;
 
@@ -23,7 +24,21 @@ if hyp candle_fs_result_analytic_proxy_target_components <> [] ||
    hyp candle_cv_fso_logical_item_mul_correct <> [] ||
    hyp candle_cv_fso_logical_item_square_correct <> [] ||
    hyp candle_cv_fso_logical_program_step_correct <> [] ||
-   hyp candle_cv_fso_logical_program_run_correct <> [] then
+   hyp candle_cv_fso_logical_program_run_correct <> [] ||
+   hyp candle_fso_logical_item_mul_analytic_invariant <> [] ||
+   hyp candle_fso_logical_item_square_analytic_invariant <> [] ||
+   hyp candle_fso_logical_program_step_poly <> [] ||
+   hyp candle_fso_logical_program_step_sqrt <> [] ||
+   hyp candle_fso_logical_program_step_neg <> [] ||
+   hyp candle_fso_logical_program_step_add <> [] ||
+   hyp candle_fso_logical_program_step_mul <> [] ||
+   hyp candle_fso_logical_program_step_square <> [] ||
+   hyp candle_fso_logical_program_step_inv <> [] ||
+   hyp candle_fso_logical_program_step_atn <> [] ||
+   hyp candle_fso_logical_program_step_pi_half <> [] ||
+   hyp candle_fso_logical_program_run_append <> [] ||
+   hyp candle_fso_logical_program_run_append_single <> [] ||
+   hyp candle_fso_logical_program_run_append_binary <> [] then
   failwith "fixed outer invariant: unexpected theorem hypotheses";;
 
 let candle_fixed_outer_invariant_axioms_after = axioms ();;
