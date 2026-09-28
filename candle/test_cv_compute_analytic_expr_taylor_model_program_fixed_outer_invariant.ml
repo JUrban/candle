@@ -1,4 +1,4 @@
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_stable_batch_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_stable_batch_prove.ml";;
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_item_invariant;;
@@ -6,6 +6,7 @@ open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_program_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_compile_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_certified_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_stable_batch_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_stable_batch_prove;;
 
 let candle_fixed_outer_invariant_axioms_before = axioms ();;
 
