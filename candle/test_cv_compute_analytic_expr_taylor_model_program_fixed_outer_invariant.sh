@@ -10,6 +10,7 @@ marker=CANDLE_CV_FIXED_OUTER_INVARIANT_OK
 fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_invariant.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_item_invariant.ml"
   "$repo_root/candle/test_cv_compute_analytic_expr_taylor_model_program_fixed_outer_invariant.ml"
 )
 
@@ -18,4 +19,3 @@ CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
 
 sha256sum -c "$output_dir/result-files.sha256"
 printf '%s\n' 'CANDLE_CV_FIXED_OUTER_INVARIANT_DRIVER_OK'
-
