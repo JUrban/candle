@@ -38,7 +38,8 @@ if hyp candle_fs_result_analytic_proxy_target_components <> [] ||
    hyp candle_fso_logical_program_step_pi_half <> [] ||
    hyp candle_fso_logical_program_run_append <> [] ||
    hyp candle_fso_logical_program_run_append_single <> [] ||
-   hyp candle_fso_logical_program_run_append_binary <> [] then
+   hyp candle_fso_logical_program_run_append_binary <> [] ||
+   hyp candle_fso_logical_compile_run_analytic_invariant <> [] then
   failwith "fixed outer invariant: unexpected theorem hypotheses";;
 
 let candle_fixed_outer_invariant_axioms_after = axioms ();;
