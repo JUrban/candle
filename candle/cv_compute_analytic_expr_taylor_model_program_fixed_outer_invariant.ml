@@ -8,6 +8,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_inva
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_invariant = struct
 
 open Multivariate_taylor;;
+open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_calculus;;
 open Candle_cv_analytic_expr_hessian;;
@@ -637,5 +638,316 @@ let candle_fs_result_mul_analytic_box_hessian_contains = prove
       candle_fso_accept "fixed outer box: right regular" right_regular_th];
     candle_fso_accept "fixed outer box: raw Hessian"
       (REWRITE_RULE[candle_fs_result_hessian_def] raw_hessian_th)]);;
+
+let candle_fs_result_mul_analytic_center_contains = prove
+ (`!center_a center_b box_a box_b boxes left right
+      (type_witness:real^N).
+     candle_analytic_erase_sqrt_certificates center_a =
+       candle_analytic_erase_sqrt_certificates box_a /\
+     candle_analytic_erase_sqrt_certificates center_b =
+       candle_analytic_erase_sqrt_certificates box_b /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes (candle_fs_result_to_q left) center_a box_a /\
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes (candle_fs_result_to_q right) center_b box_b /\
+     candle_fs_result_domain left /\
+     candle_fs_result_domain right
+     ==>
+     candle_q_dim_analytic_contains (dimindex (:N))
+       (candle_fs_first_to_q
+         (candle_fs_result_center
+           (candle_fs_result_mul
+             (candle_fs_list_of_q
+               (candle_q_fixed_list_round_upper
+                 (candle_q_radius_list boxes)))
+             left right))
+         (candle_fs_result_hessian
+           (candle_fs_result_mul
+             (candle_fs_list_of_q
+               (candle_q_fixed_list_round_upper
+                 (candle_q_radius_list boxes)))
+             left right)))
+       (list_of_seq
+         (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+         (dimindex (:N)))
+       (Candle_analytic_mul center_a center_b)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let left_invariant_th = ASSUME
+    `candle_q_dim_taylor_model_result_analytic_invariant
+      (type_witness:real^N) boxes (candle_fs_result_to_q left)
+      center_a box_a` in
+  let right_invariant_th = ASSUME
+    `candle_q_dim_taylor_model_result_analytic_invariant
+      (type_witness:real^N) boxes (candle_fs_result_to_q right)
+      center_b box_b` in
+  let left_domain_th = ASSUME
+    `candle_fs_result_domain
+      (left:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list)` in
+  let right_domain_th = ASSUME
+    `candle_fs_result_domain
+      (right:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list)` in
+  let left_instance theorem = ISPECL
+    [`center_a:candle_analytic_expr`; `box_a:candle_analytic_expr`;
+     `boxes:(((num#num)#num)#((num#num)#num))list`;
+     `left:
+       bool#
+       (((num#num)#(num#num))#((num#num)#(num#num))list)#
+       ((num#num)#(num#num))#
+       ((num#num)#(num#num))list#
+       (((num#num)#(num#num))list)list`;
+     `type_witness:real^N`] theorem in
+  let right_instance theorem = ISPECL
+    [`center_b:candle_analytic_expr`; `box_b:candle_analytic_expr`;
+     `boxes:(((num#num)#num)#((num#num)#num))list`;
+     `right:
+       bool#
+       (((num#num)#(num#num))#((num#num)#(num#num))list)#
+       ((num#num)#(num#num))#
+       ((num#num)#(num#num))list#
+       (((num#num)#(num#num))list)list`;
+     `type_witness:real^N`] theorem in
+  let left_premises_th = CONJ left_invariant_th left_domain_th in
+  let right_premises_th = CONJ right_invariant_th right_domain_th in
+  let left_center_shape_th = MATCH_MP
+    (left_instance candle_fs_result_analytic_center_shape)
+    left_premises_th in
+  let right_center_shape_th = MATCH_MP
+    (right_instance candle_fs_result_analytic_center_shape)
+    right_premises_th in
+  let left_proxy_shape_th = MATCH_MP
+    (left_instance candle_fs_result_analytic_proxy_data_shape)
+    left_premises_th in
+  let right_proxy_shape_th = MATCH_MP
+    (right_instance candle_fs_result_analytic_proxy_data_shape)
+    right_premises_th in
+  let left_center_data_th =
+    REWRITE_RULE[candle_fs_first_to_q_shape] left_center_shape_th in
+  let right_center_data_th =
+    REWRITE_RULE[candle_fs_first_to_q_shape] right_center_shape_th in
+  let output_shape_th = MATCH_MP
+   (ISPECL
+     [`dimindex (:N)`;
+      `candle_fs_result_center
+        (left:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_center
+        (right:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_value_bound
+        (left:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_value_bound
+        (right:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_gradient_bounds
+        (left:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_gradient_bounds
+        (right:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_hessian
+        (left:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`;
+      `candle_fs_result_hessian
+        (right:
+          bool#
+          (((num#num)#(num#num))#((num#num)#(num#num))list)#
+          ((num#num)#(num#num))#
+          ((num#num)#(num#num))list#
+          (((num#num)#(num#num))list)list)`]
+     candle_fs_raw_mul_complete_shape)
+   (end_itlist CONJ
+     [CONJUNCT1 left_center_data_th;
+      CONJUNCT1 right_center_data_th;
+      CONJUNCT1 left_proxy_shape_th;
+      CONJUNCT1 right_proxy_shape_th;
+      CONJUNCT1 (CONJUNCT2 left_proxy_shape_th);
+      CONJUNCT2 (CONJUNCT2 left_proxy_shape_th);
+      CONJUNCT1 (CONJUNCT2 right_proxy_shape_th);
+      CONJUNCT2 (CONJUNCT2 right_proxy_shape_th)]) in
+  let left_value_th = MATCH_MP
+    (left_instance candle_fs_result_analytic_center_value_contains)
+    left_premises_th in
+  let right_value_th = MATCH_MP
+    (right_instance candle_fs_result_analytic_center_value_contains)
+    right_premises_th in
+  let left_gradient_th = MATCH_MP
+    (left_instance candle_fs_result_analytic_center_gradient_contains)
+    left_premises_th in
+  let right_gradient_th = MATCH_MP
+    (right_instance candle_fs_result_analytic_center_gradient_contains)
+    right_premises_th in
+  let center_value_gradient_th = MATCH_MP
+   (BETA_RULE (ISPECL
+     [`dimindex (:N)`;
+      `candle_fs_first_value
+        (candle_fs_result_center
+          (left:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+      `candle_fs_first_value
+        (candle_fs_result_center
+          (right:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+      `candle_fs_first_gradient
+        (candle_fs_result_center
+          (left:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+      `candle_fs_first_gradient
+        (candle_fs_result_center
+          (right:
+            bool#
+            (((num#num)#(num#num))#((num#num)#(num#num))list)#
+            ((num#num)#(num#num))#
+            ((num#num)#(num#num))list#
+            (((num#num)#(num#num))list)list))`;
+      `candle_analytic_value
+        (list_of_seq
+          (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+          (dimindex (:N))) center_a`;
+      `candle_analytic_value
+        (list_of_seq
+          (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+          (dimindex (:N))) center_b`;
+      `(\i. candle_analytic_d i
+        (list_of_seq
+          (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+          (dimindex (:N))) center_a):num->real`;
+      `(\i. candle_analytic_d i
+        (list_of_seq
+          (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+          (dimindex (:N))) center_b):num->real`]
+     candle_fs_raw_mul_center_value_gradient_contains))
+   (end_itlist CONJ
+     [left_value_th; right_value_th;
+      left_gradient_th; right_gradient_th]) in
+  let center_domain_th = MATCH_MP candle_q_box_m_cell_domain
+   (CONJ
+     (ASSUME
+       `LENGTH (boxes:(((num#num)#num)#((num#num)#num))list) =
+        dimindex (:N)`)
+     (ASSUME `candle_q_box_valid_list boxes`)) in
+  let center_in_box_th = MATCH_MP y_in_domain center_domain_th in
+  let center_hessian_th = MATCH_MP
+   (ISPECL
+     [`center_a:candle_analytic_expr`; `box_a:candle_analytic_expr`;
+      `center_a:candle_analytic_expr`;
+      `center_b:candle_analytic_expr`; `box_b:candle_analytic_expr`;
+      `center_b:candle_analytic_expr`;
+      `boxes:(((num#num)#num)#((num#num)#num))list`;
+      `left:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `right:
+        bool#
+        (((num#num)#(num#num))#((num#num)#(num#num))list)#
+        ((num#num)#(num#num))#
+        ((num#num)#(num#num))list#
+        (((num#num)#(num#num))list)list`;
+      `type_witness:real^N`;
+      `(candle_q_box_center_vector boxes : real^N)`]
+     candle_fs_result_mul_analytic_hessian_contains)
+   (end_itlist CONJ
+     [ASSUME
+       `candle_analytic_erase_sqrt_certificates center_a =
+        candle_analytic_erase_sqrt_certificates box_a`;
+      ASSUME
+       `candle_analytic_erase_sqrt_certificates center_b =
+        candle_analytic_erase_sqrt_certificates box_b`;
+      left_invariant_th; right_invariant_th;
+      left_domain_th; right_domain_th; center_in_box_th]) in
+  REWRITE_TAC[candle_fs_result_mul_def;
+              candle_fs_result_complete_raw_def;
+              candle_fs_result_complete_rounded_def;
+              candle_fs_result_center_def;
+              candle_fs_result_hessian_def;
+              candle_fs_first_make_def;
+              candle_fs_first_value_def;
+              candle_fs_first_gradient_def;
+              candle_fs_result_make_def; FST; SND;
+              candle_q_dim_analytic_contains_def] THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REPEAT CONJ_TAC THENL
+   [candle_fso_accept "fixed outer center: shape"
+      (REWRITE_RULE
+        [candle_fs_result_center_def; candle_fs_result_hessian_def;
+         candle_fs_first_make_def; candle_fs_first_value_def;
+         candle_fs_first_gradient_def; FST; SND]
+        output_shape_th);
+    REWRITE_TAC[candle_analytic_value_def;
+                candle_fs_first_value_def; FST; SND] THEN
+    candle_fso_accept "fixed outer center: value"
+      (REWRITE_RULE
+        [candle_fs_result_center_def; candle_fs_first_value_def;
+         candle_fs_first_gradient_def; FST; SND]
+        (CONJUNCT1 center_value_gradient_th));
+    REWRITE_TAC[candle_fso_analytic_mul_d_raw;
+                candle_fs_first_gradient_def; FST; SND] THEN
+    CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+    candle_fso_accept "fixed outer center: gradient"
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (REWRITE_RULE
+          [candle_fs_result_center_def; candle_fs_first_value_def;
+           candle_fs_first_gradient_def; FST; SND]
+          (CONJUNCT2 center_value_gradient_th)));
+    CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+    candle_fso_accept "fixed outer center: Hessian"
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (REWRITE_RULE[candle_fs_result_hessian_def]
+          center_hessian_th))]);;
 
 end;;
