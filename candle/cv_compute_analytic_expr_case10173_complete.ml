@@ -86,19 +86,27 @@ let candle_case10173_complete_reconstruct root_list_pass =
   let cell_expansion =
     REWRITE_CONV [M_verifier.M_CELL_PASS_EQ_LIST_PASS1] cell_goal in
   let cell_pass = EQ_MP (SYM cell_expansion) root_list_pass in
-  let converted =
+  let expanded_general =
     M_verifier_main.normalize_result true
       candle_case10173_analytic_variable_vector
       candle_case10173_analytic_standard
       candle_case10173_plan_domain_subset cell_pass in
+  let converted =
+    let specialized = SPEC_ALL expanded_general in
+    let bridge =
+      TAUT
+        (mk_imp
+          (concl specialized,candle_case10173_analytic_converted)) in
+    MP bridge specialized in
   if hyp converted <> [] ||
-     not
-       (aconv (concl converted) candle_case10173_analytic_converted) then
-    failwith "case10173 completion: normalized source mismatch";
+     concl converted <> candle_case10173_analytic_converted then
+    failwith "case10173 completion: normalized source bridge mismatch";
   let case_theorem =
-    EQ_MP (SYM candle_case10173_analytic_expansion) converted in
+    REWRITE_RULE[GSYM candle_case10173_analytic_expansion] converted in
   let theorem =
-    EQ_MP (SYM candle_case10173_analytic_reconstruction) case_theorem in
+    (SPEC_ALL o
+     REWRITE_RULE[GSYM candle_case10173_analytic_reconstruction])
+      case_theorem in
   let _ =
     candle_case10173_complete_marker "source-reconstruction" "end" in
   theorem;;
