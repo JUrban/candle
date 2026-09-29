@@ -123,19 +123,40 @@ def render_json(roots: list[RootVerdict], paths: list[Path]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
+def render_ml_indices(indices: list[int], label: str) -> str:
+    if not indices:
+        raise ValueError("rejected-parent chunk is empty")
+    encoded = ";".join(str(index) for index in indices)
+    return (
+        "(* Generated untrusted case-10173 rejected-parent scan. *)\n"
+        "let candle_fixed_outer_parent_scan_label = "
+        f'"{label}";;\n'
+        f"let candle_fixed_outer_parent_scan_indices = [{encoded}];;\n"
+        "let candle_fixed_outer_parent_scan_include_children = true;;\n"
+        'needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan.ml";;\n'
+    )
+
+
 def render_ml(roots: list[RootVerdict]) -> str:
     rejected = [root.index for root in roots if not root.flags[0]]
     if not rejected:
         raise ValueError("parent scan has no rejected roots to refine")
-    indices = ";".join(str(index) for index in rejected)
-    return (
-        "(* Generated untrusted case-10173 rejected-parent scan. *)\n"
-        "let candle_fixed_outer_parent_scan_label = "
-        '"case10173-rejected-parent-children";;\n'
-        f"let candle_fixed_outer_parent_scan_indices = [{indices}];;\n"
-        "let candle_fixed_outer_parent_scan_include_children = true;;\n"
-        'needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan.ml";;\n'
-    )
+    return render_ml_indices(rejected, "case10173-rejected-parent-children")
+
+
+def rejected_chunks(
+    roots: list[RootVerdict], count: int,
+) -> list[list[int]]:
+    rejected = [root.index for root in roots if not root.flags[0]]
+    if count <= 0:
+        raise ValueError("rejected-parent chunk count must be positive")
+    if len(rejected) < count:
+        raise ValueError("more rejected-parent chunks than rejected roots")
+    return [
+        rejected[(len(rejected) * offset) // count:
+                 (len(rejected) * (offset + 1)) // count]
+        for offset in range(count)
+    ]
 
 
 def main() -> int:
@@ -144,12 +165,15 @@ def main() -> int:
     parser.add_argument("--start", type=int, required=True)
     parser.add_argument("--stop", type=int, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
-    parser.add_argument("--output-ml", type=Path, required=True)
+    parser.add_argument("--output-ml", type=Path, action="append", required=True)
     args = parser.parse_args()
     roots = read_logs(args.log)
     validate_parent_range(roots, args.start, args.stop)
     args.output_json.write_text(render_json(roots, args.log), encoding="utf-8")
-    args.output_ml.write_text(render_ml(roots), encoding="utf-8")
+    chunks = rejected_chunks(roots, len(args.output_ml))
+    for path, chunk in zip(args.output_ml, chunks, strict=True):
+        label = f"case10173-rejected-children-{chunk[0]}-{chunk[-1]}"
+        path.write_text(render_ml_indices(chunk, label), encoding="utf-8")
     return 0
 
 

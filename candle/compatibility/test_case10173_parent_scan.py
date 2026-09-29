@@ -33,6 +33,7 @@ class Case10173ParentScanTest(unittest.TestCase):
             rendered = subject.render_ml(roots)
             self.assertIn("[1;3]", rendered)
             self.assertIn("include_children = true", rendered)
+            self.assertEqual(subject.rejected_chunks(roots, 2), [[1], [3]])
 
     def test_rejects_duplicate_index(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
