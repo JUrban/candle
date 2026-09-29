@@ -14,7 +14,8 @@ runner="$repo_root/candle/restart_real_functions_with_fragments_strict.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 stable_data="$repo_root/candle/cv_compute_analytic_expr_stable_program_data.ml"
 flags="$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_flags.ml"
-scanner="$repo_root/candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan.ml"
+scanner=${CANDLE_FIXED_OUTER_PARENT_SCAN_FILE:-"$repo_root/candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan.ml"}
+stop_key=${CANDLE_FIXED_OUTER_PARENT_SCAN_STOP_KEY:-fixed-outer-parent-scan/parents/kernel-compute}
 marker=CANDLE_CV_FIXED_OUTER_PARENT_SCAN_OK
 
 [[ -f "$config" ]]
@@ -56,7 +57,7 @@ fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
 python3 "$profiler" --pid "$profiled_pid" --log "$output_dir/candle.log" \
   --output "$output_dir/phase-profile.json" --poll-seconds 0.05 \
-  --stop-key fixed-outer-parent-scan/parents/kernel-compute \
+  --stop-key "$stop_key" \
   --wait-for-log-seconds 43200 >"$output_dir/profile-observer.log" 2>&1 &
 profile_pid=$!
 
