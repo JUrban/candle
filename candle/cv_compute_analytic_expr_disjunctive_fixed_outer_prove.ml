@@ -20,6 +20,7 @@ open Candle_cv_exact_interval_reify;;
 open Candle_cv_flyspeck_nonlinear_driver;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_box_certificate_prepare;;
+open Candle_cv_analytic_expr_point_certificate_prepare;;
 open Candle_cv_analytic_expr_certificate_variant_prepare;;
 open Candle_cv_analytic_expr_stable_batch_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_stable_batch_prove;;
@@ -67,22 +68,23 @@ let candle_disjunctive_fixed_outer_widen numerator denominator interval =
      candle_q_term
       (Num.mul_num (candle_disjunctive_fixed_outer_q_num upper) factor));;
 
-let candle_disjunctive_fixed_outer_widen_numerator = 5;;
-let candle_disjunctive_fixed_outer_widen_denominator = 4;;
+let candle_disjunctive_fixed_outer_widen_factors =
+  [(5,4);(1001,1000);(101,100);(21,20);(11,10)];;
 
-let candle_disjunctive_fixed_outer_attempt
-    prepared point_plan domain =
-  let lower,upper =
-    candle_disjunctive_fixed_outer_domain_bounds domain in
-  let center_intervals =
-    candle_q_dim_taylor_model_point_plan_intervals_six
-      point_plan lower upper in
-  let box_intervals =
-    map
-      (candle_disjunctive_fixed_outer_widen
-        candle_disjunctive_fixed_outer_widen_numerator
-        candle_disjunctive_fixed_outer_widen_denominator)
-      center_intervals in
+let candle_disjunctive_fixed_outer_factors_for_depth depth =
+  if depth = 0 || depth >= 8 then
+    candle_disjunctive_fixed_outer_widen_factors
+  else [(5,4)];;
+
+(* Keep restored-state clients away from ambiguous generative record labels. *)
+let candle_disjunctive_fixed_outer_function_term prepared =
+  prepared.function_term;;
+
+let candle_disjunctive_fixed_outer_point_plan_program_count point_plan =
+  length point_plan.point_plan_programs;;
+
+let candle_disjunctive_fixed_outer_handoff
+    prepared domain lower upper center_intervals box_intervals =
   if length box_intervals <> 10 || length center_intervals <> 10 then
     failwith "disjunctive fixed outer: square-root slot drift";
   let cell =
@@ -106,31 +108,201 @@ let candle_disjunctive_fixed_outer_attempt
       source)
     domain;;
 
+let candle_disjunctive_fixed_outer_attempt
+    prepared point_plan numerator denominator domain =
+  let lower,upper =
+    candle_disjunctive_fixed_outer_domain_bounds domain in
+  let center_intervals =
+    candle_q_dim_taylor_model_point_plan_intervals_six
+      point_plan lower upper in
+  let box_intervals =
+    map
+      (candle_disjunctive_fixed_outer_widen numerator denominator)
+      center_intervals in
+  candle_disjunctive_fixed_outer_handoff
+    prepared domain lower upper center_intervals box_intervals;;
+
+(* Keep the generative point-plan record behind this module boundary.  A     *)
+(* restored image may contain another record type with the same field labels. *)
+let candle_disjunctive_fixed_outer_exact_intervals
+    point_plan lower upper =
+  let center_intervals =
+    candle_q_dim_taylor_model_point_plan_intervals_six
+      point_plan lower upper in
+  let box_intervals =
+    candle_q_box_rational_program_intervals_six
+      point_plan.point_plan_programs lower upper in
+  center_intervals,box_intervals;;
+
+let candle_disjunctive_fixed_outer_exact_box_attempt
+    prepared point_plan domain =
+  let lower,upper =
+    candle_disjunctive_fixed_outer_domain_bounds domain in
+  let center_intervals,box_intervals =
+    candle_disjunctive_fixed_outer_exact_intervals
+      point_plan lower upper in
+  candle_disjunctive_fixed_outer_handoff
+    prepared domain lower upper center_intervals box_intervals;;
+
+(* Tighten untrusted polynomial range hints without splitting the theorem   *)
+(* domain: evaluate exact natural intervals on each of the 2^6 half-boxes,  *)
+(* then take their hull.  The reflected checker still authenticates every   *)
+(* resulting square-root enclosure before any theorem can be returned.      *)
+let rec candle_disjunctive_fixed_outer_half_boxes = function
+  | [] -> [[]]
+  | (lower,upper) :: remaining ->
+      let midpoint =
+        Num.div_num (Num.add_num lower upper) (Num.num_of_int 2) in
+      let tails =
+        candle_disjunctive_fixed_outer_half_boxes remaining in
+      map (fun tail -> (lower,midpoint) :: tail) tails @
+      map (fun tail -> (midpoint,upper) :: tail) tails;;
+
+let rec candle_disjunctive_fixed_outer_partition_boxes levels boxes =
+  if levels = 0 then boxes
+  else if levels < 0 then
+    failwith "disjunctive fixed outer: negative partition level"
+  else
+    candle_disjunctive_fixed_outer_partition_boxes (levels - 1)
+      (List.flatten
+        (map candle_disjunctive_fixed_outer_half_boxes boxes));;
+
+let candle_disjunctive_fixed_outer_interval_hull = function
+  | [] -> failwith "disjunctive fixed outer: empty interval hull"
+  | (first_lower,first_upper) :: remaining ->
+      itlist
+        (fun (lower,upper) (hull_lower,hull_upper) ->
+          Num.min_num lower hull_lower,Num.max_num upper hull_upper)
+        remaining (first_lower,first_upper);;
+
+let candle_disjunctive_fixed_outer_partitioned_interval boxes program =
+  candle_q_box_sqrt_interval
+    (candle_disjunctive_fixed_outer_interval_hull
+      (map
+        (fun bounds ->
+          candle_q_box_rational_program_interval bounds program)
+        boxes));;
+
+let candle_disjunctive_fixed_outer_partitioned_box_attempt_levels
+    prepared point_plan levels domain =
+  let lower,upper =
+    candle_disjunctive_fixed_outer_domain_bounds domain in
+  let center_intervals =
+    candle_q_dim_taylor_model_point_plan_intervals_six
+      point_plan lower upper in
+  let bounds =
+    map2
+      (fun lower_term upper_term ->
+        rat_of_term lower_term,rat_of_term upper_term)
+      lower upper in
+  let boxes =
+    candle_disjunctive_fixed_outer_partition_boxes levels [bounds] in
+  let box_intervals =
+    map
+      (candle_disjunctive_fixed_outer_partitioned_interval boxes)
+      point_plan.point_plan_programs in
+  candle_disjunctive_fixed_outer_handoff
+    prepared domain lower upper center_intervals box_intervals;;
+
+let candle_disjunctive_fixed_outer_partitioned_box_attempt
+    prepared point_plan domain =
+  candle_disjunctive_fixed_outer_partitioned_box_attempt_levels
+    prepared point_plan 1 domain;;
+
+(* Sample every corner of a six-dimensional box.  This is untrusted hint    *)
+(* generation: the reflected checker rejects an enclosure that misses an    *)
+(* interior extremum.  Compared with center-only relative widening, corner   *)
+(* envelopes shrink with the source box and preserve much tighter jets.      *)
+let rec candle_disjunctive_fixed_outer_corners lower upper =
+  match lower,upper with
+  | [],[] -> [[]]
+  | lower_head::lower_tail,upper_head::upper_tail ->
+      let remaining =
+        candle_disjunctive_fixed_outer_corners lower_tail upper_tail in
+      map (fun values -> lower_head :: values) remaining @
+      map (fun values -> upper_head :: values) remaining
+  | _ -> failwith "disjunctive fixed outer: corner shape";;
+
+let candle_disjunctive_fixed_outer_corner_interval corners program =
+  let values =
+    map
+      (fun point -> candle_q_point_rational_program_value point program)
+      corners in
+  match values with
+  | [] -> failwith "disjunctive fixed outer: empty corner set"
+  | first :: remaining ->
+      let lower = itlist Num.min_num remaining first and
+          upper = itlist Num.max_num remaining first in
+      candle_q_box_sqrt_interval (lower,upper);;
+
+let candle_disjunctive_fixed_outer_corner_attempt
+    prepared point_plan numerator denominator domain =
+  let lower,upper =
+    candle_disjunctive_fixed_outer_domain_bounds domain in
+  let center_intervals =
+    candle_q_dim_taylor_model_point_plan_intervals_six
+      point_plan lower upper in
+  let corners =
+    candle_disjunctive_fixed_outer_corners
+      (map rat_of_term lower) (map rat_of_term upper) in
+  let sampled =
+    map
+      (candle_disjunctive_fixed_outer_corner_interval corners)
+      point_plan.point_plan_programs in
+  let box_intervals =
+    map
+      (candle_disjunctive_fixed_outer_widen numerator denominator)
+      sampled in
+  candle_disjunctive_fixed_outer_handoff
+    prepared domain lower upper center_intervals box_intervals;;
+
 let candle_disjunctive_fixed_outer_prove
     prepared point_plan label attempts maximum_depth domain =
   let rec prove depth domain =
-    attempts := !attempts + 1;
-    print_endline
-      ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_ATTEMPT" ^
-       " label=" ^ label ^
-       " attempt=" ^ string_of_int !attempts ^
-       " depth=" ^ string_of_int depth ^ " event=begin");
-    try
-      let theorem =
-        candle_disjunctive_fixed_outer_attempt prepared point_plan domain in
-      print_endline
-        ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_ATTEMPT" ^
-         " label=" ^ label ^
-         " attempt=" ^ string_of_int !attempts ^
-         " depth=" ^ string_of_int depth ^ " event=accepted");
+    let rec attempt_factors = function
+      | [] -> None
+      | (numerator,denominator) :: remaining ->
+          attempts := !attempts + 1;
+          let factor =
+            string_of_int numerator ^ "/" ^ string_of_int denominator in
+          print_endline
+            ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_ATTEMPT" ^
+             " label=" ^ label ^
+             " attempt=" ^ string_of_int !attempts ^
+             " depth=" ^ string_of_int depth ^
+             " factor=" ^ factor ^ " event=begin");
+          try
+            let theorem =
+              candle_disjunctive_fixed_outer_attempt
+                prepared point_plan numerator denominator domain in
+            print_endline
+              ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_ATTEMPT" ^
+               " label=" ^ label ^
+               " attempt=" ^ string_of_int !attempts ^
+               " depth=" ^ string_of_int depth ^
+               " factor=" ^ factor ^ " event=accepted");
+            Some theorem
+          with Failure message ->
+            if not (candle_disjunctive_fixed_outer_retryable message) then
+              failwith
+                ("disjunctive fixed outer: terminal attempt failure: " ^
+                 message);
+            print_endline
+              ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_ATTEMPT" ^
+               " label=" ^ label ^
+               " attempt=" ^ string_of_int !attempts ^
+               " depth=" ^ string_of_int depth ^
+               " factor=" ^ factor ^ " event=rejected");
+            attempt_factors remaining in
+    match attempt_factors
+            (candle_disjunctive_fixed_outer_factors_for_depth depth) with
+    | Some theorem ->
       {disjunctive_fixed_outer_theorem = theorem;
        disjunctive_fixed_outer_cells = 1;
        disjunctive_fixed_outer_max_depth = depth}
-    with Failure message ->
-      if depth >= maximum_depth ||
-         not (candle_disjunctive_fixed_outer_retryable message) then
-        failwith
-          ("disjunctive fixed outer: terminal attempt failure: " ^ message);
+    | None ->
+      if depth >= maximum_depth then
+        failwith "disjunctive fixed outer: proposal depth limit";
       let axis = (depth mod 6) + 1 in
       print_endline
         ("CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_SPLIT" ^
@@ -138,7 +310,7 @@ let candle_disjunctive_fixed_outer_prove
          " attempt=" ^ string_of_int !attempts ^
          " depth=" ^ string_of_int depth ^
          " axis=" ^ string_of_int axis ^
-         " reason=" ^ message);
+         " reason=all-bounded-proposals-rejected");
       let left_domain,right_domain =
         M_verifier.split_domain 6 6 axis domain in
       let left = prove (depth + 1) left_domain in
