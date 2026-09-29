@@ -582,44 +582,35 @@ let candle_cv_q_dim_analytic_compile_program_correct = prove
   REWRITE_TAC[candle_cv_q_dim_analytic_program_correct;
               candle_q_dim_analytic_compile_program]);;
 let candle_cv_q_dim_analytic_program_compute_eqs =
-  candle_cv_q_dim_jet_sqrt_compute_eqs @
-  map SPEC_ALL
-   [candle_cv_q_atn_zero_compute; candle_cv_q_atn_one_compute;
-    candle_cv_q_atn_neg_one_compute; candle_cv_q_atn_third_compute;
-    candle_cv_q_atn_fifth_compute; candle_cv_q_atn_seventh_compute;
-    candle_cv_q_atn_ninth_compute; candle_cv_q_atn_eleventh_compute;
-    candle_cv_q_atn_thirteenth_compute;
-    candle_cv_q_atn_pos_lower_compute; candle_cv_q_atn_pos_upper_compute;
-    candle_cv_q_atn_lower_def; candle_cv_q_atn_upper_def;
-    candle_cv_q_interval_atn_series_def;
-    candle_cv_q_interval_atn_series_domain_def;
-    candle_cv_q_atn_one_interval_def;
-    candle_cv_q_dim_jet_atn_denominator_def;
-    candle_cv_q_dim_jet_atn_d_def;
-    candle_cv_q_dim_jet_atn_dd_def;
-    candle_cv_q_dim_jet_atn_with_def;
-    candle_cv_q_dim_jet_atn_def;
-    candle_cv_q_dim_jet_atn_domain_def;
-    candle_cv_q_pi_half_interval_compute;
-    candle_cv_q_dim_jet_pi_half_def] @
-  map SPEC_ALL
-   [candle_cv_bool_and_def;
-    candle_cv_q_dim_analytic_result_make_def;
-    candle_cv_q_dim_analytic_result_domain_def;
-    candle_cv_q_dim_analytic_result_jet_def;
-    candle_cv_q_dim_analytic_result_default_def;
-    candle_cv_q_dim_analytic_result_head_def;
-    candle_cv_q_dim_analytic_result_tail_def;
-    candle_cv_q_dim_analytic_result_neg_def;
-    candle_cv_q_dim_analytic_result_add_def;
-    candle_cv_q_dim_analytic_result_mul_def;
-    candle_cv_q_dim_analytic_result_square_def;
-    candle_cv_q_dim_analytic_result_inv_def;
-    candle_cv_q_dim_analytic_result_sqrt_def;
-    candle_cv_q_dim_analytic_result_atn_def;
-    candle_cv_q_dim_analytic_result_pi_half_def;
-    candle_cv_q_dim_analytic_program_step_def;
-    candle_cv_q_dim_analytic_program_run_compute;
-    candle_cv_q_dim_analytic_program_def];;
+  union candle_cv_q_dim_jet_sqrt_compute_eqs
+   (union candle_cv_q_atn_range_compute_eqs
+     (map SPEC_ALL
+       [candle_cv_q_atn_one_interval_def;
+        candle_cv_q_dim_jet_atn_denominator_def;
+        candle_cv_q_dim_jet_atn_d_def;
+        candle_cv_q_dim_jet_atn_dd_def;
+        candle_cv_q_dim_jet_atn_with_def;
+        candle_cv_q_dim_jet_atn_def;
+        candle_cv_q_dim_jet_atn_domain_def;
+        candle_cv_q_pi_half_interval_compute;
+        candle_cv_q_dim_jet_pi_half_def;
+        candle_cv_bool_and_def;
+        candle_cv_q_dim_analytic_result_make_def;
+        candle_cv_q_dim_analytic_result_domain_def;
+        candle_cv_q_dim_analytic_result_jet_def;
+        candle_cv_q_dim_analytic_result_default_def;
+        candle_cv_q_dim_analytic_result_head_def;
+        candle_cv_q_dim_analytic_result_tail_def;
+        candle_cv_q_dim_analytic_result_neg_def;
+        candle_cv_q_dim_analytic_result_add_def;
+        candle_cv_q_dim_analytic_result_mul_def;
+        candle_cv_q_dim_analytic_result_square_def;
+        candle_cv_q_dim_analytic_result_inv_def;
+        candle_cv_q_dim_analytic_result_sqrt_def;
+        candle_cv_q_dim_analytic_result_atn_def;
+        candle_cv_q_dim_analytic_result_pi_half_def;
+        candle_cv_q_dim_analytic_program_step_def;
+        candle_cv_q_dim_analytic_program_run_compute;
+        candle_cv_q_dim_analytic_program_def]));;
 
 end;;

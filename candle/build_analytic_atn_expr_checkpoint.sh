@@ -15,6 +15,7 @@ fragments=(
   "$repo_dir/candle/cv_compute_analytic_dim_jet_sqrt.ml"
   "$repo_dir/candle/cv_compute_analytic_poly_sqrt.ml"
   "$repo_dir/candle/cv_compute_exact_interval_atn_series.ml"
+  "$repo_dir/candle/cv_compute_exact_interval_atn_range.ml"
   "$repo_dir/candle/cv_compute_analytic_dim_jet_atn.ml"
   "$repo_dir/candle/cv_compute_analytic_dim_jet_pi_half.ml"
   "$repo_dir/candle/cv_compute_analytic_expr_jet.ml"

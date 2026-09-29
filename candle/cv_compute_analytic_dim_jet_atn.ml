@@ -6,7 +6,7 @@
 (* computed once from the input interval and applied to the existing jet.    *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_exact_interval_atn_series.ml";;
+needs "candle/cv_compute_exact_interval_atn_range.ml";;
 needs "candle/cv_compute_exact_interval_square_core.ml";;
 needs "candle/cv_compute_analytic_dim_jet_inv.ml";;
 
@@ -65,11 +65,11 @@ let candle_q_dim_jet_atn_with_def = new_definition
 let candle_q_dim_jet_atn_def = new_definition
  `candle_q_dim_jet_atn a =
     candle_q_dim_jet_atn_with
-      (candle_q_interval_atn_series (candle_q_dim_jet_f a)) a`;;
+      (candle_q_interval_atn_range (candle_q_dim_jet_f a)) a`;;
 
 let candle_q_dim_jet_atn_domain_def = new_definition
  `candle_q_dim_jet_atn_domain a <=>
-    candle_q_interval_atn_series_domain (candle_q_dim_jet_f a) /\
+    candle_q_interval_atn_range_domain (candle_q_dim_jet_f a) /\
     candle_q_interval_not_zero
       (candle_q_dim_jet_atn_denominator (candle_q_dim_jet_f a))`;;
 
@@ -114,35 +114,27 @@ let candle_cv_q_dim_jet_atn_with_def = new_definition
 let candle_cv_q_dim_jet_atn_def = new_definition
  `candle_cv_q_dim_jet_atn a =
     candle_cv_q_dim_jet_atn_with
-      (candle_cv_q_interval_atn_series (candle_cv_q_dim_jet_f a)) a`;;
+      (candle_cv_q_interval_atn_range (candle_cv_q_dim_jet_f a)) a`;;
 
 let candle_cv_q_dim_jet_atn_domain_def = new_definition
  `candle_cv_q_dim_jet_atn_domain a =
     Cexp_if
-      (candle_cv_q_interval_atn_series_domain (candle_cv_q_dim_jet_f a))
+      (candle_cv_q_interval_atn_range_domain (candle_cv_q_dim_jet_f a))
       (candle_cv_q_interval_not_zero
         (candle_cv_q_dim_jet_atn_denominator (candle_cv_q_dim_jet_f a)))
       (Cexp_num 0)`;;
 
 let candle_cv_q_dim_jet_atn_compute_eqs =
-  candle_cv_q_dim_jet_inv_compute_eqs @
-  map SPEC_ALL
-   [candle_cv_q_atn_zero_compute; candle_cv_q_atn_one_compute;
-    candle_cv_q_atn_neg_one_compute; candle_cv_q_atn_third_compute;
-    candle_cv_q_atn_fifth_compute; candle_cv_q_atn_seventh_compute;
-    candle_cv_q_atn_ninth_compute; candle_cv_q_atn_eleventh_compute;
-    candle_cv_q_atn_thirteenth_compute;
-    candle_cv_q_atn_pos_lower_compute; candle_cv_q_atn_pos_upper_compute;
-    candle_cv_q_atn_lower_def; candle_cv_q_atn_upper_def;
-    candle_cv_q_interval_atn_series_def;
-    candle_cv_q_interval_atn_series_domain_def;
-    candle_cv_q_atn_one_interval_def;
-    candle_cv_q_dim_jet_atn_denominator_def;
-    candle_cv_q_dim_jet_atn_d_def;
-    candle_cv_q_dim_jet_atn_dd_def;
-    candle_cv_q_dim_jet_atn_with_def;
-    candle_cv_q_dim_jet_atn_def;
-    candle_cv_q_dim_jet_atn_domain_def];;
+  union candle_cv_q_dim_jet_inv_compute_eqs
+   (union candle_cv_q_atn_range_compute_eqs
+     (map SPEC_ALL
+       [candle_cv_q_atn_one_interval_def;
+        candle_cv_q_dim_jet_atn_denominator_def;
+        candle_cv_q_dim_jet_atn_d_def;
+        candle_cv_q_dim_jet_atn_dd_def;
+        candle_cv_q_dim_jet_atn_with_def;
+        candle_cv_q_dim_jet_atn_def;
+        candle_cv_q_dim_jet_atn_domain_def]));;
 
 let candle_cv_q_atn_one_interval_correct = prove
  (`candle_cv_q_atn_one_interval =
@@ -210,7 +202,7 @@ let candle_cv_q_dim_jet_atn_correct = prove
   REWRITE_TAC[candle_cv_q_dim_jet_atn_def;
               candle_q_dim_jet_atn_def;
               candle_cv_q_dim_jet_f_correct;
-              candle_cv_q_interval_atn_series_correct;
+              candle_cv_q_interval_atn_range_correct;
               candle_cv_q_dim_jet_atn_with_correct]);;
 
 let candle_cv_q_dim_jet_atn_if_one = prove
@@ -225,7 +217,7 @@ let candle_cv_q_dim_jet_atn_domain_correct = prove
   REWRITE_TAC[candle_cv_q_dim_jet_atn_domain_def;
               candle_q_dim_jet_atn_domain_def;
               candle_cv_q_dim_jet_f_correct;
-              candle_cv_q_interval_atn_series_domain_correct;
+              candle_cv_q_interval_atn_range_domain_correct;
               candle_cv_q_dim_jet_atn_denominator_correct;
               candle_cv_q_interval_not_zero_correct] THEN
   REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]) THEN
@@ -375,7 +367,7 @@ let candle_q_dim_jet_atn_value_sound = prove
               candle_q_dim_jet_atn_with_def;
               candle_q_dim_jet_f_def;
               candle_q_dim_jet_make_def; FST; SND] THEN
-  MESON_TAC[candle_q_interval_atn_series_sound]);;
+  MESON_TAC[candle_q_interval_atn_range_sound]);;
 
 let candle_q_dim_jet_atn_gradient_sound = prove
  (`!n a value gradient hessian i.

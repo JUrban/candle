@@ -147,7 +147,7 @@ let candle_cv_q_dim_analytic_first_result_sqrt_def = new_definition
 let candle_cv_q_dim_analytic_first_jet_atn_def = new_definition
  `candle_cv_q_dim_analytic_first_jet_atn a =
     candle_cv_q_dim_first_jet_make
-      (candle_cv_q_interval_atn_series
+      (candle_cv_q_interval_atn_range
         (candle_cv_q_dim_first_jet_f a))
       (candle_cv_q_dim_interval_list_scale
         (candle_cv_q_dim_jet_atn_d
@@ -157,7 +157,7 @@ let candle_cv_q_dim_analytic_first_jet_atn_def = new_definition
 let candle_cv_q_dim_analytic_first_jet_atn_domain_def = new_definition
  `candle_cv_q_dim_analytic_first_jet_atn_domain a =
     Cexp_if
-      (candle_cv_q_interval_atn_series_domain
+      (candle_cv_q_interval_atn_range_domain
         (candle_cv_q_dim_first_jet_f a))
       (candle_cv_q_interval_not_zero
         (candle_cv_q_dim_jet_atn_denominator
@@ -531,7 +531,7 @@ let candle_cv_q_dim_analytic_first_jet_atn_correct = prove
               candle_q_dim_jet_atn_def; candle_q_dim_jet_atn_with_def;
               candle_cv_q_dim_first_jet_f_correct;
               candle_cv_q_dim_first_jet_gradient_correct;
-              candle_cv_q_interval_atn_series_correct;
+              candle_cv_q_interval_atn_range_correct;
               candle_cv_q_dim_jet_atn_d_correct;
               candle_cv_q_dim_interval_list_scale_correct;
               candle_cv_q_dim_first_jet_encode_def;
@@ -549,11 +549,11 @@ let candle_cv_q_dim_analytic_first_jet_atn_domain_raw_correct = prove
   REWRITE_TAC[candle_cv_q_dim_analytic_first_jet_atn_domain_def;
               candle_q_dim_jet_atn_domain_def;
               candle_cv_q_dim_first_jet_f_correct;
-              candle_cv_q_interval_atn_series_domain_correct;
+              candle_cv_q_interval_atn_range_domain_correct;
               candle_cv_q_dim_jet_atn_denominator_correct;
               candle_cv_q_interval_not_zero_correct] THEN
   ASM_CASES_TAC
-    `candle_q_interval_atn_series_domain (candle_q_dim_jet_f a)` THEN
+    `candle_q_interval_atn_range_domain (candle_q_dim_jet_f a)` THEN
   ASM_CASES_TAC
     `candle_q_interval_not_zero
       (candle_q_dim_jet_atn_denominator (candle_q_dim_jet_f a))` THEN
