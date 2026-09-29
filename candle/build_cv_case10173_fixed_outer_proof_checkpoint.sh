@@ -13,11 +13,12 @@ output_dir=$3
 base_dir=${4:-/project/flyspeck-candle-runs/cv-case10173-fixed-outer-support-checkpoint-v1}
 builder="$repo_root/candle/build_cv_fragment_checkpoint.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
-ready_marker=CANDLE_CV_CASE10173_FIXED_OUTER_PROOF_CHECKPOINT_READY
+ready_marker=${CANDLE_CASE10173_FIXED_OUTER_PROOF_READY_MARKER:-CANDLE_CV_CASE10173_FIXED_OUTER_PROOF_CHECKPOINT_READY}
+proof_fragment=${CANDLE_CASE10173_FIXED_OUTER_PROOF_FRAGMENT:-"$repo_root/candle/test_cv_compute_analytic_expr_action296_fixed_outer_grouped_policy_proof.ml"}
 fragments=(
   "$policy"
   "$schedule"
-  "$repo_root/candle/test_cv_compute_analytic_expr_action296_fixed_outer_grouped_policy_proof.ml"
+  "$proof_fragment"
 )
 
 for fragment in "${fragments[@]}"; do [[ -f "$fragment" ]]; done
