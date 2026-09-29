@@ -10,5 +10,6 @@ let candle_fixed_outer_parent_scan_label =
 let candle_fixed_outer_parent_scan_indices =
   candle_case10173_parent_range_000_031_batched 0 31;;
 let candle_fixed_outer_parent_scan_include_children = false;;
+let candle_fixed_outer_parent_scan_child_axes = [];;
 let candle_fixed_outer_parent_scan_batch_size = 8;;
 needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan_batched.ml";;

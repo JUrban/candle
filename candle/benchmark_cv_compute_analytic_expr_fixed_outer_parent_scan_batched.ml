@@ -37,12 +37,21 @@ let rec candle_fixed_outer_parent_scan_strict previous = function
 
 if candle_fixed_outer_parent_scan_indices = [] ||
    candle_fixed_outer_parent_scan_batch_size <= 0 ||
+   (candle_fixed_outer_parent_scan_include_children &&
+    (candle_fixed_outer_parent_scan_child_axes = [] ||
+     not
+       (let rec valid previous = function
+          | [] -> true
+          | axis :: remaining ->
+              axis > previous && axis >= 1 && axis <= 6 &&
+              valid axis remaining in
+        valid 0 candle_fixed_outer_parent_scan_child_axes))) ||
    not
      (candle_fixed_outer_parent_scan_strict
        (-1) candle_fixed_outer_parent_scan_indices) then
   failwith "fixed outer batched parent scan: invalid configuration";;
 
-let candle_fixed_outer_parent_scan_children parent =
+let candle_fixed_outer_parent_scan_children axes parent =
   List.flatten
     (map
       (fun axis ->
@@ -50,7 +59,7 @@ let candle_fixed_outer_parent_scan_children parent =
           M_verifier.split_domain
             candle_action296_plan_dimension 6 axis parent in
         [left;right])
-      [1;2;3;4;5;6]);;
+      axes);;
 
 let candle_fixed_outer_parent_scan_encode_cell point_plan domain =
   let cell = candle_action296_stable_group_cell point_plan domain in
@@ -69,7 +78,9 @@ let candle_fixed_outer_parent_scan_task point_plan index =
     candle_action296_stable_group_box_intervals point_plan lower upper in
   let domains =
     if candle_fixed_outer_parent_scan_include_children then
-      parent :: candle_fixed_outer_parent_scan_children parent
+      parent ::
+        candle_fixed_outer_parent_scan_children
+          candle_fixed_outer_parent_scan_child_axes parent
     else [parent] in
   let jobs =
     map (candle_fixed_outer_parent_scan_encode_cell point_plan) domains in
@@ -97,7 +108,9 @@ let rec candle_fixed_outer_parent_scan_print indices groups =
   | [],[] -> ()
   | index :: remaining_indices,flags :: remaining_groups ->
       let expected =
-        if candle_fixed_outer_parent_scan_include_children then 13 else 1 in
+        if candle_fixed_outer_parent_scan_include_children then
+          1 + 2 * length candle_fixed_outer_parent_scan_child_axes
+        else 1 in
       if length flags <> expected then
         failwith "fixed outer batched parent scan: flag cardinality";
       print_endline
@@ -193,7 +206,9 @@ print_endline
    string_of_int (length candle_fixed_outer_parent_scan_indices) ^
    " verdicts=" ^
    string_of_int
-     ((if candle_fixed_outer_parent_scan_include_children then 13 else 1) *
+     ((if candle_fixed_outer_parent_scan_include_children then
+         1 + 2 * length candle_fixed_outer_parent_scan_child_axes
+       else 1) *
       length candle_fixed_outer_parent_scan_indices) ^
    " batches=" ^ string_of_int candle_fixed_outer_parent_scan_batch_count ^
    " theorem_authority=none");;

@@ -17,6 +17,7 @@ import re
 from typing import Iterable
 
 import case10173_parent_scan as parent_scan
+import case10173_axis4_scan as axis4_scan
 
 
 BRANCH_MARKER = "CANDLE_CV_FIXED_OUTER_DEPTH2_SCAN_BRANCH"
@@ -154,6 +155,48 @@ def validate_child_scans(
         raise ValueError("child scan must contain parent plus twelve verdicts")
     if any(root.flags[0] for root in children):
         raise ValueError("child scan unexpectedly accepted a rejected parent")
+
+
+def merge_axis4_child_scans(
+    parents: list[parent_scan.RootVerdict],
+    axis4_children: list[parent_scan.RootVerdict],
+    fallback_children: list[parent_scan.RootVerdict],
+) -> list[parent_scan.RootVerdict]:
+    """Expand measured axis-4 closures and splice complete fallback scans.
+
+    Unmeasured axes on an axis-4 closure are represented as false.  These
+    flags are planning data only; the proof replay checks the selected axis-4
+    cells from the original authenticated domains.
+    """
+    axis4_scan.validate_axis4_scans(parents, axis4_children)
+    fallback = axis4_scan.fallback_indices(axis4_children)
+    observed = [root.index for root in fallback_children]
+    if observed != fallback:
+        missing = sorted(set(fallback) - set(observed))
+        unexpected = sorted(set(observed) - set(fallback))
+        raise ValueError(
+            f"all-axis fallback mismatch: missing={missing[:20]} "
+            f"unexpected={unexpected[:20]}"
+        )
+    if any(len(root.flags) != 13 for root in fallback_children):
+        raise ValueError("all-axis fallback must contain thirteen verdicts")
+    if any(root.flags[0] for root in fallback_children):
+        raise ValueError("all-axis fallback unexpectedly accepted a parent")
+    fallback_by_index = {root.index: root for root in fallback_children}
+    merged: list[parent_scan.RootVerdict] = []
+    for root in axis4_children:
+        if root.index in fallback_by_index:
+            merged.append(fallback_by_index[root.index])
+            continue
+        flags = [False] * 12
+        flags[6:8] = root.flags[1:]
+        merged.append(parent_scan.RootVerdict(
+            label=f"{root.label}-normalized",
+            index=root.index,
+            flags=(False,) + tuple(flags),
+        ))
+    validate_child_scans(parents, merged)
+    return merged
 
 
 def required_depth2_work(
@@ -363,6 +406,7 @@ def _identity(path: Path) -> dict[str, object]:
 def render_json(
     plans: list[RootPlan],
     parent_paths: list[Path],
+    axis4_child_paths: list[Path],
     child_paths: list[Path],
     depth2_paths: list[Path],
 ) -> str:
@@ -372,6 +416,9 @@ def render_json(
         "claim": "untrusted plan only; reflected proof replay is authoritative",
         "inputs": {
             "parent_logs": [_identity(path) for path in parent_paths],
+            "axis4_child_logs": [
+                _identity(path) for path in axis4_child_paths
+            ],
             "child_logs": [_identity(path) for path in child_paths],
             "depth2_logs": [_identity(path) for path in depth2_paths],
         },
@@ -392,7 +439,8 @@ def render_json(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--parent-log", type=Path, action="append", required=True)
-    parser.add_argument("--child-log", type=Path, action="append", required=True)
+    parser.add_argument("--axis4-child-log", type=Path, action="append", default=[])
+    parser.add_argument("--child-log", type=Path, action="append", default=[])
     parser.add_argument("--depth2-log", type=Path, action="append", default=[])
     parser.add_argument("--start", type=int, required=True)
     parser.add_argument("--stop", type=int, required=True)
@@ -406,8 +454,15 @@ def main() -> int:
 
     parents = parent_scan.read_logs(args.parent_log)
     parent_scan.validate_parent_range(parents, args.start, args.stop)
-    children = parent_scan.read_logs(args.child_log)
-    validate_child_scans(parents, children)
+    fallback_children = parent_scan.read_logs(args.child_log)
+    if args.axis4_child_log:
+        axis4_children = parent_scan.read_logs(args.axis4_child_log)
+        children = merge_axis4_child_scans(
+            parents, axis4_children, fallback_children,
+        )
+    else:
+        children = fallback_children
+        validate_child_scans(parents, children)
     depth2 = read_depth2_logs(args.depth2_log)
     expected_work = required_depth2_work(children)
     if args.depth2_log:
@@ -415,7 +470,8 @@ def main() -> int:
     plans = build_plans(parents, children, depth2)
     args.output_json.write_text(
         render_json(
-            plans, args.parent_log, args.child_log, args.depth2_log,
+            plans, args.parent_log, args.axis4_child_log,
+            args.child_log, args.depth2_log,
         ),
         encoding="utf-8",
     )

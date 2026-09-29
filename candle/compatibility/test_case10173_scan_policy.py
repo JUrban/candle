@@ -92,6 +92,20 @@ class Case10173ScanPolicyTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unexpectedly accepted"):
             subject.validate_child_scans(parents, bad_children)
 
+    def test_axis4_closures_merge_with_full_fallback(self) -> None:
+        parents = [root(0, (True,)), root(1, (False,)), root(2, (False,))]
+        axis4 = [
+            root(1, (False, True, True)),
+            root(2, (False, True, False)),
+        ]
+        full = [root(2, (False,) + (False,) * 6 + (True, True)
+                     + (False,) * 4)]
+        merged = subject.merge_axis4_child_scans(parents, axis4, full)
+        self.assertEqual([item.index for item in merged], [1, 2])
+        self.assertEqual(len(merged[0].flags), 13)
+        self.assertEqual(merged[0].flags[7:9], (True, True))
+        self.assertEqual(subject._viable_axes(merged[0].flags[1:]), [4])
+
 
 if __name__ == "__main__":
     unittest.main()

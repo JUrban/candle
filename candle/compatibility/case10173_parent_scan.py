@@ -128,17 +128,26 @@ def render_json(roots: list[RootVerdict], paths: list[Path]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
 
-def render_ml_indices(indices: list[int], label: str) -> str:
+def render_ml_indices(
+    indices: list[int], label: str, axes: tuple[int, ...] = (1, 2, 3, 4, 5, 6),
+) -> str:
     if not indices:
         raise ValueError("rejected-parent chunk is empty")
+    if not axes or tuple(sorted(set(axes))) != axes or any(
+        not 1 <= axis <= 6 for axis in axes
+    ):
+        raise ValueError("invalid child axes")
     encoded = ";".join(str(index) for index in indices)
+    encoded_axes = ";".join(str(axis) for axis in axes)
+    batch_size = min(8, max(1, 32 // (1 + 2 * len(axes))))
     return (
         "(* Generated untrusted case-10173 rejected-parent scan. *)\n"
         "let candle_fixed_outer_parent_scan_label = "
         f'"{label}";;\n'
         f"let candle_fixed_outer_parent_scan_indices = [{encoded}];;\n"
         "let candle_fixed_outer_parent_scan_include_children = true;;\n"
-        "let candle_fixed_outer_parent_scan_batch_size = 2;;\n"
+        f"let candle_fixed_outer_parent_scan_child_axes = [{encoded_axes}];;\n"
+        f"let candle_fixed_outer_parent_scan_batch_size = {batch_size};;\n"
         'needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan_batched.ml";;\n'
     )
 
@@ -172,6 +181,9 @@ def main() -> int:
     parser.add_argument("--stop", type=int, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-ml", type=Path, action="append", required=True)
+    parser.add_argument(
+        "--child-axes", type=int, nargs="+", default=[1, 2, 3, 4, 5, 6],
+    )
     args = parser.parse_args()
     roots = read_logs(args.log)
     validate_parent_range(roots, args.start, args.stop)
@@ -179,7 +191,10 @@ def main() -> int:
     chunks = rejected_chunks(roots, len(args.output_ml))
     for path, chunk in zip(args.output_ml, chunks, strict=True):
         label = f"case10173-rejected-children-{chunk[0]}-{chunk[-1]}"
-        path.write_text(render_ml_indices(chunk, label), encoding="utf-8")
+        path.write_text(
+            render_ml_indices(chunk, label, tuple(args.child_axes)),
+            encoding="utf-8",
+        )
     return 0
 
 

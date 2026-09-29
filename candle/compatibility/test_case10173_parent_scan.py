@@ -39,9 +39,13 @@ class Case10173ParentScanTest(unittest.TestCase):
             rendered = subject.render_ml(roots)
             self.assertIn("[1;3]", rendered)
             self.assertIn("include_children = true", rendered)
+            self.assertIn("child_axes = [1;2;3;4;5;6]", rendered)
             self.assertIn("batch_size = 2", rendered)
             self.assertIn("parent_scan_batched.ml", rendered)
             self.assertEqual(subject.rejected_chunks(roots, 2), [[1], [3]])
+            axis4 = subject.render_ml_indices([1, 3], "axis4", (4,))
+            self.assertIn("child_axes = [4]", axis4)
+            self.assertIn("batch_size = 8", axis4)
 
     def test_rejects_duplicate_index(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
