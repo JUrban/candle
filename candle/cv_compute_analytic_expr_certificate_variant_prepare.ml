@@ -26,7 +26,13 @@ let rec candle_analytic_collect_sqrt_intervals
     sqrt_interval variables tm =
   if candle_analytic_is_pi_half tm ||
      candle_analytic_is_pi_half_expanded tm ||
+     candle_analytic_is_pi tm ||
      candle_analytic_polynomial_candidate variables tm then []
+  else if candle_analytic_is_acs_third tm then
+    (* Keep certificate-slot order identical to the authenticated reifier:   *)
+    (* acs(1/3) is represented by its general pi/2-atn/sqrt identity.         *)
+    candle_analytic_collect_sqrt_intervals sqrt_interval variables
+      (rand (concl candle_analytic_acs_third_atn))
   else if candle_q_is_unary `(--):real->real` tm then
     candle_analytic_collect_sqrt_intervals sqrt_interval variables
       (candle_q_dest_unary `(--):real->real` tm)
