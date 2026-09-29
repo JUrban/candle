@@ -88,12 +88,29 @@ def main() -> int:
     parser.add_argument("--axis4-log", type=Path, action="append", required=True)
     parser.add_argument("--start", type=int, required=True)
     parser.add_argument("--stop", type=int, required=True)
+    parser.add_argument(
+        "--select-start", type=int,
+        help="first parent to refine after validating the full parent range",
+    )
+    parser.add_argument(
+        "--select-stop", type=int,
+        help="last parent to refine after validating the full parent range",
+    )
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-ml", type=Path, action="append", default=[])
     args = parser.parse_args()
 
     parents = parent_scan.read_logs(args.parent_log)
     parent_scan.validate_parent_range(parents, args.start, args.stop)
+    select_start = args.start if args.select_start is None else args.select_start
+    select_stop = args.stop if args.select_stop is None else args.select_stop
+    if not args.start <= select_start <= select_stop <= args.stop:
+        raise ValueError("selected refinement range lies outside parent range")
+    parents = [
+        root for root in parents
+        if select_start <= root.index <= select_stop
+    ]
+    parent_scan.validate_parent_range(parents, select_start, select_stop)
     children = parent_scan.read_logs(args.axis4_log)
     validate_axis4_scans(parents, children)
     fallback = fallback_indices(children)

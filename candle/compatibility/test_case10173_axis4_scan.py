@@ -37,6 +37,15 @@ class Case10173Axis4ScanTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "more fallback"):
             subject.chunks([1], 2)
 
+    def test_selected_parent_slice_still_validates_exactly(self) -> None:
+        parents = [root(index, (index % 2 == 0,)) for index in range(5)]
+        selected = [root for root in parents if 1 <= root.index <= 3]
+        parent_scan.validate_parent_range(selected, 1, 3)
+        subject.validate_axis4_scans(
+            selected, [root(1, (False, True, True)),
+                       root(3, (False, True, False))],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
