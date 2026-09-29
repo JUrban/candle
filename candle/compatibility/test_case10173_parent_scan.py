@@ -43,6 +43,12 @@ class Case10173ParentScanTest(unittest.TestCase):
             self.assertIn("batch_size = 2", rendered)
             self.assertIn("parent_scan_batched.ml", rendered)
             self.assertEqual(subject.rejected_chunks(roots, 2), [[1], [3]])
+            self.assertEqual(
+                subject.rejected_chunks(
+                    roots, 1, select_start=2, select_stop=3,
+                ),
+                [[3]],
+            )
             axis4 = subject.render_ml_indices([1, 3], "axis4", (4,))
             self.assertIn("child_axes = [4]", axis4)
             self.assertIn("batch_size = 8", axis4)

@@ -160,9 +160,16 @@ def render_ml(roots: list[RootVerdict]) -> str:
 
 
 def rejected_chunks(
-    roots: list[RootVerdict], count: int,
+    roots: list[RootVerdict], count: int, *,
+    select_start: int | None = None,
+    select_stop: int | None = None,
 ) -> list[list[int]]:
-    rejected = [root.index for root in roots if not root.flags[0]]
+    rejected = [
+        root.index for root in roots
+        if not root.flags[0]
+        and (select_start is None or root.index >= select_start)
+        and (select_stop is None or root.index <= select_stop)
+    ]
     if count <= 0:
         raise ValueError("rejected-parent chunk count must be positive")
     if len(rejected) < count:
@@ -184,11 +191,26 @@ def main() -> int:
     parser.add_argument(
         "--child-axes", type=int, nargs="+", default=[1, 2, 3, 4, 5, 6],
     )
+    parser.add_argument(
+        "--select-start", type=int,
+        help="first rejected root to emit after validating the full range",
+    )
+    parser.add_argument(
+        "--select-stop", type=int,
+        help="last rejected root to emit after validating the full range",
+    )
     args = parser.parse_args()
     roots = read_logs(args.log)
     validate_parent_range(roots, args.start, args.stop)
+    select_start = args.start if args.select_start is None else args.select_start
+    select_stop = args.stop if args.select_stop is None else args.select_stop
+    if not args.start <= select_start <= select_stop <= args.stop:
+        raise ValueError("selected output range lies outside validated range")
     args.output_json.write_text(render_json(roots, args.log), encoding="utf-8")
-    chunks = rejected_chunks(roots, len(args.output_ml))
+    chunks = rejected_chunks(
+        roots, len(args.output_ml),
+        select_start=select_start, select_stop=select_stop,
+    )
     for path, chunk in zip(args.output_ml, chunks, strict=True):
         label = f"case10173-rejected-children-{chunk[0]}-{chunk[-1]}"
         path.write_text(
