@@ -3,7 +3,7 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 flyspeck_root=${CANDLE_DISJUNCTIVE_FLYSPECK_DIR:-/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6}
-base_dir=${CANDLE_DISJUNCTIVE_FIRST_LEAF_BASE_DIR:-/project/flyspeck-candle-runs/cv-disjunctive-fixed-outer-support-checkpoint-v2}
+base_dir=${CANDLE_DISJUNCTIVE_FIRST_LEAF_BASE_DIR:-/project/flyspeck-candle-runs/cv-disjunctive-fixed-outer-support-checkpoint-v3}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-disjunctive-first-leaf-fixed-outer-v1-dev-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 box_prepare="$repo_root/candle/cv_compute_analytic_expr_box_certificate_prepare.ml"

@@ -8,7 +8,7 @@ fi
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 base_dir=${CANDLE_DISJUNCTIVE_FIXED_OUTER_BASE_DIR:-/project/flyspeck-candle-runs/cv-disjunctive-plan-support-checkpoint-v1}
-run_dir=${1:-/project/flyspeck-candle-runs/cv-disjunctive-fixed-outer-support-checkpoint-v2}
+run_dir=${1:-/project/flyspeck-candle-runs/cv-disjunctive-fixed-outer-support-checkpoint-v3}
 ready_marker=CANDLE_CV_DISJUNCTIVE_FIXED_OUTER_CHECKPOINT_READY
 
 fragments=(
