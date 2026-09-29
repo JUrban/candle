@@ -9,6 +9,7 @@ runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 box_prepare="$repo_root/candle/cv_compute_analytic_expr_box_certificate_prepare.ml"
 variant_prepare="$repo_root/candle/cv_compute_analytic_expr_certificate_variant_prepare.ml"
 test_fragment="$repo_root/candle/test_cv_compute_analytic_expr_disjunctive_first_leaf_fixed_outer.ml"
+prover_fragment="$repo_root/candle/cv_compute_analytic_expr_disjunctive_fixed_outer_prove.ml"
 marker=CANDLE_CV_DISJUNCTIVE_FIRST_LEAF_OK
 
 python3 "$repo_root/candle/flyspeck_nonlinear_disjunctive_target.py" \
@@ -16,7 +17,7 @@ python3 "$repo_root/candle/flyspeck_nonlinear_disjunctive_target.py" \
 
 CANDLE_FRAGMENT_BASE_DIR="$base_dir" CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   "$runner" "$output_dir" "$marker" \
-  "$box_prepare" "$variant_prepare" "$test_fragment"
+  "$box_prepare" "$variant_prepare" "$prover_fragment" "$test_fragment"
 
 sha256sum -c "$output_dir/result-files.sha256"
 rg -F "CANDLE_CV_DISJUNCTIVE_FIRST_LEAF_RESULT" \
