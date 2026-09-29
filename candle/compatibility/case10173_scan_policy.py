@@ -359,17 +359,27 @@ def _render_plan(plan: RootPlan) -> str:
     )
 
 
-def _render_ml_list(entries: list[str], separator: str = ";\n") -> str:
+def _render_ml_list_binding(entries: list[str], name: str) -> str:
     if not entries:
-        return "[]"
+        return f"let {name} = [];;\n"
     chunks = [
         entries[offset:offset + ML_LIST_CHUNK_SIZE]
         for offset in range(0, len(entries), ML_LIST_CHUNK_SIZE)
     ]
-    rendered = ["[" + separator.join(chunk) + "]" for chunk in chunks]
+    rendered = ["[" + ";\n".join(chunk) + "]" for chunk in chunks]
     if len(rendered) == 1:
-        return rendered[0]
-    return "List.flatten\n  [" + ";\n".join(rendered) + "]"
+        return f"let {name} =\n{rendered[0]};;\n"
+    chunk_names = [
+        f"{name}_chunk_{index:03d}" for index in range(len(chunks))
+    ]
+    bindings = "".join(
+        f"let {chunk_name} =\n{chunk};;\n"
+        for chunk_name, chunk in zip(chunk_names, rendered, strict=True)
+    )
+    return (
+        bindings + f"let {name} =\n  List.flatten\n    [" +
+        ";".join(chunk_names) + "];;\n"
+    )
 
 
 def render_policy_ml(
@@ -389,8 +399,7 @@ def render_policy_ml(
         "(* Generated untrusted case-10173 fixed-outer forest plan.\n"
         "   The reflected proof adapter rechecks every selected cell. *)\n"
         "open Candle_cv_action296_adaptive_forest_prove;;\n"
-        f"let {name}_roots =\n"
-        + _render_ml_list(entries) + ";;\n"
+        + _render_ml_list_binding(entries, f"{name}_roots")
         + f"let {name}_final_cells = "
         + str(sum(plan.final_cells for plan in plans)) + ";;\n"
         + f"let {name}_expected_digest = {digest};;\n"
@@ -400,7 +409,10 @@ def render_policy_ml(
 def render_singleton_schedule_ml(plans: list[RootPlan]) -> str:
     if not plans or any(plan.depth is None for plan in plans):
         raise ValueError("singleton schedule requires a complete forest plan")
-    sizes = _render_ml_list(["1" for _ in plans], separator=";")
+    if len(plans) <= ML_LIST_CHUNK_SIZE:
+        sizes = "[" + ";".join("1" for _ in plans) + "]"
+    else:
+        sizes = "map (fun _ -> 1) candle_action296_generated_roots"
     return (
         "(* Generated conservative case-10173 fixed-outer group schedule.\n"
         "   Each singleton has the exact outer box used by policy discovery. *)\n"

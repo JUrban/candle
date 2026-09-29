@@ -71,8 +71,9 @@ class Case10173ScanPolicyTest(unittest.TestCase):
         ]
         policy = subject.render_policy_ml(plans, "candle_test_large")
         schedule = subject.render_singleton_schedule_ml(plans)
-        self.assertIn("let candle_test_large_roots =\nList.flatten", policy)
-        self.assertIn("group_sizes = List.flatten", schedule)
+        self.assertIn("let candle_test_large_roots_chunk_000 =", policy)
+        self.assertIn("let candle_test_large_roots =\n  List.flatten", policy)
+        self.assertIn("group_sizes = map (fun _ -> 1)", schedule)
         self.assertEqual(policy.count("Candle_action296_forest_leaf"), 129)
 
     def test_depth2_log_validation(self) -> None:
