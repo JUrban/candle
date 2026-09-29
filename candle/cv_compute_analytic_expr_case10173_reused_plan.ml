@@ -18,6 +18,11 @@ open Candle_cv_analytic_expr_case10173_fixture;;
 let candle_case10173_plan_axioms_before = axioms ();;
 let candle_case10173_plan_started = Unix.gettimeofday ();;
 
+let candle_case10173_plan_marker phase event =
+  print_endline
+    ("CANDLE_CERT_PROFILE lane=case10173-reused-plan" ^
+     " scope=plan phase=" ^ phase ^ " event=" ^ event);;
+
 if not
      (aconv candle_case10173_analytic_function
         candle_action296_analytic_function) then
@@ -68,6 +73,7 @@ let candle_case10173_plan_informal_domain =
   Informal_taylor.mk_m_center_domain
     6 candle_case10173_plan_xx2 candle_case10173_plan_zz2;;
 
+let _ = candle_case10173_plan_marker "certificate-search" "begin";;
 let candle_case10173_plan_search_started = Unix.gettimeofday ();;
 let candle_case10173_plan_certificate =
   Informal_search.construct_certificate
@@ -76,6 +82,7 @@ let candle_case10173_plan_certificate =
     candle_case10173_plan_search_functions;;
 let candle_case10173_plan_search_seconds =
   Unix.gettimeofday () -. candle_case10173_plan_search_started;;
+let _ = candle_case10173_plan_marker "certificate-search" "end";;
 let candle_case10173_plan_stats =
   Certificate.result_stats candle_case10173_plan_certificate;;
 
@@ -87,6 +94,7 @@ if candle_case10173_plan_stats.pass <> 3305 ||
    candle_case10173_plan_stats.glue_convex <> 0 then
   failwith "case10173 plan: certificate shape drift";;
 
+let _ = candle_case10173_plan_marker "adaptive-precision" "begin";;
 let candle_case10173_plan_adaptive_started = Unix.gettimeofday ();;
 let candle_case10173_plan_precision_tree,_ =
   Informal_verifier.m_verify_raw0
@@ -95,6 +103,7 @@ let candle_case10173_plan_precision_tree,_ =
     candle_case10173_plan_xx2 candle_case10173_plan_zz2;;
 let candle_case10173_plan_adaptive_seconds =
   Unix.gettimeofday () -. candle_case10173_plan_adaptive_started;;
+let _ = candle_case10173_plan_marker "adaptive-precision" "end";;
 let candle_case10173_plan_total_seconds =
   Unix.gettimeofday () -. candle_case10173_plan_started;;
 

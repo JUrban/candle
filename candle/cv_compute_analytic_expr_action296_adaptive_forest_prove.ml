@@ -106,7 +106,8 @@ let rec candle_action296_forest_map3 action left middle right =
 let rec candle_action296_forest_strict_roots previous = function
   | [] -> true
   | (index,_) :: remaining ->
-      index > previous && index >= 0 && index < 1061 &&
+      index > previous && index >= 0 &&
+      index < length !candle_action296_leaf_grouping_leaves &&
       candle_action296_forest_strict_roots index remaining;;
 
 let rec candle_action296_forest_build_tree domain = function
