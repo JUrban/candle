@@ -136,6 +136,114 @@ let candle_action296_fixed_outer_group_prove_sizes point_plan sizes roots =
       (candle_action296_bounded_group_partition_sizes sizes roots) in
   outcome;;
 
+let candle_action296_fixed_outer_group_attempt_counter = ref 0;;
+
+let rec candle_action296_fixed_outer_group_prove point_plan roots =
+  candle_action296_fixed_outer_group_attempt_counter :=
+    !candle_action296_fixed_outer_group_attempt_counter + 1;
+  let attempt = !candle_action296_fixed_outer_group_attempt_counter in
+  try
+    let results,cells =
+      candle_action296_fixed_outer_group_prove_attempt
+        attempt point_plan roots in
+    {
+      stable_group_results = results;
+      stable_group_final_cells = cells;
+      stable_group_attempts = 1;
+      stable_group_sizes = [length roots];
+    }
+  with Failure message ->
+    if length roots = 1 then
+      failwith
+        ("action296 fixed outer grouping: singleton failed: " ^ message)
+    else
+      let first = fst (hd roots) and last = fst (hd (rev roots)) in
+      let _ =
+        print_endline
+          ("CANDLE_CV_ACTION296_FIXED_OUTER_GROUP_FALLBACK" ^
+           " roots=" ^ string_of_int first ^ "-" ^ string_of_int last ^
+           " reason=" ^ message) in
+      let left,right = candle_action296_bounded_group_split roots in
+      let combined =
+        candle_action296_stable_group_append
+          (candle_action296_fixed_outer_group_prove point_plan left)
+          (candle_action296_fixed_outer_group_prove point_plan right) in
+      {combined with
+       stable_group_attempts = combined.stable_group_attempts + 1};;
+
+let candle_action296_fixed_outer_group_prove_chunks
+    point_plan group_size roots =
+  List.fold_left
+    (fun accumulated group ->
+      candle_action296_stable_group_append accumulated
+        (candle_action296_fixed_outer_group_prove point_plan group))
+    {
+      stable_group_results = [];
+      stable_group_final_cells = 0;
+      stable_group_attempts = 0;
+      stable_group_sizes = [];
+    }
+    (candle_action296_bounded_group_partition group_size roots);;
+
+let candle_action296_fixed_outer_grouped_forest_prove
+    label group_size roots expected_final_cells expected_digest =
+  if roots = [] || group_size <= 0 ||
+     not (candle_action296_forest_strict_roots (-1) roots) then
+    failwith "action296 fixed outer grouping: invalid adaptive plan";
+  let axioms_before = axioms () in
+  let point_plan =
+    candle_action296_fixed_outer_group_profile
+      "shared-point-plan-reuse"
+      (fun () -> candle_action296_forest_point_plan) in
+  candle_action296_fixed_outer_group_attempt_counter := 0;
+  let _ =
+    candle_action296_fixed_outer_group_marker "bounded-forest" "begin" in
+  let outcome =
+    candle_action296_fixed_outer_group_prove_chunks
+      point_plan group_size roots in
+  let _ =
+    candle_action296_fixed_outer_group_marker "bounded-forest" "end" in
+  let digest =
+    Digest.to_hex
+      (Digest.string
+        (String.concat "\n"
+          (map
+            (fun (_,theorem) -> string_of_thm theorem)
+            outcome.stable_group_results))) in
+  let digest_matches =
+    match expected_digest with
+    | None -> true
+    | Some expected -> digest = expected in
+  let parents =
+    map
+      (fun (index,_) ->
+        index,List.nth !candle_action296_leaf_grouping_leaves index)
+      roots in
+  let axioms_after = axioms () in
+  if not
+       (candle_action296_forest_validate_results
+         roots outcome.stable_group_results parents) ||
+     outcome.stable_group_final_cells <> expected_final_cells ||
+     not digest_matches ||
+     length axioms_after <> length axioms_before ||
+     not
+       (List.for_all
+         (fun theorem -> List.mem theorem axioms_before)
+         axioms_after) then
+    failwith
+      ("action296 fixed outer grouping: final adaptive validation failed for " ^
+       label);
+  {
+    stable_group_forest_result = {
+      forest_result_original_roots = length roots;
+      forest_result_final_cells = outcome.stable_group_final_cells;
+      forest_result_theorems = outcome.stable_group_results;
+      forest_result_digest = digest;
+    };
+    stable_group_attempts_total = outcome.stable_group_attempts;
+    stable_group_successful_sizes = outcome.stable_group_sizes;
+  };;
+
 let candle_action296_fixed_outer_grouped_forest_prove_sizes
     label sizes roots expected_final_cells expected_digest =
   if roots = [] ||

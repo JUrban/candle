@@ -13,8 +13,16 @@ import re
 
 RESULT_MARKER = "CANDLE_CV_ACTION296_BOUNDED_GROUPED_POLICY_RESULT"
 OK_MARKER = "CANDLE_CV_ACTION296_BOUNDED_GROUPED_POLICY_OK DEVELOPMENT_NON_RELEASE"
+RESULT_MARKERS = (
+    RESULT_MARKER,
+    "CANDLE_CV_ACTION296_FIXED_OUTER_GROUPED_DISCOVERY_RESULT",
+)
+OK_MARKERS = (
+    OK_MARKER,
+    "CANDLE_CV_ACTION296_FIXED_OUTER_GROUPED_DISCOVERY_OK DEVELOPMENT_NON_RELEASE",
+)
 RESULT_RE = re.compile(
-    rf"^{RESULT_MARKER} "
+    rf"^(?:{'|'.join(map(re.escape, RESULT_MARKERS))}) "
     r"original_leaves=(?P<original_leaves>\d+) "
     r"final_cells=(?P<final_cells>\d+) "
     r"attempts=(?P<attempts>\d+) "
@@ -35,7 +43,10 @@ class GroupSchedule:
 
 
 def parse_result(line: str) -> GroupSchedule:
-    where = line.find(RESULT_MARKER)
+    positions = [
+        line.find(marker) for marker in RESULT_MARKERS if marker in line
+    ]
+    where = -1 if not positions else min(positions)
     if where < 0:
         raise ValueError("line does not contain a grouped-policy result")
     match = RESULT_RE.fullmatch(line[where:].strip())
@@ -72,12 +83,12 @@ def validate_schedule(schedule: GroupSchedule) -> None:
 
 def read_schedule(path: Path) -> GroupSchedule:
     text = path.read_text(encoding="utf-8", errors="strict")
-    if OK_MARKER not in text:
+    if not any(marker in text for marker in OK_MARKERS):
         raise ValueError(f"incomplete grouped-policy log: {path}")
     results = [
         parse_result(line)
         for line in text.splitlines()
-        if RESULT_MARKER in line
+        if any(marker in line for marker in RESULT_MARKERS)
     ]
     if len(results) != 1:
         raise ValueError(

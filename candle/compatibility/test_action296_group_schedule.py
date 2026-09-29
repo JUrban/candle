@@ -24,6 +24,14 @@ class Action296GroupScheduleTests(unittest.TestCase):
             schedule.render_ml(parsed),
         )
 
+    def test_parse_fixed_outer_discovery_result(self) -> None:
+        result = self.RESULT.replace(
+            "CANDLE_CV_ACTION296_BOUNDED_GROUPED_POLICY_RESULT",
+            "CANDLE_CV_ACTION296_FIXED_OUTER_GROUPED_DISCOVERY_RESULT",
+        )
+        parsed = schedule.parse_result(result)
+        self.assertEqual(parsed.group_sizes, (4, 2, 2))
+
     def test_inconsistent_counts_are_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "leaf count mismatch"):
             schedule.parse_result(self.RESULT.replace("4,2,2", "4,2,1"))

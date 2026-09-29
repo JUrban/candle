@@ -13,7 +13,8 @@ output_dir=$3
 base_dir=${4:-/project/flyspeck-candle-runs/cv-action296-box-plan-support-checkpoint-v1-schedule-copy-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
-marker=CANDLE_CV_ACTION296_FIXED_OUTER_GROUPED_POLICY_OK
+marker=${CANDLE_FIXED_OUTER_GROUPED_POLICY_MARKER:-CANDLE_CV_ACTION296_FIXED_OUTER_GROUPED_POLICY_OK}
+test_fragment=${CANDLE_FIXED_OUTER_GROUPED_POLICY_TEST_FILE:-"$repo_root/candle/test_cv_compute_analytic_expr_action296_fixed_outer_grouped_policy_proof.ml"}
 
 fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer.ml"
@@ -33,7 +34,7 @@ fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_action296_fixed_outer_grouped_forest_prove.ml"
   "$policy"
   "$schedule"
-  "$repo_root/candle/test_cv_compute_analytic_expr_action296_fixed_outer_grouped_policy_proof.ml"
+  "$test_fragment"
 )
 
 for fragment in "${fragments[@]}"; do
