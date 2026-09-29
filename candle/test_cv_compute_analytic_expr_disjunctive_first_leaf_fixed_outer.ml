@@ -40,7 +40,9 @@ let _ =
        (fun square_root -> square_root) [] `pi` <> [] then
     failwith "disjunctive first leaf: derived certificate-slot drift";
   let point_plan = candle_q_dim_taylor_model_point_plan_six prepared in
-  if length point_plan.point_plan_programs <> 10 then
+  if length point_plan.point_plan_programs <> 10 ||
+     candle_disjunctive_fixed_outer_widen_numerator <> 5 ||
+     candle_disjunctive_fixed_outer_widen_denominator <> 4 then
     failwith "disjunctive first leaf: point-plan slot drift";
   let attempts = ref 0 in
   candle_q_dim_analytic_jet_profile :=
@@ -77,7 +79,7 @@ let _ =
      " cells=" ^ string_of_int result.disjunctive_fixed_outer_cells ^
      " max_depth=" ^
      string_of_int result.disjunctive_fixed_outer_max_depth ^
-     " sqrt_slots=10 theorem_digest=" ^ theorem_digest ^
+     " sqrt_slots=10 outer_factor=5/4 theorem_digest=" ^ theorem_digest ^
      " total_seconds=" ^
      string_of_float (Unix.gettimeofday () -. started));
   print_endline

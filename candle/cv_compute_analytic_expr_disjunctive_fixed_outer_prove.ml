@@ -4,7 +4,9 @@
 (* DEVELOPMENT / NON-RELEASE.  This is deliberately independent of any one  *)
 (* leaf index.  It retries only the two expected numerical-preparation       *)
 (* failures, proves every accepted child through Kernel.compute, and glues   *)
-(* the children back to the exact authenticated input domain theorem.        *)
+(* the children back to the exact authenticated input domain theorem.  The   *)
+(* whole-box square-root proposal is an untrusted widening of exact center   *)
+(* values; rejection merely triggers authenticated subdivision.              *)
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_box_certificate_prepare.ml";;
@@ -14,6 +16,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_stable_b
 module Candle_cv_analytic_expr_disjunctive_fixed_outer_prove = struct
 
 open Certificate;;
+open Candle_cv_exact_interval_reify;;
 open Candle_cv_flyspeck_nonlinear_driver;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_box_certificate_prepare;;
@@ -43,20 +46,43 @@ let rec candle_disjunctive_fixed_outer_aconv_lists left right =
   | _ -> false;;
 
 let candle_disjunctive_fixed_outer_retryable = function
-  | "analytic box certificate: nonpositive square-root range"
   | "fixed outer stable Taylor batch prover: numerical batch rejected" -> true
   | _ -> false;;
+
+let candle_disjunctive_fixed_outer_q_num value =
+  let signed,denominator_predecessor = dest_pair value in
+  let positive,negative = dest_pair signed in
+  Num.div_num
+    (Num.sub_num (dest_numeral positive) (dest_numeral negative))
+    (Num.add_num
+      (dest_numeral denominator_predecessor) (Num.num_of_int 1));;
+
+let candle_disjunctive_fixed_outer_widen numerator denominator interval =
+  let lower,upper = dest_pair interval in
+  let factor =
+    Num.div_num (Num.num_of_int numerator) (Num.num_of_int denominator) in
+  mk_pair
+    (candle_q_term
+      (Num.div_num (candle_disjunctive_fixed_outer_q_num lower) factor),
+     candle_q_term
+      (Num.mul_num (candle_disjunctive_fixed_outer_q_num upper) factor));;
+
+let candle_disjunctive_fixed_outer_widen_numerator = 5;;
+let candle_disjunctive_fixed_outer_widen_denominator = 4;;
 
 let candle_disjunctive_fixed_outer_attempt
     prepared point_plan domain =
   let lower,upper =
     candle_disjunctive_fixed_outer_domain_bounds domain in
-  let box_intervals =
-    candle_q_box_rational_program_intervals_six
-      point_plan.point_plan_programs lower upper in
   let center_intervals =
     candle_q_dim_taylor_model_point_plan_intervals_six
       point_plan lower upper in
+  let box_intervals =
+    map
+      (candle_disjunctive_fixed_outer_widen
+        candle_disjunctive_fixed_outer_widen_numerator
+        candle_disjunctive_fixed_outer_widen_denominator)
+      center_intervals in
   if length box_intervals <> 10 || length center_intervals <> 10 then
     failwith "disjunctive fixed outer: square-root slot drift";
   let cell =
