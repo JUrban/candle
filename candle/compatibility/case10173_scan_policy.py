@@ -55,6 +55,7 @@ class RootPlan:
 
 
 Work = tuple[int, int, int]
+ML_LIST_CHUNK_SIZE = 128
 
 
 def _flags(text: str) -> tuple[bool, ...]:
@@ -358,6 +359,19 @@ def _render_plan(plan: RootPlan) -> str:
     )
 
 
+def _render_ml_list(entries: list[str], separator: str = ";\n") -> str:
+    if not entries:
+        return "[]"
+    chunks = [
+        entries[offset:offset + ML_LIST_CHUNK_SIZE]
+        for offset in range(0, len(entries), ML_LIST_CHUNK_SIZE)
+    ]
+    rendered = ["[" + separator.join(chunk) + "]" for chunk in chunks]
+    if len(rendered) == 1:
+        return rendered[0]
+    return "List.flatten\n  [" + ";\n".join(rendered) + "]"
+
+
 def render_policy_ml(
     plans: list[RootPlan], name: str, expected_digest: str | None = None,
 ) -> str:
@@ -376,7 +390,7 @@ def render_policy_ml(
         "   The reflected proof adapter rechecks every selected cell. *)\n"
         "open Candle_cv_action296_adaptive_forest_prove;;\n"
         f"let {name}_roots =\n"
-        + "[" + ";\n".join(entries) + "];;\n"
+        + _render_ml_list(entries) + ";;\n"
         + f"let {name}_final_cells = "
         + str(sum(plan.final_cells for plan in plans)) + ";;\n"
         + f"let {name}_expected_digest = {digest};;\n"
@@ -386,11 +400,11 @@ def render_policy_ml(
 def render_singleton_schedule_ml(plans: list[RootPlan]) -> str:
     if not plans or any(plan.depth is None for plan in plans):
         raise ValueError("singleton schedule requires a complete forest plan")
-    sizes = ";".join("1" for _ in plans)
+    sizes = _render_ml_list(["1" for _ in plans], separator=";")
     return (
         "(* Generated conservative case-10173 fixed-outer group schedule.\n"
         "   Each singleton has the exact outer box used by policy discovery. *)\n"
-        f"let candle_action296_generated_group_sizes = [{sizes}];;\n"
+        f"let candle_action296_generated_group_sizes = {sizes};;\n"
     )
 
 

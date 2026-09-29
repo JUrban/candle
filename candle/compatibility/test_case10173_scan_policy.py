@@ -57,6 +57,24 @@ class Case10173ScanPolicyTest(unittest.TestCase):
             schedule,
         )
 
+    def test_large_outputs_use_bounded_source_lists(self) -> None:
+        plans = [
+            subject.RootPlan(
+                index=index,
+                depth=0,
+                final_cells=1,
+                first_axis=None,
+                depth1_flags=None,
+                depth2_axes=(),
+            )
+            for index in range(subject.ML_LIST_CHUNK_SIZE + 1)
+        ]
+        policy = subject.render_policy_ml(plans, "candle_test_large")
+        schedule = subject.render_singleton_schedule_ml(plans)
+        self.assertIn("let candle_test_large_roots =\nList.flatten", policy)
+        self.assertIn("group_sizes = List.flatten", schedule)
+        self.assertEqual(policy.count("Candle_action296_forest_leaf"), 129)
+
     def test_depth2_log_validation(self) -> None:
         record = (
             f"{subject.BRANCH_MARKER} label=d index=2 first_axis=4 "

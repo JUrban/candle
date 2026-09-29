@@ -2,7 +2,8 @@
    The reflected proof adapter rechecks every selected cell. *)
 open Candle_cv_action296_adaptive_forest_prove;;
 let candle_action296_generated_roots =
-[   (0,Candle_action296_forest_leaf);
+List.flatten
+  [[   (0,Candle_action296_forest_leaf);
    (1,Candle_action296_forest_leaf);
    (2,Candle_action296_forest_leaf);
    (3,Candle_action296_forest_leaf);
@@ -129,8 +130,8 @@ let candle_action296_generated_roots =
    (124,Candle_action296_forest_leaf);
    (125,Candle_action296_forest_leaf);
    (126,Candle_action296_forest_leaf);
-   (127,Candle_action296_forest_leaf);
-   (128,Candle_action296_forest_leaf);
+   (127,Candle_action296_forest_leaf)];
+[   (128,Candle_action296_forest_leaf);
    (129,Candle_action296_forest_leaf);
    (130,Candle_action296_forest_leaf);
    (131,Candle_action296_forest_leaf);
@@ -257,8 +258,8 @@ let candle_action296_generated_roots =
    (252,Candle_action296_forest_leaf);
    (253,Candle_action296_forest_leaf);
    (254,Candle_action296_forest_leaf);
-   (255,Candle_action296_forest_leaf);
-   (256,Candle_action296_forest_leaf);
+   (255,Candle_action296_forest_leaf)];
+[   (256,Candle_action296_forest_leaf);
    (257,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (258,Candle_action296_forest_leaf);
    (259,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
@@ -385,8 +386,8 @@ let candle_action296_generated_roots =
    (380,Candle_action296_forest_leaf);
    (381,Candle_action296_forest_leaf);
    (382,Candle_action296_forest_leaf);
-   (383,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (384,Candle_action296_forest_leaf);
+   (383,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];
+[   (384,Candle_action296_forest_leaf);
    (385,Candle_action296_forest_leaf);
    (386,Candle_action296_forest_leaf);
    (387,Candle_action296_forest_leaf);
@@ -513,8 +514,8 @@ let candle_action296_generated_roots =
    (508,Candle_action296_forest_leaf);
    (509,Candle_action296_forest_leaf);
    (510,Candle_action296_forest_leaf);
-   (511,Candle_action296_forest_leaf);
-   (512,Candle_action296_forest_leaf);
+   (511,Candle_action296_forest_leaf)];
+[   (512,Candle_action296_forest_leaf);
    (513,Candle_action296_forest_leaf);
    (514,Candle_action296_forest_leaf);
    (515,Candle_action296_forest_leaf);
@@ -641,8 +642,8 @@ let candle_action296_generated_roots =
    (636,Candle_action296_forest_leaf);
    (637,Candle_action296_forest_leaf);
    (638,Candle_action296_forest_leaf);
-   (639,Candle_action296_forest_leaf);
-   (640,Candle_action296_forest_leaf);
+   (639,Candle_action296_forest_leaf)];
+[   (640,Candle_action296_forest_leaf);
    (641,Candle_action296_forest_leaf);
    (642,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (643,Candle_action296_forest_leaf);
@@ -769,8 +770,8 @@ let candle_action296_generated_roots =
    (764,Candle_action296_forest_leaf);
    (765,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (766,Candle_action296_forest_leaf);
-   (767,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (768,Candle_action296_forest_leaf);
+   (767,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];
+[   (768,Candle_action296_forest_leaf);
    (769,Candle_action296_forest_leaf);
    (770,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (771,Candle_action296_forest_leaf);
@@ -897,8 +898,8 @@ let candle_action296_generated_roots =
    (892,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (893,Candle_action296_forest_leaf);
    (894,Candle_action296_forest_leaf);
-   (895,Candle_action296_forest_leaf);
-   (896,Candle_action296_forest_leaf);
+   (895,Candle_action296_forest_leaf)];
+[   (896,Candle_action296_forest_leaf);
    (897,Candle_action296_forest_leaf);
    (898,Candle_action296_forest_leaf);
    (899,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
@@ -1025,8 +1026,8 @@ let candle_action296_generated_roots =
    (1020,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1021,Candle_action296_forest_leaf);
    (1022,Candle_action296_forest_leaf);
-   (1023,Candle_action296_forest_leaf);
-   (1024,Candle_action296_forest_leaf);
+   (1023,Candle_action296_forest_leaf)];
+[   (1024,Candle_action296_forest_leaf);
    (1025,Candle_action296_forest_leaf);
    (1026,Candle_action296_forest_leaf);
    (1027,Candle_action296_forest_leaf);
@@ -1153,8 +1154,8 @@ let candle_action296_generated_roots =
    (1148,Candle_action296_forest_leaf);
    (1149,Candle_action296_forest_leaf);
    (1150,Candle_action296_forest_leaf);
-   (1151,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (1152,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
+   (1151,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];
+[   (1152,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1153,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1154,Candle_action296_forest_leaf);
    (1155,Candle_action296_forest_leaf);
@@ -1281,8 +1282,8 @@ let candle_action296_generated_roots =
    (1276,Candle_action296_forest_leaf);
    (1277,Candle_action296_forest_leaf);
    (1278,Candle_action296_forest_leaf);
-   (1279,Candle_action296_forest_leaf);
-   (1280,Candle_action296_forest_leaf);
+   (1279,Candle_action296_forest_leaf)];
+[   (1280,Candle_action296_forest_leaf);
    (1281,Candle_action296_forest_leaf);
    (1282,Candle_action296_forest_leaf);
    (1283,Candle_action296_forest_leaf);
@@ -1409,8 +1410,8 @@ let candle_action296_generated_roots =
    (1404,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1405,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1406,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (1407,Candle_action296_forest_leaf);
-   (1408,Candle_action296_forest_leaf);
+   (1407,Candle_action296_forest_leaf)];
+[   (1408,Candle_action296_forest_leaf);
    (1409,Candle_action296_forest_leaf);
    (1410,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1411,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
@@ -1537,8 +1538,8 @@ let candle_action296_generated_roots =
    (1532,Candle_action296_forest_leaf);
    (1533,Candle_action296_forest_leaf);
    (1534,Candle_action296_forest_leaf);
-   (1535,Candle_action296_forest_leaf);
-   (1536,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
+   (1535,Candle_action296_forest_leaf)];
+[   (1536,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1537,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1538,Candle_action296_forest_leaf);
    (1539,Candle_action296_forest_leaf);
@@ -1665,8 +1666,8 @@ let candle_action296_generated_roots =
    (1660,Candle_action296_forest_leaf);
    (1661,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (1662,Candle_action296_forest_leaf);
-   (1663,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (1664,Candle_action296_forest_leaf);
+   (1663,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];
+[   (1664,Candle_action296_forest_leaf);
    (1665,Candle_action296_forest_leaf);
    (1666,Candle_action296_forest_leaf);
    (1667,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
@@ -1793,8 +1794,8 @@ let candle_action296_generated_roots =
    (1788,Candle_action296_forest_leaf);
    (1789,Candle_action296_forest_leaf);
    (1790,Candle_action296_forest_leaf);
-   (1791,Candle_action296_forest_leaf);
-   (1792,Candle_action296_forest_leaf);
+   (1791,Candle_action296_forest_leaf)];
+[   (1792,Candle_action296_forest_leaf);
    (1793,Candle_action296_forest_leaf);
    (1794,Candle_action296_forest_leaf);
    (1795,Candle_action296_forest_leaf);
@@ -1921,8 +1922,8 @@ let candle_action296_generated_roots =
    (1916,Candle_action296_forest_leaf);
    (1917,Candle_action296_forest_leaf);
    (1918,Candle_action296_forest_leaf);
-   (1919,Candle_action296_forest_leaf);
-   (1920,Candle_action296_forest_leaf);
+   (1919,Candle_action296_forest_leaf)];
+[   (1920,Candle_action296_forest_leaf);
    (1921,Candle_action296_forest_leaf);
    (1922,Candle_action296_forest_leaf);
    (1923,Candle_action296_forest_leaf);
@@ -2049,8 +2050,8 @@ let candle_action296_generated_roots =
    (2044,Candle_action296_forest_leaf);
    (2045,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2046,Candle_action296_forest_leaf);
-   (2047,Candle_action296_forest_leaf);
-   (2048,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
+   (2047,Candle_action296_forest_leaf)];
+[   (2048,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2049,Candle_action296_forest_leaf);
    (2050,Candle_action296_forest_leaf);
    (2051,Candle_action296_forest_leaf);
@@ -2177,8 +2178,8 @@ let candle_action296_generated_roots =
    (2172,Candle_action296_forest_leaf);
    (2173,Candle_action296_forest_leaf);
    (2174,Candle_action296_forest_leaf);
-   (2175,Candle_action296_forest_leaf);
-   (2176,Candle_action296_forest_leaf);
+   (2175,Candle_action296_forest_leaf)];
+[   (2176,Candle_action296_forest_leaf);
    (2177,Candle_action296_forest_leaf);
    (2178,Candle_action296_forest_leaf);
    (2179,Candle_action296_forest_leaf);
@@ -2305,8 +2306,8 @@ let candle_action296_generated_roots =
    (2300,Candle_action296_forest_leaf);
    (2301,Candle_action296_forest_leaf);
    (2302,Candle_action296_forest_leaf);
-   (2303,Candle_action296_forest_leaf);
-   (2304,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
+   (2303,Candle_action296_forest_leaf)];
+[   (2304,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2305,Candle_action296_forest_leaf);
    (2306,Candle_action296_forest_leaf);
    (2307,Candle_action296_forest_leaf);
@@ -2433,8 +2434,8 @@ let candle_action296_generated_roots =
    (2428,Candle_action296_forest_leaf);
    (2429,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2430,Candle_action296_forest_leaf);
-   (2431,Candle_action296_forest_leaf);
-   (2432,Candle_action296_forest_leaf);
+   (2431,Candle_action296_forest_leaf)];
+[   (2432,Candle_action296_forest_leaf);
    (2433,Candle_action296_forest_leaf);
    (2434,Candle_action296_forest_leaf);
    (2435,Candle_action296_forest_leaf);
@@ -2561,8 +2562,8 @@ let candle_action296_generated_roots =
    (2556,Candle_action296_forest_leaf);
    (2557,Candle_action296_forest_leaf);
    (2558,Candle_action296_forest_leaf);
-   (2559,Candle_action296_forest_leaf);
-   (2560,Candle_action296_forest_leaf);
+   (2559,Candle_action296_forest_leaf)];
+[   (2560,Candle_action296_forest_leaf);
    (2561,Candle_action296_forest_leaf);
    (2562,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2563,Candle_action296_forest_leaf);
@@ -2689,8 +2690,8 @@ let candle_action296_generated_roots =
    (2684,Candle_action296_forest_leaf);
    (2685,Candle_action296_forest_leaf);
    (2686,Candle_action296_forest_leaf);
-   (2687,Candle_action296_forest_leaf);
-   (2688,Candle_action296_forest_leaf);
+   (2687,Candle_action296_forest_leaf)];
+[   (2688,Candle_action296_forest_leaf);
    (2689,Candle_action296_forest_leaf);
    (2690,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2691,Candle_action296_forest_leaf);
@@ -2817,8 +2818,8 @@ let candle_action296_generated_roots =
    (2812,Candle_action296_forest_leaf);
    (2813,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2814,Candle_action296_forest_leaf);
-   (2815,Candle_action296_forest_leaf);
-   (2816,Candle_action296_forest_leaf);
+   (2815,Candle_action296_forest_leaf)];
+[   (2816,Candle_action296_forest_leaf);
    (2817,Candle_action296_forest_leaf);
    (2818,Candle_action296_forest_leaf);
    (2819,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
@@ -2945,8 +2946,8 @@ let candle_action296_generated_roots =
    (2940,Candle_action296_forest_leaf);
    (2941,Candle_action296_forest_leaf);
    (2942,Candle_action296_forest_leaf);
-   (2943,Candle_action296_forest_leaf);
-   (2944,Candle_action296_forest_leaf);
+   (2943,Candle_action296_forest_leaf)];
+[   (2944,Candle_action296_forest_leaf);
    (2945,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (2946,Candle_action296_forest_leaf);
    (2947,Candle_action296_forest_leaf);
@@ -3073,8 +3074,8 @@ let candle_action296_generated_roots =
    (3068,Candle_action296_forest_leaf);
    (3069,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (3070,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (3071,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
-   (3072,Candle_action296_forest_leaf);
+   (3071,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];
+[   (3072,Candle_action296_forest_leaf);
    (3073,Candle_action296_forest_leaf);
    (3074,Candle_action296_forest_leaf);
    (3075,Candle_action296_forest_leaf);
@@ -3201,8 +3202,8 @@ let candle_action296_generated_roots =
    (3196,Candle_action296_forest_leaf);
    (3197,Candle_action296_forest_leaf);
    (3198,Candle_action296_forest_leaf);
-   (3199,Candle_action296_forest_leaf);
-   (3200,Candle_action296_forest_leaf);
+   (3199,Candle_action296_forest_leaf)];
+[   (3200,Candle_action296_forest_leaf);
    (3201,Candle_action296_forest_leaf);
    (3202,Candle_action296_forest_split (4,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (3203,Candle_action296_forest_leaf);
@@ -3306,6 +3307,6 @@ let candle_action296_generated_roots =
    (3301,Candle_action296_forest_split (1,Candle_action296_forest_leaf,Candle_action296_forest_leaf));
    (3302,Candle_action296_forest_leaf);
    (3303,Candle_action296_forest_leaf);
-   (3304,Candle_action296_forest_split (1,Candle_action296_forest_leaf,Candle_action296_forest_leaf))];;
+   (3304,Candle_action296_forest_split (1,Candle_action296_forest_leaf,Candle_action296_forest_leaf))]];;
 let candle_action296_generated_final_cells = 4173;;
 let candle_action296_generated_expected_digest = None;;
