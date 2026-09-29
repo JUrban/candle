@@ -66,6 +66,43 @@ let rec candle_case10173_complete_glue tree sources =
   | P_result_ref _ ->
       failwith "case10173 completion: unexpected reference node";;
 
+let candle_case10173_complete_reconstruct root_list_pass =
+  let functions,domain =
+    M_verifier.dest_m_cell_list_pass (concl root_list_pass) in
+  let expected_domain =
+    let root_domain,_,_ =
+      M_taylor.dest_m_cell_domain
+        (concl candle_case10173_leaf_grouping_root_domain) in
+    root_domain in
+  if functions <> [candle_action296_plan_prepared.function_term] ||
+     not (aconv domain expected_domain) || hyp root_list_pass <> [] then
+    failwith "case10173 completion: root theorem mismatch";
+  let _ =
+    candle_case10173_complete_marker "source-reconstruction" "begin" in
+  let cell_goal =
+    list_mk_comb
+      (`m_cell_pass:(real^6->real)->(real^6#real^6)->bool`,
+       [candle_action296_plan_prepared.function_term;domain]) in
+  let cell_expansion =
+    REWRITE_CONV [M_verifier.M_CELL_PASS_EQ_LIST_PASS1] cell_goal in
+  let cell_pass = EQ_MP (SYM cell_expansion) root_list_pass in
+  let converted =
+    M_verifier_main.normalize_result true
+      candle_case10173_analytic_variable_vector
+      candle_case10173_analytic_standard
+      candle_case10173_plan_domain_subset cell_pass in
+  if hyp converted <> [] ||
+     not
+       (aconv (concl converted) candle_case10173_analytic_converted) then
+    failwith "case10173 completion: normalized source mismatch";
+  let case_theorem =
+    EQ_MP (SYM candle_case10173_analytic_expansion) converted in
+  let theorem =
+    EQ_MP (SYM candle_case10173_analytic_reconstruction) case_theorem in
+  let _ =
+    candle_case10173_complete_marker "source-reconstruction" "end" in
+  theorem;;
+
 let _ = candle_case10173_complete_marker "precision-tree-glue" "begin";;
 let candle_case10173_complete_root_list_pass,
     candle_case10173_complete_remaining =
@@ -77,56 +114,9 @@ let _ = candle_case10173_complete_marker "precision-tree-glue" "end";;
 if candle_case10173_complete_remaining <> [] then
   failwith "case10173 completion: trailing leaf theorem";;
 
-let candle_case10173_complete_functions,
-    candle_case10173_complete_domain =
-  M_verifier.dest_m_cell_list_pass
-    (concl candle_case10173_complete_root_list_pass);;
-let candle_case10173_complete_expected_domain =
-  let domain,_,_ =
-    M_taylor.dest_m_cell_domain
-      (concl candle_case10173_leaf_grouping_root_domain) in
-  domain;;
-
-if candle_case10173_complete_functions <>
-     [candle_action296_plan_prepared.function_term] ||
-   not
-     (aconv candle_case10173_complete_domain
-       candle_case10173_complete_expected_domain) ||
-   hyp candle_case10173_complete_root_list_pass <> [] then
-  failwith "case10173 completion: root theorem mismatch";;
-
-let _ = candle_case10173_complete_marker "source-reconstruction" "begin";;
-let candle_case10173_complete_cell_goal =
-  list_mk_comb
-    (`m_cell_pass:(real^6->real)->(real^6#real^6)->bool`,
-     [candle_action296_plan_prepared.function_term;
-      candle_case10173_complete_domain]);;
-let candle_case10173_complete_cell_expansion =
-  REWRITE_CONV [M_verifier.M_CELL_PASS_EQ_LIST_PASS1]
-    candle_case10173_complete_cell_goal;;
-let candle_case10173_complete_cell_pass =
-  EQ_MP (SYM candle_case10173_complete_cell_expansion)
-    candle_case10173_complete_root_list_pass;;
-let candle_case10173_complete_converted =
-  M_verifier_main.normalize_result true
-    candle_case10173_analytic_variable_vector
-    candle_case10173_analytic_standard
-    candle_case10173_plan_domain_subset
-    candle_case10173_complete_cell_pass;;
-
-if hyp candle_case10173_complete_converted <> [] ||
-   not
-     (aconv (concl candle_case10173_complete_converted)
-       candle_case10173_analytic_converted) then
-  failwith "case10173 completion: normalized source mismatch";;
-
-let candle_case10173_complete_case =
-  EQ_MP (SYM candle_case10173_analytic_expansion)
-    candle_case10173_complete_converted;;
 let candle_case10173_complete_theorem =
-  EQ_MP (SYM candle_case10173_analytic_reconstruction)
-    candle_case10173_complete_case;;
-let _ = candle_case10173_complete_marker "source-reconstruction" "end";;
+  candle_case10173_complete_reconstruct
+    candle_case10173_complete_root_list_pass;;
 
 let candle_case10173_complete_axioms_after = axioms ();;
 if hyp candle_case10173_complete_theorem <> [] ||
