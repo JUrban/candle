@@ -41,6 +41,48 @@ let candle_analytic_expr_reified_ast,
     [candle_analytic_expr_reify_x]
     candle_analytic_expr_reify_source;;
 
+let candle_analytic_expr_reify_constant_sqrt_interval _ =
+ `((((0,0),0),((1,0),0)):
+     ((num#num)#num)#((num#num)#num))`;;
+
+let candle_analytic_expr_reify_constant_source =
+ `pi + acs (&1 / &3)`;;
+let candle_analytic_expr_reify_constant_ast,
+    candle_analytic_expr_reify_constant_theorem =
+  candle_analytic_reify_real_expression
+    candle_analytic_expr_reify_constant_sqrt_interval []
+    candle_analytic_expr_reify_constant_source;;
+
+let candle_analytic_expr_reify_constant_expanded_source =
+ `pi + acs (&1 * inv (&3))`;;
+let candle_analytic_expr_reify_constant_expanded_ast,
+    candle_analytic_expr_reify_constant_expanded_theorem =
+  candle_analytic_reify_real_expression
+    candle_analytic_expr_reify_constant_sqrt_interval []
+    candle_analytic_expr_reify_constant_expanded_source;;
+
+if hyp candle_analytic_expr_reify_constant_theorem <> [] ||
+   hyp candle_analytic_expr_reify_constant_expanded_theorem <> [] ||
+   not
+     (aconv candle_analytic_expr_reify_constant_ast
+        candle_analytic_expr_reify_constant_expanded_ast) ||
+   not
+     (aconv (concl candle_analytic_expr_reify_constant_theorem)
+       (mk_eq
+         (list_mk_comb
+           (`candle_analytic_value`,
+            [`[]:real list`;candle_analytic_expr_reify_constant_ast]),
+          candle_analytic_expr_reify_constant_source))) ||
+   not
+     (aconv (concl candle_analytic_expr_reify_constant_expanded_theorem)
+       (mk_eq
+         (list_mk_comb
+           (`candle_analytic_value`,
+            [`[]:real list`;
+             candle_analytic_expr_reify_constant_expanded_ast]),
+          candle_analytic_expr_reify_constant_expanded_source))) then
+  failwith "analytic source reifier: constant bridge mismatch";;
+
 let candle_analytic_expr_reify_expected_ast =
  `Candle_analytic_sqrt 2 0 0 2 0 0
     (Candle_analytic_add
