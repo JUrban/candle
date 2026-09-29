@@ -26,6 +26,7 @@ ROOT_RE = re.compile(
 RESULT_RE = re.compile(
     rf"{RESULT_MARKER} label=(?P<label>\S+) "
     r"roots=(?P<roots>\d+) verdicts=(?P<verdicts>\d+) "
+    r"(?:batches=(?P<batches>\d+) )?"
     r"theorem_authority=none"
 )
 
@@ -71,6 +72,10 @@ def read_logs(paths: Iterable[Path]) -> list[RootVerdict]:
             raise ValueError(f"root count mismatch in {path}")
         if int(result["verdicts"]) != sum(len(root.flags) for root in local):
             raise ValueError(f"verdict count mismatch in {path}")
+        if result["batches"] is not None and not (
+            1 <= int(result["batches"]) <= len(local)
+        ):
+            raise ValueError(f"batch count mismatch in {path}")
         if any(root.label != result["label"] for root in local):
             raise ValueError(f"label mismatch in {path}")
         for root in local:
@@ -133,7 +138,8 @@ def render_ml_indices(indices: list[int], label: str) -> str:
         f'"{label}";;\n'
         f"let candle_fixed_outer_parent_scan_indices = [{encoded}];;\n"
         "let candle_fixed_outer_parent_scan_include_children = true;;\n"
-        'needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan.ml";;\n'
+        "let candle_fixed_outer_parent_scan_batch_size = 2;;\n"
+        'needs "candle/benchmark_cv_compute_analytic_expr_fixed_outer_parent_scan_batched.ml";;\n'
     )
 
 
