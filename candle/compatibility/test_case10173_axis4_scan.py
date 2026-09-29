@@ -32,6 +32,11 @@ class Case10173Axis4ScanTest(unittest.TestCase):
                 [root(0, (False, True)), root(1, (False, True, True))],
             )
 
+    def test_chunks_require_real_fallback_work(self) -> None:
+        self.assertEqual(subject.chunks([1, 2, 3], 2), [[1], [2, 3]])
+        with self.assertRaisesRegex(ValueError, "more fallback"):
+            subject.chunks([1], 2)
+
 
 if __name__ == "__main__":
     unittest.main()

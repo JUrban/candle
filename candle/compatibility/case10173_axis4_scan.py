@@ -89,7 +89,7 @@ def main() -> int:
     parser.add_argument("--start", type=int, required=True)
     parser.add_argument("--stop", type=int, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
-    parser.add_argument("--output-ml", type=Path, action="append", required=True)
+    parser.add_argument("--output-ml", type=Path, action="append", default=[])
     args = parser.parse_args()
 
     parents = parent_scan.read_logs(args.parent_log)
@@ -100,9 +100,12 @@ def main() -> int:
     args.output_json.write_text(
         render_json(children, args.axis4_log), encoding="utf-8",
     )
-    for path, chunk in zip(
-        args.output_ml, chunks(fallback, len(args.output_ml)), strict=True,
-    ):
+    if bool(fallback) != bool(args.output_ml):
+        raise ValueError(
+            "fallback outputs are required exactly when fallback work exists"
+        )
+    work_chunks = chunks(fallback, len(args.output_ml)) if fallback else []
+    for path, chunk in zip(args.output_ml, work_chunks, strict=True):
         label = f"case10173-all-axis-fallback-{chunk[0]}-{chunk[-1]}"
         path.write_text(
             parent_scan.render_ml_indices(chunk, label), encoding="utf-8",
