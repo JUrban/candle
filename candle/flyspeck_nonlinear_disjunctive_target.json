@@ -1,0 +1,175 @@
+{
+  "claim": "authenticated disjunctive target/native oracle only; no Candle proof, S2, S3, qualification, promotion, or release credit",
+  "closure": {
+    "bytes": 577999,
+    "path": "candle/flyspeck_nonlinear_verifier_closure.json",
+    "sha256": "7d75a0675eb0cdb3e153e70d205e491832e00e1d73abc08f14d3ebf7045f0416"
+  },
+  "evidence_files": {
+    "azure_hashes": {
+      "bytes": 1516431,
+      "logical_relative_path": "azure/results/hashes.txt",
+      "sha256": "7bfd9f07d2d0f64fb7ffaefbbaeea7410910447bac03cfedd235ad851c0f336c"
+    },
+    "azure_ineqs": {
+      "bytes": 33424656,
+      "logical_relative_path": "azure/ineqs.txt",
+      "sha256": "69e6cba72f3fdf1c90da2823fbfcd7adc8602f59e004f037434047aeb9879f4d"
+    },
+    "break_case_log": {
+      "bytes": 827309,
+      "logical_relative_path": "text_formalization/nonlinear/break_case_log.hl",
+      "sha256": "2b3c74156a5ee9a6b3b5b6905ff28a7fb21e7c50052ad37887b90b9ed3d5e499"
+    },
+    "compiled_break_case": {
+      "bytes": 4473,
+      "logical_relative_path": "azure/flyspeck-nat/break_case.hl",
+      "sha256": "7df2af9a8b24923a9c7761c4a3ac3496be39f4c161bef480fe0089db24f7d0bd"
+    },
+    "compiled_definitions": {
+      "bytes": 49779,
+      "logical_relative_path": "azure/flyspeck-nat/definitions.hl",
+      "sha256": "f5c34e49f0114e038949ed0dc1d9a9f5d5f50103420a1272c3231d8b436bbac4"
+    },
+    "family_stdout_0": {
+      "bytes": 109814,
+      "logical_relative_path": "azure/results/urban/out/1/16300/2/16349/stdout",
+      "sha256": "6b780e536f7e98ea1fc1dec058aeb15dbaf2ca19330605404fc443ce0398fc1c"
+    },
+    "family_stdout_1": {
+      "bytes": 111180,
+      "logical_relative_path": "azure/results/urban/out/1/16350/2/16399/stdout",
+      "sha256": "f46a3dec7e4fa2e83318323139f63f474e6aac43249911b1f6d4b1a58e68bcc5"
+    },
+    "family_stdout_2": {
+      "bytes": 114026,
+      "logical_relative_path": "azure/results/urban/out/1/16400/2/16449/stdout",
+      "sha256": "6abfd4de5edb930f2d7775f3cb307fced411d09bf42ffa2834cdf86ad6c6f149"
+    },
+    "family_stdout_3": {
+      "bytes": 111704,
+      "logical_relative_path": "azure/results/urban/out/1/16450/2/16499/stdout",
+      "sha256": "ddcb782e9e22c9df9630b1d3a156888f0bb1d94e9a74c89850dc47acae1dcca1"
+    },
+    "family_stdout_4": {
+      "bytes": 112139,
+      "logical_relative_path": "azure/results/urban/out/1/16500/2/16549/stdout",
+      "sha256": "7db34fa2089db8e5868b304f4dcce0525fcf1af3b95613fbf7fb637acc97c517"
+    },
+    "family_stdout_5": {
+      "bytes": 112448,
+      "logical_relative_path": "azure/results/urban/out/1/16550/2/16599/stdout",
+      "sha256": "6d91cb688ee891ebf969230cc74450fb5edfe018c3341e5da608f9568a529928"
+    },
+    "family_stdout_6": {
+      "bytes": 111510,
+      "logical_relative_path": "azure/results/urban/out/1/16600/2/16649/stdout",
+      "sha256": "d430684ec37d4b198ff6d04e70ca86819f57ad365737db3139eb09b8d57c7ef8"
+    },
+    "family_stdout_7": {
+      "bytes": 129848,
+      "logical_relative_path": "azure/results/urban/out/1/16650/2/16699/stdout",
+      "sha256": "35c52f845ce87ceebc4c3c44aca8bf4e7340186372716abc1860f13be85035b3"
+    },
+    "main_verifier": {
+      "bytes": 2544,
+      "logical_relative_path": "azure/main_verifier.hl",
+      "sha256": "f8c18b2699325c0aeba9d853c8ffa2958346016af887133bf23d082adaa2f3dc"
+    },
+    "prep": {
+      "bytes": 1179697,
+      "logical_relative_path": "text_formalization/nonlinear/prep.hl",
+      "sha256": "3ccef1bf65b13ca02e7ab1f409ebb49c979862ed5ea6ff1d57ed1e4e4761723d"
+    },
+    "prove_by_refinement": {
+      "bytes": 4271,
+      "logical_relative_path": "text_formalization/general/prove_by_refinement.hl",
+      "sha256": "3101d7b115e9437e94bcfe7ae8156cfc065ac4422d463a91d690d41acca04cdb"
+    }
+  },
+  "family": {
+    "archive_tree": {
+      "bytes": 11863,
+      "sha256": "a7483c8dd800c39cb9d1e9204ec4d7b13f6acb5c7458990a7297f0733a0d6670",
+      "top_action": {
+        "coordinate": 4,
+        "kind": "Iarg_bisect"
+      }
+    },
+    "formal_glue_count": 2787351,
+    "formal_leaf_count": 2787684,
+    "global_case_first": 16330,
+    "global_case_last": 16662,
+    "historical_total_processor_hours": "598.3053667730555555555555556",
+    "historical_total_seconds": "2153899.320383",
+    "id": "prep-8293089898",
+    "member_count": 333,
+    "ordinary_only": true,
+    "source_definition": {
+      "bytes": 833,
+      "sha256": "ecf90259343115a67722be88c25b0d228453aa5bee5f7fd6876ee7931c846196"
+    }
+  },
+  "flyspeck_commit": "d6cdcd9f3e45f4ceb5fd1ba08f5b5ec4ce6a65eb",
+  "kind": "candle-flyspeck-nonlinear-disjunctive-target",
+  "native_oracle": {
+    "epsilon": "1e-10",
+    "formal_convex_glue_count": 0,
+    "formal_glue_count": 787,
+    "formal_leaf_count": 788,
+    "formal_mono_count": 0,
+    "formal_pass_mono_count": 0,
+    "formal_raw_leaf_count": 0,
+    "legacy_theorem_digest": "0b95a6345d43bd6aa35e3892f2c38bf9",
+    "precision": 6,
+    "total_seconds": 561.614339
+  },
+  "schema": 1,
+  "status": "development-non-release",
+  "target": {
+    "global_case": 16479,
+    "id": "prep-8293089898",
+    "legacy_box_path": [
+      {
+        "coordinate": 5,
+        "decimal": "0.5000",
+        "kind": "frac",
+        "side": "right"
+      },
+      {
+        "coordinate": 3,
+        "kind": "bisect",
+        "side": "right"
+      },
+      {
+        "coordinate": 2,
+        "kind": "bisect",
+        "side": "right"
+      },
+      {
+        "coordinate": 1,
+        "kind": "bisect",
+        "side": "left"
+      },
+      {
+        "coordinate": 0,
+        "kind": "bisect",
+        "side": "right"
+      },
+      {
+        "coordinate": 4,
+        "kind": "bisect",
+        "side": "left"
+      },
+      {
+        "coordinate": 4,
+        "kind": "bisect",
+        "side": "right"
+      }
+    ],
+    "legacy_ineqm_text": "ineqm [x1; x2; x3; x4; x5; x6]\n   (frac_right 5 #0.5000\n   (bisect_right 3\n   (bisect_right 2\n   (bisect_left 1\n   (bisect_right 0\n   (bisect_left 4\n   (bisect_right 4\n   [#4.0,(#2.0 * #1.26) * #2.0 * #1.26; #4.0,(#2.0 * #1.26) * #2.0 * #1.26; \n   #4.0,\n   (#2.0 * #1.26) * #2.0 * #1.26; #4.0,(#2.0 * #1.26) * #2.0 * #1.26; \n   #3.01 * #3.01,\n   #3.9 * #3.9; #4.0,(#2.0 * #1.26) * #2.0 * #1.26])))))))\n   (x1_delta_x x1 x2 x3 x4 x5 x6 * &4 +\n    delta4_squared_x x1 x2 x3 x4 x5 x6 * --#0.833 <\n    &0 \\/\n    unit6 x1 x2 x3 x4 x5 x6 * --#0.026 +\n    rhazimatn_x x1 x2 x3 x4 x5 x6 * -- &1 +\n    rhazim2atn_x x1 x2 x3 x4 x5 x6 * -- &1 +\n    rhazim3atn_x x1 x2 x3 x4 x5 x6 * -- &1 +\n    unit6 x1 x2 x3 x4 x5 x6 * pi +\n    unit6 x1 x2 x3 x4 x5 x6 * const1 * pi <\n    &0)",
+    "legacy_ineqm_text_sha256": "3ff2311b5b67933f5b0dc6c1abe5efd942b7131819851c21ceba4e2775d788de",
+    "local_case": 149,
+    "selection": "minimum formal leaf count in retained family"
+  }
+}
