@@ -51,6 +51,11 @@ class Case10173ScanPolicyTest(unittest.TestCase):
         self.assertIn("Candle_action296_forest_split (4,", rendered)
         self.assertIn("let candle_test_case10173_final_cells = 7;;", rendered)
         self.assertIn("let candle_test_case10173_expected_digest = None;;", rendered)
+        schedule = subject.render_singleton_schedule_ml(plans)
+        self.assertIn(
+            "let candle_action296_generated_group_sizes = [1;1;1];;",
+            schedule,
+        )
 
     def test_depth2_log_validation(self) -> None:
         record = (

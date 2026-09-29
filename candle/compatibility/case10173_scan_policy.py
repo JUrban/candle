@@ -340,6 +340,17 @@ def render_policy_ml(
     )
 
 
+def render_singleton_schedule_ml(plans: list[RootPlan]) -> str:
+    if not plans or any(plan.depth is None for plan in plans):
+        raise ValueError("singleton schedule requires a complete forest plan")
+    sizes = ";".join("1" for _ in plans)
+    return (
+        "(* Generated conservative case-10173 fixed-outer group schedule.\n"
+        "   Each singleton has the exact outer box used by policy discovery. *)\n"
+        f"let candle_action296_generated_group_sizes = [{sizes}];;\n"
+    )
+
+
 def _identity(path: Path) -> dict[str, object]:
     data = path.read_bytes()
     return {
@@ -387,6 +398,7 @@ def main() -> int:
     parser.add_argument("--stop", type=int, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-ml", type=Path)
+    parser.add_argument("--output-schedule-ml", type=Path)
     parser.add_argument("--ml-name", default="candle_case10173_generated")
     parser.add_argument("--expected-digest")
     parser.add_argument("--output-depth2-ml", type=Path, action="append")
@@ -425,6 +437,10 @@ def main() -> int:
                 plans, args.ml_name, expected_digest=args.expected_digest,
             ),
             encoding="utf-8",
+        )
+    if args.output_schedule_ml is not None:
+        args.output_schedule_ml.write_text(
+            render_singleton_schedule_ml(plans), encoding="utf-8",
         )
     return 0
 
