@@ -22,6 +22,10 @@ AUTHENTICATED_LEAVES = 860
 GLUE_NODES = 874
 TOKEN_ITEMS = NUMERICAL_CELLS + GLUE_NODES
 THEOREM_DIGEST = "8bb2c1bf3d1c1944d497c0da68b88207"
+PROFILE_LANE = "disjunctive-case16594-compact-stack-complete"
+PROFILE_STOP_TEXT = (
+    "CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_STACK_COMPLETE_OK"
+)
 WRAPPER_SHA256 = "1dfe5868225a37afc8c345e07c974b9fc4b2df5c710dfc90fac54517998c3426"
 PROOF_SOURCE_SHA256 = "52db0358ae62fac03ce0cf0b44afbec35a23bbe46734967b31dcb85d2f50240d"
 SUPPORT_CHECKPOINT_SHA256 = (
@@ -302,11 +306,93 @@ def _validate_sealed_run(
     }
 
 
+def _validate_phase_profile(path: Path, log: Path) -> dict[str, object]:
+    data = json.loads(path.read_text(encoding="utf-8", errors="strict"))
+    if data.get("schema") != "candle-certificate-phase-profile-v1":
+        raise ValueError("unexpected compact-stream phase-profile schema")
+    if Path(str(data.get("log"))).resolve() != log.resolve():
+        raise ValueError("compact-stream phase-profile log identity mismatch")
+    if data.get("start_at_end") is not True:
+        raise ValueError("compact-stream phase profiler did not attach at EOF")
+    if data.get("stop_key") is not None or data.get("stop_text") != PROFILE_STOP_TEXT:
+        raise ValueError("compact-stream phase-profile stop contract mismatch")
+    if data.get("stop_seen") is not True or data.get("unclosed_phases") != []:
+        raise ValueError("compact-stream phase profile is incomplete")
+    skipped = data.get("skipped_leading_end_events")
+    if not isinstance(skipped, int) or isinstance(skipped, bool) or not 0 <= skipped <= 1:
+        raise ValueError("compact-stream phase-profile attachment mismatch")
+    offset = data.get("start_log_offset")
+    if not isinstance(offset, int) or isinstance(offset, bool) or offset <= 0:
+        raise ValueError("compact-stream phase-profile start offset is invalid")
+    phases = data.get("phases")
+    events = data.get("events")
+    samples = data.get("samples")
+    if not isinstance(phases, list) or not phases:
+        raise ValueError("compact-stream phase profile contains no closed phases")
+    if not isinstance(events, list) or len(events) < 2 * len(phases):
+        raise ValueError("compact-stream phase-profile event count mismatch")
+    if not isinstance(samples, list) or not samples:
+        raise ValueError("compact-stream phase profile contains no process samples")
+
+    aggregates: dict[str, dict[str, float | int]] = {}
+    for phase in phases:
+        if not isinstance(phase, dict):
+            raise ValueError("malformed compact-stream phase-profile record")
+        if (
+            phase.get("lane") != PROFILE_LANE
+            or phase.get("scope") != ""
+            or phase.get("result") != "end"
+        ):
+            raise ValueError("unexpected compact-stream phase-profile identity")
+        name = phase.get("phase")
+        wall = phase.get("wall_seconds")
+        cpu = phase.get("cpu_seconds")
+        if (
+            not isinstance(name, str)
+            or not name
+            or not isinstance(wall, (int, float))
+            or isinstance(wall, bool)
+            or wall < 0
+            or not isinstance(cpu, (int, float))
+            or isinstance(cpu, bool)
+            or cpu < 0
+        ):
+            raise ValueError("invalid compact-stream phase-profile measurement")
+        aggregate = aggregates.setdefault(name, {
+            "count": 0,
+            "wall_seconds": 0.0,
+            "cpu_seconds": 0.0,
+            "max_wall_seconds": 0.0,
+        })
+        aggregate["count"] = int(aggregate["count"]) + 1
+        aggregate["wall_seconds"] = float(aggregate["wall_seconds"]) + float(wall)
+        aggregate["cpu_seconds"] = float(aggregate["cpu_seconds"]) + float(cpu)
+        aggregate["max_wall_seconds"] = max(
+            float(aggregate["max_wall_seconds"]), float(wall)
+        )
+    for aggregate in aggregates.values():
+        aggregate["mean_wall_seconds"] = (
+            float(aggregate["wall_seconds"]) / int(aggregate["count"])
+        )
+    return {
+        "artifact": _identity(path),
+        "duration_seconds": data.get("duration_seconds"),
+        "peak_sampled_rss_kib": data.get("peak_sampled_rss_kib"),
+        "start_log_offset": offset,
+        "skipped_leading_end_events": skipped,
+        "events": len(events),
+        "closed_phases": len(phases),
+        "samples": len(samples),
+        "aggregates": aggregates,
+    }
+
+
 def validate(
     run: Path,
     support: Path,
     ready_marker: str,
     support_ready_marker: str,
+    phase_profile: Path | None = None,
 ) -> dict[str, object]:
     run = run.resolve()
     support = support.resolve()
@@ -333,7 +419,7 @@ def validate(
     stream = parse_completed_log(
         log_path.read_text(encoding="utf-8", errors="strict"), ready_marker
     )
-    return {
+    payload = {
         "schema": "candle-case16594-compact-stream-postflight-v1",
         "status": "development-non-release",
         "claim": "retained-run validation only; no release authority",
@@ -342,6 +428,11 @@ def validate(
         "support": support_evidence,
         "stream": stream,
     }
+    if phase_profile is not None:
+        payload["phase_profile"] = _validate_phase_profile(
+            phase_profile.resolve(), log_path
+        )
+    return payload
 
 
 def main() -> int:
@@ -350,6 +441,7 @@ def main() -> int:
     parser.add_argument("--support", type=Path, required=True)
     parser.add_argument("--ready-marker", required=True)
     parser.add_argument("--support-ready-marker", required=True)
+    parser.add_argument("--phase-profile", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     payload = validate(
@@ -357,6 +449,7 @@ def main() -> int:
         args.support,
         args.ready_marker,
         args.support_ready_marker,
+        args.phase_profile,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     temporary = args.output.with_suffix(args.output.suffix + ".tmp")

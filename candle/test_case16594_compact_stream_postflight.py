@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 
@@ -92,6 +94,45 @@ class CompletedLogTest(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "duplicate OK"):
             POSTFLIGHT.parse_completed_log(log, READY)
+
+    def test_phase_profile_aggregates_late_observations(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            log = root / "base.log"
+            log.write_text("retained proof log\n", encoding="utf-8")
+            profile = root / "profile.json"
+            phases = [
+                {
+                    "lane": POSTFLIGHT.PROFILE_LANE,
+                    "scope": "",
+                    "phase": "batch-compute",
+                    "result": "end",
+                    "wall_seconds": wall,
+                    "cpu_seconds": wall - 0.1,
+                }
+                for wall in (1.0, 2.0)
+            ]
+            profile.write_text(json.dumps({
+                "schema": "candle-certificate-phase-profile-v1",
+                "log": str(log),
+                "start_at_end": True,
+                "start_log_offset": 19,
+                "stop_key": None,
+                "stop_text": POSTFLIGHT.PROFILE_STOP_TEXT,
+                "stop_seen": True,
+                "skipped_leading_end_events": 1,
+                "unclosed_phases": [],
+                "events": [{}, {}, {}, {}, {}],
+                "phases": phases,
+                "samples": [{}],
+                "duration_seconds": 3.0,
+                "peak_sampled_rss_kib": 100,
+            }), encoding="utf-8")
+            result = POSTFLIGHT._validate_phase_profile(profile, log)
+            aggregate = result["aggregates"]["batch-compute"]
+            self.assertEqual(aggregate["count"], 2)
+            self.assertEqual(aggregate["wall_seconds"], 3.0)
+            self.assertEqual(aggregate["mean_wall_seconds"], 1.5)
 
 
 if __name__ == "__main__":
