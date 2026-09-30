@@ -30,11 +30,24 @@ type candle_q_dim_taylor_model_fixed_outer_variable_token_result_six = {
   variable_token_source_theorem : thm;
 };;
 
-let candle_q_dim_taylor_model_fixed_outer_variable_token_source_six
-    (raw_result:
-      candle_q_dim_taylor_model_fixed_outer_variable_raw_result_six)
-    tokens =
-  let jobs = raw_result.variable_raw_decoded_jobs_term in
+type candle_q_dim_taylor_model_fixed_outer_variable_token_core_result_six = {
+  variable_token_core_stream_term : term;
+  variable_token_core_tree_term : term;
+  variable_token_core_run_theorem : thm;
+  variable_token_core_topology_theorem : thm;
+  variable_token_core_source_theorem : thm;
+};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_token_acceptance_six
+    (prepared:candle_q_dim_analytic_jet_prepared_six)
+    jobs jobs_accept_theorem tokens =
+  let expected_acceptance =
+    list_mk_comb
+      (`candle_q_dim_taylor_model_fixed_outer_variable_jobs_accept`,
+       [prepared.expression_term;jobs]) in
+  if hyp jobs_accept_theorem <> [] ||
+     not (aconv (concl jobs_accept_theorem) expected_acceptance) then
+    failwith "fixed outer variable token prover: acceptance mismatch";
   let run_call =
     list_mk_comb
       (`candle_q_dim_taylor_model_fixed_outer_variable_token_run`,
@@ -47,7 +60,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_token_source_six
       [candle_q_dim_taylor_model_fixed_outer_variable_token_run_def;
        candle_cv_fso_variable_jobs_decode_def;
        candle_cv_fso_variable_job_decode_def;
-       cexp_fst_def;cexp_snd_def;FST;SND]
+       cexp_fst_def;cexp_snd_def;FST;SND;APPEND]
       run_call in
   candle_q_dim_analytic_jet_profile_event
     "variable-token-stream-reduction-end";
@@ -80,8 +93,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_token_source_six
       conservation in
   let tree_accept =
     REWRITE_RULE [GSYM tree_jobs]
-      raw_result.variable_raw_accept_theorem in
-  let prepared = raw_result.variable_raw_prepared_source in
+      jobs_accept_theorem in
   let projected =
     list_mk_comb
       (`candle_q_dim_taylor_model_fixed_outer_variable_tree_project`,
@@ -136,12 +148,28 @@ let candle_q_dim_taylor_model_fixed_outer_variable_token_source_six
       cell_theorem in
   if hyp source_theorem <> [] then
     failwith "fixed outer variable token prover: source assumptions";
+  {variable_token_core_stream_term = tokens;
+   variable_token_core_tree_term = tree;
+   variable_token_core_run_theorem = run_theorem;
+   variable_token_core_topology_theorem = topology_theorem;
+   variable_token_core_source_theorem = source_theorem};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_token_source_six
+    (raw_result:
+      candle_q_dim_taylor_model_fixed_outer_variable_raw_result_six)
+    tokens =
+  let core =
+    candle_q_dim_taylor_model_fixed_outer_variable_token_acceptance_six
+      raw_result.variable_raw_prepared_source
+      raw_result.variable_raw_decoded_jobs_term
+      raw_result.variable_raw_accept_theorem tokens in
   {variable_token_raw_result = raw_result;
-   variable_token_stream_term = tokens;
-   variable_token_tree_term = tree;
-   variable_token_run_theorem = run_theorem;
-   variable_token_topology_theorem = topology_theorem;
-   variable_token_source_theorem = source_theorem};;
+   variable_token_stream_term = core.variable_token_core_stream_term;
+   variable_token_tree_term = core.variable_token_core_tree_term;
+   variable_token_run_theorem = core.variable_token_core_run_theorem;
+   variable_token_topology_theorem =
+     core.variable_token_core_topology_theorem;
+   variable_token_source_theorem = core.variable_token_core_source_theorem};;
 
 print_endline
   "CANDLE_CV_FIXED_OUTER_VARIABLE_TOKEN_STREAM_PROVE_OK DEVELOPMENT_NON_RELEASE";;
