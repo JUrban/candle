@@ -36,6 +36,11 @@ type candle_q_dim_taylor_model_fixed_outer_variable_compact_result_six = {
   variable_compact_source_theorem : thm;
 };;
 
+type candle_q_dim_taylor_model_fixed_outer_variable_compact_state_six = {
+  variable_compact_state_stack_term : term;
+  variable_compact_state_pass_theorem : thm;
+};;
+
 (* The logical runner stays dimension-polymorphic.  This six-dimensional
    adapter supplies proved reductions for the small closed numeral guards so
    rewriting selects one branch at a time instead of expanding both sides of
@@ -69,6 +74,126 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_num_rewrites_six =
         (fun current -> map (fun axis -> mk_eq (current,axis)) axes)
         currents) in
   map NUM_REDUCE_CONV (length_six :: bounds @ positions);;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_compact_initial_six
+    (prepared:candle_q_dim_analytic_jet_prepared_six) =
+  let stack =
+    `[]:((((num#num)#num)#((num#num)#num))list)list` in
+  let pass =
+    mk_icomb
+      (mk_icomb
+        (mk_icomb
+          (`candle_q_dim_taylor_model_fixed_outer_variable_compact_stack_pass`,
+           `ARB:real^6`),
+         prepared.expression_term),
+       stack) in
+  let theorem =
+    EQT_ELIM
+      (REWRITE_CONV
+        [candle_q_dim_taylor_model_fixed_outer_variable_compact_stack_pass_def]
+        pass) in
+  {variable_compact_state_stack_term = stack;
+   variable_compact_state_pass_theorem = theorem};;
+
+(* Consume one already accepted bounded job batch and its matching postorder
+   token segment.  Only the active root stack and its universal invariant
+   survive the call; raw encodings, hint payloads, and batch theorems can be
+   reclaimed before the next segment. *)
+let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
+    (prepared:candle_q_dim_analytic_jet_prepared_six)
+    state jobs jobs_accept_theorem tokens =
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-step-validation-begin";
+  let expected_acceptance =
+    list_mk_comb
+      (`candle_q_dim_taylor_model_fixed_outer_variable_jobs_accept`,
+       [prepared.expression_term;jobs]) in
+  let expected_stack_pass =
+    mk_icomb
+      (mk_icomb
+        (mk_icomb
+          (`candle_q_dim_taylor_model_fixed_outer_variable_compact_stack_pass`,
+           `ARB:real^6`),
+         prepared.expression_term),
+       state.variable_compact_state_stack_term) in
+  if hyp jobs_accept_theorem <> [] ||
+     not (aconv (concl jobs_accept_theorem) expected_acceptance) ||
+     hyp state.variable_compact_state_pass_theorem <> [] ||
+     not
+       (aconv (concl state.variable_compact_state_pass_theorem)
+         expected_stack_pass) then
+    failwith "fixed outer variable compact step: premise mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-step-validation-end";
+  let run_call =
+    mk_icomb
+      (mk_icomb
+        (mk_icomb
+          (mk_icomb
+            (`candle_q_dim_taylor_model_fixed_outer_variable_compact_run`,
+             `6`),
+           tokens),
+         jobs),
+       state.variable_compact_state_stack_term) in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-step-reduction-begin";
+  let run_theorem =
+    REWRITE_CONV
+      (candle_q_dim_taylor_model_fixed_outer_variable_compact_num_rewrites_six @
+       [candle_q_dim_taylor_model_fixed_outer_variable_compact_run_def;
+        candle_q_dim_taylor_model_fixed_outer_variable_compact_join_def;
+        candle_q_boxes_split_exact_from_def;
+        candle_cv_fso_variable_jobs_decode_def;
+        candle_cv_fso_variable_job_decode_def;
+        candle_cv_q_interval_list_decode_def;
+        candle_cv_q_interval_decode_def;candle_cv_q_decode_def;
+        candle_cv_lc_z_decode_def;candle_cv_lc_num_decode_def;
+        cexp_fst_def;cexp_snd_def;FST;SND;APPEND;LENGTH;
+        LET_DEF;LET_END_DEF])
+      run_call in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-step-reduction-end";
+  let success,payload = dest_pair (rand (concl run_theorem)) in
+  let remaining,final_stack = dest_pair payload in
+  if not (aconv success `T`) || dest_list remaining <> [] then
+    failwith "fixed outer variable compact step: token segment rejected";
+  let soundness =
+    REWRITE_RULE
+      [candle_q_dim_analytic_jet_dim_six]
+      (ISPECL
+        [tokens;prepared.expression_term;`ARB:real^6`;jobs;
+         state.variable_compact_state_stack_term;
+         `[]:((((num#num)#num)#((num#num)#num))list#
+              ((((num#num)#num)#((num#num)#num))list#
+               (((num#num)#num)#((num#num)#num))list))list`;
+         final_stack]
+        candle_q_dim_taylor_model_fixed_outer_variable_compact_run_sound) in
+  let premise =
+    CONJ prepared.valid_theorem
+      (CONJ jobs_accept_theorem
+        (CONJ state.variable_compact_state_pass_theorem run_theorem)) in
+  let conclusion = MATCH_MP soundness premise in
+  let stack_pass_theorem = CONJUNCT2 conclusion in
+  {variable_compact_state_stack_term = final_stack;
+   variable_compact_state_pass_theorem = stack_pass_theorem};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_compact_finish_six
+    (prepared:candle_q_dim_analytic_jet_prepared_six) state =
+  let root_boxes =
+    match dest_list state.variable_compact_state_stack_term with
+    | [boxes] -> boxes
+    | _ -> failwith "fixed outer variable compact finish: non-singleton stack" in
+  let expanded =
+    REWRITE_RULE
+      [candle_q_dim_taylor_model_fixed_outer_variable_compact_stack_pass_def]
+      state.variable_compact_state_pass_theorem in
+  let cell_theorem =
+    try CONJUNCT1 expanded with Failure _ -> expanded in
+  let source_theorem =
+    REWRITE_RULE [m_cell_pass;prepared.source_theorem] cell_theorem in
+  if hyp source_theorem <> [] then
+    failwith "fixed outer variable compact finish: source assumptions";
+  root_boxes,source_theorem;;
 
 let candle_q_dim_taylor_model_fixed_outer_variable_compact_acceptance_six
     (prepared:candle_q_dim_analytic_jet_prepared_six)
