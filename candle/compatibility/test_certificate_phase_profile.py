@@ -33,6 +33,30 @@ class CertificatePhaseProfileTests(unittest.TestCase):
         self.assertEqual(match["phase"], "formal-verification")
         self.assertEqual(match["event"], "end")
 
+    def test_inline_event_marker_has_empty_scope(self) -> None:
+        fields = SUBJECT.marker_fields(
+            "CANDLE_CERT_PROFILE lane=compact-stream "
+            "phase=batch-compute-begin"
+        )
+        self.assertEqual(fields, {
+            "lane": "compact-stream",
+            "scope": "",
+            "phase": "batch-compute",
+            "event": "begin",
+        })
+
+    def test_scoped_marker_fields_remain_unchanged(self) -> None:
+        fields = SUBJECT.marker_fields(
+            "CANDLE_CERT_PROFILE lane=nonlinear-leaf scope=target "
+            "phase=formal-verification event=end"
+        )
+        self.assertEqual(fields, {
+            "lane": "nonlinear-leaf",
+            "scope": "target",
+            "phase": "formal-verification",
+            "event": "end",
+        })
+
     def test_proc_sample_is_read_only_and_reports_this_process(self) -> None:
         sample = SUBJECT.proc_sample(os.getpid(), os.sysconf("SC_CLK_TCK"))
         self.assertIsNotNone(sample)

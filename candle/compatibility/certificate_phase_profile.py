@@ -21,6 +21,25 @@ MARKER = re.compile(
     r"CANDLE_CERT_PROFILE lane=(?P<lane>\S+) scope=(?P<scope>.*?) "
     r"phase=(?P<phase>\S+) event=(?P<event>begin|end|fail)"
 )
+INLINE_EVENT_MARKER = re.compile(
+    r"CANDLE_CERT_PROFILE lane=(?P<lane>\S+) "
+    r"phase=(?P<phase>\S+?)-(?P<event>begin|end|fail)(?:\s|$)"
+)
+
+
+def marker_fields(line: str) -> dict[str, str] | None:
+    match = MARKER.search(line)
+    if match is not None:
+        return match.groupdict()
+    match = INLINE_EVENT_MARKER.search(line)
+    if match is None:
+        return None
+    return {
+        "lane": match["lane"],
+        "scope": "",
+        "phase": match["phase"],
+        "event": match["event"],
+    }
 
 
 def proc_sample(pid: int, ticks: int) -> dict[str, float | int] | None:
@@ -49,6 +68,8 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--poll-seconds", type=float, default=0.05)
     parser.add_argument("--stop-key")
+    parser.add_argument("--stop-text")
+    parser.add_argument("--start-at-end", action="store_true")
     parser.add_argument("--wait-for-log-seconds", type=float, default=60.0)
     args = parser.parse_args()
 
@@ -66,8 +87,13 @@ def main() -> int:
     phase_begins: dict[tuple[str, str, str], dict[str, object]] = {}
     phases: list[dict[str, object]] = []
     stop_seen = False
+    skipped_leading_end_events = 0
+    synchronized = not args.start_at_end
 
     with args.log.open("r", encoding="utf-8", errors="replace") as log:
+        if args.start_at_end:
+            log.seek(0, 2)
+        start_log_offset = log.tell()
         while True:
             where = log.tell()
             line = log.readline()
@@ -80,24 +106,28 @@ def main() -> int:
                     **proc,
                 })
             if line:
-                match = MARKER.search(line)
-                if match:
+                fields = marker_fields(line)
+                if fields is not None:
                     item: dict[str, object] = {
-                        **match.groupdict(),
+                        **fields,
                         "elapsed_seconds": (now_ns - start_ns) / 1e9,
                         "utc": dt.datetime.now(dt.timezone.utc).isoformat(),
                         "log_offset": where,
                         "process": proc,
                     }
                     events.append(item)
-                    key = (match["lane"], match["scope"], match["phase"])
-                    if match["event"] == "begin":
+                    key = (fields["lane"], fields["scope"], fields["phase"])
+                    if fields["event"] == "begin":
+                        synchronized = True
                         if key in phase_begins:
                             raise SystemExit(f"duplicate open phase: {key}")
                         phase_begins[key] = item
-                    elif match["event"] in {"end", "fail"}:
+                    elif fields["event"] in {"end", "fail"}:
                         begin = phase_begins.pop(key, None)
                         if begin is None:
+                            if not synchronized:
+                                skipped_leading_end_events += 1
+                                continue
                             raise SystemExit(f"phase ended without begin: {key}")
                         begin_proc = begin.get("process") or {}
                         end_proc = proc or {}
@@ -105,7 +135,7 @@ def main() -> int:
                             "lane": key[0],
                             "scope": key[1],
                             "phase": key[2],
-                            "result": match["event"],
+                            "result": fields["event"],
                             "wall_seconds": float(item["elapsed_seconds"])
                             - float(begin["elapsed_seconds"]),
                             "cpu_seconds": float(end_proc.get("cpu_seconds", 0.0))
@@ -115,10 +145,12 @@ def main() -> int:
                         })
                     if (
                         args.stop_key
-                        and match["event"] == "end"
+                        and fields["event"] == "end"
                         and "/".join(key) == args.stop_key
                     ):
                         stop_seen = True
+                if args.stop_text and args.stop_text in line:
+                    stop_seen = True
                 continue
 
             if stop_seen:
@@ -138,7 +170,11 @@ def main() -> int:
         "log": str(args.log.resolve()),
         "poll_seconds": args.poll_seconds,
         "stop_key": args.stop_key,
+        "stop_text": args.stop_text,
         "stop_seen": stop_seen,
+        "start_at_end": args.start_at_end,
+        "start_log_offset": start_log_offset,
+        "skipped_leading_end_events": skipped_leading_end_events,
         "duration_seconds": (time.monotonic_ns() - start_ns) / 1e9,
         "peak_sampled_rss_kib": peak_rss_kib,
         "events": events,
