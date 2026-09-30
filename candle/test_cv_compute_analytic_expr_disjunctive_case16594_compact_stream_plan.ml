@@ -10,7 +10,7 @@ open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_compact_token_plan
 
 let _ =
   let chunks =
-    candle_disjunctive_case16594_compact_complete_split_chunks 32
+    candle_disjunctive_case16594_compact_complete_split_chunks 4
       candle_disjunctive_case16594_variable_raw_plan_cells in
   let tokens =
     dest_list (candle_disjunctive_case16594_compact_token_plan ()) in
@@ -37,7 +37,7 @@ let _ =
           after_segment remaining_chunks in
   let segments,leaves,glues,largest =
     validate 0 0 0 0 tokens chunks in
-  if segments <> 28 || leaves <> 875 || glues <> 874 then
+  if segments <> 219 || leaves <> 875 || glues <> 874 then
     failwith "case16594 compact stream plan: total mismatch";
   print_endline
     ("CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_STREAM_PLAN_RESULT" ^

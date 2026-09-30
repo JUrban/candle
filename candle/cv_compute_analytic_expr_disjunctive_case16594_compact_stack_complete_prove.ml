@@ -109,10 +109,10 @@ let candle_disjunctive_case16594_compact_stack_complete_prove () =
          " lane=disjunctive-case16594-compact-stack-complete" ^
          " phase=" ^ event));
   let chunks =
-    candle_disjunctive_case16594_compact_complete_split_chunks 32
+    candle_disjunctive_case16594_compact_complete_split_chunks 4
       candle_disjunctive_case16594_variable_raw_plan_cells in
   let chunk_count = length chunks in
-  if chunk_count <> 28 then
+  if chunk_count <> 219 then
     failwith "case16594 compact stack complete: chunk count mismatch";
   let token_items =
     dest_list (candle_disjunctive_case16594_compact_token_plan ()) in
