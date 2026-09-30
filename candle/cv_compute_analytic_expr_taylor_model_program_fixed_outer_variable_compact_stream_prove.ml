@@ -110,24 +110,8 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
      not (aconv reflected_stack_tail `Cexp_num 0`) then
     failwith "fixed outer reflected compact prover: stream rejected";
 
-  candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-root-canonical-compute-begin";
-  let root_canonical_compute =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_fso_variable_raw_compute_eqs
-      (mk_comb (`candle_cv_q_interval_list_canonical`,reflected_root)) in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-root-canonical-compute-end";
-  if hyp root_canonical_compute <> [] ||
-     not (aconv (rand (concl root_canonical_compute)) reflected_root) then
-    failwith "fixed outer reflected compact prover: noncanonical root";
   let root_boxes =
     mk_comb (`candle_cv_q_interval_list_decode`,reflected_root) in
-  let root_representation =
-    TRANS
-      (SYM
-        (SPEC reflected_root candle_cv_q_interval_list_canonical_decode))
-      root_canonical_compute in
 
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-theorem-handoff-begin";
@@ -154,33 +138,23 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-correspondence-end";
   candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-result-encoding-begin";
-  let root_stack = mk_list ([root_boxes],type_of root_boxes) in
-  let expected_result =
-    mk_pair (`T`,mk_pair (empty_jobs,root_stack)) in
-  let expected_encoding =
-    REWRITE_CONV
-      [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_def;
-       candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs_def;
-       candle_cv_q_boxes_stack_def;candle_cv_bool_def;
-       root_representation;FST;SND;SYM ONE]
-      (mk_comb
-        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result`,
-         expected_result)) in
-  if not
-       (aconv (rand (concl expected_encoding))
-         (rand (concl reflected_compute))) then
-    failwith "fixed outer reflected compact prover: result encoding mismatch";
-  candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-result-encoding-end";
-  candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-result-injectivity-begin";
+    "variable-compact-reflected-result-decode-begin";
+  let decoded_logical_result =
+    AP_TERM
+      `candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode`
+      encoded_logical_result in
   let run_theorem =
     REWRITE_RULE
-      [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_injective_all]
-      (TRANS encoded_logical_result (SYM expected_encoding)) in
+      [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_roundtrip;
+       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_def;
+       CONJUNCT1 candle_cv_fso_variable_jobs_decode_def;
+       candle_cv_q_boxes_stack_decode_def;
+       cexp_fst_def;cexp_snd_def;injectivity "cval"]
+      decoded_logical_result in
+  if hyp run_theorem <> [] then
+    failwith "fixed outer reflected compact prover: result decode assumptions";
   candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-result-injectivity-end";
+    "variable-compact-reflected-result-decode-end";
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-analytic-soundness-begin";
   candle_q_dim_analytic_jet_profile_event

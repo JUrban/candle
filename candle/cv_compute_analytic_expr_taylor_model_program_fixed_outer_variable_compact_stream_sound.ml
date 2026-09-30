@@ -50,6 +50,55 @@ let candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_def =
             (FST (SND result)))
           (candle_cv_q_boxes_stack (SND (SND result))))`;;
 
+(* A left inverse for the logical result representation.  It is deliberately
+   total on raw cval data: malformed numeric list tails decode to empty lists,
+   exactly like the existing interval/job decoders.  We use it only after the
+   reflected/logical correspondence theorem has established that the computed
+   result is in the image of the logical encoder. *)
+let candle_cv_q_boxes_stack_decode_def = define
+ `(candle_cv_q_boxes_stack_decode (Cexp_num n) =
+     ([]:((((num#num)#num)#((num#num)#num))list)list)) /\
+  (candle_cv_q_boxes_stack_decode (Cexp_pair boxes stack) =
+     CONS (candle_cv_q_interval_list_decode boxes)
+       (candle_cv_q_boxes_stack_decode stack))`;;
+
+let candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_def =
+  new_definition
+   `candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode
+       encoded =
+      ((Cexp_fst encoded = Cexp_num 1),
+       (candle_cv_fso_variable_jobs_decode (Cexp_fst (Cexp_snd encoded)),
+        candle_cv_q_boxes_stack_decode (Cexp_snd (Cexp_snd encoded))))`;;
+
+let candle_cv_q_boxes_stack_decode_roundtrip = prove
+ (`!stack:((((num#num)#num)#((num#num)#num))list)list.
+     candle_cv_q_boxes_stack_decode (candle_cv_q_boxes_stack stack) = stack`,
+  LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC
+    [candle_cv_q_boxes_stack_decode_def;candle_cv_q_boxes_stack_def;
+     candle_cv_q_interval_list_roundtrip]);;
+
+let candle_cv_bool_decode_roundtrip = prove
+ (`!value.
+     (candle_cv_bool value = Cexp_num 1) = value`,
+  GEN_TAC THEN BOOL_CASES_TAC `value:bool` THEN
+  REWRITE_TAC[candle_cv_bool_def;injectivity "cval"] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_roundtrip =
+  prove
+   (`!result.
+       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode
+         (candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result
+           result) = result`,
+    REWRITE_TAC
+      [FORALL_PAIR_THM;
+       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_def;
+       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_def;
+       cexp_fst_def;cexp_snd_def;candle_cv_bool_decode_roundtrip;
+       candle_cv_fso_variable_jobs_decode_roundtrip;
+       candle_cv_q_boxes_stack_decode_roundtrip;FST;SND]);;
+
 let _ = print_endline "CANDLE_CV_COMPACT_STREAM_SOUND_PHASE join begin";;
 let candle_cv_q_boxes_compact_join_correct = prove
  (`!left right.
