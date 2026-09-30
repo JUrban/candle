@@ -133,6 +133,7 @@ def parse_completed_log(text: str, ready_marker: str) -> dict[str, object]:
     token_total = 0
     final_active_roots: int | None = None
     result: dict[str, object] | None = None
+    last_end_line: int | None = None
     result_line: int | None = None
     ok_line: int | None = None
     ready_line: int | None = None
@@ -177,6 +178,7 @@ def parse_completed_log(text: str, ready_marker: str) -> dict[str, object]:
             final_active_roots = active_roots
             next_index += 1
             pending = None
+            last_end_line = line_number
             continue
 
         fragment = _marker_fragment(line, result_marker)
@@ -190,13 +192,15 @@ def parse_completed_log(text: str, ready_marker: str) -> dict[str, object]:
             }
             result_line = line_number
 
-        if OK_MARKER in line:
-            if line.strip() != OK_MARKER or ok_line is not None:
+        fragment = _marker_fragment(line, OK_MARKER)
+        if fragment is not None:
+            if fragment != OK_MARKER or ok_line is not None:
                 raise ValueError(f"malformed or duplicate OK marker at line {line_number}")
             ok_line = line_number
 
-        if ready_marker in line:
-            if line.strip() != ready_marker or ready_line is not None:
+        fragment = _marker_fragment(line, ready_marker)
+        if fragment is not None:
+            if fragment != ready_marker or ready_line is not None:
                 raise ValueError(f"malformed or duplicate ready marker at line {line_number}")
             ready_line = line_number
 
@@ -218,8 +222,8 @@ def parse_completed_log(text: str, ready_marker: str) -> dict[str, object]:
     }
     if result != expected_result:
         raise ValueError("terminal theorem result mismatch")
-    if None in (result_line, ok_line, ready_line) or not (
-        result_line < ok_line < ready_line
+    if None in (last_end_line, result_line, ok_line, ready_line) or not (
+        last_end_line < result_line < ok_line < ready_line
     ):
         raise ValueError("terminal marker ordering mismatch")
     return {

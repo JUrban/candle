@@ -42,7 +42,7 @@ def complete_log() -> str:
         "assumptions=0 theorem_digest=8bb2c1bf3d1c1944d497c0da68b88207",
         "CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_STACK_COMPLETE_OK "
         "DEVELOPMENT_NON_RELEASE",
-        READY,
+        "# " + READY,
     ])
     return "\n".join(lines) + "\n"
 
@@ -71,6 +71,13 @@ class CompletedLogTest(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "terminal theorem result mismatch"):
             POSTFLIGHT.parse_completed_log(log, READY)
+
+    def test_rejects_result_before_last_segment(self) -> None:
+        lines = complete_log().splitlines()
+        result = lines.pop(-3)
+        lines.insert(-5, result)
+        with self.assertRaisesRegex(ValueError, "terminal marker ordering mismatch"):
+            POSTFLIGHT.parse_completed_log("\n".join(lines) + "\n", READY)
 
     def test_rejects_runtime_error(self) -> None:
         with self.assertRaisesRegex(ValueError, "error marker"):
