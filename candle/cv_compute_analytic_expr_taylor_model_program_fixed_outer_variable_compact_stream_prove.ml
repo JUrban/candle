@@ -143,14 +143,29 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
     AP_TERM
       `candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode`
       encoded_logical_result in
-  let run_theorem =
-    REWRITE_RULE
-      [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_roundtrip;
-       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_def;
-       CONJUNCT1 candle_cv_fso_variable_jobs_decode_def;
-       candle_cv_q_boxes_stack_decode_def;
-       cexp_fst_def;cexp_snd_def;injectivity "cval"]
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-result-decode-logical-begin";
+  let decoded_logical_left =
+    CONV_RULE
+      (LAND_CONV
+        (REWR_CONV
+          candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_roundtrip))
       decoded_logical_result in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-result-decode-logical-end";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-result-decode-concrete-begin";
+  let run_theorem =
+    CONV_RULE
+      (RAND_CONV
+        (REWRITE_CONV
+          [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_result_decode_def;
+           CONJUNCT1 candle_cv_fso_variable_jobs_decode_def;
+           candle_cv_q_boxes_stack_decode_def;
+           cexp_fst_def;cexp_snd_def;injectivity "cval"]))
+      decoded_logical_left in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-result-decode-concrete-end";
   if hyp run_theorem <> [] then
     failwith "fixed outer reflected compact prover: result decode assumptions";
   candle_q_dim_analytic_jet_profile_event
@@ -184,7 +199,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
     "variable-compact-reflected-soundness-instantiation-end";
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-soundness-match-begin";
-  let cell_theorem = MATCH_MP soundness premise in
+  let cell_theorem = MP soundness premise in
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-soundness-match-end";
   candle_q_dim_analytic_jet_profile_event
