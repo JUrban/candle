@@ -69,6 +69,7 @@ def main() -> int:
     parser.add_argument("--poll-seconds", type=float, default=0.05)
     parser.add_argument("--stop-key")
     parser.add_argument("--stop-text")
+    parser.add_argument("--start-text")
     parser.add_argument("--start-at-end", action="store_true")
     parser.add_argument("--wait-for-log-seconds", type=float, default=60.0)
     args = parser.parse_args()
@@ -89,6 +90,8 @@ def main() -> int:
     stop_seen = False
     skipped_leading_end_events = 0
     synchronized = not args.start_at_end
+    collecting = args.start_text is None
+    start_seen = collecting
 
     with args.log.open("r", encoding="utf-8", errors="replace") as log:
         if args.start_at_end:
@@ -99,6 +102,18 @@ def main() -> int:
             line = log.readline()
             now_ns = time.monotonic_ns()
             proc = proc_sample(args.pid, ticks)
+            if not collecting:
+                if line and args.start_text in line:
+                    collecting = True
+                    start_seen = True
+                    synchronized = True
+                    start_ns = now_ns
+                    start_log_offset = where
+                elif not line:
+                    if proc is None:
+                        break
+                    time.sleep(args.poll_seconds)
+                continue
             if proc is not None:
                 peak_rss_kib = max(peak_rss_kib, int(proc["rss_kib"]))
                 samples.append({
@@ -171,6 +186,8 @@ def main() -> int:
         "poll_seconds": args.poll_seconds,
         "stop_key": args.stop_key,
         "stop_text": args.stop_text,
+        "start_text": args.start_text,
+        "start_seen": start_seen,
         "stop_seen": stop_seen,
         "start_at_end": args.start_at_end,
         "start_log_offset": start_log_offset,
