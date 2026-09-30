@@ -67,21 +67,20 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
     "variable-compact-reflected-validation-end";
 
   candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-jobs-canonical-compute-begin";
-  let jobs_canonical_compute =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_fso_variable_raw_compute_eqs
-      (mk_comb (`candle_cv_fso_variable_jobs_canonical`,encoded_jobs)) in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-compact-reflected-jobs-canonical-compute-end";
-  if hyp jobs_canonical_compute <> [] ||
-     not (aconv (rand (concl jobs_canonical_compute)) encoded_jobs) then
-    failwith "fixed outer reflected compact prover: noncanonical jobs";
+    "variable-compact-reflected-jobs-representation-reuse-begin";
   let jobs_representation =
-    TRANS
-      (SYM
-        (SPEC encoded_jobs candle_cv_fso_variable_jobs_canonical_decode))
-      jobs_canonical_compute in
+    raw_result.variable_raw_representation_theorem in
+  let expected_jobs_representation =
+    mk_eq
+      (mk_comb
+        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs`,
+         decoded_jobs),
+       encoded_jobs) in
+  if hyp jobs_representation <> [] ||
+     not (aconv (concl jobs_representation) expected_jobs_representation) then
+    failwith "fixed outer reflected compact prover: job representation mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-jobs-representation-reuse-end";
 
   let reflected_call =
     list_mk_comb

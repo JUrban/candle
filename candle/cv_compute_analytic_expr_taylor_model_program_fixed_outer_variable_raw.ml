@@ -255,6 +255,21 @@ let candle_cv_fso_variable_raw_jobs_check_correct = prove
       [candle_cv_bool_and_def;candle_cv_bool_def;cexp_if_def]]);;
 
 let _ = print_endline "CANDLE_VARIABLE_RAW_PROOF checker-accept";;
+let candle_cv_fso_variable_raw_jobs_check_representation_accept = prove
+ (`!encoded source_e.
+     candle_cv_fso_variable_raw_jobs_check
+       (candle_cv_analytic_instruction_list
+         (candle_analytic_compile source_e)) encoded = Cexp_num 1
+     ==>
+     candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs
+       (candle_cv_fso_variable_jobs_decode encoded) = encoded`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC
+    [candle_cv_fso_variable_raw_jobs_check_correct;candle_cv_bool_def] THEN
+  COND_CASES_TAC THENL
+   [ASM_MESON_TAC[];
+    REWRITE_TAC[injectivity "cval"] THEN CONV_TAC NUM_REDUCE_CONV]);;
+
 let candle_cv_fso_variable_raw_jobs_check_accept = prove
  (`!encoded source_e.
      candle_cv_fso_variable_raw_jobs_check

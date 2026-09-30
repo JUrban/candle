@@ -20,6 +20,7 @@ type candle_q_dim_taylor_model_fixed_outer_variable_raw_result_six = {
   variable_raw_prepared_source : candle_q_dim_analytic_jet_prepared_six;
   variable_raw_encoded_jobs_term : term;
   variable_raw_decoded_jobs_term : term;
+  variable_raw_representation_theorem : thm;
   variable_raw_accept_theorem : thm;
 };;
 
@@ -88,6 +89,12 @@ let candle_q_dim_taylor_model_fixed_outer_variable_raw_prove_encoded_six
       (REFL `candle_cv_fso_variable_raw_jobs_check`)
       [source_program_encoding;REFL encoded_jobs] in
   let abstract_compute = TRANS call_encoding concrete_compute in
+  let representation_theorem =
+    MATCH_MP
+      (SPECL
+        [encoded_jobs;prepared.expression_term]
+        candle_cv_fso_variable_raw_jobs_check_representation_accept)
+      abstract_compute in
   let accept_theorem =
     MATCH_MP
       (SPECL
@@ -107,11 +114,21 @@ let candle_q_dim_taylor_model_fixed_outer_variable_raw_prove_encoded_six
              aconv actual_jobs decoded_jobs)
       | _ -> true) then
     failwith "fixed outer variable raw prover: acceptance mismatch";
+  let expected_representation =
+    mk_eq
+      (mk_comb
+        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs`,
+         decoded_jobs),
+       encoded_jobs) in
+  if hyp representation_theorem <> [] ||
+     not (aconv (concl representation_theorem) expected_representation) then
+    failwith "fixed outer variable raw prover: representation mismatch";
   candle_q_dim_analytic_jet_profile_event
     "variable-raw-certified-taylor-batch-handoff-end";
   {variable_raw_prepared_source = prepared;
    variable_raw_encoded_jobs_term = encoded_jobs;
    variable_raw_decoded_jobs_term = decoded_jobs;
+   variable_raw_representation_theorem = representation_theorem;
    variable_raw_accept_theorem = accept_theorem};;
 
 let candle_q_dim_taylor_model_fixed_outer_variable_raw_prove_six
