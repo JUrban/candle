@@ -115,6 +115,18 @@ def _single_hash_manifest(path: Path) -> dict[str, object]:
     return records[0]
 
 
+def _read_key_values(path: Path) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8", errors="strict").splitlines():
+        if not line or "=" not in line:
+            raise ValueError(f"malformed key/value line in {path}: {line!r}")
+        key, value = line.split("=", 1)
+        if not key or key in values:
+            raise ValueError(f"duplicate or empty key in {path}: {key!r}")
+        values[key] = value
+    return values
+
+
 def _marker_fragment(line: str, marker: str) -> str | None:
     where = line.find(marker)
     if where < 0:
@@ -246,21 +258,45 @@ def _validate_sealed_run(
         raise ValueError(f"run is not checkpoint-ready: {directory}")
     if (directory / "CHECKPOINT-FAILED").exists():
         raise ValueError(f"run has a checkpoint failure marker: {directory}")
-    receipt_text = (directory / "checkpoint-seal.receipt").read_text(
-        encoding="utf-8", errors="strict"
-    )
-    receipt = dict(
-        line.split("=", 1) for line in receipt_text.splitlines() if "=" in line
-    )
+    receipt_path = directory / "checkpoint-seal.receipt"
+    receipt = _read_key_values(receipt_path)
+    required_receipt = {
+        "input_ack", "ready_marker", "ack_line", "ready_line",
+        "checkpoint_sha256", "created_utc",
+    }
+    if set(receipt) != required_receipt:
+        raise ValueError(f"checkpoint seal receipt schema mismatch: {directory}")
     if receipt.get("ready_marker") != expected_ready_marker:
         raise ValueError(f"checkpoint ready-marker mismatch: {directory}")
     checkpoint = _single_hash_manifest(directory / "checkpoint.sha256")
     base_log = _single_hash_manifest(directory / "base-log.sha256")
+    if checkpoint["sha256"] != receipt["checkpoint_sha256"]:
+        raise ValueError(f"checkpoint seal hash mismatch: {directory}")
+    if Path(str(checkpoint["path"])).parent != (directory / "checkpoint").resolve():
+        raise ValueError(f"checkpoint manifest path mismatch: {directory}")
+    if Path(str(base_log["path"])) != (directory / "base.log").resolve():
+        raise ValueError(f"base-log manifest path mismatch: {directory}")
+    try:
+        ack_line = int(receipt["ack_line"])
+        ready_line = int(receipt["ready_line"])
+    except ValueError as error:
+        raise ValueError(f"invalid checkpoint seal line number: {directory}") from error
+    lines = (directory / "base.log").read_text(
+        encoding="utf-8", errors="strict"
+    ).splitlines()
+    if not (0 < ack_line < ready_line <= len(lines)):
+        raise ValueError(f"checkpoint seal line ordering mismatch: {directory}")
+    if _marker_fragment(lines[ack_line - 1], receipt["input_ack"]) != receipt["input_ack"]:
+        raise ValueError(f"checkpoint input acknowledgment mismatch: {directory}")
+    if _marker_fragment(lines[ready_line - 1], expected_ready_marker) != expected_ready_marker:
+        raise ValueError(f"checkpoint readiness output mismatch: {directory}")
     return {
         "directory": str(directory.resolve()),
         "checkpoint": checkpoint,
         "base_log": base_log,
-        "seal_receipt": _identity(directory / "checkpoint-seal.receipt"),
+        "seal_receipt": _identity(receipt_path),
+        "ack_line": ack_line,
+        "ready_line": ready_line,
         "fragments": _manifest_records(directory / "fragments.sha256"),
         "inputs": _manifest_records(directory / "input-files.sha256"),
     }
