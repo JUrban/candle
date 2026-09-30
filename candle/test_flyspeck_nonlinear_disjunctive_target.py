@@ -24,6 +24,12 @@ class NonlinearDisjunctiveTargetTest(unittest.TestCase):
         cls.published = json.loads(
             (ROOT / subject.OUTPUT).read_text(encoding="utf-8")
         )
+        cls.member_payload = subject.build_member_target(
+            FLYSPECK_ROOT, 16594,
+        )
+        cls.member_published = json.loads(
+            (ROOT / subject.CASE16594_OUTPUT).read_text(encoding="utf-8")
+        )
 
     def test_published_target_is_current(self) -> None:
         self.assertEqual(self.published, self.payload)
@@ -100,6 +106,29 @@ class NonlinearDisjunctiveTargetTest(unittest.TestCase):
         ):
             with self.assertRaisesRegex(ValueError, "evidence drifted"):
                 subject._verified_identity(FLYSPECK_ROOT, relative)
+
+    def test_second_member_target_is_current(self) -> None:
+        self.assertEqual(self.member_published, self.member_payload)
+
+    def test_second_member_is_authenticated_and_ranked(self) -> None:
+        target = self.member_payload["target"]
+        oracle = self.member_payload["native_oracle"]
+        self.assertEqual(target["global_case"], 16594)
+        self.assertEqual(target["local_case"], 264)
+        self.assertEqual(target["selection_rank"], 2)
+        self.assertIn("frac_right 5 #0.5000", target["legacy_ineqm_text"])
+        self.assertIn("frac_left 3 #0.5000", target["legacy_ineqm_text"])
+        self.assertEqual(oracle["formal_leaf_count"], 860)
+        self.assertEqual(oracle["formal_glue_count"], 859)
+        self.assertEqual(oracle["total_seconds"], 597.504859)
+        self.assertEqual(
+            oracle["legacy_theorem_digest"],
+            "8ce02c12fa6ed4358975401adbe8951b",
+        )
+
+    def test_unknown_member_fails_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "absent or ambiguous"):
+            subject.build_member_target(FLYSPECK_ROOT, 99999)
 
 
 if __name__ == "__main__":

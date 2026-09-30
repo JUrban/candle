@@ -21,6 +21,9 @@ import flyspeck_nonlinear_first_leaf_target as common
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = Path("candle/flyspeck_nonlinear_disjunctive_target.json")
+CASE16594_OUTPUT = Path(
+    "candle/flyspeck_nonlinear_disjunctive_case16594_target.json"
+)
 CASE_ID = "prep-8293089898"
 GLOBAL_CASE = 16479
 LOCAL_CASE = 149
@@ -430,6 +433,121 @@ def build_target(flyspeck_root: Path) -> dict[str, Any]:
     }
 
 
+def build_member_target(
+    flyspeck_root: Path, global_case: int,
+) -> dict[str, Any]:
+    """Pin one member after revalidating the complete family authority."""
+
+    flyspeck_root = flyspeck_root.resolve()
+    parent = build_target(flyspeck_root)
+    rows = _family_records(flyspeck_root)
+    selected_rows = [
+        row for row in rows if row["global_case"] == global_case
+    ]
+    if len(selected_rows) != 1:
+        raise ValueError("selected disjunctive member is absent or ambiguous")
+    selected = selected_rows[0]
+    label = selected["label"]
+
+    theorem_matches: list[re.Match[str]] = []
+    for relative in FAMILY_STDOUTS:
+        stdout = (flyspeck_root / relative).read_text(encoding="utf-8")
+        match = re.search(
+            rf"^Theorem  {re.escape(label)}: \|- (?P<theorem>.*?)\n"
+            rf"^Time  {re.escape(label)}: (?P<seconds>[0-9.]+)\n"
+            rf"^Hash  {re.escape(label)}: (?P<digest>[0-9a-f]{{32}})$",
+            stdout,
+            flags=re.DOTALL | re.MULTILINE,
+        )
+        if match is not None:
+            theorem_matches.append(match)
+    if len(theorem_matches) != 1:
+        raise ValueError("selected disjunctive theorem record is ambiguous")
+    theorem_match = theorem_matches[0]
+    theorem = theorem_match.group("theorem")
+    if (
+        Decimal(theorem_match.group("seconds")) != selected["seconds"]
+        or theorem_match.group("digest") != selected["digest"]
+        or not theorem.startswith("ineqm [x1; x2; x3; x4; x5; x6]")
+        or "x1_delta_x x1 x2 x3 x4 x5 x6 * &4" not in theorem
+        or "delta4_squared_x x1 x2 x3 x4 x5 x6 * --#0.833" not in theorem
+        or "rhazimatn_x x1 x2 x3 x4 x5 x6 * -- &1" not in theorem
+        or "rhazim2atn_x x1 x2 x3 x4 x5 x6 * -- &1" not in theorem
+        or "rhazim3atn_x x1 x2 x3 x4 x5 x6 * -- &1" not in theorem
+        or "unit6 x1 x2 x3 x4 x5 x6 * const1 * pi" not in theorem
+    ):
+        raise ValueError("selected disjunctive member interface drifted")
+
+    inventory = (flyspeck_root / AZURE_INEQS).read_text(encoding="utf-8")
+    inventory_prefix = f"{global_case}: {label}: "
+    inventory_lines = [
+        line for line in inventory.splitlines()
+        if line.startswith(inventory_prefix)
+    ]
+    if len(inventory_lines) != 1 or _remove_whitespace(
+        inventory_lines[0][len(inventory_prefix):]
+    ) != _remove_whitespace(theorem):
+        raise ValueError("selected member differs from the master inventory")
+
+    hashes = (flyspeck_root / AZURE_HASHES).read_text(encoding="utf-8")
+    hash_line = (
+        f"({CASE_ID},{selected['local_case']}): {selected['digest']}"
+    )
+    if hashes.splitlines().count(hash_line) != 1:
+        raise ValueError("selected member digest inventory has drifted")
+
+    ordered = sorted(
+        rows,
+        key=lambda row: (
+            row["formal_leaf_count"], row["seconds"], row["local_case"],
+        ),
+    )
+    selection_rank = ordered.index(selected) + 1
+    parent_bytes = (ROOT / OUTPUT).read_bytes()
+    expected_parent_bytes = (
+        json.dumps(parent, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    if parent_bytes != expected_parent_bytes:
+        raise ValueError("published disjunctive parent target has drifted")
+    return {
+        "schema": 1,
+        "kind": "candle-flyspeck-nonlinear-disjunctive-member-target",
+        "status": "development-non-release",
+        "claim": parent["claim"],
+        "flyspeck_commit": parent["flyspeck_commit"],
+        "closure": parent["closure"],
+        "evidence_files": parent["evidence_files"],
+        "family": parent["family"],
+        "parent_target": {
+            "path": OUTPUT.as_posix(),
+            "bytes": len(parent_bytes),
+            "sha256": hashlib.sha256(parent_bytes).hexdigest(),
+        },
+        "target": {
+            "id": CASE_ID,
+            "global_case": global_case,
+            "local_case": selected["local_case"],
+            "selection": (
+                f"rank {selection_rank} by formal leaf count, native time, "
+                "and local case"
+            ),
+            "selection_rank": selection_rank,
+            "legacy_ineqm_text": theorem,
+            "legacy_ineqm_text_sha256": _sha256_text(theorem),
+        },
+        "native_oracle": {
+            "precision": 6,
+            "epsilon": "1e-10",
+            "total_seconds": float(selected["seconds"]),
+            "legacy_theorem_digest": selected["digest"],
+            **{
+                key: value for key, value in selected.items()
+                if key.startswith("formal_")
+            },
+        },
+    }
+
+
 def _render(payload: dict[str, Any]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True) + "\n"
 
@@ -437,12 +555,23 @@ def _render(payload: dict[str, Any]) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--flyspeck-root", type=Path, required=True)
+    parser.add_argument("--global-case", type=int)
+    parser.add_argument("--output", type=Path)
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument("--write", action="store_true")
     action.add_argument("--check", action="store_true")
     arguments = parser.parse_args()
-    rendered = _render(build_target(arguments.flyspeck_root))
-    output = ROOT / OUTPUT
+    if arguments.global_case is None:
+        payload = build_target(arguments.flyspeck_root)
+        output = ROOT / (arguments.output or OUTPUT)
+    else:
+        if arguments.output is None:
+            raise SystemExit("--output is required with --global-case")
+        payload = build_member_target(
+            arguments.flyspeck_root, arguments.global_case,
+        )
+        output = ROOT / arguments.output
+    rendered = _render(payload)
     if arguments.write:
         output.write_text(rendered, encoding="utf-8")
     elif not output.is_file() or output.read_text(encoding="utf-8") != rendered:
