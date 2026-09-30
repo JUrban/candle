@@ -41,6 +41,13 @@ type candle_q_dim_taylor_model_fixed_outer_variable_compact_state_six = {
   variable_compact_state_pass_theorem : thm;
 };;
 
+type candle_q_dim_taylor_model_fixed_outer_variable_compact_transition_six = {
+  variable_compact_transition_remaining_jobs_term : term;
+  variable_compact_transition_remaining_jobs_accept_theorem : thm;
+  variable_compact_transition_state :
+    candle_q_dim_taylor_model_fixed_outer_variable_compact_state_six;
+};;
+
 (* The logical runner stays dimension-polymorphic.  This six-dimensional
    adapter supplies proved reductions for the small closed numeral guards so
    rewriting selects one branch at a time instead of expanding both sides of
@@ -99,7 +106,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_initial_six
    token segment.  Only the active root stack and its universal invariant
    survive the call; raw encodings, hint payloads, and batch theorems can be
    reclaimed before the next segment. *)
-let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
+let candle_q_dim_taylor_model_fixed_outer_variable_compact_transition_six
     (prepared:candle_q_dim_analytic_jet_prepared_six)
     state jobs jobs_accept_theorem tokens =
   candle_q_dim_analytic_jet_profile_event
@@ -155,7 +162,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
     "variable-compact-step-reduction-end";
   let success,payload = dest_pair (rand (concl run_theorem)) in
   let remaining,final_stack = dest_pair payload in
-  if not (aconv success `T`) || dest_list remaining <> [] then
+  if not (aconv success `T`) then
     failwith "fixed outer variable compact step: token segment rejected";
   let soundness =
     REWRITE_RULE
@@ -163,9 +170,7 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
       (ISPECL
         [tokens;prepared.expression_term;`ARB:real^6`;jobs;
          state.variable_compact_state_stack_term;
-         `[]:((((num#num)#num)#((num#num)#num))list#
-              ((((num#num)#num)#((num#num)#num))list#
-               (((num#num)#num)#((num#num)#num))list))list`;
+         remaining;
          final_stack]
         candle_q_dim_taylor_model_fixed_outer_variable_compact_run_sound) in
   let premise =
@@ -173,9 +178,25 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
       (CONJ jobs_accept_theorem
         (CONJ state.variable_compact_state_pass_theorem run_theorem)) in
   let conclusion = MATCH_MP soundness premise in
+  let remaining_accept_theorem = CONJUNCT1 conclusion in
   let stack_pass_theorem = CONJUNCT2 conclusion in
-  {variable_compact_state_stack_term = final_stack;
-   variable_compact_state_pass_theorem = stack_pass_theorem};;
+  {variable_compact_transition_remaining_jobs_term = remaining;
+   variable_compact_transition_remaining_jobs_accept_theorem =
+     remaining_accept_theorem;
+   variable_compact_transition_state =
+     {variable_compact_state_stack_term = final_stack;
+      variable_compact_state_pass_theorem = stack_pass_theorem}};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
+    (prepared:candle_q_dim_analytic_jet_prepared_six)
+    state jobs jobs_accept_theorem tokens =
+  let transition =
+    candle_q_dim_taylor_model_fixed_outer_variable_compact_transition_six
+      prepared state jobs jobs_accept_theorem tokens in
+  if dest_list
+       transition.variable_compact_transition_remaining_jobs_term <> [] then
+    failwith "fixed outer variable compact step: unconsumed jobs";
+  transition.variable_compact_transition_state;;
 
 let candle_q_dim_taylor_model_fixed_outer_variable_compact_finish_six
     (prepared:candle_q_dim_analytic_jet_prepared_six) state =

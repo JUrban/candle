@@ -71,7 +71,6 @@ let candle_disjunctive_case16594_compact_complete_prove_chunks
       let segment_items,after_segment =
         candle_disjunctive_case16594_compact_complete_take_token_segment
           count [] remaining_tokens in
-      let segment = mk_list (segment_items,token_type) in
       print_endline
         ("CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_COMPLETE_CHUNK" ^
          " event=begin index=" ^ string_of_int index ^
@@ -80,16 +79,52 @@ let candle_disjunctive_case16594_compact_complete_prove_chunks
       let raw =
         candle_q_dim_taylor_model_fixed_outer_variable_raw_prove_six
           prepared cells in
+      let pieces =
+        candle_disjunctive_case16594_compact_complete_split_chunks 2
+          segment_items in
+      let rec prove_segment piece_index piece_state remaining_jobs
+          remaining_jobs_accept = function
+        | [] ->
+            if dest_list remaining_jobs <> [] then
+              failwith
+                "case16594 compact stack: token segment left jobs unconsumed";
+            piece_state
+        | piece_items :: remaining_pieces ->
+            let piece = mk_list (piece_items,token_type) in
+            let transition =
+              candle_q_dim_taylor_model_fixed_outer_variable_compact_transition_six
+                prepared piece_state remaining_jobs remaining_jobs_accept
+                piece in
+            let after_jobs =
+              transition.variable_compact_transition_remaining_jobs_term in
+            let after_state =
+              transition.variable_compact_transition_state in
+            print_endline
+              ("CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_COMPLETE_PIECE" ^
+               " event=end chunk_index=" ^ string_of_int index ^
+               " piece_index=" ^ string_of_int piece_index ^
+               " token_items=" ^ string_of_int (length piece_items) ^
+               " remaining_jobs=" ^
+                 string_of_int
+                   (length (dest_list after_jobs)) ^
+               " active_roots=" ^
+                 string_of_int
+                   (length
+                     (dest_list after_state.variable_compact_state_stack_term)));
+            prove_segment (piece_index + 1)
+              after_state after_jobs
+              transition.variable_compact_transition_remaining_jobs_accept_theorem
+              remaining_pieces in
       let next_state =
-        candle_q_dim_taylor_model_fixed_outer_variable_compact_step_six
-          prepared state raw.variable_raw_decoded_jobs_term
-          raw.variable_raw_accept_theorem segment in
+        prove_segment 0 state raw.variable_raw_decoded_jobs_term
+          raw.variable_raw_accept_theorem pieces in
       print_endline
         ("CANDLE_CV_DISJUNCTIVE_CASE16594_COMPACT_COMPLETE_CHUNK" ^
          " event=end index=" ^ string_of_int index ^
          " total=" ^ string_of_int total ^
          " cells=" ^ string_of_int count ^
          " token_items=" ^ string_of_int (length segment_items) ^
+         " token_pieces=" ^ string_of_int (length pieces) ^
          " active_roots=" ^
            string_of_int
              (length
