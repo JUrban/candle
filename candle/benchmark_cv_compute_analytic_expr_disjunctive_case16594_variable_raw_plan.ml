@@ -45,8 +45,7 @@ let rec candle_disjunctive_case16594_variable_raw_shape_build
   | P_result_pass (_,function_index,raw_flag) ->
       if function_index <> 1 || raw_flag then
         failwith "case16594 variable raw plan: pass selection drift";
-      let leaf_index = !next_leaf in
-      next_leaf := leaf_index + 1;
+      let leaf_index = next_leaf in
       if List.mem leaf_index
            candle_disjunctive_case16594_variable_raw_split_leaves then
         let left_domain,right_domain =
@@ -55,21 +54,26 @@ let rec candle_disjunctive_case16594_variable_raw_shape_build
           (Candle_disjunctive_case16594_variable_raw_leaf
              (candle_disjunctive_case16594_variable_raw_cell left_domain),
            Candle_disjunctive_case16594_variable_raw_leaf
-             (candle_disjunctive_case16594_variable_raw_cell right_domain))
+             (candle_disjunctive_case16594_variable_raw_cell right_domain)),
+        leaf_index + 1
       else
         Candle_disjunctive_case16594_variable_raw_leaf
-          (candle_disjunctive_case16594_variable_raw_cell domain)
+          (candle_disjunctive_case16594_variable_raw_cell domain),
+        leaf_index + 1
   | P_result_glue (_,split_index,convex_flag,left,right) ->
       if convex_flag then
         failwith "case16594 variable raw plan: convex node";
       let axis = split_index + 1 in
       let left_domain,right_domain =
         M_verifier.split_domain 6 6 axis domain in
+      let left_shape,after_left =
+        candle_disjunctive_case16594_variable_raw_shape_build
+          next_leaf left_domain left in
+      let right_shape,after_right =
+        candle_disjunctive_case16594_variable_raw_shape_build
+          after_left right_domain right in
       Candle_disjunctive_case16594_variable_raw_node
-        (candle_disjunctive_case16594_variable_raw_shape_build
-           next_leaf left_domain left,
-         candle_disjunctive_case16594_variable_raw_shape_build
-           next_leaf right_domain right)
+        (left_shape,right_shape),after_right
   | P_result_mono _ ->
       failwith "case16594 variable raw plan: monotonicity node"
   | P_result_ref _ ->
@@ -94,16 +98,15 @@ let candle_disjunctive_case16594_variable_raw_plan_shape,
     candle_disjunctive_case16594_variable_raw_plan_cells =
   print_endline
     "CANDLE_CV_DISJUNCTIVE_CASE16594_VARIABLE_RAW_PLAN event=begin";
-  let next_leaf = ref 0 in
-  let shape =
+  let shape,next_leaf =
     candle_disjunctive_case16594_variable_raw_shape_build
-      next_leaf candle_disjunctive_case16594_root_domain
+      0 candle_disjunctive_case16594_root_domain
       candle_disjunctive_case16594_plan_precision_tree in
   let cells =
     candle_disjunctive_case16594_variable_raw_shape_cells shape in
   let leaf_count,node_count =
     candle_disjunctive_case16594_variable_raw_shape_counts shape in
-  if !next_leaf <> 860 || leaf_count <> 875 || node_count <> 874 ||
+  if next_leaf <> 860 || leaf_count <> 875 || node_count <> 874 ||
      length cells <> 875 then
     failwith "case16594 variable raw plan: shape mismatch";
   print_endline
