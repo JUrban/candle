@@ -159,12 +159,22 @@ let candle_q_dim_taylor_model_fixed_outer_variable_compact_reflected_source_six
     "variable-compact-reflected-analytic-soundness-begin";
   candle_q_dim_analytic_jet_profile_event
     "variable-compact-reflected-soundness-instantiation-begin";
-  let soundness =
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-soundness-dimension-specialization-begin";
+  let soundness_dimension =
     REWRITE_RULE
       [candle_q_dim_analytic_jet_dim_six]
       (ISPECL
-        [prepared.expression_term;`ARB:real^6`;tokens;decoded_jobs;root_boxes]
+        [prepared.expression_term;`ARB:real^6`]
         candle_q_dim_taylor_model_fixed_outer_variable_compact_sound) in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-soundness-dimension-specialization-end";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-soundness-data-instantiation-begin";
+  let soundness =
+    ISPECL [tokens;decoded_jobs;root_boxes] soundness_dimension in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-compact-reflected-soundness-data-instantiation-end";
   let premise =
     CONJ prepared.valid_theorem
       (CONJ raw_result.variable_raw_accept_theorem run_theorem) in
