@@ -1,0 +1,117 @@
+(* ========================================================================== *)
+(* Proof-producing adapter for the one-verdict complete certificate checker.  *)
+(*                                                                            *)
+(* Unlike the raw-batch adapter, this path never materializes a concrete       *)
+(* jobs_accept theorem.  Kernel.compute returns one compact numerical and      *)
+(* topology result, and the general complete_accept theorem performs the only *)
+(* logical handoff.                                                           *)
+(* ========================================================================== *)
+
+needs "candle/cv_compute_analytic_expr_stable_program_data.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound.ml";;
+
+module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_prove = struct
+
+open Candle_cv_analytic_expr_stable_program_data;;
+open Candle_cv_analytic_expr_jet_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound;;
+
+type candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_result_six = {
+  variable_complete_encoded_jobs_term : term;
+  variable_complete_encoded_stack_term : term;
+  variable_complete_compute_theorem : thm;
+  variable_complete_stack_theorem : thm;
+};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_six
+    prepared cells tokens encoded_tokens =
+  if cells = [] then
+    failwith "fixed outer complete checker: empty certificate";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-certificate-encoding-begin";
+  let encoded_jobs =
+    candle_q_dim_taylor_model_fixed_outer_variable_raw_encode_cells_six
+      cells in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-certificate-encoding-end";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-validation-begin";
+  let token_encoding =
+    REWRITE_CONV
+      [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_tokens_def;
+       candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_token_def]
+      (mk_comb
+        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_tokens`,
+         tokens)) in
+  if not (aconv (rand (concl token_encoding)) encoded_tokens) then
+    failwith "fixed outer complete checker: token encoding mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-validation-end";
+  let source_program_encoding =
+    TRANS
+      (AP_TERM `candle_cv_analytic_instruction_list`
+        prepared.compile_theorem)
+      prepared.program_representation in
+  let concrete_call =
+    list_mk_comb
+      (`candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check`,
+       [prepared.program_representation_term;`Cexp_num 6`;
+        encoded_tokens;encoded_jobs]) in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-compute-begin";
+  let concrete_compute =
+    candle_q_dim_analytic_jet_compute
+      candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs
+      concrete_call in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-compute-end";
+  let numerical,topology =
+    candle_q_dim_stable_program_dest_cval_pair
+      "complete reflected result" (rand (concl concrete_compute)) in
+  let topology_success,topology_payload =
+    candle_q_dim_stable_program_dest_cval_pair
+      "complete topology result" topology in
+  let remaining_jobs,final_stack =
+    candle_q_dim_stable_program_dest_cval_pair
+      "complete topology payload" topology_payload in
+  if hyp concrete_compute <> [] ||
+     not (aconv numerical `Cexp_num 1`) ||
+     not (aconv topology_success `Cexp_num 1`) ||
+     not (aconv remaining_jobs `Cexp_num 0`) then
+    failwith "fixed outer complete checker: certificate rejected";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-handoff-begin";
+  let call_encoding =
+    candle_q_dim_analytic_jet_congr_apps
+      (REFL
+        `candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check`)
+      [source_program_encoding;REFL `Cexp_num 6`;token_encoding;
+       REFL encoded_jobs] in
+  let abstract_compute = TRANS call_encoding concrete_compute in
+  let soundness =
+    REWRITE_RULE
+      [candle_q_dim_analytic_jet_dim_six]
+      (ISPECL
+        [prepared.expression_term;`ARB:real^6`;tokens;encoded_jobs;
+         final_stack]
+        candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_stack_accept) in
+  let premise = CONJ prepared.valid_theorem abstract_compute in
+  if not (aconv (fst (dest_imp (concl soundness))) (concl premise)) then
+    failwith "fixed outer complete checker: soundness premise mismatch";
+  let stack_theorem = MP soundness premise in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-handoff-end";
+  if hyp stack_theorem <> [] then
+    failwith "fixed outer complete checker: unexpected assumptions";
+  {variable_complete_encoded_jobs_term = encoded_jobs;
+   variable_complete_encoded_stack_term = final_stack;
+   variable_complete_compute_theorem = concrete_compute;
+   variable_complete_stack_theorem = stack_theorem};;
+
+print_endline
+  "CANDLE_CV_FIXED_OUTER_VARIABLE_COMPLETE_PROVE_OK DEVELOPMENT_NON_RELEASE";;
+
+end;;
