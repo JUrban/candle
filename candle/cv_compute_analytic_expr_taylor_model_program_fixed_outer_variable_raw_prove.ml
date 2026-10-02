@@ -4,6 +4,7 @@
 
 needs "candle/cv_compute_analytic_expr_stable_program_data.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_batch_prove.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove = struct
@@ -15,6 +16,7 @@ open Candle_cv_analytic_expr_stable_batch_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_batch_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support;;
 
 type candle_q_dim_taylor_model_fixed_outer_variable_raw_result_six = {
   variable_raw_prepared_source : candle_q_dim_analytic_jet_prepared_six;

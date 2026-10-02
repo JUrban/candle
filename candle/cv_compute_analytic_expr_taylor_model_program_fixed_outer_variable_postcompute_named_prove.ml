@@ -9,6 +9,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_postcompute_named_prove = struct
 
@@ -16,6 +17,7 @@ open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support;;
 
 type candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_result_six = {
   variable_postcompute_named_raw_result :
@@ -24,28 +26,24 @@ type candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_result_six
   variable_postcompute_named_jobs_definition : thm;
 };;
 
-let candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_prove_encoded_six
-    prepared requested_named_jobs encoded_jobs =
+let candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_handoff_computed_six
+    prepared requested_named_jobs encoded_jobs concrete_compute =
   if not (type_of requested_named_jobs = `:cval`) then
     failwith "fixed outer postcompute named prover: expected cval name";
+  let concrete_call =
+    list_mk_comb
+      (`candle_cv_fso_variable_raw_jobs_check`,
+       [prepared.program_representation_term;encoded_jobs]) in
+  let expected_concrete_compute =
+    mk_eq (concrete_call,`Cexp_num 1`) in
+  if hyp concrete_compute <> [] ||
+     not (aconv (concl concrete_compute) expected_concrete_compute) then
+    failwith "fixed outer postcompute named prover: computed theorem mismatch";
   let source_program_encoding =
     TRANS
       (AP_TERM `candle_cv_analytic_instruction_list`
         prepared.compile_theorem)
       prepared.program_representation in
-  let concrete_call =
-    list_mk_comb
-      (`candle_cv_fso_variable_raw_jobs_check`,
-       [prepared.program_representation_term;encoded_jobs]) in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-postcompute-named-batch-compute-begin";
-  let concrete_compute =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_fso_variable_raw_compute_eqs concrete_call in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-postcompute-named-batch-compute-end";
-  if not (aconv (rand (concl concrete_compute)) `Cexp_num 1`) then
-    failwith "fixed outer postcompute named prover: raw batch rejected";
   candle_q_dim_analytic_jet_profile_event
     "variable-postcompute-named-definition-begin";
   let jobs_definition =
@@ -100,6 +98,22 @@ let candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_prove_encod
       variable_raw_accept_theorem = accept_theorem};
    variable_postcompute_named_compute_encoded_jobs_term = encoded_jobs;
    variable_postcompute_named_jobs_definition = jobs_definition};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_prove_encoded_six
+    prepared requested_named_jobs encoded_jobs =
+  let concrete_call =
+    list_mk_comb
+      (`candle_cv_fso_variable_raw_jobs_check`,
+       [prepared.program_representation_term;encoded_jobs]) in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-postcompute-named-batch-compute-begin";
+  let concrete_compute =
+    candle_q_dim_analytic_jet_compute
+      candle_cv_fso_variable_raw_compute_eqs concrete_call in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-postcompute-named-batch-compute-end";
+  candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_handoff_computed_six
+    prepared requested_named_jobs encoded_jobs concrete_compute;;
 
 let candle_q_dim_taylor_model_fixed_outer_variable_postcompute_named_prove_six
     prepared requested_named_jobs cells =
