@@ -6,7 +6,7 @@
 (* replaces the recursively constructed per-node well-formedness proof.      *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_algebraic_sound.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_tree_compact_prove = struct
@@ -17,6 +17,7 @@ open Candle_cv_analytic_expr_taylor_model_tree;;
 open Candle_cv_analytic_expr_taylor_model_tree_compact;;
 open Candle_cv_analytic_expr_taylor_model_tree_compact_correct;;
 open Candle_cv_analytic_expr_taylor_model_tree_compact_sound;;
+open Candle_cv_analytic_expr_taylor_model_tree_compact_algebraic_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove;;
 
 let candle_q_dim_taylor_model_tree_compact_prove_profile =

@@ -9,6 +9,7 @@
 
 needs "candle/cv_compute_analytic_expr_stable_program_data.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_prove = struct
@@ -16,6 +17,7 @@ module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complet
 open Candle_cv_analytic_expr_stable_program_data;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound;;
 
@@ -26,48 +28,38 @@ type candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_result_six = 
   variable_complete_stack_theorem : thm;
 };;
 
-let candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_six
-    prepared cells tokens encoded_tokens =
-  if cells = [] then
-    failwith "fixed outer complete checker: empty certificate";
-  candle_q_dim_analytic_jet_profile_event
-    "variable-complete-certificate-encoding-begin";
-  let encoded_jobs =
-    candle_q_dim_taylor_model_fixed_outer_variable_raw_encode_cells_six
-      cells in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-complete-certificate-encoding-end";
+let candle_q_dim_taylor_model_fixed_outer_variable_complete_token_encoding
+    tokens encoded_tokens =
   candle_q_dim_analytic_jet_profile_event
     "variable-complete-validation-begin";
+  let token_call =
+    mk_comb
+      (`candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_tokens`,
+       tokens) in
   let token_encoding =
     REWRITE_CONV
       [candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_tokens_def;
        candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_token_def]
-      (mk_comb
-        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_tokens`,
-         tokens)) in
-  if not (aconv (rand (concl token_encoding)) encoded_tokens) then
+      token_call in
+  if hyp token_encoding <> [] ||
+     not (aconv (lhand (concl token_encoding)) token_call) ||
+     not (aconv (rand (concl token_encoding)) encoded_tokens) then
     failwith "fixed outer complete checker: token encoding mismatch";
   candle_q_dim_analytic_jet_profile_event
     "variable-complete-validation-end";
-  let source_program_encoding =
-    TRANS
-      (AP_TERM `candle_cv_analytic_instruction_list`
-        prepared.compile_theorem)
-      prepared.program_representation in
+  token_encoding;;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_complete_handoff_with_encoding_six
+    prepared tokens encoded_tokens encoded_jobs token_encoding
+    concrete_compute =
+  if aconv encoded_tokens `Cexp_num 0` ||
+     aconv encoded_jobs `Cexp_num 0` then
+    failwith "fixed outer complete checker: empty certificate";
   let concrete_call =
     list_mk_comb
       (`candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check`,
        [prepared.program_representation_term;`Cexp_num 6`;
         encoded_tokens;encoded_jobs]) in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-complete-compute-begin";
-  let concrete_compute =
-    candle_q_dim_analytic_jet_compute
-      candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs
-      concrete_call in
-  candle_q_dim_analytic_jet_profile_event
-    "variable-complete-compute-end";
   let numerical,topology =
     candle_q_dim_stable_program_dest_cval_pair
       "complete reflected result" (rand (concl concrete_compute)) in
@@ -78,10 +70,16 @@ let candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_six
     candle_q_dim_stable_program_dest_cval_pair
       "complete topology payload" topology_payload in
   if hyp concrete_compute <> [] ||
+     not (aconv (lhand (concl concrete_compute)) concrete_call) ||
      not (aconv numerical `Cexp_num 1`) ||
      not (aconv topology_success `Cexp_num 1`) ||
      not (aconv remaining_jobs `Cexp_num 0`) then
     failwith "fixed outer complete checker: certificate rejected";
+  let source_program_encoding =
+    TRANS
+      (AP_TERM `candle_cv_analytic_instruction_list`
+        prepared.compile_theorem)
+      prepared.program_representation in
   candle_q_dim_analytic_jet_profile_event
     "variable-complete-handoff-begin";
   let call_encoding =
@@ -110,6 +108,46 @@ let candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_six
    variable_complete_encoded_stack_term = final_stack;
    variable_complete_compute_theorem = concrete_compute;
    variable_complete_stack_theorem = stack_theorem};;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_complete_handoff_computed_stack_six
+    prepared tokens encoded_tokens encoded_jobs concrete_compute =
+  let token_encoding =
+    candle_q_dim_taylor_model_fixed_outer_variable_complete_token_encoding
+      tokens encoded_tokens in
+  candle_q_dim_taylor_model_fixed_outer_variable_complete_handoff_with_encoding_six
+    prepared tokens encoded_tokens encoded_jobs token_encoding
+    concrete_compute;;
+
+let candle_q_dim_taylor_model_fixed_outer_variable_complete_stack_six
+    prepared cells tokens encoded_tokens =
+  if cells = [] then
+    failwith "fixed outer complete checker: empty certificate";
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-certificate-encoding-begin";
+  let encoded_jobs =
+    candle_q_dim_taylor_model_fixed_outer_variable_raw_encode_cells_six
+      cells in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-certificate-encoding-end";
+  let token_encoding =
+    candle_q_dim_taylor_model_fixed_outer_variable_complete_token_encoding
+      tokens encoded_tokens in
+  let concrete_call =
+    list_mk_comb
+      (`candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check`,
+       [prepared.program_representation_term;`Cexp_num 6`;
+        encoded_tokens;encoded_jobs]) in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-compute-begin";
+  let concrete_compute =
+    candle_q_dim_analytic_jet_compute
+      (candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs ())
+      concrete_call in
+  candle_q_dim_analytic_jet_profile_event
+    "variable-complete-compute-end";
+  candle_q_dim_taylor_model_fixed_outer_variable_complete_handoff_with_encoding_six
+    prepared tokens encoded_tokens encoded_jobs token_encoding
+    concrete_compute;;
 
 print_endline
   "CANDLE_CV_FIXED_OUTER_VARIABLE_COMPLETE_PROVE_OK DEVELOPMENT_NON_RELEASE";;

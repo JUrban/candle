@@ -8,33 +8,19 @@
 (* or combine a concrete jobs_accept theorem.                                 *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_sound.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound = struct
 
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw;;
-open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_representation_support;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stack_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_sound;;
-
-let candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check_def =
-  new_definition
-   `candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check
-        source_program tree_dim tokens encoded_jobs =
-      Cexp_pair
-        (candle_cv_fso_variable_raw_jobs_check source_program encoded_jobs)
-        (candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_run
-          tree_dim tokens encoded_jobs (Cexp_num 0))`;;
-
-let candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs =
-  union candle_cv_fso_variable_raw_compute_eqs
-    (union
-      candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_compute_eqs
-      [SPEC_ALL
-        candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check_def]);;
 
 let _ = print_endline "CANDLE_CV_COMPLETE_SOUND_PHASE components begin";;
 let candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_components =

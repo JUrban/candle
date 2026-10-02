@@ -10,6 +10,7 @@
 
 needs "candle/cv_compute_analytic_expr_taylor_model_tree.ml";;
 needs "candle/cv_compute_whole_box_dim_taylor.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_compute.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_tree_compact = struct
 
@@ -18,6 +19,13 @@ open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_certified_compute;;
 open Candle_cv_analytic_expr_taylor_model_tree;;
+open Candle_cv_analytic_expr_taylor_model_tree_compact_compute;;
+
+(* Preserve the original module-qualified API after moving the reflected
+   definition into the compute-only support unit. *)
+let candle_cv_q_boxes_split_exact_from_def =
+  Candle_cv_analytic_expr_taylor_model_tree_compact_compute.
+    candle_cv_q_boxes_split_exact_from_def;;
 
 (* This relation is deliberately stronger than equality of represented real
    endpoints: it requires exact equality of the rational certificate data.
@@ -72,35 +80,6 @@ let candle_cv_q_dim_taylor_model_tree_topology_def = define
          (Cexp_pair
            (candle_cv_q_dim_taylor_model_tree_topology left)
            (candle_cv_q_dim_taylor_model_tree_topology right))))`;;
-
-let candle_cv_q_boxes_split_exact_from_def = define
- `(candle_cv_q_boxes_split_exact_from current axis (Cexp_num n) left right =
-     Cexp_if (Cexp_eq (Cexp_num n) (Cexp_num 0))
-       (candle_cv_bool_and
-         (Cexp_eq left (Cexp_num 0))
-         (Cexp_eq right (Cexp_num 0)))
-       (Cexp_num 0)) /\
-  (candle_cv_q_boxes_split_exact_from current axis
-      (Cexp_pair root_value remaining_values) left right =
-     Cexp_if (Cexp_ispair left)
-       (Cexp_if (Cexp_ispair right)
-         (candle_cv_bool_and
-           (Cexp_if (Cexp_eq current axis)
-             (candle_cv_bool_and
-               (Cexp_eq (Cexp_fst (Cexp_fst left)) (Cexp_fst root_value))
-               (candle_cv_bool_and
-                 (Cexp_eq (Cexp_snd (Cexp_fst right))
-                   (Cexp_snd root_value))
-                 (Cexp_eq (Cexp_snd (Cexp_fst left))
-                   (Cexp_fst (Cexp_fst right)))))
-             (candle_cv_bool_and
-               (Cexp_eq (Cexp_fst left) root_value)
-               (Cexp_eq (Cexp_fst right) root_value)))
-           (candle_cv_q_boxes_split_exact_from
-             (Cexp_add current (Cexp_num 1)) axis remaining_values
-             (Cexp_snd left) (Cexp_snd right)))
-         (Cexp_num 0))
-       (Cexp_num 0))`;;
 
 (* Nested constructor patterns make both recursive calls structurally smaller
    than the input tree, while malformed cval shapes are rejected. *)

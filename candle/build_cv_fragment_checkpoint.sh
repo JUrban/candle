@@ -12,8 +12,16 @@ run_dir=$2
 ready_marker=$3
 shift 3
 fragments=("$@")
+input_relocation_from=${CANDLE_FRAGMENT_INPUT_RELOCATION_FROM:-}
+input_relocation_to=${CANDLE_FRAGMENT_INPUT_RELOCATION_TO:-}
 marker_id=$(printf '%s' "$ready_marker" | sha256sum | awk '{print substr($1,1,16)}')
 input_ack="CANDLE_CV_FRAGMENT_CHECKPOINT_INPUT_ACK_${marker_id}"
+
+if [[ -n "$input_relocation_from" || -n "$input_relocation_to" ]]; then
+  [[ -n "$input_relocation_from" && -n "$input_relocation_to" ]]
+  [[ "$input_relocation_from" = /* && "$input_relocation_to" = /* ]]
+  [[ -d "$input_relocation_to" ]]
+fi
 
 [[ -f "$base_dir/CHECKPOINT-READY" ]]
 [[ ! -f "$base_dir/CHECKPOINT-FAILED" ]]
@@ -31,7 +39,13 @@ while read -r expected path; do
     if [[ "$path" == "$fragment" ]]; then overlaid=1; break; fi
   done
   if [[ "$overlaid" -eq 0 ]]; then
-    printf '%s  %s\n' "$expected" "$path" | sha256sum -c -
+    resolved_path=$path
+    if [[ -n "$input_relocation_from" &&
+          "$path" == "$input_relocation_from"/* ]]; then
+      relocated_path="$input_relocation_to/${path#"$input_relocation_from"/}"
+      if [[ -f "$relocated_path" ]]; then resolved_path=$relocated_path; fi
+    fi
+    printf '%s  %s\n' "$expected" "$resolved_path" | sha256sum -c -
   fi
 done <"$base_dir/input-files.sha256"
 

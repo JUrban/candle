@@ -9,6 +9,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_whole_box_taylor.ml";;
+needs "candle/cv_compute_cval_list.ml";;
 
 module Candle_cv_whole_box_dim_taylor = struct
 
@@ -19,6 +20,15 @@ open Candle_cv_exact_rational_order_core;;
 open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_whole_box_taylor;;
+open Candle_cv_cval_list;;
+
+(* Preserve the original module-qualified API after moving the executable
+   primitive into its smaller shared support unit. *)
+let candle_cv_list_length_def =
+  Candle_cv_cval_list.candle_cv_list_length_def;;
+
+let candle_cv_list_length_compute =
+  Candle_cv_cval_list.candle_cv_list_length_compute;;
 
 (* Ordinary exact-data algorithm. *)
 
@@ -203,11 +213,6 @@ let candle_cv_q_dim_whole_box_upper_def = new_definition
         (candle_cv_q_center_environment_list boxes) pds)
       (candle_cv_q_program_interval_matrix boxes pdds)`;;
 
-let candle_cv_list_length_def = define
- `(candle_cv_list_length (Cexp_num n) = Cexp_num 0) /\
-  (candle_cv_list_length (Cexp_pair h t) =
-     Cexp_add (Cexp_num 1) (candle_cv_list_length t))`;;
-
 let candle_cv_q_box_valid_list_def = define
  `(candle_cv_q_box_valid_list (Cexp_num n) = Cexp_num 1) /\
   (candle_cv_q_box_valid_list (Cexp_pair h t) =
@@ -338,18 +343,6 @@ let candle_cv_q_weighted_rows_abs_upper_compute = prove
   STRUCT_CASES_TAC (SPEC `row_lists:cval` (cases "cval")) THEN
   REWRITE_TAC[candle_cv_q_weighted_rows_abs_upper_def;
               cexp_if_def; cexp_ispair_def; cexp_fst_def; cexp_snd_def]);;
-
-let candle_cv_list_length_compute = prove
- (`!items.
-     candle_cv_list_length items =
-     Cexp_if (Cexp_ispair items)
-       (Cexp_add (Cexp_num 1)
-         (candle_cv_list_length (Cexp_snd items)))
-       (Cexp_num 0)`,
-  GEN_TAC THEN
-  STRUCT_CASES_TAC (SPEC `items:cval` (cases "cval")) THEN
-  REWRITE_TAC[candle_cv_list_length_def;
-              cexp_if_def; cexp_ispair_def; cexp_snd_def]);;
 
 let candle_cv_q_box_valid_list_compute = prove
  (`!boxes.

@@ -1,13 +1,13 @@
 (* Setup/compile discriminator for the complete nonlinear equation bundle. *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute.ml";;
 needs "candle/cv_compute_equation_slice.ml";;
 
 module Test_cv_compute_equation_slice_complete_control = struct
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_compute;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_compute;;
-open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute;;
 open Candle_cv_compute_equation_slice;;
 
 let candle_cv_compute_slice_control_profile phase event =
@@ -26,7 +26,7 @@ let _ =
   let topology_equations =
     candle_cv_q_dim_taylor_model_fixed_outer_variable_compact_compute_eqs in
   let complete_equations =
-    candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs in
+    candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_compute_eqs () in
   let sliced_equations =
     candle_cv_compute_equation_slice
       complete_equations candle_cv_compute_slice_control_call in

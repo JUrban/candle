@@ -8,14 +8,13 @@
 (* theorem.                                                                    *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stack_sound.ml";;
+needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_compute.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stream_compute = struct
 
 open Candle_cv_analytic_expr_program_compute;;
-open Candle_cv_analytic_expr_taylor_model_tree_compact;;
-open Candle_cv_analytic_expr_taylor_model_tree_compact_correct;;
-open Candle_cv_whole_box_dim_taylor;;
+open Candle_cv_cval_list;;
+open Candle_cv_analytic_expr_taylor_model_tree_compact_compute;;
 
 (* Join the encoded interval lists for two sibling boxes.  The parent lower
    endpoint comes from the left child and its upper endpoint from the right.
