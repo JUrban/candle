@@ -7,10 +7,18 @@ if [[ $# -lt 3 ]]; then
 fi
 
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-real-functions-checkpoint-v1}
+input_relocation_from=${CANDLE_FRAGMENT_INPUT_RELOCATION_FROM:-}
+input_relocation_to=${CANDLE_FRAGMENT_INPUT_RELOCATION_TO:-}
 output_dir=$1
 expected_marker=$2
 shift 2
 fragments=("$@")
+
+if [[ -n "$input_relocation_from" || -n "$input_relocation_to" ]]; then
+  [[ -n "$input_relocation_from" && -n "$input_relocation_to" ]]
+  [[ "$input_relocation_from" = /* && "$input_relocation_to" = /* ]]
+  [[ -d "$input_relocation_to" ]]
+fi
 
 [[ -f "$base_dir/CHECKPOINT-READY" ]]
 [[ ! -f "$base_dir/CHECKPOINT-FAILED" ]]
@@ -38,13 +46,22 @@ mapfile -t checkpoints < <(
 [[ ${#checkpoints[@]} -eq 1 ]]
 sha256sum -c "$base_dir/checkpoint.sha256"
 sha256sum -c "$base_dir/base-log.sha256"
+: >"$output_dir/input-files.resolved.tsv"
 while read -r expected path; do
   overlaid=0
   for fragment in "${fragments[@]}"; do
     if [[ "$path" == "$fragment" ]]; then overlaid=1; break; fi
   done
   if [[ "$overlaid" -eq 0 ]]; then
-    printf '%s  %s\n' "$expected" "$path" | sha256sum -c -
+    resolved_path=$path
+    if [[ -n "$input_relocation_from" &&
+          "$path" == "$input_relocation_from"/* ]]; then
+      relocated_path="$input_relocation_to/${path#"$input_relocation_from"/}"
+      if [[ -f "$relocated_path" ]]; then resolved_path=$relocated_path; fi
+    fi
+    printf '%s  %s\n' "$expected" "$resolved_path" | sha256sum -c -
+    printf '%s\t%s\t%s\n' "$expected" "$path" "$resolved_path" \
+      >>"$output_dir/input-files.resolved.tsv"
   fi
 done <"$base_dir/input-files.sha256"
 
@@ -163,5 +180,6 @@ printf 'nonce=%s\nfragment_set_sha256=%s\nack_line=%s\nmarker_line=%s\ncompleted
   "$input_nonce" "$fragment_set_sha256" "$ack_line" "$marker_line" \
   "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >"$output_dir/input-ack.receipt"
 sha256sum "$output_dir/fragments.sha256" "$output_dir/stdin.ml" \
-  "$output_dir/candle.log" >"$output_dir/result-files.sha256"
+  "$output_dir/input-files.resolved.tsv" "$output_dir/candle.log" \
+  >"$output_dir/result-files.sha256"
 printf '%s\n' 'CANDLE_REAL_FUNCTIONS_FRAGMENT_RESTART_OK'
