@@ -18,6 +18,7 @@ open Candle_cv_analytic_expr_disjunctive_case16594_family_prove;;
 open Candle_cv_analytic_expr_disjunctive_family_engine;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_compute;;
+open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_variable_raw_plan;;
 open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_variable_axis_plan;;
 
 type candle_disjunctive_case16594_complete_full_token_data =
@@ -30,14 +31,13 @@ type candle_disjunctive_case16594_complete_full_task =
   | Candle_disjunctive_case16594_complete_full_emit_glue of int;;
 
 let rec candle_disjunctive_case16594_complete_full_traverse
-    tasks reversed_cells reversed_tokens leaf_count glue_count =
+    tasks reversed_tokens leaf_count glue_count =
   match tasks with
-  | [] -> rev reversed_cells,rev reversed_tokens,leaf_count,glue_count
+  | [] -> rev reversed_tokens,leaf_count,glue_count
   | Candle_disjunctive_case16594_complete_full_visit shape :: remaining ->
       (match shape with
-       | Candle_disjunctive_case16594_variable_axis_leaf cell ->
+       | Candle_disjunctive_case16594_variable_axis_leaf _ ->
            candle_disjunctive_case16594_complete_full_traverse remaining
-             (cell :: reversed_cells)
              (Candle_disjunctive_case16594_complete_full_leaf ::
                reversed_tokens)
              (leaf_count + 1) glue_count
@@ -47,10 +47,9 @@ let rec candle_disjunctive_case16594_complete_full_traverse
               Candle_disjunctive_case16594_complete_full_visit right ::
               Candle_disjunctive_case16594_complete_full_emit_glue axis ::
               remaining)
-             reversed_cells reversed_tokens leaf_count glue_count)
+             reversed_tokens leaf_count glue_count)
   | Candle_disjunctive_case16594_complete_full_emit_glue axis :: remaining ->
       candle_disjunctive_case16594_complete_full_traverse remaining
-        reversed_cells
         (Candle_disjunctive_case16594_complete_full_glue axis ::
           reversed_tokens)
         leaf_count (glue_count + 1);;
@@ -71,8 +70,6 @@ let rec candle_disjunctive_case16594_complete_full_stack_length encoded =
 
 type candle_disjunctive_case16594_complete_full_capture = {
   complete_full_prepared : candle_q_dim_analytic_jet_prepared_six;
-  complete_full_token_data :
-    candle_disjunctive_case16594_complete_full_token_data list;
   complete_full_encoded_tokens : term;
   complete_full_encoded_jobs : term;
   complete_full_compute_theorem : thm;
@@ -93,26 +90,47 @@ let _ =
     "complete-full-precomputed-preparation-begin";
   let prepared =
     candle_disjunctive_case16594_engine_state.family_engine_prepared in
-  let cells,token_data,leaf_count,glue_count =
-    candle_disjunctive_case16594_complete_full_traverse
-      [Candle_disjunctive_case16594_complete_full_visit
-        (candle_disjunctive_case16594_variable_axis_plan ())]
-      [] [] 0 0 in
-  if leaf_count <> 875 || glue_count <> 874 || length cells <> 875 ||
-     length token_data <> 1749 then
-    failwith "case16594 complete full capture: plan shape mismatch";
-  let encoded_tokens =
-    candle_q_dim_stable_program_cval_list
-      (map candle_disjunctive_case16594_complete_full_encode_token
-        token_data) in
+  let cells = candle_disjunctive_case16594_variable_raw_plan_cells in
+  if length cells <> 875 then
+    failwith "case16594 complete full capture: cell plan shape mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "complete-full-precomputed-job-encoding-begin";
   let encoded_jobs =
     candle_q_dim_taylor_model_fixed_outer_variable_raw_encode_cells_six
       cells in
+  candle_q_dim_analytic_jet_profile_event
+    "complete-full-precomputed-job-encoding-end";
+  candle_q_dim_analytic_jet_profile_event
+    "complete-full-precomputed-plan-traversal-begin";
+  let encoded_tokens =
+    let token_data,leaf_count,glue_count =
+      candle_disjunctive_case16594_complete_full_traverse
+        [Candle_disjunctive_case16594_complete_full_visit
+          (candle_disjunctive_case16594_variable_axis_plan ())]
+        [] 0 0 in
+    if leaf_count <> 875 || glue_count <> 874 ||
+       length token_data <> 1749 then
+      failwith "case16594 complete full capture: token plan shape mismatch";
+    candle_q_dim_analytic_jet_profile_event
+      "complete-full-precomputed-plan-traversal-end";
+    candle_q_dim_analytic_jet_profile_event
+      "complete-full-precomputed-token-encoding-begin";
+    let encoded =
+      candle_q_dim_stable_program_cval_list
+        (map candle_disjunctive_case16594_complete_full_encode_token
+          token_data) in
+    candle_q_dim_analytic_jet_profile_event
+      "complete-full-precomputed-token-encoding-end";
+    encoded in
+  candle_q_dim_analytic_jet_profile_event
+    "complete-full-precomputed-call-construction-begin";
   let call =
     list_mk_comb
       (`candle_cv_q_dim_taylor_model_fixed_outer_variable_complete_check`,
        [prepared.program_representation_term;`Cexp_num 6`;
         encoded_tokens;encoded_jobs]) in
+  candle_q_dim_analytic_jet_profile_event
+    "complete-full-precomputed-call-construction-end";
   candle_q_dim_analytic_jet_profile_event
     "complete-full-precomputed-preparation-end";
   candle_q_dim_analytic_jet_profile_event
@@ -143,7 +161,6 @@ let _ =
   candle_disjunctive_case16594_complete_full_slot :=
     Some
       ({complete_full_prepared = prepared;
-        complete_full_token_data = token_data;
         complete_full_encoded_tokens = encoded_tokens;
         complete_full_encoded_jobs = encoded_jobs;
         complete_full_compute_theorem = theorem});

@@ -15,6 +15,7 @@ open Candle_cv_analytic_expr_disjunctive_case16594_plan;;
 open Candle_cv_analytic_expr_disjunctive_case16594_family_prove;;
 open Candle_cv_analytic_expr_disjunctive_family_engine;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_root_prove;;
+open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_variable_axis_plan;;
 open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_complete_full_precomputed_capture;;
 
 let candle_disjunctive_case16594_complete_full_logical_token = function
@@ -30,9 +31,16 @@ let _ =
   let captured = candle_disjunctive_case16594_complete_full_precomputed () in
   let leaf =
     `Candle_q_dim_taylor_model_fixed_outer_variable_compact_leaf` in
+  let token_data,leaf_count,glue_count =
+    candle_disjunctive_case16594_complete_full_traverse
+      [Candle_disjunctive_case16594_complete_full_visit
+        (candle_disjunctive_case16594_variable_axis_plan ())]
+      [] 0 0 in
+  if leaf_count <> 875 || glue_count <> 874 || length token_data <> 1749 then
+    failwith "case16594 complete full handoff: token plan shape mismatch";
   let token_items =
     map candle_disjunctive_case16594_complete_full_logical_token
-      captured.complete_full_token_data in
+      token_data in
   let tokens = mk_list (token_items,type_of leaf) in
   candle_q_dim_analytic_jet_profile_event
     "complete-full-precomputed-theorem-handoff-begin";
