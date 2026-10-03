@@ -482,4 +482,197 @@ let candle_fsn_sqrt_jet_components = prove
         candle_fsn_sqrt_hessian_contains) THEN
     ASM_REWRITE_TAC[]]);;
 
+let candle_fsn_atn_value_contains = prove
+ (`!fixed_interval x.
+     candle_fsn_atn_domain fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_of_q
+             (candle_q_interval_atn_range
+               (candle_fs_interval_to_q fixed_interval)))
+           (atn x)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_atn_domain_def; LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_interval_atn_range_sound THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_atn_d_contains = prove
+ (`!fixed_interval x.
+     candle_fsn_atn_domain fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fsn_atn_d_fixed fixed_interval)
+           (inv (&1 + x * x))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_atn_domain_def;
+              candle_fsn_atn_d_fixed_def;
+              LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_dim_jet_atn_d_sound THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_atn_dd_contains = prove
+ (`!fixed_interval x.
+     candle_fsn_atn_domain fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fsn_atn_dd_fixed fixed_interval)
+           (--((x + x) *
+                (inv (&1 + x * x) * inv (&1 + x * x))))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_atn_domain_def;
+              candle_fsn_atn_dd_fixed_def;
+              LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_dim_jet_atn_dd_sound THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_first_atn_contains = prove
+ (`!n
+     (first:(((num#num)#(num#num))#
+       (((num#num)#(num#num))list)))
+     (value:real) (gradient:num->real).
+     candle_fsn_atn_domain (candle_fs_first_value first) /\
+     candle_fs_interval_contains (candle_fs_first_value first) value /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient first) (list_of_seq gradient n)
+     ==> candle_fs_interval_contains
+           (candle_fs_first_value (candle_fsn_first_atn first))
+           (atn value) /\
+         ALL2 candle_fs_interval_contains
+           (candle_fs_first_gradient (candle_fsn_first_atn first))
+           (list_of_seq
+             (\i. inv (&1 + value * value) * gradient i) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_first_atn_def;
+              candle_fs_first_make_def;
+              candle_fs_first_value_def;
+              candle_fs_first_gradient_def;
+              FST; SND; LET_DEF; LET_END_DEF] THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fsn_atn_value_contains THEN
+    ASM_REWRITE_TAC[GSYM candle_fs_first_value_def];
+    REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+    MATCH_MP_TAC candle_fsn_interval_list_scale_contains THEN
+    ASM_REWRITE_TAC[GSYM candle_fs_first_value_def;
+                    GSYM candle_fs_first_gradient_def] THEN
+    MATCH_MP_TAC candle_fsn_atn_d_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fsn_atn_hessian_contains = prove
+ (`!n
+     (value:((num#num)#(num#num)))
+     (gradient:((num#num)#(num#num))list)
+     (hessian:(((num#num)#(num#num))list)list)
+     (value_real:real) (gradient_real:num->real)
+     (hessian_real:num->num->real).
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian /\
+     candle_fsn_atn_domain value /\
+     candle_fs_interval_contains value value_real /\
+     ALL2 candle_fs_interval_contains gradient
+       (list_of_seq gradient_real n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) n) n)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+           (candle_fsn_atn_hessian value gradient hessian)
+           (list_of_seq
+             (\i. list_of_seq
+               (\j.
+                  (--((value_real + value_real) *
+                       (inv (&1 + value_real * value_real) *
+                        inv (&1 + value_real * value_real)))) *
+                    (gradient_real i * gradient_real j) +
+                  inv (&1 + value_real * value_real) *
+                    hessian_real i j) n) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_atn_hessian_def; LET_DEF; LET_END_DEF] THEN
+  MATCH_MP_TAC candle_fsn_unary_hessian_contains THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fsn_atn_d_contains THEN ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fsn_atn_dd_contains THEN ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fsn_atn_jet_components = prove
+ (`!n
+     (value:((num#num)#(num#num)))
+     (gradient:((num#num)#(num#num))list)
+     (hessian:(((num#num)#(num#num))list)list)
+     (value_real:real) (gradient_real:num->real)
+     (hessian_real:num->num->real).
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian /\
+     candle_fsn_atn_domain value /\
+     candle_fs_interval_contains value value_real /\
+     ALL2 candle_fs_interval_contains gradient
+       (list_of_seq gradient_real n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) n) n)
+     ==> candle_q_dim_jet_contains_components n
+           (candle_fs_first_to_q
+             (candle_fsn_first_atn
+               (candle_fs_first_make
+                 (value:((num#num)#(num#num))) gradient))
+             (candle_fsn_atn_hessian value gradient hessian))
+           (atn value_real)
+           (\i. inv (&1 + value_real * value_real) * gradient_real i)
+           (\i j.
+              (--((value_real + value_real) *
+                   (inv (&1 + value_real * value_real) *
+                    inv (&1 + value_real * value_real)))) *
+                (gradient_real i * gradient_real j) +
+              inv (&1 + value_real * value_real) * hessian_real i j)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_first_value
+        (candle_fsn_first_atn
+          (candle_fs_first_make
+            (value:((num#num)#(num#num))) gradient)))
+      (atn value_real) /\
+    ALL2 candle_fs_interval_contains
+      (candle_fs_first_gradient
+        (candle_fsn_first_atn
+          (candle_fs_first_make
+            (value:((num#num)#(num#num))) gradient)))
+      (list_of_seq
+        (\i. inv (&1 + value_real * value_real) * gradient_real i) n)`
+  STRIP_ASSUME_TAC THENL
+   [MP_TAC
+      (ISPECL
+        [`n:num`;
+         `candle_fs_first_make
+           (value:((num#num)#(num#num)))
+           (gradient:((num#num)#(num#num))list)`;
+         `value_real:real`;
+         `gradient_real:num->real`]
+        candle_fsn_first_atn_contains) THEN
+    ASM_REWRITE_TAC[candle_fs_first_make_def;
+                    candle_fs_first_value_def;
+                    candle_fs_first_gradient_def; FST; SND];
+    ALL_TAC] THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fsn_atn_jet_shape THEN ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    MP_TAC
+      (ISPECL
+        [`n:num`;
+         `value:((num#num)#(num#num))`;
+         `gradient:((num#num)#(num#num))list`;
+         `hessian:(((num#num)#(num#num))list)list`;
+         `value_real:real`;
+         `gradient_real:num->real`;
+         `hessian_real:num->num->real`]
+        candle_fsn_atn_hessian_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
 end;;
