@@ -6,11 +6,9 @@
 (* complete Taylor arithmetic and representation theory.                     *)
 (* ========================================================================== *)
 
-needs "candle/cv_compute_analytic_expr_program_compute.ml";;
+needs "candle/compute.ml";;
 
 module Candle_cv_cval_list = struct
-
-open Candle_cv_analytic_expr_program_compute;;
 
 let candle_cv_list_length_def = define
  `(candle_cv_list_length (Cexp_num n) = Cexp_num 0) /\
