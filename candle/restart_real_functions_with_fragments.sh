@@ -87,6 +87,7 @@ done
         for (i = 1; i <= count; i++) if (paths[i] != "") skip[paths[i]] = 1
       }
       {
+        sub(/\r$/, "")
         candidate = $0
         if (candidate ~ /^needs "[^"]+";;$/) {
           sub(/^needs "/, "", candidate)

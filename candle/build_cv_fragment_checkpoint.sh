@@ -60,7 +60,10 @@ mkdir -p "$run_dir/checkpoint" "$run_dir/dmtcp-tmp"
     fragment_sha256=$(sha256sum "$fragment" | awk '{print $1}')
     printf 'print_endline "CANDLE_RESTORE_FRAGMENT_BEGIN sha256=%s file=%s";;\n' \
       "$fragment_sha256" "$(basename "$fragment")"
-    awk '!/^needs "[^"]+";;$/' "$fragment"
+    awk '
+      { sub(/\r$/, "") }
+      !/^needs "[^"]+";;$/
+    ' "$fragment"
     printf 'print_endline "CANDLE_RESTORE_FRAGMENT_END sha256=%s file=%s";;\n' \
       "$fragment_sha256" "$(basename "$fragment")"
   done
