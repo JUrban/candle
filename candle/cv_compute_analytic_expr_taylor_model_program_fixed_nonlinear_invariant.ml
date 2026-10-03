@@ -1817,4 +1817,56 @@ let candle_fsn_result_atn_analytic_invariant = prove
          candle_fsn_result_atn_analytic_box_hessian_contains) THEN
       ASM_REWRITE_TAC[]]]);;
 
+let candle_fsn_result_pi_half_analytic_invariant = prove
+ (`!boxes dimensions (type_witness:real^N).
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     LENGTH dimensions = dimindex (:N)
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_fs_result_to_q
+         (candle_fsn_result_pi_half
+           (candle_fs_list_of_q
+             (candle_q_fixed_list_round_upper
+               (candle_q_radius_list boxes)))
+           dimensions))
+       Candle_analytic_pi_half Candle_analytic_pi_half`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_result_pi_half_def] THEN
+  MATCH_MP_TAC candle_fs_result_complete_analytic_invariant THEN
+  REPEAT CONJ_TAC THENL
+   [REWRITE_TAC[candle_analytic_valid_dim_def];
+    REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    DISCH_TAC THEN REPEAT CONJ_TAC THENL
+     [REWRITE_TAC[candle_analytic_regular_at_def];
+      REWRITE_TAC[candle_analytic_regular_at_def];
+      MP_TAC
+       (SPEC `dimensions:((num#num)#(num#num))list`
+         candle_fsn_pi_half_jet_shape) THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_dim_analytic_contains_def;
+                  candle_analytic_value_def;
+                  candle_analytic_d_def;
+                  candle_analytic_dd_def] THEN
+      MP_TAC
+       (SPEC `dimensions:((num#num)#(num#num))list`
+         candle_fsn_pi_half_jet_components) THEN
+      ASM_REWRITE_TAC[];
+      X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+      MATCH_MP_TAC candle_fs_analytic_hessian_flyspeck_contains THEN
+      REPEAT CONJ_TAC THENL
+       [REWRITE_TAC[candle_analytic_valid_dim_def];
+        REWRITE_TAC[candle_analytic_regular_at_def];
+        REWRITE_TAC[candle_analytic_dd_def] THEN
+        CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+        MP_TAC
+         (SPECL
+           [`dimensions:((num#num)#(num#num))list`;
+            `dimensions:((num#num)#(num#num))list`]
+           candle_fs_interval_zero_matrix_contains) THEN
+        ASM_REWRITE_TAC[]]]]);;
+
 end;;

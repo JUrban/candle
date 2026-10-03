@@ -30,7 +30,8 @@ let candle_fixed_nonlinear_invariant_theorems =
   candle_fsn_result_atn_analytic_center_contains;
   candle_fsn_result_atn_analytic_center_shape;
   candle_fsn_result_atn_analytic_box_hessian_contains;
-  candle_fsn_result_atn_analytic_invariant];;
+  candle_fsn_result_atn_analytic_invariant;
+  candle_fsn_result_pi_half_analytic_invariant];;
 
 if exists (fun th -> hyp th <> []) candle_fixed_nonlinear_invariant_theorems then
   failwith "fixed nonlinear invariant theorem assumptions"
