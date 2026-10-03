@@ -10,12 +10,18 @@ let candle_fixed_nonlinear_invariant_theorems =
   candle_fsn_sqrt_value_contains;
   candle_fsn_sqrt_d_contains;
   candle_fsn_sqrt_dd_contains;
-  candle_fsn_first_sqrt_contains];;
+  candle_fsn_first_sqrt_contains;
+  candle_fsn_unary_hessian_contains;
+  candle_fsn_sqrt_hessian_contains;
+  candle_fsn_sqrt_jet_components];;
 
 if exists (fun th -> hyp th <> []) candle_fixed_nonlinear_invariant_theorems then
   failwith "fixed nonlinear invariant theorem assumptions"
+else if exists (fun th -> frees (concl th) <> [])
+  candle_fixed_nonlinear_invariant_theorems then
+  failwith "fixed nonlinear invariant theorem free variables"
 else
   print_endline
     ("CANDLE_FIXED_NONLINEAR_INVARIANT_OK theorems=" ^
      string_of_int (length candle_fixed_nonlinear_invariant_theorems) ^
-     " assumptions=0");;
+     " assumptions=0 free_variables=0");;
