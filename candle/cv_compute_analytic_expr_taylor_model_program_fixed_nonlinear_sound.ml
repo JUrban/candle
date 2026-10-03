@@ -760,4 +760,139 @@ let candle_fsn_interval_outer_contains = prove
   MATCH_MP_TAC candle_fs_raw_interval_outer_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* The nonlinear operations first obtain rational enclosures and then round
+   them outward to the fixed scale.  This scalar lemma is the bridge used by
+   all three component proofs below; in particular, it records explicitly
+   that the reciprocal's nonzero side condition is checked before rounding. *)
+
+let candle_fsn_q_inv_interval_contains = prove
+ (`!fixed_interval x.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q fixed_interval) /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_of_q
+             (candle_fsn_q_inv_interval fixed_interval))
+           (inv x)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  REWRITE_TAC[candle_fsn_q_inv_interval_def] THEN
+  MATCH_MP_TAC candle_q_interval_inv_sound THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_inv_square_contains = prove
+ (`!fixed_interval x.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q fixed_interval) /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fsn_interval_mul
+             (candle_fs_interval_of_q
+               (candle_fsn_q_inv_interval fixed_interval))
+             (candle_fs_interval_of_q
+               (candle_fsn_q_inv_interval fixed_interval)))
+           (inv x * inv x)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fsn_interval_mul_contains THEN
+  CONJ_TAC THEN MATCH_MP_TAC candle_fsn_q_inv_interval_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fsn_inv_square_neg_contains = prove
+ (`!fixed_interval x.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q fixed_interval) /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_neg
+             (candle_fsn_interval_mul
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval))
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval))))
+           (--(inv x * inv x))`,
+  MESON_TAC[candle_fsn_inv_square_contains;
+            candle_fs_interval_neg_sound]);;
+
+let candle_fsn_inv_cube_contains = prove
+ (`!fixed_interval x.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q fixed_interval) /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fsn_interval_mul
+             (candle_fsn_interval_mul
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval))
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval)))
+             (candle_fs_interval_of_q
+               (candle_fsn_q_inv_interval fixed_interval)))
+           ((inv x * inv x) * inv x)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fsn_interval_mul_contains THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fsn_inv_square_contains;
+    MATCH_MP_TAC candle_fsn_q_inv_interval_contains] THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fsn_inv_cube_twice_contains = prove
+ (`!fixed_interval x.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q fixed_interval) /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_add
+             (candle_fsn_interval_mul
+               (candle_fsn_interval_mul
+                 (candle_fs_interval_of_q
+                   (candle_fsn_q_inv_interval fixed_interval))
+                 (candle_fs_interval_of_q
+                   (candle_fsn_q_inv_interval fixed_interval)))
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval)))
+             (candle_fsn_interval_mul
+               (candle_fsn_interval_mul
+                 (candle_fs_interval_of_q
+                   (candle_fsn_q_inv_interval fixed_interval))
+                 (candle_fs_interval_of_q
+                   (candle_fsn_q_inv_interval fixed_interval)))
+               (candle_fs_interval_of_q
+                 (candle_fsn_q_inv_interval fixed_interval))))
+           (((inv x * inv x) * inv x) +
+            ((inv x * inv x) * inv x))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_interval_add_sound THEN
+  CONJ_TAC THEN MATCH_MP_TAC candle_fsn_inv_cube_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fsn_first_inv_contains = prove
+ (`!n first value gradient.
+     candle_q_interval_not_zero
+       (candle_fs_interval_to_q (candle_fs_first_value first)) /\
+     candle_fs_interval_contains (candle_fs_first_value first) value /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient first) (list_of_seq gradient n)
+     ==> candle_fs_interval_contains
+           (candle_fs_first_value (candle_fsn_first_inv first))
+           (inv value) /\
+         ALL2 candle_fs_interval_contains
+           (candle_fs_first_gradient (candle_fsn_first_inv first))
+           (list_of_seq
+             (\i. (--(inv value * inv value)) * gradient i) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_first_inv_def;
+              candle_fs_first_make_def;
+              candle_fs_first_value_def;
+              candle_fs_first_gradient_def;
+              FST; SND; LET_DEF; LET_END_DEF] THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fsn_q_inv_interval_contains THEN
+    ASM_REWRITE_TAC[GSYM candle_fs_first_value_def];
+    REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+    MATCH_MP_TAC candle_fsn_interval_list_scale_contains THEN
+    ASM_REWRITE_TAC[GSYM candle_fs_first_value_def;
+                    GSYM candle_fs_first_gradient_def] THEN
+    MATCH_MP_TAC candle_fsn_inv_square_neg_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
 end;;

@@ -41,7 +41,13 @@ let candle_fixed_nonlinear_helper_theorems =
   candle_fsn_pi_half_jet_shape;
   candle_fsn_interval_list_scale_contains;
   candle_fsn_interval_matrix_scale_contains;
-  candle_fsn_interval_outer_contains];;
+  candle_fsn_interval_outer_contains;
+  candle_fsn_q_inv_interval_contains;
+  candle_fsn_inv_square_contains;
+  candle_fsn_inv_square_neg_contains;
+  candle_fsn_inv_cube_contains;
+  candle_fsn_inv_cube_twice_contains;
+  candle_fsn_first_inv_contains];;
 
 if exists (fun th -> hyp th <> []) candle_fixed_nonlinear_helper_theorems then
   failwith "fixed nonlinear helper theorem assumptions"
