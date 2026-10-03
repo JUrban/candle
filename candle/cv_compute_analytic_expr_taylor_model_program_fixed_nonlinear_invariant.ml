@@ -14,6 +14,7 @@ open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
 open Candle_cv_exact_interval_sqrt_certificate;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
 
 let candle_fsn_inv_hessian_contains = prove
@@ -674,5 +675,34 @@ let candle_fsn_atn_jet_components = prove
          `hessian_real:num->num->real`]
         candle_fsn_atn_hessian_contains) THEN
     ASM_REWRITE_TAC[]]);;
+
+let candle_fsn_pi_half_jet_components = prove
+ (`!(dimensions:((num#num)#(num#num))list).
+     candle_q_dim_jet_contains_components (LENGTH dimensions)
+       (candle_fs_first_to_q
+         (candle_fs_first_make
+           (candle_fs_interval_of_q candle_q_pi_half_interval)
+           (candle_fs_interval_zeros dimensions))
+         (candle_fs_interval_zero_matrix dimensions dimensions))
+       (pi / &2) (\i. &0) (\i j. &0)`,
+  GEN_TAC THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_ACCEPT_TAC candle_fsn_pi_half_jet_shape;
+    REWRITE_TAC[candle_fs_first_make_def;
+                candle_fs_first_value_def; FST] THEN
+    MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+    MESON_TAC[candle_q_pi_half_interval_sound];
+    REWRITE_TAC[candle_fs_first_make_def;
+                candle_fs_first_gradient_def; SND] THEN
+    ACCEPT_TAC
+      (SPEC `dimensions:((num#num)#(num#num))list`
+        candle_fs_interval_zeros_contains);
+    CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+    ACCEPT_TAC
+      (SPECL
+        [`dimensions:((num#num)#(num#num))list`;
+         `dimensions:((num#num)#(num#num))list`]
+        candle_fs_interval_zero_matrix_contains)]);;
 
 end;;

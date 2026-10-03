@@ -19,7 +19,8 @@ let candle_fixed_nonlinear_invariant_theorems =
   candle_fsn_atn_dd_contains;
   candle_fsn_first_atn_contains;
   candle_fsn_atn_hessian_contains;
-  candle_fsn_atn_jet_components];;
+  candle_fsn_atn_jet_components;
+  candle_fsn_pi_half_jet_components];;
 
 if exists (fun th -> hyp th <> []) candle_fixed_nonlinear_invariant_theorems then
   failwith "fixed nonlinear invariant theorem assumptions"
