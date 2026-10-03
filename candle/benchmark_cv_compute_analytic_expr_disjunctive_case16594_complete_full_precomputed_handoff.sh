@@ -2,14 +2,13 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-case16594-complete-lean-compute-support-v2-dev-001}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-case16594-complete-full-precomputed-capture-checkpoint-v1-16g-dev-001}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-case16594-complete-full-precomputed-handoff-v1-dev-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 marker='CANDLE_CV_CASE16594_COMPLETE_FULL_HANDOFF_OK DEVELOPMENT_NON_RELEASE'
 
 fragments=(
-  "$repo_root/candle/benchmark_cv_compute_analytic_expr_disjunctive_case16594_complete_full_precomputed_capture.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_batch.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_tree.ml"
   "$repo_root/candle/cv_compute_whole_box_taylor.ml"
@@ -24,6 +23,7 @@ fragments=(
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_sound.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_prove.ml"
   "$repo_root/candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_complete_root_prove.ml"
+  "$repo_root/candle/cv_compute_analytic_expr_disjunctive_case16594_leaf_grouping.ml"
   "$repo_root/candle/test_cv_compute_analytic_expr_disjunctive_case16594_complete_full_precomputed_handoff.ml"
 )
 
