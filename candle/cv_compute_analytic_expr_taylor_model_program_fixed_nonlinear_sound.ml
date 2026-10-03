@@ -15,6 +15,8 @@ module Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound = stru
 
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_pi_half;;
+open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear;;
@@ -65,6 +67,133 @@ let candle_fsn_inv_hessian_def = new_definition
       (candle_fsn_interval_matrix_scale
         (candle_fs_interval_add r3 r3)
         (candle_fsn_interval_outer gradient gradient))`;;
+
+let candle_fsn_result_inv_def = new_definition
+ `candle_fsn_result_inv radii result =
+    candle_fs_result_complete_rounded radii
+      (candle_fs_result_domain result /\
+       candle_q_interval_not_zero
+         (candle_fs_interval_to_q
+           (candle_fs_first_value (candle_fs_result_center result))) /\
+       candle_q_interval_not_zero
+         (candle_fs_interval_to_q
+           (candle_fs_result_value_bound result)))
+      (candle_fsn_first_inv (candle_fs_result_center result))
+      (candle_fsn_inv_hessian
+        (candle_fs_result_value_bound result)
+        (candle_fs_result_gradient_bounds result)
+        (candle_fs_result_hessian result))`;;
+
+let candle_fsn_sqrt_domain_def = new_definition
+ `candle_fsn_sqrt_domain certificate fixed_interval <=>
+    let input = candle_fs_interval_to_q fixed_interval in
+    candle_q_interval_sqrt_certificate input certificate /\
+    candle_q_interval_not_zero
+      (candle_q_interval_add_normalized certificate certificate) /\
+    candle_q_interval_not_zero
+      (candle_q_interval_mul_normalized
+        (candle_q_interval_add_normalized certificate certificate)
+        (candle_q_interval_add_normalized input input))`;;
+
+let candle_fsn_first_sqrt_def = new_definition
+ `candle_fsn_first_sqrt certificate first =
+    let value = candle_fs_interval_of_q certificate in
+    let d = candle_fs_interval_of_q
+      (candle_q_dim_jet_sqrt_d certificate) in
+    candle_fs_first_make value
+      (candle_fsn_interval_list_scale d
+        (candle_fs_first_gradient first))`;;
+
+let candle_fsn_sqrt_hessian_def = new_definition
+ `candle_fsn_sqrt_hessian certificate value gradient hessian =
+    let input = candle_fs_interval_to_q value in
+    let d = candle_fs_interval_of_q
+      (candle_q_dim_jet_sqrt_d certificate) in
+    let dd = candle_fs_interval_of_q
+      (candle_q_dim_jet_sqrt_dd certificate input) in
+    candle_fs_interval_matrix_add
+      (candle_fsn_interval_matrix_scale dd
+        (candle_fsn_interval_outer gradient gradient))
+      (candle_fsn_interval_matrix_scale d hessian)`;;
+
+let candle_fsn_result_sqrt_def = new_definition
+ `candle_fsn_result_sqrt radii center_certificate box_certificate result =
+    candle_fs_result_complete_rounded radii
+      (candle_fs_result_domain result /\
+       candle_fsn_sqrt_domain center_certificate
+         (candle_fs_first_value (candle_fs_result_center result)) /\
+       candle_fsn_sqrt_domain box_certificate
+         (candle_fs_result_value_bound result))
+      (candle_fsn_first_sqrt center_certificate
+        (candle_fs_result_center result))
+      (candle_fsn_sqrt_hessian box_certificate
+        (candle_fs_result_value_bound result)
+        (candle_fs_result_gradient_bounds result)
+        (candle_fs_result_hessian result))`;;
+
+let candle_fsn_atn_domain_def = new_definition
+ `candle_fsn_atn_domain fixed_interval <=>
+    let input = candle_fs_interval_to_q fixed_interval in
+    candle_q_interval_atn_range_domain input /\
+    candle_q_interval_not_zero
+      (candle_q_dim_jet_atn_denominator input)`;;
+
+let candle_fsn_atn_d_fixed_def = new_definition
+ `candle_fsn_atn_d_fixed fixed_interval =
+    candle_fs_interval_of_q
+      (candle_q_dim_jet_atn_d
+        (candle_fs_interval_to_q fixed_interval))`;;
+
+let candle_fsn_atn_dd_fixed_def = new_definition
+ `candle_fsn_atn_dd_fixed fixed_interval =
+    candle_fs_interval_of_q
+      (candle_q_dim_jet_atn_dd
+        (candle_fs_interval_to_q fixed_interval))`;;
+
+let candle_fsn_first_atn_def = new_definition
+ `candle_fsn_first_atn first =
+    let value = candle_fs_interval_of_q
+      (candle_q_interval_atn_range
+        (candle_fs_interval_to_q (candle_fs_first_value first))) in
+    let d = candle_fsn_atn_d_fixed (candle_fs_first_value first) in
+    candle_fs_first_make value
+      (candle_fsn_interval_list_scale d
+        (candle_fs_first_gradient first))`;;
+
+let candle_fsn_atn_hessian_def = new_definition
+ `candle_fsn_atn_hessian value gradient hessian =
+    let d = candle_fsn_atn_d_fixed value in
+    let dd = candle_fsn_atn_dd_fixed value in
+    candle_fs_interval_matrix_add
+      (candle_fsn_interval_matrix_scale dd
+        (candle_fsn_interval_outer gradient gradient))
+      (candle_fsn_interval_matrix_scale d hessian)`;;
+
+let candle_fsn_result_atn_def = new_definition
+ `candle_fsn_result_atn radii result =
+    candle_fs_result_complete_rounded radii
+      (candle_fs_result_domain result /\
+       candle_fsn_atn_domain
+         (candle_fs_first_value (candle_fs_result_center result)) /\
+       candle_fsn_atn_domain (candle_fs_result_value_bound result))
+      (candle_fsn_first_atn (candle_fs_result_center result))
+      (candle_fsn_atn_hessian
+        (candle_fs_result_value_bound result)
+        (candle_fs_result_gradient_bounds result)
+        (candle_fs_result_hessian result))`;;
+
+let candle_fsn_result_pi_half_def = new_definition
+ `candle_fsn_result_pi_half radii dimensions =
+    candle_fs_result_complete_rounded radii T
+      (candle_fs_first_make
+        (candle_fs_interval_of_q candle_q_pi_half_interval)
+        (candle_fs_interval_zeros dimensions))
+      (candle_fs_interval_zero_matrix dimensions dimensions)`;;
+
+let candle_cv_raw_bool_correct = prove
+ (`!b. Cexp_num (if b then 1 else 0) = candle_cv_bool b`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_bool_def; ARITH_RULE `1 = SUC 0`]);;
 
 let candle_cv_fsn_interval_mul_correct = prove
  (`!left right.
@@ -169,6 +298,221 @@ let candle_cv_fsn_inv_hessian_correct = prove
               candle_cv_fsn_interval_matrix_scale_correct;
               candle_cv_fs_interval_matrix_add_correct;
               LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_result_inv_correct = prove
+ (`!radii result.
+     candle_cv_fsn_result_inv
+       (candle_cv_lc_vec radii) (candle_cv_fs_result result) =
+     candle_cv_fs_result (candle_fsn_result_inv radii result)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_result_inv_def;
+              candle_fsn_result_inv_def;
+              candle_cv_fs_result_domain_correct;
+              candle_cv_fs_result_center_correct;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_result_value_bound_correct;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_interval_not_zero_correct;
+              candle_cv_raw_bool_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_fsn_first_inv_correct;
+              candle_cv_fs_result_gradient_bounds_correct;
+              candle_cv_fs_result_hessian_correct;
+              candle_cv_fsn_inv_hessian_correct;
+              candle_cv_fs_result_complete_rounded_correct]);;
+
+let candle_cv_fsn_sqrt_domain_correct = prove
+ (`!certificate fixed_interval.
+     candle_cv_fsn_sqrt_domain
+       (candle_cv_q_interval certificate)
+       (candle_cv_fs_interval fixed_interval) =
+     candle_cv_bool (candle_fsn_sqrt_domain certificate fixed_interval)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_sqrt_domain_def;
+              candle_fsn_sqrt_domain_def;
+              candle_cv_fs_interval_to_q_correct;
+              Candle_cv_exact_interval_sqrt_certificate.
+                candle_cv_q_interval_sqrt_certificate_correct;
+              Candle_cv_polynomial_expr_dim_jet_representation.
+                candle_cv_q_interval_add_normalized_correct;
+              Candle_cv_polynomial_expr_dim_jet_representation.
+                candle_cv_q_interval_mul_normalized_correct;
+              candle_cv_q_interval_not_zero_correct;
+              candle_cv_raw_bool_correct;
+              GSYM candle_cv_bool_and_def;
+              candle_cv_bool_and_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_first_sqrt_correct = prove
+ (`!certificate first.
+     candle_cv_fsn_first_sqrt
+       (candle_cv_q_interval certificate) (candle_cv_fs_first first) =
+     candle_cv_fs_first (candle_fsn_first_sqrt certificate first)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_first_sqrt_def;
+              candle_fsn_first_sqrt_def;
+              candle_cv_fs_interval_of_q_correct;
+              candle_cv_q_dim_jet_sqrt_d_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fsn_interval_list_scale_correct;
+              candle_cv_fs_first_make_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_sqrt_hessian_correct = prove
+ (`!certificate value gradient hessian.
+     candle_cv_fsn_sqrt_hessian
+       (candle_cv_q_interval certificate)
+       (candle_cv_fs_interval value)
+       (candle_cv_fs_interval_list gradient)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_interval_matrix
+       (candle_fsn_sqrt_hessian certificate value gradient hessian)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_sqrt_hessian_def;
+              candle_fsn_sqrt_hessian_def;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_dim_jet_sqrt_d_correct;
+              candle_cv_q_dim_jet_sqrt_dd_correct;
+              candle_cv_fs_interval_of_q_correct;
+              candle_cv_fsn_interval_outer_correct;
+              candle_cv_fsn_interval_matrix_scale_correct;
+              candle_cv_fs_interval_matrix_add_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_result_sqrt_correct = prove
+ (`!radii center_certificate box_certificate result.
+     candle_cv_fsn_result_sqrt
+       (candle_cv_lc_vec radii)
+       (candle_cv_q_interval center_certificate)
+       (candle_cv_q_interval box_certificate)
+       (candle_cv_fs_result result) =
+     candle_cv_fs_result
+       (candle_fsn_result_sqrt radii
+         center_certificate box_certificate result)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_result_sqrt_def;
+              candle_fsn_result_sqrt_def;
+              candle_cv_fs_result_domain_correct;
+              candle_cv_fs_result_center_correct;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_result_value_bound_correct;
+              candle_cv_fsn_sqrt_domain_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_fsn_first_sqrt_correct;
+              candle_cv_fs_result_gradient_bounds_correct;
+              candle_cv_fs_result_hessian_correct;
+              candle_cv_fsn_sqrt_hessian_correct;
+              candle_cv_fs_result_complete_rounded_correct]);;
+
+let candle_cv_fsn_atn_domain_correct = prove
+ (`!fixed_interval.
+     candle_cv_fsn_atn_domain (candle_cv_fs_interval fixed_interval) =
+     candle_cv_bool (candle_fsn_atn_domain fixed_interval)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_atn_domain_def;
+              candle_fsn_atn_domain_def;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_interval_atn_range_domain_correct;
+              candle_cv_q_dim_jet_atn_denominator_correct;
+              candle_cv_q_interval_not_zero_correct;
+              candle_cv_raw_bool_correct;
+              GSYM candle_cv_bool_and_def;
+              candle_cv_bool_and_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_atn_d_fixed_correct = prove
+ (`!fixed_interval.
+     candle_cv_fsn_atn_d_fixed (candle_cv_fs_interval fixed_interval) =
+     candle_cv_fs_interval (candle_fsn_atn_d_fixed fixed_interval)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_atn_d_fixed_def;
+              candle_fsn_atn_d_fixed_def;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_dim_jet_atn_d_correct;
+              candle_cv_fs_interval_of_q_correct]);;
+
+let candle_cv_fsn_atn_dd_fixed_correct = prove
+ (`!fixed_interval.
+     candle_cv_fsn_atn_dd_fixed (candle_cv_fs_interval fixed_interval) =
+     candle_cv_fs_interval (candle_fsn_atn_dd_fixed fixed_interval)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_atn_dd_fixed_def;
+              candle_fsn_atn_dd_fixed_def;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_dim_jet_atn_dd_correct;
+              candle_cv_fs_interval_of_q_correct]);;
+
+let candle_cv_fsn_first_atn_correct = prove
+ (`!first.
+     candle_cv_fsn_first_atn (candle_cv_fs_first first) =
+     candle_cv_fs_first (candle_fsn_first_atn first)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_first_atn_def;
+              candle_fsn_first_atn_def;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_interval_to_q_correct;
+              candle_cv_q_interval_atn_range_correct;
+              candle_cv_fs_interval_of_q_correct;
+              candle_cv_fsn_atn_d_fixed_correct;
+              candle_cv_fs_first_gradient_correct;
+              candle_cv_fsn_interval_list_scale_correct;
+              candle_cv_fs_first_make_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_atn_hessian_correct = prove
+ (`!value gradient hessian.
+     candle_cv_fsn_atn_hessian
+       (candle_cv_fs_interval value)
+       (candle_cv_fs_interval_list gradient)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_interval_matrix
+       (candle_fsn_atn_hessian value gradient hessian)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_atn_hessian_def;
+              candle_fsn_atn_hessian_def;
+              candle_cv_fsn_atn_d_fixed_correct;
+              candle_cv_fsn_atn_dd_fixed_correct;
+              candle_cv_fsn_interval_outer_correct;
+              candle_cv_fsn_interval_matrix_scale_correct;
+              candle_cv_fs_interval_matrix_add_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_cv_fsn_result_atn_correct = prove
+ (`!radii result.
+     candle_cv_fsn_result_atn
+       (candle_cv_lc_vec radii) (candle_cv_fs_result result) =
+     candle_cv_fs_result (candle_fsn_result_atn radii result)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_result_atn_def;
+              candle_fsn_result_atn_def;
+              candle_cv_fs_result_domain_correct;
+              candle_cv_fs_result_center_correct;
+              candle_cv_fs_first_value_correct;
+              candle_cv_fs_result_value_bound_correct;
+              candle_cv_fsn_atn_domain_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_fsn_first_atn_correct;
+              candle_cv_fs_result_gradient_bounds_correct;
+              candle_cv_fs_result_hessian_correct;
+              candle_cv_fsn_atn_hessian_correct;
+              candle_cv_fs_result_complete_rounded_correct]);;
+
+let candle_cv_fsn_result_pi_half_correct = prove
+ (`!radii dimensions.
+     candle_cv_fsn_result_pi_half
+       (candle_cv_lc_vec radii)
+       (candle_cv_fs_interval_list dimensions) =
+     candle_cv_fs_result
+       (candle_fsn_result_pi_half radii dimensions)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fsn_result_pi_half_def;
+              candle_fsn_result_pi_half_def;
+              candle_cv_q_pi_half_interval_correct;
+              candle_cv_fs_interval_of_q_correct;
+              candle_cv_fs_interval_zeros_correct;
+              candle_cv_fs_first_make_correct;
+              candle_cv_fs_interval_zero_matrix_like_correct;
+              candle_cv_fs_result_complete_true_correct]);;
 
 let candle_fsn_interval_mul_contains = prove
  (`!left right x y.
