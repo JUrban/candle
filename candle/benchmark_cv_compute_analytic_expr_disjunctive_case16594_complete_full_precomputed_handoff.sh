@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
-base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-case16594-complete-full-precomputed-capture-checkpoint-v1-16g-dev-001}
+base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-case16594-complete-full-precomputed-capture-checkpoint-v2-16g-dev-001}
 output_dir=${1:-/project/flyspeck-candle-runs/cv-case16594-complete-full-precomputed-handoff-v1-dev-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
