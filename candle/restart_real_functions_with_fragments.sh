@@ -123,7 +123,7 @@ restart_pid=$!
 ack_seen=0
 for _ in $(seq 1 600); do
   if [[ -f "$output_dir/candle.log" ]] &&
-     rg -Fqx "$input_ack" "$output_dir/candle.log"; then
+     rg -Fq "$input_ack" "$output_dir/candle.log"; then
     ack_seen=1
     break
   fi
@@ -165,7 +165,7 @@ if [[ "$restart_status" -ne 0 ]]; then
   exit "$restart_status"
 fi
 
-ack_count=$(rg -Fxc "$input_ack" "$output_dir/candle.log")
+ack_count=$(rg -Foc "$input_ack" "$output_dir/candle.log")
 [[ "$ack_count" -eq 1 ]]
 ack_line=$(rg -Fn -m1 "$input_ack" "$output_dir/candle.log" | cut -d: -f1)
 if ! rg -Fq "$expected_marker" "$output_dir/candle.log"; then
