@@ -1,0 +1,6 @@
+needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_nonlinear.ml";;
+
+open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear;;
+
+print_endline
+  "CANDLE_CV_FIXED_NONLINEAR_LOAD_OK DEVELOPMENT_NON_RELEASE NON_AUTHORITATIVE";;
