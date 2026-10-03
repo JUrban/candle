@@ -23,6 +23,11 @@ type candle_disjunctive_case16594_variable_raw_tree_shape =
       candle_disjunctive_case16594_variable_raw_tree_shape *
       candle_disjunctive_case16594_variable_raw_tree_shape;;
 
+let candle_disjunctive_case16594_variable_raw_plan_marker phase event =
+  print_endline
+    ("CANDLE_CERT_PROFILE lane=disjunctive-case16594-variable-raw-plan" ^
+     " scope=plan phase=" ^ phase ^ " event=" ^ event);;
+
 let candle_disjunctive_case16594_variable_raw_split_leaves =
   [388;455;459;465;473;477;485;491;560;574;578;582;750;752;767];;
 
@@ -98,14 +103,26 @@ let candle_disjunctive_case16594_variable_raw_plan_shape,
     candle_disjunctive_case16594_variable_raw_plan_cells =
   print_endline
     "CANDLE_CV_DISJUNCTIVE_CASE16594_VARIABLE_RAW_PLAN event=begin";
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "shape-build" "begin";
   let shape,next_leaf =
     candle_disjunctive_case16594_variable_raw_shape_build
       0 candle_disjunctive_case16594_root_domain
       candle_disjunctive_case16594_plan_precision_tree in
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "shape-build" "end";
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "cell-flatten" "begin";
   let cells =
     candle_disjunctive_case16594_variable_raw_shape_cells shape in
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "cell-flatten" "end";
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "shape-counts" "begin";
   let leaf_count,node_count =
     candle_disjunctive_case16594_variable_raw_shape_counts shape in
+  candle_disjunctive_case16594_variable_raw_plan_marker
+    "shape-counts" "end";
   if next_leaf <> 860 || leaf_count <> 875 || node_count <> 874 ||
      length cells <> 875 then
     failwith "case16594 variable raw plan: shape mismatch";
