@@ -1,6 +1,6 @@
 (* Generated untrusted case-10173 fixed-outer forest plan.
    The reflected proof adapter rechecks every selected cell. *)
-open Candle_cv_action296_adaptive_forest_prove;;
+open Candle_cv_action296_forest_plan;;
 let candle_action296_generated_roots_chunk_000 =
 [   (0,Candle_action296_forest_leaf);
    (1,Candle_action296_forest_leaf);

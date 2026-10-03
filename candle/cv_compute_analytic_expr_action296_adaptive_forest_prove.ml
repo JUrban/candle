@@ -8,21 +8,13 @@
 (* ========================================================================== *)
 
 needs "candle/benchmark_cv_compute_analytic_expr_action296_grouped_32_depth2_scan_algebraic.ml";;
+needs "candle/cv_compute_analytic_expr_action296_forest_plan.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove.ml";;
 
 module Candle_cv_action296_adaptive_forest_prove = struct
 
 open Candle_cv_analytic_expr_taylor_model_program_fixed_algebraic_batch_prove;;
-
-type candle_action296_forest_plan =
-  | Candle_action296_forest_leaf
-  | Candle_action296_forest_split of
-      int * candle_action296_forest_plan * candle_action296_forest_plan;;
-
-type candle_action296_forest_tree =
-  | Candle_action296_forest_tree_leaf of thm
-  | Candle_action296_forest_tree_split of
-      int * candle_action296_forest_tree * candle_action296_forest_tree;;
+open Candle_cv_action296_forest_plan;;
 
 type candle_action296_forest_prepared_six = {
   forest_prepared_index : int;
@@ -109,26 +101,6 @@ let rec candle_action296_forest_strict_roots previous = function
       index > previous && index >= 0 &&
       index < length !candle_action296_leaf_grouping_leaves &&
       candle_action296_forest_strict_roots index remaining;;
-
-let rec candle_action296_forest_build_tree domain = function
-  | Candle_action296_forest_leaf ->
-      Candle_action296_forest_tree_leaf domain
-  | Candle_action296_forest_split (axis,left_plan,right_plan) ->
-      if axis < 1 || axis > 6 then
-        failwith "action296 adaptive forest: split axis out of range";
-      let left,right =
-        M_verifier.split_domain
-          candle_action296_plan_dimension 6 axis domain in
-      Candle_action296_forest_tree_split
-        (axis,
-         candle_action296_forest_build_tree left left_plan,
-         candle_action296_forest_build_tree right right_plan);;
-
-let rec candle_action296_forest_tree_domains = function
-  | Candle_action296_forest_tree_leaf domain -> [domain]
-  | Candle_action296_forest_tree_split (_,left,right) ->
-      candle_action296_forest_tree_domains left @
-      candle_action296_forest_tree_domains right;;
 
 let candle_action296_forest_cell case =
   {
