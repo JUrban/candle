@@ -566,6 +566,158 @@ let candle_fsn_interval_outer_shape = prove
               `right:((num#num)#(num#num))list`]
         candle_fs_raw_interval_outer_shape))]);;
 
+let candle_fsn_first_inv_gradient_length = prove
+ (`!first.
+     LENGTH (candle_fs_first_gradient (candle_fsn_first_inv first)) =
+     LENGTH (candle_fs_first_gradient first)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_first_inv_def;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def;
+              candle_fsn_interval_list_scale_length;
+              FST; SND; LET_DEF; LET_END_DEF]);;
+
+let candle_fsn_first_sqrt_gradient_length = prove
+ (`!certificate first.
+     LENGTH
+       (candle_fs_first_gradient
+         (candle_fsn_first_sqrt certificate first)) =
+     LENGTH (candle_fs_first_gradient first)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_first_sqrt_def;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def;
+              candle_fsn_interval_list_scale_length;
+              FST; SND; LET_DEF; LET_END_DEF]);;
+
+let candle_fsn_first_atn_gradient_length = prove
+ (`!first.
+     LENGTH (candle_fs_first_gradient (candle_fsn_first_atn first)) =
+     LENGTH (candle_fs_first_gradient first)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_first_atn_def;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def;
+              candle_fsn_interval_list_scale_length;
+              FST; SND; LET_DEF; LET_END_DEF]);;
+
+let candle_fsn_inv_hessian_shape = prove
+ (`!value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     LENGTH (candle_fsn_inv_hessian value gradient hessian) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fsn_inv_hessian value gradient hessian)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_inv_hessian_def; LET_DEF; LET_END_DEF] THEN
+  ASM_MESON_TAC[candle_fsn_interval_matrix_scale_shape;
+                candle_fsn_interval_outer_shape;
+                candle_fs_interval_matrix_add_length;
+                candle_fs_interval_matrix_add_rows_width]);;
+
+let candle_fsn_sqrt_hessian_shape = prove
+ (`!certificate value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     LENGTH
+       (candle_fsn_sqrt_hessian certificate value gradient hessian) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fsn_sqrt_hessian certificate value gradient hessian)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_sqrt_hessian_def; LET_DEF; LET_END_DEF] THEN
+  ASM_MESON_TAC[candle_fsn_interval_matrix_scale_shape;
+                candle_fsn_interval_outer_shape;
+                candle_fs_interval_matrix_add_length;
+                candle_fs_interval_matrix_add_rows_width]);;
+
+let candle_fsn_atn_hessian_shape = prove
+ (`!value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     LENGTH (candle_fsn_atn_hessian value gradient hessian) = n /\
+     ALL (\row. LENGTH row = n)
+       (candle_fsn_atn_hessian value gradient hessian)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_atn_hessian_def; LET_DEF; LET_END_DEF] THEN
+  ASM_MESON_TAC[candle_fsn_interval_matrix_scale_shape;
+                candle_fsn_interval_outer_shape;
+                candle_fs_interval_matrix_add_length;
+                candle_fs_interval_matrix_add_rows_width]);;
+
+let candle_fsn_inv_jet_shape = prove
+ (`!value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q
+         (candle_fsn_first_inv (candle_fs_first_make value gradient))
+         (candle_fsn_inv_hessian value gradient hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape;
+              candle_fsn_first_inv_gradient_length;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def; FST; SND] THEN
+  ASM_MESON_TAC[candle_fsn_inv_hessian_shape]);;
+
+let candle_fsn_sqrt_jet_shape = prove
+ (`!certificate value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q
+         (candle_fsn_first_sqrt certificate
+           (candle_fs_first_make value gradient))
+         (candle_fsn_sqrt_hessian certificate value gradient hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape;
+              candle_fsn_first_sqrt_gradient_length;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def; FST; SND] THEN
+  ASM_MESON_TAC[candle_fsn_sqrt_hessian_shape]);;
+
+let candle_fsn_atn_jet_shape = prove
+ (`!value gradient hessian n.
+     LENGTH gradient = n /\
+     LENGTH hessian = n /\
+     ALL (\row. LENGTH row = n) hessian
+     ==>
+     candle_q_dim_jet_shape n
+       (candle_fs_first_to_q
+         (candle_fsn_first_atn (candle_fs_first_make value gradient))
+         (candle_fsn_atn_hessian value gradient hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape;
+              candle_fsn_first_atn_gradient_length;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def; FST; SND] THEN
+  ASM_MESON_TAC[candle_fsn_atn_hessian_shape]);;
+
+let candle_fsn_pi_half_jet_shape = prove
+ (`!dimensions.
+     candle_q_dim_jet_shape (LENGTH dimensions)
+       (candle_fs_first_to_q
+         (candle_fs_first_make
+           (candle_fs_interval_of_q candle_q_pi_half_interval)
+           (candle_fs_interval_zeros dimensions))
+         (candle_fs_interval_zero_matrix dimensions dimensions))`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def;
+              candle_fs_interval_zeros_length;
+              candle_fs_interval_zero_matrix_shape;
+              FST; SND]);;
+
 let candle_fsn_interval_list_scale_contains = prove
  (`!scalar scalar_value intervals values.
      candle_fs_interval_contains scalar scalar_value /\

@@ -29,6 +29,16 @@ let candle_fixed_nonlinear_helper_theorems =
   candle_fsn_interval_list_scale_length;
   candle_fsn_interval_matrix_scale_shape;
   candle_fsn_interval_outer_shape;
+  candle_fsn_first_inv_gradient_length;
+  candle_fsn_first_sqrt_gradient_length;
+  candle_fsn_first_atn_gradient_length;
+  candle_fsn_inv_hessian_shape;
+  candle_fsn_sqrt_hessian_shape;
+  candle_fsn_atn_hessian_shape;
+  candle_fsn_inv_jet_shape;
+  candle_fsn_sqrt_jet_shape;
+  candle_fsn_atn_jet_shape;
+  candle_fsn_pi_half_jet_shape;
   candle_fsn_interval_list_scale_contains;
   candle_fsn_interval_matrix_scale_contains;
   candle_fsn_interval_outer_contains];;
