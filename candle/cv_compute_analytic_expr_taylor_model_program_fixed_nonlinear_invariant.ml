@@ -12,6 +12,8 @@ module Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_invariant = 
 
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
+open Candle_cv_exact_interval_sqrt_certificate;;
+open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
 
 let candle_fsn_inv_hessian_contains = prove
@@ -197,6 +199,89 @@ let candle_fsn_inv_jet_components = prove
          `gradient_real:num->real`;
          `hessian_real:num->num->real`]
         candle_fsn_inv_hessian_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fsn_sqrt_value_contains = prove
+ (`!certificate fixed_interval x.
+     candle_fsn_sqrt_domain certificate fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_of_q certificate) (sqrt x)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_sqrt_domain_def; LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_interval_sqrt_certificate_sound THEN
+  EXISTS_TAC `candle_fs_interval_to_q fixed_interval` THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_sqrt_d_contains = prove
+ (`!certificate fixed_interval x.
+     candle_fsn_sqrt_domain certificate fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_of_q
+             (candle_q_dim_jet_sqrt_d certificate))
+           (inv (sqrt x + sqrt x))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_sqrt_domain_def; LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_dim_jet_sqrt_d_sound THEN
+  EXISTS_TAC `candle_fs_interval_to_q fixed_interval` THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_sqrt_dd_contains = prove
+ (`!certificate fixed_interval x.
+     candle_fsn_sqrt_domain certificate fixed_interval /\
+     candle_fs_interval_contains fixed_interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_of_q
+             (candle_q_dim_jet_sqrt_dd certificate
+               (candle_fs_interval_to_q fixed_interval)))
+           (--inv ((sqrt x + sqrt x) * (x + x)))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fsn_sqrt_domain_def; LET_DEF; LET_END_DEF] THEN
+  STRIP_TAC THEN MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+  MATCH_MP_TAC candle_q_dim_jet_sqrt_dd_sound THEN
+  ASM_REWRITE_TAC[candle_fs_interval_to_q_contains]);;
+
+let candle_fsn_first_sqrt_contains = prove
+ (`!n certificate first value gradient.
+     candle_fsn_sqrt_domain certificate
+       (candle_fs_first_value first) /\
+     candle_fs_interval_contains (candle_fs_first_value first) value /\
+     ALL2 candle_fs_interval_contains
+       (candle_fs_first_gradient first) (list_of_seq gradient n)
+     ==> candle_fs_interval_contains
+           (candle_fs_first_value
+             (candle_fsn_first_sqrt certificate first))
+           (sqrt value) /\
+         ALL2 candle_fs_interval_contains
+           (candle_fs_first_gradient
+             (candle_fsn_first_sqrt certificate first))
+           (list_of_seq
+             (\i. inv (sqrt value + sqrt value) * gradient i) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fsn_first_sqrt_def;
+              candle_fs_first_make_def;
+              candle_fs_first_value_def;
+              candle_fs_first_gradient_def;
+              FST; SND; LET_DEF; LET_END_DEF] THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fsn_sqrt_value_contains THEN
+    EXISTS_TAC
+      `candle_fs_first_value
+        (first:(((num#num)#(num#num))#
+          (((num#num)#(num#num))list)))` THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+    MATCH_MP_TAC candle_fsn_interval_list_scale_contains THEN
+    ASM_REWRITE_TAC[GSYM candle_fs_first_value_def;
+                    GSYM candle_fs_first_gradient_def] THEN
+    MATCH_MP_TAC candle_fsn_sqrt_d_contains THEN
+    EXISTS_TAC
+      `candle_fs_first_value
+        (first:(((num#num)#(num#num))#
+          (((num#num)#(num#num))list)))` THEN
     ASM_REWRITE_TAC[]]);;
 
 end;;

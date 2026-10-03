@@ -6,7 +6,11 @@ open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_invariant;;
 
 let candle_fixed_nonlinear_invariant_theorems =
  [candle_fsn_inv_hessian_contains;
-  candle_fsn_inv_jet_components];;
+  candle_fsn_inv_jet_components;
+  candle_fsn_sqrt_value_contains;
+  candle_fsn_sqrt_d_contains;
+  candle_fsn_sqrt_dd_contains;
+  candle_fsn_first_sqrt_contains];;
 
 if exists (fun th -> hyp th <> []) candle_fixed_nonlinear_invariant_theorems then
   failwith "fixed nonlinear invariant theorem assumptions"
