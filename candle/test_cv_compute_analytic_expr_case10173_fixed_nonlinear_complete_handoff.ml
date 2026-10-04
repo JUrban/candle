@@ -5,6 +5,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_nonlinear_vari
 
 module Test_cv_compute_analytic_expr_case10173_fixed_nonlinear_complete_handoff = struct
 
+open M_verifier;;
 open Candle_cv_polynomial_expr_flyspeck_fixture;;
 open Candle_cv_analytic_expr_action296_plan;;
 open Candle_cv_analytic_expr_case10173_fixture;;
@@ -15,6 +16,9 @@ open Benchmark_cv_compute_analytic_expr_case10173_variable_raw_plan;;
 open Benchmark_cv_compute_analytic_expr_case10173_complete_topology;;
 open Benchmark_cv_compute_analytic_expr_case10173_complete_capture;;
 open Benchmark_cv_compute_analytic_expr_case10173_fixed_nonlinear_complete_capture;;
+
+let candle_case10173_fixed_nonlinear_complete_source_theorem_state :
+    thm option ref = ref None;;
 
 Candle_cv_analytic_expr_jet_prove.candle_q_dim_analytic_jet_profile :=
   (fun event ->
@@ -134,10 +138,17 @@ let _ =
      length axioms_after <> length axioms_before ||
      not (List.for_all (fun axiom -> List.mem axiom axioms_before) axioms_after)
   then failwith "case10173 fixed nonlinear complete: final validation failed";
+  candle_case10173_fixed_nonlinear_complete_source_theorem_state := Some theorem;
   print_endline
     ("CANDLE_CV_CASE10173_FIXED_NONLINEAR_COMPLETE_HANDOFF_OK" ^
      " DEVELOPMENT_NON_RELEASE roots=3305 numerical_cells=4173" ^
      " token_items=8345 active_roots=1 remaining_jobs=0" ^
      " assumptions=0 axiom_growth=0 theorem_digest=" ^ digest);;
+
+let candle_case10173_fixed_nonlinear_complete_source_theorem () =
+  match !candle_case10173_fixed_nonlinear_complete_source_theorem_state with
+  | Some theorem -> theorem
+  | None ->
+      failwith "case10173 fixed nonlinear complete: source theorem unavailable";;
 
 end;;

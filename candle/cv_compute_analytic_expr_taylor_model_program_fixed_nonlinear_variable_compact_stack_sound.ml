@@ -11,6 +11,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_nonlinear_vari
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_variable_compact_stack_sound = struct
 
+open M_verifier;;
 open Candle_cv_analytic_expr_stable_batch;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_compact_stack_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_certified_sound;;

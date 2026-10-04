@@ -12,6 +12,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_batch.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_tree = struct
 
+open M_verifier;;
 open Candle_cv_analytic_expr_taylor_model_batch;;
 open Candle_cv_analytic_expr_taylor_model_program_compile_sound;;
 

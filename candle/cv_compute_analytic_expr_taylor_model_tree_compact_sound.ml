@@ -10,6 +10,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_tree_compact_correct.ml";;
 
 module Candle_cv_analytic_expr_taylor_model_tree_compact_sound = struct
 
+open M_verifier;;
 open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_analytic_expr_taylor_model_tree;;
