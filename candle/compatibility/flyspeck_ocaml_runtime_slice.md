@@ -24,6 +24,16 @@ uses are replaced by exact, source-digest-bound typed operations:
 - integer occurrence-count ordering in `lpproc.ml` uses `Int.compare`;
 - term hashing in `tactics_jordan.hl` uses `Hash_term.hash_of_term`.
 
+The reflected nonlinear S3 checker additionally reaches Flyspeck's
+`m_verifier.hl` merge tactic, which is outside the 400-source direct build
+graph.  Its two inputs are lists of HOL terms, so
+`cv_compute_flyspeck_nonlinear_term_order_compat.ml` preserves the source
+tactic and replaces only that native polymorphic comparison by `Term.compare`.
+The focused actual-function test first reproduces the fail-closed legacy call,
+then checks the explicit comparator on the same two production function terms,
+domain, and merge theorem with no axiom growth.  This separate S3 helper is not
+registered as a direct-build source normalization.
+
 The OCaml-compatible unary `Hashtbl.create` uses a linear association list and
 preserves the duplicate-binding stack behavior of `add`, `find`, and `remove`.
 `Hashtbl.create_ordered` exposes CakeML's ordered bucket implementation when a
