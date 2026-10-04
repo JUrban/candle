@@ -6,6 +6,8 @@
 (* must connect a successful aggregate to Flyspeck's real inequalities.       *)
 (* ========================================================================== *)
 
+needs "candle/compute.ml";;
+
 module Candle_cv_linear_combination_core = struct
 
 (* A signed integer is represented without subtraction as (positive,negative).

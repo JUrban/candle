@@ -17,6 +17,7 @@ FLYSPECK_ROOT = Path(
 sys.path.insert(0, str(HERE))
 
 import flyspeck_nonlinear_verifier_closure as subject
+import flyspeck_nonlinear_verifier_smoke as smoke
 
 
 class NonlinearVerifierClosureTest(unittest.TestCase):
@@ -94,6 +95,41 @@ class NonlinearVerifierClosureTest(unittest.TestCase):
             use["identifier"] == "abs_float" and use["line"] == 345
             for use in compatibility["toplevel_uses"]
         ))
+
+    def test_direct_runtime_compatibility_fragment_has_central_authority(
+        self,
+    ) -> None:
+        path = ROOT / "candle/cv_compute_nonlinear_verifier_runtime_compat.ml"
+        text = path.read_text(encoding="ascii")
+        begin = "(* CANDLE_CV_NONLINEAR_RUNTIME_COMPAT_BEGIN *)\n"
+        shared_end = "(* CANDLE_CV_NONLINEAR_RUNTIME_COMPAT_SHARED_END *)"
+        sign_begin = (
+            "(* CANDLE_CV_NONLINEAR_RUNTIME_COMPAT_SIGN_NUM_BEGIN *)\n"
+        )
+        sign_end = "(* CANDLE_CV_NONLINEAR_RUNTIME_COMPAT_SIGN_NUM_END *)"
+        end = "(* CANDLE_CV_NONLINEAR_RUNTIME_COMPAT_END *)"
+        self.assertEqual(text.count(begin), 1)
+        self.assertEqual(text.count(shared_end), 1)
+        self.assertEqual(text.count(sign_begin), 1)
+        self.assertEqual(text.count(sign_end), 1)
+        self.assertEqual(text.count(end), 1)
+        observed_shared = (
+            text.split(begin, 1)[1].split(shared_end, 1)[0].rstrip("\n")
+        )
+        expected, _record = smoke.authenticate_big_int_compatibility(ROOT)
+        expected_shared, expected_alias = expected.rsplit(
+            "let sign_num = Num.sign_num;;", 1
+        )
+        self.assertEqual(expected_alias, "\n")
+        self.assertEqual(observed_shared, expected_shared.rstrip("\n"))
+        observed_sign = (
+            text.split(sign_begin, 1)[1].split(sign_end, 1)[0].rstrip("\n")
+        )
+        nums = (ROOT / smoke.BIG_INT_SOURCE).read_text(encoding="ascii")
+        sign_source = "let sign_num n =\n"
+        sign_start = nums.index(sign_source)
+        sign_finish = nums.index("\n;;", sign_start) + len("\n;;")
+        self.assertEqual(observed_sign, nums[sign_start:sign_finish])
 
     def test_float_runtime_identifier_surface_is_accounted_for(self) -> None:
         compatibility = self.payload["compatibility"]

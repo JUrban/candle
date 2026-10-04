@@ -30,9 +30,23 @@ if not
         candle_cv_num_compat_half) ||
    not
      (Num.eq_num (Num.minus_num candle_cv_num_compat_two)
-        (Num.num_of_int (~-2)))
+        (Num.num_of_int (~-2))) ||
+   Num.string_of_num candle_cv_num_compat_three <> "3" ||
+   Num.sign_num (Num.num_of_int (~-2)) <> -1 ||
+   not
+     (Num.eq_num
+        (Num.quo_num (Num.num_of_int 7) candle_cv_num_compat_three)
+        candle_cv_num_compat_two) ||
+   not
+     (Num.eq_num
+        (Num.mod_num (Num.num_of_int 7) candle_cv_num_compat_three)
+        (Num.num_of_int 1)) ||
+   Num.compare candle_cv_num_compat_two candle_cv_num_compat_three <> -1 ||
+   not
+     (Num.eq_num
+        (Num.num_of_big_int (Big_int.big_int_of_int 5))
+        (Num.num_of_int 5))
 then failwith "direct reflected Num compatibility mismatch";;
 
 print_endline
-  "CANDLE_CV_NUM_MODULE_COMPAT_OK representation=existing-num aliases=14";;
-
+  "CANDLE_CV_NUM_MODULE_COMPAT_OK representation=existing-num aliases=36";;
