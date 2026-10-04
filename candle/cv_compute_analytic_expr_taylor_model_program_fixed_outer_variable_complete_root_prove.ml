@@ -12,6 +12,7 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable
 
 module Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_root_prove = struct
 
+open M_verifier;;
 open Candle_cv_analytic_expr_stable_program_data;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw;;

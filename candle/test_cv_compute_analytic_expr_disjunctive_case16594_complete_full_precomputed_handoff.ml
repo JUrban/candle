@@ -19,6 +19,9 @@ open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_complete_
 open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_variable_axis_plan;;
 open Benchmark_cv_compute_analytic_expr_disjunctive_case16594_complete_full_precomputed_capture;;
 
+let candle_disjunctive_case16594_complete_full_source_theorem_state :
+    thm option ref = ref None;;
+
 let candle_disjunctive_case16594_complete_full_logical_token = function
   | Candle_disjunctive_case16594_complete_full_leaf ->
       `Candle_q_dim_taylor_model_fixed_outer_variable_compact_leaf`
@@ -103,10 +106,18 @@ let _ =
      length axioms_after <> length axioms_before ||
      not (List.for_all (fun axiom -> List.mem axiom axioms_before) axioms_after)
   then failwith "case16594 complete full handoff: final validation failed";
+  candle_disjunctive_case16594_complete_full_source_theorem_state :=
+    Some theorem;
   print_endline
     ("CANDLE_CV_CASE16594_COMPLETE_FULL_HANDOFF_OK DEVELOPMENT_NON_RELEASE" ^
      " authenticated_leaves=860 numerical_cells=875 token_items=1749" ^
      " active_roots=1 remaining_jobs=0 assumptions=0 axiom_growth=0" ^
      " theorem_digest=" ^ digest);;
+
+let candle_disjunctive_case16594_complete_full_source_theorem () =
+  match !candle_disjunctive_case16594_complete_full_source_theorem_state with
+  | Some theorem -> theorem
+  | None ->
+      failwith "case16594 complete full handoff: source theorem unavailable";;
 
 end;;

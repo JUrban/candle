@@ -42,7 +42,12 @@ let rec candle_direct_ineqm_conv =
       ALL_CONV tm;;
 
 let candle_direct_flyspeck_defs =
-  [Nonlinear_lemma.unit6;
+  [Sphere.delta_x;
+   Sphere.delta_x4;
+   Sphere.delta4_squared_x;
+   Sphere.x1_delta_x;
+   Nonlinear_lemma.unit6;
+   Nonlinear_lemma.rho_alt;
    Nonlinear_lemma.sqrt_x1;
    Nonlinear_lemma.sqrt_x2;
    Nonlinear_lemma.sqrt_x3;
@@ -50,8 +55,16 @@ let candle_direct_flyspeck_defs =
    Nonlinear_lemma.sqrt_x5;
    Nonlinear_lemma.sqrt_x6;
    Sphere.dihatn_x;
-   Sphere.delta_x4;
-   Sphere.delta_x];;
+   Sphere.dih2atn_x;
+   Sphere.dih3atn_x;
+   Sphere.rhazimatn_x;
+   Sphere.rhazim2atn_x;
+   Sphere.rhazim3atn_x;
+   Sphere.sol0;
+   GSYM Nonlinear_lemma.sol0_over_pi_EQ_const1;
+   Sphere.rotate2;
+   Sphere.rotate3;
+   REAL_POW_2];;
 
 let candle_direct_expand_ineq_case =
   REWRITE_CONV
