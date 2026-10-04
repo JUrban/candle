@@ -21,7 +21,10 @@ let candle_q_point_sqrt_interval rational =
   if rational <=/ Num.num_of_int 0 then
     failwith "analytic point certificate: nonpositive square-root argument";
   let scale = candle_q_point_sqrt_scale in
-  let approximate = Float.sqrt (Num.float_of_num rational) in
+  (* Flyspeck also defines a theorem module named [Float].  Use the OCaml
+     standard-library binding explicitly so direct-source module loading
+     cannot redirect this untrusted numerical hint generator. *)
+  let approximate = Stdlib.sqrt (Num.float_of_num rational) in
   let truncated = int_of_float (approximate *. float_of_int scale) in
   let lower_candidate = truncated - candle_q_point_sqrt_margin in
   let lower_integer = if lower_candidate < 0 then 0 else lower_candidate in

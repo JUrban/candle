@@ -5,7 +5,11 @@
 (* pinned case-10173 target before this fragment runs in the loaded verifier. *)
 (* ========================================================================== *)
 
+needs "candle/cv_compute_flyspeck_direct_source_compat.ml";;
+
 module Candle_cv_analytic_expr_case10173_fixture = struct
+
+open Candle_cv_flyspeck_direct_source_compat;;
 
 let candle_case10173_analytic_target =
  `ineqm [x1; x2; x3; x4; x5; x6]
@@ -30,7 +34,7 @@ let candle_case10173_analytic_target =
     &0)`;;
 
 let candle_case10173_analytic_reconstruction =
-  Break_case.ineqm_conv candle_case10173_analytic_target;;
+  candle_direct_ineqm_conv candle_case10173_analytic_target;;
 
 if lhand (concl candle_case10173_analytic_reconstruction) <>
      candle_case10173_analytic_target then
@@ -46,11 +50,7 @@ let candle_case10173_analytic_expansion =
       REAL_ARITH `~(a < b:real) <=> b <= a`;
       REAL_ARITH `~(a >= b:real) <=> a < b`;
       REAL_ARITH `~(a <= b:real) <=> b < a`]
-   THENC
-   REWRITE_CONV
-     ([Definitions.ineq; IMP_IMP; REAL_MUL_LZERO; REAL_MUL_RZERO] @
-      Definitions.flyspeck_defs)
-   THENC DEPTH_CONV let_CONV)
+   THENC candle_direct_expand_ineq_case)
     candle_case10173_analytic_case;;
 
 let candle_case10173_analytic_converted =
@@ -77,7 +77,7 @@ let candle_case10173_analytic_lhs =
 
 let candle_case10173_analytic_functions,
     candle_case10173_analytic_variable_vector =
-  M_verifier_main.exprs_to_vector_fun [candle_case10173_analytic_lhs];;
+  candle_direct_exprs_to_vector_fun [candle_case10173_analytic_lhs];;
 
 if length candle_case10173_analytic_functions <> 1 then
   failwith "case10173 analytic fixture: vector-function drift";;

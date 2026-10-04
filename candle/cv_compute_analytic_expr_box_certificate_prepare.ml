@@ -113,8 +113,10 @@ let candle_q_box_sqrt_interval (lower,upper) =
   if Num.le_num lower (Num.num_of_int 0) || Num.lt_num upper lower then
     failwith "analytic box certificate: nonpositive square-root range";
   let scale = candle_q_box_sqrt_scale in
-  let lower_approximate = Float.sqrt (Num.float_of_num lower) and
-      upper_approximate = Float.sqrt (Num.float_of_num upper) in
+  (* Flyspeck also defines a theorem module named [Float].  Keep this
+     untrusted hint calculation on the OCaml runtime binding explicitly. *)
+  let lower_approximate = Stdlib.sqrt (Num.float_of_num lower) and
+      upper_approximate = Stdlib.sqrt (Num.float_of_num upper) in
   let lower_truncated =
     int_of_float (lower_approximate *. float_of_int scale) and
       upper_truncated =

@@ -8,21 +8,26 @@
 
 needs "candle/cv_compute_analytic_expr_jet_prove.ml";;
 needs "candle/cv_compute_analytic_expr_action296_fixture.ml";;
+needs "formal_ineqs/verifier/certificate.hl";;
 
 module Candle_cv_analytic_expr_action296_plan = struct
 
 open Certificate;;
+open M_verifier_main;;
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_action296_fixture;;
 
 let candle_action296_plan_axioms_before = axioms ();;
 let candle_action296_plan_started = Unix.gettimeofday ();;
+let candle_action296_plan_marker phase =
+  print_endline ("CANDLE_CERT_PROFILE lane=action296-plan phase=" ^ phase);;
 
 let candle_action296_plan_lo,candle_action296_plan_hi =
   candle_action296_analytic_bounds;;
+let _ = candle_action296_plan_marker "source-bounds";;
 let candle_action296_plan_sorted_variable_names =
   map (fst o dest_var)
-    (dest_vector candle_action296_analytic_variable_vector);;
+    (M_taylor.dest_vector candle_action296_analytic_variable_vector);;
 
 if length candle_action296_plan_sorted_variable_names <> 6 then
   failwith "action296 analytic plan: variable-order drift";;
@@ -41,18 +46,24 @@ let candle_action296_plan_ordered_bounds =
     candle_action296_plan_sorted_variable_names [];;
 let candle_action296_plan_xx0,candle_action296_plan_zz0 =
   unzip candle_action296_plan_ordered_bounds;;
-let candle_action296_plan_xx = mk_real_list candle_action296_plan_xx0
-and candle_action296_plan_zz = mk_real_list candle_action296_plan_zz0;;
+let _ = candle_action296_plan_marker "ordered-bounds";;
+let candle_action296_plan_xx =
+  Misc_vars.mk_real_list candle_action296_plan_xx0
+and candle_action296_plan_zz =
+  Misc_vars.mk_real_list candle_action296_plan_zz0;;
 let candle_action296_plan_domain_subset,
     (candle_action296_plan_xx1,candle_action296_plan_zz1) =
   M_verifier_main.mk_float_domain 6
     (candle_action296_plan_xx,candle_action296_plan_zz);;
+let _ = candle_action296_plan_marker "float-domain";;
 let candle_action296_plan_dimension =
-  (get_dim o fst o dest_abs) candle_action296_analytic_function;;
+  length candle_action296_plan_sorted_variable_names;;
+let _ = candle_action296_plan_marker "dimension";;
 let candle_action296_plan_xx2 =
   Informal_taylor.convert_to_float_list 6 true candle_action296_plan_xx
 and candle_action296_plan_zz2 =
   Informal_taylor.convert_to_float_list 6 false candle_action296_plan_zz;;
+let _ = candle_action296_plan_marker "float-endpoints";;
 
 let candle_action296_plan_params =
   ref
@@ -61,8 +72,10 @@ let candle_action296_plan_params =
        convex_flag = false;
        allow_derivatives = false;
        eps = 1e-10};;
+let _ = candle_action296_plan_marker "parameters";;
 
 let candle_action296_plan_build_started = Unix.gettimeofday ();;
+let _ = candle_action296_plan_marker "verification-functions-begin";;
 let candle_action296_plan_formal_functions,
     candle_action296_plan_informal_functions =
   unzip
@@ -70,6 +83,7 @@ let candle_action296_plan_formal_functions,
       (M_verifier_main.mk_verification_functions
         candle_action296_plan_params 6)
       candle_action296_analytic_functions);;
+let _ = candle_action296_plan_marker "verification-functions";;
 let candle_action296_plan_build_seconds =
   Unix.gettimeofday () -. candle_action296_plan_build_started;;
 
@@ -91,6 +105,7 @@ let candle_action296_plan_certificate =
     candle_action296_plan_search_options
     candle_action296_plan_informal_domain
     candle_action296_plan_search_functions;;
+let _ = candle_action296_plan_marker "certificate-search";;
 let candle_action296_plan_search_seconds =
   Unix.gettimeofday () -. candle_action296_plan_search_started;;
 let candle_action296_plan_stats =
@@ -110,11 +125,13 @@ let candle_action296_plan_precision_tree,_ =
     6 1 6 candle_action296_plan_informal_functions
     candle_action296_plan_certificate
     candle_action296_plan_xx2 candle_action296_plan_zz2;;
+let _ = candle_action296_plan_marker "adaptive-precision";;
 let candle_action296_plan_adaptive_seconds =
   Unix.gettimeofday () -. candle_action296_plan_adaptive_started;;
 
 let candle_action296_plan_vector,_ =
   dest_abs candle_action296_analytic_function;;
+let _ = candle_action296_plan_marker "source-vector";;
 let candle_action296_plan_variables =
   Candle_cv_polynomial_expr_flyspeck_reify.candle_poly_vector_components
     candle_action296_plan_vector 6;;
@@ -141,12 +158,29 @@ let candle_action296_plan_prepared =
   candle_q_dim_analytic_jet_prepare_six_with
     candle_action296_plan_sqrt_interval
     candle_action296_analytic_function;;
+let _ = candle_action296_plan_marker "reflected-preparation";;
 let candle_action296_plan_prepare_seconds =
   Unix.gettimeofday () -. candle_action296_plan_prepare_started;;
 let candle_action296_plan_instruction_count =
   length (dest_list candle_action296_plan_prepared.program_term);;
 let candle_action296_plan_total_seconds =
   Unix.gettimeofday () -. candle_action296_plan_started;;
+
+print_endline
+  ("CANDLE_CERT_PROFILE lane=action296-plan phase=authenticated-state" ^
+   " dimension=" ^ string_of_int candle_action296_plan_dimension ^
+   " variable_sqrts=" ^
+   string_of_int !candle_action296_plan_variable_sqrt_count ^
+   " nested_sqrts=" ^
+   string_of_int !candle_action296_plan_nested_sqrt_count ^
+   " instructions=" ^
+   string_of_int candle_action296_plan_instruction_count ^
+   " domain_hypotheses=" ^
+   string_of_int (length (hyp candle_action296_plan_domain_subset)) ^
+   " valid_hypotheses=" ^
+   string_of_int (length (hyp candle_action296_plan_prepared.valid_theorem)) ^
+   " source_hypotheses=" ^
+   string_of_int (length (hyp candle_action296_plan_prepared.source_theorem)));;
 
 if candle_action296_plan_dimension <> 6 ||
    !candle_action296_plan_variable_sqrt_count <> 6 ||

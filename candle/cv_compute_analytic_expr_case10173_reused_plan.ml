@@ -44,8 +44,10 @@ let candle_case10173_plan_ordered_bounds =
     candle_action296_plan_sorted_variable_names [];;
 let candle_case10173_plan_xx0,candle_case10173_plan_zz0 =
   unzip candle_case10173_plan_ordered_bounds;;
-let candle_case10173_plan_xx = mk_real_list candle_case10173_plan_xx0
-and candle_case10173_plan_zz = mk_real_list candle_case10173_plan_zz0;;
+let candle_case10173_plan_xx =
+  Misc_vars.mk_real_list candle_case10173_plan_xx0
+and candle_case10173_plan_zz =
+  Misc_vars.mk_real_list candle_case10173_plan_zz0;;
 let candle_case10173_plan_domain_subset,
     (candle_case10173_plan_xx1,candle_case10173_plan_zz1) =
   M_verifier_main.mk_float_domain 6

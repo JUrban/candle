@@ -10,6 +10,8 @@
 needs "candle/cv_compute_analytic_expr_case10173_leaf_grouping_fixture.ml";;
 needs "candle/cv_compute_analytic_expr_action296_forest_plan.ml";;
 needs "candle/cv_compute_analytic_expr_case10173_fixed_outer_generated_plan.ml";;
+needs "candle/cv_compute_analytic_expr_box_certificate_prepare.ml";;
+needs "candle/cv_compute_analytic_expr_certificate_variant_prepare.ml";;
 needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_outer_variable_raw_prove.ml";;
 
 module Benchmark_cv_compute_analytic_expr_case10173_variable_raw_plan = struct
