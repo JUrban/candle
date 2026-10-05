@@ -34,8 +34,8 @@ type candle_disjunctive_fixed_outer_result = {
 let candle_disjunctive_fixed_outer_domain_bounds domain_theorem =
   let domain_pair,_,_ = M_taylor.dest_m_cell_domain (concl domain_theorem) in
   let actual_lower,actual_upper = dest_pair domain_pair in
-  let lower,_ = candle_reflected_nl_normalize_vector actual_lower and
-      upper,_ = candle_reflected_nl_normalize_vector actual_upper in
+  let lower = candle_reflected_nl_normalize_vector_data actual_lower and
+      upper = candle_reflected_nl_normalize_vector_data actual_upper in
   lower,upper;;
 
 let rec candle_disjunctive_fixed_outer_aconv_lists left right =

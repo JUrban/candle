@@ -154,6 +154,26 @@ let candle_reflected_nl_normalize_vector vector_tm =
     failwith "reflected nonlinear driver: endpoint normalization mismatch";
   normalized_components,vector_theorem;;
 
+(* Exact data-only endpoint decoding for untrusted certificate preparation.  *)
+(* This deliberately returns no theorem: callers may use the result only as  *)
+(* a proposal that the later proof-producing source handoff authenticates.    *)
+(* Avoiding twelve discarded FLOAT_TO_NUM_CONV theorems per six-dimensional  *)
+(* box materially reduces large forest-plan preparation time.                 *)
+let candle_reflected_nl_exact_component_data tm =
+  try
+    let _ = rat_of_term tm in tm
+  with Failure _ ->
+    term_of_rat (More_float.num_of_float_tm tm);;
+
+let candle_reflected_nl_normalize_vector_data vector_tm =
+  let vector_head,vector_args = strip_comb vector_tm in
+  if fst (dest_const vector_head) <> "vector" || length vector_args <> 1 then
+    failwith "reflected nonlinear driver: expected live explicit vector data";
+  let components = dest_list (hd vector_args) in
+  if length components <> 6 then
+    failwith "reflected nonlinear driver: expected six live data coordinates";
+  map candle_reflected_nl_exact_component_data components;;
+
 let candle_reflected_nl_source_pass_with
     function_term prove_box domain_th =
   let domain,_,_ = M_taylor.dest_m_cell_domain (concl domain_th) in
