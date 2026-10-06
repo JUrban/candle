@@ -251,20 +251,20 @@
   },
   "transition_verification": {
     "implementation": "candle/cv_compute_tame_graph_transition.ml",
-    "implementation_sha256": "eb19bead3d65394e4d227f89941eee56a237d29c1e7162c90b8492e412f8e872",
+    "implementation_sha256": "11eb75f45f203950529f7717422a41313f1eaacacff4ffa3a11fd817596b4bf9",
     "focused_test": "candle/test_cv_compute_tame_graph_transition.ml",
     "focused_test_sha256": "8df02968388560ede8e93d7ef9096fb8865a5c450bea9046e7f186c2dc61e285",
     "launcher_sha256": "12b219ec250cd7d1637d85048b0ddfba62699463e9c1b3270999456098c60c54",
-    "fresh_success_log": "/project/flyspeck-candle-runs/tame-transition-v2-dev-001/fresh.log",
-    "fresh_success_log_sha256": "d7df75573596609e08731fbfdb7d4d95ff3db2075a7a5eaa9bcf9fa0e1d84cb1",
-    "fresh_success_time_sha256": "507011b400e8e726462cc3c67fe05684ee2590b2c2fcd2f326f82ea99cf68b44",
-    "fresh_success_elapsed_seconds": 153.90,
-    "fresh_success_user_seconds": 150.01,
-    "fresh_success_system_seconds": 3.87,
-    "fresh_success_max_rss_kib": 1090432,
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-worklist-v2-dev-002/fresh.log",
+    "fresh_success_log_sha256": "e3e0743e45098c0008a861e63a1a9fee1a408eaaa5fe0194f32b744eef02de99",
+    "fresh_success_time_sha256": "2ebafe1e3070867cd204761a7631510749afbf10f6ec505804842531dfddb397",
+    "fresh_success_elapsed_seconds": 153.73,
+    "fresh_success_user_seconds": 151.27,
+    "fresh_success_system_seconds": 2.45,
+    "fresh_success_max_rss_kib": 1088640,
     "success_marker": "CANDLE_CV_TAME_GRAPH_TRANSITION_TEST_OK enum33=2 enum43=3 next_tame0_children=2 next_tame_children=1 final_pruned=1 complete_graph_identities=isabelle_exact axiom_growth=0 DEVELOPMENT_NON_RELEASE",
     "global_axiom_growth": 0,
-    "algorithm_identity": "The reflected runtime enumerator implements AFP enumBase, enumAppend, and the exact iteration/wrapping order. It feeds score-admissible sizes into duplicate-edge filtering and subdivision, applies exact notame pruning, and then implements TameEnum's final tame10/tame11a/tame11b/tame12o/is_tame13a filter.",
+    "algorithm_identity": "The reflected runtime enumerator implements AFP enumBase, enumAppend, and the exact iteration/wrapping order. It feeds score-admissible sizes into duplicate-edge filtering and subdivision, applies exact notame pruning, and then implements TameEnum's final tame10/tame11a/tame12o/is_tame13a filter. Tame11b belongs to the earlier Generator.notame stage and is deliberately not duplicated in TameEnum.is_tame.",
     "first_transition_results": {
       "enumerator_3_3_entries": 2,
       "enumerator_4_3_entries": 3,
@@ -274,6 +274,42 @@
       "complete_ordered_graph_identity_match": true
     },
     "claim_limit": "This proves a focused exact first transition, not the universal transition correspondence, deterministic whole-worklist replay, complete p=0 enumeration, bounded p=2, archive classification, or S4."
+  },
+  "worklist_verification": {
+    "implementation": "candle/cv_compute_tame_graph_worklist.ml",
+    "implementation_sha256": "7c821cf9e9afb1341fed31ff1026ebcc7e3a150998df0f00c4721b2c983409a2",
+    "focused_test": "candle/test_cv_compute_tame_graph_worklist.ml",
+    "focused_test_sha256": "128e717b1d564a5f476638341ce573d2e05f3f9b114174581c44fcff9896c972",
+    "launcher_sha256": "10c6cca5e25613b4c2d053176b38ffb8e25adca0b3ec1d21d16247df557c4790",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-worklist-v2-dev-002/fresh.log",
+    "fresh_success_log_sha256": "e3e0743e45098c0008a861e63a1a9fee1a408eaaa5fe0194f32b744eef02de99",
+    "fresh_success_time_sha256": "2ebafe1e3070867cd204761a7631510749afbf10f6ec505804842531dfddb397",
+    "fresh_success_elapsed_seconds": 153.73,
+    "fresh_success_user_seconds": 151.27,
+    "fresh_success_system_seconds": 2.45,
+    "fresh_success_max_rss_kib": 1088640,
+    "success_marker": "CANDLE_CV_TAME_GRAPH_WORKLIST_TEST_OK fuel0_preserves_frontier=true fuel1_visited=1 fuel1_stage0_children=2 fuel1_retained=1 fuel1_final_pruned=1 fuel1_maximum_frontier=1 exact_state=true axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "global_axiom_growth": 0,
+    "algorithm_identity": "Deterministic depth-first replay over an exact cval frontier. Each nonfinal graph uses the composed AFP-compatible transition and prepends its retained children in transition order; final graphs are accumulated separately. Explicit numeric fuel fail-closes the executable iteration while preserving frontier, finals, and six counters in the returned state.",
+    "development_run_history": [
+      {"run": "dev-001", "seconds": 157.68, "class": "source_contract_failure", "result": "mixed cval recursion supplied assumptions to new_specification; replaced by a num_RECURSION helper plus a total cval wrapper"},
+      {"run": "dev-002", "seconds": 153.73, "class": "kernel_success", "result": "zero-step preservation and exact one-step state/counters passed; no axiom growth"}
+    ],
+    "prepared_p0_benchmark": {
+      "prepare_source": "candle/prepare_cv_compute_tame_graph_worklist_p0.ml",
+      "prepare_source_sha256": "a259742f446026fb3ba02643df323ac7bb006dd262178390e546a82afc553e7b",
+      "prefix10_source_sha256": "9f71e4452a7577fb91aec76c85afda941de4534e2fd6f0edc7a18a29470b8833",
+      "prefix100_source_sha256": "675bb31ea5bb7a108293089a95448c58b8ea57c911703c36632d573ca697fbb9",
+      "complete_source": "candle/benchmark_cv_compute_tame_graph_worklist_p0_complete.ml",
+      "complete_source_sha256": "e4eab53268accb6c946fe6f46e4b8ae4fc6ece254923780c6258990c2c77c4fb",
+      "prefix10": {"visited": 10, "frontier": 30, "finals": 0, "maximum_frontier": 30},
+      "prefix100": {"visited": 100, "frontier": 13, "finals": 0, "maximum_frontier": 30},
+      "complete": {"fuel": 1000, "visited": 239, "stage0_children": 239, "retained_children": 238, "final_pruned": 1, "frontier": 0, "finals": 0, "maximum_frontier": 30},
+      "timing_status": "interactive prepared-state development observation only",
+      "timing_observation": "Each 10-node, 100-node, and complete 239-node call returned within its first 30-second PTY poll. Exact evaluator timing and a retained transcript remain pending; this observation is not used as feasibility-gate timing evidence.",
+      "preparation_cost_note": "The retained 153.73-second fresh worklist test and the additional unmeasured persistent preparation session must both be charged in the eventual total-cost comparison."
+    },
+    "claim_limit": "The exact executable p=0 worklist completed in a prepared development state, but independent AFP visited-node/result comparison, precise retained timing, universal transition/replay soundness, bounded p=2, archive classification, and S4 remain open."
   },
   "entries": [
     {

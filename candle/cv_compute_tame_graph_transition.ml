@@ -159,12 +159,9 @@ let candle_cv_tame_is_tame_def = new_definition
          (candle_cv_tame_tame11a_faces_at
            (candle_cv_tame_graph_faces_at graph))
          (candle_cv_tame_and
-           (candle_cv_tame_tame11b_faces_at
+           (candle_cv_tame_tame12o_faces_at
              (candle_cv_tame_graph_faces_at graph))
-           (candle_cv_tame_and
-             (candle_cv_tame_tame12o_faces_at
-               (candle_cv_tame_graph_faces_at graph))
-             (candle_cv_tame_is_tame13a graph)))))`;;
+           (candle_cv_tame_is_tame13a graph))))`;;
 
 let candle_cv_tame_filter_final_tame_def = define
  `(candle_cv_tame_filter_final_tame (Cexp_num n) = Cexp_num 0) /\
