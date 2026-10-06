@@ -18,8 +18,8 @@ open Candle_cv_flyspeck_lists_core;;
 (* reuse the common cval list convention: [Cexp_num 0] is nil and             *)
 (* [Cexp_pair h t] is cons.                                                    *)
 
-let candle_cv_tame_face_def = new_definition
- `candle_cv_tame_face (face:num list) = candle_cv_num_list face`;;
+let candle_cv_tame_fgraph_face_def = new_definition
+ `candle_cv_tame_fgraph_face (face:num list) = candle_cv_num_list face`;;
 
 let candle_cv_tame_fgraph_def = new_definition
  `candle_cv_tame_fgraph (graph:(num list)list) = candle_cv_num_lists graph`;;
@@ -41,8 +41,8 @@ let candle_cv_tame_fgraph_decode_def = define
 
 let candle_cv_tame_face_roundtrip = prove
  (`!face:num list.
-     candle_cv_tame_face_decode (candle_cv_tame_face face) = face`,
-  REWRITE_TAC[candle_cv_tame_face_def] THEN
+     candle_cv_tame_face_decode (candle_cv_tame_fgraph_face face) = face`,
+  REWRITE_TAC[candle_cv_tame_fgraph_face_def] THEN
   LIST_INDUCT_TAC THEN
   ASM_REWRITE_TAC[candle_cv_num_list_def;
                   candle_cv_tame_face_decode_def;
@@ -55,7 +55,7 @@ let candle_cv_tame_fgraph_roundtrip = prove
   LIST_INDUCT_TAC THEN
   ASM_REWRITE_TAC[candle_cv_num_lists_def;
                   candle_cv_tame_fgraph_decode_def;
-                  GSYM candle_cv_tame_face_def;
+                  GSYM candle_cv_tame_fgraph_face_def;
                   candle_cv_tame_face_roundtrip]);;
 
 let candle_cv_tame_vertex_map_roundtrip = prove
@@ -67,7 +67,8 @@ let candle_cv_tame_vertex_map_roundtrip = prove
 
 let candle_cv_tame_face_injective = prove
  (`!face1 face2:num list.
-     candle_cv_tame_face face1 = candle_cv_tame_face face2 <=> face1 = face2`,
+     candle_cv_tame_fgraph_face face1 =
+     candle_cv_tame_fgraph_face face2 <=> face1 = face2`,
   REPEAT GEN_TAC THEN EQ_TAC THENL
    [DISCH_THEN (MP_TAC o AP_TERM `candle_cv_tame_face_decode`) THEN
     REWRITE_TAC[candle_cv_tame_face_roundtrip];

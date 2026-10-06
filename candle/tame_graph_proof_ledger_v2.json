@@ -72,17 +72,17 @@
   "data_validator_verification": {
     "test": "candle/test_cv_compute_tame_graph_data_sound.ml",
     "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
-    "fresh_success_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-001/fresh.log",
-    "fresh_success_log_sha256": "9d4a6f6cae23987527e1b3e55d37fa1db20668f561104f315369909fcc55a74d",
-    "fresh_success_elapsed_seconds": 130.97,
-    "fresh_success_user_seconds": 126.76,
-    "fresh_success_system_seconds": 4.04,
-    "fresh_success_max_rss_kib": 1088640,
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-002/fresh.log",
+    "fresh_success_log_sha256": "7b2ff8eaf4d906eb9f9ef1a2546586684461eeb7f98d0e8852b1ad4d02217422",
+    "fresh_success_elapsed_seconds": 130.03,
+    "fresh_success_user_seconds": 128.65,
+    "fresh_success_system_seconds": 1.37,
+    "fresh_success_max_rss_kib": 1087744,
     "success_marker": "CANDLE_CV_TAME_GRAPH_DATA_SOUND_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
     "checked_theorem_count": 7,
     "theorem_hypotheses": 0,
     "global_axiom_growth": 0,
-    "pre_evidence_cost_note": "Development required five failed fresh-kernel loads, one launcher failure before load, one non-preserved green fresh load, and one persistent proof-iteration session before the recorded run. The four earliest full-load failures were observed at about 100-110 seconds each but their temporary timing files were not retained; this cost must be included as a range in the eventual feasibility report rather than silently charging only the final run."
+    "pre_evidence_cost_note": "Development required five failed fresh-kernel loads, one launcher failure before load, one non-preserved green fresh load, and one persistent proof-iteration session before the first recorded run. The four earliest full-load failures were observed at about 100-110 seconds each but their temporary timing files were not retained. Dev-002 is a fresh rerun after the archive face encoder constant was renamed from candle_cv_tame_face to candle_cv_tame_fgraph_face to remove a namespace collision with the authentic enumerator face constructor; encoded data, validator predicates, and proof statements are unchanged. The eventual feasibility report must include all preparation rather than silently charging only the final run."
   },
   "explicit_map_core_verification": {
     "test": "candle/test_tame_graph_explicit_map_core.ml",
@@ -181,6 +181,44 @@
     },
     "development_cost_note": "Before the final retained run, two fresh proof failures exposed unsplit recursive-definition conjunctions; later fresh runs established the workload but were superseded by the exact full-identity fixture and corrected timing claim. In a progressively GC-stressed persistent session, a 100000-repeat probe was interrupted after roughly 390 seconds and a subsequent 10000-repeat probe after more than 240 seconds. Those costs are development/preparation cost, not throughput evidence.",
     "claim_limit": "This checks the exact first successor batch from the authentic p=0 seed. It is not a complete p=0 worklist replay, tame-pruning proof, archive classification, bounded p=2 result, or S4 theorem."
+  },
+  "first_stage_pruning_verification": {
+    "implementation": "candle/cv_compute_tame_graph_pruning.ml",
+    "implementation_sha256": "905faa19fd3b273fe5fc4040b82b2fe06a1b0050f1808320d0cf51a95bc983b0",
+    "soundness": "candle/cv_compute_tame_graph_pruning_sound.ml",
+    "soundness_sha256": "4381112a55e02b78b35112c6909171e54264c8ac6629f87db020adcddc2bc01f",
+    "focused_test": "candle/test_cv_compute_tame_graph_pruning.ml",
+    "focused_test_sha256": "a2f5debbe1e4abc716d7bb77658cd43445f7294ff129c82dc36e1c6a3ac9abba",
+    "focused_success_log": "/project/flyspeck-candle-runs/tame-pruning-v2-dev-001/fresh.log",
+    "focused_success_log_sha256": "8002641f0b113fc9d8fce92b6d5f8deb8466ead6d839b6f98b9967366a12ba92",
+    "focused_elapsed_seconds": 134.54,
+    "focused_user_seconds": 133.27,
+    "focused_system_seconds": 1.26,
+    "focused_max_rss_kib": 1090432,
+    "focused_success_marker": "CANDLE_CV_TAME_GRAPH_PRUNING_TEST_OK seed_retained=true degree7_retained=true degree8_rejected=true exceptional_degree7_rejected=true vertex16_rejected=true filter_order=exact axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "soundness_test": "candle/test_cv_compute_tame_graph_pruning_sound.ml",
+    "soundness_test_sha256": "707a8800cb14639a1a97119a019300dbdd5577a8d6bd2b03db5f7a4416b35915",
+    "soundness_success_log": "/project/flyspeck-candle-runs/tame-pruning-sound-v2-dev-005/fresh.log",
+    "soundness_success_log_sha256": "b1a689710e5e17d10a28444f8f9991f3023743cbe4ee632417b8481efc752852",
+    "soundness_time_sha256": "8b5329452dcb19c64810c0903253d8b11823a9db3f9377d2de9126d49a19c7e8",
+    "soundness_candle_log_sha256": "2015852b8e4206962daf40d1413b57356aa43c27e58b5d1421e60391edc86e69",
+    "soundness_elapsed_seconds": 137.98,
+    "soundness_user_seconds": 136.58,
+    "soundness_system_seconds": 1.39,
+    "soundness_max_rss_kib": 1090432,
+    "soundness_success_marker": "CANDLE_CV_TAME_GRAPH_PRUNING_SOUND_TEST_OK theorems=15 assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "theorem_hypotheses": 0,
+    "global_axiom_growth": 0,
+    "algorithm_identity": "Exact AFP Generator.notame: reject unless countVertices <= 15 and every vertex obeys tame11b's degree bound 7 without an exceptional final face and 6 otherwise.",
+    "development_run_history": [
+      {"run": "sound-dev-001", "seconds": 135.10, "class": "namespace_integration_failure", "result": "archive encoder and enumerator defined incompatible HOL constants with the same face name"},
+      {"run": "sound-dev-002", "seconds": 138.57, "class": "source_failure", "result": "nested product-list type annotation did not parse"},
+      {"run": "sound-dev-003", "seconds": 137.13, "class": "source_failure", "result": "nested product-list type annotation still ambiguous"},
+      {"run": "sound-dev-004", "seconds": 137.91, "class": "source_failure", "result": "nested list annotation fixed after this retained failure"},
+      {"run": "sound-dev-005", "seconds": 137.98, "class": "kernel_success", "result": "15 theorems assumption-free; no axiom growth"}
+    ],
+    "additional_preparation_cost_note": "One persistent post-bootstrap proof-iteration session and the five retained cold soundness runs preceded closure. The feasibility accounting must include these costs; only the final run is evidence for the final bytes.",
+    "claim_limit": "This proves the exact first-stage notame decision on every typed graph encoding and validates focused accept/reject fixtures. It does not yet implement squanderLowerBound/polysizes, final is_tame filtering, deterministic whole-worklist replay, complete p=0 enumeration, bounded p=2, archive classification, or S4."
   },
   "entries": [
     {
@@ -295,8 +333,8 @@
         "candle_cv_tame_vertex_map_valid_correct"
       ],
       "status": "fresh_kernel_checked",
-      "verification_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-001/fresh.log",
-      "verification_log_sha256": "9d4a6f6cae23987527e1b3e55d37fa1db20668f561104f315369909fcc55a74d",
+      "verification_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-002/fresh.log",
+      "verification_log_sha256": "7b2ff8eaf4d906eb9f9ef1a2546586684461eeb7f98d0e8852b1ad4d02217422",
       "result": "On typed list, fgraph, and explicit-map encodings, the reflected validators equal ordinary HOL predicates for bounds, nonemptiness, and duplicate-free source and target maps.",
       "claim_limit": "This proves typed validator correspondence only. It does not prove total source coverage, canonical face ordering, archive membership, explicit-map face matching, production iso_fgraph, or classification. Malformed raw-cval rejection remains covered by the separate adversarial data-boundary test."
     },
@@ -412,8 +450,20 @@
       "claim_limit": "This is one authentic enumeration transition from the seed, not complete p=0 enumeration or any classification theorem."
     },
     {
+      "id": "faithful_first_stage_notame_boundary",
+      "implementation": "candle/cv_compute_tame_graph_pruning.ml",
+      "soundness": "candle/cv_compute_tame_graph_pruning_sound.ml",
+      "theorem": "Candle_cv_tame_graph_pruning_sound.candle_tame_cv_notame_correct",
+      "status": "fresh_kernel_checked",
+      "focused_verification_log": "/project/flyspeck-candle-runs/tame-pruning-v2-dev-001/fresh.log",
+      "soundness_verification_log": "/project/flyspeck-candle-runs/tame-pruning-sound-v2-dev-005/fresh.log",
+      "result": "Kernel.compute implements the exact AFP Generator.notame decision, and a universal typed-encoding theorem identifies that verdict with countVertices <= 15 plus tame11b's per-vertex exceptional-face degree rule. Focused fixtures cover the seed, both degree thresholds, and the vertex-count rejection; all 15 checked theorems are assumption-free with no axiom growth.",
+      "next_boundary": "Compose authentic polysizes/squander lower-bound selection, successor generation, first-stage pruning, final is_tame filtering, and the deterministic worklist before the complete p=0 benchmark.",
+      "claim_limit": "This is the first authentic pruning decision, not the complete next_tame function, a complete worklist replay, archive comparison, classification theorem, or S4."
+    },
+    {
       "id": "whole_tree_replay",
-      "status": "first_successor_boundary_green",
+      "status": "first_successor_and_first_stage_pruning_green",
       "near_term_execution_milestones": [
         "first exact next_plane successor batch",
         "complete reflected parameter p=0 development run",
