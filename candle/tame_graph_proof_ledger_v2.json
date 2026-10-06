@@ -218,7 +218,36 @@
       {"run": "sound-dev-005", "seconds": 137.98, "class": "kernel_success", "result": "15 theorems assumption-free; no axiom growth"}
     ],
     "additional_preparation_cost_note": "One persistent post-bootstrap proof-iteration session and the five retained cold soundness runs preceded closure. The feasibility accounting must include these costs; only the final run is evidence for the final bytes.",
-    "claim_limit": "This proves the exact first-stage notame decision on every typed graph encoding and validates focused accept/reject fixtures. It does not yet implement squanderLowerBound/polysizes, final is_tame filtering, deterministic whole-worklist replay, complete p=0 enumeration, bounded p=2, archive classification, or S4."
+    "claim_limit": "This proves the exact first-stage notame decision on every typed graph encoding and validates focused accept/reject fixtures. By itself it does not prove the separately implemented squanderLowerBound/polysizes layer, final is_tame filtering, deterministic whole-worklist replay, complete p=0 enumeration, bounded p=2, archive classification, or S4."
+  },
+  "scoring_verification": {
+    "implementation": "candle/cv_compute_tame_graph_scoring.ml",
+    "implementation_sha256": "156f42866890d3a10d54a45dd6c51b7ced4bfc9926c3283da435ee50c4a28c35",
+    "focused_test": "candle/test_cv_compute_tame_graph_scoring.ml",
+    "focused_test_sha256": "95cd76913a73fa0f264f05e4d46a5959a73008ac8eec789456a99680f6c69525",
+    "launcher_sha256": "59585c0cc2f8128e44e1a8ed93ee119d8390429db145d3e6d035ada714ea3a43",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-scoring-v2-dev-002/fresh.log",
+    "fresh_success_log_sha256": "6baf08f604dd9e6314815ea2b3078a64cdb373b9b4dfb35888bfa33cb45acc04",
+    "fresh_success_time_sha256": "f86fe1fed3666d5fde5f7e6e0a5078c30918775b9685b4de59185f1d4fb21e8d",
+    "fresh_success_elapsed_seconds": 150.20,
+    "fresh_success_user_seconds": 147.75,
+    "fresh_success_system_seconds": 2.40,
+    "fresh_success_max_rss_kib": 1089536,
+    "success_marker": "CANDLE_CV_TAME_GRAPH_SCORING_TEST_OK face_rows=5 vertex_rows=16 seed_lower=0 first_child_lower=0 second_child_lower=15410 second_child_table=3 p0_sizes=1 p2_sizes=3 strict_threshold=true axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "global_axiom_growth": 0,
+    "algorithm_identity": "Exact executable AFP faceSquanderLowerBound, excessAtType/ExcessAt, ExcessTable, deleteAround, ExcessNotAtRec, squanderLowerBound, is_tame13a, and score-dependent polysizes filter. ExcessNotAtRec uses list-shaped fuel equal to its input table, preserving both AFP recursion branches while making termination explicit to the reflected evaluator.",
+    "authentic_branch_results": {
+      "seed_lower_bound": 0,
+      "first_nonfinal_child_lower_bound": 0,
+      "final_triangle_child_excess_table_entries": 3,
+      "final_triangle_child_lower_bound": 15410,
+      "final_triangle_child_is_tame13a": false
+    },
+    "development_run_history": [
+      {"run": "dev-001", "seconds": 151.52, "class": "source_failure", "result": "one surplus closing parenthesis in the quoted 15-row squanderVertex term"},
+      {"run": "dev-002", "seconds": 150.20, "class": "kernel_success", "result": "all score-table, authentic-branch, ExcessTable, independent-maximum, and strict-polysizes fixtures green; no axiom growth"}
+    ],
+    "claim_limit": "This is focused executable evidence on exact constants and authentic early graphs. A universal typed correspondence theorem for the full scoring layer, final is_tame filter, deterministic replay, complete p=0 enumeration, bounded p=2, archive classification, and S4 remain open."
   },
   "entries": [
     {
@@ -462,8 +491,19 @@
       "claim_limit": "This is the first authentic pruning decision, not the complete next_tame function, a complete worklist replay, archive comparison, classification theorem, or S4."
     },
     {
+      "id": "faithful_squander_scoring_boundary",
+      "implementation": "candle/cv_compute_tame_graph_scoring.ml",
+      "test": "candle/test_cv_compute_tame_graph_scoring.ml",
+      "status": "fresh_kernel_checked_focused",
+      "verification_log": "/project/flyspeck-candle-runs/tame-scoring-v2-dev-002/fresh.log",
+      "verification_log_sha256": "6baf08f604dd9e6314815ea2b3078a64cdb373b9b4dfb35888bfa33cb45acc04",
+      "result": "Kernel.compute executes the exact AFP lower-bound pipeline. The authentic p=0 seed and nonfinal child score 0; the first final triangle child yields three 15410 excess entries, deleteAround limits their independent maximum to 15410, is rejected by is_tame13a, and admits no polygon size. Every explicit score-table row and strict target boundary is checked with no axiom growth.",
+      "next_boundary": "Compose the exact enumerator, score-selected polygon generation, notame filtering, final is_tame filtering, and deterministic worklist; then run the complete p=0 differential benchmark.",
+      "claim_limit": "The full scoring correspondence proof and whole-worklist/classification theorems remain open; this milestone is DEVELOPMENT/NON-RELEASE executable evidence."
+    },
+    {
       "id": "whole_tree_replay",
-      "status": "first_successor_and_first_stage_pruning_green",
+      "status": "first_successor_first_stage_pruning_and_scoring_green",
       "near_term_execution_milestones": [
         "first exact next_plane successor batch",
         "complete reflected parameter p=0 development run",
