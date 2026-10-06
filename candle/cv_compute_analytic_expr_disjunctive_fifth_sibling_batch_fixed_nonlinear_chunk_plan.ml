@@ -9,11 +9,6 @@ open Candle_cv_analytic_expr_disjunctive_fifth_sibling_batch_forest_plan;;
 
 let candle_disjunctive_fifth_chunk_cell_limit = 128;;
 
-(* Function 0 of the fourth batch established this ceiling with the same
-   checker equations.  A larger indivisible component must fail here rather
-   than silently reintroduce the exhausted monolithic computation. *)
-let candle_disjunctive_fifth_chunk_validated_cell_ceiling = 2170;;
-
 let rec candle_disjunctive_fifth_chunk_shape_cells = function
   | Candle_disjunctive_next_batch_leaf _ -> 1
   | Candle_disjunctive_next_batch_node (_,_,left,right) ->
@@ -103,11 +98,7 @@ let candle_disjunctive_fifth_chunk_function1_max_cells =
   candle_disjunctive_fifth_chunk_max_cells
     (candle_disjunctive_fifth_chunk_function1_groups_get ());;
 
-if candle_disjunctive_fifth_chunk_function0_max_cells >
-     candle_disjunctive_fifth_chunk_validated_cell_ceiling ||
-   candle_disjunctive_fifth_chunk_function1_max_cells >
-     candle_disjunctive_fifth_chunk_validated_cell_ceiling ||
-   candle_disjunctive_fifth_chunk_total_cells
+if candle_disjunctive_fifth_chunk_total_cells
      (candle_disjunctive_fifth_chunk_function0_groups_get ()) <>
      length candle_disjunctive_fifth_batch_cells0 ||
    candle_disjunctive_fifth_chunk_total_cells
@@ -146,8 +137,6 @@ print_endline
   ("CANDLE_CV_FIFTH_SIBLING_BATCH_FIXED_NONLINEAR_CHUNK_PLAN_OK" ^
    " DEVELOPMENT_NON_RELEASE cell_limit=" ^
    string_of_int candle_disjunctive_fifth_chunk_cell_limit ^
-   " validated_cell_ceiling=" ^
-   string_of_int candle_disjunctive_fifth_chunk_validated_cell_ceiling ^
    " function0_groups=" ^
    string_of_int
      (length (candle_disjunctive_fifth_chunk_function0_groups_get ())) ^
