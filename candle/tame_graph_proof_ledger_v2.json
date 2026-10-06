@@ -170,6 +170,35 @@
       "claim_limit": "This is a genuine first-stage executable rejection soundness lemma. It does not prove notame7 preservation, final lower-bound rejection, or completion preservation."
     },
     {
+      "id": "explicit_vertex_map_to_iso_fgraph",
+      "status": "bounded_bridge_identified",
+      "target": "A successful total explicit-map check on two decoded fgraphs implies Import_tame_classification.iso_fgraph for those exact fgraphs.",
+      "production_definition_chain": [
+        "Import_tame_classification.iso_fgraph",
+        "Import_tame_classification.is_iso",
+        "Import_tame_classification.is_Iso",
+        "Import_tame_classification.is_pr_Iso",
+        "Import_tame_classification.is_pr_Hom"
+      ],
+      "exact_existing_hol_leads": [
+        "Tame_list.congs_rot: cyclic face congruence is bounded rotation",
+        "Elllnyz.cong_refl",
+        "Elllnyz.cong_sym",
+        "Elllnyz.cong_trans",
+        "Elllnyz.good_list_iso_fgraph_proper"
+      ],
+      "bounded_proof_route": [
+        "interpret the checked association list as a total function on every source vertex",
+        "prove checked distinct targets imply inj_on on the exact union of source-face vertices",
+        "prove bidirectional checked face matching under bounded rotation gives equality of the two IMAGE __cong class sets",
+        "select the proper or MAP REVERSE target branch from the checked orientation bit",
+        "introduce the induced function as the existential witness in iso_fgraph"
+      ],
+      "load_boundary": "after direct actions tame_list, import_tame_classification, more_tame_concl, and ELLLNYZ",
+      "first_unsupported_fact": "The current cval layer validates map syntax/ranges/distinct entries but does not yet prove total source coverage, bounded-rotation face matching, or a refinement theorem from the cval verdict to this production predicate.",
+      "claim_limit": "The exact bridge and reusable HOL leads are identified; no cval explicit-map verdict is yet connected to production iso_fgraph."
+    },
+    {
       "id": "afp_structural_seed_validity",
       "authenticated_source": "Invariants.thy:2541 inv_Seed",
       "source_theorem": "inv_Seed",
