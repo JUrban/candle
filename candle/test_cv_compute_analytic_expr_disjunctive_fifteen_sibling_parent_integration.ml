@@ -6,7 +6,7 @@ needs "candle/test_cv_compute_analytic_expr_disjunctive_case16597_shared_complet
 needs "candle/test_cv_compute_analytic_expr_disjunctive_next_sibling_batch_shared_complete.ml";;
 needs "candle/test_cv_compute_analytic_expr_disjunctive_second_sibling_batch_shared_complete.ml";;
 needs "candle/test_cv_compute_analytic_expr_disjunctive_third_sibling_batch_shared_complete.ml";;
-needs "candle/test_cv_compute_analytic_expr_disjunctive_fourth_sibling_batch_shared_complete.ml";;
+needs "candle/test_cv_compute_analytic_expr_disjunctive_fourth_sibling_batch_fixed_nonlinear_shared_complete.ml";;
 
 module Test_cv_compute_analytic_expr_disjunctive_fifteen_sibling_parent_integration = struct
 
@@ -16,7 +16,7 @@ open Test_cv_compute_analytic_expr_disjunctive_case16597_shared_complete;;
 open Test_cv_compute_analytic_expr_disjunctive_next_sibling_batch_shared_complete;;
 open Test_cv_compute_analytic_expr_disjunctive_second_sibling_batch_shared_complete;;
 open Test_cv_compute_analytic_expr_disjunctive_third_sibling_batch_shared_complete;;
-open Test_cv_compute_analytic_expr_disjunctive_fourth_sibling_batch_shared_complete;;
+open Test_cv_compute_analytic_expr_disjunctive_fourth_sibling_batch_fixed_nonlinear_shared_complete;;
 open Candle_cv_analytic_expr_disjunctive_case16479_fixture;;
 open Candle_cv_analytic_expr_disjunctive_case16594_fixture;;
 open Candle_cv_analytic_expr_disjunctive_case16597_plan;;
@@ -33,13 +33,31 @@ let candle_disjunctive_fifteen_parent_formula tm =
   | _ -> failwith "disjunctive fifteen parent: malformed provider leaf";;
 
 let _ =
+  let continued_from_twelve =
+    if !Break_case_exec.candle_nonlinear_reflected_leaf_attempts = 0 &&
+       !Break_case_exec.candle_nonlinear_reflected_leaf_successes = 0 &&
+       !Serialization.nonlinear_legacy_import_attempts = 0 &&
+       !Serialization.nonlinear_legacy_import_successes = 0 &&
+       !Break_case_exec.candle_nonlinear_iarg_leaf_visits = 0 &&
+       not (Serialization.has_deserialization_axiom ())
+    then false
+    else if
+       !Break_case_exec.candle_nonlinear_reflected_leaf_attempts = 333 &&
+       !Break_case_exec.candle_nonlinear_reflected_leaf_successes = 12 &&
+       !Serialization.nonlinear_legacy_import_attempts = 321 &&
+       !Serialization.nonlinear_legacy_import_successes = 321 &&
+       !Break_case_exec.candle_nonlinear_iarg_leaf_visits = 111 &&
+       Serialization.has_deserialization_axiom ()
+    then begin
+      Break_case_exec.candle_nonlinear_reflected_leaf_attempts := 0;
+      Break_case_exec.candle_nonlinear_reflected_leaf_successes := 0;
+      Serialization.nonlinear_legacy_import_attempts := 0;
+      Serialization.nonlinear_legacy_import_successes := 0;
+      Break_case_exec.candle_nonlinear_iarg_leaf_visits := 0;
+      true
+    end
+    else failwith "disjunctive fifteen parent: dirty import boundary" in
   let axioms_before = axioms () in
-  if !Break_case_exec.candle_nonlinear_reflected_leaf_attempts <> 0 ||
-     !Break_case_exec.candle_nonlinear_reflected_leaf_successes <> 0 ||
-     !Serialization.nonlinear_legacy_import_attempts <> 0 ||
-     !Serialization.nonlinear_legacy_import_successes <> 0 ||
-     Serialization.has_deserialization_axiom ()
-  then failwith "disjunctive fifteen parent: dirty import boundary";
   let source_target =
     Break_case_exec.get_ineq candle_disjunctive_fifteen_parent_label in
   let _,_,needs_delta =
@@ -123,6 +141,7 @@ let _ =
     (fun _ _ _ -> None);
   let axioms_after = axioms () in
   let axiom_growth = length axioms_after - length axioms_before in
+  let expected_axiom_growth = if continued_from_twelve then 0 else 1 in
   let digest = Digest.to_hex (Digest.string (string_of_thm parent)) in
   if hyp parent <> [] ||
      not (aconv (concl parent) target) ||
@@ -133,13 +152,15 @@ let _ =
      !Serialization.nonlinear_legacy_import_successes <> leaf_count - 15 ||
      !Break_case_exec.candle_nonlinear_iarg_leaf_visits <> 111 ||
      not (Serialization.has_deserialization_axiom ()) ||
-     axiom_growth <> 1 ||
+     axiom_growth <> expected_axiom_growth ||
      digest <> "e543c7135f766094f4c885571b72cb4a" then
     failwith "disjunctive fifteen parent: parent validation failed";
   print_endline
     ("CANDLE_CV_DISJUNCTIVE_FIFTEEN_PARENT_INTEGRATION_OK" ^
      " DEVELOPMENT_NON_RELEASE parent=prep-8293089898 leaves=333" ^
      " reflected_leaves=15 legacy_siblings=318 shared_direct_programs=2" ^
+     " continued_from_twelve=" ^
+     (if continued_from_twelve then "true" else "false") ^
      " shared_source_leaves=" ^ string_of_int !shared_source_attempts ^
      " iarg_leaf_visits=111 assumptions=0 axiom_growth=" ^
      string_of_int axiom_growth ^ " theorem_digest=" ^ digest);;
