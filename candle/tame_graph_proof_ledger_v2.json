@@ -249,6 +249,32 @@
     ],
     "claim_limit": "This is focused executable evidence on exact constants and authentic early graphs. A universal typed correspondence theorem for the full scoring layer, final is_tame filter, deterministic replay, complete p=0 enumeration, bounded p=2, archive classification, and S4 remain open."
   },
+  "transition_verification": {
+    "implementation": "candle/cv_compute_tame_graph_transition.ml",
+    "implementation_sha256": "eb19bead3d65394e4d227f89941eee56a237d29c1e7162c90b8492e412f8e872",
+    "focused_test": "candle/test_cv_compute_tame_graph_transition.ml",
+    "focused_test_sha256": "8df02968388560ede8e93d7ef9096fb8865a5c450bea9046e7f186c2dc61e285",
+    "launcher_sha256": "12b219ec250cd7d1637d85048b0ddfba62699463e9c1b3270999456098c60c54",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-transition-v2-dev-001/fresh.log",
+    "fresh_success_log_sha256": "d7df75573596609e08731fbfdb7d4d95ff3db2075a7a5eaa9bcf9fa0e1d84cb1",
+    "fresh_success_time_sha256": "507011b400e8e726462cc3c67fe05684ee2590b2c2fcd2f326f82ea99cf68b44",
+    "fresh_success_elapsed_seconds": 153.90,
+    "fresh_success_user_seconds": 150.01,
+    "fresh_success_system_seconds": 3.87,
+    "fresh_success_max_rss_kib": 1090432,
+    "success_marker": "CANDLE_CV_TAME_GRAPH_TRANSITION_TEST_OK enum33=2 enum43=3 next_tame0_children=2 next_tame_children=1 final_pruned=1 complete_graph_identities=isabelle_exact axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "global_axiom_growth": 0,
+    "algorithm_identity": "The reflected runtime enumerator implements AFP enumBase, enumAppend, and the exact iteration/wrapping order. It feeds score-admissible sizes into duplicate-edge filtering and subdivision, applies exact notame pruning, and then implements TameEnum's final tame10/tame11a/tame11b/tame12o/is_tame13a filter.",
+    "first_transition_results": {
+      "enumerator_3_3_entries": 2,
+      "enumerator_4_3_entries": 3,
+      "next_tame0_children": 2,
+      "next_tame_children": 1,
+      "final_pruned_children": 1,
+      "complete_ordered_graph_identity_match": true
+    },
+    "claim_limit": "This proves a focused exact first transition, not the universal transition correspondence, deterministic whole-worklist replay, complete p=0 enumeration, bounded p=2, archive classification, or S4."
+  },
   "entries": [
     {
       "id": "typed_covers_replay_sound",
@@ -502,8 +528,19 @@
       "claim_limit": "The full scoring correspondence proof and whole-worklist/classification theorems remain open; this milestone is DEVELOPMENT/NON-RELEASE executable evidence."
     },
     {
+      "id": "faithful_composed_next_tame_boundary",
+      "implementation": "candle/cv_compute_tame_graph_transition.ml",
+      "test": "candle/test_cv_compute_tame_graph_transition.ml",
+      "status": "fresh_kernel_checked_focused",
+      "verification_log": "/project/flyspeck-candle-runs/tame-transition-v2-dev-001/fresh.log",
+      "verification_log_sha256": "d7df75573596609e08731fbfdb7d4d95ff3db2075a7a5eaa9bcf9fa0e1d84cb1",
+      "result": "The exact runtime enumerator, scoring, successor, notame pruning, and final is_tame filter execute as one Kernel.compute transition. Ordered enumerator and complete child graph terms match the independent Isabelle first-step oracle; next_tame0 returns both children and next_tame removes exactly the known final non-tame child, without axiom growth.",
+      "next_boundary": "Add deterministic bounded worklist execution and counters, measure a small prepared prefix, then scale to the complete p=0 replay and bounded p=2 differential benchmark.",
+      "claim_limit": "The universal transition refinement and whole-tree completeness/classification proofs remain open; this is DEVELOPMENT/NON-RELEASE execution evidence."
+    },
+    {
       "id": "whole_tree_replay",
-      "status": "first_successor_first_stage_pruning_and_scoring_green",
+      "status": "exact_composed_first_next_tame_transition_green",
       "near_term_execution_milestones": [
         "first exact next_plane successor batch",
         "complete reflected parameter p=0 development run",
