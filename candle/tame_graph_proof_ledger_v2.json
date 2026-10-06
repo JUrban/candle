@@ -69,6 +69,21 @@
       {"run": "seed-v2-009", "seconds": 122.61, "class": "kernel_success", "result": "17 theorems assumption-free; no axiom growth"}
     ]
   },
+  "data_validator_verification": {
+    "test": "candle/test_cv_compute_tame_graph_data_sound.ml",
+    "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-001/fresh.log",
+    "fresh_success_log_sha256": "9d4a6f6cae23987527e1b3e55d37fa1db20668f561104f315369909fcc55a74d",
+    "fresh_success_elapsed_seconds": 130.97,
+    "fresh_success_user_seconds": 126.76,
+    "fresh_success_system_seconds": 4.04,
+    "fresh_success_max_rss_kib": 1088640,
+    "success_marker": "CANDLE_CV_TAME_GRAPH_DATA_SOUND_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "checked_theorem_count": 7,
+    "theorem_hypotheses": 0,
+    "global_axiom_growth": 0,
+    "pre_evidence_cost_note": "Development required five failed fresh-kernel loads, one launcher failure before load, one non-preserved green fresh load, and one persistent proof-iteration session before the recorded run. The four earliest full-load failures were observed at about 100-110 seconds each but their temporary timing files were not retained; this cost must be included as a range in the eventual feasibility report rather than silently charging only the final run."
+  },
   "entries": [
     {
       "id": "typed_covers_replay_sound",
@@ -168,6 +183,24 @@
       "direct_definition_weight_total_lines": 265,
       "stronger_pruning_weight_refs": ["GeneratorProps:537", "TameProps+TameEnumProps+Plane1Props:160"],
       "claim_limit": "This is a genuine first-stage executable rejection soundness lemma. It does not prove notame7 preservation, final lower-bound rejection, or completion preservation."
+    },
+    {
+      "id": "typed_reflected_data_validator_soundness",
+      "implementation": "candle/cv_compute_tame_graph_data_sound.ml",
+      "theorems": [
+        "candle_cv_tame_num_member_correct",
+        "candle_cv_tame_num_list_valid_aux_correct",
+        "candle_cv_tame_num_list_valid_correct",
+        "candle_cv_tame_fgraph_valid_correct",
+        "candle_cv_tame_nonempty_fgraph_valid_correct",
+        "candle_cv_tame_vertex_map_valid_aux_correct",
+        "candle_cv_tame_vertex_map_valid_correct"
+      ],
+      "status": "fresh_kernel_checked",
+      "verification_log": "/project/flyspeck-candle-runs/tame-data-sound-v2-dev-001/fresh.log",
+      "verification_log_sha256": "9d4a6f6cae23987527e1b3e55d37fa1db20668f561104f315369909fcc55a74d",
+      "result": "On typed list, fgraph, and explicit-map encodings, the reflected validators equal ordinary HOL predicates for bounds, nonemptiness, and duplicate-free source and target maps.",
+      "claim_limit": "This proves typed validator correspondence only. It does not prove total source coverage, canonical face ordering, archive membership, explicit-map face matching, production iso_fgraph, or classification. Malformed raw-cval rejection remains covered by the separate adversarial data-boundary test."
     },
     {
       "id": "explicit_vertex_map_to_iso_fgraph",

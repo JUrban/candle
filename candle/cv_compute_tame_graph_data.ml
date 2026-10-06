@@ -280,6 +280,7 @@ let candle_cv_tame_graph_data_compute_eqs =
     candle_cv_tame_vertex_map_valid_aux_compute;
     candle_cv_tame_vertex_map_valid_compute];;
 
-print_endline "CANDLE_CV_TAME_GRAPH_DATA_OK DEVELOPMENT_NON_RELEASE";;
+let _ =
+  print_endline "CANDLE_CV_TAME_GRAPH_DATA_OK DEVELOPMENT_NON_RELEASE";;
 
 end;;
