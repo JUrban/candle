@@ -7,8 +7,33 @@ needs "candle/cv_compute_analytic_expr_taylor_model_program_fixed_nonlinear_vari
 module Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_variable_raw_combine_prove = struct
 
 open Candle_cv_analytic_expr_jet_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_batch;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_variable_batch_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_variable_raw_prove;;
+
+(* Encoded job lists use [Cexp_num _] as nil and [Cexp_pair] as cons.  Keep
+   concatenation in that data language so independently authenticated raw
+   batches can also supply one representation theorem to the compact topology
+   checker. *)
+let candle_cv_fsn_variable_encoded_jobs_append_def = define
+ `(candle_cv_fsn_variable_encoded_jobs_append (Cexp_num n) right = right) /\
+  (candle_cv_fsn_variable_encoded_jobs_append
+      (Cexp_pair job jobs) right =
+     Cexp_pair job
+       (candle_cv_fsn_variable_encoded_jobs_append jobs right))`;;
+
+let candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs_append = prove
+ (`!left right.
+     candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs
+       (APPEND left right) =
+     candle_cv_fsn_variable_encoded_jobs_append
+       (candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs left)
+       (candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs right)`,
+   LIST_INDUCT_TAC THEN
+   ASM_REWRITE_TAC
+     [APPEND;
+      candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs_def;
+      candle_cv_fsn_variable_encoded_jobs_append_def]);;
 
 let candle_q_dim_taylor_model_fixed_nonlinear_variable_jobs_accept_append =
   prove
@@ -28,30 +53,46 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_jobs_accept_append =
 type candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_six = {
   fixed_nonlinear_raw_acceptance_prepared :
     candle_q_dim_analytic_jet_prepared_six;
+  fixed_nonlinear_raw_acceptance_encoded_jobs_term : term;
   fixed_nonlinear_raw_acceptance_jobs_term : term;
+  fixed_nonlinear_raw_acceptance_representation_theorem : thm;
   fixed_nonlinear_raw_acceptance_theorem : thm;
   fixed_nonlinear_raw_acceptance_compute_count : int;
 };;
 
 let candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_validate
-    prepared jobs theorem =
+    prepared encoded_jobs jobs representation theorem =
   let expected =
     list_mk_comb
       (`candle_q_dim_taylor_model_fixed_nonlinear_variable_jobs_accept`,
        [prepared.expression_term;jobs]) in
   if hyp theorem <> [] || not (aconv (concl theorem) expected) then
-    failwith "fixed nonlinear raw combine: acceptance mismatch";;
+    failwith "fixed nonlinear raw combine: acceptance mismatch";
+  let expected_representation =
+    mk_eq
+      (mk_comb
+        (`candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs`,jobs),
+       encoded_jobs) in
+  if hyp representation <> [] ||
+     not (aconv (concl representation) expected_representation) then
+    failwith "fixed nonlinear raw combine: representation mismatch";;
 
 let candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_of_result
     (result:candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_result_six) =
   candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_validate
     result.fixed_nonlinear_variable_raw_prepared_source
+    result.fixed_nonlinear_variable_raw_encoded_jobs_term
     result.fixed_nonlinear_variable_raw_decoded_jobs_term
+    result.fixed_nonlinear_variable_raw_representation_theorem
     result.fixed_nonlinear_variable_raw_accept_theorem;
   {fixed_nonlinear_raw_acceptance_prepared =
      result.fixed_nonlinear_variable_raw_prepared_source;
+   fixed_nonlinear_raw_acceptance_encoded_jobs_term =
+     result.fixed_nonlinear_variable_raw_encoded_jobs_term;
    fixed_nonlinear_raw_acceptance_jobs_term =
      result.fixed_nonlinear_variable_raw_decoded_jobs_term;
+   fixed_nonlinear_raw_acceptance_representation_theorem =
+     result.fixed_nonlinear_variable_raw_representation_theorem;
    fixed_nonlinear_raw_acceptance_theorem =
      result.fixed_nonlinear_variable_raw_accept_theorem;
    fixed_nonlinear_raw_acceptance_compute_count = 1};;
@@ -66,6 +107,25 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_merge
   let left_jobs = left.fixed_nonlinear_raw_acceptance_jobs_term
   and right_jobs = right.fixed_nonlinear_raw_acceptance_jobs_term in
   let jobs = mk_icomb (mk_icomb (`APPEND`,left_jobs),right_jobs) in
+  let encoded_call =
+    list_mk_comb
+      (`candle_cv_fsn_variable_encoded_jobs_append`,
+       [left.fixed_nonlinear_raw_acceptance_encoded_jobs_term;
+        right.fixed_nonlinear_raw_acceptance_encoded_jobs_term]) in
+  let encoding =
+    REWRITE_CONV
+      [candle_cv_fsn_variable_encoded_jobs_append_def]
+      encoded_call in
+  let encoded_jobs = rand (concl encoding) in
+  let representation =
+    TRANS
+      (REWRITE_RULE
+        [left.fixed_nonlinear_raw_acceptance_representation_theorem;
+         right.fixed_nonlinear_raw_acceptance_representation_theorem]
+        (SPECL
+          [left_jobs;right_jobs]
+          candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs_append))
+      encoding in
   let theorem =
     EQ_MP
       (SYM
@@ -75,9 +135,11 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_merge
       (CONJ left.fixed_nonlinear_raw_acceptance_theorem
         right.fixed_nonlinear_raw_acceptance_theorem) in
   candle_q_dim_taylor_model_fixed_nonlinear_variable_raw_acceptance_validate
-    prepared jobs theorem;
+    prepared encoded_jobs jobs representation theorem;
   {fixed_nonlinear_raw_acceptance_prepared = prepared;
+   fixed_nonlinear_raw_acceptance_encoded_jobs_term = encoded_jobs;
    fixed_nonlinear_raw_acceptance_jobs_term = jobs;
+   fixed_nonlinear_raw_acceptance_representation_theorem = representation;
    fixed_nonlinear_raw_acceptance_theorem = theorem;
    fixed_nonlinear_raw_acceptance_compute_count =
      left.fixed_nonlinear_raw_acceptance_compute_count +

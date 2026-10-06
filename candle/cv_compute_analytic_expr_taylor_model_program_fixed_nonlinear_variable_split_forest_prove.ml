@@ -59,6 +59,8 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_split_forest_six
   let stack_result =
     candle_q_dim_taylor_model_fixed_nonlinear_variable_split_stack_six
       raw_result tokens encoded_tokens in
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-forest-extraction-begin";
   let stack_decode =
     candle_q_dim_taylor_model_fixed_nonlinear_variable_split_forest_decode
       stack_result.fixed_nonlinear_split_encoded_stack_term in
@@ -84,6 +86,8 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_split_forest_six
           failwith "fixed nonlinear split forest: source assumptions";
         source)
       cell_theorems in
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-forest-extraction-end";
   {fixed_nonlinear_split_forest_stack_result = stack_result;
    fixed_nonlinear_split_forest_root_boxes = root_boxes;
    fixed_nonlinear_split_forest_source_theorems = source_theorems};;

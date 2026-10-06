@@ -92,6 +92,8 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_split_stack_six
   if not (aconv reflected_success `Cexp_num 1`) ||
      not (aconv reflected_remaining `Cexp_num 0`) then
     failwith "fixed nonlinear split: topology rejected";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-correspondence-begin";
   let correspondence =
     SPECL
       [tokens;`6`;decoded_jobs;empty_stack]
@@ -130,6 +132,8 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_split_stack_six
       decoded_logical_left in
   if hyp run_theorem <> [] then
     failwith "fixed nonlinear split: run theorem assumptions";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-correspondence-end";
   let logical_result = rand (concl run_theorem) in
   let logical_payload = rand logical_result in
   let final_stack = rand logical_payload in
@@ -157,9 +161,13 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_split_stack_six
         (CONJ initial_stack_pass run_theorem)) in
   if not (aconv (fst (dest_imp (concl soundness))) (concl premise)) then
     failwith "fixed nonlinear split: soundness premise mismatch";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-soundness-handoff-begin";
   let stack_theorem = CONJUNCT2 (MATCH_MP soundness premise) in
   if hyp stack_theorem <> [] then
     failwith "fixed nonlinear split: stack theorem assumptions";
+  candle_q_dim_analytic_jet_profile_event
+    "fixed-nonlinear-split-soundness-handoff-end";
   {fixed_nonlinear_split_encoded_stack_term = reflected_stack;
    fixed_nonlinear_split_logical_stack_term = final_stack;
    fixed_nonlinear_split_topology_compute_theorem = reflected_compute;
