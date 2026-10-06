@@ -27,7 +27,8 @@
   "verification": {
     "core_test": "candle/test_tame_graph_covers_core.ml",
     "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
-    "fresh_success_log": "/tmp/candle-tame-core-v2-fresh18.log",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-core-replay-f6628134-dev-001/fresh18.log",
+    "fresh_success_log_sha256": "9b46b48ce609ea44dd9e55c3d31db05cb3fe8eb219a5f91a55eb5f46387d6c0e",
     "fresh_success_elapsed_seconds": 121,
     "success_marker": "CANDLE_TAME_GRAPH_COVERS_CORE_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
     "theorem_hypotheses": 0,
@@ -62,7 +63,7 @@
       "implementation": "candle/tame_graph_covers_core.ml",
       "theorem": "Candle_tame_graph_covers_core.candle_tame_replay_sound",
       "status": "fresh_kernel_checked",
-      "verification_log": "/tmp/candle-tame-core-v2-fresh18.log",
+      "verification_log": "/project/flyspeck-candle-runs/tame-core-replay-f6628134-dev-001/fresh18.log",
       "assumptions_exposed": [
         "terminal states have no plane_step successors",
         "rejection refutes tame at invariant final states",
@@ -89,7 +90,7 @@
         "candle_tame_replay_invariant_step"
       ],
       "status": "fresh_kernel_checked",
-      "verification_log": "/tmp/candle-tame-core-v2-fresh18.log",
+      "verification_log": "/project/flyspeck-candle-runs/tame-core-replay-f6628134-dev-001/fresh18.log",
       "afp_lead": "Invariants.thy: invariant/RTranCl preservation infrastructure",
       "dependency_weight_refs": ["Invariants:2826"],
       "dependency_weight_total_lines": 2826,
