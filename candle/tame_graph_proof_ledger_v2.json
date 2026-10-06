@@ -27,15 +27,18 @@
   "verification": {
     "core_test": "candle/test_tame_graph_covers_core.ml",
     "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
-    "fresh_success_log": "/project/flyspeck-candle-runs/tame-core-replay-f6628134-dev-001/fresh18.log",
-    "fresh_success_log_sha256": "9b46b48ce609ea44dd9e55c3d31db05cb3fe8eb219a5f91a55eb5f46387d6c0e",
-    "fresh_success_elapsed_seconds": 121,
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-core-replay-seed-v2-dev-009/fresh.log",
+    "fresh_success_log_sha256": "93ba6aa14b6ee2d873df088ccc429bd00e9cf4cc6f564af2840e7e192ebd1fda",
+    "fresh_success_elapsed_seconds": 122.61,
     "success_marker": "CANDLE_TAME_GRAPH_COVERS_CORE_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
     "theorem_hypotheses": 0,
     "global_axiom_growth": 0,
     "recorded_proof_or_source_attempt_seconds": 1664,
     "recorded_infrastructure_repeat_seconds": 387,
-    "recorded_fresh_run_total_seconds": 2051,
+    "checked_theorem_count": 17,
+    "seed_specialization_total_elapsed_seconds": 2066,
+    "seed_specialization_fresh_run_total_seconds": 417.97,
+    "recorded_fresh_run_total_seconds": 2468.97,
     "run_history": [
       {"run": "fresh1", "seconds": 117, "class": "source_failure", "result": "module-final expression typing"},
       {"run": "fresh2", "seconds": 119, "class": "proof_failure", "result": "hints split"},
@@ -54,7 +57,16 @@
       {"run": "fresh15", "seconds": 183, "class": "proof_attempt_terminated", "result": "unbounded MESON choice search replaced by exact specialization"},
       {"run": "fresh16", "seconds": 134, "class": "source_failure", "result": "tryfind helper typing corrected"},
       {"run": "fresh17", "seconds": 122, "class": "kernel_success", "result": "15 theorems assumption-free; no axiom growth"},
-      {"run": "fresh18", "seconds": 121, "class": "kernel_success", "result": "final clean bytes; 15 theorems assumption-free; no axiom growth"}
+      {"run": "fresh18", "seconds": 121, "class": "kernel_success", "result": "final clean bytes; 15 theorems assumption-free; no axiom growth"},
+      {"run": "seed-v2-001", "seconds": 0.00, "class": "infrastructure_repeat", "result": "wrong worktree binary path"},
+      {"run": "seed-v2-002", "seconds": 0.01, "class": "infrastructure_repeat", "result": "wrong runtime working directory"},
+      {"run": "seed-v2-003", "seconds": 2.77, "class": "infrastructure_repeat", "result": "obsolete runtime lacked required loader API"},
+      {"run": "seed-v2-004", "seconds": 5.23, "class": "infrastructure_repeat", "result": "runtime source-root mismatch"},
+      {"run": "seed-v2-005", "seconds": 6.20, "class": "infrastructure_repeat", "result": "runtime load-path order selected incompatible support"},
+      {"run": "seed-v2-006", "seconds": 141.75, "class": "proof_failure", "result": "schematic hint type made quoted specialization invalid"},
+      {"run": "seed-v2-007", "seconds": 136.47, "class": "proof_failure", "result": "goal-driven specialization exposed unstable composed subgoal tactic"},
+      {"run": "seed-v2-008", "seconds": 2.93, "class": "infrastructure_repeat", "result": "attempted to set HOL load_path before hol.ml defined it"},
+      {"run": "seed-v2-009", "seconds": 122.61, "class": "kernel_success", "result": "17 theorems assumption-free; no axiom growth"}
     ]
   },
   "entries": [
@@ -95,6 +107,24 @@
       "dependency_weight_refs": ["Invariants:2826"],
       "dependency_weight_total_lines": 2826,
       "claim_limit": "This discharges the generic reachability component only, not AFP's difficult structural inv predicate."
+    },
+    {
+      "id": "seed_specialized_replay_sound",
+      "implementation": "candle/tame_graph_seed_sound.ml",
+      "theorems": [
+        "candle_tame_replay_invariant_preserved",
+        "Candle_tame_graph_seed_sound.candle_tame_seed_replay_sound"
+      ],
+      "status": "fresh_kernel_checked",
+      "verification_log": "/project/flyspeck-candle-runs/tame-core-replay-seed-v2-dev-009/fresh.log",
+      "verification_log_sha256": "93ba6aa14b6ee2d873df088ccc429bd00e9cf4cc6f564af2840e7e192ebd1fda",
+      "starting_state_route": [
+        "structural seed",
+        "structural preservation for every retained expand child",
+        "every retained child is an authentic plane_step child"
+      ],
+      "result": "The theorem derives both the combined structural/reachability invariant on the singleton seed frontier and its preservation for every replay frontier before applying replay soundness.",
+      "claim_limit": "The route is general and explicit, but production closure still requires authentic structural seed/preservation and tame-completion preservation theorems."
     },
     {
       "id": "production_seed_and_reachability_adapter",

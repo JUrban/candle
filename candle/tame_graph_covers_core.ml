@@ -361,6 +361,26 @@ let candle_tame_replay_invariant_step = prove
   REWRITE_TAC[candle_tame_replay_invariant_def] THEN
   MESON_TAC[candle_tame_reachable_invariant_step]);;
 
+(* Production replay normally expands a filtered successor list rather than *)
+(* every [plane_step] successor.  These two premises are the exact bridge:   *)
+(* the retained children preserve the structural invariant, and each retained*)
+(* child is an authentic plane successor.  Thus seed validity plus this one   *)
+(* theorem discharges [candle_tame_start_valid] for every replay frontier.     *)
+
+let candle_tame_replay_invariant_preserved = prove
+ (`!plane_step:A->A list seed structural expand.
+     (!parent child.
+        structural parent /\ MEM child (expand parent)
+        ==> structural child) /\
+     (!parent child.
+        MEM child (expand parent) ==> MEM child (plane_step parent))
+     ==>
+     candle_tame_invariant_preserved
+       (candle_tame_replay_invariant plane_step seed structural) expand`,
+  REWRITE_TAC[candle_tame_invariant_preserved_def;
+              candle_tame_replay_invariant_def] THEN
+  MESON_TAC[candle_tame_reachable_invariant_step]);;
+
 (* Frontier lemmas avoid re-proving set algebra inside the replay induction.    *)
 (* Their conclusions are exactly the two goals produced by one application of  *)
 (* [candle_tame_covers_insert].                                                  *)
@@ -483,6 +503,7 @@ let candle_tame_replay_sound = prove
      [MATCH_MP_TAC candle_tame_preserved_children_valid THEN
       ASM_REWRITE_TAC[candle_tame_start_valid_def];
       ASM_REWRITE_TAC[]]]);;
+
 end;;
 
 print_endline "CANDLE_TAME_GRAPH_COVERS_CORE_OK DEVELOPMENT_NON_RELEASE";;

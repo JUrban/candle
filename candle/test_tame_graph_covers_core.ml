@@ -3,8 +3,10 @@
 let candle_tame_covers_axioms_before = axioms ();;
 
 needs "candle/tame_graph_covers_core.ml";;
+needs "candle/tame_graph_seed_sound.ml";;
 
 open Candle_tame_graph_covers_core;;
+open Candle_tame_graph_seed_sound;;
 
 let candle_tame_covers_checked_theorems =
  [candle_tame_covers_empty;
@@ -20,8 +22,10 @@ let candle_tame_covers_checked_theorems =
   candle_tame_reachable_invariant_step;
   candle_tame_replay_invariant_seed;
   candle_tame_replay_invariant_step;
+  candle_tame_replay_invariant_preserved;
   candle_tame_covers_expansion_frontier;
-  candle_tame_replay_sound];;
+  candle_tame_replay_sound;
+  candle_tame_seed_replay_sound];;
 
 if not (List.for_all (fun theorem -> hyp theorem = [])
           candle_tame_covers_checked_theorems) then
