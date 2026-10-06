@@ -84,6 +84,22 @@
     "global_axiom_growth": 0,
     "pre_evidence_cost_note": "Development required five failed fresh-kernel loads, one launcher failure before load, one non-preserved green fresh load, and one persistent proof-iteration session before the recorded run. The four earliest full-load failures were observed at about 100-110 seconds each but their temporary timing files were not retained; this cost must be included as a range in the eventual feasibility report rather than silently charging only the final run."
   },
+  "explicit_map_core_verification": {
+    "test": "candle/test_tame_graph_explicit_map_core.ml",
+    "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-explicit-map-core-v2-dev-001/fresh.log",
+    "fresh_success_log_sha256": "38b0c296fb2784a9ac5d64e1ae93b92f4474fe504996673cbbffc10732b16522",
+    "fresh_success_time_sha256": "67c082b38e5667583a6b027dad7ce1b489b6ef2c8d82c98133d3cf6e25959c5b",
+    "fresh_success_elapsed_seconds": 117.11,
+    "fresh_success_user_seconds": 114.86,
+    "fresh_success_system_seconds": 2.15,
+    "fresh_success_max_rss_kib": 1090432,
+    "success_marker": "CANDLE_TAME_GRAPH_EXPLICIT_MAP_CORE_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "checked_theorem_count": 5,
+    "theorem_hypotheses": 0,
+    "global_axiom_growth": 0,
+    "pre_evidence_cost_note": "One unmeasured persistent proof-iteration session preceded the retained fresh run. Eventual feasibility accounting must charge this preparation as well as the retained fresh run, theorem handoff, and required repeats."
+  },
   "entries": [
     {
       "id": "typed_covers_replay_sound",
@@ -201,6 +217,22 @@
       "verification_log_sha256": "9d4a6f6cae23987527e1b3e55d37fa1db20668f561104f315369909fcc55a74d",
       "result": "On typed list, fgraph, and explicit-map encodings, the reflected validators equal ordinary HOL predicates for bounds, nonemptiness, and duplicate-free source and target maps.",
       "claim_limit": "This proves typed validator correspondence only. It does not prove total source coverage, canonical face ordering, archive membership, explicit-map face matching, production iso_fgraph, or classification. Malformed raw-cval rejection remains covered by the separate adversarial data-boundary test."
+    },
+    {
+      "id": "explicit_vertex_map_injectivity_core",
+      "implementation": "candle/tame_graph_explicit_map_core.ml",
+      "theorems": [
+        "candle_tame_list_distinct_map_injective",
+        "candle_tame_vertex_map_apply_pair_member",
+        "candle_tame_vertex_map_apply_injective_on_vertices",
+        "candle_tame_fgraph_vertices_set",
+        "candle_tame_explicit_map_shape_injective"
+      ],
+      "status": "fresh_kernel_checked",
+      "verification_log": "/project/flyspeck-candle-runs/tame-explicit-map-core-v2-dev-001/fresh.log",
+      "verification_log_sha256": "38b0c296fb2784a9ac5d64e1ae93b92f4474fe504996673cbbffc10732b16522",
+      "result": "Duplicate-free association-list targets plus total source coverage imply that the decoded vertex function is injective on exactly the union of the source graph's face vertices.",
+      "claim_limit": "This is the source-independent finite-map core. It does not yet connect the predicate to the reflected cval verdict, prove checked face correspondence, or derive production iso_fgraph; those remain late-load bridge obligations."
     },
     {
       "id": "explicit_vertex_map_to_iso_fgraph",
