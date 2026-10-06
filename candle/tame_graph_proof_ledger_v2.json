@@ -1,0 +1,189 @@
+{
+  "schema": "candle-tame-graph-proof-ledger-v2",
+  "release_status": "DEVELOPMENT_NON_RELEASE",
+  "base_commit": "02c4d95a168dcbd55297349b365636850d347d15",
+  "scope": "typed covers/replay soundness, explicit starting-state invariant route, and bounded exact production adapters",
+  "weight_basis": {
+    "authority": "docs/Candle_tame_graph_reflection_plan_v2_2026-10-06.md:299-316",
+    "meaning": "Whole-AFP-theory source-line counts used for proof-risk triage; they are not HOL proof-length estimates and are not reduced without an exact direct-manifest theorem match.",
+    "authenticated_archive": "third_party/afp-flyspeck-tame-2014-08-28/afp-Flyspeck-Tame-2014-08-28.tar.gz",
+    "initial_total_lines": 11033,
+    "theories": {
+      "FaceDivisionProps": 4942,
+      "Invariants": 2826,
+      "ScoreProps": 725,
+      "PlaneProps": 680,
+      "GeneratorProps": 537,
+      "GraphProps": 437,
+      "EnumeratorProps": 429,
+      "LowerBound": 297,
+      "TameProps+TameEnumProps+Plane1Props": 160
+    },
+    "additional_direct_definition_theories": {
+      "Generator": 119,
+      "Tame": 146
+    }
+  },
+  "verification": {
+    "core_test": "candle/test_tame_graph_covers_core.ml",
+    "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
+    "fresh_success_log": "/tmp/candle-tame-core-v2-fresh18.log",
+    "fresh_success_elapsed_seconds": 121,
+    "success_marker": "CANDLE_TAME_GRAPH_COVERS_CORE_TEST_OK assumptions=0 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "theorem_hypotheses": 0,
+    "global_axiom_growth": 0,
+    "recorded_proof_or_source_attempt_seconds": 1664,
+    "recorded_infrastructure_repeat_seconds": 387,
+    "recorded_fresh_run_total_seconds": 2051,
+    "run_history": [
+      {"run": "fresh1", "seconds": 117, "class": "source_failure", "result": "module-final expression typing"},
+      {"run": "fresh2", "seconds": 119, "class": "proof_failure", "result": "hints split"},
+      {"run": "fresh3", "seconds": 122, "class": "proof_failure", "result": "hints split"},
+      {"run": "fresh4", "seconds": 123, "class": "proof_failure", "result": "hints split"},
+      {"run": "fresh5", "seconds": 117, "class": "infrastructure_repeat", "result": "worktree needs path unresolved"},
+      {"run": "fresh6", "seconds": 36, "class": "infrastructure_repeat", "result": "HOL bootstrap omitted"},
+      {"run": "fresh7", "seconds": 116, "class": "infrastructure_repeat", "result": "post-HOL Filename.currentDir unavailable"},
+      {"run": "fresh8", "seconds": 0, "class": "infrastructure_repeat", "result": "snapshot config unavailable from worktree cwd"},
+      {"run": "fresh9", "seconds": 118, "class": "infrastructure_repeat", "result": "absolute #use rejected"},
+      {"run": "fresh10", "seconds": 128, "class": "proof_failure", "result": "polymorphic expansion-frontier match"},
+      {"run": "fresh11", "seconds": 119, "class": "proof_failure", "result": "localized expansion-frontier match"},
+      {"run": "fresh12", "seconds": 129, "class": "proof_failure", "result": "remaining replay branch goals"},
+      {"run": "fresh13", "seconds": 119, "class": "proof_failure", "result": "remaining replay branch goals"},
+      {"run": "fresh14", "seconds": 128, "class": "proof_failure", "result": "three exact residual goals recorded"},
+      {"run": "fresh15", "seconds": 183, "class": "proof_attempt_terminated", "result": "unbounded MESON choice search replaced by exact specialization"},
+      {"run": "fresh16", "seconds": 134, "class": "source_failure", "result": "tryfind helper typing corrected"},
+      {"run": "fresh17", "seconds": 122, "class": "kernel_success", "result": "15 theorems assumption-free; no axiom growth"},
+      {"run": "fresh18", "seconds": 121, "class": "kernel_success", "result": "final clean bytes; 15 theorems assumption-free; no axiom growth"}
+    ]
+  },
+  "entries": [
+    {
+      "id": "typed_covers_replay_sound",
+      "implementation": "candle/tame_graph_covers_core.ml",
+      "theorem": "Candle_tame_graph_covers_core.candle_tame_replay_sound",
+      "status": "fresh_kernel_checked",
+      "verification_log": "/tmp/candle-tame-core-v2-fresh18.log",
+      "assumptions_exposed": [
+        "terminal states have no plane_step successors",
+        "rejection refutes tame at invariant final states",
+        "accepted leaf hints imply archived",
+        "expansion preserves the starting invariant",
+        "expansion preserves every tame final completion"
+      ],
+      "abstracted_dependency_weight_refs": [
+        "FaceDivisionProps:4942", "Invariants:2826", "ScoreProps:725",
+        "PlaneProps:680", "GeneratorProps:537", "GraphProps:437",
+        "EnumeratorProps:429", "LowerBound:297",
+        "TameProps+TameEnumProps+Plane1Props:160"
+      ],
+      "abstracted_dependency_weight_total_lines": 11033,
+      "claim_limit": "The kernel-checked implication exposes the weighted production premises; it does not discharge their 11,033-line AFP risk closure."
+    },
+    {
+      "id": "automatic_reachability_invariant",
+      "implementation": "candle/tame_graph_covers_core.ml",
+      "theorems": [
+        "candle_tame_reachable_invariant_seed",
+        "candle_tame_reachable_invariant_step",
+        "candle_tame_replay_invariant_seed",
+        "candle_tame_replay_invariant_step"
+      ],
+      "status": "fresh_kernel_checked",
+      "verification_log": "/tmp/candle-tame-core-v2-fresh18.log",
+      "afp_lead": "Invariants.thy: invariant/RTranCl preservation infrastructure",
+      "dependency_weight_refs": ["Invariants:2826"],
+      "dependency_weight_total_lines": 2826,
+      "claim_limit": "This discharges the generic reachability component only, not AFP's difficult structural inv predicate."
+    },
+    {
+      "id": "production_seed_and_reachability_adapter",
+      "implementation": "candle/tame_graph_covers_production.ml",
+      "theorems": [
+        "candle_tame_plane_reachable_inv_seed",
+        "candle_tame_plane_reachable_inv_step",
+        "candle_tame_plane_reachable_inv_rtrancl",
+        "candle_tame_seed_not_final"
+      ],
+      "status": "late_load_kernel_test_pending",
+      "load_boundary": "after Flyspeck Tame_defs, Tame_defs2, Tame_list, and Import_tame_classification",
+      "production_constants": [
+        "Tame_defs.Seed", "Tame_defs.finalGraph", "Tame_defs.RTranCl",
+        "Tame_defs2.next_plane"
+      ],
+      "dependency_weight_refs": ["Invariants:2826", "FaceDivisionProps:4942"],
+      "dependency_weight_total_lines": 7768,
+      "claim_limit": "Seed-not-final is a concrete adapter signal, not the requested pruning or structural-invariant result."
+    },
+    {
+      "id": "production_first_stage_notame_soundness",
+      "implementation": "candle/tame_graph_covers_production.ml",
+      "definition": "candle_tame_notame",
+      "theorem": "candle_tame_notame_sound",
+      "status": "late_load_kernel_test_pending",
+      "exact_statement": "candle_tame_notame g <=> ~(countVertices g <= 15 /\\ tame11b g); candle_tame_notame g ==> ~tame g",
+      "authenticated_source": [
+        "Generator.thy:87-88 notame",
+        "Tame.thy:118-128 tame10/tame10ub/tame11b",
+        "Tame.thy:142-143 tame",
+        "text_formalization/tame/import_tame_classification.hl:98-118"
+      ],
+      "production_constants": [
+        "Tame_defs.countVertices",
+        "Import_tame_classification.tame10",
+        "Import_tame_classification.tame11b",
+        "Import_tame_classification.tame"
+      ],
+      "direct_definition_weight_refs": ["Generator:119", "Tame:146"],
+      "direct_definition_weight_total_lines": 265,
+      "stronger_pruning_weight_refs": ["GeneratorProps:537", "TameProps+TameEnumProps+Plane1Props:160"],
+      "claim_limit": "This is a genuine first-stage executable rejection soundness lemma. It does not prove notame7 preservation, final lower-bound rejection, or completion preservation."
+    },
+    {
+      "id": "afp_structural_seed_validity",
+      "authenticated_source": "Invariants.thy:2541 inv_Seed",
+      "source_theorem": "inv_Seed",
+      "status": "open_boundary",
+      "dependency_weight_refs": ["Invariants:2826", "FaceDivisionProps:4942"],
+      "dependency_weight_total_lines": 7768,
+      "first_unsupported_fact": "The production HOL tree has no port of AFP's composite tame-graph inv predicate, so inv_Seed cannot yet be stated authentically; the existing HOL constant inv is unrelated function inversion."
+    },
+    {
+      "id": "afp_structural_next_plane_preservation",
+      "authenticated_source": "Invariants.thy:2816 inv_inv_next_plane0",
+      "source_theorem": "inv_inv_next_plane0",
+      "status": "open_boundary",
+      "dependency_weight_refs": [
+        "Invariants:2826", "FaceDivisionProps:4942",
+        "EnumeratorProps:429", "GraphProps:437"
+      ],
+      "dependency_weight_total_lines": 8634,
+      "depends_on": "port of inv and its component Seed/next_plane0 closure lemmas"
+    },
+    {
+      "id": "afp_strong_pruning_and_completion_soundness",
+      "authenticated_sources": [
+        "GeneratorProps.thy:429 inv_inv_notame",
+        "GeneratorProps.thy:512 next_tame0_comp",
+        "GeneratorProps.thy:523 inv_inv_next_tame0",
+        "GeneratorProps.thy:526 inv_inv_next_tame",
+        "TameEnumProps.thy:12 untame_negFin",
+        "TameEnumProps.thy:31 next_tame_comp"
+      ],
+      "status": "open_boundary",
+      "dependency_weight_refs": [
+        "FaceDivisionProps:4942", "Invariants:2826", "ScoreProps:725",
+        "PlaneProps:680", "GeneratorProps:537", "GraphProps:437",
+        "EnumeratorProps:429", "LowerBound:297",
+        "TameProps+TameEnumProps+Plane1Props:160"
+      ],
+      "dependency_weight_total_lines": 11033,
+      "first_unsupported_fact": "inv_inv_notame requires the missing composite inv and notame7 preservation closure; next_tame0_comp then additionally depends on untame_notame and the exact successor-filter theorem.",
+      "claim_limit": "No notame7 preservation, lower-bound final rejection, or next_tame completion theorem is certified by this packet."
+    },
+    {
+      "id": "whole_tree_replay",
+      "status": "not_started_by_design",
+      "excluded": ["parameter p=0 replay", "parameter p=2 replay", "whole-tree witnesses"]
+    }
+  ]
+}
