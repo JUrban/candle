@@ -112,6 +112,8 @@ let rec candle_case10173_bound_emit index = function
          "\t" ^ Num.string_of_num (candle_case10173_bound_rational upper));
       candle_case10173_bound_emit (index + 1) remaining;;
 
+let candle_case10173_bound_prefix128_theorem : thm option ref = ref None;;
+
 let _ =
   let axioms_before = axioms () in
   candle_q_dim_analytic_jet_profile :=
@@ -144,6 +146,7 @@ let _ =
   candle_q_dim_analytic_jet_profile_event "kernel-compute-begin";
   let theorem = candle_q_dim_analytic_jet_compute equations call in
   candle_q_dim_analytic_jet_profile_event "kernel-compute-end";
+  candle_case10173_bound_prefix128_theorem := Some theorem;
   let results = candle_case10173_bound_dest_list (rand (concl theorem)) in
   if hyp theorem <> [] || length results <> 128 then
     failwith "case10173 bound tightness: result shape";
