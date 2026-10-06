@@ -18,23 +18,20 @@ open Candle_cv_flyspeck_nonlinear_term_order_compat;;
 
 let candle_disjunctive_fifth_batch_axioms_before = axioms ();;
 
-let candle_disjunctive_fifth_batch_component_pass component source =
+let candle_disjunctive_fifth_batch_component_pass component list_theorem =
   let function_term =
     List.nth candle_disjunctive_case16646_functions
       component.next_batch_component_selected in
-  let expected_lower,expected_upper =
-    candle_disjunctive_fixed_outer_domain_bounds
-      component.next_batch_component_domain in
-  candle_reflected_nl_source_pass_with function_term
-    (fun actual_lower actual_upper ->
-      if not
-          (candle_disjunctive_shared_aconv_lists
-             actual_lower expected_lower &&
-           candle_disjunctive_shared_aconv_lists
-             actual_upper expected_upper)
-      then failwith "fifth sibling batch complete: component handoff drift";
-      source)
-    component.next_batch_component_domain;;
+  let expected_domain,_,_ =
+    M_taylor.dest_m_cell_domain
+      (concl component.next_batch_component_domain) in
+  let functions,actual_domain =
+    M_verifier.dest_m_cell_list_pass (concl list_theorem) in
+  if functions <> [function_term] ||
+     not (aconv actual_domain expected_domain) ||
+     hyp list_theorem <> [] then
+    failwith "fifth sibling batch complete: component handoff drift";
+  list_theorem;;
 
 let candle_disjunctive_fifth_batch_pair_components components sources =
   let rec pair components sources =
