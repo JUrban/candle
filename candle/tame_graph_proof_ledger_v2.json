@@ -100,6 +100,31 @@
     "global_axiom_growth": 0,
     "pre_evidence_cost_note": "One unmeasured persistent proof-iteration session preceded the retained fresh run. Eventual feasibility accounting must charge this preparation as well as the retained fresh run, theorem handoff, and required repeats."
   },
+  "enumerator_seed_verification": {
+    "implementation": "candle/cv_compute_tame_graph_enumerator_core.ml",
+    "test": "candle/test_cv_compute_tame_graph_enumerator_seed.ml",
+    "runtime": "/project/flyspeck-candle-runs/v352-full-boundary-materialization-heap16-dev-005/snapshot/candle/candle/build/cake",
+    "fresh_success_log": "/project/flyspeck-candle-runs/tame-enumerator-seed-v2-dev-007/fresh.log",
+    "fresh_success_log_sha256": "f652b6b88e54a93a3c3ceb890de178409893b84e2dbac4987f55d86909da966b",
+    "fresh_success_time_sha256": "d5d279e6497f9461b03cf496c3521fd618d1502e823e301723fc706f6e65757c",
+    "fresh_success_elapsed_seconds": 121.65,
+    "fresh_success_user_seconds": 119.59,
+    "fresh_success_system_seconds": 1.95,
+    "fresh_success_max_rss_kib": 1091328,
+    "success_marker": "CANDLE_CV_TAME_GRAPH_ENUMERATOR_SEED_TEST_OK p=0_min_vertex=2 axiom_growth=0 DEVELOPMENT_NON_RELEASE",
+    "global_axiom_growth": 0,
+    "recorded_failed_fresh_elapsed_seconds": 715.05,
+    "run_history": [
+      {"run": "dev-001", "seconds": 119.96, "class": "compute_contract_failure", "result": "constructor equation rejected from program-equation list"},
+      {"run": "dev-002", "seconds": 117.36, "class": "source_failure", "result": "tuple precedence in experimental extended-initializer call"},
+      {"run": "dev-003", "seconds": 118.89, "class": "compute_contract_failure", "result": "verified primitive rejected extension of fixed initialization theorem set"},
+      {"run": "dev-004", "seconds": 119.92, "class": "fixture_proof_failure", "result": "LET and constructor rewrites incomplete"},
+      {"run": "dev-005", "seconds": 119.40, "class": "source_failure", "result": "late Flyspeck LET_THM unavailable at fresh base"},
+      {"run": "dev-006", "seconds": 119.52, "class": "fixture_proof_failure", "result": "numeral normal forms differed syntactically"},
+      {"run": "dev-007", "seconds": 121.65, "class": "kernel_success", "result": "exact p=0 seed theorem and Kernel.compute minimum vertex 2; no axiom growth"}
+    ],
+    "additional_preparation_cost_note": "Several unmeasured persistent proof-iteration sessions and the first unretained core-load attempt preceded dev-007. The eventual feasibility report must add these as an explicit range. This smoke test records total cold elapsed time; evaluator-only, theorem-handoff, and prepared-state repeat timings begin with the first successor batch."
+  },
   "entries": [
     {
       "id": "typed_covers_replay_sound",
@@ -306,9 +331,26 @@
       "claim_limit": "No notame7 preservation, lower-bound final rejection, or next_tame completion theorem is certified by this packet."
     },
     {
+      "id": "faithful_enumerator_seed_boundary",
+      "implementation": "candle/cv_compute_tame_graph_enumerator_core.ml",
+      "test": "candle/test_cv_compute_tame_graph_enumerator_seed.ml",
+      "status": "fresh_kernel_checked",
+      "verification_log": "/project/flyspeck-candle-runs/tame-enumerator-seed-v2-dev-007/fresh.log",
+      "verification_log_sha256": "f652b6b88e54a93a3c3ceb890de178409893b84e2dbac4987f55d86909da966b",
+      "result": "The exact AFP p=0 seed graph is theorem-bound to the intended nested cval face/graph representation. Kernel.compute evaluates the authentic minimal-face/minimal-height selection and returns vertex 2 with no axiom growth.",
+      "representation_decision": "Externally prepared loop tables remain ordinary checked HOL data; only all-variable graph equations enter Kernel.compute. This respects the primitive's fixed initialization theorem contract and mirrors AFP's precomputed enumTab route.",
+      "next_boundary": "Port splitFace/subdivFace and compare the complete first next_plane successor batch against the independent Isabelle reference before adding the full pruning predicates.",
+      "claim_limit": "This is an actual Kernel.compute representation/selection result, not yet an enumeration step, pruning result, p=0 replay, graph classification, or S4 theorem."
+    },
+    {
       "id": "whole_tree_replay",
-      "status": "not_started_by_design",
-      "excluded": ["parameter p=0 replay", "parameter p=2 replay", "whole-tree witnesses"]
+      "status": "seed_boundary_started",
+      "near_term_execution_milestones": [
+        "first exact next_plane successor batch",
+        "complete reflected parameter p=0 development run",
+        "fixed bounded representative parameter p=2 development run"
+      ],
+      "excluded": ["whole-tree witness certificates"]
     }
   ]
 }
