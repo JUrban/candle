@@ -9,6 +9,7 @@ fi
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/cv-nonlinear-real-functions-checkpoint-v1}
 input_relocation_from=${CANDLE_FRAGMENT_INPUT_RELOCATION_FROM:-}
 input_relocation_to=${CANDLE_FRAGMENT_INPUT_RELOCATION_TO:-}
+extra_load_path=${CANDLE_FRAGMENT_EXTRA_LOAD_PATH:-}
 output_dir=$1
 expected_marker=$2
 shift 2
@@ -18,6 +19,11 @@ if [[ -n "$input_relocation_from" || -n "$input_relocation_to" ]]; then
   [[ -n "$input_relocation_from" && -n "$input_relocation_to" ]]
   [[ "$input_relocation_from" = /* && "$input_relocation_to" = /* ]]
   [[ -d "$input_relocation_to" ]]
+fi
+if [[ -n "$extra_load_path" ]]; then
+  [[ "$extra_load_path" = /* ]]
+  [[ "$extra_load_path" =~ ^/[A-Za-z0-9._/-]+$ ]]
+  [[ -d "$extra_load_path" ]]
 fi
 
 [[ -f "$base_dir/CHECKPOINT-READY" ]]
@@ -77,6 +83,9 @@ done
 {
   printf 'print_endline "%s";;\n' "$input_ack"
   printf 'load_path := ["/project/worktrees/flyspeck-cv-nonlinear-closure-v11-manifest-d6/formal_ineqs"; "/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;\n'
+  if [[ -n "$extra_load_path" ]]; then
+    printf 'load_path := "%s" :: !load_path;;\n' "$extra_load_path"
+  fi
   for fragment in "${fragments[@]}"; do
     fragment_sha256=$(sha256sum "$fragment" | awk '{print $1}')
     printf 'print_endline "CANDLE_RESTORE_FRAGMENT_BEGIN sha256=%s file=%s";;\n' \
