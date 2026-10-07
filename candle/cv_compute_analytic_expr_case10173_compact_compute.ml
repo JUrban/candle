@@ -606,6 +606,135 @@ let candle_cv_case10173_direct_coordinate_jobs_digest_compute = prove
     [candle_cv_case10173_direct_coordinate_jobs_digest_def;
      cexp_if_def;cexp_ispair_def;cexp_fst_def;cexp_snd_def]);;
 
+let candle_cv_case10173_fixed_coordinate_sqrt_result_def = new_definition
+ `candle_cv_case10173_fixed_coordinate_sqrt_result
+      check_domain dimensions boxes radii variable
+      center_certificate box_certificate =
+    let center_input = candle_cv_fs_interval_lookup variable dimensions in
+    let box_input = candle_cv_fs_interval_of_q
+      (candle_cv_fs_interval_lookup variable boxes) in
+    let center_value = candle_cv_fs_interval_of_q center_certificate in
+    let box_value = candle_cv_fs_interval_of_q box_certificate in
+    let center_d = candle_cv_fs_hist_positive_inv
+      (candle_cv_fs_angle_interval_scale (Cexp_num 2) center_value) in
+    let box_d = candle_cv_fs_hist_positive_inv
+      (candle_cv_fs_angle_interval_scale (Cexp_num 2) box_value) in
+    let box_logarithmic_d = candle_cv_fs_interval_neg
+      (candle_cv_fs_hist_positive_inv
+        (candle_cv_fs_angle_interval_scale (Cexp_num 2) box_input)) in
+    let box_dd = candle_cv_fs_angle_interval_mul
+      box_d box_logarithmic_d in
+    candle_cv_fs_result_complete_rounded radii
+      (Cexp_if check_domain
+        (candle_cv_bool_and
+          (candle_cv_fsn_sqrt_domain center_certificate center_input)
+          (candle_cv_fsn_sqrt_domain box_certificate box_input))
+        (Cexp_num 1))
+      (candle_cv_fs_first_make center_value
+        (candle_cv_case10173_coordinate_vector
+          center_d variable dimensions))
+      (candle_cv_case10173_coordinate_diagonal
+        box_dd variable dimensions)`;;
+
+let candle_cv_case10173_fixed_coordinates_def = define
+ `(candle_cv_case10173_fixed_coordinates check_domain dimensions boxes radii
+      (Cexp_num n) coefficient_programs center_certificates
+      box_certificates acc = acc) /\
+  (candle_cv_case10173_fixed_coordinates check_domain dimensions boxes radii
+      (Cexp_pair input_program input_programs) coefficient_programs
+      center_certificates box_certificates acc =
+     let variable = Cexp_snd (Cexp_fst input_program) in
+     let root_result = candle_cv_case10173_fixed_coordinate_sqrt_result
+       check_domain dimensions boxes radii variable
+       (Cexp_fst center_certificates) (Cexp_fst box_certificates) in
+     let coefficient_result = candle_cv_fs_poly_program_fixed
+       dimensions radii (Cexp_fst coefficient_programs) in
+     let term_result = candle_cv_fs_result_mul
+       radii coefficient_result root_result in
+     candle_cv_case10173_fixed_coordinates check_domain dimensions boxes radii
+       input_programs (Cexp_snd coefficient_programs)
+       (Cexp_snd center_certificates) (Cexp_snd box_certificates)
+       (candle_cv_case10173_compact_acc_add_result acc term_result))`;;
+
+let candle_cv_case10173_fixed_coordinates_compute = prove
+ (`!check_domain dimensions boxes radii input_programs coefficient_programs
+       center_certificates box_certificates acc.
+     candle_cv_case10173_fixed_coordinates check_domain dimensions boxes radii
+       input_programs coefficient_programs center_certificates
+       box_certificates acc =
+     Cexp_if (Cexp_ispair input_programs)
+       (let variable = Cexp_snd (Cexp_fst (Cexp_fst input_programs)) in
+        let root_result = candle_cv_case10173_fixed_coordinate_sqrt_result
+          check_domain dimensions boxes radii variable
+          (Cexp_fst center_certificates) (Cexp_fst box_certificates) in
+        let coefficient_result = candle_cv_fs_poly_program_fixed
+          dimensions radii (Cexp_fst coefficient_programs) in
+        let term_result = candle_cv_fs_result_mul
+          radii coefficient_result root_result in
+        candle_cv_case10173_fixed_coordinates
+          check_domain dimensions boxes radii
+          (Cexp_snd input_programs) (Cexp_snd coefficient_programs)
+          (Cexp_snd center_certificates) (Cexp_snd box_certificates)
+          (candle_cv_case10173_compact_acc_add_result acc term_result))
+       acc`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC (SPEC `input_programs:cval` (cases "cval")) THEN
+  REWRITE_TAC
+    [candle_cv_case10173_fixed_coordinates_def;
+     cexp_if_def;cexp_ispair_def;cexp_fst_def;cexp_snd_def;
+     LET_DEF;LET_END_DEF]);;
+
+let candle_cv_case10173_fixed_coordinate_acc_def = new_definition
+ `candle_cv_case10173_fixed_coordinate_acc check_domain plan boxes
+      center_certificates box_certificates =
+    let center_boxes = candle_cv_q_center_environment_list boxes in
+    let dimensions = candle_cv_fs_interval_list_of_q center_boxes in
+    let radii = candle_cv_fs_list_of_q
+      (candle_cv_q_fixed_list_round_upper
+        (candle_cv_q_radius_list boxes)) in
+    let constants = candle_cv_fs_interval_lookup (Cexp_num 0) plan in
+    let input_programs = candle_cv_fs_interval_lookup (Cexp_num 1) plan in
+    let coefficient_programs =
+      candle_cv_fs_interval_lookup (Cexp_num 2) plan in
+    let constants_acc = candle_cv_case10173_compact_constants
+      dimensions radii constants
+      (candle_cv_case10173_compact_acc_zero dimensions) in
+    candle_cv_case10173_fixed_coordinates check_domain dimensions boxes radii
+      input_programs coefficient_programs center_certificates
+      box_certificates constants_acc`;;
+
+let candle_cv_case10173_fixed_coordinate_jobs_digest_def = define
+ `(candle_cv_case10173_fixed_coordinate_jobs_digest check_domain plan
+      (Cexp_num n) = Cexp_num 0) /\
+  (candle_cv_case10173_fixed_coordinate_jobs_digest check_domain plan
+      (Cexp_pair job jobs) =
+     Cexp_add
+       (candle_cv_case10173_compact_digest
+         (candle_cv_case10173_fixed_coordinate_acc check_domain plan
+           (Cexp_snd (Cexp_snd job)) (Cexp_fst (Cexp_snd job))
+           (Cexp_fst job)))
+       (candle_cv_case10173_fixed_coordinate_jobs_digest
+         check_domain plan jobs))`;;
+
+let candle_cv_case10173_fixed_coordinate_jobs_digest_compute = prove
+ (`!check_domain plan jobs.
+     candle_cv_case10173_fixed_coordinate_jobs_digest
+       check_domain plan jobs =
+     Cexp_if (Cexp_ispair jobs)
+       (Cexp_add
+         (candle_cv_case10173_compact_digest
+           (candle_cv_case10173_fixed_coordinate_acc check_domain plan
+             (Cexp_snd (Cexp_snd (Cexp_fst jobs)))
+             (Cexp_fst (Cexp_snd (Cexp_fst jobs)))
+             (Cexp_fst (Cexp_fst jobs))))
+         (candle_cv_case10173_fixed_coordinate_jobs_digest
+           check_domain plan (Cexp_snd jobs)))
+       (Cexp_num 0)`,
+  REPEAT GEN_TAC THEN STRUCT_CASES_TAC (SPEC `jobs:cval` (cases "cval")) THEN
+  REWRITE_TAC
+    [candle_cv_case10173_fixed_coordinate_jobs_digest_def;
+     cexp_if_def;cexp_ispair_def;cexp_fst_def;cexp_snd_def]);;
+
 let candle_cv_case10173_compact_angle_result_def = new_definition
  `candle_cv_case10173_compact_angle_result boxes roots =
     let center_boxes = candle_cv_q_center_environment_list boxes in
@@ -743,6 +872,10 @@ let candle_cv_case10173_compact_compute_eqs =
          candle_cv_case10173_direct_coordinates_compute;
          candle_cv_case10173_direct_coordinate_acc_def;
          candle_cv_case10173_direct_coordinate_jobs_digest_compute;
+         candle_cv_case10173_fixed_coordinate_sqrt_result_def;
+         candle_cv_case10173_fixed_coordinates_compute;
+         candle_cv_case10173_fixed_coordinate_acc_def;
+         candle_cv_case10173_fixed_coordinate_jobs_digest_compute;
          candle_cv_case10173_compact_angle_result_def;
          candle_cv_case10173_compact_angle_jobs_digest_compute;
          candle_cv_case10173_compact_structure_jobs_check_compute;

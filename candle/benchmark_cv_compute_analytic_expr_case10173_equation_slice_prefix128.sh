@@ -3,14 +3,15 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 base_dir=${CANDLE_FRAGMENT_BASE_DIR:-/project/flyspeck-candle-runs/v510-direct-case10173-historical-support-checkpoint-dev-001}
-output_dir=${1:-/project/flyspeck-candle-runs/cv-case10173-compact-stages-prefix128-v1-dev-001}
+output_dir=${1:-/project/flyspeck-candle-runs/cv-case10173-equation-slice-prefix128-v1-dev-001}
 runner="$repo_root/candle/restart_real_functions_with_fragments.sh"
 profiler="$repo_root/candle/compatibility/certificate_phase_profile.py"
 support="$repo_root/candle/cv_compute_analytic_expr_case10173_compact_compute.ml"
 compact="$repo_root/candle/benchmark_cv_compute_analytic_expr_case10173_compact_prefix128.ml"
-stages="$repo_root/candle/benchmark_cv_compute_analytic_expr_case10173_compact_stages_prefix128.ml"
+slicer="$repo_root/candle/cv_compute_equation_slice.ml"
+fragment="$repo_root/candle/benchmark_cv_compute_analytic_expr_case10173_equation_slice_prefix128.ml"
 fixture="$repo_root/candle/fixtures/case10173_historical_roots_prefix128.tsv"
-marker='CANDLE_CV_CASE10173_COMPACT_STAGES_PREFIX128_OK'
+marker='CANDLE_CV_CASE10173_EQUATION_SLICE_PREFIX128_OK'
 
 is_descendant() {
   local candidate=$1 ancestor=$2 parent
@@ -26,7 +27,8 @@ is_descendant() {
 CANDLE_FRAGMENT_BASE_DIR="$base_dir" \
   CANDLE_FRAGMENT_SKIP_ALL_NEEDS=1 \
   CANDLE_FRAGMENT_EXTRA_LOAD_PATH="$repo_root" \
-  "$runner" "$output_dir" "$marker" "$support" "$compact" "$stages" &
+  "$runner" "$output_dir" "$marker" \
+  "$support" "$compact" "$slicer" "$fragment" &
 runner_pid=$!
 
 profiled_pid=
@@ -44,7 +46,7 @@ done
 
 if [[ -z "$profiled_pid" ]]; then
   wait "$runner_pid"
-  printf '%s\n' 'restored compact-stage process was not found' >&2
+  printf '%s\n' 'restored equation-slice process was not found' >&2
   exit 1
 fi
 printf '%s\n' "$profiled_pid" >"$output_dir/profiled.pid"
@@ -66,11 +68,11 @@ set -e
   exit "$profile_status"
 }
 
-rg -q "$marker .*cells=128 structure_repeats=2 coordinate_repeats=2 direct_coordinate_repeats=2 fixed_coordinate_repeats=2 unchecked_coordinate_repeats=2 angle_repeats=2 direct_coordinate_exact_match=1 fixed_coordinate_repeat_equal=1 unchecked_coordinate_exact_match=1 compact_digests_repeat_equal=1 assumptions=0 axiom_growth=0" \
+rg -q "$marker .*cells=128 full_repeats=2 sliced_repeats=2 result=1 exact_match=1 assumptions=0 axiom_growth=0" \
   "$output_dir/candle.log"
-sha256sum "$fixture" "$support" "$compact" "$stages" \
+sha256sum "$fixture" "$support" "$compact" "$slicer" "$fragment" \
   "$output_dir/candle.log" "$output_dir/phase-profile.json" \
-  >"$output_dir/compact-stage-files.sha256"
+  >"$output_dir/equation-slice-files.sha256"
 sha256sum -c "$output_dir/result-files.sha256"
 printf '%s\n' \
-  'CANDLE_CV_CASE10173_COMPACT_STAGES_PREFIX128_DRIVER_OK DEVELOPMENT_NON_RELEASE NON_AUTHORITATIVE'
+  'CANDLE_CV_CASE10173_EQUATION_SLICE_PREFIX128_DRIVER_OK DEVELOPMENT_NON_RELEASE NON_AUTHORITATIVE'

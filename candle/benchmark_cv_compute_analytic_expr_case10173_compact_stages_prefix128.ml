@@ -29,6 +29,12 @@ let _ =
       direct_coordinate_call = list_mk_comb
         (`candle_cv_case10173_direct_coordinate_jobs_digest`,
          [plan;encoded_jobs]) and
+      fixed_coordinate_call = list_mk_comb
+        (`candle_cv_case10173_fixed_coordinate_jobs_digest`,
+         [`Cexp_num 1`;plan;encoded_jobs]) and
+      unchecked_coordinate_call = list_mk_comb
+        (`candle_cv_case10173_fixed_coordinate_jobs_digest`,
+         [`Cexp_num 0`;plan;encoded_jobs]) and
       angle_call = list_mk_comb
         (`candle_cv_case10173_compact_angle_jobs_digest`,
          [encoded_jobs;candle_case10173_compact_roots]) in
@@ -44,8 +50,16 @@ let _ =
   let coordinate_1 = run "coordinate-1" coordinate_call in
   let direct_coordinate_1 = run "direct-coordinate-1"
     direct_coordinate_call in
+  let fixed_coordinate_1 = run "fixed-coordinate-1"
+    fixed_coordinate_call in
+  let unchecked_coordinate_1 = run "unchecked-coordinate-1"
+    unchecked_coordinate_call in
   let angle_1 = run "angle-1" angle_call in
   let angle_2 = run "angle-2" angle_call in
+  let unchecked_coordinate_2 = run "unchecked-coordinate-2"
+    unchecked_coordinate_call in
+  let fixed_coordinate_2 = run "fixed-coordinate-2"
+    fixed_coordinate_call in
   let direct_coordinate_2 = run "direct-coordinate-2"
     direct_coordinate_call in
   let coordinate_2 = run "coordinate-2" coordinate_call in
@@ -56,6 +70,12 @@ let _ =
        (rand (concl coordinate_2))) ||
      not (aconv (rand (concl direct_coordinate_1))
        (rand (concl direct_coordinate_2))) ||
+     not (aconv (rand (concl fixed_coordinate_1))
+       (rand (concl fixed_coordinate_2))) ||
+     not (aconv (rand (concl unchecked_coordinate_1))
+       (rand (concl unchecked_coordinate_2))) ||
+     not (aconv (rand (concl fixed_coordinate_1))
+       (rand (concl unchecked_coordinate_1))) ||
      not (aconv (rand (concl coordinate_1))
        (rand (concl direct_coordinate_1))) ||
      not (aconv (rand (concl angle_1)) (rand (concl angle_2))) ||
@@ -63,6 +83,6 @@ let _ =
      not (List.for_all (fun axiom -> List.mem axiom axioms_before) (axioms ()))
   then failwith "case10173 compact stages: repeat validation failed";
   print_endline
-    "CANDLE_CV_CASE10173_COMPACT_STAGES_PREFIX128_OK DEVELOPMENT_NON_RELEASE NON_AUTHORITATIVE cells=128 structure_repeats=2 coordinate_repeats=2 direct_coordinate_repeats=2 angle_repeats=2 direct_coordinate_exact_match=1 compact_digests_repeat_equal=1 assumptions=0 axiom_growth=0";;
+    "CANDLE_CV_CASE10173_COMPACT_STAGES_PREFIX128_OK DEVELOPMENT_NON_RELEASE NON_AUTHORITATIVE cells=128 structure_repeats=2 coordinate_repeats=2 direct_coordinate_repeats=2 fixed_coordinate_repeats=2 unchecked_coordinate_repeats=2 angle_repeats=2 direct_coordinate_exact_match=1 fixed_coordinate_repeat_equal=1 unchecked_coordinate_exact_match=1 compact_digests_repeat_equal=1 assumptions=0 axiom_growth=0";;
 
 end;;
