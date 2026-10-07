@@ -204,22 +204,25 @@ let candle_case10173_compact_plan instructions =
      candle_case10173_compact_poly_payload
        (candle_case10173_compact_nth 39 instructions)];;
 
+let candle_case10173_compact_prepare () =
+  let captured = candle_case10173_complete_capture () in
+  let source_program =
+    captured.case10173_complete_prepared.program_representation_term in
+  let instructions = candle_case10173_compact_program_items source_program in
+  if not (candle_case10173_compact_validate_source instructions) then
+    failwith "case10173 compact: complete source skeleton drift";
+  candle_case10173_compact_plan instructions,
+  candle_case10173_compact_take 128
+    captured.case10173_complete_encoded_jobs;;
+
 let _ =
   Candle_cv_analytic_expr_jet_prove.candle_q_dim_analytic_jet_profile :=
     (fun event -> print_endline
       ("CANDLE_CERT_PROFILE lane=case10173-compact-prefix128 phase=" ^
        event));
   let axioms_before = axioms () in
-  let captured = candle_case10173_complete_capture () in
-  let source_program =
-    captured.case10173_complete_prepared.program_representation_term in
   candle_q_dim_analytic_jet_profile_event "plan-preparation-begin";
-  let instructions = candle_case10173_compact_program_items source_program in
-  if not (candle_case10173_compact_validate_source instructions) then
-    failwith "case10173 compact: complete source skeleton drift";
-  let plan = candle_case10173_compact_plan instructions in
-  let encoded_jobs = candle_case10173_compact_take 128
-    captured.case10173_complete_encoded_jobs in
+  let plan,encoded_jobs = candle_case10173_compact_prepare () in
   candle_q_dim_analytic_jet_profile_event "plan-preparation-end";
   let call = list_mk_comb
     (`candle_cv_case10173_compact_raw_jobs_check`,
