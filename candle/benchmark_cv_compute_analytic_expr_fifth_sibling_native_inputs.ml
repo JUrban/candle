@@ -10,6 +10,7 @@ module Benchmark_cv_compute_analytic_expr_fifth_sibling_native_inputs = struct
 
 open Candle_cv_analytic_expr_jet_prove;;
 open Candle_cv_analytic_expr_stable_batch_prove;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_batch_prove;;
 open Candle_cv_analytic_expr_disjunctive_case16594_plan;;
 open Test_cv_compute_analytic_expr_disjunctive_next_sibling_batch_scan;;
 open Candle_cv_analytic_expr_disjunctive_fifth_sibling_batch_forest_plan;;
