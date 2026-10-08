@@ -3,10 +3,10 @@
 (* adaptive-replay discriminator.                                            *)
 (*                                                                            *)
 (* DEVELOPMENT / NON-RELEASE / NON-AUTHORITATIVE.  Internal-node cells are  *)
-(* represented by their exact recorded domain bounds.  Square-root fields   *)
-(* are explicit zero placeholders for a native run that must recompute every *)
-(* enclosure; they are not certificates.  This creates diagnostic data only *)
-(* and introduces no theorem or numerical verdict.                           *)
+(* represented by the exact root domain plus authenticated split topology.   *)
+(* A native-side data generator reconstructs every child by exact rational   *)
+(* bisection and supplies explicit zero placeholders to a run that recomputes *)
+(* every square-root enclosure.  This creates diagnostic data only.          *)
 (* ========================================================================== *)
 
 module Benchmark_cv_compute_analytic_expr_fifth_sibling_native_forest_inputs = struct
@@ -49,18 +49,13 @@ let rec candle_fifth_forest_native_input_program_length term =
     | _ -> failwith "fifth forest native input: malformed program pair"
   else failwith "fifth forest native input: malformed program spine";;
 
-let candle_fifth_forest_native_input_zero_certificates =
-  "0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0";;
-
-let candle_fifth_forest_native_input_emit_domain index domain =
+let candle_fifth_forest_native_input_emit_root component domain =
   let lower,upper =
     candle_disjunctive_fixed_outer_domain_bounds domain in
   if length lower <> 6 || length upper <> 6 then
     failwith "fifth forest native input: domain shape drift";
   print_endline
-    ("CANDLE_CV_NL_NATIVE_JOB\t16594\t" ^ string_of_int index ^ "\t" ^
-     candle_fifth_forest_native_input_zero_certificates ^ "\t" ^
-     candle_fifth_forest_native_input_zero_certificates ^ "\t" ^
+    ("CANDLE_CV_NL_NATIVE_FOREST_ROOT\t" ^ string_of_int component ^ "\t" ^
      candle_fifth_forest_native_input_vector lower ^ "\t" ^
      candle_fifth_forest_native_input_vector upper);;
 
@@ -74,17 +69,15 @@ let candle_fifth_forest_native_input_emit_topology
 
 let rec candle_fifth_forest_native_input_emit_shape
     component parent side depth index = function
-  | Candle_disjunctive_next_batch_leaf (selected,domain,_) ->
+  | Candle_disjunctive_next_batch_leaf (selected,_,_) ->
       if selected <> 1 then
         failwith "fifth forest native input: mixed selection";
       candle_fifth_forest_native_input_emit_topology
         index component parent side depth "leaf" 0;
-      candle_fifth_forest_native_input_emit_domain index domain;
       index + 1,1,0,depth
-  | Candle_disjunctive_next_batch_node (axis,domain,left,right) ->
+  | Candle_disjunctive_next_batch_node (axis,_,left,right) ->
       candle_fifth_forest_native_input_emit_topology
         index component parent side depth "node" axis;
-      candle_fifth_forest_native_input_emit_domain index domain;
       let after_left,left_leaves,left_nodes,left_depth =
         candle_fifth_forest_native_input_emit_shape
           component index 0 (depth + 1) (index + 1) left in
@@ -99,6 +92,9 @@ let rec candle_fifth_forest_native_input_emit_components index = function
   | component::components ->
       if component.next_batch_component_selected <> 1 then
         failwith "fifth forest native input: non-function1 component";
+      candle_fifth_forest_native_input_emit_root
+        component.next_batch_component_id
+        component.next_batch_component_domain;
       let after_shape,leaves,nodes,depth =
         candle_fifth_forest_native_input_emit_shape
           component.next_batch_component_id (-1) (-1) 0 index
@@ -129,7 +125,7 @@ let _ =
   then failwith "fifth forest native input: validation failed";
   print_endline
     ("CANDLE_CV_FIFTH_SIBLING_NATIVE_FOREST_INPUTS_OK DEVELOPMENT_NON_RELEASE" ^
-     " instructions=167 sqrt_slots=10 placeholder_certificates=zero" ^
+     " instructions=167 sqrt_slots=10 domain_roots=20" ^
      " components=20 nodes=11718" ^
      " leaves=5869 internal_nodes=5849 maximum_depth=" ^ string_of_int depth ^
      " assumptions=0 axiom_growth=0");;
