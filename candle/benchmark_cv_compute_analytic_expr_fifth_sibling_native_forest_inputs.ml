@@ -3,9 +3,10 @@
 (* adaptive-replay discriminator.                                            *)
 (*                                                                            *)
 (* DEVELOPMENT / NON-RELEASE / NON-AUTHORITATIVE.  Internal-node cells are  *)
-(* reconstructed from the exact recorded domain by the same scan-cell       *)
-(* constructor used by the sealed forest plan.  This creates diagnostic data *)
-(* only and introduces no theorem or numerical verdict.                      *)
+(* represented by their exact recorded domain bounds.  Square-root fields   *)
+(* are explicit zero placeholders for a native run that must recompute every *)
+(* enclosure; they are not certificates.  This creates diagnostic data only *)
+(* and introduces no theorem or numerical verdict.                           *)
 (* ========================================================================== *)
 
 module Benchmark_cv_compute_analytic_expr_fifth_sibling_native_forest_inputs = struct
@@ -23,24 +24,6 @@ let candle_fifth_forest_native_input_rational term =
 
 let candle_fifth_forest_native_input_vector terms =
   String.concat "," (map candle_fifth_forest_native_input_rational terms);;
-
-let candle_fifth_forest_native_input_q_data term =
-  let signed,denominator_predecessor = dest_pair term in
-  let positive,negative = dest_pair signed in
-  let numerator =
-    Num.sub_num (dest_numeral positive) (dest_numeral negative) in
-  let denominator =
-    Num.add_num (dest_numeral denominator_predecessor)
-      (Num.num_of_int 1) in
-  Num.string_of_num (Num.div_num numerator denominator);;
-
-let candle_fifth_forest_native_input_interval term =
-  let lower,upper = dest_pair term in
-  candle_fifth_forest_native_input_q_data lower ^ ":" ^
-  candle_fifth_forest_native_input_q_data upper;;
-
-let candle_fifth_forest_native_input_intervals terms =
-  String.concat "," (map candle_fifth_forest_native_input_interval terms);;
 
 let rec candle_fifth_forest_native_input_cval term =
   let constructor,arguments = strip_comb term in
@@ -65,22 +48,20 @@ let rec candle_fifth_forest_native_input_program_length term =
     | _ -> failwith "fifth forest native input: malformed program pair"
   else failwith "fifth forest native input: malformed program spine";;
 
-let candle_fifth_forest_native_input_emit_cell index cell =
-  let stable = cell.variable_batch_stable_cell in
-  if length cell.variable_batch_box_intervals <> 10 ||
-     length stable.stable_batch_center_intervals <> 10 ||
-     length stable.stable_batch_lower <> 6 ||
-     length stable.stable_batch_upper <> 6 then
-    failwith "fifth forest native input: cell shape drift";
+let candle_fifth_forest_native_input_zero_certificates =
+  "0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0,0:0";;
+
+let candle_fifth_forest_native_input_emit_domain index domain =
+  let lower,upper =
+    candle_disjunctive_fixed_outer_domain_bounds domain in
+  if length lower <> 6 || length upper <> 6 then
+    failwith "fifth forest native input: domain shape drift";
   print_endline
     ("CANDLE_CV_NL_NATIVE_JOB\t16594\t" ^ string_of_int index ^ "\t" ^
-     candle_fifth_forest_native_input_intervals
-       cell.variable_batch_box_intervals ^ "\t" ^
-     candle_fifth_forest_native_input_intervals
-       stable.stable_batch_center_intervals ^ "\t" ^
-     candle_fifth_forest_native_input_vector stable.stable_batch_lower ^
-     "\t" ^
-     candle_fifth_forest_native_input_vector stable.stable_batch_upper);;
+     candle_fifth_forest_native_input_zero_certificates ^ "\t" ^
+     candle_fifth_forest_native_input_zero_certificates ^ "\t" ^
+     candle_fifth_forest_native_input_vector lower ^ "\t" ^
+     candle_fifth_forest_native_input_vector upper);;
 
 let candle_fifth_forest_native_input_emit_topology
     index component parent side depth kind axis =
@@ -92,18 +73,17 @@ let candle_fifth_forest_native_input_emit_topology
 
 let rec candle_fifth_forest_native_input_emit_shape
     component parent side depth index = function
-  | Candle_disjunctive_next_batch_leaf (selected,_,cell) ->
+  | Candle_disjunctive_next_batch_leaf (selected,domain,_) ->
       if selected <> 1 then
         failwith "fifth forest native input: mixed selection";
       candle_fifth_forest_native_input_emit_topology
         index component parent side depth "leaf" 0;
-      candle_fifth_forest_native_input_emit_cell index cell;
+      candle_fifth_forest_native_input_emit_domain index domain;
       index + 1,1,0,depth
   | Candle_disjunctive_next_batch_node (axis,domain,left,right) ->
-      let cell = candle_disjunctive_next_batch_cell 1 domain in
       candle_fifth_forest_native_input_emit_topology
         index component parent side depth "node" axis;
-      candle_fifth_forest_native_input_emit_cell index cell;
+      candle_fifth_forest_native_input_emit_domain index domain;
       let after_left,left_leaves,left_nodes,left_depth =
         candle_fifth_forest_native_input_emit_shape
           component index 0 (depth + 1) (index + 1) left in
@@ -148,7 +128,8 @@ let _ =
   then failwith "fifth forest native input: validation failed";
   print_endline
     ("CANDLE_CV_FIFTH_SIBLING_NATIVE_FOREST_INPUTS_OK DEVELOPMENT_NON_RELEASE" ^
-     " instructions=167 sqrt_slots=10 components=20 nodes=11718" ^
+     " instructions=167 sqrt_slots=10 placeholder_certificates=zero" ^
+     " components=20 nodes=11718" ^
      " leaves=5869 internal_nodes=5849 maximum_depth=" ^ string_of_int depth ^
      " assumptions=0 axiom_growth=0");;
 
