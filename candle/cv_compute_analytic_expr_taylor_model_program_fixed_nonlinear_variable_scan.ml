@@ -74,6 +74,46 @@ let candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_six
       failwith (label ^ ": fixed nonlinear scan validation failed");
     count,failures;;
 
+(* Stream discovery-only jobs through bounded reflected calls.  In
+   particular, do not retain every prepared cell and its encoded cval term at
+   once: authentic fifth-sibling batches contain thousands of cells, while a
+   later theorem-producing path already works at a much smaller boundary. *)
+let candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_jobs_chunked_six
+    label chunk_limit prepared prepare_cell jobs =
+  if chunk_limit <= 0 then
+    failwith (label ^ ": nonpositive scan chunk limit");
+  let rec take count reversed = function
+    | remaining when count = 0 -> rev reversed,remaining
+    | [] -> rev reversed,[]
+    | job::remaining -> take (count - 1) (job::reversed) remaining in
+  let rec scan chunk_index offset total reversed_failures remaining =
+    match remaining with
+    | [] -> total,rev reversed_failures
+    | _ ->
+        let chunk,after = take chunk_limit [] remaining in
+        let chunk_label =
+          label ^ "-chunk-" ^ string_of_int chunk_index in
+        candle_q_dim_analytic_jet_profile_event
+          (chunk_label ^ "-cell-preparation-begin");
+        let cells = map prepare_cell chunk in
+        candle_q_dim_analytic_jet_profile_event
+          (chunk_label ^ "-cell-preparation-end");
+        let count,failures =
+          candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_six
+            chunk_label prepared cells in
+        let expected = length chunk in
+        if count <> expected then
+          failwith (chunk_label ^ ": chunk cardinality drift");
+        let global_failures = map (fun index -> offset + index) failures in
+        scan (chunk_index + 1) (offset + count) (total + count)
+          (List.rev_append global_failures reversed_failures) after in
+  candle_q_dim_analytic_jet_profile_event (label ^ "-stream-begin");
+  let count,failures = scan 0 0 0 [] jobs in
+  candle_q_dim_analytic_jet_profile_event (label ^ "-stream-end");
+  if count <> length jobs then
+    failwith (label ^ ": streamed scan cardinality drift");
+  count,failures;;
+
 print_endline
   "CANDLE_CV_FIXED_NONLINEAR_VARIABLE_SCAN_OK DEVELOPMENT_NON_RELEASE";;
 

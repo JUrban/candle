@@ -33,22 +33,25 @@ let candle_disjunctive_fifth_batch_tagged_get,
     List.filter (fun (_,_,selected,_) -> selected = 0) tagged
   and function1 =
     List.filter (fun (_,_,selected,_) -> selected = 1) tagged in
-  let scan_cells point_plan jobs =
-    map
+  let scan_jobs label prepared point_plan jobs =
+    candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_jobs_chunked_six
+      label 128 prepared
       (fun (_,_,_,domain) ->
         candle_disjunctive_next_batch_scan_cell point_plan domain)
       jobs in
   let axioms_before = axioms () in
   let count0,failures0 =
-    candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_six
+    scan_jobs
       "fifth-sibling-batch-function0-fixed-nonlinear-scan"
       candle_disjunctive_next_batch_prepared0
-      (scan_cells candle_disjunctive_next_batch_point_plan0 function0) in
+      candle_disjunctive_next_batch_point_plan0
+      function0 in
   let count1,failures1 =
-    candle_q_dim_taylor_model_fixed_nonlinear_variable_scan_six
+    scan_jobs
       "fifth-sibling-batch-function1-fixed-nonlinear-scan"
       candle_disjunctive_next_batch_prepared1
-      (scan_cells candle_disjunctive_next_batch_point_plan1 function1) in
+      candle_disjunctive_next_batch_point_plan1
+      function1 in
   let rejected =
     candle_disjunctive_next_batch_select_failures 0 failures0 function0 @
     candle_disjunctive_next_batch_select_failures 0 failures1 function1 in
