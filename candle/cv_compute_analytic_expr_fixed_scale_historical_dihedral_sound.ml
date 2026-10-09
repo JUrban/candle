@@ -813,6 +813,64 @@ let candle_fs_hist_sqrt_hessian_contains = prove
     (SPEC `6` candle_fs_hist_sqrt_hessian_symmetric_entry_contains) THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_sqrt_hessian_component_symmetric = prove
+ (`!rowindex colindex derivative_real logarithmic_real
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     (!i j. hessian_real i j = hessian_real j i)
+     ==> candle_fs_hist_sqrt_hessian_component rowindex colindex
+           derivative_real logarithmic_real gradient_real hessian_real =
+         derivative_real *
+           (gradient_real colindex *
+              (logarithmic_real * gradient_real rowindex) +
+            hessian_real rowindex colindex)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_component_def] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[REAL_MUL_AC]);;
+
+let candle_fs_hist_sqrt_hessian_chain_contains = prove
+ (`!derivative_value logarithmic_derivative input_gradient input_hessian
+      derivative_real logarithmic_real
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     LENGTH input_gradient = 6 /\
+     LENGTH input_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) input_hessian /\
+     candle_fs_interval_contains derivative_value derivative_real /\
+     candle_fs_interval_contains logarithmic_derivative logarithmic_real /\
+     ALL2 candle_fs_interval_contains input_gradient
+       (list_of_seq gradient_real 6) /\
+     ALL2 (ALL2 candle_fs_interval_contains) input_hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) 6) 6) /\
+     (!i j. hessian_real i j = hessian_real j i)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+           (candle_fs_hist_sqrt_hessian derivative_value
+             logarithmic_derivative input_gradient input_hessian)
+           (list_of_seq
+             (\i. list_of_seq
+               (\j. derivative_real *
+                 (gradient_real j *
+                    (logarithmic_real * gradient_real i) +
+                  hessian_real i j)) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_list_of_seq;
+              candle_all2_list_of_seq] THEN
+  X_GEN_TAC `rowindex:num` THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_row_list_of_seq;
+              candle_all2_list_of_seq] THEN
+  X_GEN_TAC `colindex:num` THEN DISCH_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_sqrt_hessian_component rowindex colindex
+      derivative_real logarithmic_real gradient_real hessian_real =
+    derivative_real *
+      (gradient_real colindex *
+         (logarithmic_real * gradient_real rowindex) +
+       hessian_real rowindex colindex)`
+  (fun th -> ONCE_REWRITE_TAC[GSYM th]) THENL
+   [MATCH_MP_TAC candle_fs_hist_sqrt_hessian_component_symmetric THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC
+      (SPEC `6` candle_fs_hist_sqrt_hessian_symmetric_entry_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
 let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
  (`!rowindex colindex derivative_value logarithmic_derivative
       input_gradient input_hessian.
