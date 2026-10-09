@@ -575,4 +575,140 @@ let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
     REWRITE_TAC[candle_cv_fs_angle_interval_mul_correct;
                 candle_cv_fs_interval_add_correct]]);;
 
+let candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct = prove
+ (`!rowindex colindex derivative_value logarithmic_derivative
+      input_gradient input_hessian.
+     rowindex < LENGTH input_hessian /\
+     colindex < LENGTH input_hessian
+     ==>
+     candle_cv_fs_hist_sqrt_hessian_symmetric_entry
+       (Cexp_num rowindex) (Cexp_num colindex)
+       (candle_cv_fs_interval derivative_value)
+       (candle_cv_fs_interval logarithmic_derivative)
+       (candle_cv_fs_interval_list input_gradient)
+       (candle_cv_fs_interval_matrix input_hessian) =
+     candle_cv_fs_interval
+       (candle_fs_hist_sqrt_hessian_symmetric_entry rowindex colindex
+         derivative_value logarithmic_derivative input_gradient
+         input_hessian)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_sqrt_hessian_symmetric_entry_def;
+              candle_fs_hist_sqrt_hessian_symmetric_entry_def;
+              cexp_less_def] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def] THEN
+  MATCH_MP_TAC candle_cv_fs_hist_sqrt_hessian_entry_correct THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_cv_fs_hist_sqrt_hessian_row_correct = prove
+ (`!rowindex derivative_value logarithmic_derivative
+      input_gradient input_hessian.
+     LENGTH input_hessian = 6 /\ rowindex < 6
+     ==>
+     candle_cv_fs_hist_sqrt_hessian_row
+       (Cexp_num rowindex)
+       (candle_cv_fs_interval derivative_value)
+       (candle_cv_fs_interval logarithmic_derivative)
+       (candle_cv_fs_interval_list input_gradient)
+       (candle_cv_fs_interval_matrix input_hessian) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_sqrt_hessian_row rowindex derivative_value
+         logarithmic_derivative input_gradient input_hessian)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `0`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `1`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `2`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `3`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `4`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `5`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct) THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_hist_sqrt_hessian_row_def;
+                  candle_fs_hist_sqrt_hessian_row_def;
+                  candle_cv_fs_angle_six_correct]);;
+
+let candle_cv_fs_hist_sqrt_hessian_correct = prove
+ (`!derivative_value logarithmic_derivative input_gradient input_hessian.
+     LENGTH input_hessian = 6
+     ==>
+     candle_cv_fs_hist_sqrt_hessian
+       (candle_cv_fs_interval derivative_value)
+       (candle_cv_fs_interval logarithmic_derivative)
+       (candle_cv_fs_interval_list input_gradient)
+       (candle_cv_fs_interval_matrix input_hessian) =
+     candle_cv_fs_interval_matrix
+       (candle_fs_hist_sqrt_hessian derivative_value
+         logarithmic_derivative input_gradient input_hessian)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`0`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`1`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`2`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`3`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`4`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`5`; `derivative_value:(num#num)#(num#num)`;
+            `logarithmic_derivative:(num#num)#(num#num)`;
+            `input_gradient:((num#num)#(num#num))list`;
+            `input_hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_sqrt_hessian_row_correct) THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_hist_sqrt_hessian_def;
+                  candle_fs_hist_sqrt_hessian_def;
+                  candle_cv_fs_angle_matrix_six_correct]);;
+
 end;;
