@@ -241,4 +241,43 @@ let candle_fs_hist_inv_twice_positive_contains = prove
   MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
   ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC);;
 
+(* This is the complete special-gradient scalar used by both historical
+   orders: [numerator / (2 * positive_root)]. *)
+
+let candle_fs_hist_over_twice_positive_def = new_definition
+ `candle_fs_hist_over_twice_positive numerator positive_interval =
+    candle_fs_angle_interval_mul numerator
+      (candle_fs_hist_inv_twice_positive positive_interval)`;;
+
+let candle_cv_fs_hist_over_twice_positive_correct = prove
+ (`!numerator positive_interval.
+     candle_cv_fs_angle_interval_mul
+       (candle_cv_fs_interval numerator)
+       (candle_cv_fs_hist_positive_inv
+         (candle_cv_fs_angle_interval_scale
+           (Cexp_num 2) (candle_cv_fs_interval positive_interval))) =
+     candle_cv_fs_interval
+       (candle_fs_hist_over_twice_positive
+         numerator positive_interval)`,
+  REWRITE_TAC[candle_fs_hist_over_twice_positive_def;
+              candle_cv_fs_hist_inv_twice_positive_correct;
+              candle_cv_fs_angle_interval_mul_correct]);;
+
+let candle_fs_hist_over_twice_positive_contains = prove
+ (`!numerator lower upper y x.
+     candle_fs_interval_contains numerator y /\
+     0 < lower /\ lower <= upper /\
+     candle_fs_interval_contains ((lower,0),(upper,0)) x
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_over_twice_positive
+             numerator ((lower,0),(upper,0)))
+           (y * inv (&2 * x))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_over_twice_positive_def;
+              candle_fs_angle_interval_mul_def] THEN
+  MATCH_MP_TAC candle_fsn_interval_mul_contains THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 end;;
