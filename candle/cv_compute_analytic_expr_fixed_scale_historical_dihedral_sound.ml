@@ -1147,4 +1147,265 @@ let candle_cv_fs_hist_sqrt_hessian_correct = prove
                   candle_fs_hist_sqrt_hessian_def;
                   candle_cv_fs_angle_matrix_six_correct]);;
 
+(* Package the supplied-root square-root operation at the same jet boundary
+   used by the generic nonlinear checker.  This is deliberately the whole
+   value/gradient/Hessian operation: proving more isolated scalar identities
+   would not yet authorize the low-work historical instruction. *)
+
+let candle_fs_hist_second_make_def = new_definition
+ `candle_fs_hist_second_make value gradient hessian =
+    (value,(gradient,hessian))`;;
+
+let candle_fs_hist_second_value_def = new_definition
+ `candle_fs_hist_second_value second = FST second`;;
+
+let candle_fs_hist_second_gradient_def = new_definition
+ `candle_fs_hist_second_gradient second = FST (SND second)`;;
+
+let candle_fs_hist_second_hessian_def = new_definition
+ `candle_fs_hist_second_hessian second = SND (SND second)`;;
+
+let candle_cv_fs_hist_second_def = new_definition
+ `candle_cv_fs_hist_second second =
+    Cexp_pair
+      (candle_cv_fs_interval (candle_fs_hist_second_value second))
+      (Cexp_pair
+        (candle_cv_fs_interval_list
+          (candle_fs_hist_second_gradient second))
+        (candle_cv_fs_interval_matrix
+          (candle_fs_hist_second_hessian second)))`;;
+
+let candle_fs_hist_second_sqrt_supplied_def = new_definition
+ `candle_fs_hist_second_sqrt_supplied input root_value =
+    let input_value = candle_fs_hist_second_value input in
+    let input_gradient = candle_fs_hist_second_gradient input in
+    let input_hessian = candle_fs_hist_second_hessian input in
+    let derivative_value = candle_fs_hist_inv_twice_positive root_value in
+    let logarithmic_derivative = candle_fs_interval_neg
+      (candle_fs_hist_inv_twice_positive input_value) in
+    candle_fs_hist_second_make root_value
+      (candle_fsn_interval_list_scale derivative_value input_gradient)
+      (candle_fs_hist_sqrt_hessian derivative_value logarithmic_derivative
+        input_gradient input_hessian)`;;
+
+let candle_cv_fs_hist_second_sqrt_supplied_correct = prove
+ (`!input_value input_gradient input_hessian root_value.
+     LENGTH input_hessian = 6
+     ==>
+     candle_cv_fs_hist_second_sqrt_supplied
+       (candle_cv_fs_hist_second
+         (candle_fs_hist_second_make input_value input_gradient
+           input_hessian))
+       (candle_cv_fs_interval root_value) =
+     candle_cv_fs_hist_second
+       (candle_fs_hist_second_sqrt_supplied
+         (candle_fs_hist_second_make input_value input_gradient
+           input_hessian)
+         root_value)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_sqrt_supplied_def;
+              candle_cv_fs_hist_second_def;
+              candle_cv_fs_hist_second_make_def;
+              candle_cv_fs_hist_second_value_def;
+              candle_cv_fs_hist_second_gradient_def;
+              candle_cv_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              candle_fs_hist_second_value_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_hessian_def;
+              candle_cv_fs_hist_inv_twice_positive_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fsn_interval_list_scale_correct;
+              cexp_fst_def; cexp_snd_def; LET_DEF; LET_END_DEF] THEN
+  AP_TERM_TAC THEN AP_TERM_TAC THEN
+  MATCH_MP_TAC candle_cv_fs_hist_sqrt_hessian_correct THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_sqrt_hessian_shape = prove
+ (`!derivative_value logarithmic_derivative input_gradient input_hessian.
+     LENGTH
+       (candle_fs_hist_sqrt_hessian derivative_value
+         logarithmic_derivative input_gradient input_hessian) = 6 /\
+     ALL (\row. LENGTH row = 6)
+       (candle_fs_hist_sqrt_hessian derivative_value
+         logarithmic_derivative input_gradient input_hessian)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_def;
+              candle_fs_hist_sqrt_hessian_row_def; LENGTH; ALL] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_positive_sqrt_hessian_universal_contains = prove
+ (`!input_lower input_upper root_lower root_upper input_real
+      input_gradient input_hessian
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     0 < input_lower /\ input_lower <= input_upper /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     &0 < input_real /\
+     candle_fs_interval_contains
+       ((input_lower,0),(input_upper,0)) input_real /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) (sqrt input_real) /\
+     LENGTH input_gradient = 6 /\
+     LENGTH input_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) input_hessian /\
+     ALL2 candle_fs_interval_contains input_gradient
+       (list_of_seq gradient_real 6) /\
+     ALL2 (ALL2 candle_fs_interval_contains) input_hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) 6) 6) /\
+     (!i j. hessian_real i j = hessian_real j i)
+     ==>
+     ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_sqrt_hessian
+         (candle_fs_hist_inv_twice_positive
+           ((root_lower,0),(root_upper,0)))
+         (candle_fs_interval_neg
+           (candle_fs_hist_inv_twice_positive
+             ((input_lower,0),(input_upper,0))))
+         input_gradient input_hessian)
+       (list_of_seq
+         (\i. list_of_seq
+           (\j.
+              (--inv
+                ((sqrt input_real + sqrt input_real) *
+                 (input_real + input_real))) *
+                (gradient_real i * gradient_real j) +
+              inv (sqrt input_real + sqrt input_real) *
+                hessian_real i j) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPECL
+      [`input_lower:num`; `input_upper:num`;
+       `root_lower:num`; `root_upper:num`;
+       `input_real:real`; `sqrt input_real`]
+      candle_fs_hist_sqrt_scalars_contains) THEN
+  ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_list_of_seq;
+              candle_all2_list_of_seq] THEN
+  X_GEN_TAC `rowindex:num` THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_row_list_of_seq;
+              candle_all2_list_of_seq] THEN
+  X_GEN_TAC `colindex:num` THEN DISCH_TAC THEN
+  SUBGOAL_THEN
+   `(--inv
+      ((sqrt input_real + sqrt input_real) *
+       (input_real + input_real))) *
+      (gradient_real rowindex * gradient_real colindex) +
+    inv (sqrt input_real + sqrt input_real) *
+      hessian_real rowindex colindex =
+    candle_fs_hist_sqrt_hessian_component rowindex colindex
+      (inv (&2 * sqrt input_real)) (--inv (&2 * input_real))
+      gradient_real hessian_real`
+  SUBST1_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_sqrt_chain_formula;
+                  candle_fs_hist_sqrt_hessian_component_symmetric];
+    MATCH_MP_TAC
+      (SPEC `6` candle_fs_hist_sqrt_hessian_symmetric_entry_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_second_to_q_def = new_definition
+ `candle_fs_hist_second_to_q second =
+    candle_fs_first_to_q
+      (candle_fs_first_make
+        (candle_fs_hist_second_value second)
+        (candle_fs_hist_second_gradient second))
+      (candle_fs_hist_second_hessian second)`;;
+
+let candle_fs_hist_second_sqrt_supplied_components = prove
+ (`!input_lower input_upper root_lower root_upper input_real
+      input_gradient input_hessian
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     0 < input_lower /\ input_lower <= input_upper /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     &0 < input_real /\
+     candle_fs_interval_contains
+       ((input_lower,0),(input_upper,0)) input_real /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) (sqrt input_real) /\
+     LENGTH input_gradient = 6 /\
+     LENGTH input_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) input_hessian /\
+     ALL2 candle_fs_interval_contains input_gradient
+       (list_of_seq gradient_real 6) /\
+     ALL2 (ALL2 candle_fs_interval_contains) input_hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) 6) 6) /\
+     (!i j. hessian_real i j = hessian_real j i)
+     ==>
+     candle_q_dim_jet_contains_components 6
+       (candle_fs_hist_second_to_q
+         (candle_fs_hist_second_sqrt_supplied
+           (candle_fs_hist_second_make
+             ((input_lower,0),(input_upper,0))
+             input_gradient input_hessian)
+           ((root_lower,0),(root_upper,0))))
+       (sqrt input_real)
+       (\i. inv (sqrt input_real + sqrt input_real) * gradient_real i)
+       (\i j.
+          (--inv
+            ((sqrt input_real + sqrt input_real) *
+             (input_real + input_real))) *
+            (gradient_real i * gradient_real j) +
+          inv (sqrt input_real + sqrt input_real) * hessian_real i j)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_second_to_q_def] THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REWRITE_TAC[candle_fs_first_to_q_shape] THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                    candle_fs_hist_second_make_def;
+                    candle_fs_hist_second_value_def;
+                    candle_fs_hist_second_gradient_def;
+                    candle_fs_hist_second_hessian_def;
+                    candle_fs_first_make_def;
+                    candle_fs_first_gradient_def;
+                    candle_fsn_interval_list_scale_length;
+                    LET_DEF; LET_END_DEF];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                candle_fs_hist_second_make_def;
+                candle_fs_hist_second_value_def;
+                candle_fs_hist_second_gradient_def;
+                candle_fs_hist_second_hessian_def;
+                candle_fs_first_make_def;
+                candle_fs_first_gradient_def;
+                LET_DEF; LET_END_DEF] THEN
+    MESON_TAC[candle_fs_hist_sqrt_hessian_shape];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                candle_fs_hist_second_make_def;
+                candle_fs_hist_second_value_def;
+                candle_fs_hist_second_gradient_def;
+                candle_fs_hist_second_hessian_def;
+                candle_fs_first_make_def;
+                candle_fs_first_gradient_def;
+                LET_DEF; LET_END_DEF] THEN
+    MESON_TAC[candle_fs_hist_sqrt_hessian_shape];
+    ASM_REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                    candle_fs_hist_second_make_def;
+                    candle_fs_hist_second_value_def;
+                    candle_fs_hist_second_gradient_def;
+                    candle_fs_hist_second_hessian_def;
+                    candle_fs_first_make_def;
+                    candle_fs_first_value_def;
+                    LET_DEF; LET_END_DEF];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                candle_fs_hist_second_make_def;
+                candle_fs_hist_second_value_def;
+                candle_fs_hist_second_gradient_def;
+                candle_fs_hist_second_hessian_def;
+                candle_fs_first_make_def;
+                candle_fs_first_gradient_def;
+                LET_DEF; LET_END_DEF] THEN
+    REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+    REWRITE_TAC[GSYM candle_fs_hist_positive_sqrt_gradient_def] THEN
+    MATCH_MP_TAC candle_fs_hist_positive_sqrt_gradient_universal_contains THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+                candle_fs_hist_second_make_def;
+                candle_fs_hist_second_value_def;
+                candle_fs_hist_second_gradient_def;
+                candle_fs_hist_second_hessian_def;
+                LET_DEF; LET_END_DEF] THEN
+    MATCH_MP_TAC
+      candle_fs_hist_positive_sqrt_hessian_universal_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
 end;;

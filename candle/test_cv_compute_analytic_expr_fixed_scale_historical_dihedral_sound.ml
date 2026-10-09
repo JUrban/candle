@@ -43,5 +43,9 @@ let _ = candle_cv_fs_hist_sqrt_hessian_entry_correct;;
 let _ = candle_cv_fs_hist_sqrt_hessian_symmetric_entry_correct;;
 let _ = candle_cv_fs_hist_sqrt_hessian_row_correct;;
 let _ = candle_cv_fs_hist_sqrt_hessian_correct;;
+let _ = candle_cv_fs_hist_second_sqrt_supplied_correct;;
+let _ = candle_fs_hist_sqrt_hessian_shape;;
+let _ = candle_fs_hist_positive_sqrt_hessian_universal_contains;;
+let _ = candle_fs_hist_second_sqrt_supplied_components;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;
