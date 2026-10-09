@@ -343,6 +343,23 @@ let candle_cv_fs_angle_interval_scale_correct = prove
               candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
               candle_cv_fs_raw_scale_correct; FST; SND]);;
 
+let candle_fs_angle_interval_scale_contains = prove
+ (`!factor interval x.
+     candle_fs_interval_contains interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_angle_interval_scale factor interval)
+           (&factor * x)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_angle_interval_scale_def;
+              candle_fs_real_def; candle_lc_zreal_scale; FST; SND;
+              real_div; GSYM REAL_MUL_ASSOC] THEN
+  STRIP_TAC THEN
+  SUBGOAL_THEN `&0 <= &factor` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LE; LE_0];
+    CONJ_TAC THEN MATCH_MP_TAC REAL_LE_LMUL THEN
+    ASM_REWRITE_TAC[]]);;
+
 let candle_cv_fs_angle_interval_scale_neg_two_correct = prove
  (`!value.
      candle_cv_fs_angle_interval_scale_neg_two

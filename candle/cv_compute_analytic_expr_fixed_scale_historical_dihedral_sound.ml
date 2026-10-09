@@ -8,7 +8,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_compute.ml";;
-needs "candle/cv_compute_analytic_expr_fixed_scale_sound.ml";;
+needs "candle/cv_compute_analytic_expr_fixed_scale_angle_polynomials_sound.ml";;
 
 module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound = struct
 
@@ -17,6 +17,9 @@ open Candle_cv_exact_interval_inv_core;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
+open Candle_cv_analytic_expr_fixed_scale_invariant;;
+open Candle_cv_analytic_expr_fixed_scale_angle_polynomials_sound;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_compute;;
 
 (* This is the exact ordinary-HOL operation implemented by
@@ -142,5 +145,54 @@ let candle_fs_hist_positive_inv_contains = prove
     EXISTS_TAC `inv (&lower / &candle_fs_scale)` THEN
     ASM_REWRITE_TAC[] THEN
     MATCH_MP_TAC candle_fs_hist_inv_upper THEN ASM_REWRITE_TAC[]]);;
+
+(* This is the first complete subterm used by both the first- and second-order
+   historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
+   helper at the exact executable boundary makes the subsequent jet proof
+   reuse one cval representation theorem and one semantic enclosure theorem. *)
+
+let candle_fs_hist_two_over_positive_root_def = new_definition
+ `candle_fs_hist_two_over_positive_root
+      (positive_interval:(num#num)#(num#num)) =
+    candle_fs_angle_interval_mul
+      (candle_fs_angle_interval_scale 2 candle_fs_interval_one)
+      (candle_fs_hist_positive_inv positive_interval)`;;
+
+let candle_cv_fs_hist_two_over_positive_root_correct = prove
+ (`!positive_interval.
+     candle_cv_fs_angle_interval_mul
+       (candle_cv_fs_angle_interval_scale
+         (Cexp_num 2) candle_cv_fs_interval_one)
+       (candle_cv_fs_hist_positive_inv
+         (candle_cv_fs_interval positive_interval)) =
+     candle_cv_fs_interval
+       (candle_fs_hist_two_over_positive_root positive_interval)`,
+  REWRITE_TAC[candle_fs_hist_two_over_positive_root_def;
+              candle_cv_fs_interval_one_correct;
+              candle_cv_fs_angle_interval_scale_correct;
+              candle_cv_fs_hist_positive_inv_correct;
+              candle_cv_fs_angle_interval_mul_correct]);;
+
+let candle_fs_hist_two_over_positive_root_contains = prove
+ (`!lower upper x.
+     0 < lower /\ lower <= upper /\
+     candle_fs_interval_contains ((lower,0),(upper,0)) x
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_two_over_positive_root
+             ((lower,0),(upper,0)))
+           (&2 * inv x)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_two_over_positive_root_def;
+              candle_fs_angle_interval_mul_def] THEN
+  MATCH_MP_TAC candle_fsn_interval_mul_contains THEN
+  CONJ_TAC THENL
+   [MP_TAC candle_fs_interval_one_contains THEN
+    DISCH_THEN
+      (MP_TAC o MATCH_MP
+        (SPECL [`2`; `candle_fs_interval_one`; `&1`]
+          candle_fs_angle_interval_scale_contains)) THEN
+    REWRITE_TAC[REAL_MUL_RID];
+    MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
+    ASM_REWRITE_TAC[]]);;
 
 end;;
