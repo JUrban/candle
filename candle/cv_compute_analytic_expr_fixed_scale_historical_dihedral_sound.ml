@@ -146,6 +146,104 @@ let candle_fs_hist_positive_inv_contains = prove
     ASM_REWRITE_TAC[] THEN
     MATCH_MP_TAC candle_fs_hist_inv_upper THEN ASM_REWRITE_TAC[]]);;
 
+(* Positive canonical interval products remain positive canonical after the
+   fixed-scale product and directed rounding.  Exposing this shape is needed
+   before the historical direct reciprocal may soundly consume denominators
+   such as [root_delta * root_four_x0] and [u126 * u135]. *)
+
+let candle_fs_hist_zmul_positive = prove
+ (`!a b. candle_q_zmul (a,0) (b,0) = (a * b,0)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_zmul_def; FST; SND; MULT_CLAUSES; ADD_CLAUSES]);;
+
+let candle_fs_hist_raw_min_positive_left = prove
+ (`!a b. a <= b
+     ==> candle_fs_raw_min (a,0) (b,0) = (a,0)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_min_def; candle_fs_raw_le_def; FST; SND;
+              ADD_CLAUSES] THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_raw_max_positive_right = prove
+ (`!a b. a <= b
+     ==> candle_fs_raw_max (a,0) (b,0) = (b,0)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_raw_max_def; candle_fs_raw_le_def; FST; SND;
+              ADD_CLAUSES] THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_raw_interval_mul_positive_shape = prove
+ (`!lower_left upper_left lower_right upper_right.
+     lower_left <= upper_left /\ lower_right <= upper_right
+     ==> candle_fs_raw_interval_mul
+           ((lower_left,0),(upper_left,0))
+           ((lower_right,0),(upper_right,0)) =
+         ((lower_left * lower_right,0),
+          (upper_left * upper_right,0))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPECL
+      [`lower_left:num`; `lower_left:num`;
+       `lower_right:num`; `upper_right:num`] LE_MULT2) THEN
+  ASM_REWRITE_TAC[LE_REFL] THEN DISCH_TAC THEN
+  MP_TAC
+    (SPECL
+      [`upper_left:num`; `upper_left:num`;
+       `lower_right:num`; `upper_right:num`] LE_MULT2) THEN
+  ASM_REWRITE_TAC[LE_REFL] THEN DISCH_TAC THEN
+  MP_TAC
+    (SPECL
+      [`lower_left:num`; `upper_left:num`;
+       `lower_right:num`; `lower_right:num`] LE_MULT2) THEN
+  ASM_REWRITE_TAC[LE_REFL] THEN DISCH_TAC THEN
+  MP_TAC
+    (SPECL
+      [`lower_left:num`; `upper_left:num`;
+       `upper_right:num`; `upper_right:num`] LE_MULT2) THEN
+  ASM_REWRITE_TAC[LE_REFL] THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_mul_def;
+              candle_fs_hist_zmul_positive; FST; SND] THEN
+  ASM_REWRITE_TAC[candle_fs_raw_min_def; candle_fs_raw_max_def;
+                  candle_fs_raw_le_def; FST; SND; ADD_CLAUSES]);;
+
+let candle_fs_hist_interval_mul_positive_shape = prove
+ (`!lower_left upper_left lower_right upper_right.
+     lower_left <= upper_left /\ lower_right <= upper_right
+     ==> candle_fs_angle_interval_mul
+           ((lower_left,0),(upper_left,0))
+           ((lower_right,0),(upper_right,0)) =
+         (((lower_left * lower_right) DIV candle_fs_scale,0),
+          (candle_q_ceil_div (upper_left * upper_right)
+             candle_fs_scale,0))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_angle_interval_mul_def;
+              candle_fsn_interval_mul_def] THEN
+  ASM_SIMP_TAC[candle_fs_hist_raw_interval_mul_positive_shape] THEN
+  REWRITE_TAC[candle_fs_raw_interval_round_def;
+              candle_fs_floor_div_def; candle_fs_ceil_div_def;
+              FST; SND; ARITH_RULE `~(n < 0)`; SUB_0]);;
+
+let candle_fs_hist_div_le_ceil_div = prove
+ (`!numerator denominator.
+     numerator DIV denominator <=
+     candle_q_ceil_div numerator denominator`,
+  REPEAT GEN_TAC THEN REWRITE_TAC[candle_q_ceil_div_def] THEN
+  COND_CASES_TAC THEN ARITH_TAC);;
+
+let candle_fs_hist_interval_mul_positive_order = prove
+ (`!lower_left upper_left lower_right upper_right.
+     lower_left <= upper_left /\ lower_right <= upper_right
+     ==> (lower_left * lower_right) DIV candle_fs_scale <=
+         candle_q_ceil_div (upper_left * upper_right)
+           candle_fs_scale`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC LE_TRANS THEN
+  EXISTS_TAC `(upper_left * upper_right) DIV candle_fs_scale` THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC DIV_MONO THEN MATCH_MP_TAC LE_MULT2 THEN
+    ASM_REWRITE_TAC[];
+    MATCH_ACCEPT_TAC candle_fs_hist_div_le_ceil_div]);;
+
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
    helper at the exact executable boundary makes the subsequent jet proof
