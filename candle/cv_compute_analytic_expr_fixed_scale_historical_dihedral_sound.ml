@@ -482,6 +482,30 @@ let candle_fs_hist_positive_sqrt_gradient_contains = prove
   MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_sqrt_scalars_contains = prove
+ (`!input_lower input_upper root_lower root_upper input_real root_real.
+     0 < input_lower /\ input_lower <= input_upper /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     candle_fs_interval_contains
+       ((input_lower,0),(input_upper,0)) input_real /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) root_real
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_inv_twice_positive
+             ((root_lower,0),(root_upper,0)))
+           (inv (&2 * root_real)) /\
+         candle_fs_interval_contains
+           (candle_fs_interval_neg
+             (candle_fs_hist_inv_twice_positive
+               ((input_lower,0),(input_upper,0))))
+           (--inv (&2 * input_real))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+    MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
 (* The supplied-square-root evaluator uses a symmetry-aware six-by-six
    constructor rather than the generic matrix combinators.  Expose its exact
    ordinary-HOL operation before proving the analytic Hessian invariant. *)
@@ -870,6 +894,49 @@ let candle_fs_hist_sqrt_hessian_chain_contains = prove
     MATCH_MP_TAC
       (SPEC `6` candle_fs_hist_sqrt_hessian_symmetric_entry_contains) THEN
     ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_positive_sqrt_hessian_contains = prove
+ (`!input_lower input_upper root_lower root_upper input_real root_real
+      input_gradient input_hessian
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     0 < input_lower /\ input_lower <= input_upper /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     candle_fs_interval_contains
+       ((input_lower,0),(input_upper,0)) input_real /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) root_real /\
+     LENGTH input_gradient = 6 /\
+     LENGTH input_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) input_hessian /\
+     ALL2 candle_fs_interval_contains input_gradient
+       (list_of_seq gradient_real 6) /\
+     ALL2 (ALL2 candle_fs_interval_contains) input_hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) 6) 6) /\
+     (!i j. hessian_real i j = hessian_real j i)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+           (candle_fs_hist_sqrt_hessian
+             (candle_fs_hist_inv_twice_positive
+               ((root_lower,0),(root_upper,0)))
+             (candle_fs_interval_neg
+               (candle_fs_hist_inv_twice_positive
+                 ((input_lower,0),(input_upper,0))))
+             input_gradient input_hessian)
+           (list_of_seq
+             (\i. list_of_seq
+               (\j. inv (&2 * root_real) *
+                 (gradient_real j *
+                    ((--inv (&2 * input_real)) * gradient_real i) +
+                  hessian_real i j)) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPECL
+      [`input_lower:num`; `input_upper:num`;
+       `root_lower:num`; `root_upper:num`;
+       `input_real:real`; `root_real:real`]
+      candle_fs_hist_sqrt_scalars_contains) THEN
+  ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_sqrt_hessian_chain_contains THEN
+  ASM_REWRITE_TAC[]);;
 
 let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
  (`!rowindex colindex derivative_value logarithmic_derivative
