@@ -540,6 +540,165 @@ let candle_fs_hist_sqrt_hessian_def = new_definition
      candle_fs_hist_sqrt_hessian_row 5 derivative_value
        logarithmic_derivative input_gradient input_hessian]`;;
 
+(* The historical constructor indexes the input jet directly.  These small
+   structural lemmas keep that implementation detail out of the analytic
+   proof below. *)
+
+let candle_fs_interval_lookup_el = prove
+ (`!lookup_index intervals.
+     lookup_index < LENGTH intervals
+     ==> candle_fs_interval_lookup lookup_index intervals =
+         EL lookup_index intervals`,
+  INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_interval_lookup_def; LENGTH; EL; HD; TL;
+                  LT; LT_SUC]);;
+
+let candle_fs_angle_matrix_row_lookup_el = prove
+ (`!rowindex matrixvalue.
+     rowindex < LENGTH matrixvalue
+     ==> candle_fs_angle_matrix_row_lookup rowindex matrixvalue =
+         EL rowindex matrixvalue`,
+  INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_angle_matrix_row_lookup_def; LENGTH; EL; HD; TL;
+                  LT; LT_SUC]);;
+
+let candle_fs_hist_all2_el_right = prove
+ (`!P xs ys lookup_index.
+     ALL2 P xs ys /\ lookup_index < LENGTH ys
+     ==> P (EL lookup_index xs) (EL lookup_index ys)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [LIST_INDUCT_TAC THEN REWRITE_TAC[ALL2; LENGTH; LT];
+    LIST_INDUCT_TAC THENL
+     [REWRITE_TAC[ALL2];
+      INDUCT_TAC THEN
+      ASM_REWRITE_TAC[ALL2; LENGTH; EL; HD; TL; LT_SUC] THEN
+      ASM_MESON_TAC[]]]);;
+
+let candle_fs_hist_all_el = prove
+ (`!P items item_index.
+     ALL P items /\ item_index < LENGTH items
+     ==> P (EL item_index items)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[LENGTH; LT];
+    INDUCT_TAC THEN
+    ASM_REWRITE_TAC[ALL; LENGTH; EL; HD; TL; LT_SUC] THEN
+    ASM_MESON_TAC[]]);;
+
+let candle_fs_hist_matrix_row_length = prove
+ (`!n matrixvalue rowindex.
+     ALL (\matrix_row:((num#num)#(num#num))list.
+       LENGTH matrix_row = n) matrixvalue /\
+     rowindex < LENGTH matrixvalue
+     ==> LENGTH (EL rowindex matrixvalue) = n`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[LENGTH; LT];
+    INDUCT_TAC THEN
+    ASM_REWRITE_TAC[ALL; LENGTH; EL; HD; TL; LT_SUC] THEN
+    ASM_MESON_TAC[]]);;
+
+let candle_fs_hist_interval_lookup_contains = prove
+ (`!n intervals (values:num->real) lookup_index.
+     LENGTH intervals = n /\
+     ALL2 candle_fs_interval_contains intervals (list_of_seq values n) /\
+     lookup_index < n
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_lookup lookup_index intervals)
+           (values lookup_index)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_lookup lookup_index intervals =
+    EL lookup_index intervals`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_lookup_el THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `EL lookup_index (list_of_seq (values:num->real) n) =
+    values lookup_index`
+  (fun th -> ONCE_REWRITE_TAC[GSYM th]) THENL
+   [MATCH_MP_TAC EL_LIST_OF_SEQ THEN ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_all2_el_right THEN
+    ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ]]);;
+
+let candle_fs_hist_matrix_row_contains = prove
+ (`!n matrixvalue (values:num->num->real) rowindex.
+     LENGTH matrixvalue = n /\
+     ALL (\matrix_row. LENGTH matrix_row = n) matrixvalue /\
+     ALL2 (ALL2 candle_fs_interval_contains) matrixvalue
+       (list_of_seq (\i. list_of_seq (values i) n) n) /\
+     rowindex < n
+     ==> LENGTH (EL rowindex matrixvalue) = n /\
+         ALL2 candle_fs_interval_contains (EL rowindex matrixvalue)
+           (list_of_seq (values rowindex) n)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  CONJ_TAC THENL
+   [MP_TAC
+      (ISPECL
+        [`n:num`; `matrixvalue:(((num#num)#(num#num))list)list`;
+         `rowindex:num`]
+        candle_fs_hist_matrix_row_length) THEN
+    ASM_REWRITE_TAC[];
+    SUBGOAL_THEN
+     `EL rowindex
+        (list_of_seq (\i. list_of_seq ((values:num->num->real) i) n) n) =
+      list_of_seq (values rowindex) n`
+    (fun th -> ONCE_REWRITE_TAC[GSYM th]) THENL
+     [MATCH_MP_TAC EL_LIST_OF_SEQ THEN ASM_REWRITE_TAC[];
+      MATCH_MP_TAC candle_fs_hist_all2_el_right THEN
+      ASM_REWRITE_TAC[LENGTH_LIST_OF_SEQ]]]);;
+
+let candle_fs_hist_matrix_lookup_contains = prove
+ (`!n matrixvalue (values:num->num->real) rowindex colindex.
+     LENGTH matrixvalue = n /\
+     ALL (\matrix_row. LENGTH matrix_row = n) matrixvalue /\
+     ALL2 (ALL2 candle_fs_interval_contains) matrixvalue
+       (list_of_seq (\i. list_of_seq (values i) n) n) /\
+     rowindex < n /\ colindex < n
+     ==> candle_fs_interval_contains
+           (candle_fs_angle_matrix_lookup rowindex colindex matrixvalue)
+           (values rowindex colindex)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_angle_matrix_lookup_def] THEN
+  ASM_MESON_TAC[candle_fs_angle_matrix_row_lookup_el;
+                candle_fs_hist_matrix_row_contains;
+                candle_fs_hist_interval_lookup_contains]);;
+
+(* Local semantic contract for one supplied-square-root Hessian entry.  The
+   scalar derivative enclosures are deliberately parameters here: subsequent
+   instruction soundness only has to connect the historical root operations
+   to the universal sqrt derivatives once. *)
+
+let candle_fs_hist_sqrt_hessian_entry_contains = prove
+ (`!n rowindex colindex derivative_value logarithmic_derivative
+      input_gradient input_hessian derivative_real logarithmic_real
+      (gradient_real:num->real) (hessian_real:num->num->real).
+     rowindex < n /\ colindex < n /\
+     LENGTH input_gradient = n /\
+     LENGTH input_hessian = n /\
+     ALL (\matrix_row. LENGTH matrix_row = n) input_hessian /\
+     candle_fs_interval_contains derivative_value derivative_real /\
+     candle_fs_interval_contains logarithmic_derivative logarithmic_real /\
+     ALL2 candle_fs_interval_contains input_gradient
+       (list_of_seq gradient_real n) /\
+     ALL2 (ALL2 candle_fs_interval_contains) input_hessian
+       (list_of_seq (\i. list_of_seq (hessian_real i) n) n)
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_sqrt_hessian_entry rowindex colindex
+             derivative_value logarithmic_derivative input_gradient
+             input_hessian)
+           (derivative_real *
+             (gradient_real colindex *
+                (logarithmic_real * gradient_real rowindex) +
+              hessian_real rowindex colindex))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_sqrt_hessian_entry_def;
+              candle_fs_angle_interval_mul_def;
+              LET_DEF; LET_END_DEF] THEN
+  ASM_MESON_TAC[candle_fsn_interval_mul_contains;
+                candle_fs_interval_add_sound;
+                candle_fs_hist_interval_lookup_contains;
+                candle_fs_hist_matrix_lookup_contains]);;
+
 let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
  (`!rowindex colindex derivative_value logarithmic_derivative
       input_gradient input_hessian.
