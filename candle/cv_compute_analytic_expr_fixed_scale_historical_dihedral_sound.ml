@@ -481,4 +481,98 @@ let candle_fs_hist_positive_sqrt_gradient_contains = prove
   MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* The supplied-square-root evaluator uses a symmetry-aware six-by-six
+   constructor rather than the generic matrix combinators.  Expose its exact
+   ordinary-HOL operation before proving the analytic Hessian invariant. *)
+
+let candle_fs_hist_sqrt_hessian_entry_def = new_definition
+ `candle_fs_hist_sqrt_hessian_entry rowindex colindex derivative_value
+      logarithmic_derivative input_gradient input_hessian =
+    let scaled_row = candle_fs_angle_interval_mul
+      logarithmic_derivative
+      (candle_fs_interval_lookup rowindex input_gradient) in
+    let inside = candle_fs_interval_add
+      (candle_fs_angle_interval_mul
+        (candle_fs_interval_lookup colindex input_gradient) scaled_row)
+      (candle_fs_angle_matrix_lookup
+        rowindex colindex input_hessian) in
+    candle_fs_angle_interval_mul derivative_value inside`;;
+
+let candle_fs_hist_sqrt_hessian_symmetric_entry_def = new_definition
+ `candle_fs_hist_sqrt_hessian_symmetric_entry rowindex colindex
+      derivative_value logarithmic_derivative input_gradient input_hessian =
+    if colindex < rowindex then
+      candle_fs_hist_sqrt_hessian_entry colindex rowindex derivative_value
+        logarithmic_derivative input_gradient input_hessian
+    else
+      candle_fs_hist_sqrt_hessian_entry rowindex colindex derivative_value
+        logarithmic_derivative input_gradient input_hessian`;;
+
+let candle_fs_hist_sqrt_hessian_row_def = new_definition
+ `candle_fs_hist_sqrt_hessian_row rowindex derivative_value
+      logarithmic_derivative input_gradient input_hessian =
+    [candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 0 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 1 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 2 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 3 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 4 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_symmetric_entry rowindex 5 derivative_value
+       logarithmic_derivative input_gradient input_hessian]`;;
+
+let candle_fs_hist_sqrt_hessian_def = new_definition
+ `candle_fs_hist_sqrt_hessian derivative_value logarithmic_derivative
+      input_gradient input_hessian =
+    [candle_fs_hist_sqrt_hessian_row 0 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_row 1 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_row 2 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_row 3 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_row 4 derivative_value
+       logarithmic_derivative input_gradient input_hessian;
+     candle_fs_hist_sqrt_hessian_row 5 derivative_value
+       logarithmic_derivative input_gradient input_hessian]`;;
+
+let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
+ (`!rowindex colindex derivative_value logarithmic_derivative
+      input_gradient input_hessian.
+     rowindex < LENGTH input_hessian
+     ==>
+     candle_cv_fs_hist_sqrt_hessian_entry
+       (Cexp_num rowindex) (Cexp_num colindex)
+       (candle_cv_fs_interval derivative_value)
+       (candle_cv_fs_interval logarithmic_derivative)
+       (candle_cv_fs_interval_list input_gradient)
+       (candle_cv_fs_interval_matrix input_hessian) =
+     candle_cv_fs_interval
+       (candle_fs_hist_sqrt_hessian_entry rowindex colindex
+         derivative_value logarithmic_derivative input_gradient
+         input_hessian)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_sqrt_hessian_entry_def;
+              candle_fs_hist_sqrt_hessian_entry_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_add_correct;
+              LET_DEF; LET_END_DEF] THEN
+  SUBGOAL_THEN
+   `candle_cv_fs_angle_matrix_lookup
+      (Cexp_num rowindex) (Cexp_num colindex)
+      (candle_cv_fs_interval_matrix input_hessian) =
+    candle_cv_fs_interval
+      (candle_fs_angle_matrix_lookup
+        rowindex colindex input_hessian)`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_cv_fs_angle_matrix_lookup_correct THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_cv_fs_angle_interval_mul_correct;
+                candle_cv_fs_interval_add_correct]]);;
+
 end;;
