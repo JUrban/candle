@@ -442,4 +442,43 @@ let candle_fs_hist_over_twice_positive_contains = prove
   MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* Lift the square-root derivative scalar through the generally proved list
+   scale.  This is the complete [root_delta_gradient] construction shared by
+   the first-order and supplied-square-root second-order paths. *)
+
+let candle_fs_hist_positive_sqrt_gradient_def = new_definition
+ `candle_fs_hist_positive_sqrt_gradient positive_interval gradient =
+    candle_fsn_interval_list_scale
+      (candle_fs_hist_inv_twice_positive positive_interval) gradient`;;
+
+let candle_cv_fs_hist_positive_sqrt_gradient_correct = prove
+ (`!positive_interval gradient.
+     candle_cv_fsn_interval_list_scale
+       (candle_cv_fs_hist_positive_inv
+         (candle_cv_fs_angle_interval_scale
+           (Cexp_num 2) (candle_cv_fs_interval positive_interval)))
+       (candle_cv_fs_interval_list gradient) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_positive_sqrt_gradient
+         positive_interval gradient)`,
+  REWRITE_TAC[candle_fs_hist_positive_sqrt_gradient_def;
+              candle_cv_fs_hist_inv_twice_positive_correct;
+              candle_cv_fsn_interval_list_scale_correct]);;
+
+let candle_fs_hist_positive_sqrt_gradient_contains = prove
+ (`!lower upper x gradient gradient_values.
+     0 < lower /\ lower <= upper /\
+     candle_fs_interval_contains ((lower,0),(upper,0)) x /\
+     ALL2 candle_fs_interval_contains gradient gradient_values
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_positive_sqrt_gradient
+             ((lower,0),(upper,0)) gradient)
+           (MAP (\g:real. inv (&2 * x) * g) gradient_values)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_positive_sqrt_gradient_def] THEN
+  MATCH_MP_TAC candle_fsn_interval_list_scale_contains THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 end;;
