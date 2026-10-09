@@ -482,6 +482,23 @@ let candle_fs_hist_positive_sqrt_gradient_contains = prove
   MATCH_MP_TAC candle_fs_hist_inv_twice_positive_contains THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_positive_sqrt_gradient_universal_contains = prove
+ (`!root_lower root_upper input_real gradient gradient_real.
+     0 < root_lower /\ root_lower <= root_upper /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) (sqrt input_real) /\
+     ALL2 candle_fs_interval_contains gradient gradient_real
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_positive_sqrt_gradient
+             ((root_lower,0),(root_upper,0)) gradient)
+           (MAP
+             (\g:real. inv (sqrt input_real + sqrt input_real) * g)
+             gradient_real)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[REAL_ARITH `x + x = &2 * x`] THEN
+  MATCH_MP_TAC candle_fs_hist_positive_sqrt_gradient_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_fs_hist_sqrt_scalars_contains = prove
  (`!input_lower input_upper root_lower root_upper input_real root_real.
      0 < input_lower /\ input_lower <= input_upper /\
@@ -937,6 +954,27 @@ let candle_fs_hist_positive_sqrt_hessian_contains = prove
   ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
   MATCH_MP_TAC candle_fs_hist_sqrt_hessian_chain_contains THEN
   ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_sqrt_chain_formula = prove
+ (`!x gradient_i gradient_j hessian_ij.
+     &0 < x
+     ==> inv (&2 * sqrt x) *
+           (gradient_j * ((--inv (&2 * x)) * gradient_i) + hessian_ij) =
+         (--inv ((sqrt x + sqrt x) * (x + x))) *
+           (gradient_i * gradient_j) +
+         inv (sqrt x + sqrt x) * hessian_ij`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN `~(x = &0)` ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN `&0 < sqrt x` ASSUME_TAC THENL
+   [MP_TAC (SPEC `x:real` SQRT_LT_0) THEN ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN `~(sqrt x = &0)` ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_INV_MUL; REAL_ARITH `y + y = &2 * y`] THEN
+  CONV_TAC REAL_RING);;
 
 let candle_cv_fs_hist_sqrt_hessian_entry_correct = prove
  (`!rowindex colindex derivative_value logarithmic_derivative
