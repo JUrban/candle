@@ -195,4 +195,50 @@ let candle_fs_hist_two_over_positive_root_contains = prove
     MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
     ASM_REWRITE_TAC[]]);;
 
+(* The companion recurring root subterm is [1 / (2 * positive_root)].  It is
+   the derivative enclosure used by the supplied-square-root path. *)
+
+let candle_fs_hist_inv_twice_positive_def = new_definition
+ `candle_fs_hist_inv_twice_positive
+      (positive_interval:(num#num)#(num#num)) =
+    candle_fs_hist_positive_inv
+      (candle_fs_angle_interval_scale 2 positive_interval)`;;
+
+let candle_cv_fs_hist_inv_twice_positive_correct = prove
+ (`!positive_interval.
+     candle_cv_fs_hist_positive_inv
+       (candle_cv_fs_angle_interval_scale
+         (Cexp_num 2) (candle_cv_fs_interval positive_interval)) =
+     candle_cv_fs_interval
+       (candle_fs_hist_inv_twice_positive positive_interval)`,
+  REWRITE_TAC[candle_fs_hist_inv_twice_positive_def;
+              candle_cv_fs_angle_interval_scale_correct;
+              candle_cv_fs_hist_positive_inv_correct]);;
+
+let candle_fs_hist_inv_twice_positive_contains = prove
+ (`!lower upper x.
+     0 < lower /\ lower <= upper /\
+     candle_fs_interval_contains ((lower,0),(upper,0)) x
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_inv_twice_positive
+             ((lower,0),(upper,0)))
+           (inv (&2 * x))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+    `candle_fs_interval_contains
+       ((2 * lower,0),(2 * upper,0)) (&2 * x)` ASSUME_TAC THENL
+   [MP_TAC
+      (SPECL [`2:num`;
+              `(((lower,0),(upper,0)):(num#num)#(num#num))`;
+              `x:real`]
+        candle_fs_angle_interval_scale_contains) THEN
+    ASM_REWRITE_TAC[candle_fs_angle_interval_scale_def;
+                    candle_lc_zscale_def; FST; SND; MULT_CLAUSES];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_inv_twice_positive_def;
+              candle_fs_angle_interval_scale_def;
+              candle_lc_zscale_def; FST; SND; MULT_CLAUSES] THEN
+  MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
+  ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC);;
+
 end;;
