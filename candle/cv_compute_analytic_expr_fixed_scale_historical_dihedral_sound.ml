@@ -367,6 +367,82 @@ let candle_fs_hist_quotient_contains = prove
     MATCH_MP_TAC candle_fs_hist_positive_product_inv_contains THEN
     ASM_REWRITE_TAC[]]);;
 
+(* The historical arctangent kernel uses a fixed Horner series whose rational
+   coefficients are rounded once to the 2^40 grid.  This ordinary-HOL helper
+   is the exact operation represented by [candle_cv_fs_hist_rational_constant].
+   Its containment theorem is general in the signed numerator and nonzero
+   natural denominator, so the subsequent Horner proof can reuse it for every
+   alternating coefficient without coefficient-specific arithmetic proofs. *)
+
+let candle_fs_hist_rational_constant_def = new_definition
+ `candle_fs_hist_rational_constant positive negative denominator =
+    let numerator = candle_lc_zscale candle_fs_scale
+      (positive,negative) in
+    candle_fs_raw_interval_round denominator (numerator,numerator)`;;
+
+let candle_cv_fs_hist_rational_constant_correct = prove
+ (`!positive negative denominator.
+     candle_cv_fs_hist_rational_constant
+       (Cexp_num positive) (Cexp_num negative) (Cexp_num denominator) =
+     candle_cv_fs_interval
+       (candle_fs_hist_rational_constant
+         positive negative denominator)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_rational_constant_def;
+              LET_DEF; LET_END_DEF] THEN
+  SUBGOAL_THEN
+   `candle_cv_fs_raw_scale candle_cv_fs_scale
+      (Cexp_pair (Cexp_num positive) (Cexp_num negative)) =
+    candle_cv_lc_z
+      (candle_lc_zscale candle_fs_scale (positive,negative))`
+  SUBST1_TAC THENL
+   [REWRITE_TAC[candle_cv_fs_scale_correct;
+                candle_cv_fs_raw_scale_def;
+                candle_cv_lc_z_def; candle_lc_zscale_def;
+                cexp_fst_def; cexp_snd_def; cexp_mul_def; FST; SND];
+    REWRITE_TAC[candle_fs_hist_rational_constant_def;
+                candle_fs_raw_interval_round_def;
+                LET_DEF; LET_END_DEF;
+                candle_cv_fs_floor_div_correct;
+                candle_cv_fs_ceil_div_correct;
+                candle_cv_fs_interval_def; FST; SND]]);;
+
+let candle_fs_hist_scale_cancel = prove
+ (`!z denominator.
+     ~(denominator = 0)
+     ==> (&candle_fs_scale * z) /
+           (&denominator * &candle_fs_scale) = z / &denominator`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  SUBGOAL_THEN `~(&denominator = &0)` ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[REAL_OF_NUM_EQ];
+    ALL_TAC] THEN
+  SUBGOAL_THEN `~(&(candle_fs_scale) = &0)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_EQ] THEN
+    MP_TAC candle_fs_scale_pos THEN ARITH_TAC;
+    ALL_TAC] THEN
+  MAP_EVERY UNDISCH_TAC
+    [`~(&denominator = &0)`;
+     `~(&(candle_fs_scale) = &0)`] THEN
+  CONV_TAC REAL_FIELD);;
+
+let candle_fs_hist_rational_constant_contains = prove
+ (`!positive negative denominator.
+     ~(denominator = 0)
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_rational_constant
+             positive negative denominator)
+           (candle_lc_zreal (positive,negative) / &denominator)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_hist_rational_constant_def;
+              LET_DEF; LET_END_DEF] THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  CONJ_TAC THENL
+   [ASM_ARITH_TAC;
+    ASM_SIMP_TAC[candle_fs_raw_interval_contains_def;
+                 candle_fs_raw_real_def; FST; SND;
+                 candle_lc_zreal_scale; GSYM REAL_OF_NUM_MUL;
+                 candle_fs_hist_scale_cancel; REAL_LE_REFL]]);;
+
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
    helper at the exact executable boundary makes the subsequent jet proof
