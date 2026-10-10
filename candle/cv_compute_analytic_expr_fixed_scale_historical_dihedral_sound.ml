@@ -15,6 +15,7 @@ module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound = struct
 
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_interval_inv_core;;
+open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
@@ -3503,6 +3504,90 @@ let candle_fs_hist_raw_cubic_def = new_definition
  `candle_fs_hist_raw_cubic first second third =
     candle_fs_raw_interval_mul
       (candle_fs_raw_interval_mul first second) third`;;
+
+(* The historical value blocks deliberately postpone rounding across products
+   of two and three fixed-scale inputs.  The generic fixed-scale library has
+   the two-input theorem at denominator [scale^2]; expose the underlying
+   denominator-parametric fact here so the nested raw product is related to
+   the exact real cubic rather than to an independently rounded surrogate. *)
+
+let candle_fs_hist_raw_interval_mul_contains = prove
+ (`!left_denominator right_denominator left right x y.
+     0 < left_denominator /\ 0 < right_denominator /\
+     candle_fs_raw_interval_contains left_denominator left x /\
+     candle_fs_raw_interval_contains right_denominator right y
+     ==> candle_fs_raw_interval_contains
+           (left_denominator * right_denominator)
+           (candle_fs_raw_interval_mul left right) (x * y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_raw_interval_mul_def] THEN
+  STRIP_TAC THEN
+  SUBGOAL_THEN
+    `0 < left_denominator * right_denominator` ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[LT_MULT];
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[candle_fs_raw_min_real; candle_fs_raw_max_real;
+               candle_fs_raw_mul_real; FST; SND] THEN
+  MP_TAC
+    (SPECL
+      [`x:real`; `y:real`;
+       `candle_fs_raw_real left_denominator
+          (FST (left:(num#num)#(num#num))):real`;
+       `candle_fs_raw_real left_denominator
+          (SND (left:(num#num)#(num#num))):real`;
+       `candle_fs_raw_real right_denominator
+          (FST (right:(num#num)#(num#num))):real`;
+       `candle_fs_raw_real right_denominator
+          (SND (right:(num#num)#(num#num))):real`]
+      candle_real_interval_mul) THEN
+  ASM_REWRITE_TAC[] THEN DISCH_THEN ACCEPT_TAC);;
+
+let candle_fs_hist_interval_contains_raw_scale = prove
+ (`!interval x.
+     candle_fs_interval_contains interval x <=>
+     candle_fs_raw_interval_contains candle_fs_scale interval x`,
+  REWRITE_TAC[candle_fs_interval_contains_def;
+              candle_fs_raw_interval_contains_def;
+              candle_fs_real_def;
+              candle_fs_raw_real_def]);;
+
+let candle_fs_hist_raw_cubic_contains = prove
+ (`!first second third x y z.
+     candle_fs_interval_contains first x /\
+     candle_fs_interval_contains second y /\
+     candle_fs_interval_contains third z
+     ==> candle_fs_raw_interval_contains
+           ((candle_fs_scale * candle_fs_scale) * candle_fs_scale)
+           (candle_fs_hist_raw_cubic first second third)
+           ((x * y) * z)`,
+  REPEAT GEN_TAC THEN DISCH_THEN (fun input_th ->
+    let first_th = CONJUNCT1 input_th in
+    let second_th = CONJUNCT1 (CONJUNCT2 input_th) in
+    let third_th = CONJUNCT2 (CONJUNCT2 input_th) in
+    let inner_th =
+      MATCH_MP
+        (SPECL
+          [`first:(num#num)#(num#num)`;
+           `second:(num#num)#(num#num)`; `x:real`; `y:real`]
+          candle_fs_raw_interval_mul_sound)
+        (CONJ first_th second_th) in
+    let third_raw_th =
+      EQ_MP
+        (SPECL [`third:(num#num)#(num#num)`; `z:real`]
+          candle_fs_hist_interval_contains_raw_scale)
+        third_th in
+    let result_th =
+      MATCH_MP
+        (SPECL
+          [`candle_fs_scale * candle_fs_scale`; `candle_fs_scale`;
+           `candle_fs_raw_interval_mul first second`;
+           `third:(num#num)#(num#num)`; `x * y`; `z:real`]
+          candle_fs_hist_raw_interval_mul_contains)
+        (CONJ candle_fs_product_denominator_pos
+          (CONJ candle_fs_scale_pos (CONJ inner_th third_raw_th))) in
+    REWRITE_TAC[candle_fs_hist_raw_cubic_def] THEN
+    ACCEPT_TAC result_th));;
 
 let candle_cv_fs_hist_raw_cubic_correct = prove
  (`!first second third.
