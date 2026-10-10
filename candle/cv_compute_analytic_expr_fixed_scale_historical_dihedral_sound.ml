@@ -2500,4 +2500,64 @@ let candle_cv_fs_hist_b_hessian_correct = prove
                   candle_cv_fs_angle_matrix_six_correct;
                   LET_DEF; LET_END_DEF]);;
 
+let candle_fs_hist_log_u_gradient_entry_def = new_definition
+ `candle_fs_hist_log_u_gradient_entry coordinate
+      u126_gradient reciprocal_u126 u135_gradient reciprocal_u135 =
+    candle_fs_interval_add
+      (candle_fs_angle_interval_mul
+        (candle_fs_interval_lookup coordinate u126_gradient)
+        reciprocal_u126)
+      (candle_fs_angle_interval_mul
+        (candle_fs_interval_lookup coordinate u135_gradient)
+        reciprocal_u135)`;;
+
+let candle_cv_fs_hist_log_u_gradient_entry_correct = prove
+ (`!coordinate u126_gradient reciprocal_u126
+      u135_gradient reciprocal_u135.
+     candle_cv_fs_hist_log_u_gradient_entry
+       (Cexp_num coordinate)
+       (candle_cv_fs_interval_list u126_gradient)
+       (candle_cv_fs_interval reciprocal_u126)
+       (candle_cv_fs_interval_list u135_gradient)
+       (candle_cv_fs_interval reciprocal_u135) =
+     candle_cv_fs_interval
+       (candle_fs_hist_log_u_gradient_entry coordinate
+         u126_gradient reciprocal_u126 u135_gradient reciprocal_u135)`,
+  REWRITE_TAC[candle_cv_fs_hist_log_u_gradient_entry_def;
+              candle_fs_hist_log_u_gradient_entry_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_add_correct]);;
+
+let candle_fs_hist_log_u_gradient_def = new_definition
+ `candle_fs_hist_log_u_gradient
+      u126_gradient reciprocal_u126 u135_gradient reciprocal_u135 =
+    [candle_fs_hist_log_u_gradient_entry 0
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135;
+     candle_fs_hist_log_u_gradient_entry 1
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135;
+     candle_fs_hist_log_u_gradient_entry 2
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135;
+     candle_fs_hist_log_u_gradient_entry 3
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135;
+     candle_fs_hist_log_u_gradient_entry 4
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135;
+     candle_fs_hist_log_u_gradient_entry 5
+       u126_gradient reciprocal_u126 u135_gradient reciprocal_u135]`;;
+
+let candle_cv_fs_hist_log_u_gradient_correct = prove
+ (`!u126_gradient reciprocal_u126 u135_gradient reciprocal_u135.
+     candle_cv_fs_hist_log_u_gradient
+       (candle_cv_fs_interval_list u126_gradient)
+       (candle_cv_fs_interval reciprocal_u126)
+       (candle_cv_fs_interval_list u135_gradient)
+       (candle_cv_fs_interval reciprocal_u135) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_log_u_gradient
+         u126_gradient reciprocal_u126 u135_gradient reciprocal_u135)`,
+  REWRITE_TAC[candle_cv_fs_hist_log_u_gradient_def;
+              candle_fs_hist_log_u_gradient_def;
+              candle_cv_fs_hist_log_u_gradient_entry_correct;
+              candle_cv_fs_angle_six_correct]);;
+
 end;;
