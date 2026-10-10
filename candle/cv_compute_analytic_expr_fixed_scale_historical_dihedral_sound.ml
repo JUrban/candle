@@ -4104,6 +4104,121 @@ let candle_fs_hist_delta_x4_derivative_nonpositive = prove
   MATCH_MP_TAC candle_fs_hist_delta_x4_derivative_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* Real witness selected by the executable monotonicity classifier.  When a
+   derivative sign is not certified, retain the caller's original value; the
+   corresponding executable coordinate likewise retains the complete box. *)
+
+let candle_fs_hist_monotone_value_def = new_definition
+ `candle_fs_hist_monotone_value upper coordinate boxes derivatives
+      (values:num->real) =
+    let box = candle_fs_interval_lookup coordinate boxes in
+    let derivative_value = candle_fs_interval_lookup coordinate derivatives in
+    if candle_fs_raw_le (0,0) (FST derivative_value) then
+      candle_fs_real (if upper then SND box else FST box)
+    else if candle_fs_raw_le (SND derivative_value) (0,0) then
+      candle_fs_real (if upper then FST box else SND box)
+    else values coordinate`;;
+
+let candle_fs_hist_monotone_coordinate_contains = prove
+ (`!upper coordinate boxes derivatives (values:num->real).
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) (values coordinate)
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_monotone_coordinate
+             upper coordinate boxes derivatives)
+           (candle_fs_hist_monotone_value
+             upper coordinate boxes derivatives values)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_fs_hist_monotone_coordinate_def;
+              candle_fs_hist_monotone_value_def;
+              LET_DEF; LET_END_DEF] THEN
+  COND_CASES_TAC THENL
+   [BOOL_CASES_TAC `upper:bool` THEN
+    ASM_REWRITE_TAC[candle_fs_hist_point_contains];
+    COND_CASES_TAC THENL
+     [BOOL_CASES_TAC `upper:bool` THEN
+      ASM_REWRITE_TAC[candle_fs_hist_point_contains];
+      ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_hist_monotone_environment_contains = prove
+ (`!upper boxes derivatives (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_monotone_environment upper boxes derivatives)
+           (list_of_seq
+             (\i. candle_fs_hist_monotone_value
+               upper i boxes derivatives values) 6)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_monotone_environment_def;
+              num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND; ALL2] THEN
+  REPEAT CONJ_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_monotone_coordinate_contains THEN
+  MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+  ASM_REWRITE_TAC[] THEN ARITH_TAC);;
+
+let candle_fs_hist_delta_x4_update_contains = prove
+ (`!n boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = n /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values n) /\
+     coordinate < n /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement
+     ==> ALL2 candle_fs_interval_contains boxes
+           (list_of_seq
+             (candle_fs_hist_delta_x4_update
+               values coordinate replacement) n)`,
+  REPEAT STRIP_TAC THEN
+  let boxes_th =
+    EQ_MP
+      (ISPECL
+        [`boxes:((num#num)#(num#num))list`; `n:num`]
+        LENGTH_EQ_LIST_OF_SEQ)
+      (ASSUME `LENGTH (boxes:((num#num)#(num#num))list) = n`) in
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (list_of_seq (\i. EL i boxes) n)
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          values coordinate replacement) n)`
+  (fun updated_th ->
+     let congruence_th =
+       BETA_RULE
+         (AP_TERM
+           `(\items:((num#num)#(num#num))list.
+              ALL2 candle_fs_interval_contains items
+                (list_of_seq
+                  (candle_fs_hist_delta_x4_update
+                    (values:num->real) coordinate replacement) n))`
+           boxes_th) in
+     ACCEPT_TAC (EQ_MP (SYM congruence_th) updated_th)) THENL
+   [REWRITE_TAC[candle_all2_list_of_seq] THEN
+    X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_update_def] THEN
+    COND_CASES_TAC THENL
+     [ASM_REWRITE_TAC[] THEN
+      SUBGOAL_THEN
+       `candle_fs_interval_lookup coordinate boxes = EL coordinate boxes`
+      ASSUME_TAC THENL
+       [MATCH_MP_TAC candle_fs_interval_lookup_el THEN ASM_REWRITE_TAC[];
+        ASM_MESON_TAC[]];
+      SUBGOAL_THEN
+       `candle_fs_interval_contains
+          (candle_fs_interval_lookup i boxes) (values i)`
+      ASSUME_TAC THENL
+       [MATCH_MP_TAC
+          (SPECL [`n:num`; `boxes:((num#num)#(num#num))list`;
+                  `values:num->real`; `i:num`]
+            candle_fs_hist_interval_lookup_contains) THEN
+        ASM_REWRITE_TAC[];
+        ALL_TAC] THEN
+      SUBGOAL_THEN
+       `candle_fs_interval_lookup i boxes = EL i boxes`
+      ASSUME_TAC THENL
+       [MATCH_MP_TAC candle_fs_interval_lookup_el THEN ASM_REWRITE_TAC[];
+        ASM_MESON_TAC[]]]]);;
+
 let candle_fs_hist_raw_interval_sum_contains = prove
  (`!denominator intervals values.
      ALL2 (candle_fs_raw_interval_contains denominator) intervals values
