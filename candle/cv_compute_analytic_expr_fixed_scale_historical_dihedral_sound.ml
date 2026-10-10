@@ -3986,4 +3986,119 @@ let candle_cv_fs_hist_delta_second_correct = prove
               candle_cv_fs_interval_pair_correct;
               candle_cv_fs_hist_second_make_correct]);;
 
+let candle_fs_hist_b_gradient_def = new_definition
+ `candle_fs_hist_b_gradient root_four_x0 root_delta_value
+      root_delta_gradient two_over_root_four_x0 =
+    let base = candle_fsn_interval_list_scale
+      root_four_x0 root_delta_gradient in
+    [candle_fs_interval_add
+       (candle_fs_interval_lookup 0 base)
+       (candle_fs_angle_interval_mul
+         root_delta_value two_over_root_four_x0);
+     candle_fs_interval_lookup 1 base;
+     candle_fs_interval_lookup 2 base;
+     candle_fs_interval_lookup 3 base;
+     candle_fs_interval_lookup 4 base;
+     candle_fs_interval_lookup 5 base]`;;
+
+let candle_cv_fs_hist_b_gradient_correct = prove
+ (`!root_four_x0 root_delta_value root_delta_gradient
+      two_over_root_four_x0.
+     let base = candle_cv_fsn_interval_list_scale
+       (candle_cv_fs_interval root_four_x0)
+       (candle_cv_fs_interval_list root_delta_gradient) in
+     candle_cv_fs_angle_six
+       (candle_cv_fs_interval_add
+         (candle_cv_fs_interval_lookup (Cexp_num 0) base)
+         (candle_cv_fs_angle_interval_mul
+           (candle_cv_fs_interval root_delta_value)
+           (candle_cv_fs_interval two_over_root_four_x0)))
+       (candle_cv_fs_interval_lookup (Cexp_num 1) base)
+       (candle_cv_fs_interval_lookup (Cexp_num 2) base)
+       (candle_cv_fs_interval_lookup (Cexp_num 3) base)
+       (candle_cv_fs_interval_lookup (Cexp_num 4) base)
+       (candle_cv_fs_interval_lookup (Cexp_num 5) base) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_b_gradient root_four_x0 root_delta_value
+         root_delta_gradient two_over_root_four_x0)`,
+  REWRITE_TAC[candle_fs_hist_b_gradient_def;
+              candle_cv_fsn_interval_list_scale_correct;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_add_correct;
+              candle_cv_fs_angle_six_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_fs_hist_b_gradient_length = prove
+ (`!root_four_x0 root_delta_value root_delta_gradient
+      two_over_root_four_x0.
+     LENGTH
+       (candle_fs_hist_b_gradient root_four_x0 root_delta_value
+         root_delta_gradient two_over_root_four_x0) = 6`,
+  REWRITE_TAC[candle_fs_hist_b_gradient_def;
+              LET_DEF; LET_END_DEF; LENGTH] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_sqrt_hessian_length = prove
+ (`!derivative_value logarithmic_derivative input_gradient input_hessian.
+     LENGTH
+       (candle_fs_hist_sqrt_hessian derivative_value
+         logarithmic_derivative input_gradient input_hessian) = 6`,
+  MESON_TAC[candle_fs_hist_sqrt_hessian_shape]);;
+
+let candle_fs_hist_second_sqrt_supplied_hessian_length = prove
+ (`!input root_value.
+     LENGTH
+       (candle_fs_hist_second_hessian
+         (candle_fs_hist_second_sqrt_supplied input root_value)) = 6`,
+  REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF;
+              candle_fs_hist_sqrt_hessian_length]);;
+
+let candle_fs_hist_delta_x4_hessian_length = prove
+ (`LENGTH candle_fs_hist_delta_x4_hessian = 6`,
+  REWRITE_TAC[candle_fs_hist_delta_x4_hessian_def;
+              LET_DEF; LET_END_DEF; LENGTH] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_delta_x4_second_hessian_length = prove
+ (`!boxes.
+     LENGTH
+       (candle_fs_hist_second_hessian
+         (candle_fs_hist_delta_x4_second boxes)) = 6`,
+  REWRITE_TAC[candle_fs_hist_delta_x4_second_def;
+              candle_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF;
+              candle_fs_hist_delta_x4_hessian_length]);;
+
+let candle_fs_hist_b_hessian_length = prove
+ (`!root_four_x0 root_delta_value root_delta_gradient
+      root_delta_hessian two_over_root_four_x0 x0.
+     LENGTH
+       (candle_fs_hist_b_hessian root_four_x0 root_delta_value
+         root_delta_gradient root_delta_hessian
+         two_over_root_four_x0 x0) = 6`,
+  REWRITE_TAC[candle_fs_hist_b_hessian_def;
+              LET_DEF; LET_END_DEF; LENGTH] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_cv_fs_hist_root_delta_correct = prove
+ (`!boxes root_delta_value.
+     candle_cv_fs_hist_second_sqrt_supplied
+       (candle_cv_fs_hist_delta_second
+         (candle_cv_fs_interval_list boxes))
+       (candle_cv_fs_interval root_delta_value) =
+     candle_cv_fs_hist_second
+       (candle_fs_hist_second_sqrt_supplied
+         (candle_fs_hist_delta_second boxes) root_delta_value)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_delta_second_correct;
+              candle_fs_hist_delta_second_def;
+              LET_DEF; LET_END_DEF] THEN
+  MATCH_MP_TAC candle_cv_fs_hist_second_sqrt_supplied_correct THEN
+  REWRITE_TAC[candle_fs_angle_delta_hessian_length]);;
+
 end;;
