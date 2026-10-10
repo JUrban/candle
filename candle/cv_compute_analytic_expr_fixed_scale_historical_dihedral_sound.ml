@@ -3810,4 +3810,180 @@ let candle_cv_fs_hist_delta_gradient_sign_entry_correct = prove
                   candle_cv_fs_interval_snd_correct;
                   candle_cv_fs_interval_pair_correct]);;
 
+let candle_fs_hist_delta_gradient_def = new_definition
+ `candle_fs_hist_delta_gradient boxes hessian =
+    [candle_fs_hist_delta_gradient_sign_entry 0 boxes hessian;
+     candle_fs_hist_delta_gradient_sign_entry 1 boxes hessian;
+     candle_fs_hist_delta_gradient_sign_entry 2 boxes hessian;
+     candle_fs_hist_delta_gradient_sign_entry 3 boxes hessian;
+     candle_fs_hist_delta_gradient_sign_entry 4 boxes hessian;
+     candle_fs_hist_delta_gradient_sign_entry 5 boxes hessian]`;;
+
+let candle_cv_fs_hist_delta_gradient_correct = prove
+ (`!boxes hessian.
+     LENGTH hessian = 6
+     ==>
+     candle_cv_fs_angle_six
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 0) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 1) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 2) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 3) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 4) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 5) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_interval_matrix hessian)) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_delta_gradient boxes hessian)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`0`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  MP_TAC
+    (SPECL [`1`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  MP_TAC
+    (SPECL [`2`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  MP_TAC
+    (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  MP_TAC
+    (SPECL [`4`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  MP_TAC
+    (SPECL [`5`; `boxes:((num#num)#(num#num))list`;
+            `hessian:(((num#num)#(num#num))list)list`]
+      candle_cv_fs_hist_delta_gradient_sign_entry_correct) THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_fs_hist_delta_gradient_def;
+                  candle_cv_fs_angle_six_correct]);;
+
+let candle_cv_fs_hist_delta_gradient_of_boxes_correct = prove
+ (`!boxes.
+     candle_cv_fs_angle_six
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 0) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes)))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 1) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes)))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 2) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes)))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 3) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes)))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 4) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes)))
+       (candle_cv_fs_hist_delta_gradient_sign_entry
+         (Cexp_num 5) (candle_cv_fs_interval_list boxes)
+         (candle_cv_fs_angle_delta_hessian
+           (candle_cv_fs_interval_list boxes))) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_delta_gradient boxes
+         (candle_fs_angle_delta_hessian boxes))`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_angle_delta_hessian_correct] THEN
+  MATCH_MP_TAC candle_cv_fs_hist_delta_gradient_correct THEN
+  REWRITE_TAC[candle_fs_angle_delta_hessian_length]);;
+
+let candle_fs_hist_delta_value_block_def = new_definition
+ `candle_fs_hist_delta_value_block environment =
+    let x0 = candle_fs_interval_lookup 0 environment in
+    let x1 = candle_fs_interval_lookup 1 environment in
+    let x2 = candle_fs_interval_lookup 2 environment in
+    let x3 = candle_fs_interval_lookup 3 environment in
+    let x4 = candle_fs_interval_lookup 4 environment in
+    let x5 = candle_fs_interval_lookup 5 environment in
+    let l0 = candle_fs_angle_interval_sum
+      [candle_fs_interval_neg x0;x1;x2;
+       candle_fs_interval_neg x3;x4;x5] in
+    let l1 = candle_fs_angle_interval_sum
+      [x0;candle_fs_interval_neg x1;x2;x3;
+       candle_fs_interval_neg x4;x5] in
+    let l2 = candle_fs_angle_interval_sum
+      [x0;x1;candle_fs_interval_neg x2;x3;x4;
+       candle_fs_interval_neg x5] in
+    let raw = candle_fs_angle_interval_sum
+      [candle_fs_hist_raw_cubic x0 x3 l0;
+       candle_fs_hist_raw_cubic x1 x4 l1;
+       candle_fs_hist_raw_cubic x2 x5 l2;
+       candle_fs_interval_neg (candle_fs_hist_raw_cubic x1 x2 x3);
+       candle_fs_interval_neg (candle_fs_hist_raw_cubic x0 x2 x4);
+       candle_fs_interval_neg (candle_fs_hist_raw_cubic x0 x1 x5);
+       candle_fs_interval_neg (candle_fs_hist_raw_cubic x3 x4 x5)] in
+    candle_fs_raw_interval_round candle_fs_scale_squared raw`;;
+
+let candle_cv_fs_hist_delta_value_block_correct = prove
+ (`!environment.
+     candle_cv_fs_hist_delta_value_block
+       (candle_cv_fs_interval_list environment) =
+     candle_cv_fs_interval
+       (candle_fs_hist_delta_value_block environment)`,
+  REWRITE_TAC[candle_cv_fs_hist_delta_value_block_def;
+              candle_fs_hist_delta_value_block_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_angle_six_correct;
+              candle_cv_fs_angle_seven_correct;
+              candle_cv_fs_angle_interval_sum_correct;
+              candle_cv_fs_hist_raw_cubic_correct;
+              candle_cv_fs_scale_squared_correct;
+              candle_cv_fs_raw_interval_round_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_fs_hist_delta_second_def = new_definition
+ `candle_fs_hist_delta_second boxes =
+    let hessian = candle_fs_angle_delta_hessian boxes in
+    let gradient = candle_fs_hist_delta_gradient boxes hessian in
+    let lower_environment = candle_fs_hist_monotone_environment
+      F boxes gradient in
+    let upper_environment = candle_fs_hist_monotone_environment
+      T boxes gradient in
+    let lower = candle_fs_hist_delta_value_block lower_environment in
+    let upper = candle_fs_hist_delta_value_block upper_environment in
+    candle_fs_hist_second_make
+      (FST lower,SND upper) gradient hessian`;;
+
+let candle_cv_fs_hist_delta_second_correct = prove
+ (`!boxes.
+     candle_cv_fs_hist_delta_second
+       (candle_cv_fs_interval_list boxes) =
+     candle_cv_fs_hist_second
+       (candle_fs_hist_delta_second boxes)`,
+  REWRITE_TAC[candle_cv_fs_hist_delta_second_def;
+              candle_fs_hist_delta_second_def;
+              LET_DEF; LET_END_DEF] THEN
+  REWRITE_TAC[candle_cv_fs_angle_delta_hessian_correct;
+              candle_cv_fs_hist_delta_gradient_of_boxes_correct] THEN
+  REWRITE_TAC[candle_cv_fs_hist_monotone_environment_lower_correct;
+              candle_cv_fs_hist_monotone_environment_upper_correct] THEN
+  REWRITE_TAC[candle_cv_fs_hist_delta_value_block_correct;
+              candle_cv_fs_interval_fst_correct;
+              candle_cv_fs_interval_snd_correct;
+              candle_cv_fs_interval_pair_correct;
+              candle_cv_fs_hist_second_make_correct]);;
+
 end;;
