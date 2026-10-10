@@ -9,6 +9,7 @@
 
 needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_compute.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_angle_polynomials_sound.ml";;
+needs "trig/atn.hl";;
 
 module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound = struct
 
@@ -22,6 +23,7 @@ open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_analytic_expr_fixed_scale_angle_polynomials_sound;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_compute;;
+open Atn;;
 
 (* This is the exact ordinary-HOL operation implemented by
    [candle_cv_fs_hist_positive_inv].  Its general representation keeps both
@@ -841,6 +843,195 @@ let candle_fs_hist_atan_pos_upper_target_series = prove
        (\i. ((-- &1) pow i / &(2 * i + 1)) * x pow (2 * i + 1))`,
   REWRITE_TAC[candle_fs_hist_atan_pos_upper_target_expanded;
               candle_fs_hist_atan_pos_upper_sum_expanded]);;
+
+(* The computed Horner enclosures above are now connected once to Flyspeck's
+   alternating-series result.  This is the analytic bridge shared by every
+   occurrence of the historical dihedral instruction. *)
+
+let candle_fs_hist_atan_pos_lower_sound = prove
+ (`!x.
+     &0 <= candle_fs_real x /\ candle_fs_real x < &1
+     ==>
+     candle_fs_real (FST (candle_fs_hist_atan_pos_lower x)) <=
+     atn (candle_fs_real x)`,
+  GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC (SPEC `x:num#num` candle_fs_hist_atan_pos_lower_contains) THEN
+  REWRITE_TAC[candle_fs_interval_contains_def] THEN STRIP_TAC THEN
+  MATCH_MP_TAC REAL_LE_TRANS THEN
+  EXISTS_TAC `candle_fs_hist_atan_pos_lower_target (candle_fs_real x)` THEN
+  ASM_REWRITE_TAC[candle_fs_hist_atan_pos_lower_target_series] THEN
+  MATCH_MP_TAC
+    (SPECL [`candle_fs_real x`; `5`] atn_poly_pos_lower_bound) THEN
+  CONV_TAC NUM_REDUCE_CONV THEN ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_atan_pos_upper_sound = prove
+ (`!x.
+     &0 <= candle_fs_real x /\ candle_fs_real x < &1
+     ==>
+     atn (candle_fs_real x) <=
+     candle_fs_real (SND (candle_fs_hist_atan_pos_upper x))`,
+  GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC (SPEC `x:num#num` candle_fs_hist_atan_pos_upper_contains) THEN
+  REWRITE_TAC[candle_fs_interval_contains_def] THEN STRIP_TAC THEN
+  MATCH_MP_TAC REAL_LE_TRANS THEN
+  EXISTS_TAC `candle_fs_hist_atan_pos_upper_target (candle_fs_real x)` THEN
+  ASM_REWRITE_TAC[candle_fs_hist_atan_pos_upper_target_series] THEN
+  MATCH_MP_TAC
+    (SPECL [`candle_fs_real x`; `6`] atn_poly_pos_upper_bound) THEN
+  CONV_TAC NUM_REDUCE_CONV THEN ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_atan_lower_point_def = new_definition
+ `candle_fs_hist_atan_lower_point x =
+    if candle_fs_raw_le (0,0) x then
+      FST (candle_fs_hist_atan_pos_lower x)
+    else
+      candle_fs_raw_neg
+        (SND (candle_fs_hist_atan_pos_upper (candle_fs_raw_neg x)))`;;
+
+let candle_fs_hist_atan_upper_point_def = new_definition
+ `candle_fs_hist_atan_upper_point x =
+    if candle_fs_raw_le (0,0) x then
+      SND (candle_fs_hist_atan_pos_upper x)
+    else
+      candle_fs_raw_neg
+        (FST (candle_fs_hist_atan_pos_lower (candle_fs_raw_neg x)))`;;
+
+let candle_cv_fs_hist_atan_lower_point_correct = prove
+ (`!x.
+     candle_cv_fs_hist_atan_lower_point (candle_cv_lc_z x) =
+     candle_cv_lc_z (candle_fs_hist_atan_lower_point x)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_atan_lower_point_def;
+              candle_fs_hist_atan_lower_point_def;
+              candle_cv_fs_zero_correct;
+              candle_cv_fs_raw_le_correct] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[cexp_if_def;
+                  candle_cv_fs_hist_atan_pos_lower_correct;
+                  candle_cv_fs_hist_atan_pos_upper_correct;
+                  candle_cv_fs_raw_neg_correct;
+                  candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
+                  FST; SND]);;
+
+let candle_cv_fs_hist_atan_upper_point_correct = prove
+ (`!x.
+     candle_cv_fs_hist_atan_upper_point (candle_cv_lc_z x) =
+     candle_cv_lc_z (candle_fs_hist_atan_upper_point x)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_atan_upper_point_def;
+              candle_fs_hist_atan_upper_point_def;
+              candle_cv_fs_zero_correct;
+              candle_cv_fs_raw_le_correct] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[cexp_if_def;
+                  candle_cv_fs_hist_atan_pos_lower_correct;
+                  candle_cv_fs_hist_atan_pos_upper_correct;
+                  candle_cv_fs_raw_neg_correct;
+                  candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
+                  FST; SND]);;
+
+let candle_fs_hist_raw_le_zero_real = prove
+ (`!x. candle_fs_raw_le (0,0) x <=> &0 <= candle_fs_real x`,
+  GEN_TAC THEN
+  MP_TAC
+    (SPECL [`candle_fs_scale`; `(0,0)`; `x:num#num`]
+      candle_fs_raw_le_scaled) THEN
+  REWRITE_TAC[candle_fs_scale_pos; candle_fs_raw_real_def;
+              candle_fs_real_def; candle_lc_zreal_def; FST; SND;
+              REAL_SUB_REFL; real_div; REAL_MUL_LZERO]);;
+
+let candle_fs_hist_atan_lower_point_sound = prove
+ (`!x.
+     -- &1 < candle_fs_real x /\ candle_fs_real x < &1
+     ==>
+     candle_fs_real (candle_fs_hist_atan_lower_point x) <=
+     atn (candle_fs_real x)`,
+  GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_atan_lower_point_def] THEN
+  COND_CASES_TAC THENL
+   [RULE_ASSUM_TAC
+      (REWRITE_RULE[candle_fs_hist_raw_le_zero_real]) THEN
+    MATCH_MP_TAC candle_fs_hist_atan_pos_lower_sound THEN
+    ASM_REWRITE_TAC[];
+    RULE_ASSUM_TAC
+      (REWRITE_RULE[candle_fs_hist_raw_le_zero_real]) THEN
+    REWRITE_TAC[candle_fs_raw_neg_real_scaled] THEN
+    MP_TAC
+      (SPEC `candle_fs_raw_neg x`
+        candle_fs_hist_atan_pos_upper_sound) THEN
+    REWRITE_TAC[candle_fs_raw_neg_real_scaled] THEN
+    ANTS_TAC THENL [ASM_REAL_ARITH_TAC; ALL_TAC] THEN
+    REWRITE_TAC[ATN_NEG] THEN REAL_ARITH_TAC]);;
+
+let candle_fs_hist_atan_upper_point_sound = prove
+ (`!x.
+     -- &1 < candle_fs_real x /\ candle_fs_real x < &1
+     ==>
+     atn (candle_fs_real x) <=
+     candle_fs_real (candle_fs_hist_atan_upper_point x)`,
+  GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_atan_upper_point_def] THEN
+  COND_CASES_TAC THENL
+   [RULE_ASSUM_TAC
+      (REWRITE_RULE[candle_fs_hist_raw_le_zero_real]) THEN
+    MATCH_MP_TAC candle_fs_hist_atan_pos_upper_sound THEN
+    ASM_REWRITE_TAC[];
+    RULE_ASSUM_TAC
+      (REWRITE_RULE[candle_fs_hist_raw_le_zero_real]) THEN
+    REWRITE_TAC[candle_fs_raw_neg_real_scaled] THEN
+    MP_TAC
+      (SPEC `candle_fs_raw_neg x`
+        candle_fs_hist_atan_pos_lower_sound) THEN
+    REWRITE_TAC[candle_fs_raw_neg_real_scaled] THEN
+    ANTS_TAC THENL [ASM_REAL_ARITH_TAC; ALL_TAC] THEN
+    REWRITE_TAC[ATN_NEG] THEN REAL_ARITH_TAC]);;
+
+let candle_fs_hist_atan_interval_def = new_definition
+ `candle_fs_hist_atan_interval input =
+    (candle_fs_hist_atan_lower_point (FST input),
+     candle_fs_hist_atan_upper_point (SND input))`;;
+
+let candle_cv_fs_hist_atan_interval_correct = prove
+ (`!input.
+     candle_cv_fs_hist_atan_interval (candle_cv_fs_interval input) =
+     candle_cv_fs_interval (candle_fs_hist_atan_interval input)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_atan_interval_def;
+              candle_fs_hist_atan_interval_def;
+              candle_cv_fs_interval_def; cexp_fst_def; cexp_snd_def;
+              candle_cv_fs_hist_atan_lower_point_correct;
+              candle_cv_fs_hist_atan_upper_point_correct; FST; SND]);;
+
+let candle_fs_hist_atan_interval_sound = prove
+ (`!input:((num#num)#(num#num)). !x.
+     -- &1 < candle_fs_real (FST input) /\
+     candle_fs_real (SND input) < &1 /\
+     candle_fs_interval_contains input x
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_hist_atan_interval input) (atn x)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_atan_interval_def;
+              candle_fs_interval_contains_def; FST; SND] THEN
+  STRIP_TAC THEN
+  SUBGOAL_THEN
+   `-- &1 < candle_fs_real
+      (FST (input:((num#num)#(num#num)))) /\
+    candle_fs_real (FST (input:((num#num)#(num#num)))) < &1`
+  ASSUME_TAC THENL [ASM_REAL_ARITH_TAC; ALL_TAC] THEN
+  SUBGOAL_THEN
+   `-- &1 < candle_fs_real
+      (SND (input:((num#num)#(num#num)))) /\
+    candle_fs_real (SND (input:((num#num)#(num#num)))) < &1`
+  ASSUME_TAC THENL [ASM_REAL_ARITH_TAC; ALL_TAC] THEN
+  MP_TAC
+    (SPEC `FST (input:((num#num)#(num#num)))`
+      candle_fs_hist_atan_lower_point_sound) THEN
+  MP_TAC
+    (SPEC `SND (input:((num#num)#(num#num)))`
+      candle_fs_hist_atan_upper_point_sound) THEN
+  ASM_REWRITE_TAC[] THEN
+  ASM_MESON_TAC[ATN_MONO_LE_EQ; REAL_LE_TRANS]);;
 
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
