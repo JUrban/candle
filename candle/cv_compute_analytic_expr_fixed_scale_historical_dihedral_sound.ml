@@ -3728,4 +3728,86 @@ let candle_cv_fs_hist_delta_gradient_block_5_correct = prove
               candle_cv_fs_hist_round_scale_correct;
               LET_DEF; LET_END_DEF]);;
 
+let candle_fs_hist_delta_gradient_component_block_def = new_definition
+ `candle_fs_hist_delta_gradient_component_block coordinate environment =
+    if coordinate = 0 then
+      candle_fs_hist_delta_gradient_block_0 environment
+    else if coordinate = 1 then
+      candle_fs_hist_delta_gradient_block_1 environment
+    else if coordinate = 2 then
+      candle_fs_hist_delta_gradient_block_2 environment
+    else if coordinate = 3 then
+      candle_fs_hist_delta_gradient_block_3 environment
+    else if coordinate = 4 then
+      candle_fs_hist_delta_gradient_block_4 environment
+    else
+      candle_fs_hist_delta_gradient_block_5 environment`;;
+
+let candle_cv_fs_hist_delta_gradient_component_block_correct = prove
+ (`!coordinate environment.
+     candle_cv_fs_hist_delta_gradient_component_block
+       (Cexp_num coordinate)
+       (candle_cv_fs_interval_list environment) =
+     candle_cv_fs_interval
+       (candle_fs_hist_delta_gradient_component_block
+         coordinate environment)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_delta_gradient_component_block_def;
+              candle_fs_hist_delta_gradient_component_block_def;
+              cexp_eq_def; injectivity "cval"] THEN
+  REPEAT(COND_CASES_TAC THEN
+    ASM_REWRITE_TAC[cexp_if_def;
+                    candle_cv_fs_hist_delta_gradient_block_0_correct;
+                    candle_cv_fs_hist_delta_gradient_block_1_correct;
+                    candle_cv_fs_hist_delta_gradient_block_2_correct;
+                    candle_cv_fs_hist_delta_gradient_block_3_correct;
+                    candle_cv_fs_hist_delta_gradient_block_4_correct;
+                    candle_cv_fs_hist_delta_gradient_block_5_correct]));;
+
+let candle_fs_hist_delta_gradient_sign_entry_def = new_definition
+ `candle_fs_hist_delta_gradient_sign_entry
+      coordinate boxes hessian =
+    let derivatives = candle_fs_angle_matrix_row_lookup coordinate hessian in
+    let lower_environment = candle_fs_hist_monotone_environment
+      F boxes derivatives in
+    let upper_environment = candle_fs_hist_monotone_environment
+      T boxes derivatives in
+    let lower = candle_fs_hist_delta_gradient_component_block
+      coordinate lower_environment in
+    let upper = candle_fs_hist_delta_gradient_component_block
+      coordinate upper_environment in
+    (FST lower,SND upper)`;;
+
+let candle_cv_fs_hist_delta_gradient_sign_entry_correct = prove
+ (`!coordinate boxes hessian.
+     coordinate < LENGTH hessian
+     ==>
+     candle_cv_fs_hist_delta_gradient_sign_entry
+       (Cexp_num coordinate)
+       (candle_cv_fs_interval_list boxes)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_interval
+       (candle_fs_hist_delta_gradient_sign_entry
+         coordinate boxes hessian)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+    `candle_cv_fs_interval_lookup (Cexp_num coordinate)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_interval_list
+       (candle_fs_angle_matrix_row_lookup coordinate hessian)`
+    ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_cv_fs_angle_matrix_row_lookup_correct THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_cv_fs_hist_delta_gradient_sign_entry_def;
+              candle_fs_hist_delta_gradient_sign_entry_def;
+              LET_DEF; LET_END_DEF] THEN
+  ASM_REWRITE_TAC[] THEN
+  REWRITE_TAC[candle_cv_fs_hist_monotone_environment_lower_correct;
+                  candle_cv_fs_hist_monotone_environment_upper_correct;
+                  candle_cv_fs_hist_delta_gradient_component_block_correct;
+                  candle_cv_fs_interval_fst_correct;
+                  candle_cv_fs_interval_snd_correct;
+                  candle_cv_fs_interval_pair_correct]);;
+
 end;;
