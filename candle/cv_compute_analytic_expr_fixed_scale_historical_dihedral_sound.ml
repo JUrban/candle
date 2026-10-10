@@ -4550,6 +4550,285 @@ let candle_fs_hist_delta_x4_monotone_step = prove
       ASM_REAL_ARITH_TAC;
       REWRITE_TAC[candle_fs_hist_delta_x4_update_self; REAL_LE_REFL]]]);;
 
+let candle_fs_hist_delta_x4_monotone_prefix_def = new_definition
+ `candle_fs_hist_delta_x4_monotone_prefix upper boxes
+      (values:num->real) prefix_length =
+    \i. if i < prefix_length then
+          candle_fs_hist_monotone_value upper i boxes
+            (candle_fs_hist_delta_x4_gradient boxes) values
+        else values i`;;
+
+let candle_fs_hist_delta_x4_monotone_prefix_zero = prove
+ (`!upper boxes (values:num->real).
+     candle_fs_hist_delta_x4_monotone_prefix upper boxes values 0 = values`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[FUN_EQ_THM;
+              candle_fs_hist_delta_x4_monotone_prefix_def; LT]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_suc = prove
+ (`!upper boxes (values:num->real) prefix_length.
+     candle_fs_hist_delta_x4_monotone_prefix
+       upper boxes values (SUC prefix_length) =
+     candle_fs_hist_delta_x4_update
+       (candle_fs_hist_delta_x4_monotone_prefix
+         upper boxes values prefix_length)
+       prefix_length
+       (candle_fs_hist_monotone_value upper prefix_length boxes
+         (candle_fs_hist_delta_x4_gradient boxes) values)`,
+  REPEAT GEN_TAC THEN REWRITE_TAC[FUN_EQ_THM] THEN
+  X_GEN_TAC `i:num` THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_def;
+              candle_fs_hist_delta_x4_update_def] THEN
+  ASM_CASES_TAC `i:num = prefix_length` THEN ASM_REWRITE_TAC[] THENL
+   [ARITH_TAC;
+    ASM_CASES_TAC `i:num < prefix_length` THEN ASM_REWRITE_TAC[] THEN
+    ASM_ARITH_TAC]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_coordinate = prove
+ (`!upper boxes (values:num->real) prefix_length.
+     candle_fs_hist_delta_x4_monotone_prefix
+       upper boxes values prefix_length prefix_length = values prefix_length`,
+  REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_def; LT_REFL]);;
+
+let candle_fs_hist_monotone_value_prefix = prove
+ (`!upper boxes (values:num->real) prefix_length.
+     candle_fs_hist_monotone_value upper prefix_length boxes
+       (candle_fs_hist_delta_x4_gradient boxes)
+       (candle_fs_hist_delta_x4_monotone_prefix
+         upper boxes values prefix_length) =
+     candle_fs_hist_monotone_value upper prefix_length boxes
+       (candle_fs_hist_delta_x4_gradient boxes) values`,
+  REWRITE_TAC[candle_fs_hist_monotone_value_def;
+              LET_DEF; LET_END_DEF;
+              candle_fs_hist_delta_x4_monotone_prefix_coordinate]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_contains = prove
+ (`!prefix_length upper boxes (values:num->real).
+     prefix_length <= 6 /\
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains boxes
+           (list_of_seq
+             (candle_fs_hist_delta_x4_monotone_prefix
+               upper boxes values prefix_length) 6)`,
+  INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN STRIP_TAC THEN
+    ASM_REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_zero];
+    POP_ASSUM (LABEL_TAC "prefix_ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    SUBGOAL_THEN `prefix_length < 6` ASSUME_TAC THENL
+     [ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_interval_contains
+        (candle_fs_interval_lookup prefix_length boxes)
+        (values prefix_length)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+                `prefix_length:num`]
+          candle_fs_hist_six_lookup_contains) THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_interval_contains
+        (candle_fs_interval_lookup prefix_length boxes)
+        (candle_fs_hist_monotone_value upper prefix_length boxes
+          (candle_fs_hist_delta_x4_gradient boxes) values)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`upper:bool`; `prefix_length:num`;
+           `boxes:((num#num)#(num#num))list`;
+           `candle_fs_hist_delta_x4_gradient boxes`; `values:num->real`]
+          candle_fs_hist_monotone_value_in_box) THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `ALL2 candle_fs_interval_contains boxes
+        (list_of_seq
+          (candle_fs_hist_delta_x4_monotone_prefix
+            upper boxes values prefix_length) 6)`
+    ASSUME_TAC THENL
+     [USE_THEN "prefix_ih" (fun th ->
+        MATCH_MP_TAC
+          (SPECL
+            [`upper:bool`; `boxes:((num#num)#(num#num))list`;
+             `values:num->real`] th)) THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_suc] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`6`; `boxes:((num#num)#(num#num))list`;
+         `candle_fs_hist_delta_x4_monotone_prefix
+           (upper:bool) boxes (values:num->real) prefix_length`;
+         `prefix_length:num`;
+         `candle_fs_hist_monotone_value upper prefix_length boxes
+           (candle_fs_hist_delta_x4_gradient boxes) values`]
+        candle_fs_hist_delta_x4_update_contains) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_upper = prove
+ (`!prefix_length boxes (values:num->real).
+     prefix_length <= 6 /\
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> candle_fs_hist_delta_x4_real values <=
+         candle_fs_hist_delta_x4_real
+           (candle_fs_hist_delta_x4_monotone_prefix
+             T boxes values prefix_length)`,
+  INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_zero;
+                REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "upper_ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    SUBGOAL_THEN `prefix_length < 6` ASSUME_TAC THENL
+     [ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `ALL2 candle_fs_interval_contains boxes
+        (list_of_seq
+          (candle_fs_hist_delta_x4_monotone_prefix
+            T boxes (values:num->real) prefix_length) 6)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`prefix_length:num`; `T`; `boxes:((num#num)#(num#num))list`;
+           `values:num->real`]
+          candle_fs_hist_delta_x4_monotone_prefix_contains) THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_hist_delta_x4_real values <=
+      candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix
+          T boxes values prefix_length)`
+    ASSUME_TAC THENL
+     [USE_THEN "upper_ih" (fun th ->
+        MATCH_MP_TAC
+          (SPECL [`boxes:((num#num)#(num#num))list`; `values:num->real`] th))
+      THEN ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix
+          T boxes values prefix_length) <=
+      candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_update
+          (candle_fs_hist_delta_x4_monotone_prefix
+            T boxes values prefix_length)
+          prefix_length
+          (candle_fs_hist_monotone_value T prefix_length boxes
+            (candle_fs_hist_delta_x4_gradient boxes) values))`
+    ASSUME_TAC THENL
+     [MP_TAC
+        (SPECL
+          [`T`; `boxes:((num#num)#(num#num))list`;
+           `candle_fs_hist_delta_x4_monotone_prefix
+             T boxes (values:num->real) prefix_length`;
+           `prefix_length:num`]
+          candle_fs_hist_delta_x4_monotone_step) THEN
+      ASM_REWRITE_TAC[candle_fs_hist_monotone_value_prefix];
+      ALL_TAC] THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_suc] THEN
+    ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_lower = prove
+ (`!prefix_length boxes (values:num->real).
+     prefix_length <= 6 /\
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> candle_fs_hist_delta_x4_real
+           (candle_fs_hist_delta_x4_monotone_prefix
+             F boxes values prefix_length) <=
+         candle_fs_hist_delta_x4_real values`,
+  INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_zero;
+                REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "lower_ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    SUBGOAL_THEN `prefix_length < 6` ASSUME_TAC THENL
+     [ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `ALL2 candle_fs_interval_contains boxes
+        (list_of_seq
+          (candle_fs_hist_delta_x4_monotone_prefix
+            F boxes (values:num->real) prefix_length) 6)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`prefix_length:num`; `F`; `boxes:((num#num)#(num#num))list`;
+           `values:num->real`]
+          candle_fs_hist_delta_x4_monotone_prefix_contains) THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix
+          F boxes values prefix_length) <=
+      candle_fs_hist_delta_x4_real values`
+    ASSUME_TAC THENL
+     [USE_THEN "lower_ih" (fun th ->
+        MATCH_MP_TAC
+          (SPECL [`boxes:((num#num)#(num#num))list`; `values:num->real`] th))
+      THEN ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_update
+          (candle_fs_hist_delta_x4_monotone_prefix
+            F boxes values prefix_length)
+          prefix_length
+          (candle_fs_hist_monotone_value F prefix_length boxes
+            (candle_fs_hist_delta_x4_gradient boxes) values)) <=
+      candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix
+          F boxes values prefix_length)`
+    ASSUME_TAC THENL
+     [MP_TAC
+        (SPECL
+          [`F`; `boxes:((num#num)#(num#num))list`;
+           `candle_fs_hist_delta_x4_monotone_prefix
+             F boxes (values:num->real) prefix_length`;
+           `prefix_length:num`]
+          candle_fs_hist_delta_x4_monotone_step) THEN
+      ASM_REWRITE_TAC[candle_fs_hist_monotone_value_prefix];
+      ALL_TAC] THEN
+    REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_suc] THEN
+    ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_hist_delta_x4_monotone_prefix_six_list = prove
+ (`!upper boxes (values:num->real).
+     list_of_seq
+       (candle_fs_hist_delta_x4_monotone_prefix upper boxes values 6) 6 =
+     list_of_seq
+       (\i. candle_fs_hist_monotone_value upper i boxes
+         (candle_fs_hist_delta_x4_gradient boxes) values) 6`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+  X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ;
+               candle_fs_hist_delta_x4_monotone_prefix_def]);;
+
+let candle_fs_hist_delta_x4_monotone_environment_prefix_contains = prove
+ (`!upper boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_monotone_environment upper boxes
+             (candle_fs_hist_delta_x4_gradient boxes))
+           (list_of_seq
+             (candle_fs_hist_delta_x4_monotone_prefix
+               upper boxes values 6) 6)`,
+  REPEAT STRIP_TAC THEN
+  ONCE_REWRITE_TAC[candle_fs_hist_delta_x4_monotone_prefix_six_list] THEN
+  MATCH_MP_TAC candle_fs_hist_monotone_environment_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_fs_hist_raw_interval_sum_contains = prove
  (`!denominator intervals values.
      ALL2 (candle_fs_raw_interval_contains denominator) intervals values
@@ -4735,6 +5014,79 @@ let candle_fs_hist_delta_x4_value_block_contains = prove
       MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
       MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN ASM_REWRITE_TAC[];
       MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_hist_delta_x4_second_value_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_second_value
+             (candle_fs_hist_delta_x4_second boxes))
+           (candle_fs_hist_delta_x4_real values)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_hist_delta_x4_value_block
+        (candle_fs_hist_monotone_environment F boxes
+          (candle_fs_hist_delta_x4_gradient boxes)))
+      (candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix F boxes values 6))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_delta_x4_value_block_contains THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_fs_hist_monotone_environment_def; LENGTH] THEN
+      CONV_TAC NUM_REDUCE_CONV;
+      MATCH_MP_TAC
+        (SPECL [`F`; `boxes:((num#num)#(num#num))list`;
+                `values:num->real`]
+          candle_fs_hist_delta_x4_monotone_environment_prefix_contains) THEN
+      ASM_REWRITE_TAC[]];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_hist_delta_x4_value_block
+        (candle_fs_hist_monotone_environment T boxes
+          (candle_fs_hist_delta_x4_gradient boxes)))
+      (candle_fs_hist_delta_x4_real
+        (candle_fs_hist_delta_x4_monotone_prefix T boxes values 6))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_delta_x4_value_block_contains THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_fs_hist_monotone_environment_def; LENGTH] THEN
+      CONV_TAC NUM_REDUCE_CONV;
+      MATCH_MP_TAC
+        (SPECL [`T`; `boxes:((num#num)#(num#num))list`;
+                `values:num->real`]
+          candle_fs_hist_delta_x4_monotone_environment_prefix_contains) THEN
+      ASM_REWRITE_TAC[]];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_delta_x4_real
+      (candle_fs_hist_delta_x4_monotone_prefix F boxes values 6) <=
+    candle_fs_hist_delta_x4_real values`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`6`; `boxes:((num#num)#(num#num))list`; `values:num->real`]
+        candle_fs_hist_delta_x4_monotone_prefix_lower) THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_delta_x4_real values <=
+    candle_fs_hist_delta_x4_real
+      (candle_fs_hist_delta_x4_monotone_prefix T boxes values 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`6`; `boxes:((num#num)#(num#num))list`; `values:num->real`]
+        candle_fs_hist_delta_x4_monotone_prefix_upper) THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  RULE_ASSUM_TAC (REWRITE_RULE[candle_fs_interval_contains_def]) THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_second_def;
+              candle_fs_hist_second_value_def;
+              candle_fs_hist_second_make_def;
+              candle_fs_interval_contains_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  ASM_REAL_ARITH_TAC);;
 
 let candle_cv_fs_hist_raw_cubic_correct = prove
  (`!first second third.
