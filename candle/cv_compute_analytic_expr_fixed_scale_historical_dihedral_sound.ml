@@ -1999,6 +1999,36 @@ let candle_cv_fs_hist_second_def = new_definition
         (candle_cv_fs_interval_matrix
           (candle_fs_hist_second_hessian second)))`;;
 
+(* The [delta_x4] Hessian is constant.  Record its ordinary-HOL image once so
+   the complete historical second-order instruction can reuse a single cval
+   representation theorem instead of reopening the 36 literal entries. *)
+
+let candle_fs_hist_delta_x4_hessian_def = new_definition
+ `candle_fs_hist_delta_x4_hessian =
+    let zero_value = candle_fs_interval_zero in
+    let one_value = candle_fs_interval_one in
+    let negative_one = candle_fs_interval_neg one_value in
+    let negative_two = candle_fs_angle_interval_scale_neg_two one_value in
+    [[negative_two; one_value; one_value; negative_two; one_value; one_value];
+     [one_value; zero_value; negative_one; zero_value; one_value; zero_value];
+     [one_value; negative_one; zero_value; zero_value; zero_value; one_value];
+     [negative_two; zero_value; zero_value; zero_value; zero_value; zero_value];
+     [one_value; one_value; zero_value; zero_value; zero_value; negative_one];
+     [one_value; zero_value; one_value; zero_value; negative_one; zero_value]]`;;
+
+let candle_cv_fs_hist_delta_x4_hessian_correct = prove
+ (`candle_cv_fs_hist_delta_x4_hessian =
+    candle_cv_fs_interval_matrix candle_fs_hist_delta_x4_hessian`,
+  REWRITE_TAC[candle_cv_fs_hist_delta_x4_hessian_def;
+              candle_fs_hist_delta_x4_hessian_def;
+              candle_cv_fs_interval_zero_correct;
+              candle_cv_fs_interval_one_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_angle_interval_scale_neg_two_correct;
+              candle_cv_fs_angle_six_correct;
+              candle_cv_fs_angle_matrix_six_correct;
+              LET_DEF; LET_END_DEF]);;
+
 let candle_fs_hist_second_sqrt_supplied_def = new_definition
  `candle_fs_hist_second_sqrt_supplied input root_value =
     let input_value = candle_fs_hist_second_value input in
