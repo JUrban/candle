@@ -3610,6 +3610,116 @@ let candle_fs_hist_interval_sum_contains = prove
   ASM_MESON_TAC[candle_fs_interval_zero_contains;
                 candle_fs_interval_add_sound]);;
 
+let candle_fs_hist_scale_neg_two_contains = prove
+ (`!interval x.
+     candle_fs_interval_contains interval x
+     ==> candle_fs_interval_contains
+           (candle_fs_angle_interval_scale_neg_two interval)
+           (--(&2 * x))`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_angle_interval_scale_neg_two_def] THEN
+  MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+  MATCH_MP_TAC candle_fs_angle_interval_scale_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_six_lookup_contains = prove
+ (`!environment (values:num->real) lookup_index.
+     LENGTH environment = 6 /\
+     ALL2 candle_fs_interval_contains environment (list_of_seq values 6) /\
+     lookup_index < 6
+     ==> candle_fs_interval_contains
+           (candle_fs_interval_lookup lookup_index environment)
+           (values lookup_index)`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL [`6`; `environment:((num#num)#(num#num))list`;
+            `values:num->real`; `lookup_index:num`]
+      candle_fs_hist_interval_lookup_contains) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_delta_x4_gradient_real_def = new_definition
+ `candle_fs_hist_delta_x4_gradient_real (values:num->real) =
+    [ITLIST (\x total:real. x + total)
+       [--(&2 * values 0);values 1;values 2;
+        --(&2 * values 3);values 4;values 5] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0;--(values 2);values 4] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0;--(values 1);values 5] (&0);
+     --(&2 * values 0);
+     ITLIST (\x total:real. x + total)
+       [values 0;values 1;--(values 5)] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0;values 2;--(values 4)] (&0)]`;;
+
+let candle_fs_hist_delta_x4_gradient_contains = prove
+ (`!environment (values:num->real).
+     LENGTH environment = 6 /\
+     ALL2 candle_fs_interval_contains environment (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_delta_x4_gradient environment)
+           (candle_fs_hist_delta_x4_gradient_real values)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_gradient_def;
+              candle_fs_hist_delta_x4_gradient_real_def;
+              LET_DEF; LET_END_DEF; ALL2] THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_scale_neg_two_contains THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_scale_neg_two_contains THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC];
+    MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC];
+    MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC];
+    MATCH_MP_TAC candle_fs_hist_scale_neg_two_contains THEN
+    MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC];
+    MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC]]);;
+
 let candle_fs_hist_raw_interval_sum_contains = prove
  (`!denominator intervals values.
      ALL2 (candle_fs_raw_interval_contains denominator) intervals values

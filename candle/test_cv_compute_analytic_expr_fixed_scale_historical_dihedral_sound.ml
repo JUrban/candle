@@ -68,6 +68,7 @@ let _ = candle_fs_hist_positive_sqrt_hessian_universal_contains;;
 let _ = candle_fs_hist_second_sqrt_supplied_components;;
 let _ = candle_fs_hist_raw_interval_mul_contains;;
 let _ = candle_fs_hist_raw_interval_sum_contains;;
+let _ = candle_fs_hist_delta_x4_gradient_contains;;
 let _ = candle_fs_hist_raw_cubic_contains;;
 let _ = candle_fs_hist_raw_cubic_round_contains;;
 let _ = candle_fs_hist_delta_x4_real_polynomial;;
