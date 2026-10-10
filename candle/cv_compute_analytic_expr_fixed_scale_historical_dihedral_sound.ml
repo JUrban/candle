@@ -15,6 +15,7 @@ module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound = struct
 
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_interval_inv_core;;
+open Candle_cv_analytic_dim_jet_pi_half;;
 open Candle_cv_analytic_expr_taylor_model_sound;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
@@ -1032,6 +1033,105 @@ let candle_fs_hist_atan_interval_sound = prove
       candle_fs_hist_atan_upper_point_sound) THEN
   ASM_REWRITE_TAC[] THEN
   ASM_MESON_TAC[ATN_MONO_LE_EQ; REAL_LE_TRANS]);;
+
+(* Package the complete historical value path: the checked quotient is fed to
+   the signed arctangent enclosure and then added to the certified pi/2
+   interval.  The derivative paths remain separate below, so this theorem can
+   close the scalar value boundary before their larger matrix proof. *)
+
+let candle_fs_hist_dihedral_value_from_quotient_def = new_definition
+ `candle_fs_hist_dihedral_value_from_quotient
+      (atan_input:(num#num)#(num#num)) =
+    candle_fs_interval_add
+      (candle_fs_interval_of_q candle_q_pi_half_interval)
+      (candle_fs_hist_atan_interval atan_input)`;;
+
+let candle_cv_fs_hist_dihedral_value_from_quotient_correct = prove
+ (`!atan_input.
+     candle_cv_fs_interval_add
+       (candle_cv_fs_interval_of_q candle_cv_q_pi_half_interval)
+       (candle_cv_fs_hist_atan_interval
+         (candle_cv_fs_interval atan_input)) =
+     candle_cv_fs_interval
+       (candle_fs_hist_dihedral_value_from_quotient atan_input)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_dihedral_value_from_quotient_def;
+              candle_cv_q_pi_half_interval_correct;
+              candle_cv_fs_interval_of_q_correct;
+              candle_cv_fs_hist_atan_interval_correct;
+              candle_cv_fs_interval_add_correct]);;
+
+let candle_fs_hist_dihedral_value_from_quotient_sound = prove
+ (`!atan_input quotient_real.
+     -- &1 < candle_fs_real (FST atan_input) /\
+     candle_fs_real (SND atan_input) < &1 /\
+     candle_fs_interval_contains atan_input quotient_real
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_hist_dihedral_value_from_quotient atan_input)
+       (pi / &2 + atn quotient_real)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_dihedral_value_from_quotient_def] THEN
+  MATCH_MP_TAC candle_fs_interval_add_sound THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_of_q_sound THEN
+    MATCH_ACCEPT_TAC candle_q_pi_half_interval_sound;
+    MATCH_MP_TAC candle_fs_hist_atan_interval_sound THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_cv_fs_hist_dihedral_value_correct = prove
+ (`!delta_x4_interval root_delta root_four_x0.
+     candle_cv_fs_interval_add
+       (candle_cv_fs_interval_of_q candle_cv_q_pi_half_interval)
+       (candle_cv_fs_hist_atan_interval
+         (candle_cv_fs_angle_interval_mul
+           (candle_cv_fs_interval_neg
+             (candle_cv_fs_interval delta_x4_interval))
+           (candle_cv_fs_hist_positive_inv
+             (candle_cv_fs_angle_interval_mul
+               (candle_cv_fs_interval root_delta)
+               (candle_cv_fs_interval root_four_x0))))) =
+     candle_cv_fs_interval
+       (candle_fs_hist_dihedral_value_from_quotient
+         (candle_fs_hist_quotient
+           delta_x4_interval root_delta root_four_x0))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_quotient_correct;
+              candle_cv_fs_hist_dihedral_value_from_quotient_correct]);;
+
+let candle_fs_hist_dihedral_value_sound = prove
+ (`!delta_x4_interval root_lower root_upper
+      root_four_lower root_four_upper
+      delta_x4_real root_real root_four_real.
+     candle_fs_interval_contains delta_x4_interval delta_x4_real /\
+     root_lower <= root_upper /\
+     root_four_lower <= root_four_upper /\
+     0 < (root_lower * root_four_lower) DIV candle_fs_scale /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) root_real /\
+     candle_fs_interval_contains
+       ((root_four_lower,0),(root_four_upper,0)) root_four_real /\
+     -- &1 < candle_fs_real
+       (FST (candle_fs_hist_quotient delta_x4_interval
+         ((root_lower,0),(root_upper,0))
+         ((root_four_lower,0),(root_four_upper,0)))) /\
+     candle_fs_real
+       (SND (candle_fs_hist_quotient delta_x4_interval
+         ((root_lower,0),(root_upper,0))
+         ((root_four_lower,0),(root_four_upper,0)))) < &1
+     ==>
+     candle_fs_interval_contains
+       (candle_fs_hist_dihedral_value_from_quotient
+         (candle_fs_hist_quotient delta_x4_interval
+           ((root_lower,0),(root_upper,0))
+           ((root_four_lower,0),(root_four_upper,0))))
+       (pi / &2 +
+        atn (--delta_x4_real * inv (root_real * root_four_real)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_dihedral_value_from_quotient_sound THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC candle_fs_hist_quotient_contains THEN
+  ASM_REWRITE_TAC[]);;
 
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
