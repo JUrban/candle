@@ -3230,4 +3230,133 @@ let candle_cv_fs_hist_u135_correct = prove
   REWRITE_TAC[candle_cv_fs_hist_u_def;
               candle_fs_hist_u_def; FST; SND]);;
 
+(* The remaining complete second-order representation is assembled from the
+   same record boundary used by the executable instruction.  These small
+   projection lemmas keep subsequent component proofs independent of the
+   nested cval-pair encoding. *)
+
+let candle_cv_fs_hist_second_make_correct = prove
+ (`!value gradient hessian.
+     candle_cv_fs_hist_second_make
+       (candle_cv_fs_interval value)
+       (candle_cv_fs_interval_list gradient)
+       (candle_cv_fs_interval_matrix hessian) =
+     candle_cv_fs_hist_second
+       (candle_fs_hist_second_make value gradient hessian)`,
+  REWRITE_TAC[candle_cv_fs_hist_second_make_def;
+              candle_cv_fs_hist_second_def;
+              candle_fs_hist_second_make_def;
+              candle_fs_hist_second_value_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_hessian_def; FST; SND]);;
+
+let candle_cv_fs_hist_second_value_correct = prove
+ (`!second.
+     candle_cv_fs_hist_second_value (candle_cv_fs_hist_second second) =
+     candle_cv_fs_interval (candle_fs_hist_second_value second)`,
+  REWRITE_TAC[candle_cv_fs_hist_second_value_def;
+              candle_cv_fs_hist_second_def; cexp_fst_def]);;
+
+let candle_cv_fs_hist_second_gradient_correct = prove
+ (`!second.
+     candle_cv_fs_hist_second_gradient (candle_cv_fs_hist_second second) =
+     candle_cv_fs_interval_list (candle_fs_hist_second_gradient second)`,
+  REWRITE_TAC[candle_cv_fs_hist_second_gradient_def;
+              candle_cv_fs_hist_second_def; cexp_fst_def; cexp_snd_def]);;
+
+let candle_cv_fs_hist_second_hessian_correct = prove
+ (`!second.
+     candle_cv_fs_hist_second_hessian (candle_cv_fs_hist_second second) =
+     candle_cv_fs_interval_matrix (candle_fs_hist_second_hessian second)`,
+  REWRITE_TAC[candle_cv_fs_hist_second_hessian_def;
+              candle_cv_fs_hist_second_def; cexp_snd_def]);;
+
+let candle_fs_hist_monotone_coordinate_def = new_definition
+ `candle_fs_hist_monotone_coordinate upper coordinate boxes derivatives =
+    let box = candle_fs_interval_lookup coordinate boxes in
+    let derivative_value = candle_fs_interval_lookup coordinate derivatives in
+    if candle_fs_raw_le (0,0) (FST derivative_value) then
+      candle_fs_hist_point (if upper then SND box else FST box)
+    else if candle_fs_raw_le (SND derivative_value) (0,0) then
+      candle_fs_hist_point (if upper then FST box else SND box)
+    else box`;;
+
+let candle_cv_fs_hist_monotone_coordinate_correct = prove
+ (`!upper coordinate boxes derivatives.
+     candle_cv_fs_hist_monotone_coordinate
+       (Cexp_num coordinate)
+       (Cexp_num (if upper then SUC 0 else 0))
+       (candle_cv_fs_interval_list boxes)
+       (candle_cv_fs_interval_list derivatives) =
+     candle_cv_fs_interval
+       (candle_fs_hist_monotone_coordinate
+         upper coordinate boxes derivatives)`,
+  REPEAT GEN_TAC THEN BOOL_CASES_TAC `upper:bool` THEN
+  REWRITE_TAC[candle_cv_fs_hist_monotone_coordinate_def;
+              candle_fs_hist_monotone_coordinate_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_interval_fst_correct;
+              candle_cv_fs_interval_snd_correct;
+              candle_cv_fs_zero_correct;
+              candle_cv_fs_raw_le_correct;
+              candle_cv_fs_hist_point_correct;
+              LET_DEF; LET_END_DEF] THEN
+  REPEAT(COND_CASES_TAC THEN
+    ASM_REWRITE_TAC[cexp_if_def; candle_cv_fs_hist_point_correct]));;
+
+let candle_fs_hist_monotone_environment_def = new_definition
+ `candle_fs_hist_monotone_environment upper boxes derivatives =
+    [candle_fs_hist_monotone_coordinate upper 0 boxes derivatives;
+     candle_fs_hist_monotone_coordinate upper 1 boxes derivatives;
+     candle_fs_hist_monotone_coordinate upper 2 boxes derivatives;
+     candle_fs_hist_monotone_coordinate upper 3 boxes derivatives;
+     candle_fs_hist_monotone_coordinate upper 4 boxes derivatives;
+     candle_fs_hist_monotone_coordinate upper 5 boxes derivatives]`;;
+
+let candle_cv_fs_hist_monotone_environment_correct = prove
+ (`!upper boxes derivatives.
+     candle_cv_fs_hist_monotone_environment
+       (Cexp_num (if upper then SUC 0 else 0))
+       (candle_cv_fs_interval_list boxes)
+       (candle_cv_fs_interval_list derivatives) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_monotone_environment upper boxes derivatives)`,
+  REWRITE_TAC[candle_cv_fs_hist_monotone_environment_def;
+              candle_fs_hist_monotone_environment_def;
+              candle_cv_fs_hist_monotone_coordinate_correct;
+              candle_cv_fs_angle_six_correct]);;
+
+let candle_fs_hist_delta_x4_gradient_def = new_definition
+ `candle_fs_hist_delta_x4_gradient environment =
+    let x0 = candle_fs_interval_lookup 0 environment in
+    let x1 = candle_fs_interval_lookup 1 environment in
+    let x2 = candle_fs_interval_lookup 2 environment in
+    let x3 = candle_fs_interval_lookup 3 environment in
+    let x4 = candle_fs_interval_lookup 4 environment in
+    let x5 = candle_fs_interval_lookup 5 environment in
+    [candle_fs_angle_interval_sum
+       [candle_fs_angle_interval_scale_neg_two x0;x1;x2;
+        candle_fs_angle_interval_scale_neg_two x3;x4;x5];
+     candle_fs_angle_interval_sum [x0;candle_fs_interval_neg x2;x4];
+     candle_fs_angle_interval_sum [x0;candle_fs_interval_neg x1;x5];
+     candle_fs_angle_interval_scale_neg_two x0;
+     candle_fs_angle_interval_sum [x0;x1;candle_fs_interval_neg x5];
+     candle_fs_angle_interval_sum [x0;x2;candle_fs_interval_neg x4]]`;;
+
+let candle_cv_fs_hist_delta_x4_gradient_correct = prove
+ (`!environment.
+     candle_cv_fs_hist_delta_x4_gradient
+       (candle_cv_fs_interval_list environment) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_delta_x4_gradient environment)`,
+  REWRITE_TAC[candle_cv_fs_hist_delta_x4_gradient_def;
+              candle_fs_hist_delta_x4_gradient_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_angle_interval_scale_neg_two_correct;
+              candle_cv_fs_hist_three_correct;
+              candle_cv_fs_angle_interval_sum_correct;
+              candle_cv_fs_angle_six_correct;
+              LET_DEF; LET_END_DEF]);;
+
 end;;
