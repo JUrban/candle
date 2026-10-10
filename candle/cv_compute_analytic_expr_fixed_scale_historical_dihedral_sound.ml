@@ -6236,6 +6236,192 @@ let candle_fs_hist_delta_gradient_coordinate_secant = prove
                   num_CONV `2`; num_CONV `1`; EL; HD; TL] THEN
   CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
 
+(* Derivative-parameterized coordinate traversal.  This is the common data
+   path used first with one exact delta-Hessian row and then with the bounded
+   delta-gradient vector itself. *)
+
+let candle_fs_hist_monotone_prefix_def = new_definition
+ `candle_fs_hist_monotone_prefix upper boxes derivatives
+      (values:num->real) prefix_length =
+    \i. if i < prefix_length then
+          candle_fs_hist_monotone_value upper i boxes derivatives values
+        else values i`;;
+
+let candle_fs_hist_monotone_prefix_zero = prove
+ (`!upper boxes derivatives (values:num->real).
+     candle_fs_hist_monotone_prefix upper boxes derivatives values 0 =
+     values`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[FUN_EQ_THM; candle_fs_hist_monotone_prefix_def; LT]);;
+
+let candle_fs_hist_monotone_prefix_suc = prove
+ (`!upper boxes derivatives (values:num->real) prefix_length.
+     candle_fs_hist_monotone_prefix
+       upper boxes derivatives values (SUC prefix_length) =
+     candle_fs_hist_delta_x4_update
+       (candle_fs_hist_monotone_prefix
+         upper boxes derivatives values prefix_length)
+       prefix_length
+       (candle_fs_hist_monotone_value upper prefix_length boxes
+         derivatives values)`,
+  REPEAT GEN_TAC THEN REWRITE_TAC[FUN_EQ_THM] THEN
+  X_GEN_TAC `i:num` THEN
+  REWRITE_TAC[candle_fs_hist_monotone_prefix_def;
+              candle_fs_hist_delta_x4_update_def] THEN
+  ASM_CASES_TAC `i:num = prefix_length` THEN ASM_REWRITE_TAC[] THENL
+   [ARITH_TAC;
+    ASM_CASES_TAC `i:num < prefix_length` THEN ASM_REWRITE_TAC[] THEN
+    ASM_ARITH_TAC]);;
+
+let candle_fs_hist_monotone_prefix_coordinate = prove
+ (`!upper boxes derivatives (values:num->real) prefix_length.
+     candle_fs_hist_monotone_prefix
+       upper boxes derivatives values prefix_length prefix_length =
+     values prefix_length`,
+  REWRITE_TAC[candle_fs_hist_monotone_prefix_def; LT_REFL]);;
+
+let candle_fs_hist_monotone_value_general_prefix = prove
+ (`!upper boxes derivatives (values:num->real) prefix_length.
+     candle_fs_hist_monotone_value upper prefix_length boxes derivatives
+       (candle_fs_hist_monotone_prefix
+         upper boxes derivatives values prefix_length) =
+     candle_fs_hist_monotone_value upper prefix_length boxes derivatives
+       values`,
+  REWRITE_TAC[candle_fs_hist_monotone_value_def;
+              LET_DEF; LET_END_DEF;
+              candle_fs_hist_monotone_prefix_coordinate]);;
+
+let candle_fs_hist_monotone_prefix_contains = prove
+ (`!prefix_length upper boxes derivatives (values:num->real).
+     prefix_length <= 6 /\
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains boxes
+           (list_of_seq
+             (candle_fs_hist_monotone_prefix
+               upper boxes derivatives values prefix_length) 6)`,
+  INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN STRIP_TAC THEN
+    ASM_REWRITE_TAC[candle_fs_hist_monotone_prefix_zero];
+    POP_ASSUM (LABEL_TAC "prefix_ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    SUBGOAL_THEN `prefix_length < 6` ASSUME_TAC THENL
+     [ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_interval_contains
+        (candle_fs_interval_lookup prefix_length boxes)
+        (values prefix_length)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_fs_interval_contains
+        (candle_fs_interval_lookup prefix_length boxes)
+        (candle_fs_hist_monotone_value upper prefix_length boxes
+          derivatives values)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_monotone_value_in_box THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `ALL2 candle_fs_interval_contains boxes
+        (list_of_seq
+          (candle_fs_hist_monotone_prefix
+            upper boxes derivatives values prefix_length) 6)`
+    ASSUME_TAC THENL
+     [USE_THEN "prefix_ih" (fun th ->
+        MATCH_MP_TAC
+          (SPECL
+            [`upper:bool`; `boxes:((num#num)#(num#num))list`;
+             `derivatives:((num#num)#(num#num))list`;
+             `values:num->real`] th)) THEN
+      ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    REWRITE_TAC[candle_fs_hist_monotone_prefix_suc] THEN
+    MATCH_MP_TAC candle_fs_hist_delta_x4_update_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_monotone_prefix_six_list = prove
+ (`!upper boxes derivatives (values:num->real).
+     list_of_seq
+       (candle_fs_hist_monotone_prefix
+         upper boxes derivatives values 6) 6 =
+     list_of_seq
+       (\i. candle_fs_hist_monotone_value upper i boxes derivatives values)
+       6`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+  X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ; candle_fs_hist_monotone_prefix_def]);;
+
+let candle_fs_hist_monotone_environment_general_prefix_contains = prove
+ (`!upper boxes derivatives (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_monotone_environment upper boxes derivatives)
+           (list_of_seq
+             (candle_fs_hist_monotone_prefix
+               upper boxes derivatives values 6) 6)`,
+  REPEAT STRIP_TAC THEN
+  ONCE_REWRITE_TAC[candle_fs_hist_monotone_prefix_six_list] THEN
+  MATCH_MP_TAC candle_fs_hist_monotone_environment_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_quadratic_coordinate_nondecreasing = prove
+ (`!old_value new_value old_derivative new_derivative current replacement.
+     current <= replacement /\
+     &0 <= old_derivative /\
+     &0 <= new_derivative /\
+     new_value - old_value =
+       (replacement - current) *
+       ((new_derivative + old_derivative) / &2)
+     ==> old_value <= new_value`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement:real) - current` ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= ((new_derivative:real) + old_derivative) / &2`
+  ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement - current) *
+      ((new_derivative + old_derivative) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC REAL_LE_MUL THEN ASM_REWRITE_TAC[];
+    ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_hist_quadratic_coordinate_nonincreasing = prove
+ (`!old_value new_value old_derivative new_derivative current replacement.
+     current <= replacement /\
+     old_derivative <= &0 /\
+     new_derivative <= &0 /\
+     new_value - old_value =
+       (replacement - current) *
+       ((new_derivative + old_derivative) / &2)
+     ==> new_value <= old_value`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement:real) - current` ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= --(((new_derivative:real) + old_derivative) / &2)`
+  ASSUME_TAC THENL
+   [ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement - current) *
+      --((new_derivative + old_derivative) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC REAL_LE_MUL THEN ASM_REWRITE_TAC[];
+    ASM_REAL_ARITH_TAC]);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =

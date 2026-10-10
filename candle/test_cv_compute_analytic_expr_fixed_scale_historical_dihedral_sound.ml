@@ -108,5 +108,9 @@ let _ = candle_fs_hist_delta_hessian_contains;;
 let _ = candle_fs_hist_delta_gradient_component_contains;;
 let _ = candle_fs_hist_delta_hessian_entry_contains;;
 let _ = candle_fs_hist_delta_gradient_coordinate_secant;;
+let _ = candle_fs_hist_monotone_prefix_contains;;
+let _ = candle_fs_hist_monotone_environment_general_prefix_contains;;
+let _ = candle_fs_hist_quadratic_coordinate_nondecreasing;;
+let _ = candle_fs_hist_quadratic_coordinate_nonincreasing;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;
