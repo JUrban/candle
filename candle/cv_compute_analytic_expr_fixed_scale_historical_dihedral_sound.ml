@@ -2262,4 +2262,242 @@ let candle_fs_hist_second_sqrt_supplied_components = prove
       candle_fs_hist_positive_sqrt_hessian_universal_contains THEN
     ASM_REWRITE_TAC[]]);;
 
+(* Ordinary-HOL mirrors of the remaining historical second-order arithmetic.
+   These representation lemmas keep the executable instruction and its
+   semantic proof connected without constructing per-cell arithmetic proofs. *)
+
+let candle_fs_hist_matrix_scale_def = new_definition
+ `candle_fs_hist_matrix_scale scalar matrixvalue =
+    candle_fs_raw_interval_matrix_round candle_fs_scale
+      (candle_fs_raw_interval_matrix_scale scalar matrixvalue)`;;
+
+let candle_cv_fs_hist_matrix_scale_correct = prove
+ (`!scalar matrixvalue.
+     candle_cv_fs_hist_matrix_scale
+       (candle_cv_fs_interval scalar)
+       (candle_cv_fs_interval_matrix matrixvalue) =
+     candle_cv_fs_interval_matrix
+       (candle_fs_hist_matrix_scale scalar matrixvalue)`,
+  REWRITE_TAC[candle_cv_fs_hist_matrix_scale_def;
+              candle_fs_hist_matrix_scale_def;
+              candle_cv_fs_scale_correct;
+              candle_cv_fs_raw_interval_matrix_scale_correct;
+              candle_cv_fs_raw_interval_matrix_round_correct]);;
+
+let candle_fs_hist_b_hessian_entry_def = new_definition
+ `candle_fs_hist_b_hessian_entry rowindex colindex base_hessian
+      root_delta_value root_delta_gradient two_over_root_four_x0 x0 =
+    let base = candle_fs_angle_matrix_lookup
+      rowindex colindex base_hessian in
+    if rowindex = 0 then
+      if colindex = 0 then
+        let twice_first_correction = candle_fs_angle_interval_scale 2
+          (candle_fs_angle_interval_mul
+            (candle_fs_interval_lookup 0 root_delta_gradient)
+            two_over_root_four_x0) in
+        let diagonal_subtraction = candle_fs_angle_interval_mul
+          (candle_fs_angle_interval_mul
+            root_delta_value two_over_root_four_x0)
+          (candle_fs_hist_positive_inv
+            (candle_fs_angle_interval_scale 2 x0)) in
+        candle_fs_interval_add base
+          (candle_fs_interval_add twice_first_correction
+            (candle_fs_interval_neg diagonal_subtraction))
+      else candle_fs_interval_add base
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup colindex root_delta_gradient)
+          two_over_root_four_x0)
+    else if colindex = 0 then
+      candle_fs_interval_add base
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup rowindex root_delta_gradient)
+          two_over_root_four_x0)
+    else base`;;
+
+let candle_cv_fs_hist_b_hessian_entry_correct = prove
+ (`!rowindex colindex base_hessian root_delta_value
+      root_delta_gradient two_over_root_four_x0 x0.
+     rowindex < LENGTH base_hessian
+     ==>
+     candle_cv_fs_hist_b_hessian_entry
+       (Cexp_num rowindex) (Cexp_num colindex)
+       (candle_cv_fs_interval_matrix base_hessian)
+       (candle_cv_fs_interval root_delta_value)
+       (candle_cv_fs_interval_list root_delta_gradient)
+       (candle_cv_fs_interval two_over_root_four_x0)
+       (candle_cv_fs_interval x0) =
+     candle_cv_fs_interval
+       (candle_fs_hist_b_hessian_entry rowindex colindex base_hessian
+         root_delta_value root_delta_gradient two_over_root_four_x0 x0)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_b_hessian_entry_def;
+              candle_fs_hist_b_hessian_entry_def] THEN
+  SUBGOAL_THEN
+   `candle_cv_fs_angle_matrix_lookup
+      (Cexp_num rowindex) (Cexp_num colindex)
+      (candle_cv_fs_interval_matrix base_hessian) =
+    candle_cv_fs_interval
+      (candle_fs_angle_matrix_lookup rowindex colindex base_hessian)`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_cv_fs_angle_matrix_lookup_correct THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ASM_CASES_TAC `rowindex = 0` THEN
+  ASM_CASES_TAC `colindex = 0` THEN
+  ASM_REWRITE_TAC[candle_cv_fs_interval_lookup_correct;
+                  candle_cv_fs_angle_interval_mul_correct;
+                  candle_cv_fs_angle_interval_scale_correct;
+                  candle_cv_fs_hist_positive_inv_correct;
+                  candle_cv_fs_interval_add_correct;
+                  candle_cv_fs_interval_neg_correct;
+                  cexp_eq_def; injectivity "cval"; cexp_if_def;
+                  LET_DEF; LET_END_DEF]);;
+
+let candle_fs_hist_matrix_scale_length = prove
+ (`!scalar matrixvalue.
+     LENGTH (candle_fs_hist_matrix_scale scalar matrixvalue) =
+     LENGTH matrixvalue`,
+  REWRITE_TAC[candle_fs_hist_matrix_scale_def;
+              candle_fs_raw_interval_matrix_round_length;
+              candle_fs_raw_interval_matrix_scale_length]);;
+
+let candle_fs_hist_b_hessian_row_def = new_definition
+ `candle_fs_hist_b_hessian_row rowindex base_hessian root_delta_value
+      root_delta_gradient two_over_root_four_x0 x0 =
+    [candle_fs_hist_b_hessian_entry rowindex 0
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_entry rowindex 1
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_entry rowindex 2
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_entry rowindex 3
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_entry rowindex 4
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_entry rowindex 5
+       base_hessian root_delta_value root_delta_gradient
+       two_over_root_four_x0 x0]`;;
+
+let candle_cv_fs_hist_b_hessian_row_correct = prove
+ (`!rowindex base_hessian root_delta_value root_delta_gradient
+      two_over_root_four_x0 x0.
+     LENGTH base_hessian = 6 /\ rowindex < 6
+     ==>
+     candle_cv_fs_hist_b_hessian_row
+       (Cexp_num rowindex)
+       (candle_cv_fs_interval_matrix base_hessian)
+       (candle_cv_fs_interval root_delta_value)
+       (candle_cv_fs_interval_list root_delta_gradient)
+       (candle_cv_fs_interval two_over_root_four_x0)
+       (candle_cv_fs_interval x0) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_b_hessian_row rowindex base_hessian
+         root_delta_value root_delta_gradient two_over_root_four_x0 x0)`,
+  REPEAT STRIP_TAC THEN
+  ASM_SIMP_TAC[candle_cv_fs_hist_b_hessian_row_def;
+               candle_fs_hist_b_hessian_row_def;
+               candle_cv_fs_hist_b_hessian_entry_correct;
+               candle_cv_fs_angle_six_correct]);;
+
+let candle_fs_hist_b_hessian_def = new_definition
+ `candle_fs_hist_b_hessian root_four_x0 root_delta_value
+      root_delta_gradient root_delta_hessian two_over_root_four_x0 x0 =
+    let base_hessian = candle_fs_hist_matrix_scale
+      root_four_x0 root_delta_hessian in
+    [candle_fs_hist_b_hessian_row 0 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_row 1 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_row 2 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_row 3 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_row 4 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0;
+     candle_fs_hist_b_hessian_row 5 base_hessian
+       root_delta_value root_delta_gradient two_over_root_four_x0 x0]`;;
+
+let candle_cv_fs_hist_b_hessian_correct = prove
+ (`!root_four_x0 root_delta_value root_delta_gradient
+      root_delta_hessian two_over_root_four_x0 x0.
+     LENGTH root_delta_hessian = 6
+     ==>
+     candle_cv_fs_hist_b_hessian
+       (candle_cv_fs_interval root_four_x0)
+       (candle_cv_fs_interval root_delta_value)
+       (candle_cv_fs_interval_list root_delta_gradient)
+       (candle_cv_fs_interval_matrix root_delta_hessian)
+       (candle_cv_fs_interval two_over_root_four_x0)
+       (candle_cv_fs_interval x0) =
+     candle_cv_fs_interval_matrix
+       (candle_fs_hist_b_hessian root_four_x0 root_delta_value
+         root_delta_gradient root_delta_hessian two_over_root_four_x0 x0)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`0`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`1`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`2`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`3`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`4`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`5`;
+            `candle_fs_hist_matrix_scale root_four_x0
+               root_delta_hessian`;
+            `root_delta_value:(num#num)#(num#num)`;
+            `root_delta_gradient:((num#num)#(num#num))list`;
+            `two_over_root_four_x0:(num#num)#(num#num)`;
+            `x0:(num#num)#(num#num)`]
+      candle_cv_fs_hist_b_hessian_row_correct) THEN
+  ASM_REWRITE_TAC[candle_fs_hist_matrix_scale_length] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_hist_b_hessian_def;
+                  candle_fs_hist_b_hessian_def;
+                  candle_cv_fs_hist_matrix_scale_correct;
+                  candle_cv_fs_angle_matrix_six_correct;
+                  LET_DEF; LET_END_DEF]);;
+
 end;;
