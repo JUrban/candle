@@ -656,6 +656,192 @@ let candle_fs_hist_atan_pos_lower_target_series = prove
   REWRITE_TAC[candle_fs_hist_atan_pos_lower_target_expanded;
               candle_fs_hist_atan_pos_lower_sum_expanded]);;
 
+let candle_fs_hist_atan_pos_upper_def = new_definition
+ `candle_fs_hist_atan_pos_upper x =
+    let point = candle_fs_hist_point x in
+    let x2 = candle_fs_angle_interval_mul point point in
+    let polynomial = candle_fs_hist_rational_constant 1 0 13 in
+    let polynomial = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 11)
+      (candle_fs_angle_interval_mul x2 polynomial) in
+    let polynomial = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 1 0 9)
+      (candle_fs_angle_interval_mul x2 polynomial) in
+    let polynomial = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 7)
+      (candle_fs_angle_interval_mul x2 polynomial) in
+    let polynomial = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 1 0 5)
+      (candle_fs_angle_interval_mul x2 polynomial) in
+    let polynomial = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 3)
+      (candle_fs_angle_interval_mul x2 polynomial) in
+    candle_fs_angle_interval_mul point
+      (candle_fs_interval_add candle_fs_interval_one
+        (candle_fs_angle_interval_mul x2 polynomial))`;;
+
+let candle_cv_fs_hist_atan_pos_upper_correct = prove
+ (`!x.
+     candle_cv_fs_hist_atan_pos_upper (candle_cv_lc_z x) =
+     candle_cv_fs_interval (candle_fs_hist_atan_pos_upper x)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_atan_pos_upper_def;
+              candle_fs_hist_atan_pos_upper_def;
+              LET_DEF; LET_END_DEF;
+              candle_cv_fs_hist_point_correct;
+              candle_cv_fs_hist_rational_constant_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_add_correct;
+              candle_cv_fs_interval_one_correct]);;
+
+let candle_fs_hist_atan_pos_upper_target_def = new_definition
+ `candle_fs_hist_atan_pos_upper_target x =
+    let x2 = x * x in
+    x * (&1 + x2 *
+      (candle_lc_zreal (0,1) / &3 + x2 *
+        (candle_lc_zreal (1,0) / &5 + x2 *
+          (candle_lc_zreal (0,1) / &7 + x2 *
+            (candle_lc_zreal (1,0) / &9 + x2 *
+              (candle_lc_zreal (0,1) / &11 + x2 *
+                (candle_lc_zreal (1,0) / &13)))))))`;;
+
+let candle_fs_hist_atan_pos_upper_contains = prove
+ (`!x.
+     candle_fs_interval_contains
+       (candle_fs_hist_atan_pos_upper x)
+       (candle_fs_hist_atan_pos_upper_target (candle_fs_real x))`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_atan_pos_upper_def;
+              candle_fs_hist_atan_pos_upper_target_def;
+              LET_DEF; LET_END_DEF] THEN
+  ABBREV_TAC `point = candle_fs_hist_point x` THEN
+  ABBREV_TAC
+    `square = candle_fs_angle_interval_mul point point` THEN
+  ABBREV_TAC `xreal = candle_fs_real x` THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains point xreal` ASSUME_TAC THENL
+   [EXPAND_TAC "point" THEN EXPAND_TAC "xreal" THEN
+    MATCH_ACCEPT_TAC candle_fs_hist_point_contains;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains square (xreal * xreal)` ASSUME_TAC THENL
+   [EXPAND_TAC "square" THEN
+    MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC(SPECL [`1`; `0`; `13`]
+    candle_fs_hist_rational_constant_contains) THEN
+  MP_TAC(SPECL [`0`; `1`; `11`]
+    candle_fs_hist_rational_constant_contains) THEN
+  MP_TAC(SPECL [`1`; `0`; `9`]
+    candle_fs_hist_rational_constant_contains) THEN
+  MP_TAC(SPECL [`0`; `1`; `7`]
+    candle_fs_hist_rational_constant_contains) THEN
+  MP_TAC(SPECL [`1`; `0`; `5`]
+    candle_fs_hist_rational_constant_contains) THEN
+  MP_TAC(SPECL [`0`; `1`; `3`]
+    candle_fs_hist_rational_constant_contains) THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT DISCH_TAC THEN
+  ABBREV_TAC
+   `p11 = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 11)
+      (candle_fs_angle_interval_mul square
+        (candle_fs_hist_rational_constant 1 0 13))` THEN
+  ABBREV_TAC
+   `r11 = candle_lc_zreal (0,1) / &11 +
+      (xreal * xreal) * (candle_lc_zreal (1,0) / &13)` THEN
+  SUBGOAL_THEN `candle_fs_interval_contains p11 r11` ASSUME_TAC THENL
+   [EXPAND_TAC "p11" THEN EXPAND_TAC "r11" THEN
+    MATCH_MP_TAC candle_fs_hist_horner_step_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ABBREV_TAC
+   `p9 = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 1 0 9)
+      (candle_fs_angle_interval_mul square p11)` THEN
+  ABBREV_TAC
+   `r9 = candle_lc_zreal (1,0) / &9 + (xreal * xreal) * r11` THEN
+  SUBGOAL_THEN `candle_fs_interval_contains p9 r9` ASSUME_TAC THENL
+   [EXPAND_TAC "p9" THEN EXPAND_TAC "r9" THEN
+    MATCH_MP_TAC candle_fs_hist_horner_step_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ABBREV_TAC
+   `p7 = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 7)
+      (candle_fs_angle_interval_mul square p9)` THEN
+  ABBREV_TAC
+   `r7 = candle_lc_zreal (0,1) / &7 + (xreal * xreal) * r9` THEN
+  SUBGOAL_THEN `candle_fs_interval_contains p7 r7` ASSUME_TAC THENL
+   [EXPAND_TAC "p7" THEN EXPAND_TAC "r7" THEN
+    MATCH_MP_TAC candle_fs_hist_horner_step_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ABBREV_TAC
+   `p5 = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 1 0 5)
+      (candle_fs_angle_interval_mul square p7)` THEN
+  ABBREV_TAC
+   `r5 = candle_lc_zreal (1,0) / &5 + (xreal * xreal) * r7` THEN
+  SUBGOAL_THEN `candle_fs_interval_contains p5 r5` ASSUME_TAC THENL
+   [EXPAND_TAC "p5" THEN EXPAND_TAC "r5" THEN
+    MATCH_MP_TAC candle_fs_hist_horner_step_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ABBREV_TAC
+   `p3 = candle_fs_interval_add
+      (candle_fs_hist_rational_constant 0 1 3)
+      (candle_fs_angle_interval_mul square p5)` THEN
+  ABBREV_TAC
+   `r3 = candle_lc_zreal (0,1) / &3 + (xreal * xreal) * r5` THEN
+  SUBGOAL_THEN `candle_fs_interval_contains p3 r3` ASSUME_TAC THENL
+   [EXPAND_TAC "p3" THEN EXPAND_TAC "r3" THEN
+    MATCH_MP_TAC candle_fs_hist_horner_step_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_interval_add_sound THEN
+    CONJ_TAC THENL
+     [MATCH_ACCEPT_TAC candle_fs_interval_one_contains;
+      MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+      ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_hist_atan_pos_upper_target_expanded = prove
+ (`!x.
+     candle_fs_hist_atan_pos_upper_target x =
+     x - x pow 3 / &3 + x pow 5 / &5 - x pow 7 / &7 +
+     x pow 9 / &9 - x pow 11 / &11 + x pow 13 / &13`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_atan_pos_upper_target_def;
+              candle_lc_zreal_def; FST; SND;
+              LET_DEF; LET_END_DEF] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_atan_pos_upper_sum_expanded = prove
+ (`!x.
+     sum (0..6)
+       (\i. ((-- &1) pow i / &(2 * i + 1)) * x pow (2 * i + 1)) =
+     x - x pow 3 / &3 + x pow 5 / &5 - x pow 7 / &7 +
+     x pow 9 / &9 - x pow 11 / &11 + x pow 13 / &13`,
+  GEN_TAC THEN
+  REWRITE_TAC[SUM_CLAUSES_NUMSEG; LE_0] THEN
+  CONV_TAC (LAND_CONV EXPAND_SUM_CONV) THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_atan_pos_upper_target_series = prove
+ (`!x.
+     candle_fs_hist_atan_pos_upper_target x =
+     sum (0..6)
+       (\i. ((-- &1) pow i / &(2 * i + 1)) * x pow (2 * i + 1))`,
+  REWRITE_TAC[candle_fs_hist_atan_pos_upper_target_expanded;
+              candle_fs_hist_atan_pos_upper_sum_expanded]);;
+
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
    helper at the exact executable boundary makes the subsequent jet proof
