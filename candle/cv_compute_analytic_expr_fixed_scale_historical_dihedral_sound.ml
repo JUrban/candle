@@ -2951,4 +2951,69 @@ let candle_cv_fs_hist_final_hessian_correct = prove
                   candle_fs_hist_final_hessian_def;
                   candle_cv_fs_angle_matrix_six_correct]);;
 
+let candle_fs_hist_c_entry_def = new_definition
+ `candle_fs_hist_c_entry coordinate delta_x4_value b
+      delta_x4_gradient b_gradient =
+    candle_fs_interval_add
+      (candle_fs_interval_neg
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup coordinate delta_x4_gradient) b))
+      (candle_fs_angle_interval_mul delta_x4_value
+        (candle_fs_interval_lookup coordinate b_gradient))`;;
+
+let candle_fs_hist_c_vector_def = new_definition
+ `candle_fs_hist_c_vector delta_x4_value b delta_x4_gradient b_gradient =
+    [candle_fs_hist_c_entry 0 delta_x4_value b
+       delta_x4_gradient b_gradient;
+     candle_fs_hist_c_entry 1 delta_x4_value b
+       delta_x4_gradient b_gradient;
+     candle_fs_hist_c_entry 2 delta_x4_value b
+       delta_x4_gradient b_gradient;
+     candle_fs_hist_c_entry 3 delta_x4_value b
+       delta_x4_gradient b_gradient;
+     candle_fs_hist_c_entry 4 delta_x4_value b
+       delta_x4_gradient b_gradient;
+     candle_fs_hist_c_entry 5 delta_x4_value b
+       delta_x4_gradient b_gradient]`;;
+
+let candle_cv_fs_hist_c_vector_correct = prove
+ (`!delta_x4_value b delta_x4_gradient b_gradient.
+     candle_cv_fs_hist_c_vector
+       (candle_cv_fs_interval delta_x4_value)
+       (candle_cv_fs_interval b)
+       (candle_cv_fs_interval_list delta_x4_gradient)
+       (candle_cv_fs_interval_list b_gradient) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_c_vector delta_x4_value b
+         delta_x4_gradient b_gradient)`,
+  REWRITE_TAC[candle_cv_fs_hist_c_vector_def;
+              candle_fs_hist_c_vector_def;
+              candle_fs_hist_c_entry_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_interval_add_correct;
+              candle_cv_fs_angle_six_correct]);;
+
+let candle_fs_hist_replace_three_def = new_definition
+ `candle_fs_hist_replace_three items value =
+    [candle_fs_interval_lookup 0 items;
+     candle_fs_interval_lookup 1 items;
+     candle_fs_interval_lookup 2 items;
+     value;
+     candle_fs_interval_lookup 4 items;
+     candle_fs_interval_lookup 5 items]`;;
+
+let candle_cv_fs_hist_replace_three_correct = prove
+ (`!items value.
+     candle_cv_fs_hist_replace_three
+       (candle_cv_fs_interval_list items)
+       (candle_cv_fs_interval value) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_replace_three items value)`,
+  REWRITE_TAC[candle_cv_fs_hist_replace_three_def;
+              candle_fs_hist_replace_three_def;
+              candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_six_correct]);;
+
 end;;
