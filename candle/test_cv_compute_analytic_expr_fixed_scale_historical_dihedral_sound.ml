@@ -103,5 +103,6 @@ let _ = candle_fs_hist_raw_cubic_round_contains;;
 let _ = candle_fs_hist_delta_x4_real_polynomial;;
 let _ = candle_fs_hist_delta_x4_value_block_contains;;
 let _ = candle_fs_hist_delta_value_block_contains;;
+let _ = candle_fs_hist_delta_gradient_blocks_contain;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;

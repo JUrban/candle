@@ -5728,6 +5728,174 @@ let candle_fs_hist_delta_value_block_contains = prove
     MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
     MATCH_MP_TAC candle_fs_hist_raw_cubic_contains THEN ASM_REWRITE_TAC[]]);;
 
+let candle_fs_hist_raw_angle_interval_scale_contains = prove
+ (`!denominator factor interval x.
+     0 < denominator /\
+     candle_fs_raw_interval_contains denominator interval x
+     ==> candle_fs_raw_interval_contains denominator
+           (candle_fs_angle_interval_scale factor interval) (&factor * x)`,
+  REWRITE_TAC[FORALL_PAIR_THM] THEN REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_angle_interval_scale_def;
+              candle_fs_raw_real_def; candle_lc_zreal_scale; FST; SND;
+              real_div; GSYM REAL_MUL_ASSOC] THEN
+  STRIP_TAC THEN
+  SUBGOAL_THEN `&0 <= &factor` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LE; LE_0];
+    CONJ_TAC THEN MATCH_MP_TAC REAL_LE_LMUL THEN ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_raw_scale_neg_two_contains = prove
+ (`!denominator interval x.
+     0 < denominator /\
+     candle_fs_raw_interval_contains denominator interval x
+     ==> candle_fs_raw_interval_contains denominator
+           (candle_fs_angle_interval_scale_neg_two interval)
+           (--(&2 * x))`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_angle_interval_scale_neg_two_def] THEN
+  MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
+  MATCH_MP_TAC candle_fs_hist_raw_angle_interval_scale_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_raw_product_round_contains = prove
+ (`!raw x.
+     candle_fs_raw_interval_contains
+       (candle_fs_scale * candle_fs_scale) raw x
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_round_scale raw) x`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_round_scale_def] THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  ASM_REWRITE_TAC[candle_fs_scale_pos]);;
+
+(* The exact first derivatives of [delta], in the same ten-product order as
+   the historical gradient blocks. *)
+
+let candle_fs_hist_delta_gradient_real_def = new_definition
+ `candle_fs_hist_delta_gradient_real (values:num->real) =
+    [ITLIST (\x total:real. x + total)
+       [--(&2 * (values 0 * values 3));
+        values 1 * values 3;values 1 * values 4;
+        --(values 1 * values 5);values 2 * values 3;
+        --(values 2 * values 4);values 2 * values 5;
+        --(values 3 * values 3);values 3 * values 4;
+        values 3 * values 5] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0 * values 3;values 0 * values 4;
+        --(values 0 * values 5);--(&2 * (values 1 * values 4));
+        --(values 2 * values 3);values 2 * values 4;
+        values 2 * values 5;values 3 * values 4;
+        --(values 4 * values 4);values 4 * values 5] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0 * values 3;--(values 0 * values 4);
+        values 0 * values 5;--(values 1 * values 3);
+        values 1 * values 4;values 1 * values 5;
+        --(&2 * (values 2 * values 5));values 3 * values 5;
+        values 4 * values 5;--(values 5 * values 5)] (&0);
+     ITLIST (\x total:real. x + total)
+       [--(values 0 * values 0);values 0 * values 1;
+        values 0 * values 2;--(&2 * (values 0 * values 3));
+        values 0 * values 4;values 0 * values 5;
+        --(values 1 * values 2);values 1 * values 4;
+        values 2 * values 5;--(values 4 * values 5)] (&0);
+     ITLIST (\x total:real. x + total)
+       [values 0 * values 1;--(values 0 * values 2);
+        values 0 * values 3;--(values 1 * values 1);
+        values 1 * values 2;values 1 * values 3;
+        --(&2 * (values 1 * values 4));values 1 * values 5;
+        values 2 * values 5;--(values 3 * values 5)] (&0);
+     ITLIST (\x total:real. x + total)
+       [--(values 0 * values 1);values 0 * values 2;
+        values 0 * values 3;values 1 * values 2;
+        values 1 * values 4;--(values 2 * values 2);
+        values 2 * values 3;values 2 * values 4;
+        --(&2 * (values 2 * values 5));
+        --(values 3 * values 4)] (&0)]`;;
+
+let candle_fs_hist_delta_gradient_blocks_contain = prove
+ (`!environment (values:num->real).
+     LENGTH environment = 6 /\
+     ALL2 candle_fs_interval_contains environment (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           [candle_fs_hist_delta_gradient_block_0 environment;
+            candle_fs_hist_delta_gradient_block_1 environment;
+            candle_fs_hist_delta_gradient_block_2 environment;
+            candle_fs_hist_delta_gradient_block_3 environment;
+            candle_fs_hist_delta_gradient_block_4 environment;
+            candle_fs_hist_delta_gradient_block_5 environment]
+           (candle_fs_hist_delta_gradient_real values)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 0 environment) (values 0)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 1 environment) (values 1)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 2 environment) (values 2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 3 environment) (values 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 4 environment) (values 4)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 5 environment) (values 5)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_delta_gradient_real_def; ALL2] THEN
+  let term_tac =
+    REWRITE_TAC[candle_fs_hist_raw_product_def] THEN
+    FIRST
+     [MATCH_MP_TAC candle_fs_hist_raw_scale_neg_two_contains THEN
+      CONJ_TAC THENL
+       [MATCH_ACCEPT_TAC candle_fs_product_denominator_pos;
+        MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+        ASM_REWRITE_TAC[]];
+      MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
+      MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+      ASM_REWRITE_TAC[];
+      MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+      ASM_REWRITE_TAC[]] in
+  let block_tac definition =
+    REWRITE_TAC[definition; LET_DEF; LET_END_DEF] THEN
+    MATCH_MP_TAC candle_fs_hist_raw_product_round_contains THEN
+    MATCH_MP_TAC candle_fs_hist_raw_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN
+    REPEAT CONJ_TAC THEN
+    term_tac in
+  REPEAT CONJ_TAC THENL
+   [block_tac candle_fs_hist_delta_gradient_block_0_def;
+    block_tac candle_fs_hist_delta_gradient_block_1_def;
+    block_tac candle_fs_hist_delta_gradient_block_2_def;
+    block_tac candle_fs_hist_delta_gradient_block_3_def;
+    block_tac candle_fs_hist_delta_gradient_block_4_def;
+    block_tac candle_fs_hist_delta_gradient_block_5_def]);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =
