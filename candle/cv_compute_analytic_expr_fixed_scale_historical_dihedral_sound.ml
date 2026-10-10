@@ -5896,6 +5896,126 @@ let candle_fs_hist_delta_gradient_blocks_contain = prove
     block_tac candle_fs_hist_delta_gradient_block_4_def;
     block_tac candle_fs_hist_delta_gradient_block_5_def]);;
 
+(* Exact Hessian of [delta].  The symmetric layout mirrors the executable
+   6-by-6 interval matrix so each row can subsequently justify the historical
+   monotone endpoint selector for one gradient component. *)
+
+let candle_fs_hist_delta_hessian_real_def = new_definition
+ `candle_fs_hist_delta_hessian_real (values:num->real) =
+    let h00 = --(&2 * values 3) in
+    let h01 = ITLIST (\x total:real. x + total)
+      [values 3;values 4;--(values 5)] (&0) in
+    let h02 = ITLIST (\x total:real. x + total)
+      [values 3;--(values 4);values 5] (&0) in
+    let h03 = ITLIST (\x total:real. x + total)
+      [--(&2 * values 0);values 1;values 2;
+       --(&2 * values 3);values 4;values 5] (&0) in
+    let h04 = ITLIST (\x total:real. x + total)
+      [values 1;--(values 2);values 3] (&0) in
+    let h05 = ITLIST (\x total:real. x + total)
+      [--(values 1);values 2;values 3] (&0) in
+    let h11 = --(&2 * values 4) in
+    let h12 = ITLIST (\x total:real. x + total)
+      [--(values 3);values 4;values 5] (&0) in
+    let h13 = ITLIST (\x total:real. x + total)
+      [values 0;--(values 2);values 4] (&0) in
+    let h14 = ITLIST (\x total:real. x + total)
+      [values 0;--(&2 * values 1);values 2;values 3;
+       --(&2 * values 4);values 5] (&0) in
+    let h15 = ITLIST (\x total:real. x + total)
+      [--(values 0);values 2;values 4] (&0) in
+    let h22 = --(&2 * values 5) in
+    let h23 = ITLIST (\x total:real. x + total)
+      [values 0;--(values 1);values 5] (&0) in
+    let h24 = ITLIST (\x total:real. x + total)
+      [--(values 0);values 1;values 5] (&0) in
+    let h25 = ITLIST (\x total:real. x + total)
+      [values 0;values 1;--(&2 * values 2);values 3;values 4;
+       --(&2 * values 5)] (&0) in
+    let h33 = --(&2 * values 0) in
+    let h34 = ITLIST (\x total:real. x + total)
+      [values 0;values 1;--(values 5)] (&0) in
+    let h35 = ITLIST (\x total:real. x + total)
+      [values 0;values 2;--(values 4)] (&0) in
+    let h44 = --(&2 * values 1) in
+    let h45 = ITLIST (\x total:real. x + total)
+      [values 1;values 2;--(values 3)] (&0) in
+    let h55 = --(&2 * values 2) in
+    [[h00;h01;h02;h03;h04;h05];
+     [h01;h11;h12;h13;h14;h15];
+     [h02;h12;h22;h23;h24;h25];
+     [h03;h13;h23;h33;h34;h35];
+     [h04;h14;h24;h34;h44;h45];
+     [h05;h15;h25;h35;h45;h55]]`;;
+
+let candle_fs_hist_delta_hessian_contains = prove
+ (`!environment (values:num->real).
+     LENGTH environment = 6 /\
+     ALL2 candle_fs_interval_contains environment (list_of_seq values 6)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+           (candle_fs_angle_delta_hessian environment)
+           (candle_fs_hist_delta_hessian_real values)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 0 environment) (values 0)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 1 environment) (values 1)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 2 environment) (values 2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 3 environment) (values 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 4 environment) (values 4)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 5 environment) (values 5)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_angle_delta_hessian_def;
+              candle_fs_hist_delta_hessian_real_def;
+              LET_DEF; LET_END_DEF; ALL2] THEN
+  let atom_tac =
+    FIRST
+     [MATCH_MP_TAC candle_fs_hist_scale_neg_two_contains THEN
+      FIRST_ASSUM MATCH_ACCEPT_TAC;
+      MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+      FIRST_ASSUM MATCH_ACCEPT_TAC;
+      FIRST_ASSUM MATCH_ACCEPT_TAC] in
+  let linear_tac =
+    FIRST
+     [MATCH_MP_TAC candle_fs_hist_scale_neg_two_contains THEN
+      FIRST_ASSUM MATCH_ACCEPT_TAC;
+      MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+      REWRITE_TAC[ALL2] THEN REPEAT CONJ_TAC THEN atom_tac] in
+  REPEAT CONJ_TAC THEN linear_tac);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =
