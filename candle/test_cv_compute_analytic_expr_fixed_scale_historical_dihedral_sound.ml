@@ -67,6 +67,8 @@ let _ = candle_fs_hist_sqrt_hessian_shape;;
 let _ = candle_fs_hist_positive_sqrt_hessian_universal_contains;;
 let _ = candle_fs_hist_second_sqrt_supplied_components;;
 let _ = candle_fs_hist_raw_interval_mul_contains;;
+let _ = candle_fs_hist_raw_interval_sum_contains;;
 let _ = candle_fs_hist_raw_cubic_contains;;
+let _ = candle_fs_hist_raw_cubic_round_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;

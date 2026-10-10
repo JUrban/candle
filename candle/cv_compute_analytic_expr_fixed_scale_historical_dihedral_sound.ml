@@ -3552,6 +3552,64 @@ let candle_fs_hist_interval_contains_raw_scale = prove
               candle_fs_real_def;
               candle_fs_raw_real_def]);;
 
+let candle_fs_hist_raw_add_real = prove
+ (`!denominator left right.
+     candle_fs_raw_real denominator (candle_fs_add left right) =
+     candle_fs_raw_real denominator left +
+     candle_fs_raw_real denominator right`,
+  REWRITE_TAC[candle_fs_raw_real_def; candle_fs_add_def;
+              candle_fs_canonical_real; candle_lc_zreal_add;
+              real_div; REAL_ADD_RDISTRIB]);;
+
+let candle_fs_hist_raw_interval_add_contains = prove
+ (`!denominator left right x y.
+     candle_fs_raw_interval_contains denominator left x /\
+     candle_fs_raw_interval_contains denominator right y
+     ==> candle_fs_raw_interval_contains denominator
+           (candle_fs_interval_add left right) (x + y)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_interval_add_def;
+              candle_fs_hist_raw_add_real; FST; SND] THEN
+  REAL_ARITH_TAC);;
+
+let candle_fs_hist_raw_neg_real = prove
+ (`!denominator value.
+     candle_fs_raw_real denominator (candle_fs_raw_neg value) =
+     --(candle_fs_raw_real denominator value)`,
+  REWRITE_TAC[candle_fs_raw_real_def; candle_fs_raw_neg_real;
+              real_div; REAL_NEG_LMUL]);;
+
+let candle_fs_hist_raw_interval_neg_contains = prove
+ (`!denominator interval x.
+     candle_fs_raw_interval_contains denominator interval x
+     ==> candle_fs_raw_interval_contains denominator
+           (candle_fs_interval_neg interval) (--x)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_interval_neg_def;
+              candle_fs_hist_raw_neg_real; FST; SND] THEN
+  REAL_ARITH_TAC);;
+
+let candle_fs_hist_raw_interval_zero_contains = prove
+ (`!denominator.
+     candle_fs_raw_interval_contains denominator
+       candle_fs_interval_zero (&0)`,
+  REWRITE_TAC[candle_fs_raw_interval_contains_def;
+              candle_fs_interval_zero_def;
+              candle_fs_raw_zero_real; FST; SND; REAL_LE_REFL]);;
+
+let candle_fs_hist_raw_interval_sum_contains = prove
+ (`!denominator intervals values.
+     ALL2 (candle_fs_raw_interval_contains denominator) intervals values
+     ==> candle_fs_raw_interval_contains denominator
+           (candle_fs_angle_interval_sum intervals)
+           (ITLIST (\x total:real. x + total) values (&0))`,
+  GEN_TAC THEN LIST_INDUCT_TAC THEN LIST_INDUCT_TAC THEN
+  ASM_REWRITE_TAC[ALL2; ITLIST; candle_fs_angle_interval_sum_def] THEN
+  ASM_MESON_TAC[candle_fs_hist_raw_interval_zero_contains;
+                candle_fs_hist_raw_interval_add_contains]);;
+
 let candle_fs_hist_raw_cubic_contains = prove
  (`!first second third x y z.
      candle_fs_interval_contains first x /\
@@ -3588,6 +3646,17 @@ let candle_fs_hist_raw_cubic_contains = prove
           (CONJ candle_fs_scale_pos (CONJ inner_th third_raw_th))) in
     REWRITE_TAC[candle_fs_hist_raw_cubic_def] THEN
     ACCEPT_TAC result_th));;
+
+let candle_fs_hist_raw_cubic_round_contains = prove
+ (`!raw x.
+     candle_fs_raw_interval_contains
+       ((candle_fs_scale * candle_fs_scale) * candle_fs_scale) raw x
+     ==> candle_fs_interval_contains
+           (candle_fs_raw_interval_round
+             (candle_fs_scale * candle_fs_scale) raw) x`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  ASM_REWRITE_TAC[candle_fs_product_denominator_pos]);;
 
 let candle_cv_fs_hist_raw_cubic_correct = prove
  (`!first second third.
