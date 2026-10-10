@@ -3720,6 +3720,179 @@ let candle_fs_hist_delta_x4_gradient_contains = prove
       MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
       ASM_REWRITE_TAC[] THEN ARITH_TAC]]);;
 
+(* The exact real polynomial computed by the historical [delta_x4] value
+   block.  Its list form deliberately mirrors the executable accumulator;
+   the conventional polynomial identity is proved below. *)
+
+let candle_fs_hist_delta_x4_real_def = new_definition
+ `candle_fs_hist_delta_x4_real (values:num->real) =
+    let linear = ITLIST (\x total:real. x + total)
+      [--(values 0);values 1;values 2;
+       --(values 3);values 4;values 5] (&0) in
+    ITLIST (\x total:real. x + total)
+      [--(values 1 * values 2);
+       --(values 0 * values 3);
+       values 1 * values 4;
+       values 2 * values 5;
+       --(values 4 * values 5);
+       values 0 * linear] (&0)`;;
+
+(* A coordinate function for the exact gradient and the algebraic secant
+   identity used by the monotone endpoint selector.  The identity is proved
+   once for all six coordinates; the executable only needs interval signs. *)
+
+let candle_fs_hist_delta_x4_derivative_def = new_definition
+ `candle_fs_hist_delta_x4_derivative (values:num->real) coordinate =
+    if coordinate = 0 then
+      --(&2 * values 0) + values 1 + values 2 - &2 * values 3 +
+      values 4 + values 5
+    else if coordinate = 1 then values 0 - values 2 + values 4
+    else if coordinate = 2 then values 0 - values 1 + values 5
+    else if coordinate = 3 then --(&2 * values 0)
+    else if coordinate = 4 then values 0 + values 1 - values 5
+    else if coordinate = 5 then values 0 + values 2 - values 4
+    else &0`;;
+
+let candle_fs_hist_delta_x4_update_def = new_definition
+ `candle_fs_hist_delta_x4_update (values:num->real) coordinate replacement =
+    \i. if i = coordinate then replacement else values i`;;
+
+let candle_fs_hist_delta_x4_gradient_real_list_of_seq = prove
+ (`!values.
+     candle_fs_hist_delta_x4_gradient_real values =
+     list_of_seq (candle_fs_hist_delta_x4_derivative values) 6`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_gradient_real_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND; ITLIST;
+              CONS_11] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT CONJ_TAC THEN REAL_ARITH_TAC);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_0 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 0 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 0) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 0 replacement) 0 +
+       candle_fs_hist_delta_x4_derivative values 0) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_1 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 1 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 1) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 1 replacement) 1 +
+       candle_fs_hist_delta_x4_derivative values 1) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_2 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 2 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 2) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 2 replacement) 2 +
+       candle_fs_hist_delta_x4_derivative values 2) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_3 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 3 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 3) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 3 replacement) 3 +
+       candle_fs_hist_delta_x4_derivative values 3) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_4 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 4 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 4) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 4 replacement) 4 +
+       candle_fs_hist_delta_x4_derivative values 4) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant_5 = prove
+ (`!values replacement.
+     candle_fs_hist_delta_x4_real
+       (candle_fs_hist_delta_x4_update values 5 replacement) -
+     candle_fs_hist_delta_x4_real values =
+     (replacement - values 5) *
+     ((candle_fs_hist_delta_x4_derivative
+         (candle_fs_hist_delta_x4_update values 5 replacement) 5 +
+       candle_fs_hist_delta_x4_derivative values 5) / &2)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_x4_update_def;
+              candle_fs_hist_delta_x4_derivative_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_fs_hist_delta_x4_coordinate_secant = prove
+ (`!values coordinate replacement.
+     coordinate < 6
+     ==> candle_fs_hist_delta_x4_real
+           (candle_fs_hist_delta_x4_update values coordinate replacement) -
+         candle_fs_hist_delta_x4_real values =
+         (replacement - values coordinate) *
+         ((candle_fs_hist_delta_x4_derivative
+              (candle_fs_hist_delta_x4_update
+                values coordinate replacement) coordinate +
+           candle_fs_hist_delta_x4_derivative values coordinate) / &2)`,
+  REPEAT STRIP_TAC THEN
+  ASM_CASES_TAC `coordinate = 0` THENL
+   [ASM_REWRITE_TAC[candle_fs_hist_delta_x4_coordinate_secant_0];
+    ASM_CASES_TAC `coordinate = 1` THENL
+     [ASM_REWRITE_TAC[candle_fs_hist_delta_x4_coordinate_secant_1];
+      ASM_CASES_TAC `coordinate = 2` THENL
+       [ASM_REWRITE_TAC[candle_fs_hist_delta_x4_coordinate_secant_2];
+        ASM_CASES_TAC `coordinate = 3` THENL
+         [ASM_REWRITE_TAC[candle_fs_hist_delta_x4_coordinate_secant_3];
+          ASM_CASES_TAC `coordinate = 4` THENL
+           [ASM_REWRITE_TAC[candle_fs_hist_delta_x4_coordinate_secant_4];
+            SUBGOAL_THEN `coordinate = 5` SUBST_ALL_TAC THENL
+             [ASM_ARITH_TAC;
+              REWRITE_TAC[
+                candle_fs_hist_delta_x4_coordinate_secant_5]]]]]]]);;
+
 let candle_fs_hist_raw_interval_sum_contains = prove
  (`!denominator intervals values.
      ALL2 (candle_fs_raw_interval_contains denominator) intervals values
@@ -3779,23 +3952,8 @@ let candle_fs_hist_raw_cubic_round_contains = prove
   MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
   ASM_REWRITE_TAC[candle_fs_product_denominator_pos]);;
 
-(* The exact real polynomial computed by the historical [delta_x4] value
-   block.  Its list form deliberately mirrors the executable accumulator;
-   a subsequent analytic bridge can rewrite it to the conventional
-   polynomial without putting any symbolic algebra in the checker. *)
-
-let candle_fs_hist_delta_x4_real_def = new_definition
- `candle_fs_hist_delta_x4_real (values:num->real) =
-    let linear = ITLIST (\x total:real. x + total)
-      [--(values 0);values 1;values 2;
-       --(values 3);values 4;values 5] (&0) in
-    ITLIST (\x total:real. x + total)
-      [--(values 1 * values 2);
-       --(values 0 * values 3);
-       values 1 * values 4;
-       values 2 * values 5;
-       --(values 4 * values 5);
-       values 0 * linear] (&0)`;;
+(* Rewrite the accumulator-shaped definition to the conventional polynomial
+   without putting symbolic algebra in the checker. *)
 
 let candle_fs_hist_delta_x4_real_polynomial = prove
  (`!values.
