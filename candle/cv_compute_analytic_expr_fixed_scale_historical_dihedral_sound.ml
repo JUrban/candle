@@ -2560,4 +2560,395 @@ let candle_cv_fs_hist_log_u_gradient_correct = prove
               candle_cv_fs_hist_log_u_gradient_entry_correct;
               candle_cv_fs_angle_six_correct]);;
 
+let candle_cv_fs_hist_four_correct = prove
+ (`!a b c d.
+     candle_cv_fs_hist_four
+       (candle_cv_fs_interval a) (candle_cv_fs_interval b)
+       (candle_cv_fs_interval c) (candle_cv_fs_interval d) =
+     candle_cv_fs_interval_list [a;b;c;d]`,
+  REWRITE_TAC[candle_cv_fs_hist_four_def;
+              candle_cv_fs_interval_list_def]);;
+
+let candle_cv_fs_hist_interval_eq_select_correct = prove
+ (`!rowindex colindex equal_value unequal_value.
+     Cexp_if
+       (Cexp_eq (Cexp_num rowindex) (Cexp_num colindex))
+       (candle_cv_fs_interval equal_value)
+       (candle_cv_fs_interval unequal_value) =
+     candle_cv_fs_interval
+       (if rowindex = colindex then equal_value else unequal_value)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[cexp_eq_def; injectivity "cval"] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]);;
+
+let candle_fs_hist_final_hessian_entry_def = new_definition
+ `candle_fs_hist_final_hessian_entry rowindex colindex
+      b delta_x4_value delta_x4_gradient delta_x4_hessian
+      b_gradient b_hessian reciprocal_u result_gradient log_u_gradient =
+    let common_first = candle_fs_interval_neg
+      (candle_fs_angle_interval_mul b
+        (candle_fs_angle_matrix_lookup
+          rowindex colindex delta_x4_hessian)) in
+    let common_last = candle_fs_angle_interval_mul delta_x4_value
+      (candle_fs_angle_matrix_lookup rowindex colindex b_hessian) in
+    let identity = if rowindex = colindex then
+      candle_fs_interval_add common_first common_last
+    else
+      candle_fs_angle_interval_sum
+        [common_first;
+         candle_fs_interval_neg
+           (candle_fs_angle_interval_mul
+             (candle_fs_interval_lookup rowindex delta_x4_gradient)
+             (candle_fs_interval_lookup colindex b_gradient));
+         candle_fs_angle_interval_mul
+           (candle_fs_interval_lookup colindex delta_x4_gradient)
+           (candle_fs_interval_lookup rowindex b_gradient);
+         common_last] in
+    candle_fs_interval_add
+      (candle_fs_angle_interval_mul reciprocal_u identity)
+      (candle_fs_interval_neg
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup rowindex result_gradient)
+          (candle_fs_interval_lookup colindex log_u_gradient)))`;;
+
+let candle_cv_fs_hist_final_hessian_entry_correct = prove
+ (`!rowindex colindex b delta_x4_value delta_x4_gradient
+      delta_x4_hessian b_gradient b_hessian reciprocal_u
+      result_gradient log_u_gradient.
+     rowindex < LENGTH delta_x4_hessian /\
+     rowindex < LENGTH b_hessian
+     ==>
+     candle_cv_fs_hist_final_hessian_entry
+       (Cexp_num rowindex) (Cexp_num colindex)
+       (candle_cv_fs_interval b)
+       (candle_cv_fs_interval delta_x4_value)
+       (candle_cv_fs_interval_list delta_x4_gradient)
+       (candle_cv_fs_interval_matrix delta_x4_hessian)
+       (candle_cv_fs_interval_list b_gradient)
+       (candle_cv_fs_interval_matrix b_hessian)
+       (candle_cv_fs_interval reciprocal_u)
+       (candle_cv_fs_interval_list result_gradient)
+       (candle_cv_fs_interval_list log_u_gradient) =
+     candle_cv_fs_interval
+       (candle_fs_hist_final_hessian_entry rowindex colindex
+         b delta_x4_value delta_x4_gradient delta_x4_hessian
+         b_gradient b_hessian reciprocal_u result_gradient
+         log_u_gradient)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_final_hessian_entry_def;
+              candle_fs_hist_final_hessian_entry_def] THEN
+  SUBGOAL_THEN
+   `candle_cv_fs_angle_matrix_lookup
+      (Cexp_num rowindex) (Cexp_num colindex)
+      (candle_cv_fs_interval_matrix delta_x4_hessian) =
+    candle_cv_fs_interval
+      (candle_fs_angle_matrix_lookup
+        rowindex colindex delta_x4_hessian)`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_cv_fs_angle_matrix_lookup_correct THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_cv_fs_angle_matrix_lookup
+      (Cexp_num rowindex) (Cexp_num colindex)
+      (candle_cv_fs_interval_matrix b_hessian) =
+    candle_cv_fs_interval
+      (candle_fs_angle_matrix_lookup rowindex colindex b_hessian)`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_cv_fs_angle_matrix_lookup_correct THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_cv_fs_interval_lookup_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_interval_add_correct;
+              candle_cv_fs_hist_four_correct;
+              candle_cv_fs_angle_interval_sum_correct;
+              candle_cv_fs_hist_interval_eq_select_correct;
+              LET_DEF; LET_END_DEF]);;
+
+let candle_fs_hist_final_hessian_symmetric_entry_def = new_definition
+ `candle_fs_hist_final_hessian_symmetric_entry rowindex colindex
+      b delta_x4_value delta_x4_gradient delta_x4_hessian
+      b_gradient b_hessian reciprocal_u result_gradient log_u_gradient =
+    if colindex < rowindex then
+      candle_fs_hist_final_hessian_entry colindex rowindex
+        b delta_x4_value delta_x4_gradient delta_x4_hessian
+        b_gradient b_hessian reciprocal_u result_gradient log_u_gradient
+    else
+      candle_fs_hist_final_hessian_entry rowindex colindex
+        b delta_x4_value delta_x4_gradient delta_x4_hessian
+        b_gradient b_hessian reciprocal_u result_gradient log_u_gradient`;;
+
+let candle_cv_fs_hist_final_hessian_symmetric_entry_correct = prove
+ (`!rowindex colindex b delta_x4_value delta_x4_gradient
+      delta_x4_hessian b_gradient b_hessian reciprocal_u
+      result_gradient log_u_gradient.
+     rowindex < LENGTH delta_x4_hessian /\
+     colindex < LENGTH delta_x4_hessian /\
+     rowindex < LENGTH b_hessian /\
+     colindex < LENGTH b_hessian
+     ==>
+     candle_cv_fs_hist_final_hessian_symmetric_entry
+       (Cexp_num rowindex) (Cexp_num colindex)
+       (candle_cv_fs_interval b)
+       (candle_cv_fs_interval delta_x4_value)
+       (candle_cv_fs_interval_list delta_x4_gradient)
+       (candle_cv_fs_interval_matrix delta_x4_hessian)
+       (candle_cv_fs_interval_list b_gradient)
+       (candle_cv_fs_interval_matrix b_hessian)
+       (candle_cv_fs_interval reciprocal_u)
+       (candle_cv_fs_interval_list result_gradient)
+       (candle_cv_fs_interval_list log_u_gradient) =
+     candle_cv_fs_interval
+       (candle_fs_hist_final_hessian_symmetric_entry rowindex colindex
+         b delta_x4_value delta_x4_gradient delta_x4_hessian
+         b_gradient b_hessian reciprocal_u result_gradient
+         log_u_gradient)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_cv_fs_hist_final_hessian_symmetric_entry_def;
+              candle_fs_hist_final_hessian_symmetric_entry_def;
+              cexp_less_def] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def] THEN
+  MATCH_MP_TAC candle_cv_fs_hist_final_hessian_entry_correct THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_final_hessian_row_def = new_definition
+ `candle_fs_hist_final_hessian_row rowindex b delta_x4_value
+      delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+      result_gradient log_u_gradient =
+    [candle_fs_hist_final_hessian_symmetric_entry rowindex 0
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_symmetric_entry rowindex 1
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_symmetric_entry rowindex 2
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_symmetric_entry rowindex 3
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_symmetric_entry rowindex 4
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_symmetric_entry rowindex 5
+       b delta_x4_value delta_x4_gradient delta_x4_hessian
+       b_gradient b_hessian reciprocal_u result_gradient log_u_gradient]`;;
+
+let candle_cv_fs_hist_final_hessian_row_correct = prove
+ (`!rowindex b delta_x4_value delta_x4_gradient delta_x4_hessian
+      b_gradient b_hessian reciprocal_u result_gradient log_u_gradient.
+     LENGTH delta_x4_hessian = 6 /\ LENGTH b_hessian = 6 /\
+     rowindex < 6
+     ==>
+     candle_cv_fs_hist_final_hessian_row
+       (Cexp_num rowindex)
+       (candle_cv_fs_interval b)
+       (candle_cv_fs_interval delta_x4_value)
+       (candle_cv_fs_interval_list delta_x4_gradient)
+       (candle_cv_fs_interval_matrix delta_x4_hessian)
+       (candle_cv_fs_interval_list b_gradient)
+       (candle_cv_fs_interval_matrix b_hessian)
+       (candle_cv_fs_interval reciprocal_u)
+       (candle_cv_fs_interval_list result_gradient)
+       (candle_cv_fs_interval_list log_u_gradient) =
+     candle_cv_fs_interval_list
+       (candle_fs_hist_final_hessian_row rowindex b delta_x4_value
+         delta_x4_gradient delta_x4_hessian b_gradient b_hessian
+         reciprocal_u result_gradient log_u_gradient)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `0`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `1`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `2`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `3`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `4`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  MP_TAC
+    (SPECL [`rowindex:num`; `5`;
+            `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_symmetric_entry_correct) THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_hist_final_hessian_row_def;
+                  candle_fs_hist_final_hessian_row_def;
+                  candle_cv_fs_angle_six_correct]);;
+
+let candle_fs_hist_final_hessian_def = new_definition
+ `candle_fs_hist_final_hessian b delta_x4_value delta_x4_gradient
+      delta_x4_hessian b_gradient b_hessian reciprocal_u
+      result_gradient log_u_gradient =
+    [candle_fs_hist_final_hessian_row 0 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_row 1 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_row 2 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_row 3 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_row 4 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient;
+     candle_fs_hist_final_hessian_row 5 b delta_x4_value
+       delta_x4_gradient delta_x4_hessian b_gradient b_hessian reciprocal_u
+       result_gradient log_u_gradient]`;;
+
+let candle_cv_fs_hist_final_hessian_correct = prove
+ (`!b delta_x4_value delta_x4_gradient delta_x4_hessian
+      b_gradient b_hessian reciprocal_u result_gradient log_u_gradient.
+     LENGTH delta_x4_hessian = 6 /\ LENGTH b_hessian = 6
+     ==>
+     candle_cv_fs_hist_final_hessian
+       (candle_cv_fs_interval b)
+       (candle_cv_fs_interval delta_x4_value)
+       (candle_cv_fs_interval_list delta_x4_gradient)
+       (candle_cv_fs_interval_matrix delta_x4_hessian)
+       (candle_cv_fs_interval_list b_gradient)
+       (candle_cv_fs_interval_matrix b_hessian)
+       (candle_cv_fs_interval reciprocal_u)
+       (candle_cv_fs_interval_list result_gradient)
+       (candle_cv_fs_interval_list log_u_gradient) =
+     candle_cv_fs_interval_matrix
+       (candle_fs_hist_final_hessian b delta_x4_value
+         delta_x4_gradient delta_x4_hessian b_gradient b_hessian
+         reciprocal_u result_gradient log_u_gradient)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`0`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`1`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`2`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`3`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`4`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  MP_TAC
+    (SPECL [`5`; `b:(num#num)#(num#num)`;
+            `delta_x4_value:(num#num)#(num#num)`;
+            `delta_x4_gradient:((num#num)#(num#num))list`;
+            `delta_x4_hessian:(((num#num)#(num#num))list)list`;
+            `b_gradient:((num#num)#(num#num))list`;
+            `b_hessian:(((num#num)#(num#num))list)list`;
+            `reciprocal_u:(num#num)#(num#num)`;
+            `result_gradient:((num#num)#(num#num))list`;
+            `log_u_gradient:((num#num)#(num#num))list`]
+      candle_cv_fs_hist_final_hessian_row_correct) THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT STRIP_TAC THEN
+  ASM_REWRITE_TAC[candle_cv_fs_hist_final_hessian_def;
+                  candle_fs_hist_final_hessian_def;
+                  candle_cv_fs_angle_matrix_six_correct]);;
+
 end;;
