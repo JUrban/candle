@@ -309,6 +309,64 @@ let candle_fs_hist_positive_product_inv_contains = prove
   MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
   ASM_REWRITE_TAC[]);;
 
+(* Package the complete historical quotient boundary.  The executable uses
+   the outward-rounded product [root_delta * root_four_x0] and its checked
+   positive reciprocal before multiplying by [-delta_x4].  Keeping that
+   sequence as one ordinary-HOL operation lets the final arctangent proof
+   consume the exact quotient it needs without rebuilding intermediate
+   arithmetic theorems per certificate leaf. *)
+
+let candle_fs_hist_quotient_def = new_definition
+ `candle_fs_hist_quotient
+      (delta_x4_interval:(num#num)#(num#num)) root_delta root_four_x0 =
+    candle_fs_angle_interval_mul
+      (candle_fs_interval_neg delta_x4_interval)
+      (candle_fs_hist_positive_product_inv root_delta root_four_x0)`;;
+
+let candle_cv_fs_hist_quotient_correct = prove
+ (`!delta_x4_interval root_delta root_four_x0.
+     candle_cv_fs_angle_interval_mul
+       (candle_cv_fs_interval_neg
+         (candle_cv_fs_interval delta_x4_interval))
+       (candle_cv_fs_hist_positive_inv
+         (candle_cv_fs_angle_interval_mul
+           (candle_cv_fs_interval root_delta)
+           (candle_cv_fs_interval root_four_x0))) =
+     candle_cv_fs_interval
+       (candle_fs_hist_quotient
+         delta_x4_interval root_delta root_four_x0)`,
+  REWRITE_TAC[candle_fs_hist_quotient_def;
+              candle_fs_hist_positive_product_inv_def;
+              candle_cv_fs_interval_neg_correct;
+              candle_cv_fs_angle_interval_mul_correct;
+              candle_cv_fs_hist_positive_product_inv_correct]);;
+
+let candle_fs_hist_quotient_contains = prove
+ (`!delta_x4_interval root_lower root_upper
+      root_four_lower root_four_upper
+      delta_x4_real root_real root_four_real.
+     candle_fs_interval_contains delta_x4_interval delta_x4_real /\
+     root_lower <= root_upper /\
+     root_four_lower <= root_four_upper /\
+     0 < (root_lower * root_four_lower) DIV candle_fs_scale /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0)) root_real /\
+     candle_fs_interval_contains
+       ((root_four_lower,0),(root_four_upper,0)) root_four_real
+     ==> candle_fs_interval_contains
+           (candle_fs_hist_quotient delta_x4_interval
+             ((root_lower,0),(root_upper,0))
+             ((root_four_lower,0),(root_four_upper,0)))
+           (--delta_x4_real * inv (root_real * root_four_real))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_quotient_def;
+              candle_fs_angle_interval_mul_def] THEN
+  MATCH_MP_TAC candle_fsn_interval_mul_contains THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_neg_sound THEN ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_positive_product_inv_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
 (* This is the first complete subterm used by both the first- and second-order
    historical instructions: [2 / root_four_x0].  Keeping the ordinary-HOL
    helper at the exact executable boundary makes the subsequent jet proof
