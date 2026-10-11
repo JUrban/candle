@@ -1335,4 +1335,79 @@ let candle_fs_hist_u_product_identity = prove
               LET_DEF; LET_END_DEF; ITLIST] THEN
   CONV_TAC REAL_RING);;
 
+let candle_fs_hist_u_value_formula_real_def = new_definition
+ `candle_fs_hist_u_value_formula_real
+      negative0 negative1 negative2 positive0 positive1 positive2 =
+    ITLIST (\item total:real. item + total)
+      [--(negative0 * negative0);
+       --(negative1 * negative1);
+       --(negative2 * negative2);
+       &2 * (positive0 * positive1);
+       &2 * (positive1 * positive2);
+       &2 * (positive2 * positive0)] (&0)`;;
+
+let candle_fs_hist_u_value_formula_real_polynomial = prove
+ (`!negative0 negative1 negative2 positive0 positive1 positive2.
+     candle_fs_hist_u_value_formula_real
+       negative0 negative1 negative2 positive0 positive1 positive2 =
+     --(negative0 * negative0) - negative1 * negative1 -
+       negative2 * negative2 + &2 * (positive0 * positive1) +
+       &2 * (positive1 * positive2) + &2 * (positive2 * positive0)`,
+  REWRITE_TAC[candle_fs_hist_u_value_formula_real_def; ITLIST] THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_u_value_formula_contains = prove
+ (`!selector points0 points1 points2
+      negative0 negative1 negative2 positive0 positive1 positive2.
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup selector points0) negative0 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup selector points1) negative1 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup selector points2) negative2 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup (selector + 1) points0) positive0 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup (selector + 1) points1) positive1 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup (selector + 1) points2) positive2
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_u_value_formula selector points0 points1 points2)
+       (candle_fs_hist_u_value_formula_real
+         negative0 negative1 negative2 positive0 positive1 positive2)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_value_formula_def;
+              candle_fs_hist_u_value_formula_real_def;
+              LET_DEF; LET_END_DEF] THEN
+  MATCH_MP_TAC candle_fs_raw_interval_round_sound THEN
+  CONJ_TAC THENL
+   [MATCH_ACCEPT_TAC candle_fs_scale_pos;
+    MATCH_MP_TAC candle_fs_hist_raw_interval_sum_contains THEN
+    REWRITE_TAC[ALL2] THEN
+    REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
+      MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+      ASM_REWRITE_TAC[];
+      MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
+      MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+      ASM_REWRITE_TAC[];
+      MATCH_MP_TAC candle_fs_hist_raw_interval_neg_contains THEN
+      MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+      ASM_REWRITE_TAC[];
+      MATCH_MP_TAC candle_fs_hist_raw_angle_interval_scale_contains THEN
+      CONJ_TAC THENL
+       [MATCH_ACCEPT_TAC candle_fs_product_denominator_pos;
+        MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+        ASM_REWRITE_TAC[]];
+      MATCH_MP_TAC candle_fs_hist_raw_angle_interval_scale_contains THEN
+      CONJ_TAC THENL
+       [MATCH_ACCEPT_TAC candle_fs_product_denominator_pos;
+        MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+        ASM_REWRITE_TAC[]];
+      MATCH_MP_TAC candle_fs_hist_raw_angle_interval_scale_contains THEN
+      CONJ_TAC THENL
+       [MATCH_ACCEPT_TAC candle_fs_product_denominator_pos;
+        MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
+        ASM_REWRITE_TAC[]]]]);;
+
 end;;

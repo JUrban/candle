@@ -38,5 +38,8 @@ let _ = candle_fs_hist_log_u_gradient_entry_contains;;
 let _ = candle_fs_hist_log_u_gradient_contains;;
 let _ = candle_fs_hist_log_u_gradient_fixed_contains;;
 let _ = candle_fs_hist_u_product_identity;;
+let _ = candle_fs_hist_u_value_formula_real_def;;
+let _ = candle_fs_hist_u_value_formula_real_polynomial;;
+let _ = candle_fs_hist_u_value_formula_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
