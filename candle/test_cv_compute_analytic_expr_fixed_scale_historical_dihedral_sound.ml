@@ -136,5 +136,9 @@ let _ = candle_fs_hist_delta_nondecreasing_forward;;
 let _ = candle_fs_hist_delta_nondecreasing_backward;;
 let _ = candle_fs_hist_delta_nonincreasing_forward;;
 let _ = candle_fs_hist_delta_nonincreasing_backward;;
+let _ = candle_fs_hist_delta_monotone_step;;
+let _ = candle_fs_hist_delta_monotone_prefix_upper;;
+let _ = candle_fs_hist_delta_monotone_prefix_lower;;
+let _ = candle_fs_hist_delta_second_value_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;
