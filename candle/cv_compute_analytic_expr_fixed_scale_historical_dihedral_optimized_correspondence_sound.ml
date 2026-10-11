@@ -730,4 +730,101 @@ let candle_fs_hist_positive_inv_double_contains = prove
   MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
   ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC);;
 
+(* Discharge the abstract [b] Hessian contract at the exact executable
+   boundary used by the historical checker.  In particular, the coordinate
+   zero reciprocal is authorized through the checked box lookup rather than
+   by a detached numerical premise. *)
+
+let candle_fs_hist_b_hessian_fixed_contains = prove
+ (`!boxes values delta_lower delta_upper
+      root_delta_lower root_delta_upper
+      root_four_x0_lower root_four_x0_upper
+      x0_lower x0_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_hist_second_value
+       (candle_fs_hist_delta_second boxes) =
+       ((delta_lower,0),(delta_upper,0)) /\
+     0 < delta_lower /\ delta_lower <= delta_upper /\
+     0 < root_delta_lower /\ root_delta_lower <= root_delta_upper /\
+     &0 < candle_fs_hist_delta_real values /\
+     candle_fs_interval_contains
+       ((root_delta_lower,0),(root_delta_upper,0))
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     0 < root_four_x0_lower /\
+     root_four_x0_lower <= root_four_x0_upper /\
+     candle_fs_interval_contains
+       ((root_four_x0_lower,0),(root_four_x0_upper,0))
+       (sqrt (candle_fs_hist_four_x0_real values)) /\
+     candle_fs_interval_lookup 0 boxes =
+       ((x0_lower,0),(x0_upper,0)) /\
+     0 < x0_lower /\ x0_lower <= x0_upper
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_b_hessian
+         ((root_four_x0_lower,0),(root_four_x0_upper,0))
+         ((root_delta_lower,0),(root_delta_upper,0))
+         (candle_fs_hist_second_gradient
+           (candle_fs_hist_second_sqrt_supplied
+             (candle_fs_hist_delta_second boxes)
+             ((root_delta_lower,0),(root_delta_upper,0))))
+         (candle_fs_hist_second_hessian
+           (candle_fs_hist_second_sqrt_supplied
+             (candle_fs_hist_delta_second boxes)
+             ((root_delta_lower,0),(root_delta_upper,0))))
+         (candle_fs_hist_two_over_positive_root
+           ((root_four_x0_lower,0),(root_four_x0_upper,0)))
+         (candle_fs_interval_lookup 0 boxes))
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_b_real_jet values) i) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_b_hessian_contains THEN
+  REPEAT CONJ_TAC THENL
+   [REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_hessian_shape];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_hessian_shape];
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+         `delta_lower:num`; `delta_upper:num`;
+         `root_delta_lower:num`; `root_delta_upper:num`]
+        candle_fs_hist_root_delta_hessian_fixed_contains) THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_gradient_length] THEN
+    MP_TAC
+      (SPEC `boxes:((num#num)#(num#num))list`
+        candle_fs_hist_delta_second_data_shape) THEN
+    MESON_TAC[];
+    MATCH_MP_TAC candle_fs_hist_root_delta_gradient_fixed_contains THEN
+    ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_two_over_positive_root_contains THEN
+    ASM_REWRITE_TAC[];
+    SUBGOAL_THEN
+     `candle_fs_interval_contains
+        (candle_fs_interval_lookup 0 boxes) (values 0)`
+    ASSUME_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`6`; `boxes:((num#num)#(num#num))list`;
+           `values:num->real`; `0`]
+          candle_fs_hist_interval_lookup_contains) THEN
+      ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV;
+      ONCE_REWRITE_TAC
+        [ASSUME
+          `candle_fs_interval_lookup 0 boxes =
+           ((x0_lower,0),(x0_upper,0))`] THEN
+      MATCH_MP_TAC candle_fs_hist_positive_inv_double_contains THEN
+      ASM_REWRITE_TAC[] THEN
+      ONCE_REWRITE_TAC
+        [GSYM
+          (ASSUME
+            `candle_fs_interval_lookup 0 boxes =
+             ((x0_lower,0),(x0_upper,0))`)] THEN
+      MATCH_ACCEPT_TAC
+        (ASSUME
+          `candle_fs_interval_contains
+             (candle_fs_interval_lookup 0 boxes) (values 0)`)]]);;
+
 end;;
