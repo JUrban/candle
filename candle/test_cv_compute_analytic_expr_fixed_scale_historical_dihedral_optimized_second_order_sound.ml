@@ -1,0 +1,8 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_optimized_second_order_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_second_order_sound;;
+
+let _ = candle_fs_hist_second_components_from_data;;
+let _ = candle_fs_hist_reference_dihedral_value;;
+
+print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_SECOND_ORDER_OK";;
