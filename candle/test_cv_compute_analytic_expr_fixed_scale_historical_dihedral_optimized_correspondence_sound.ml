@@ -91,5 +91,6 @@ let _ = candle_fs_hist_u_three_formula_real_def;;
 let _ = candle_fs_hist_u_three_point_zero_nonnegative;;
 let _ = candle_fs_hist_u_three_point_three_nonnegative;;
 let _ = candle_fs_hist_u_three_prefix_upper_formula_bound;;
+let _ = candle_fs_hist_u_three_prefix_lower_formula_bound;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;

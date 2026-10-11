@@ -2727,4 +2727,106 @@ let candle_fs_hist_u_three_prefix_upper_formula_bound = prove
     REWRITE_TAC[candle_fs_hist_u_three_vector_real_def] THEN
     CONV_TAC NUM_REDUCE_CONV]);;
 
+let candle_fs_hist_u_three_prefix_lower_formula_bound = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 0 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 1 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 2 boxes))
+     ==> candle_fs_hist_u_three_formula_real 2 boxes <=
+         candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_u_three_monotone_prefix F boxes values 3)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_formula_real_def] THEN
+  MP_TAC
+   (SPECL
+     [`EL 3 (candle_fs_hist_u_three_points_real boxes 0)`;
+      `candle_fs_hist_u_three_monotone_prefix F boxes values 3 0`;
+      `EL 2 (candle_fs_hist_u_three_points_real boxes 0)`;
+      `EL 3 (candle_fs_hist_u_three_points_real boxes 1)`;
+      `candle_fs_hist_u_three_monotone_prefix F boxes values 3 1`;
+      `EL 2 (candle_fs_hist_u_three_points_real boxes 1)`;
+      `EL 3 (candle_fs_hist_u_three_points_real boxes 2)`;
+      `candle_fs_hist_u_three_monotone_prefix F boxes values 3 2`;
+      `EL 2 (candle_fs_hist_u_three_points_real boxes 2)`]
+     candle_fs_hist_u_termwise_bounds) THEN
+  ANTS_TAC THENL
+   [REPEAT CONJ_TAC THENL
+     [MATCH_MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `0`]
+         candle_fs_hist_u_three_point_three_nonnegative) THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `0`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]];
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `0`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]];
+      MATCH_MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `1`]
+         candle_fs_hist_u_three_point_three_nonnegative) THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `1`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]];
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `1`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]];
+      MATCH_MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `2`]
+         candle_fs_hist_u_three_point_three_nonnegative) THEN
+      ASM_REWRITE_TAC[] THEN ARITH_TAC;
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `2`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]];
+      MP_TAC
+       (SPECL [`boxes:((num#num)#(num#num))list`;
+               `values:num->real`; `2`]
+         candle_fs_hist_u_three_prefix_lower_point_bounds) THEN
+      ANTS_TAC THENL
+       [ASM_REWRITE_TAC[] THEN ARITH_TAC;
+        DISCH_THEN
+         (CONJUNCTS_THEN2 ASSUME_TAC ASSUME_TAC) THEN
+        ASM_REWRITE_TAC[candle_fs_hist_u_three_points_real_def]]];
+    DISCH_THEN (fun th -> MP_TAC (CONJUNCT1 th)) THEN
+    REWRITE_TAC[candle_fs_hist_u_three_vector_real_def] THEN
+    CONV_TAC NUM_REDUCE_CONV]);;
+
 end;;
