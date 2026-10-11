@@ -1410,4 +1410,64 @@ let candle_fs_hist_u_value_formula_contains = prove
         MATCH_MP_TAC candle_fs_raw_interval_mul_sound THEN
         ASM_REWRITE_TAC[]]]]);;
 
+let candle_fs_hist_u_points_real_def = new_definition
+ `candle_fs_hist_u_points_real
+      (x:(num#num)#(num#num))
+      (gradient:(num#num)#(num#num)) =
+    let lower_point = candle_fs_real (FST x) in
+    let upper_point = candle_fs_real (SND x) in
+    if candle_fs_raw_le (0,0) (FST gradient) then
+      [upper_point;upper_point;lower_point;lower_point]
+    else if candle_fs_raw_le (SND gradient) (0,0) then
+      [lower_point;lower_point;upper_point;upper_point]
+    else
+      [lower_point;upper_point;upper_point;lower_point]`;;
+
+let candle_fs_hist_u_points_real_contains = prove
+ (`!x gradient.
+     ALL2 candle_fs_interval_contains
+       (candle_fs_hist_u_points x gradient)
+       (candle_fs_hist_u_points_real x gradient)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_points_def;
+              candle_fs_hist_u_points_real_def;
+              LET_DEF; LET_END_DEF] THEN
+  REPEAT(COND_CASES_TAC THEN
+    ASM_REWRITE_TAC[ALL2; candle_fs_interval_contains_def;
+                    FST; SND; REAL_LE_REFL]));;
+
+let candle_fs_hist_u_points_length = prove
+ (`!x gradient. LENGTH (candle_fs_hist_u_points x gradient) = 4`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_points_def; LET_DEF; LET_END_DEF] THEN
+  REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[LENGTH]) THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_u_value_formula_points_contains = prove
+ (`!selector x0 gradient0 x1 gradient1 x2 gradient2.
+     selector + 1 < 4
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_u_value_formula selector
+         (candle_fs_hist_u_points x0 gradient0)
+         (candle_fs_hist_u_points x1 gradient1)
+         (candle_fs_hist_u_points x2 gradient2))
+       (candle_fs_hist_u_value_formula_real
+         (EL selector (candle_fs_hist_u_points_real x0 gradient0))
+         (EL selector (candle_fs_hist_u_points_real x1 gradient1))
+         (EL selector (candle_fs_hist_u_points_real x2 gradient2))
+         (EL (selector + 1)
+           (candle_fs_hist_u_points_real x0 gradient0))
+         (EL (selector + 1)
+           (candle_fs_hist_u_points_real x1 gradient1))
+         (EL (selector + 1)
+           (candle_fs_hist_u_points_real x2 gradient2)))`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  let lookup_tac =
+    MATCH_MP_TAC candle_fs_interval_lookup_contains THEN
+    CONJ_TAC THENL
+     [MATCH_ACCEPT_TAC candle_fs_hist_u_points_real_contains;
+      REWRITE_TAC[candle_fs_hist_u_points_length] THEN ASM_ARITH_TAC] in
+  MATCH_MP_TAC candle_fs_hist_u_value_formula_contains THEN
+  REPEAT CONJ_TAC THEN lookup_tac);;
+
 end;;

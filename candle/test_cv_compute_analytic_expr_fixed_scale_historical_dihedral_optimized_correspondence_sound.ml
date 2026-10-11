@@ -41,5 +41,9 @@ let _ = candle_fs_hist_u_product_identity;;
 let _ = candle_fs_hist_u_value_formula_real_def;;
 let _ = candle_fs_hist_u_value_formula_real_polynomial;;
 let _ = candle_fs_hist_u_value_formula_contains;;
+let _ = candle_fs_hist_u_points_real_def;;
+let _ = candle_fs_hist_u_points_real_contains;;
+let _ = candle_fs_hist_u_points_length;;
+let _ = candle_fs_hist_u_value_formula_points_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
