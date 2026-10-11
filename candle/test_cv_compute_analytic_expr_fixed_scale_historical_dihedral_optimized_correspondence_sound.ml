@@ -53,5 +53,7 @@ let _ = candle_fs_hist_u_three_gradient_contains;;
 let _ = candle_fs_hist_u_three_coordinate_secant;;
 let _ = candle_fs_hist_u_three_coordinate_nondecreasing;;
 let _ = candle_fs_hist_u_three_coordinate_nonincreasing;;
+let _ = candle_fs_hist_u_three_coordinate_nondecreasing_backward;;
+let _ = candle_fs_hist_u_three_coordinate_nonincreasing_backward;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
