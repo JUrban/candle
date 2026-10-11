@@ -55,5 +55,10 @@ let _ = candle_fs_hist_u_three_coordinate_nondecreasing;;
 let _ = candle_fs_hist_u_three_coordinate_nonincreasing;;
 let _ = candle_fs_hist_u_three_coordinate_nondecreasing_backward;;
 let _ = candle_fs_hist_u_three_coordinate_nonincreasing_backward;;
+let _ = candle_fs_hist_u_selected_real_def;;
+let _ = candle_fs_hist_u_selected_real_contains;;
+let _ = candle_fs_hist_u_selected_real_nonnegative;;
+let _ = candle_fs_hist_u_selected_upper_point_bounds;;
+let _ = candle_fs_hist_u_selected_lower_point_bounds;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;

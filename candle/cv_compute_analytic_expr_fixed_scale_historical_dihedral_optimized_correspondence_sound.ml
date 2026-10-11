@@ -1724,4 +1724,82 @@ let candle_fs_hist_u_three_coordinate_nonincreasing_backward = prove
    [MATCH_MP_TAC REAL_LE_MUL THEN ASM_REAL_ARITH_TAC;
     ASM_REAL_ARITH_TAC]);;
 
+let candle_fs_hist_u_selected_real_def = new_definition
+ `candle_fs_hist_u_selected_real upper
+      (x:(num#num)#(num#num))
+      (gradient:(num#num)#(num#num)) value =
+    if candle_fs_raw_le (0,0) (FST gradient) then
+      candle_fs_real (if upper then SND x else FST x)
+    else if candle_fs_raw_le (SND gradient) (0,0) then
+      candle_fs_real (if upper then FST x else SND x)
+    else value`;;
+
+let candle_fs_hist_u_selected_real_contains = prove
+ (`!upper x gradient value.
+     candle_fs_interval_contains x value
+     ==> candle_fs_interval_contains x
+       (candle_fs_hist_u_selected_real upper x gradient value)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_selected_real_def] THEN
+  COND_CASES_TAC THENL
+   [BOOL_CASES_TAC `upper:bool` THEN
+    ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+    REAL_ARITH_TAC;
+    COND_CASES_TAC THENL
+     [BOOL_CASES_TAC `upper:bool` THEN
+      ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+      REAL_ARITH_TAC;
+      ASM_REWRITE_TAC[]]]);;
+
+let candle_fs_hist_u_selected_real_nonnegative = prove
+ (`!upper x gradient value.
+     candle_fs_raw_le (0,0) (FST x) /\
+     candle_fs_interval_contains x value
+     ==> &0 <= candle_fs_hist_u_selected_real upper x gradient value`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_interval_contains_nonnegative THEN
+  EXISTS_TAC `x:(num#num)#(num#num)` THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_u_selected_real_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_u_selected_upper_point_bounds = prove
+ (`!x gradient value.
+     candle_fs_interval_contains x value
+     ==> EL 0 (candle_fs_hist_u_points_real x gradient) <=
+         candle_fs_hist_u_selected_real T x gradient value /\
+         candle_fs_hist_u_selected_real T x gradient value <=
+         EL 1 (candle_fs_hist_u_points_real x gradient)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  POP_ASSUM
+    (fun th ->
+      MP_TAC (REWRITE_RULE[candle_fs_interval_contains_def] th)) THEN
+  STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_points_real_def;
+              candle_fs_hist_u_selected_real_def;
+              LET_DEF; LET_END_DEF] THEN
+  REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[]) THEN
+  CONV_TAC (DEPTH_CONV EL_CONV) THEN
+  CONJ_TAC THEN ASM_REAL_ARITH_TAC);;
+
+let candle_fs_hist_u_selected_lower_point_bounds = prove
+ (`!x gradient value.
+     candle_fs_interval_contains x value
+     ==> EL 3 (candle_fs_hist_u_points_real x gradient) <=
+         candle_fs_hist_u_selected_real F x gradient value /\
+         candle_fs_hist_u_selected_real F x gradient value <=
+         EL 2 (candle_fs_hist_u_points_real x gradient)`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  POP_ASSUM
+    (fun th ->
+      MP_TAC (REWRITE_RULE[candle_fs_interval_contains_def] th)) THEN
+  STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_points_real_def;
+              candle_fs_hist_u_selected_real_def;
+              LET_DEF; LET_END_DEF] THEN
+  REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[]) THEN
+  CONV_TAC (DEPTH_CONV EL_CONV) THEN
+  CONJ_TAC THEN ASM_REAL_ARITH_TAC);;
+
 end;;
