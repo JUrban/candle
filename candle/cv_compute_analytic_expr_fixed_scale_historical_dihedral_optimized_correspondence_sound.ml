@@ -296,4 +296,101 @@ let candle_fs_hist_b_gradient_fixed_contains = prove
     MATCH_MP_TAC candle_fs_hist_two_over_positive_root_contains THEN
     ASM_REWRITE_TAC[]]);;
 
+let candle_fs_hist_root_delta_hessian_fixed_contains = prove
+ (`!boxes values input_lower input_upper root_lower root_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_hist_second_value
+       (candle_fs_hist_delta_second boxes) =
+       ((input_lower,0),(input_upper,0)) /\
+     0 < input_lower /\ input_lower <= input_upper /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     &0 < candle_fs_hist_delta_real values /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0))
+       (sqrt (candle_fs_hist_delta_real values))
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_second_hessian
+         (candle_fs_hist_second_sqrt_supplied
+           (candle_fs_hist_delta_second boxes)
+           ((root_lower,0),(root_upper,0))))
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_root_delta_real_jet values) i) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      ((input_lower,0),(input_upper,0))
+      (candle_fs_hist_delta_real values)`
+  ASSUME_TAC THENL
+   [MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`]
+        candle_fs_hist_delta_second_value_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_root_delta_real_jet_def;
+              candle_hist_real_jet_hessian_def;
+              candle_hist_real_jet_make_def] THEN
+  ONCE_REWRITE_TAC[candle_fs_hist_second_hessian_def] THEN
+  REWRITE_TAC[
+              candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  ASM_REWRITE_TAC[] THEN
+  CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+  REWRITE_TAC[REAL_MUL_ASSOC] THEN
+  MP_TAC (ISPEC `boxes:((num#num)#(num#num))list`
+    candle_fs_hist_delta_second_data_shape) THEN
+  STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (candle_fs_hist_second_gradient
+        (candle_fs_hist_delta_second boxes))
+      (list_of_seq
+        (\i. EL i (candle_fs_hist_delta_gradient_real values)) 6)`
+  ASSUME_TAC THENL
+   [REWRITE_TAC[GSYM candle_fs_hist_delta_gradient_real_list_of_seq] THEN
+    MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`]
+        candle_fs_hist_delta_second_gradient_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `ALL2 (ALL2 candle_fs_interval_contains)
+      (candle_fs_hist_second_hessian
+        (candle_fs_hist_delta_second boxes))
+      (list_of_seq
+        (\i. list_of_seq
+          (candle_fs_hist_delta_hessian_component_real values i) 6) 6)`
+  ASSUME_TAC THENL
+   [REWRITE_TAC
+      [GSYM
+        (CONV_RULE (DEPTH_CONV ETA_CONV)
+          candle_fs_hist_delta_hessian_component_real_list_of_seq)] THEN
+    MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`]
+        candle_fs_hist_delta_second_hessian_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC
+    (CONV_RULE (DEPTH_CONV BETA_CONV)
+      (REWRITE_RULE[REAL_MUL_ASSOC]
+        (SPECL
+          [`input_lower:num`; `input_upper:num`;
+           `root_lower:num`; `root_upper:num`;
+           `candle_fs_hist_delta_real (values:num->real)`;
+           `candle_fs_hist_second_gradient
+              (candle_fs_hist_delta_second boxes)`;
+           `candle_fs_hist_second_hessian
+              (candle_fs_hist_delta_second boxes)`;
+           `\i. EL i (candle_fs_hist_delta_gradient_real values)`;
+          `candle_fs_hist_delta_hessian_component_real values`]
+          candle_fs_hist_positive_sqrt_hessian_universal_contains))) THEN
+  ASM_REWRITE_TAC[
+    candle_fs_hist_delta_hessian_component_real_symmetric]);;
+
 end;;
