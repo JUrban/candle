@@ -72,5 +72,13 @@ let _ = candle_fs_hist_u_three_nonincreasing_backward;;
 let _ = candle_fs_hist_u_three_selected_value_def;;
 let _ = candle_fs_hist_u_three_selected_value_in_box;;
 let _ = candle_fs_hist_u_three_monotone_step;;
+let _ = candle_fs_hist_u_three_monotone_prefix_def;;
+let _ = candle_fs_hist_u_three_monotone_prefix_zero;;
+let _ = candle_fs_hist_u_three_monotone_prefix_suc;;
+let _ = candle_fs_hist_u_three_monotone_prefix_coordinate;;
+let _ = candle_fs_hist_u_three_selected_value_prefix;;
+let _ = candle_fs_hist_u_three_monotone_prefix_contains;;
+let _ = candle_fs_hist_u_three_monotone_prefix_upper;;
+let _ = candle_fs_hist_u_three_monotone_prefix_lower;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
