@@ -1,0 +1,8 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_first_order_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_first_order_sound;;
+
+let _ = candle_cv_fs_hist_delta_x4_value_direct_correct;;
+let _ = candle_cv_fs_hist_first_order_direct_correct;;
+
+print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_FIRST_ORDER_SOUND_OK";;
