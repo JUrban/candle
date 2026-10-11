@@ -3054,4 +3054,55 @@ let candle_fs_hist_u135_value_contains = prove
     CONV_TAC (DEPTH_CONV BETA_CONV) THEN
     CONV_TAC NUM_REDUCE_CONV]);;
 
+(* The real historical input boxes have nonnegative squared-edge lower
+   endpoints.  Consequently the two U enclosures required by the logarithmic
+   gradient checker are consequences of the source boxes, rather than
+   additional per-inequality proof obligations. *)
+
+let candle_fs_hist_log_u_gradient_fixed_from_boxes_contains = prove
+ (`!boxes (values:num->real)
+      u126_lower u126_upper u135_lower u135_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 0 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 1 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 2 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 4 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 5 boxes)) /\
+     FST (candle_fs_hist_u126 boxes) =
+       ((u126_lower,0),(u126_upper,0)) /\
+     0 < u126_lower /\ u126_lower <= u126_upper /\
+     FST (candle_fs_hist_u135 boxes) =
+       ((u135_lower,0),(u135_upper,0)) /\
+     0 < u135_lower /\ u135_lower <= u135_upper
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_log_u_gradient
+         (SND (candle_fs_hist_u126 boxes))
+         (candle_fs_hist_positive_inv (FST (candle_fs_hist_u126 boxes)))
+         (SND (candle_fs_hist_u135 boxes))
+         (candle_fs_hist_positive_inv (FST (candle_fs_hist_u135 boxes))))
+       (list_of_seq
+         (candle_fs_hist_log_u_gradient_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains (FST (candle_fs_hist_u126 boxes))
+      (candle_fs_hist_u126_real values)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u126_value_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains (FST (candle_fs_hist_u135 boxes))
+      (candle_fs_hist_u135_real values)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u135_value_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ASM_MESON_TAC[candle_fs_hist_log_u_gradient_fixed_contains]);;
+
 end;;

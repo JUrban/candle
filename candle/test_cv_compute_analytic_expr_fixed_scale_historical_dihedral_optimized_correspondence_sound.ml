@@ -98,5 +98,6 @@ let _ = candle_fs_hist_u_three_value_formula_endpoints;;
 let _ = candle_fs_hist_u_three_value_contains;;
 let _ = candle_fs_hist_u126_value_contains;;
 let _ = candle_fs_hist_u135_value_contains;;
+let _ = candle_fs_hist_log_u_gradient_fixed_from_boxes_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
