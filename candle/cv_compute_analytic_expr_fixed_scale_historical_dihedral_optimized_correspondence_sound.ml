@@ -433,4 +433,58 @@ let candle_fs_hist_b_base_hessian_contains = prove
   MATCH_MP_TAC candle_fsn_interval_matrix_scale_contains THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_b_hessian_target_def = new_definition
+ `candle_fs_hist_b_hessian_target values rowindex colindex =
+    let base =
+      sqrt (candle_fs_hist_four_x0_real values) *
+      candle_hist_real_jet_hessian
+        (candle_fs_hist_root_delta_real_jet values) rowindex colindex in
+    let two_over_root =
+      &2 * inv (sqrt (candle_fs_hist_four_x0_real values)) in
+    if rowindex = 0 then
+      if colindex = 0 then
+        base +
+          (&2 *
+             (candle_hist_real_jet_gradient
+                (candle_fs_hist_root_delta_real_jet values) 0 *
+              two_over_root) +
+           --((sqrt (candle_fs_hist_delta_real values) * two_over_root) *
+              inv (&2 * values 0)))
+      else
+        base +
+          candle_hist_real_jet_gradient
+            (candle_fs_hist_root_delta_real_jet values) colindex *
+          two_over_root
+    else if colindex = 0 then
+      base +
+        candle_hist_real_jet_gradient
+          (candle_fs_hist_root_delta_real_jet values) rowindex *
+        two_over_root
+    else base`;;
+
+let candle_fs_hist_b_hessian_target_eq = prove
+ (`!values rowindex colindex.
+     candle_hist_real_jet_hessian
+       (candle_fs_hist_b_real_jet values) rowindex colindex =
+     candle_fs_hist_b_hessian_target values rowindex colindex`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_b_hessian_target_def;
+              candle_fs_hist_b_real_jet_def;
+              candle_hist_real_jet_mul_def;
+              candle_hist_real_jet_hessian_def;
+              candle_hist_real_jet_gradient_def;
+              candle_hist_real_jet_value_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_root_delta_real_jet_def;
+              candle_fs_hist_root_four_x0_real_jet_def;
+              FST; SND; LET_DEF; LET_END_DEF] THEN
+  ASM_CASES_TAC `rowindex = 0` THEN
+  ASM_CASES_TAC `colindex = 0` THEN
+  ASM_REWRITE_TAC[candle_fs_hist_four_x0_gradient_real_def;
+                  candle_fs_hist_four_x0_hessian_real_def;
+                  candle_fs_hist_four_x0_real_def] THEN
+  REWRITE_TAC[REAL_ARITH `x + x = &2 * x`; REAL_INV_MUL] THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV THEN
+  CONV_TAC REAL_RING);;
+
 end;;
