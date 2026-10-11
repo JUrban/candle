@@ -1470,4 +1470,54 @@ let candle_fs_hist_u_value_formula_points_contains = prove
   MATCH_MP_TAC candle_fs_hist_u_value_formula_contains THEN
   REPEAT CONJ_TAC THEN lookup_tac);;
 
+let candle_fs_hist_nonnegative_product_bounds = prove
+ (`!lower_left x upper_left lower_right y upper_right.
+     &0 <= lower_left /\ lower_left <= x /\ x <= upper_left /\
+     &0 <= lower_right /\ lower_right <= y /\ y <= upper_right
+     ==> lower_left * lower_right <= x * y /\
+         x * y <= upper_left * upper_right`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN CONJ_TAC THEN
+  MATCH_MP_TAC REAL_LE_MUL2 THEN ASM_REAL_ARITH_TAC);;
+
+let candle_fs_hist_u_termwise_bounds = prove
+ (`!lower0 x0 upper0 lower1 x1 upper1 lower2 x2 upper2.
+     &0 <= lower0 /\ lower0 <= x0 /\ x0 <= upper0 /\
+     &0 <= lower1 /\ lower1 <= x1 /\ x1 <= upper1 /\
+     &0 <= lower2 /\ lower2 <= x2 /\ x2 <= upper2
+     ==> candle_fs_hist_u_value_formula_real
+           upper0 upper1 upper2 lower0 lower1 lower2 <=
+         candle_fs_hist_u_three_real x0 x1 x2 /\
+         candle_fs_hist_u_three_real x0 x1 x2 <=
+         candle_fs_hist_u_value_formula_real
+           lower0 lower1 lower2 upper0 upper1 upper2`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPECL [`lower0:real`; `x0:real`; `upper0:real`;
+            `lower0:real`; `x0:real`; `upper0:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  MP_TAC
+    (SPECL [`lower1:real`; `x1:real`; `upper1:real`;
+            `lower1:real`; `x1:real`; `upper1:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  MP_TAC
+    (SPECL [`lower2:real`; `x2:real`; `upper2:real`;
+            `lower2:real`; `x2:real`; `upper2:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  MP_TAC
+    (SPECL [`lower0:real`; `x0:real`; `upper0:real`;
+            `lower1:real`; `x1:real`; `upper1:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  MP_TAC
+    (SPECL [`lower1:real`; `x1:real`; `upper1:real`;
+            `lower2:real`; `x2:real`; `upper2:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  MP_TAC
+    (SPECL [`lower2:real`; `x2:real`; `upper2:real`;
+            `lower0:real`; `x0:real`; `upper0:real`]
+      candle_fs_hist_nonnegative_product_bounds) THEN
+  ASM_REWRITE_TAC[] THEN REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_value_formula_real_polynomial;
+              candle_fs_hist_u_three_real_def] THEN
+  ASM_REAL_ARITH_TAC);;
+
 end;;
