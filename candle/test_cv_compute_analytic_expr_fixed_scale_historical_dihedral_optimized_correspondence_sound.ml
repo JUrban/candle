@@ -104,5 +104,6 @@ let _ = candle_fs_hist_final_hessian_symmetric_real_def;;
 let _ = candle_fs_hist_final_hessian_entry_contains;;
 let _ = candle_fs_hist_final_hessian_symmetric_contains;;
 let _ = candle_fs_hist_final_hessian_contains;;
+let _ = candle_hist_real_atan_negative_quotient_hessian_low_work;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
