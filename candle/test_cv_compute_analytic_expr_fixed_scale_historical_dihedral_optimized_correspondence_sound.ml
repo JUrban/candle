@@ -80,5 +80,9 @@ let _ = candle_fs_hist_u_three_selected_value_prefix;;
 let _ = candle_fs_hist_u_three_monotone_prefix_contains;;
 let _ = candle_fs_hist_u_three_monotone_prefix_upper;;
 let _ = candle_fs_hist_u_three_monotone_prefix_lower;;
+let _ = candle_fs_hist_u_three_monotone_prefix_selected;;
+let _ = candle_fs_hist_u_three_prefix_upper_point_bounds;;
+let _ = candle_fs_hist_u_three_prefix_lower_point_bounds;;
+let _ = candle_fs_hist_u_points_real_nonnegative;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
