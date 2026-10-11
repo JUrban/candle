@@ -222,4 +222,164 @@ let candle_case10173_hist_source_radical_value = prove
   REWRITE_TAC[REAL_SUB_RZERO; REAL_DIV_1] THEN
   CONV_TAC REAL_RING);;
 
+let candle_case10173_hist_delta_x4_d = prove
+ (`!values coordinate.
+     coordinate < 6
+     ==> candle_analytic_d coordinate (list_of_seq values 6)
+           candle_case10173_hist_delta_x4_expr =
+         candle_fs_hist_delta_x4_derivative values coordinate`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `coordinate = 0 \/ coordinate = 1 \/ coordinate = 2 \/
+    coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+  MP_TAC THENL
+   [ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC[candle_case10173_hist_delta_x4_expr_def;
+              candle_case10173_hist_delta_x4_poly_def;
+              candle_analytic_d_def; candle_poly_d_list_def;
+              candle_poly_value_list_def;
+              candle_fs_hist_delta_x4_derivative_def] THEN
+  REWRITE_TAC[num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND;
+              candle_q_real_lookup_def] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_case10173_hist_delta_d = prove
+ (`!values coordinate.
+     coordinate < 6
+     ==> candle_analytic_d coordinate (list_of_seq values 6)
+           candle_case10173_hist_delta_expr =
+         EL coordinate (candle_fs_hist_delta_gradient_real values)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `coordinate = 0 \/ coordinate = 1 \/ coordinate = 2 \/
+    coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+  MP_TAC THENL
+   [ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC[candle_case10173_hist_delta_expr_def;
+              candle_case10173_hist_delta_poly_def;
+              candle_analytic_d_def; candle_poly_d_list_def;
+              candle_poly_value_list_def;
+              candle_fs_hist_delta_gradient_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC (DEPTH_CONV EL_CONV) THEN
+  REWRITE_TAC[num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND;
+              candle_q_real_lookup_def] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_case10173_hist_four_x0_d = prove
+ (`!values coordinate.
+     coordinate < 6
+     ==> candle_analytic_d coordinate (list_of_seq values 6)
+           candle_case10173_hist_four_x0_expr =
+         candle_fs_hist_four_x0_gradient_real coordinate`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `coordinate = 0 \/ coordinate = 1 \/ coordinate = 2 \/
+    coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+  MP_TAC THENL
+   [ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC[candle_case10173_hist_four_x0_expr_def;
+              candle_case10173_hist_four_x0_poly_def;
+              candle_analytic_d_def; candle_poly_d_list_def;
+              candle_poly_value_list_def;
+              candle_fs_hist_four_x0_gradient_real_def] THEN
+  REWRITE_TAC[num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND;
+              candle_q_real_lookup_def;
+              candle_q_real_def; candle_q_den_def;
+              candle_lc_zreal_def; FST; SND] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REWRITE_TAC[REAL_SUB_RZERO; REAL_DIV_1] THEN
+  CONV_TAC REAL_RING);;
+
+let candle_case10173_hist_delta_x4_dd = prove
+ (`!values (rowindex:num) colindex.
+     rowindex < 6 /\ colindex < 6
+     ==> candle_analytic_dd rowindex colindex (list_of_seq values 6)
+           candle_case10173_hist_delta_x4_expr =
+         candle_fs_hist_delta_x4_hessian_component_real rowindex colindex`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+   (ARITH_RULE
+     `rowindex < 6
+      ==> rowindex = 0 \/ rowindex = 1 \/ rowindex = 2 \/
+          rowindex = 3 \/ rowindex = 4 \/ rowindex = 5`) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  MP_TAC
+   (ARITH_RULE
+     `colindex < 6
+      ==> colindex = 0 \/ colindex = 1 \/ colindex = 2 \/
+          colindex = 3 \/ colindex = 4 \/ colindex = 5`) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC[candle_case10173_hist_delta_x4_expr_def;
+              candle_case10173_hist_delta_x4_poly_def;
+              candle_analytic_dd_def; candle_poly_dd_list_def;
+              candle_poly_d_list_def; candle_poly_value_list_def;
+              candle_fs_hist_delta_x4_hessian_component_real_def;
+              candle_fs_hist_delta_x4_hessian_real_def] THEN
+  CONV_TAC (DEPTH_CONV EL_CONV) THEN
+  REWRITE_TAC[num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND;
+              candle_q_real_lookup_def] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_case10173_hist_delta_dd = prove
+ (`!values (rowindex:num) colindex.
+     rowindex < 6 /\ colindex < 6
+     ==> candle_analytic_dd rowindex colindex (list_of_seq values 6)
+           candle_case10173_hist_delta_expr =
+         candle_fs_hist_delta_hessian_component_real
+           values rowindex colindex`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+   (ARITH_RULE
+     `rowindex < 6
+      ==> rowindex = 0 \/ rowindex = 1 \/ rowindex = 2 \/
+          rowindex = 3 \/ rowindex = 4 \/ rowindex = 5`) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  MP_TAC
+   (ARITH_RULE
+     `colindex < 6
+      ==> colindex = 0 \/ colindex = 1 \/ colindex = 2 \/
+          colindex = 3 \/ colindex = 4 \/ colindex = 5`) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC[candle_case10173_hist_delta_expr_def;
+              candle_case10173_hist_delta_poly_def;
+              candle_analytic_dd_def; candle_poly_dd_list_def;
+              candle_poly_d_list_def; candle_poly_value_list_def;
+              candle_fs_hist_delta_hessian_component_real_def;
+              candle_fs_hist_delta_hessian_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC (DEPTH_CONV EL_CONV) THEN
+  REWRITE_TAC[num_CONV `6`; num_CONV `5`; num_CONV `4`; num_CONV `3`;
+              num_CONV `2`; num_CONV `1`; list_of_seq; APPEND;
+              candle_q_real_lookup_def] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN CONV_TAC REAL_RING);;
+
+let candle_case10173_hist_four_x0_dd = prove
+ (`!values rowindex colindex.
+     candle_analytic_dd rowindex colindex (list_of_seq values 6)
+       candle_case10173_hist_four_x0_expr =
+     candle_fs_hist_four_x0_hessian_real rowindex colindex`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_case10173_hist_four_x0_expr_def;
+              candle_case10173_hist_four_x0_poly_def;
+              candle_analytic_dd_def; candle_poly_dd_list_def;
+              candle_poly_d_list_def; candle_poly_value_list_def;
+              candle_fs_hist_four_x0_hessian_real_def;
+              REAL_MUL_LZERO; REAL_MUL_RZERO;
+              REAL_ADD_LID; REAL_ADD_RID]);;
+
 end;;
