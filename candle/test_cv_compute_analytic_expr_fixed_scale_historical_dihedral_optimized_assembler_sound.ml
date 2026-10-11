@@ -1,0 +1,9 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_optimized_assembler_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_assembler_sound;;
+
+let _ = candle_fs_hist_final_hessian_shape;;
+let _ = candle_fs_hist_second_order_shape;;
+let _ = candle_fs_hist_second_order_reference_from_components;;
+
+print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_ASSEMBLER_OK";;
