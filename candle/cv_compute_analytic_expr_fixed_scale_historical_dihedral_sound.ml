@@ -7787,6 +7787,43 @@ let candle_fs_hist_delta_second_value_contains = prove
               LET_DEF; LET_END_DEF; FST; SND] THEN
   ASM_REAL_ARITH_TAC);;
 
+(* Collect the independently checked gradient and Hessian enclosures at the
+   packaged second-order boundary.  These accessor-facing statements are the
+   reusable inputs to the supplied-root square-root rule below; no numerical
+   component is reconstructed as a theorem during checker execution. *)
+
+let candle_fs_hist_delta_second_gradient_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+           (candle_fs_hist_second_gradient
+             (candle_fs_hist_delta_second boxes))
+           (candle_fs_hist_delta_gradient_real values)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_second_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  MATCH_MP_TAC candle_fs_hist_delta_gradient_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_delta_second_hessian_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+           (candle_fs_hist_second_hessian
+             (candle_fs_hist_delta_second boxes))
+           (candle_fs_hist_delta_hessian_real values)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_delta_second_def;
+              candle_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  MATCH_MP_TAC candle_fs_hist_delta_hessian_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =
