@@ -120,5 +120,8 @@ let _ = candle_fs_hist_delta_gradient_nondecreasing_forward;;
 let _ = candle_fs_hist_delta_gradient_nondecreasing_backward;;
 let _ = candle_fs_hist_delta_gradient_nonincreasing_forward;;
 let _ = candle_fs_hist_delta_gradient_nonincreasing_backward;;
+let _ = candle_fs_hist_delta_gradient_monotone_step;;
+let _ = candle_fs_hist_delta_gradient_monotone_prefix_upper;;
+let _ = candle_fs_hist_delta_gradient_monotone_prefix_lower;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;
