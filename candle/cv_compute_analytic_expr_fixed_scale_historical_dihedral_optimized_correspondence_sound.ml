@@ -393,4 +393,44 @@ let candle_fs_hist_root_delta_hessian_fixed_contains = prove
   ASM_REWRITE_TAC[
     candle_fs_hist_delta_hessian_component_real_symmetric]);;
 
+let candle_fs_hist_matrix_scale_eq = prove
+ (`!scalar matrixvalue.
+     candle_fs_hist_matrix_scale scalar matrixvalue =
+     candle_fsn_interval_matrix_scale scalar matrixvalue`,
+  REWRITE_TAC[candle_fs_hist_matrix_scale_def;
+              candle_fsn_interval_matrix_scale_def]);;
+
+let candle_fs_hist_b_base_hessian_contains = prove
+ (`!root_four_x0 root_delta_hessian values.
+     candle_fs_interval_contains root_four_x0
+       (sqrt (candle_fs_hist_four_x0_real values)) /\
+     ALL2 (ALL2 candle_fs_interval_contains) root_delta_hessian
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_root_delta_real_jet values) i) 6) 6)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_matrix_scale root_four_x0 root_delta_hessian)
+       (list_of_seq
+         (\i. list_of_seq
+           (\j. sqrt (candle_fs_hist_four_x0_real values) *
+                candle_hist_real_jet_hessian
+                  (candle_fs_hist_root_delta_real_jet values) i j)
+           6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 (ALL2 candle_fs_interval_contains) root_delta_hessian
+      (list_of_seq
+        (\i. list_of_seq
+          (\j. candle_hist_real_jet_hessian
+            (candle_fs_hist_root_delta_real_jet values) i j)
+          6) 6)`
+  ASSUME_TAC THENL
+   [CONV_TAC (DEPTH_CONV ETA_CONV) THEN ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_matrix_scale_eq] THEN
+  ONCE_REWRITE_TAC[GSYM candle_map_matrix_scale_list_of_seq] THEN
+  MATCH_MP_TAC candle_fsn_interval_matrix_scale_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 end;;
