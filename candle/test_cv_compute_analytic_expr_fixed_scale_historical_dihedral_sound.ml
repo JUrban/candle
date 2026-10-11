@@ -142,5 +142,8 @@ let _ = candle_fs_hist_delta_monotone_prefix_lower;;
 let _ = candle_fs_hist_delta_second_value_contains;;
 let _ = candle_fs_hist_delta_second_gradient_contains;;
 let _ = candle_fs_hist_delta_second_hessian_contains;;
+let _ = candle_fs_hist_matrix_list_of_seq;;
+let _ = candle_fs_hist_delta_second_to_q_shape;;
+let _ = candle_fs_hist_delta_second_components;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;

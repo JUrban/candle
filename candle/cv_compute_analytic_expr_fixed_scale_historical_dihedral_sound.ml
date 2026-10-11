@@ -7824,6 +7824,85 @@ let candle_fs_hist_delta_second_hessian_contains = prove
   MATCH_MP_TAC candle_fs_hist_delta_hessian_contains THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_matrix_list_of_seq = prove
+ (`!n (row_lists:(real list)list).
+     LENGTH row_lists = n /\
+     ALL (\row_value. LENGTH row_value = n) row_lists
+     ==> row_lists =
+         list_of_seq
+           (\i:num. list_of_seq
+             (\j:num. EL j (EL i row_lists)) n) n`,
+  REPEAT STRIP_TAC THEN
+  ONCE_REWRITE_TAC[LIST_EQ] THEN
+  REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
+  ASM_REWRITE_TAC[] THEN
+  X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+  REWRITE_TAC[GSYM LENGTH_EQ_LIST_OF_SEQ] THEN
+  UNDISCH_TAC
+    `ALL (\row_value:real list. LENGTH row_value = n) row_lists` THEN
+  REWRITE_TAC[GSYM ALL_EL] THEN
+  DISCH_THEN (MP_TAC o SPEC `i:num`) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_delta_second_to_q_shape = prove
+ (`!boxes.
+     candle_q_dim_jet_shape 6
+       (candle_fs_hist_second_to_q
+         (candle_fs_hist_delta_second boxes))`,
+  REWRITE_TAC[candle_fs_hist_second_to_q_def;
+              candle_fs_first_to_q_shape;
+              candle_fs_first_make_def;
+              candle_fs_first_gradient_def;
+              candle_fs_hist_delta_second_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  REWRITE_TAC[candle_fs_hist_delta_gradient_def; LENGTH;
+              candle_fs_angle_delta_hessian_length;
+              candle_fs_hist_delta_hessian_interval_rows] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_delta_second_components = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> candle_q_dim_jet_contains_components 6
+           (candle_fs_hist_second_to_q
+             (candle_fs_hist_delta_second boxes))
+           (candle_fs_hist_delta_real values)
+           (\i. EL i (candle_fs_hist_delta_gradient_real values))
+           (\i j. EL j
+             (EL i (candle_fs_hist_delta_hessian_real values)))`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_second_to_q_def] THEN
+  MATCH_MP_TAC candle_fs_first_components_from_data THEN
+  REPEAT CONJ_TAC THENL
+   [REWRITE_TAC[GSYM candle_fs_hist_second_to_q_def] THEN
+    MATCH_ACCEPT_TAC candle_fs_hist_delta_second_to_q_shape;
+    REWRITE_TAC[candle_fs_first_value_def;
+                candle_fs_first_make_def; FST] THEN
+    MATCH_MP_TAC candle_fs_hist_delta_second_value_contains THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_first_gradient_def;
+                candle_fs_first_make_def; SND] THEN
+    REWRITE_TAC[GSYM candle_fs_hist_delta_gradient_real_list_of_seq] THEN
+    MATCH_MP_TAC candle_fs_hist_delta_second_gradient_contains THEN
+    ASM_REWRITE_TAC[];
+    SUBGOAL_THEN
+     `candle_fs_hist_delta_hessian_real values =
+      list_of_seq
+        (\i. list_of_seq
+          (\j. EL j
+            (EL i (candle_fs_hist_delta_hessian_real values))) 6) 6`
+    (fun th -> REWRITE_TAC[GSYM th]) THENL
+     [MATCH_MP_TAC candle_fs_hist_matrix_list_of_seq THEN
+      REWRITE_TAC[candle_fs_hist_delta_hessian_real_length;
+                  candle_fs_hist_delta_hessian_real_rows];
+      MATCH_MP_TAC candle_fs_hist_delta_second_hessian_contains THEN
+      ASM_REWRITE_TAC[]]]);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =
