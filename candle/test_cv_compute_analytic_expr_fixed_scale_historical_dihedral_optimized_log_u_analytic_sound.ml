@@ -1,0 +1,8 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_optimized_log_u_analytic_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_log_u_analytic_sound;;
+
+let _ = candle_fs_hist_log_u_gradient_real_is_product_gradient;;
+let _ = candle_fs_hist_log_u_gradient_real_is_analytic;;
+
+print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_LOG_U_ANALYTIC_OK";;
