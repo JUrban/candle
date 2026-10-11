@@ -8,6 +8,7 @@ module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_corresp
 
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_delta_root_sound;;
+open Candle_cv_analytic_expr_fixed_scale_historical_delta_x4_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_root_four_x0_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_composition_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_sound;;
@@ -826,5 +827,155 @@ let candle_fs_hist_b_hessian_fixed_contains = prove
         (ASSUME
           `candle_fs_interval_contains
              (candle_fs_interval_lookup 0 boxes) (values 0)`)]]);;
+
+(* The historical checker forms the numerator of the final gradient directly:
+   [-delta_x4' * b + delta_x4 * b'].  Keep that low-work vector tied to the
+   already authenticated analytic source jets before introducing the shared
+   positive denominator. *)
+
+let candle_fs_hist_c_real_def = new_definition
+ `candle_fs_hist_c_real values coordinate =
+    --(candle_fs_hist_delta_x4_derivative values coordinate *
+       candle_hist_real_jet_value (candle_fs_hist_b_real_jet values)) +
+    candle_fs_hist_delta_x4_real values *
+      candle_hist_real_jet_gradient
+        (candle_fs_hist_b_real_jet values) coordinate`;;
+
+let candle_fs_hist_c_entry_contains = prove
+ (`!values coordinate delta_x4_value b
+      delta_x4_gradient b_gradient.
+     LENGTH delta_x4_gradient = 6 /\
+     ALL2 candle_fs_interval_contains delta_x4_gradient
+       (list_of_seq (candle_fs_hist_delta_x4_derivative values) 6) /\
+     LENGTH b_gradient = 6 /\
+     ALL2 candle_fs_interval_contains b_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values)) 6) /\
+     candle_fs_interval_contains delta_x4_value
+       (candle_fs_hist_delta_x4_real values) /\
+     candle_fs_interval_contains b
+       (candle_hist_real_jet_value
+         (candle_fs_hist_b_real_jet values)) /\
+     coordinate < 6
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_c_entry coordinate delta_x4_value b
+         delta_x4_gradient b_gradient)
+       (candle_fs_hist_c_real values coordinate)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate delta_x4_gradient)
+      (candle_fs_hist_delta_x4_derivative values coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL
+        [`6`; `delta_x4_gradient:((num#num)#(num#num))list`;
+         `candle_fs_hist_delta_x4_derivative (values:num->real)`;
+         `coordinate:num`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate b_gradient)
+      (candle_hist_real_jet_gradient
+        (candle_fs_hist_b_real_jet values) coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL
+        [`6`; `b_gradient:((num#num)#(num#num))list`;
+         `candle_hist_real_jet_gradient
+            (candle_fs_hist_b_real_jet (values:num->real))`;
+         `coordinate:num`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_c_entry_def;
+              candle_fs_hist_c_real_def] THEN
+  MATCH_MP_TAC candle_fs_interval_add_sound THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+    MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_c_vector_contains = prove
+ (`!values delta_x4_value b delta_x4_gradient b_gradient.
+     LENGTH delta_x4_gradient = 6 /\
+     ALL2 candle_fs_interval_contains delta_x4_gradient
+       (list_of_seq (candle_fs_hist_delta_x4_derivative values) 6) /\
+     LENGTH b_gradient = 6 /\
+     ALL2 candle_fs_interval_contains b_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values)) 6) /\
+     candle_fs_interval_contains delta_x4_value
+       (candle_fs_hist_delta_x4_real values) /\
+     candle_fs_interval_contains b
+       (candle_hist_real_jet_value
+         (candle_fs_hist_b_real_jet values))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_c_vector delta_x4_value b
+         delta_x4_gradient b_gradient)
+       (list_of_seq (candle_fs_hist_c_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_c_vector_def] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[ALL2] THEN
+  REPEAT CONJ_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_c_entry_contains THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_c_vector_fixed_contains = prove
+ (`!boxes values root_delta_lower root_delta_upper
+      root_four_x0_lower root_four_x0_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     0 < root_delta_lower /\ root_delta_lower <= root_delta_upper /\
+     candle_fs_interval_contains
+       ((root_delta_lower,0),(root_delta_upper,0))
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     0 < root_four_x0_lower /\
+     root_four_x0_lower <= root_four_x0_upper /\
+     candle_fs_interval_contains
+       ((root_four_x0_lower,0),(root_four_x0_upper,0))
+       (sqrt (candle_fs_hist_four_x0_real values))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_c_vector
+         (candle_fs_hist_second_value
+           (candle_fs_hist_delta_x4_second boxes))
+         (candle_fs_angle_interval_mul
+           ((root_delta_lower,0),(root_delta_upper,0))
+           ((root_four_x0_lower,0),(root_four_x0_upper,0)))
+         (candle_fs_hist_second_gradient
+           (candle_fs_hist_delta_x4_second boxes))
+         (candle_fs_hist_b_gradient
+           ((root_four_x0_lower,0),(root_four_x0_upper,0))
+           ((root_delta_lower,0),(root_delta_upper,0))
+           (candle_fs_hist_second_gradient
+             (candle_fs_hist_second_sqrt_supplied
+               (candle_fs_hist_delta_second boxes)
+               ((root_delta_lower,0),(root_delta_upper,0))))
+           (candle_fs_hist_two_over_positive_root
+             ((root_four_x0_lower,0),(root_four_x0_upper,0)))))
+       (list_of_seq (candle_fs_hist_c_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_c_vector_contains THEN
+  REPEAT CONJ_TAC THENL
+   [MP_TAC
+      (SPEC `boxes:((num#num)#(num#num))list`
+        candle_fs_hist_delta_x4_second_data_shape) THEN
+    MESON_TAC[];
+    MATCH_MP_TAC candle_fs_hist_delta_x4_second_gradient_contains THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_fs_hist_b_gradient_length];
+    MATCH_MP_TAC candle_fs_hist_b_gradient_fixed_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_delta_x4_second_value_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_b_value_contains THEN
+    ASM_REWRITE_TAC[]]);;
 
 end;;

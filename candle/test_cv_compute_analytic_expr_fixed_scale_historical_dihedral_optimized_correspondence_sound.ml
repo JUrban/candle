@@ -18,5 +18,9 @@ let _ = candle_fs_hist_second_sqrt_supplied_hessian_shape;;
 let _ = candle_fs_hist_second_sqrt_supplied_gradient_length;;
 let _ = candle_fs_hist_positive_inv_double_contains;;
 let _ = candle_fs_hist_b_hessian_fixed_contains;;
+let _ = candle_fs_hist_c_real_def;;
+let _ = candle_fs_hist_c_entry_contains;;
+let _ = candle_fs_hist_c_vector_contains;;
+let _ = candle_fs_hist_c_vector_fixed_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;
