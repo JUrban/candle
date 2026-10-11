@@ -7235,6 +7235,244 @@ let candle_fs_hist_delta_gradient_component_nonpositive = prove
   MATCH_MP_TAC candle_fs_hist_delta_gradient_component_interval_contains THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_fs_hist_delta_gradient_component_nonnegative_update = prove
+ (`!coordinate boxes (values:num->real) replacement.
+     coordinate < 6 /\ LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes))))
+     ==> &0 <= EL coordinate
+           (candle_fs_hist_delta_gradient_real
+             (candle_fs_hist_delta_x4_update
+               values coordinate replacement))`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+       `candle_fs_hist_delta_x4_update
+         (values:num->real) coordinate replacement`]
+      candle_fs_hist_delta_gradient_component_nonnegative) THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC
+    (SPECL [`6`; `boxes:((num#num)#(num#num))list`;
+            `values:num->real`; `coordinate:num`; `replacement:real`]
+      candle_fs_hist_delta_x4_update_contains) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_delta_gradient_component_nonpositive_update = prove
+ (`!coordinate boxes (values:num->real) replacement.
+     coordinate < 6 /\ LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes)))) (0,0)
+     ==> EL coordinate
+           (candle_fs_hist_delta_gradient_real
+             (candle_fs_hist_delta_x4_update
+               values coordinate replacement)) <= &0`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+       `candle_fs_hist_delta_x4_update
+         (values:num->real) coordinate replacement`]
+      candle_fs_hist_delta_gradient_component_nonpositive) THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC
+    (SPECL [`6`; `boxes:((num#num)#(num#num))list`;
+            `values:num->real`; `coordinate:num`; `replacement:real`]
+      candle_fs_hist_delta_x4_update_contains) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_delta_nondecreasing_forward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     coordinate < 6 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     values coordinate <= replacement /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes))))
+     ==> candle_fs_hist_delta_real values <=
+         candle_fs_hist_delta_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement)`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`candle_fs_hist_delta_real (values:num->real)`;
+       `candle_fs_hist_delta_real
+         (candle_fs_hist_delta_x4_update values coordinate replacement)`;
+       `EL coordinate
+         (candle_fs_hist_delta_gradient_real values)`;
+       `EL coordinate
+         (candle_fs_hist_delta_gradient_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement))`;
+       `(values:num->real) coordinate`; `replacement:real`]
+      candle_fs_hist_quadratic_coordinate_nondecreasing) THEN
+  ASM_REWRITE_TAC[] THEN
+  REPEAT CONJ_TAC THEN
+  FIRST
+   [MATCH_MP_TAC
+      (SPECL
+        [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+         `values:num->real`; `replacement:real`]
+        candle_fs_hist_delta_gradient_component_nonnegative_update) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC
+      (SPECL
+        [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+         `values:num->real`]
+        candle_fs_hist_delta_gradient_component_nonnegative) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_delta_coordinate_secant THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_delta_nondecreasing_backward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     coordinate < 6 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     replacement <= values coordinate /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes))))
+     ==> candle_fs_hist_delta_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) <=
+         candle_fs_hist_delta_real values`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_delta_x4_update_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate boxes) (values coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC
+   (SPECL
+     [`boxes:((num#num)#(num#num))list`;
+      `candle_fs_hist_delta_x4_update
+        (values:num->real) coordinate replacement`;
+      `coordinate:num`; `(values:num->real) coordinate`]
+     candle_fs_hist_delta_nondecreasing_forward) THEN
+  ASM_REWRITE_TAC[candle_fs_hist_delta_x4_update_same;
+                  candle_fs_hist_delta_x4_update_restore]);;
+
+let candle_fs_hist_delta_nonincreasing_forward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     coordinate < 6 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     values coordinate <= replacement /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes)))) (0,0)
+     ==> candle_fs_hist_delta_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) <=
+         candle_fs_hist_delta_real values`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`candle_fs_hist_delta_real (values:num->real)`;
+       `candle_fs_hist_delta_real
+         (candle_fs_hist_delta_x4_update values coordinate replacement)`;
+       `EL coordinate
+         (candle_fs_hist_delta_gradient_real values)`;
+       `EL coordinate
+         (candle_fs_hist_delta_gradient_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement))`;
+       `(values:num->real) coordinate`; `replacement:real`]
+      candle_fs_hist_quadratic_coordinate_nonincreasing) THEN
+  ASM_REWRITE_TAC[] THEN
+  REPEAT CONJ_TAC THEN
+  FIRST
+   [MATCH_MP_TAC
+      (SPECL
+        [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+         `values:num->real`; `replacement:real`]
+        candle_fs_hist_delta_gradient_component_nonpositive_update) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC
+      (SPECL
+        [`coordinate:num`; `boxes:((num#num)#(num#num))list`;
+         `values:num->real`]
+        candle_fs_hist_delta_gradient_component_nonpositive) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_delta_coordinate_secant THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_delta_nonincreasing_backward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     coordinate < 6 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     replacement <= values coordinate /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (candle_fs_hist_delta_gradient boxes
+           (candle_fs_angle_delta_hessian boxes)))) (0,0)
+     ==> candle_fs_hist_delta_real values <=
+         candle_fs_hist_delta_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_delta_x4_update_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate boxes) (values coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC
+   (SPECL
+     [`boxes:((num#num)#(num#num))list`;
+      `candle_fs_hist_delta_x4_update
+        (values:num->real) coordinate replacement`;
+      `coordinate:num`; `(values:num->real) coordinate`]
+     candle_fs_hist_delta_nonincreasing_forward) THEN
+  ASM_REWRITE_TAC[candle_fs_hist_delta_x4_update_same;
+                  candle_fs_hist_delta_x4_update_restore]);;
+
 let candle_fs_hist_b_gradient_def = new_definition
  `candle_fs_hist_b_gradient root_four_x0 root_delta_value
       root_delta_gradient two_over_root_four_x0 =

@@ -130,5 +130,11 @@ let _ = candle_fs_hist_delta_coordinate_secant;;
 let _ = candle_fs_hist_delta_gradient_component_interval_contains;;
 let _ = candle_fs_hist_delta_gradient_component_nonnegative;;
 let _ = candle_fs_hist_delta_gradient_component_nonpositive;;
+let _ = candle_fs_hist_delta_gradient_component_nonnegative_update;;
+let _ = candle_fs_hist_delta_gradient_component_nonpositive_update;;
+let _ = candle_fs_hist_delta_nondecreasing_forward;;
+let _ = candle_fs_hist_delta_nondecreasing_backward;;
+let _ = candle_fs_hist_delta_nonincreasing_forward;;
+let _ = candle_fs_hist_delta_nonincreasing_backward;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_SCALAR_SOUND_OK";;
