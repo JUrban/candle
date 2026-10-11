@@ -1802,4 +1802,392 @@ let candle_fs_hist_u_selected_lower_point_bounds = prove
   CONV_TAC (DEPTH_CONV EL_CONV) THEN
   CONJ_TAC THEN ASM_REAL_ARITH_TAC);;
 
+let candle_fs_hist_u_three_boxes_def = new_definition
+ `candle_fs_hist_u_three_boxes
+      (boxes:((num#num)#(num#num))list) =
+    candle_fs_hist_u_three
+      (candle_fs_interval_lookup 0 boxes)
+      (candle_fs_interval_lookup 1 boxes)
+      (candle_fs_interval_lookup 2 boxes)`;;
+
+let candle_fs_hist_u_three_boxes_gradient_length = prove
+ (`!boxes. LENGTH (SND (candle_fs_hist_u_three_boxes boxes)) = 3`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_boxes_def;
+              candle_fs_hist_u_three_def;
+              candle_fs_hist_u_def;
+              LET_DEF; LET_END_DEF; LENGTH] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_u_three_derivative_contains = prove
+ (`!boxes (values:num->real) coordinate.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3
+     ==> candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes)))
+       (candle_fs_hist_u_three_gradient_real values coordinate)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 0 boxes) (values 0)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `0`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 1 boxes) (values 1)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `1`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 2 boxes) (values 2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `2`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (SND (candle_fs_hist_u_three_boxes boxes))
+      (list_of_seq (candle_fs_hist_u_three_gradient_real values) 3)`
+  ASSUME_TAC THENL
+   [REWRITE_TAC[candle_fs_hist_u_three_boxes_def] THEN
+    MATCH_MP_TAC candle_fs_hist_u_three_gradient_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`3`;
+       `SND (candle_fs_hist_u_three_boxes
+         (boxes:((num#num)#(num#num))list))`;
+       `candle_fs_hist_u_three_gradient_real (values:num->real)`;
+       `coordinate:num`]
+      candle_fs_hist_interval_lookup_contains) THEN
+  ASM_REWRITE_TAC[candle_fs_hist_u_three_boxes_gradient_length]);;
+
+let candle_fs_hist_u_three_derivative_nonnegative = prove
+ (`!boxes (values:num->real) coordinate.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes))))
+     ==> &0 <= candle_fs_hist_u_three_gradient_real values coordinate`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_interval_contains_nonnegative THEN
+  EXISTS_TAC
+   `candle_fs_interval_lookup coordinate
+      (SND (candle_fs_hist_u_three_boxes boxes))` THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_u_three_derivative_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_u_three_derivative_nonpositive = prove
+ (`!boxes (values:num->real) coordinate.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes)))) (0,0)
+     ==> candle_fs_hist_u_three_gradient_real values coordinate <= &0`,
+  REPEAT STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_interval_contains_nonpositive THEN
+  EXISTS_TAC
+   `candle_fs_interval_lookup coordinate
+      (SND (candle_fs_hist_u_three_boxes boxes))` THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_u_three_derivative_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_fs_hist_u_three_nondecreasing_forward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     values coordinate <= replacement /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes))))
+     ==> candle_fs_hist_u_three_vector_real values <=
+         candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `coordinate:num`; `replacement:real`]
+        candle_fs_hist_delta_x4_update_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= candle_fs_hist_u_three_gradient_real values coordinate`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonnegative];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= candle_fs_hist_u_three_gradient_real
+      (candle_fs_hist_delta_x4_update values coordinate replacement)
+      coordinate`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonnegative];
+    ALL_TAC] THEN
+  ASM_MESON_TAC[candle_fs_hist_u_three_coordinate_nondecreasing]);;
+
+let candle_fs_hist_u_three_nondecreasing_backward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     replacement <= values coordinate /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes))))
+     ==> candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) <=
+         candle_fs_hist_u_three_vector_real values`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `coordinate:num`; `replacement:real`]
+        candle_fs_hist_delta_x4_update_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= candle_fs_hist_u_three_gradient_real values coordinate`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonnegative];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= candle_fs_hist_u_three_gradient_real
+      (candle_fs_hist_delta_x4_update values coordinate replacement)
+      coordinate`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonnegative];
+    ALL_TAC] THEN
+  ASM_MESON_TAC
+   [candle_fs_hist_u_three_coordinate_nondecreasing_backward]);;
+
+let candle_fs_hist_u_three_nonincreasing_forward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     values coordinate <= replacement /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes)))) (0,0)
+     ==> candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) <=
+         candle_fs_hist_u_three_vector_real values`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `coordinate:num`; `replacement:real`]
+        candle_fs_hist_delta_x4_update_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_gradient_real values coordinate <= &0`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonpositive];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_gradient_real
+      (candle_fs_hist_delta_x4_update values coordinate replacement)
+      coordinate <= &0`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonpositive];
+    ALL_TAC] THEN
+  ASM_MESON_TAC[candle_fs_hist_u_three_coordinate_nonincreasing]);;
+
+let candle_fs_hist_u_three_nonincreasing_backward = prove
+ (`!boxes (values:num->real) coordinate replacement.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3 /\
+     candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes) replacement /\
+     replacement <= values coordinate /\
+     candle_fs_raw_le
+       (SND (candle_fs_interval_lookup coordinate
+         (SND (candle_fs_hist_u_three_boxes boxes)))) (0,0)
+     ==> candle_fs_hist_u_three_vector_real values <=
+         candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains boxes
+      (list_of_seq
+        (candle_fs_hist_delta_x4_update
+          (values:num->real) coordinate replacement) 3)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `coordinate:num`; `replacement:real`]
+        candle_fs_hist_delta_x4_update_contains) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_gradient_real values coordinate <= &0`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonpositive];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_gradient_real
+      (candle_fs_hist_delta_x4_update values coordinate replacement)
+      coordinate <= &0`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_u_three_derivative_nonpositive];
+    ALL_TAC] THEN
+  ASM_MESON_TAC
+   [candle_fs_hist_u_three_coordinate_nonincreasing_backward]);;
+
+let candle_fs_hist_u_three_selected_value_def = new_definition
+ `candle_fs_hist_u_three_selected_value upper coordinate boxes
+      (values:num->real) =
+    candle_fs_hist_u_selected_real upper
+      (candle_fs_interval_lookup coordinate boxes)
+      (candle_fs_interval_lookup coordinate
+        (SND (candle_fs_hist_u_three_boxes boxes)))
+      (values coordinate)`;;
+
+let candle_fs_hist_u_three_selected_value_in_box = prove
+ (`!upper coordinate boxes (values:num->real).
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3
+     ==> candle_fs_interval_contains
+       (candle_fs_interval_lookup coordinate boxes)
+       (candle_fs_hist_u_three_selected_value
+         upper coordinate boxes values)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_selected_value_def] THEN
+  MATCH_MP_TAC candle_fs_hist_u_selected_real_contains THEN
+  MATCH_MP_TAC
+    (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+            `values:num->real`; `coordinate:num`]
+      candle_fs_hist_interval_lookup_contains) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_u_three_monotone_step = prove
+ (`!upper boxes (values:num->real) coordinate.
+     LENGTH boxes = 3 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 3) /\
+     coordinate < 3
+     ==> if upper then
+           candle_fs_hist_u_three_vector_real values <=
+           candle_fs_hist_u_three_vector_real
+             (candle_fs_hist_delta_x4_update values coordinate
+               (candle_fs_hist_u_three_selected_value
+                 upper coordinate boxes values))
+         else
+           candle_fs_hist_u_three_vector_real
+             (candle_fs_hist_delta_x4_update values coordinate
+               (candle_fs_hist_u_three_selected_value
+                 upper coordinate boxes values)) <=
+           candle_fs_hist_u_three_vector_real values`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_real
+      (FST (candle_fs_interval_lookup coordinate boxes)) <=
+      values coordinate /\
+    values coordinate <=
+      candle_fs_real
+        (SND (candle_fs_interval_lookup coordinate boxes))`
+  STRIP_ASSUME_TAC THENL
+   [MP_TAC
+      (SPECL [`3`; `boxes:((num#num)#(num#num))list`;
+              `values:num->real`; `coordinate:num`]
+        candle_fs_hist_interval_lookup_contains) THEN
+    ASM_REWRITE_TAC[candle_fs_interval_contains_def];
+    ALL_TAC] THEN
+  BOOL_CASES_TAC `upper:bool` THEN
+  ASM_REWRITE_TAC[candle_fs_hist_u_three_selected_value_def;
+                  candle_fs_hist_u_selected_real_def] THEN
+  COND_CASES_TAC THENL
+   [MATCH_MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+         `coordinate:num`;
+         `candle_fs_real
+           (SND (candle_fs_interval_lookup coordinate boxes))`]
+        candle_fs_hist_u_three_nondecreasing_forward) THEN
+    ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+    ASM_REAL_ARITH_TAC;
+    COND_CASES_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+           `coordinate:num`;
+           `candle_fs_real
+             (FST (candle_fs_interval_lookup coordinate boxes))`]
+          candle_fs_hist_u_three_nonincreasing_backward) THEN
+      ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+      ASM_REAL_ARITH_TAC;
+      REWRITE_TAC[candle_fs_hist_delta_x4_update_self; REAL_LE_REFL]];
+    MATCH_MP_TAC
+      (SPECL
+        [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+         `coordinate:num`;
+         `candle_fs_real
+           (FST (candle_fs_interval_lookup coordinate boxes))`]
+        candle_fs_hist_u_three_nondecreasing_backward) THEN
+    ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+    ASM_REAL_ARITH_TAC;
+    COND_CASES_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`boxes:((num#num)#(num#num))list`; `values:num->real`;
+           `coordinate:num`;
+           `candle_fs_real
+             (SND (candle_fs_interval_lookup coordinate boxes))`]
+          candle_fs_hist_u_three_nonincreasing_forward) THEN
+      ASM_REWRITE_TAC[candle_fs_interval_contains_def] THEN
+      ASM_REAL_ARITH_TAC;
+      REWRITE_TAC[candle_fs_hist_delta_x4_update_self; REAL_LE_REFL]]]);;
+
 end;;
