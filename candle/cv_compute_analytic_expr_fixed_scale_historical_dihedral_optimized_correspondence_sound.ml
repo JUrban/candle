@@ -12,6 +12,7 @@ open Candle_cv_analytic_expr_fixed_scale_historical_root_four_x0_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_composition_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_instantiation;;
+open Candle_cv_analytic_expr_fixed_scale_angle_polynomials_sound;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
 open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
@@ -486,5 +487,118 @@ let candle_fs_hist_b_hessian_target_eq = prove
   REWRITE_TAC[REAL_ARITH `x + x = &2 * x`; REAL_INV_MUL] THEN
   CONV_TAC REAL_RAT_REDUCE_CONV THEN
   CONV_TAC REAL_RING);;
+
+let candle_fs_hist_b_hessian_entry_contains = prove
+ (`!values rowindex colindex base_hessian root_delta_value
+      root_delta_gradient two_over_root_four_x0 x0.
+     LENGTH base_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) base_hessian /\
+     ALL2 (ALL2 candle_fs_interval_contains) base_hessian
+       (list_of_seq
+         (\i. list_of_seq
+           (\j. sqrt (candle_fs_hist_four_x0_real values) *
+                candle_hist_real_jet_hessian
+                  (candle_fs_hist_root_delta_real_jet values) i j)
+           6) 6) /\
+     LENGTH root_delta_gradient = 6 /\
+     ALL2 candle_fs_interval_contains root_delta_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values)) 6) /\
+     candle_fs_interval_contains root_delta_value
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     candle_fs_interval_contains two_over_root_four_x0
+       (&2 * inv (sqrt (candle_fs_hist_four_x0_real values))) /\
+     candle_fs_interval_contains
+       (candle_fs_hist_positive_inv
+         (candle_fs_angle_interval_scale 2 x0))
+       (inv (&2 * values 0)) /\
+     rowindex < 6 /\ colindex < 6
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_b_hessian_entry rowindex colindex base_hessian
+         root_delta_value root_delta_gradient two_over_root_four_x0 x0)
+       (candle_fs_hist_b_hessian_target values rowindex colindex)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_angle_matrix_lookup rowindex colindex base_hessian)
+      (sqrt (candle_fs_hist_four_x0_real values) *
+       candle_hist_real_jet_hessian
+         (candle_fs_hist_root_delta_real_jet values) rowindex colindex)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (SPECL
+          [`6`; `base_hessian:(((num#num)#(num#num))list)list`;
+           `\i j. sqrt (candle_fs_hist_four_x0_real values) *
+              candle_hist_real_jet_hessian
+                (candle_fs_hist_root_delta_real_jet values) i j`;
+           `rowindex:num`; `colindex:num`]
+          candle_fs_hist_matrix_lookup_contains)) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `!i. i < 6
+      ==> candle_fs_interval_contains
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup i root_delta_gradient)
+          two_over_root_four_x0)
+        (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values) i *
+         (&2 * inv (sqrt (candle_fs_hist_four_x0_real values))))`
+  ASSUME_TAC THENL
+   [REPEAT STRIP_TAC THEN
+    MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC
+        (SPECL
+          [`6`; `root_delta_gradient:((num#num)#(num#num))list`;
+           `candle_hist_real_jet_gradient
+              (candle_fs_hist_root_delta_real_jet values)`;
+           `i:num`]
+          candle_fs_hist_interval_lookup_contains) THEN
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[]];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_angle_interval_scale 2
+        (candle_fs_angle_interval_mul
+          (candle_fs_interval_lookup 0 root_delta_gradient)
+          two_over_root_four_x0))
+      (&2 *
+        (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values) 0 *
+         (&2 * inv (sqrt (candle_fs_hist_four_x0_real values)))))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_angle_interval_scale_contains THEN
+    FIRST_X_ASSUM MATCH_MP_TAC THEN CONV_TAC NUM_REDUCE_CONV;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_neg
+        (candle_fs_angle_interval_mul
+          (candle_fs_angle_interval_mul
+            root_delta_value two_over_root_four_x0)
+          (candle_fs_hist_positive_inv
+            (candle_fs_angle_interval_scale 2 x0))))
+      (--((sqrt (candle_fs_hist_delta_real values) *
+            (&2 * inv (sqrt (candle_fs_hist_four_x0_real values)))) *
+          inv (&2 * values 0)))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_neg_sound THEN
+    MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+    CONJ_TAC THENL
+     [MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+      ASM_REWRITE_TAC[];
+      ASM_REWRITE_TAC[]];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_b_hessian_entry_def;
+              candle_fs_hist_b_hessian_target_def;
+              LET_DEF; LET_END_DEF] THEN
+  ASM_CASES_TAC `rowindex = 0` THEN
+  ASM_CASES_TAC `colindex = 0` THEN
+  ASM_REWRITE_TAC[] THEN
+  ASM_MESON_TAC[candle_fs_interval_add_sound]);;
 
 end;;
