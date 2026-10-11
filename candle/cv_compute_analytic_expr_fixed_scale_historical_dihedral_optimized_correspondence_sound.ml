@@ -1315,4 +1315,24 @@ let candle_fs_hist_log_u_gradient_fixed_contains = prove
   MATCH_MP_TAC candle_fs_hist_log_u_gradient_contains THEN
   CONV_TAC (DEPTH_CONV ETA_CONV) THEN ASM_REWRITE_TAC[]);;
 
+(* The specialized U denominator is the exact squared arctangent denominator.
+   This polynomial identity is the algebraic bridge from the historical
+   low-work formulas to the universal dihedral composition. *)
+
+let candle_fs_hist_u_product_identity = prove
+ (`!values.
+     candle_fs_hist_u126_real values *
+       candle_fs_hist_u135_real values =
+     &4 * values 0 * candle_fs_hist_delta_real values +
+       candle_fs_hist_delta_x4_real values *
+       candle_fs_hist_delta_x4_real values`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u126_real_def;
+              candle_fs_hist_u135_real_def;
+              candle_fs_hist_u_three_real_def;
+              candle_fs_hist_delta_real_def;
+              candle_fs_hist_delta_x4_real_def;
+              LET_DEF; LET_END_DEF; ITLIST] THEN
+  CONV_TAC REAL_RING);;
+
 end;;
