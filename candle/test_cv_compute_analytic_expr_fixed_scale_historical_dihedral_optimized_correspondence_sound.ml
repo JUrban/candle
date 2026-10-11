@@ -13,5 +13,6 @@ let _ = candle_fs_hist_matrix_scale_eq;;
 let _ = candle_fs_hist_b_base_hessian_contains;;
 let _ = candle_fs_hist_b_hessian_target_eq;;
 let _ = candle_fs_hist_b_hessian_entry_contains;;
+let _ = candle_fs_hist_b_hessian_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;

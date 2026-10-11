@@ -601,4 +601,79 @@ let candle_fs_hist_b_hessian_entry_contains = prove
   ASM_REWRITE_TAC[] THEN
   ASM_MESON_TAC[candle_fs_interval_add_sound]);;
 
+let candle_fs_hist_b_hessian_contains = prove
+ (`!values root_four_x0 root_delta_value root_delta_gradient
+      root_delta_hessian two_over_root_four_x0 x0.
+     LENGTH root_delta_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) root_delta_hessian /\
+     candle_fs_interval_contains root_four_x0
+       (sqrt (candle_fs_hist_four_x0_real values)) /\
+     ALL2 (ALL2 candle_fs_interval_contains) root_delta_hessian
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_root_delta_real_jet values) i) 6) 6) /\
+     LENGTH root_delta_gradient = 6 /\
+     ALL2 candle_fs_interval_contains root_delta_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values)) 6) /\
+     candle_fs_interval_contains root_delta_value
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     candle_fs_interval_contains two_over_root_four_x0
+       (&2 * inv (sqrt (candle_fs_hist_four_x0_real values))) /\
+     candle_fs_interval_contains
+       (candle_fs_hist_positive_inv
+         (candle_fs_angle_interval_scale 2 x0))
+       (inv (&2 * values 0))
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_b_hessian root_four_x0 root_delta_value
+         root_delta_gradient root_delta_hessian
+         two_over_root_four_x0 x0)
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_b_real_jet values) i) 6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (candle_fs_hist_matrix_scale root_four_x0 root_delta_hessian) = 6`
+  ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[candle_fs_hist_matrix_scale_length];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `ALL (\matrix_row. LENGTH matrix_row = 6)
+      (candle_fs_hist_matrix_scale root_four_x0 root_delta_hessian)`
+  ASSUME_TAC THENL
+   [REWRITE_TAC[candle_fs_hist_matrix_scale_eq] THEN
+    MP_TAC
+      (SPECL
+        [`root_four_x0:(num#num)#(num#num)`;
+         `root_delta_hessian:(((num#num)#(num#num))list)list`; `6`]
+        candle_fsn_interval_matrix_scale_shape) THEN
+    ASM_REWRITE_TAC[] THEN MESON_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `ALL2 (ALL2 candle_fs_interval_contains)
+      (candle_fs_hist_matrix_scale root_four_x0 root_delta_hessian)
+      (list_of_seq
+        (\i. list_of_seq
+          (\j. sqrt (candle_fs_hist_four_x0_real values) *
+               candle_hist_real_jet_hessian
+                 (candle_fs_hist_root_delta_real_jet values) i j)
+          6) 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_b_base_hessian_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_b_hessian_def;
+              candle_fs_hist_b_hessian_row_def;
+              LET_DEF; LET_END_DEF] THEN
+  CONV_TAC (DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[candle_fs_hist_b_hessian_target_eq; ALL2] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT CONJ_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_b_hessian_entry_contains THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV);;
+
 end;;
