@@ -978,4 +978,156 @@ let candle_fs_hist_c_vector_fixed_contains = prove
     MATCH_MP_TAC candle_fs_hist_b_value_contains THEN
     ASM_REWRITE_TAC[]]);;
 
+let candle_fs_hist_u_gradient_form_contains = prove
+ (`!first second third x y z.
+     candle_fs_interval_contains first x /\
+     candle_fs_interval_contains second y /\
+     candle_fs_interval_contains third z
+     ==> candle_fs_interval_contains
+       (candle_fs_angle_interval_scale 2
+         (candle_fs_angle_interval_sum
+           [first;second;third]))
+       (&2 * (x + y + z))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_angle_interval_scale_contains THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_angle_interval_sum
+        [first;second;third])
+      (ITLIST (\item total:real. item + total) [x;y;z] (&0))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_interval_sum_contains THEN
+    ASM_REWRITE_TAC[ALL2];
+    ALL_TAC] THEN
+  RULE_ASSUM_TAC (REWRITE_RULE[ITLIST; REAL_ADD_RID]) THEN
+  ASM_REWRITE_TAC[REAL_ADD_ASSOC]);;
+
+let candle_fs_hist_u_three_gradient_def = prove
+ (`!x0 x1 x2.
+     SND (candle_fs_hist_u_three x0 x1 x2) =
+     [candle_fs_angle_interval_scale 2
+        (candle_fs_angle_interval_sum
+          [candle_fs_interval_neg x0;x1;x2]);
+      candle_fs_angle_interval_scale 2
+        (candle_fs_angle_interval_sum
+          [x0;candle_fs_interval_neg x1;x2]);
+      candle_fs_angle_interval_scale 2
+        (candle_fs_angle_interval_sum
+          [x0;x1;candle_fs_interval_neg x2])]`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_def;
+              candle_fs_hist_u_def;
+              LET_DEF; LET_END_DEF; FST; SND]);;
+
+let candle_fs_hist_interval_lookup_three = prove
+ (`!first second third.
+     candle_fs_interval_lookup 0 [first;second;third] = first /\
+     candle_fs_interval_lookup 1 [first;second;third] = second /\
+     candle_fs_interval_lookup 2 [first;second;third] = third`,
+  REPEAT GEN_TAC THEN
+  MP_TAC (ARITH_RULE `1 = SUC 0`) THEN
+  MP_TAC (ARITH_RULE `2 = SUC (SUC 0)`) THEN
+  REPEAT (DISCH_THEN SUBST1_TAC) THEN
+  REWRITE_TAC[candle_fs_interval_lookup_def]);;
+
+let candle_fs_hist_u126_gradient_real_def = new_definition
+ `candle_fs_hist_u126_gradient_real values coordinate =
+    if coordinate = 0 then
+      &2 * (--(values 0) + values 1 + values 5)
+    else if coordinate = 1 then
+      &2 * (values 0 + --(values 1) + values 5)
+    else if coordinate = 5 then
+      &2 * (values 0 + values 1 + --(values 5))
+    else &0`;;
+
+let candle_fs_hist_u135_gradient_real_def = new_definition
+ `candle_fs_hist_u135_gradient_real values coordinate =
+    if coordinate = 0 then
+      &2 * (--(values 0) + values 2 + values 4)
+    else if coordinate = 2 then
+      &2 * (values 0 + --(values 2) + values 4)
+    else if coordinate = 4 then
+      &2 * (values 0 + values 2 + --(values 4))
+    else &0`;;
+
+let candle_fs_hist_u126_gradient_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+       (SND (candle_fs_hist_u126 boxes))
+       (list_of_seq (candle_fs_hist_u126_gradient_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 0 boxes) (values 0) /\
+    candle_fs_interval_contains
+      (candle_fs_interval_lookup 1 boxes) (values 1) /\
+    candle_fs_interval_contains
+      (candle_fs_interval_lookup 5 boxes) (values 5)`
+  STRIP_ASSUME_TAC THENL
+   [REPEAT CONJ_TAC THEN
+    MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV;
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_u126_def;
+              candle_fs_hist_u_def;
+              LET_DEF; LET_END_DEF; FST; SND;
+              candle_fs_hist_u_three_gradient_def] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[candle_fs_hist_u126_gradient_real_def;
+              candle_fs_interval_lookup_def; ALL2] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REWRITE_TAC[candle_fs_hist_interval_lookup_three] THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound];
+    MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound];
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains;
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains;
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains;
+    MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound]]);;
+
+let candle_fs_hist_u135_gradient_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6)
+     ==> ALL2 candle_fs_interval_contains
+       (SND (candle_fs_hist_u135 boxes))
+       (list_of_seq (candle_fs_hist_u135_gradient_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup 0 boxes) (values 0) /\
+    candle_fs_interval_contains
+      (candle_fs_interval_lookup 2 boxes) (values 2) /\
+    candle_fs_interval_contains
+      (candle_fs_interval_lookup 4 boxes) (values 4)`
+  STRIP_ASSUME_TAC THENL
+   [REPEAT CONJ_TAC THEN
+    MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+    ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV;
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_u135_def;
+              candle_fs_hist_u_def;
+              LET_DEF; LET_END_DEF; FST; SND;
+              candle_fs_hist_u_three_gradient_def] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[candle_fs_hist_u135_gradient_real_def;
+              candle_fs_interval_lookup_def; ALL2] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REWRITE_TAC[candle_fs_hist_interval_lookup_three] THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound];
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains;
+    MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound];
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains;
+    MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+    ASM_MESON_TAC[candle_fs_interval_neg_sound];
+    MATCH_ACCEPT_TAC candle_fs_interval_zero_contains]);;
+
 end;;
