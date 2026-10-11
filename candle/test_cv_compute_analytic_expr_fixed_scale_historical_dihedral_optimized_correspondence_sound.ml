@@ -29,5 +29,13 @@ let _ = candle_fs_hist_u126_gradient_real_def;;
 let _ = candle_fs_hist_u135_gradient_real_def;;
 let _ = candle_fs_hist_u126_gradient_contains;;
 let _ = candle_fs_hist_u135_gradient_contains;;
+let _ = candle_fs_hist_u_three_real_def;;
+let _ = candle_fs_hist_u126_real_def;;
+let _ = candle_fs_hist_u135_real_def;;
+let _ = candle_fs_hist_log_u_gradient_real_def;;
+let _ = candle_fs_hist_log_u_gradient_real_eta;;
+let _ = candle_fs_hist_log_u_gradient_entry_contains;;
+let _ = candle_fs_hist_log_u_gradient_contains;;
+let _ = candle_fs_hist_log_u_gradient_fixed_contains;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;

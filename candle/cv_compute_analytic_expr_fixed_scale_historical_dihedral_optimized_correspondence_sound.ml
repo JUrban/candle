@@ -1130,4 +1130,189 @@ let candle_fs_hist_u135_gradient_contains = prove
     ASM_MESON_TAC[candle_fs_interval_neg_sound];
     MATCH_ACCEPT_TAC candle_fs_interval_zero_contains]);;
 
+let candle_fs_hist_u_three_real_def = new_definition
+ `candle_fs_hist_u_three_real x0 x1 x2 =
+    --(x0 * x0) - x1 * x1 - x2 * x2 +
+    &2 * (x0 * x1) + &2 * (x1 * x2) + &2 * (x2 * x0)`;;
+
+let candle_fs_hist_u126_real_def = new_definition
+ `candle_fs_hist_u126_real (values:num->real) =
+    candle_fs_hist_u_three_real (values 0) (values 1) (values 5)`;;
+
+let candle_fs_hist_u135_real_def = new_definition
+ `candle_fs_hist_u135_real (values:num->real) =
+    candle_fs_hist_u_three_real (values 0) (values 2) (values 4)`;;
+
+let candle_fs_hist_log_u_gradient_real_def = new_definition
+ `candle_fs_hist_log_u_gradient_real (values:num->real) coordinate =
+    candle_fs_hist_u126_gradient_real values coordinate *
+      inv (candle_fs_hist_u126_real values) +
+    candle_fs_hist_u135_gradient_real values coordinate *
+      inv (candle_fs_hist_u135_real values)`;;
+
+let candle_fs_hist_log_u_gradient_real_eta = prove
+ (`!values.
+     candle_fs_hist_log_u_gradient_real values =
+     (\coordinate.
+       candle_fs_hist_u126_gradient_real values coordinate *
+         inv (candle_fs_hist_u126_real values) +
+       candle_fs_hist_u135_gradient_real values coordinate *
+         inv (candle_fs_hist_u135_real values))`,
+  REWRITE_TAC[FUN_EQ_THM; candle_fs_hist_log_u_gradient_real_def]);;
+
+let candle_fs_hist_log_u_gradient_entry_contains = prove
+ (`!coordinate u126_gradient reciprocal_u126
+      u135_gradient reciprocal_u135 u126_real_gradient
+      u135_real_gradient reciprocal_u126_real reciprocal_u135_real.
+     LENGTH u126_gradient = 6 /\
+     ALL2 candle_fs_interval_contains u126_gradient
+       (list_of_seq u126_real_gradient 6) /\
+     LENGTH u135_gradient = 6 /\
+     ALL2 candle_fs_interval_contains u135_gradient
+       (list_of_seq u135_real_gradient 6) /\
+     candle_fs_interval_contains reciprocal_u126 reciprocal_u126_real /\
+     candle_fs_interval_contains reciprocal_u135 reciprocal_u135_real /\
+     coordinate < 6
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_log_u_gradient_entry coordinate
+         u126_gradient reciprocal_u126 u135_gradient reciprocal_u135)
+       (u126_real_gradient coordinate * reciprocal_u126_real +
+        u135_real_gradient coordinate * reciprocal_u135_real)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate u126_gradient)
+      (u126_real_gradient coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (SPECL
+          [`6`; `u126_gradient:((num#num)#(num#num))list`;
+           `u126_real_gradient:num->real`; `coordinate:num`]
+          candle_fs_hist_interval_lookup_contains)) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_interval_lookup coordinate u135_gradient)
+      (u135_real_gradient coordinate)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (SPECL
+          [`6`; `u135_gradient:((num#num)#(num#num))list`;
+           `u135_real_gradient:num->real`; `coordinate:num`]
+          candle_fs_hist_interval_lookup_contains)) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_log_u_gradient_entry_def] THEN
+  MATCH_MP_TAC candle_fs_interval_add_sound THEN
+  CONJ_TAC THEN MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_log_u_gradient_contains = prove
+ (`!u126_gradient reciprocal_u126 u135_gradient reciprocal_u135
+      u126_real_gradient u135_real_gradient
+      reciprocal_u126_real reciprocal_u135_real.
+     LENGTH u126_gradient = 6 /\
+     ALL2 candle_fs_interval_contains u126_gradient
+       (list_of_seq u126_real_gradient 6) /\
+     LENGTH u135_gradient = 6 /\
+     ALL2 candle_fs_interval_contains u135_gradient
+       (list_of_seq u135_real_gradient 6) /\
+     candle_fs_interval_contains reciprocal_u126 reciprocal_u126_real /\
+     candle_fs_interval_contains reciprocal_u135 reciprocal_u135_real
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_log_u_gradient
+         u126_gradient reciprocal_u126 u135_gradient reciprocal_u135)
+       (list_of_seq
+         (\coordinate.
+           u126_real_gradient coordinate * reciprocal_u126_real +
+           u135_real_gradient coordinate * reciprocal_u135_real) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_log_u_gradient_def] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[ALL2] THEN
+  REPEAT CONJ_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_log_u_gradient_entry_contains THEN
+  ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_fs_hist_log_u_gradient_fixed_contains = prove
+ (`!boxes (values:num->real)
+      u126_lower u126_upper u135_lower u135_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     FST (candle_fs_hist_u126 boxes) =
+       ((u126_lower,0),(u126_upper,0)) /\
+     0 < u126_lower /\ u126_lower <= u126_upper /\
+     candle_fs_interval_contains (FST (candle_fs_hist_u126 boxes))
+       (candle_fs_hist_u126_real values) /\
+     FST (candle_fs_hist_u135 boxes) =
+       ((u135_lower,0),(u135_upper,0)) /\
+     0 < u135_lower /\ u135_lower <= u135_upper /\
+     candle_fs_interval_contains (FST (candle_fs_hist_u135 boxes))
+       (candle_fs_hist_u135_real values)
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_log_u_gradient
+         (SND (candle_fs_hist_u126 boxes))
+         (candle_fs_hist_positive_inv (FST (candle_fs_hist_u126 boxes)))
+         (SND (candle_fs_hist_u135 boxes))
+         (candle_fs_hist_positive_inv (FST (candle_fs_hist_u135 boxes))))
+       (list_of_seq
+         (candle_fs_hist_log_u_gradient_real values) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (SND (candle_fs_hist_u126 boxes))
+      (list_of_seq (candle_fs_hist_u126_gradient_real values) 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u126_gradient_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (SND (candle_fs_hist_u135 boxes))
+      (list_of_seq (candle_fs_hist_u135_gradient_real values) 6)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u135_gradient_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_hist_positive_inv (FST (candle_fs_hist_u126 boxes)))
+      (inv (candle_fs_hist_u126_real values))`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_positive_inv_contains];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_hist_positive_inv (FST (candle_fs_hist_u135 boxes)))
+      (inv (candle_fs_hist_u135_real values))`
+  ASSUME_TAC THENL
+   [ASM_MESON_TAC[candle_fs_hist_positive_inv_contains];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `LENGTH (SND (candle_fs_hist_u126 boxes)) = 6`
+  ASSUME_TAC THENL
+   [MP_TAC (MATCH_MP candle_all2_length
+      (ASSUME
+        `ALL2 candle_fs_interval_contains
+          (SND (candle_fs_hist_u126 boxes))
+          (list_of_seq (candle_fs_hist_u126_gradient_real values) 6)`)) THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `LENGTH (SND (candle_fs_hist_u135 boxes)) = 6`
+  ASSUME_TAC THENL
+   [MP_TAC (MATCH_MP candle_all2_length
+      (ASSUME
+        `ALL2 candle_fs_interval_contains
+          (SND (candle_fs_hist_u135 boxes))
+          (list_of_seq (candle_fs_hist_u135_gradient_real values) 6)`)) THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_log_u_gradient_real_eta] THEN
+  MATCH_MP_TAC candle_fs_hist_log_u_gradient_contains THEN
+  CONV_TAC (DEPTH_CONV ETA_CONV) THEN ASM_REWRITE_TAC[]);;
+
 end;;
