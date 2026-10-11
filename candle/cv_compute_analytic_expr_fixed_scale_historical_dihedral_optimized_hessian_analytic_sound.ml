@@ -284,4 +284,149 @@ let candle_fs_hist_final_hessian_symmetric_real_is_reference = prove
   ASM_SIMP_TAC[candle_fs_hist_final_hessian_entry_real_is_reference;
                candle_fs_hist_reference_dihedral_hessian_symmetric]);;
 
+let candle_fs_hist_final_hessian_reference_list_of_seq = prove
+ (`!values.
+     &0 < candle_fs_hist_delta_real values /\
+     &0 < candle_fs_hist_four_x0_real values /\
+     ~(candle_fs_hist_u126_real values = &0) /\
+     ~(candle_fs_hist_u135_real values = &0)
+     ==> list_of_seq
+           (\i. list_of_seq
+             (\j. candle_fs_hist_final_hessian_symmetric_real i j
+               (candle_hist_real_jet_value
+                 (candle_fs_hist_b_real_jet values))
+               (candle_hist_real_jet_value
+                 (candle_fs_hist_delta_x4_real_jet values))
+               (candle_hist_real_jet_gradient
+                 (candle_fs_hist_delta_x4_real_jet values))
+               (candle_hist_real_jet_hessian
+                 (candle_fs_hist_delta_x4_real_jet values))
+               (candle_hist_real_jet_gradient
+                 (candle_fs_hist_b_real_jet values))
+               (candle_hist_real_jet_hessian
+                 (candle_fs_hist_b_real_jet values))
+               (inv
+                 (candle_fs_hist_u126_real values *
+                  candle_fs_hist_u135_real values))
+               (\k.
+                  inv
+                    (candle_fs_hist_u126_real values *
+                     candle_fs_hist_u135_real values) *
+                  candle_fs_hist_c_real values k)
+               (candle_fs_hist_log_u_gradient_real values)) 6) 6 =
+         list_of_seq
+           (\i. list_of_seq
+             (\j. candle_hist_real_jet_hessian
+               (candle_fs_hist_reference_dihedral_real_jet values) i j)
+             6) 6`,
+  GEN_TAC THEN STRIP_TAC THEN
+  ONCE_REWRITE_TAC[LIST_EQ] THEN
+  REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
+  X_GEN_TAC `rowindex:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+  ONCE_REWRITE_TAC[LIST_EQ] THEN
+  REWRITE_TAC[LENGTH_LIST_OF_SEQ] THEN
+  X_GEN_TAC `colindex:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ;
+               candle_fs_hist_final_hessian_symmetric_real_is_reference]);;
+
+let candle_fs_hist_final_hessian_reference_contains = prove
+ (`!values b delta_x4_value delta_x4_gradient delta_x4_hessian
+      b_gradient b_hessian reciprocal_u result_gradient log_u_gradient.
+     &0 < candle_fs_hist_delta_real values /\
+     &0 < candle_fs_hist_four_x0_real values /\
+     ~(candle_fs_hist_u126_real values = &0) /\
+     ~(candle_fs_hist_u135_real values = &0) /\
+     candle_fs_interval_contains b
+       (candle_hist_real_jet_value (candle_fs_hist_b_real_jet values)) /\
+     candle_fs_interval_contains delta_x4_value
+       (candle_hist_real_jet_value
+         (candle_fs_hist_delta_x4_real_jet values)) /\
+     LENGTH delta_x4_gradient = 6 /\
+     ALL2 candle_fs_interval_contains delta_x4_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_delta_x4_real_jet values)) 6) /\
+     LENGTH delta_x4_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) delta_x4_hessian /\
+     ALL2 (ALL2 candle_fs_interval_contains) delta_x4_hessian
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_delta_x4_real_jet values) i) 6) 6) /\
+     LENGTH b_gradient = 6 /\
+     ALL2 candle_fs_interval_contains b_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values)) 6) /\
+     LENGTH b_hessian = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6) b_hessian /\
+     ALL2 (ALL2 candle_fs_interval_contains) b_hessian
+       (list_of_seq
+         (\i. list_of_seq
+           (candle_hist_real_jet_hessian
+             (candle_fs_hist_b_real_jet values) i) 6) 6) /\
+     candle_fs_interval_contains reciprocal_u
+       (inv
+         (candle_fs_hist_u126_real values *
+          candle_fs_hist_u135_real values)) /\
+     LENGTH result_gradient = 6 /\
+     ALL2 candle_fs_interval_contains result_gradient
+       (list_of_seq
+         (\i. inv
+           (candle_fs_hist_u126_real values *
+            candle_fs_hist_u135_real values) *
+           candle_fs_hist_c_real values i) 6) /\
+     LENGTH log_u_gradient = 6 /\
+     ALL2 candle_fs_interval_contains log_u_gradient
+       (list_of_seq
+         (candle_fs_hist_log_u_gradient_real values) 6)
+     ==> ALL2 (ALL2 candle_fs_interval_contains)
+       (candle_fs_hist_final_hessian b delta_x4_value
+         delta_x4_gradient delta_x4_hessian b_gradient b_hessian
+         reciprocal_u result_gradient log_u_gradient)
+       (list_of_seq
+         (\i. list_of_seq
+           (\j. candle_hist_real_jet_hessian
+             (candle_fs_hist_reference_dihedral_real_jet values) i j)
+           6) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `list_of_seq
+      (\i. list_of_seq
+        (\j. candle_fs_hist_final_hessian_symmetric_real i j
+          (candle_hist_real_jet_value
+            (candle_fs_hist_b_real_jet values))
+          (candle_hist_real_jet_value
+            (candle_fs_hist_delta_x4_real_jet values))
+          (candle_hist_real_jet_gradient
+            (candle_fs_hist_delta_x4_real_jet values))
+          (candle_hist_real_jet_hessian
+            (candle_fs_hist_delta_x4_real_jet values))
+          (candle_hist_real_jet_gradient
+            (candle_fs_hist_b_real_jet values))
+          (candle_hist_real_jet_hessian
+            (candle_fs_hist_b_real_jet values))
+          (inv
+            (candle_fs_hist_u126_real values *
+             candle_fs_hist_u135_real values))
+          (\k. inv
+            (candle_fs_hist_u126_real values *
+             candle_fs_hist_u135_real values) *
+            candle_fs_hist_c_real values k)
+          (candle_fs_hist_log_u_gradient_real values)) 6) 6 =
+    list_of_seq
+      (\i. list_of_seq
+        (\j. candle_hist_real_jet_hessian
+          (candle_fs_hist_reference_dihedral_real_jet values) i j)
+        6) 6`
+  (LABEL_TAC "reference_matrix") THENL
+   [MATCH_MP_TAC candle_fs_hist_final_hessian_reference_list_of_seq THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  USE_THEN "reference_matrix"
+    (fun matrix_eq -> ONCE_REWRITE_TAC[GSYM matrix_eq]) THEN
+  MATCH_MP_TAC candle_fs_hist_final_hessian_contains THEN
+  ASM_REWRITE_TAC[]);;
+
 end;;
