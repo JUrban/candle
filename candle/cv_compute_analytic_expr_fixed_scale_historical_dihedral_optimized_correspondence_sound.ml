@@ -3611,4 +3611,78 @@ let candle_fs_hist_final_hessian_entry_real_is_atan_hessian = prove
   COND_CASES_TAC THEN ASM_REWRITE_TAC[ITLIST] THEN
   CONV_TAC REAL_RING);;
 
+(* The supplied positive square roots used by the historical instruction are
+   the same [b] occurring in the analytic quotient.  These small identities
+   let the already-proved U126*U135 polynomial identity serve as the exact
+   arctangent denominator, without trusting a numerical coincidence. *)
+
+let candle_fs_hist_b_real_jet_value = prove
+ (`!values.
+     candle_hist_real_jet_value (candle_fs_hist_b_real_jet values) =
+     sqrt (candle_fs_hist_delta_real values) *
+     sqrt (candle_fs_hist_four_x0_real values)`,
+  REWRITE_TAC[candle_fs_hist_b_real_jet_def;
+              candle_hist_real_jet_mul_def;
+              candle_hist_real_jet_value_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_root_delta_real_jet_def;
+              candle_fs_hist_root_four_x0_real_jet_def;
+              FST; SND]);;
+
+let candle_fs_hist_b_real_jet_value_squared = prove
+ (`!values.
+     &0 <= candle_fs_hist_delta_real values /\
+     &0 <= candle_fs_hist_four_x0_real values
+     ==> candle_hist_real_jet_value (candle_fs_hist_b_real_jet values) *
+         candle_hist_real_jet_value (candle_fs_hist_b_real_jet values) =
+         candle_fs_hist_delta_real values *
+         candle_fs_hist_four_x0_real values`,
+  GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_b_real_jet_value] THEN
+  MP_TAC
+   (SPEC `candle_fs_hist_delta_real (values:num->real)` SQRT_POW_2) THEN
+  MP_TAC
+   (SPEC `candle_fs_hist_four_x0_real (values:num->real)` SQRT_POW_2) THEN
+  ASM_REWRITE_TAC[REAL_POW_2] THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_u_product_is_analytic_denominator = prove
+ (`!values.
+     &0 <= candle_fs_hist_delta_real values /\
+     &0 <= candle_fs_hist_four_x0_real values
+     ==> candle_fs_hist_u126_real values *
+           candle_fs_hist_u135_real values =
+         candle_hist_real_jet_value
+           (candle_fs_hist_delta_x4_real_jet values) *
+         candle_hist_real_jet_value
+           (candle_fs_hist_delta_x4_real_jet values) +
+         candle_hist_real_jet_value
+           (candle_fs_hist_b_real_jet values) *
+         candle_hist_real_jet_value
+           (candle_fs_hist_b_real_jet values)`,
+  GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC (SPEC `values:num->real`
+    candle_fs_hist_b_real_jet_value_squared) THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_THEN
+   (fun b_squared ->
+     REWRITE_TAC[candle_fs_hist_u_product_identity;
+                 b_squared;
+                 candle_fs_hist_delta_x4_real_jet_def;
+                 candle_hist_real_jet_value_def;
+                 candle_hist_real_jet_make_def; FST; SND]) THEN
+  REWRITE_TAC[candle_fs_hist_four_x0_real_def] THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_b_real_jet_value_positive = prove
+ (`!values.
+     &0 < candle_fs_hist_delta_real values /\
+     &0 < candle_fs_hist_four_x0_real values
+     ==> &0 < candle_hist_real_jet_value
+       (candle_fs_hist_b_real_jet values)`,
+  GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_b_real_jet_value] THEN
+  MATCH_MP_TAC REAL_LT_MUL THEN
+  ASM_SIMP_TAC[SQRT_POS_LT]);;
+
 end;;
