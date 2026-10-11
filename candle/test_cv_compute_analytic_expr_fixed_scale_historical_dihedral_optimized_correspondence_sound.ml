@@ -47,5 +47,11 @@ let _ = candle_fs_hist_u_points_length;;
 let _ = candle_fs_hist_u_value_formula_points_contains;;
 let _ = candle_fs_hist_nonnegative_product_bounds;;
 let _ = candle_fs_hist_u_termwise_bounds;;
+let _ = candle_fs_hist_u_three_vector_real_def;;
+let _ = candle_fs_hist_u_three_gradient_real_def;;
+let _ = candle_fs_hist_u_three_gradient_contains;;
+let _ = candle_fs_hist_u_three_coordinate_secant;;
+let _ = candle_fs_hist_u_three_coordinate_nondecreasing;;
+let _ = candle_fs_hist_u_three_coordinate_nonincreasing;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_CORRESPONDENCE_OK";;

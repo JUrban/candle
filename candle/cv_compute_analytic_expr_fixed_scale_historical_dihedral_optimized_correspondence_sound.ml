@@ -1520,4 +1520,134 @@ let candle_fs_hist_u_termwise_bounds = prove
               candle_fs_hist_u_three_real_def] THEN
   ASM_REAL_ARITH_TAC);;
 
+let candle_fs_hist_u_three_vector_real_def = new_definition
+ `candle_fs_hist_u_three_vector_real (values:num->real) =
+    candle_fs_hist_u_three_real (values 0) (values 1) (values 2)`;;
+
+let candle_fs_hist_u_three_gradient_real_def = new_definition
+ `candle_fs_hist_u_three_gradient_real (values:num->real) coordinate =
+    if coordinate = 0 then
+      &2 * (--(values 0) + values 1 + values 2)
+    else if coordinate = 1 then
+      &2 * (values 0 + --(values 1) + values 2)
+    else if coordinate = 2 then
+      &2 * (values 0 + values 1 + --(values 2))
+    else &0`;;
+
+let candle_fs_hist_u_three_gradient_contains = prove
+ (`!x0 x1 x2 (values:num->real).
+     candle_fs_interval_contains x0 (values 0) /\
+     candle_fs_interval_contains x1 (values 1) /\
+     candle_fs_interval_contains x2 (values 2)
+     ==> ALL2 candle_fs_interval_contains
+       (SND (candle_fs_hist_u_three x0 x1 x2))
+       (list_of_seq (candle_fs_hist_u_three_gradient_real values) 3)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_gradient_def] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[candle_fs_hist_u_three_gradient_real_def; ALL2] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REPEAT CONJ_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_u_gradient_form_contains THEN
+  ASM_MESON_TAC[candle_fs_interval_neg_sound]);;
+
+let candle_fs_hist_u_three_coordinate_secant = prove
+ (`!values coordinate replacement.
+     coordinate < 3
+     ==> candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) -
+         candle_fs_hist_u_three_vector_real values =
+         (replacement - values coordinate) *
+         ((candle_fs_hist_u_three_gradient_real
+             (candle_fs_hist_delta_x4_update
+               values coordinate replacement) coordinate +
+           candle_fs_hist_u_three_gradient_real values coordinate) / &2)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `coordinate = 0 \/ coordinate = 1 \/ coordinate = 2`
+  MP_TAC THENL
+   [ASM_ARITH_TAC;
+    DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+    REWRITE_TAC[candle_fs_hist_u_three_vector_real_def;
+                candle_fs_hist_u_three_real_def;
+                candle_fs_hist_u_three_gradient_real_def;
+                candle_fs_hist_delta_x4_update_def] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    CONV_TAC REAL_RING]);;
+
+let candle_fs_hist_u_three_coordinate_nondecreasing = prove
+ (`!(values:num->real) coordinate replacement.
+     coordinate < 3 /\
+     values coordinate <= replacement /\
+     &0 <= candle_fs_hist_u_three_gradient_real values coordinate /\
+     &0 <= candle_fs_hist_u_three_gradient_real
+       (candle_fs_hist_delta_x4_update
+         values coordinate replacement) coordinate
+     ==> candle_fs_hist_u_three_vector_real values <=
+         candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement)`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_vector_real
+       (candle_fs_hist_delta_x4_update
+         values coordinate replacement) -
+     candle_fs_hist_u_three_vector_real values =
+     (replacement - values coordinate) *
+     ((candle_fs_hist_u_three_gradient_real
+         (candle_fs_hist_delta_x4_update
+           values coordinate replacement) coordinate +
+       candle_fs_hist_u_three_gradient_real values coordinate) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u_three_coordinate_secant THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement - values coordinate) *
+     ((candle_fs_hist_u_three_gradient_real
+         (candle_fs_hist_delta_x4_update
+           values coordinate replacement) coordinate +
+       candle_fs_hist_u_three_gradient_real values coordinate) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC REAL_LE_MUL THEN ASM_REAL_ARITH_TAC;
+    ASM_REAL_ARITH_TAC]);;
+
+let candle_fs_hist_u_three_coordinate_nonincreasing = prove
+ (`!(values:num->real) coordinate replacement.
+     coordinate < 3 /\
+     values coordinate <= replacement /\
+     candle_fs_hist_u_three_gradient_real values coordinate <= &0 /\
+     candle_fs_hist_u_three_gradient_real
+       (candle_fs_hist_delta_x4_update
+         values coordinate replacement) coordinate <= &0
+     ==> candle_fs_hist_u_three_vector_real
+           (candle_fs_hist_delta_x4_update
+             values coordinate replacement) <=
+         candle_fs_hist_u_three_vector_real values`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_hist_u_three_vector_real
+       (candle_fs_hist_delta_x4_update
+         values coordinate replacement) -
+     candle_fs_hist_u_three_vector_real values =
+     (replacement - values coordinate) *
+     ((candle_fs_hist_u_three_gradient_real
+         (candle_fs_hist_delta_x4_update
+           values coordinate replacement) coordinate +
+       candle_fs_hist_u_three_gradient_real values coordinate) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_u_three_coordinate_secant THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 <= (replacement - values coordinate) *
+     --((candle_fs_hist_u_three_gradient_real
+          (candle_fs_hist_delta_x4_update
+            values coordinate replacement) coordinate +
+        candle_fs_hist_u_three_gradient_real values coordinate) / &2)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC REAL_LE_MUL THEN ASM_REAL_ARITH_TAC;
+    ASM_REAL_ARITH_TAC]);;
+
 end;;
