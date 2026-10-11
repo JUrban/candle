@@ -2829,4 +2829,48 @@ let candle_fs_hist_u_three_prefix_lower_formula_bound = prove
     REWRITE_TAC[candle_fs_hist_u_three_vector_real_def] THEN
     CONV_TAC NUM_REDUCE_CONV]);;
 
+let candle_fs_hist_u_three_formula_def = new_definition
+ `candle_fs_hist_u_three_formula selector boxes =
+    candle_fs_hist_u_value_formula selector
+      (candle_fs_hist_u_points
+        (candle_fs_interval_lookup 0 boxes)
+        (candle_fs_interval_lookup 0
+          (SND (candle_fs_hist_u_three_boxes boxes))))
+      (candle_fs_hist_u_points
+        (candle_fs_interval_lookup 1 boxes)
+        (candle_fs_interval_lookup 1
+          (SND (candle_fs_hist_u_three_boxes boxes))))
+      (candle_fs_hist_u_points
+        (candle_fs_interval_lookup 2 boxes)
+        (candle_fs_interval_lookup 2
+          (SND (candle_fs_hist_u_three_boxes boxes))))`;;
+
+let candle_fs_hist_u_three_formula_contains = prove
+ (`!selector boxes.
+     selector + 1 < 4
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_u_three_formula selector boxes)
+       (candle_fs_hist_u_three_formula_real selector boxes)`,
+  REPEAT STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_formula_def;
+              candle_fs_hist_u_three_formula_real_def;
+              candle_fs_hist_u_three_points_real_def] THEN
+  MATCH_MP_TAC candle_fs_hist_u_value_formula_points_contains THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_u_three_value_formula_endpoints = prove
+ (`!boxes.
+     FST (candle_fs_hist_u_three_boxes boxes) =
+     (FST (candle_fs_hist_u_three_formula 2 boxes),
+      SND (candle_fs_hist_u_three_formula 0 boxes))`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_u_three_boxes_def;
+              candle_fs_hist_u_three_formula_def;
+              candle_fs_hist_u_three_def;
+              candle_fs_hist_u_def;
+              candle_fs_interval_lookup_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  REWRITE_TAC[candle_fs_hist_interval_lookup_three] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
 end;;
