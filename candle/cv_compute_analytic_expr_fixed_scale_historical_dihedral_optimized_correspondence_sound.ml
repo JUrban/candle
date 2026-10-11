@@ -7,10 +7,12 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_reference
 module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_correspondence_sound = struct
 
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound;;
+open Candle_cv_analytic_expr_fixed_scale_historical_delta_root_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_root_four_x0_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_composition_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_instantiation;;
+open Candle_cv_analytic_expr_fixed_scale_invariant;;
 
 (* The historical checker names the product of its two supplied positive
    square roots [b].  Record its exact analytic jet once; the following
@@ -43,5 +45,70 @@ let candle_fs_hist_b_value_contains = prove
               FST; SND] THEN
   MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
   ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_root_delta_gradient_fixed_contains = prove
+ (`!boxes values root_lower root_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     0 < root_lower /\ root_lower <= root_upper /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0))
+       (sqrt (candle_fs_hist_delta_real values))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_second_gradient
+         (candle_fs_hist_second_sqrt_supplied
+           (candle_fs_hist_delta_second boxes)
+           ((root_lower,0),(root_upper,0))))
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values)) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_root_delta_real_jet_def;
+              candle_hist_real_jet_gradient_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+  REWRITE_TAC[GSYM candle_fs_hist_positive_sqrt_gradient_def] THEN
+  MATCH_MP_TAC candle_fs_hist_positive_sqrt_gradient_universal_contains THEN
+  ASM_REWRITE_TAC[] THEN
+  MP_TAC
+    (SPECL
+      [`boxes:((num#num)#(num#num))list`; `values:num->real`]
+      candle_fs_hist_delta_second_gradient_contains) THEN
+  ASM_REWRITE_TAC[candle_fs_hist_second_gradient_def] THEN
+  DISCH_TAC THEN
+  ONCE_REWRITE_TAC[GSYM candle_fs_hist_delta_gradient_real_list_of_seq] THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_fs_hist_root_four_x0_gradient_fixed_contains = prove
+ (`!boxes values root_lower root_upper.
+     0 < root_lower /\ root_lower <= root_upper /\
+     candle_fs_interval_contains
+       ((root_lower,0),(root_upper,0))
+       (sqrt (candle_fs_hist_four_x0_real values))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_second_gradient
+         (candle_fs_hist_second_sqrt_supplied
+           (candle_fs_hist_four_x0_second boxes)
+           ((root_lower,0),(root_upper,0))))
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_four_x0_real_jet values)) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_fs_hist_root_four_x0_real_jet_def;
+              candle_hist_real_jet_gradient_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_four_x0_second_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+  REWRITE_TAC[GSYM candle_fs_hist_positive_sqrt_gradient_def] THEN
+  MATCH_MP_TAC candle_fs_hist_positive_sqrt_gradient_universal_contains THEN
+  ASM_REWRITE_TAC[candle_fs_hist_four_x0_gradient_contains]);;
 
 end;;
