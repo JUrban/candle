@@ -5,5 +5,6 @@ open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_integrati
 let _ = candle_hist_real_atan_negative_quotient_gradient_low_work;;
 let _ = candle_fs_hist_c_real_is_analytic_numerator;;
 let _ = candle_fs_hist_reference_dihedral_gradient_is_low_work;;
+let _ = candle_fs_hist_b_real_jet_gradient_squared_product;;
 
 print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_INTEGRATION_OK";;

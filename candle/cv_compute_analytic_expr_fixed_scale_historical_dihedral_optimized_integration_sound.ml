@@ -7,6 +7,7 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_optimized
 module Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_integration_sound = struct
 
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound;;
+open Candle_cv_analytic_expr_fixed_scale_historical_root_four_x0_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_composition_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_instantiation;;
@@ -163,5 +164,76 @@ let candle_fs_hist_reference_dihedral_gradient_is_low_work = prove
   ASM_SIMP_TAC[candle_fs_hist_u_product_is_analytic_denominator;
                REAL_LT_IMP_LE;
                candle_fs_hist_c_real_is_analytic_numerator]);;
+
+(* Differentiate the square-root product used for [b].  Keeping this field
+   identity separate from the polynomial U identity makes its only domain
+   obligations explicit. *)
+
+let candle_fs_hist_b_real_jet_gradient_squared_product = prove
+ (`!values coordinate.
+     &0 < candle_fs_hist_delta_real values /\
+     &0 < candle_fs_hist_four_x0_real values
+     ==> (candle_hist_real_jet_value
+            (candle_fs_hist_b_real_jet values) +
+          candle_hist_real_jet_value
+            (candle_fs_hist_b_real_jet values)) *
+         candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values) coordinate =
+         candle_fs_hist_four_x0_real values *
+           EL coordinate (candle_fs_hist_delta_gradient_real values) +
+         candle_fs_hist_delta_real values *
+           candle_fs_hist_four_x0_gradient_real coordinate`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `&0 < sqrt (candle_fs_hist_delta_real values)`
+  (LABEL_TAC "root_delta_positive") THENL
+   [ASM_SIMP_TAC[SQRT_POS_LT];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&0 < sqrt (candle_fs_hist_four_x0_real values)`
+  (LABEL_TAC "root_four_positive") THENL
+   [ASM_SIMP_TAC[SQRT_POS_LT];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `sqrt (candle_fs_hist_delta_real values) *
+      sqrt (candle_fs_hist_delta_real values) =
+    candle_fs_hist_delta_real values`
+  (LABEL_TAC "root_delta_square") THENL
+   [REWRITE_TAC[GSYM REAL_POW_2] THEN
+    MATCH_MP_TAC SQRT_POW_2 THEN ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `sqrt (candle_fs_hist_four_x0_real values) *
+      sqrt (candle_fs_hist_four_x0_real values) =
+    candle_fs_hist_four_x0_real values`
+  (LABEL_TAC "root_four_square") THENL
+   [REWRITE_TAC[GSYM REAL_POW_2] THEN
+    MATCH_MP_TAC SQRT_POW_2 THEN ASM_REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `~(sqrt (candle_fs_hist_delta_real values) +
+      sqrt (candle_fs_hist_delta_real values) = &0)`
+  (LABEL_TAC "twice_root_delta_nonzero") THENL
+   [USE_THEN "root_delta_positive" MP_TAC THEN REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `~(sqrt (candle_fs_hist_four_x0_real values) +
+      sqrt (candle_fs_hist_four_x0_real values) = &0)`
+  (LABEL_TAC "twice_root_four_nonzero") THENL
+   [USE_THEN "root_four_positive" MP_TAC THEN REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_b_real_jet_def;
+              candle_hist_real_jet_mul_def;
+              candle_hist_real_jet_value_def;
+              candle_hist_real_jet_gradient_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_root_delta_real_jet_def;
+              candle_fs_hist_root_four_x0_real_jet_def;
+              FST; SND] THEN
+  REMOVE_THEN "root_delta_square" MP_TAC THEN
+  REMOVE_THEN "root_four_square" MP_TAC THEN
+  REMOVE_THEN "twice_root_delta_nonzero" MP_TAC THEN
+  REMOVE_THEN "twice_root_four_nonzero" MP_TAC THEN
+  CONV_TAC REAL_FIELD);;
 
 end;;
