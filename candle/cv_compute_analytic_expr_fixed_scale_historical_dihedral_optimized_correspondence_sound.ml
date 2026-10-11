@@ -676,4 +676,58 @@ let candle_fs_hist_b_hessian_contains = prove
   MATCH_MP_TAC candle_fs_hist_b_hessian_entry_contains THEN
   ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV);;
 
+let candle_fs_hist_second_sqrt_supplied_hessian_shape = prove
+ (`!input root_value.
+     LENGTH
+       (candle_fs_hist_second_hessian
+         (candle_fs_hist_second_sqrt_supplied input root_value)) = 6 /\
+     ALL (\matrix_row. LENGTH matrix_row = 6)
+       (candle_fs_hist_second_hessian
+         (candle_fs_hist_second_sqrt_supplied input root_value))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_hessian_def;
+              candle_fs_hist_second_make_def;
+              LET_DEF; LET_END_DEF; FST; SND] THEN
+  MATCH_ACCEPT_TAC candle_fs_hist_sqrt_hessian_shape);;
+
+let candle_fs_hist_second_sqrt_supplied_gradient_length = prove
+ (`!input root_value.
+     LENGTH
+       (candle_fs_hist_second_gradient
+         (candle_fs_hist_second_sqrt_supplied input root_value)) =
+     LENGTH (candle_fs_hist_second_gradient input)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_second_sqrt_supplied_def;
+              candle_fs_hist_second_gradient_def;
+              candle_fs_hist_second_make_def;
+              candle_fsn_interval_list_scale_length;
+              LET_DEF; LET_END_DEF; FST; SND]);;
+
+let candle_fs_hist_positive_inv_double_contains = prove
+ (`!lower upper x.
+     0 < lower /\ lower <= upper /\
+     candle_fs_interval_contains ((lower,0),(upper,0)) x
+     ==> candle_fs_interval_contains
+       (candle_fs_hist_positive_inv
+         (candle_fs_angle_interval_scale 2
+           ((lower,0),(upper,0))))
+       (inv (&2 * x))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_angle_interval_scale 2 ((lower,0),(upper,0)))
+      (&2 * x)`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_angle_interval_scale_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  RULE_ASSUM_TAC
+    (REWRITE_RULE[candle_fs_angle_interval_scale_def;
+                  candle_lc_zscale_def; FST; SND; MULT_CLAUSES]) THEN
+  REWRITE_TAC[candle_fs_angle_interval_scale_def;
+              candle_lc_zscale_def; FST; SND; MULT_CLAUSES] THEN
+  MATCH_MP_TAC candle_fs_hist_positive_inv_contains THEN
+  ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC);;
+
 end;;
