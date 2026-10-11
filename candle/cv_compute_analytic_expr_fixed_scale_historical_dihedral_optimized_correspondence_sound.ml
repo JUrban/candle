@@ -12,7 +12,9 @@ open Candle_cv_analytic_expr_fixed_scale_historical_root_four_x0_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_composition_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_reference_instantiation;;
+open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_invariant;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_sound;;
 
 (* The historical checker names the product of its two supplied positive
    square roots [b].  Record its exact analytic jet once; the following
@@ -110,5 +112,188 @@ let candle_fs_hist_root_four_x0_gradient_fixed_contains = prove
   REWRITE_TAC[GSYM candle_fs_hist_positive_sqrt_gradient_def] THEN
   MATCH_MP_TAC candle_fs_hist_positive_sqrt_gradient_universal_contains THEN
   ASM_REWRITE_TAC[candle_fs_hist_four_x0_gradient_contains]);;
+
+let candle_fs_hist_b_gradient_target_def = new_definition
+ `candle_fs_hist_b_gradient_target values coordinate =
+    sqrt (candle_fs_hist_four_x0_real values) *
+      candle_hist_real_jet_gradient
+        (candle_fs_hist_root_delta_real_jet values) coordinate +
+    (if coordinate = 0 then
+       sqrt (candle_fs_hist_delta_real values) *
+         (&2 * inv (sqrt (candle_fs_hist_four_x0_real values)))
+     else &0)`;;
+
+let candle_fs_hist_b_gradient_target_eq = prove
+ (`!values coordinate.
+     candle_hist_real_jet_gradient
+       (candle_fs_hist_b_real_jet values) coordinate =
+     candle_fs_hist_b_gradient_target values coordinate`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fs_hist_b_gradient_target_def;
+              candle_fs_hist_b_real_jet_def;
+              candle_hist_real_jet_mul_def;
+              candle_hist_real_jet_gradient_def;
+              candle_hist_real_jet_value_def;
+              candle_hist_real_jet_make_def;
+              candle_fs_hist_root_delta_real_jet_def;
+              candle_fs_hist_root_four_x0_real_jet_def;
+              FST; SND] THEN
+  ASM_CASES_TAC `coordinate = 0` THEN
+  ASM_REWRITE_TAC[candle_fs_hist_four_x0_gradient_real_def] THEN
+  REWRITE_TAC[REAL_ARITH `x + x = &2 * x`; REAL_INV_MUL] THEN
+  CONV_TAC REAL_RAT_REDUCE_CONV THEN
+  CONV_TAC REAL_RING);;
+
+let candle_fs_hist_b_gradient_contains = prove
+ (`!values root_delta_value root_four_x0 root_delta_gradient
+      two_over_root_four_x0.
+     candle_fs_interval_contains root_delta_value
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     candle_fs_interval_contains root_four_x0
+       (sqrt (candle_fs_hist_four_x0_real values)) /\
+     ALL2 candle_fs_interval_contains root_delta_gradient
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values)) 6) /\
+     candle_fs_interval_contains two_over_root_four_x0
+       (&2 * inv (sqrt (candle_fs_hist_four_x0_real values)))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_b_gradient root_four_x0 root_delta_value
+         root_delta_gradient two_over_root_four_x0)
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values)) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `ALL2 candle_fs_interval_contains
+      (candle_fsn_interval_list_scale root_four_x0 root_delta_gradient)
+      (list_of_seq
+        (\coordinate.
+          sqrt (candle_fs_hist_four_x0_real values) *
+          candle_hist_real_jet_gradient
+            (candle_fs_hist_root_delta_real_jet values) coordinate) 6)`
+  ASSUME_TAC THENL
+   [REWRITE_TAC[GSYM candle_map_scale_list_of_seq] THEN
+    MATCH_MP_TAC candle_fsn_interval_list_scale_contains THEN
+    CONV_TAC (DEPTH_CONV ETA_CONV) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (candle_fsn_interval_list_scale root_four_x0 root_delta_gradient) = 6`
+  ASSUME_TAC THENL
+   [REWRITE_TAC[candle_fsn_interval_list_scale_length] THEN
+    MP_TAC
+      (MATCH_MP candle_all2_length
+        (ASSUME
+          `ALL2 candle_fs_interval_contains root_delta_gradient
+            (list_of_seq
+              (candle_hist_real_jet_gradient
+                (candle_fs_hist_root_delta_real_jet values)) 6)`)) THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `!coordinate. coordinate < 6
+      ==> candle_fs_interval_contains
+        (candle_fs_interval_lookup coordinate
+          (candle_fsn_interval_list_scale
+            root_four_x0 root_delta_gradient))
+        (sqrt (candle_fs_hist_four_x0_real values) *
+         candle_hist_real_jet_gradient
+           (candle_fs_hist_root_delta_real_jet values) coordinate)`
+  ASSUME_TAC THENL
+   [REPEAT STRIP_TAC THEN
+    MATCH_MP_TAC
+      (CONV_RULE (DEPTH_CONV BETA_CONV)
+        (SPECL
+          [`6`;
+           `candle_fsn_interval_list_scale
+              root_four_x0 root_delta_gradient`;
+           `\coordinate.
+              sqrt (candle_fs_hist_four_x0_real values) *
+              candle_hist_real_jet_gradient
+                (candle_fs_hist_root_delta_real_jet values) coordinate`;
+           `coordinate:num`]
+          candle_fs_hist_interval_lookup_contains)) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_fs_interval_contains
+      (candle_fs_angle_interval_mul
+        root_delta_value two_over_root_four_x0)
+      (sqrt (candle_fs_hist_delta_real values) *
+       (&2 * inv (sqrt (candle_fs_hist_four_x0_real values))))`
+  ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_fs_hist_angle_mul_contains THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_fs_hist_b_gradient_target_eq;
+              candle_fs_hist_b_gradient_def;
+              LET_DEF; LET_END_DEF] THEN
+  CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+  REWRITE_TAC[candle_fs_hist_b_gradient_target_eq;
+              candle_fs_hist_b_gradient_target_def; ALL2] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REWRITE_TAC[REAL_ADD_RID] THEN
+  let lookup_tac index =
+    MATCH_MP_TAC
+      (SPEC index
+        (ASSUME
+          `!coordinate. coordinate < 6
+             ==> candle_fs_interval_contains
+               (candle_fs_interval_lookup coordinate
+                 (candle_fsn_interval_list_scale
+                   root_four_x0 root_delta_gradient))
+               (sqrt (candle_fs_hist_four_x0_real values) *
+                candle_hist_real_jet_gradient
+                  (candle_fs_hist_root_delta_real_jet values) coordinate)`))
+    THEN ARITH_TAC in
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_fs_interval_add_sound THEN
+    CONJ_TAC THENL
+     [lookup_tac `0`;
+      ASM_REWRITE_TAC[]];
+    lookup_tac `1`;
+    lookup_tac `2`;
+    lookup_tac `3`;
+    lookup_tac `4`;
+    lookup_tac `5`]);;
+
+let candle_fs_hist_b_gradient_fixed_contains = prove
+ (`!boxes values root_delta_lower root_delta_upper
+      root_four_x0_lower root_four_x0_upper.
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     0 < root_delta_lower /\ root_delta_lower <= root_delta_upper /\
+     candle_fs_interval_contains
+       ((root_delta_lower,0),(root_delta_upper,0))
+       (sqrt (candle_fs_hist_delta_real values)) /\
+     0 < root_four_x0_lower /\
+     root_four_x0_lower <= root_four_x0_upper /\
+     candle_fs_interval_contains
+       ((root_four_x0_lower,0),(root_four_x0_upper,0))
+       (sqrt (candle_fs_hist_four_x0_real values))
+     ==> ALL2 candle_fs_interval_contains
+       (candle_fs_hist_b_gradient
+         ((root_four_x0_lower,0),(root_four_x0_upper,0))
+         ((root_delta_lower,0),(root_delta_upper,0))
+         (candle_fs_hist_second_gradient
+           (candle_fs_hist_second_sqrt_supplied
+             (candle_fs_hist_delta_second boxes)
+             ((root_delta_lower,0),(root_delta_upper,0))))
+         (candle_fs_hist_two_over_positive_root
+           ((root_four_x0_lower,0),(root_four_x0_upper,0))))
+       (list_of_seq
+         (candle_hist_real_jet_gradient
+           (candle_fs_hist_b_real_jet values)) 6)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_fs_hist_b_gradient_contains THEN
+  REPEAT CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_root_delta_gradient_fixed_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_fs_hist_two_over_positive_root_contains THEN
+    ASM_REWRITE_TAC[]]);;
 
 end;;
