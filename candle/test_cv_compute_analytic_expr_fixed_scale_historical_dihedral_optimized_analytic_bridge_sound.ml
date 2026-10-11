@@ -1,0 +1,8 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_optimized_analytic_bridge_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_optimized_analytic_bridge_sound;;
+
+let _ = candle_real_hist_dihedral_jet_is_analytic;;
+let _ = candle_q_hist_dihedral_components_are_analytic;;
+
+print_endline "CANDLE_CV_HISTORICAL_DIHEDRAL_OPTIMIZED_ANALYTIC_BRIDGE_OK";;
