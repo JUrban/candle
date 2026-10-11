@@ -2960,4 +2960,98 @@ let candle_fs_hist_u_three_value_contains = prove
               FST; SND] THEN
   ASM_REAL_ARITH_TAC);;
 
+let candle_fs_hist_u126_value_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 0 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 1 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 5 boxes))
+     ==> candle_fs_interval_contains
+       (FST (candle_fs_hist_u126 boxes))
+       (candle_fs_hist_u126_real values)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+   (SPECL
+     [`[candle_fs_interval_lookup 0 boxes;
+        candle_fs_interval_lookup 1 boxes;
+        candle_fs_interval_lookup 5 boxes]`;
+      `(\coordinate.
+         if coordinate = 0 then (values:num->real) 0
+         else if coordinate = 1 then values 1
+         else values 5):num->real`]
+     candle_fs_hist_u_three_value_contains) THEN
+  ANTS_TAC THENL
+   [REPEAT CONJ_TAC THENL
+     [REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV;
+      CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+      REWRITE_TAC[ALL2] THEN
+      CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+      CONV_TAC NUM_REDUCE_CONV THEN
+      REPEAT CONJ_TAC THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV;
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three];
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three];
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three]];
+    REWRITE_TAC[candle_fs_hist_u126_def;
+                candle_fs_hist_u126_real_def;
+                candle_fs_hist_u_three_boxes_def;
+                candle_fs_hist_u_three_vector_real_def;
+                candle_fs_hist_u_def;
+                LET_DEF; LET_END_DEF; FST; SND] THEN
+    REWRITE_TAC[candle_fs_hist_interval_lookup_three] THEN
+    CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+    CONV_TAC NUM_REDUCE_CONV]);;
+
+let candle_fs_hist_u135_value_contains = prove
+ (`!boxes (values:num->real).
+     LENGTH boxes = 6 /\
+     ALL2 candle_fs_interval_contains boxes (list_of_seq values 6) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 0 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 2 boxes)) /\
+     candle_fs_raw_le (0,0)
+       (FST (candle_fs_interval_lookup 4 boxes))
+     ==> candle_fs_interval_contains
+       (FST (candle_fs_hist_u135 boxes))
+       (candle_fs_hist_u135_real values)`,
+  REPEAT STRIP_TAC THEN
+  MP_TAC
+   (SPECL
+     [`[candle_fs_interval_lookup 0 boxes;
+        candle_fs_interval_lookup 2 boxes;
+        candle_fs_interval_lookup 4 boxes]`;
+      `(\coordinate.
+         if coordinate = 0 then (values:num->real) 0
+         else if coordinate = 1 then values 2
+         else values 4):num->real`]
+     candle_fs_hist_u_three_value_contains) THEN
+  ANTS_TAC THENL
+   [REPEAT CONJ_TAC THENL
+     [REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV;
+      CONV_TAC (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) THEN
+      REWRITE_TAC[ALL2] THEN
+      CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+      CONV_TAC NUM_REDUCE_CONV THEN
+      REPEAT CONJ_TAC THEN
+      MATCH_MP_TAC candle_fs_hist_six_lookup_contains THEN
+      ASM_REWRITE_TAC[] THEN CONV_TAC NUM_REDUCE_CONV;
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three];
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three];
+      ASM_REWRITE_TAC[candle_fs_hist_interval_lookup_three]];
+    REWRITE_TAC[candle_fs_hist_u135_def;
+                candle_fs_hist_u135_real_def;
+                candle_fs_hist_u_three_boxes_def;
+                candle_fs_hist_u_three_vector_real_def;
+                candle_fs_hist_u_def;
+                LET_DEF; LET_END_DEF; FST; SND] THEN
+    REWRITE_TAC[candle_fs_hist_interval_lookup_three] THEN
+    CONV_TAC (DEPTH_CONV BETA_CONV) THEN
+    CONV_TAC NUM_REDUCE_CONV]);;
+
 end;;
