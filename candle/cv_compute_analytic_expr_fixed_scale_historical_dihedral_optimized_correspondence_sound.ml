@@ -3546,4 +3546,69 @@ let candle_hist_real_atan_negative_quotient_hessian_low_work = prove
   REMOVE_THEN "u_nonzero" MP_TAC THEN
   CONV_TAC REAL_FIELD);;
 
+(* Connect one semantic entry of the executable low-work instruction to the
+   preceding algebra theorem.  The diagonal branch deliberately omits the two
+   cancelling cross terms; this lemma proves that optimization harmless once,
+   independently of the historical source polynomials. *)
+
+let candle_fs_hist_final_hessian_entry_real_is_atan_hessian = prove
+ (`!(a_jet:real#((num->real)#(num->num->real)))
+     (b_jet:real#((num->real)#(num->num->real))) rowindex colindex.
+     ~(candle_hist_real_jet_value b_jet = &0) /\
+     ~(candle_hist_real_jet_value a_jet *
+        candle_hist_real_jet_value a_jet +
+        candle_hist_real_jet_value b_jet *
+        candle_hist_real_jet_value b_jet = &0)
+     ==> candle_fs_hist_final_hessian_entry_real rowindex colindex
+       (candle_hist_real_jet_value b_jet)
+       (candle_hist_real_jet_value a_jet)
+       (candle_hist_real_jet_gradient a_jet)
+       (candle_hist_real_jet_hessian a_jet)
+       (candle_hist_real_jet_gradient b_jet)
+       (candle_hist_real_jet_hessian b_jet)
+       (inv
+         (candle_hist_real_jet_value a_jet *
+            candle_hist_real_jet_value a_jet +
+          candle_hist_real_jet_value b_jet *
+            candle_hist_real_jet_value b_jet))
+       (\i.
+         inv
+           (candle_hist_real_jet_value a_jet *
+              candle_hist_real_jet_value a_jet +
+            candle_hist_real_jet_value b_jet *
+              candle_hist_real_jet_value b_jet) *
+         (--(candle_hist_real_jet_gradient a_jet i *
+              candle_hist_real_jet_value b_jet) +
+          candle_hist_real_jet_value a_jet *
+            candle_hist_real_jet_gradient b_jet i))
+       (\i.
+         ((candle_hist_real_jet_value a_jet +
+           candle_hist_real_jet_value a_jet) *
+            candle_hist_real_jet_gradient a_jet i +
+          (candle_hist_real_jet_value b_jet +
+           candle_hist_real_jet_value b_jet) *
+            candle_hist_real_jet_gradient b_jet i) *
+         inv
+           (candle_hist_real_jet_value a_jet *
+              candle_hist_real_jet_value a_jet +
+            candle_hist_real_jet_value b_jet *
+              candle_hist_real_jet_value b_jet)) =
+       candle_hist_real_jet_hessian
+         (candle_hist_real_jet_atn
+           (candle_hist_real_jet_mul
+             (candle_hist_real_jet_neg a_jet)
+             (candle_hist_real_jet_inv b_jet))) rowindex colindex`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+   (SPECL
+     [`a_jet:real#((num->real)#(num->num->real))`;
+      `b_jet:real#((num->real)#(num->num->real))`;
+      `rowindex:num`; `colindex:num`]
+     candle_hist_real_atan_negative_quotient_hessian_low_work) THEN
+  ASM_REWRITE_TAC[] THEN DISCH_THEN SUBST1_TAC THEN
+  REWRITE_TAC[candle_fs_hist_final_hessian_entry_real_def;
+              LET_DEF; LET_END_DEF] THEN
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[ITLIST] THEN
+  CONV_TAC REAL_RING);;
+
 end;;
