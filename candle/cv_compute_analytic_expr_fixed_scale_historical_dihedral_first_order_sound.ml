@@ -68,18 +68,9 @@ let candle_fs_hist_first_order_direct_def = new_definition
     let two_over_root_four_x0 = candle_fs_angle_interval_mul
       (candle_fs_angle_interval_scale 2 candle_fs_interval_one)
       (candle_fs_hist_positive_inv root_four_x0) in
-    let b_gradient_base = candle_fsn_interval_list_scale
-      root_four_x0 root_delta_gradient in
-    let b_gradient =
-      [candle_fs_interval_add
-         (candle_fs_interval_lookup 0 b_gradient_base)
-         (candle_fs_angle_interval_mul
-           root_delta two_over_root_four_x0);
-       candle_fs_interval_lookup 1 b_gradient_base;
-       candle_fs_interval_lookup 2 b_gradient_base;
-       candle_fs_interval_lookup 3 b_gradient_base;
-       candle_fs_interval_lookup 4 b_gradient_base;
-       candle_fs_interval_lookup 5 b_gradient_base] in
+    let b_gradient = candle_fs_hist_b_gradient
+      root_four_x0 root_delta root_delta_gradient
+      two_over_root_four_x0 in
     let c = candle_fs_hist_c_vector
       delta_x4_value b delta_x4_gradient b_gradient in
     let reciprocal_u = candle_fs_hist_positive_inv
@@ -124,6 +115,7 @@ let candle_cv_fs_hist_first_order_direct_correct = prove
               candle_cv_fs_interval_one_correct;
               candle_cv_fs_interval_lookup_correct;
               candle_cv_fs_interval_add_correct;
+              candle_fs_hist_b_gradient_def;
               candle_cv_fs_hist_c_vector_correct;
               candle_cv_fs_interval_fst_correct;
               candle_cv_fs_hist_replace_three_correct;
