@@ -4,5 +4,9 @@ open Candle_cv_analytic_expr_case10173_historical_dihedral_program_analytic_soun
 
 let _ = candle_case10173_hist_logical_item_analytic_invariant;;
 let _ = candle_case10173_hist_logical_item_source_analytic_invariant;;
+let _ = candle_case10173_hist_context_prefix_length;;
+let _ = candle_case10173_hist_context_suffix_length;;
+let _ = candle_case10173_hist_context_expression_well_formed;;
+let _ = candle_case10173_hist_context_run_analytic_invariant;;
 
 print_endline "CANDLE_CV_CASE10173_HISTORICAL_PROGRAM_ANALYTIC_SOUND_OK";;
