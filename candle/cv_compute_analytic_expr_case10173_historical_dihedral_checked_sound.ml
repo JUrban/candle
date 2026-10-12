@@ -4,6 +4,7 @@
 
 needs "candle/cv_compute_analytic_expr_case10173_historical_dihedral_checked_compute.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_angle_polynomials_sound.ml";;
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_dihedral_sound.ml";;
 
 module Candle_cv_analytic_expr_case10173_historical_dihedral_checked_sound = struct
 
@@ -11,6 +12,7 @@ open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_analytic_expr_fixed_scale_sound;;
 open Candle_cv_analytic_expr_fixed_scale_angle_polynomials_sound;;
+open Candle_cv_analytic_expr_fixed_scale_historical_dihedral_sound;;
 open Candle_cv_analytic_expr_fixed_scale_historical_root_certificate_compute;;
 open Candle_cv_analytic_expr_case10173_historical_dihedral_checked_compute;;
 
@@ -111,7 +113,8 @@ let candle_case10173_hist_root_inputs_def = new_definition
     [candle_fs_angle_delta_value center_environment;
      candle_fs_angle_interval_scale 4
        (candle_fs_interval_lookup 0 center_environment);
-     candle_fs_angle_delta_value box_environment;
+     candle_fs_hist_second_value
+       (candle_fs_hist_delta_second box_environment);
      candle_fs_angle_interval_scale 4
        (candle_fs_interval_lookup 0 box_environment)]`;;
 
@@ -127,6 +130,8 @@ let candle_cv_case10173_hist_root_inputs_correct = prove
               candle_cv_q_center_environment_list_correct;
               candle_cv_fs_interval_list_of_q_correct;
               candle_cv_fs_angle_delta_value_correct;
+              candle_cv_fs_hist_delta_second_correct;
+              candle_cv_fs_hist_second_value_correct;
               candle_cv_fs_interval_lookup_correct;
               candle_cv_fs_angle_interval_scale_correct;
               candle_cv_fs_interval_list_def;
@@ -199,7 +204,8 @@ let candle_case10173_hist_root_record_valid_components = prove
          (candle_fs_interval_lookup 0 center_environment))
        center_root_four_x0 /\
      candle_fs_hist_positive_root_certificate
-       (candle_fs_angle_delta_value box_environment)
+       (candle_fs_hist_second_value
+         (candle_fs_hist_delta_second box_environment))
        box_root_delta /\
      candle_fs_hist_positive_root_certificate
        (candle_fs_angle_interval_scale 4

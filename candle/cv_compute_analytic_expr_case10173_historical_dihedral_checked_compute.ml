@@ -81,7 +81,8 @@ let candle_cv_case10173_hist_root_inputs_def = new_definition
         (candle_cv_fs_angle_interval_scale (Cexp_num 4)
           (candle_cv_fs_interval_lookup (Cexp_num 0) center_environment))
         (Cexp_pair
-          (candle_cv_fs_angle_delta_value box_environment)
+          (candle_cv_fs_hist_second_value
+            (candle_cv_fs_hist_delta_second box_environment))
           (Cexp_pair
             (candle_cv_fs_angle_interval_scale (Cexp_num 4)
               (candle_cv_fs_interval_lookup (Cexp_num 0) box_environment))
