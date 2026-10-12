@@ -41,9 +41,9 @@ def main() -> None:
     source = [line for line in args.input.read_text().splitlines() if line]
     if args.count is not None:
         source = source[: args.count]
-    # These intervals are untrusted benchmark inputs.  The experimental ML
-    # splice seals them as data but does not yet validate their sqrt contracts;
-    # they therefore must not be used as release evidence.
+    # These intervals remain untrusted captured inputs.  They are suitable
+    # only for the authenticated-root wrapper, which recomputes each radicand
+    # from its source job and checks the square-root contract before use.
     rows: list[str] = []
     for expected_index, line in enumerate(source):
         record = parse(line)
