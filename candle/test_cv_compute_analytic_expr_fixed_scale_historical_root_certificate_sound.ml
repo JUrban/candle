@@ -1,0 +1,7 @@
+needs "candle/cv_compute_analytic_expr_fixed_scale_historical_root_certificate_sound.ml";;
+
+open Candle_cv_analytic_expr_fixed_scale_historical_root_certificate_sound;;
+
+let _ = candle_fs_hist_root_certificate_sound;;
+
+print_endline "CANDLE_CV_HISTORICAL_ROOT_CERTIFICATE_SOUND_OK";;
