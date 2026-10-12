@@ -1,0 +1,8 @@
+needs "candle/cv_compute_analytic_expr_case10173_historical_dihedral_program_analytic_sound.ml";;
+
+open Candle_cv_analytic_expr_case10173_historical_dihedral_program_analytic_sound;;
+
+let _ = candle_case10173_hist_logical_item_analytic_invariant;;
+let _ = candle_case10173_hist_logical_item_source_analytic_invariant;;
+
+print_endline "CANDLE_CV_CASE10173_HISTORICAL_PROGRAM_ANALYTIC_SOUND_OK";;
