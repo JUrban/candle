@@ -1,0 +1,15 @@
+needs "candle/cv_compute_analytic_expr_case10173_historical_dihedral_context_certified_sound.ml";;
+
+module Test_cv_compute_analytic_expr_case10173_historical_dihedral_context_certified_sound = struct
+
+open Candle_cv_analytic_expr_case10173_historical_dihedral_context_certified_sound;;
+
+let _ = candle_case10173_hist_checked_context_certified_accept_sound;;
+let _ = candle_case10173_hist_checked_context_certified_flag_sound;;
+let _ = candle_case10173_hist_checked_context_source_cell_sound;;
+let _ = candle_case10173_hist_checked_context_source_cell_flag_sound;;
+
+print_endline
+  "CANDLE_CV_CASE10173_HISTORICAL_CONTEXT_CERTIFIED_SOUND_OK DEVELOPMENT_NON_RELEASE";;
+
+end;;
