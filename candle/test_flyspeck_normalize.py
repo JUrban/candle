@@ -324,10 +324,16 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("Hash_term.hash_of_term", relabel["operations"][7]["after"])
         set_make = entries["PROJECT-MODULE-S3-SET-MAKE-001"]
         self.assertEqual(set_make["operations"][0]["line"], 34)
-        self.assertIn("type t = string list", set_make["operations"][0]["after"])
+        self.assertIn("Node of t * string * t", set_make["operations"][0]["after"])
+        self.assertIn("module Nonlinear_import_map", (
+            set_make["operations"][0]["after"]
+        ))
+        self.assertIn("String.compare", set_make["operations"][0]["after"])
         self.assertNotIn("Set.Make", set_make["operations"][0]["after"])
-        self.assertIn("only through empty, add, and mem", set_make["semantic_rule"])
-        self.assertEqual(len(set_make["operations"]), 3)
+        self.assertIn("deterministic balanced search trees", (
+            set_make["semantic_rule"]
+        ))
+        self.assertEqual(len(set_make["operations"]), 29)
         self.assertIn("#flyspeck_loadt", set_make["operations"][1]["after"])
         digest_output = set_make["operations"][2]
         self.assertEqual(digest_output["kind"], "exact_span_replace_once")
@@ -336,7 +342,15 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         self.assertIn("Filename.temp_file", digest_output["start"])
         self.assertNotIn("Filename.temp_file", digest_output["after"])
         self.assertEqual(digest_output["after"].count("failwith"), 2)
-        self.assertIn("attempt-local atomic", set_make["scope_limit"])
+        self.assertIn("legacy nonlinear import", set_make["scope_limit"])
+        serialization_after = "".join(
+            operation.get("after", "") for operation in set_make["operations"]
+        )
+        self.assertIn("module Serialization_collections", serialization_after)
+        self.assertIn("let mk_nonlinear_legacy_ser_thm", serialization_after)
+        self.assertIn("Serialization_import.nonlinear_legacy_import_attempts", (
+            serialization_after
+        ))
         update_database = entries["PROJECT-TOPLOOP-S3-UPDATE-DATABASE-001"]
         self.assertEqual(
             [operation["kind"] for operation in update_database["operations"]],
@@ -677,18 +691,35 @@ class FlyspeckNormalizationTests(unittest.TestCase):
             "PROJECT-NONLINEAR-S3-FINAL-COVERAGE-GATES-001"
         ]
         self.assertEqual(
-            [operation["line"] for operation in nonlinear_digests["operations"]],
-            [49, 335, 364, 412],
+            [operation["line"] for operation in nonlinear_digests["operations"][:5]],
+            [34, 49, 335, 364, 412],
         )
+        self.assertEqual(
+            [operation["line"] for operation in nonlinear_digests["operations"][5:]],
+            [44, 78, 211, 295, 311],
+        )
+        static_dependencies = nonlinear_digests["operations"][0]
+        self.assertEqual(static_dependencies["kind"], "exact_lines_replace_once")
+        self.assertEqual(static_dependencies["replacement_count"], 5)
+        self.assertEqual(
+            [replacement["line"] for replacement in static_dependencies["replacements"]],
+            [34, 35, 36, 37, 38],
+        )
+        self.assertTrue(all(
+            replacement["after"].startswith("#flyspeck_needs ")
+            for replacement in static_dependencies["replacements"]
+        ))
         nonlinear_after = "".join(
             operation["after"] for operation in nonlinear_digests["operations"]
+            if "after" in operation
         )
         self.assertIn("1f054717131cf915bd8cc95ab7b645c3", nonlinear_after)
         self.assertIn("e607b9e5e7f4c495236c6546d6889963", nonlinear_after)
         self.assertIn("filter (fun (_,t) -> t = TRUTH) exec_results = []", nonlinear_after)
-        self.assertIn("candle_nonlinear_iarg_leaf_visits = 7479", nonlinear_after)
-        self.assertEqual(nonlinear_after.count("||\n  failwith"), 4)
-        self.assertIn("do not bind definition/proof history", (
+        self.assertIn("candle_mk_all_expected_iarg_leaf_visits", nonlinear_after)
+        self.assertIn("nonlinear_legacy_import_successes = 23242", nonlinear_after)
+        self.assertEqual(nonlinear_after.count("||\n  failwith"), 5)
+        self.assertIn("legacy axiom-backed archive import", (
             nonlinear_digests["scope_limit"]
         ))
         operation_ids = [
@@ -703,7 +734,7 @@ class FlyspeckNormalizationTests(unittest.TestCase):
         )
         self.assertEqual(archive["operations"][0]["chunk_count"], 40)
         self.assertIn("lexical shadowing", archive["semantic_rule"])
-        self.assertEqual(len(operation_ids), 184)
+        self.assertEqual(len(operation_ids), 216)
         self.assertEqual(len(operation_ids), len(set(operation_ids)))
 
     def test_materialized_receipt_is_deterministic(self):
