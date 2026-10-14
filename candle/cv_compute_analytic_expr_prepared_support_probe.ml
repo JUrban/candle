@@ -1,5 +1,5 @@
 (* ========================================================================== *)
-(* Focused proved-preparation coverage probe for Flyspeck NL source terms.    *)
+(* Proved-preparation coverage scan for Flyspeck NL source terms.             *)
 (*                                                                            *)
 (* DEVELOPMENT / NON-RELEASE.  This applies Flyspeck's existing preparation  *)
 (* tactic to a source goal and inspects the resulting goal expression.  It   *)
@@ -66,23 +66,28 @@ let candle_nl_prepared_scan_source source_id =
       functions [] in
   dimension,length disjuncts,unsupported,target;;
 
-let candle_nl_prepared_probe_id = "prep-8657368829";;
-let candle_nl_prepared_probe_started = Unix.gettimeofday ();;
-let candle_nl_prepared_probe_dimension,
-    candle_nl_prepared_probe_disjuncts,
-    candle_nl_prepared_probe_unsupported,
-    candle_nl_prepared_probe_target =
-  candle_nl_prepared_scan_source candle_nl_prepared_probe_id;;
-let candle_nl_prepared_probe_seconds =
-  Unix.gettimeofday () -. candle_nl_prepared_probe_started;;
+let candle_nl_prepared_probe_ids = Break_case_exec.all_idv;;
 
-print_endline
-  ("CANDLE_NL_PREPARED_SUPPORT_PROBE DEVELOPMENT_NON_RELEASE" ^
-   " source_id=" ^ candle_nl_prepared_probe_id ^
-   " dimension=" ^ string_of_int candle_nl_prepared_probe_dimension ^
-   " disjuncts=" ^ string_of_int candle_nl_prepared_probe_disjuncts ^
-   " unsupported=" ^
-     candle_nl_corpus_scan_join "," candle_nl_prepared_probe_unsupported ^
-   " elapsed_seconds=" ^ string_of_float candle_nl_prepared_probe_seconds);;
+let candle_nl_prepared_probe_emit source_id =
+  let started = Unix.gettimeofday () in
+  try
+    let dimension,disjuncts,unsupported,_ =
+      candle_nl_prepared_scan_source source_id in
+    let elapsed = Unix.gettimeofday () -. started in
+    print_endline
+      ("CANDLE_NL_PREPARED_SUPPORT_PROBE DEVELOPMENT_NON_RELEASE" ^
+       " source_id=" ^ source_id ^
+       " dimension=" ^ string_of_int dimension ^
+       " disjuncts=" ^ string_of_int disjuncts ^
+       " unsupported=" ^
+         candle_nl_corpus_scan_join "," unsupported ^
+       " elapsed_seconds=" ^ string_of_float elapsed)
+  with Failure message ->
+    print_endline
+      ("CANDLE_NL_PREPARED_SUPPORT_PROBE_ERROR DEVELOPMENT_NON_RELEASE" ^
+       " source_id=" ^ source_id ^ " message=" ^ message);;
+
+let _ =
+  do_list candle_nl_prepared_probe_emit candle_nl_prepared_probe_ids;;
 
 end;;
