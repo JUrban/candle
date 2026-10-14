@@ -12,10 +12,12 @@ needs "candle/cv_compute_analytic_expr_fixed_scale_historical_root_certificate_c
 
 module Candle_cv_analytic_expr_case10173_historical_dihedral_checked_compute = struct
 
+open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_analytic_expr_fixed_scale_compute;;
 open Candle_cv_analytic_expr_fixed_scale_angle_polynomials_compute;;
 open Candle_cv_analytic_expr_fixed_scale_historical_root_certificate_compute;;
 open Candle_cv_analytic_expr_case10173_historical_dihedral_program_compute;;
+open Candle_cv_analytic_expr_taylor_model_program_fixed_outer_variable_raw;;
 
 (* Unlike the underlying certificate checker, this wrapper also authenticates
    the two sign components of the internally computed radicand interval. *)
@@ -323,6 +325,28 @@ let candle_cv_case10173_hist_checked_raw_jobs_check_def = new_definition
         encoded_jobs)
       (candle_cv_case10173_hist_checked_jobs_check
         source_program encoded_jobs roots)`;;
+
+(* Eliminate the raw wrapper once, at its logical boundary.  Registered
+   evaluators return this exact closed raw equality; source soundness needs
+   its canonical representation and checked-list components separately. *)
+
+let candle_cv_case10173_hist_checked_raw_jobs_accept = prove
+ (`!source_program encoded_jobs roots.
+     candle_cv_case10173_hist_checked_raw_jobs_check
+       source_program encoded_jobs roots = Cexp_num 1
+     ==>
+     candle_cv_q_dim_taylor_model_fixed_outer_variable_jobs
+       (candle_cv_fso_variable_jobs_decode encoded_jobs) = encoded_jobs /\
+     candle_cv_case10173_hist_checked_jobs_check
+       source_program encoded_jobs roots = Cexp_num 1`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC
+    [candle_cv_case10173_hist_checked_raw_jobs_check_def;
+     candle_cv_fso_variable_jobs_canonical_equal;
+     candle_cv_bool_and_def;candle_cv_bool_def] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[cexp_if_def;injectivity "cval"] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
 
 let candle_cv_case10173_hist_checked_program_compute_eqs =
   map (REWRITE_RULE [LET_END_DEF])
