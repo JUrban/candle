@@ -7,6 +7,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_hminus_iarg0_plan_probe.ml";;
+needs "candle/cv_compute_analytic_expr_hminus_iarg0_selected_leaf_fixture.ml";;
 needs "candle/cv_compute_analytic_expr_box_certificate_prepare.ml";;
 
 module Test_cv_compute_analytic_expr_hminus_iarg0_function0_first_leaf = struct
@@ -39,6 +40,16 @@ let leaf_path,leaf_status,leaf_function_index,leaf_domain =
 
 if leaf_function_index <> 0 then
   failwith "hminus Iarg0 function0: selected-function drift";;
+
+if leaf_path <>
+     Candle_cv_analytic_expr_hminus_iarg0_selected_leaf_fixture.selected_path ||
+   not
+     (aconv (concl leaf_domain)
+       (concl Candle_cv_analytic_expr_hminus_iarg0_selected_leaf_fixture.leaf_domain)) ||
+   not
+     (aconv function0
+       Candle_cv_analytic_expr_hminus_iarg0_selected_leaf_fixture.function0)
+then failwith "hminus Iarg0 function0: lightweight fixture drift";;
 
 let leaf_pair,_,_ =
   M_taylor.dest_m_cell_domain (concl leaf_domain);;
