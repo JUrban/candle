@@ -13,6 +13,8 @@ module Candle_cv_analytic_expr_fixed_scale_taylor_handoff_sound = struct
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_whole_box_dim_taylor;;
+open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_analytic_expr_fixed_scale_taylor_handoff_compute;;
 
 let candle_matan_fs_scale_def = new_definition
@@ -46,6 +48,16 @@ let candle_matan_fs_q_abs_upper_def = new_definition
         then SND (FST q) - FST (FST q)
         else FST (FST q) - SND (FST q)) * candle_matan_fs_scale)
       (candle_q_den q)`;;
+
+let candle_matan_fs_weighted_rows_upper_def = define
+ `(candle_matan_fs_weighted_rows_upper radii [] row_lists = 0) /\
+  (candle_matan_fs_weighted_rows_upper radii (CONS weight weights) [] = 0) /\
+  (candle_matan_fs_weighted_rows_upper radii (CONS weight weights)
+      (CONS interval_row row_tail) =
+     candle_matan_fs_q_abs_upper
+       (candle_q_mul weight
+         (candle_q_dot_abs_upper radii interval_row)) +
+     candle_matan_fs_weighted_rows_upper radii weights row_tail)`;;
 
 let candle_cv_matan_fs_scale_correct = prove
  (`candle_cv_matan_fs_scale = Cexp_num candle_matan_fs_scale`,
@@ -107,6 +119,28 @@ let candle_cv_matan_fs_q_abs_upper_correct = prove
   ASM_REWRITE_TAC[cexp_if_def; cexp_mul_def;
                   candle_cv_matan_fs_ceil_div_correct; ADD1]);;
 let _ = marker "sound-q-abs-upper-correct";;
+
+let candle_cv_matan_fs_weighted_rows_upper_correct = prove
+ (`!radii weights row_lists.
+     candle_cv_matan_fs_weighted_rows_upper
+       (candle_cv_q_list radii) (candle_cv_q_list weights)
+       (candle_cv_q_interval_matrix row_lists) =
+     Cexp_num
+       (candle_matan_fs_weighted_rows_upper radii weights row_lists)`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[candle_cv_q_list_def;
+                candle_cv_matan_fs_weighted_rows_upper_def;
+                candle_matan_fs_weighted_rows_upper_def];
+    LIST_INDUCT_TAC THEN
+    ASM_REWRITE_TAC[candle_cv_q_list_def;
+                    candle_cv_q_interval_matrix_def;
+                    candle_cv_matan_fs_weighted_rows_upper_def;
+                    candle_matan_fs_weighted_rows_upper_def;
+                    candle_cv_q_dot_abs_upper_correct;
+                    candle_cv_q_mul_correct;
+                    candle_cv_matan_fs_q_abs_upper_correct;
+                    cexp_add_def]]);;
+let _ = marker "sound-weighted-rows-correct";;
 
 let candle_matan_fs_scale_pos = prove
  (`0 < candle_matan_fs_scale`,
@@ -273,5 +307,56 @@ let candle_matan_fs_q_abs_upper_sound = prove
   REWRITE_TAC[FORALL_PAIR_THM;
               candle_matan_fs_q_abs_upper_sound_components]);;
 let _ = marker "sound-q-abs-upper";;
+
+let candle_real_le_abs = prove
+ (`!x:real. x <= abs x`,
+  GEN_TAC THEN
+  MP_TAC (SPECL [`x:real`; `abs x`] REAL_ABS_BOUNDS) THEN
+  REWRITE_TAC[REAL_LE_REFL] THEN MESON_TAC[]);;
+
+let candle_matan_fs_weighted_rows_upper_sound = prove
+ (`!radii weights row_lists.
+     candle_q_real
+       (candle_q_weighted_rows_abs_upper radii weights row_lists) <=
+     &(candle_matan_fs_weighted_rows_upper radii weights row_lists) /
+     &candle_matan_fs_scale`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REPEAT GEN_TAC THEN
+    REWRITE_TAC[candle_q_weighted_rows_abs_upper_def;
+                candle_matan_fs_weighted_rows_upper_def;
+                candle_q_dim_real_zero; real_div; REAL_MUL_LZERO;
+                REAL_LE_REFL];
+    POP_ASSUM (LABEL_TAC "weights_ih") THEN
+    LIST_INDUCT_TAC THEN
+    ASM_REWRITE_TAC[candle_q_weighted_rows_abs_upper_def;
+                    candle_matan_fs_weighted_rows_upper_def;
+                    candle_q_dim_real_zero; real_div; REAL_MUL_LZERO;
+                    REAL_LE_REFL] THEN
+    SUBGOAL_THEN
+     `candle_q_real
+        (candle_q_mul h (candle_q_dot_abs_upper radii h')) <=
+      &(candle_matan_fs_q_abs_upper
+          (candle_q_mul h (candle_q_dot_abs_upper radii h'))) /
+      &candle_matan_fs_scale`
+     ASSUME_TAC THENL
+     [MATCH_MP_TAC REAL_LE_TRANS THEN
+      EXISTS_TAC
+       `abs
+         (candle_q_real
+           (candle_q_mul h (candle_q_dot_abs_upper radii h')))` THEN
+      REWRITE_TAC[candle_real_le_abs] THEN
+      MATCH_ACCEPT_TAC candle_matan_fs_q_abs_upper_sound;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `candle_q_real
+        (candle_q_weighted_rows_abs_upper radii t t') <=
+      &(candle_matan_fs_weighted_rows_upper radii t t') /
+      &candle_matan_fs_scale`
+     ASSUME_TAC THENL
+     [USE_THEN "weights_ih" MATCH_ACCEPT_TAC;
+      REWRITE_TAC[candle_q_real_add; GSYM REAL_OF_NUM_ADD; real_div;
+                  REAL_ADD_RDISTRIB] THEN
+      ASM_REAL_ARITH_TAC]]);;
+let _ = marker "sound-weighted-rows";;
 
 end;;
