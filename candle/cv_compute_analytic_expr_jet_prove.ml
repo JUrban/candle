@@ -194,9 +194,11 @@ let rec candle_q_dim_analytic_jet_congr_apps function_theorem arguments =
       candle_q_dim_analytic_jet_congr_apps
         (MK_COMB (function_theorem,argument_theorem)) remaining;;
 
-let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
-  if length lower <> 6 || length upper <> 6 then
-    failwith "analytic shared-jet prover: expected six box coordinates";
+let candle_q_dim_analytic_jet_prove_box_dim
+    dimension sound_theorem prepared lower upper =
+  if dimension < 1 ||
+     length lower <> dimension || length upper <> dimension then
+    failwith "analytic shared-jet prover: box dimension mismatch";
   let boxes = candle_poly_fixture_q_boxes lower upper in
   let boxes_representation =
     candle_q_dim_analytic_jet_boxes_encode_conv boxes in
@@ -327,21 +329,21 @@ let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
   let _ =
     candle_q_dim_analytic_jet_profile_event
       "numerical-acceptance-derived" in
-  let length_six =
+  let length_theorem =
     prove
       (mk_eq
         (mk_comb
           (`LENGTH:(((num#num)#num)#((num#num)#num))list->num`,boxes),
-         `6`),
+         mk_small_numeral dimension),
        REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV) in
   let _ =
     candle_q_dim_analytic_jet_profile_event "box-length-derived" in
   let vector_theorem =
     MATCH_MP
       (SPECL [prepared.expression_term;boxes]
-        candle_q_dim_analytic_jet_sound_six)
+        sound_theorem)
       (CONJ prepared.valid_theorem
-        (CONJ length_six numerical_theorem)) in
+        (CONJ length_theorem numerical_theorem)) in
   let _ =
     candle_q_dim_analytic_jet_profile_event "soundness-instantiated" in
   let source_theorem =
@@ -362,5 +364,13 @@ let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
                 prepared.function_term) then
     failwith "analytic shared-jet prover: source theorem mismatch";
   source_theorem;;
+
+let candle_q_dim_analytic_jet_prove_box_six prepared lower upper =
+  candle_q_dim_analytic_jet_prove_box_dim
+    6 candle_q_dim_analytic_jet_sound_six prepared lower upper;;
+
+let candle_q_dim_analytic_jet_prove_box_seven prepared lower upper =
+  candle_q_dim_analytic_jet_prove_box_dim
+    7 candle_q_dim_analytic_jet_sound_seven prepared lower upper;;
 
 end;;

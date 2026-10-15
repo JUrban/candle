@@ -80,11 +80,18 @@ let candle_reflected_nl_q_real_identity encoded component =
      REWRITE_TAC[GSYM REAL_OF_NUM_SUC] THEN
      CONV_TAC REAL_RAT_REDUCE_CONV);;
 
-let candle_reflected_nl_selector_vector_identity selector boxes components =
+let candle_reflected_nl_selector_vector_identity_dim
+    index_type selector boxes components =
+  let dimension_theorem =
+    DIMINDEX_CONV (inst [index_type,`:N`] `dimindex (:N)`) in
+  let dimension = dest_small_numeral (rand (concl dimension_theorem)) in
+  if dimension < 1 || length components <> dimension then
+    failwith "reflected nonlinear driver: selector dimension mismatch";
   let encoded = mk_comb (selector,boxes) in
   let explicit =
     mk_comb
-      (`vector:real list->real^6`,mk_list (components,`:real`)) in
+      (inst [index_type,`:N`] `vector:real list->real^N`,
+       mk_list (components,`:real`)) in
   let selector_list_theorem =
     match fst (dest_const selector) with
     | "candle_q_box_lower_vector" ->
@@ -101,20 +108,20 @@ let candle_reflected_nl_selector_vector_identity selector boxes components =
   let component_identities =
     map2 candle_reflected_nl_q_real_identity encoded_components components in
   let _ = candle_reflected_nl_profile_event "selector-length-begin" in
-  let length_six =
+  let length_theorem =
     prove
       (mk_eq
         (mk_comb
           (`LENGTH:(((num#num)#num)#((num#num)#num))list->num`,boxes),
-         `6`),
+         mk_small_numeral dimension),
        REWRITE_TAC[LENGTH] THEN CONV_TAC NUM_REDUCE_CONV) in
   let _ = candle_reflected_nl_profile_event "selector-length-complete" in
   let abstract_identity =
     MATCH_MP
       (SPEC boxes
-        (REWRITE_RULE[candle_q_dim_poly_jet_dim_six]
-          (INST_TYPE [`:6`,`:N`] selector_list_theorem)))
-      length_six in
+        (REWRITE_RULE[dimension_theorem]
+          (INST_TYPE [index_type,`:N`] selector_list_theorem)))
+      length_theorem in
   let _ = candle_reflected_nl_profile_event "selector-abstract-complete" in
   let expanded_identity =
     PURE_REWRITE_RULE [FST;SND]
@@ -127,6 +134,10 @@ let candle_reflected_nl_selector_vector_identity selector boxes components =
      not (aconv (rand (concl identity)) explicit) then
     failwith "reflected nonlinear driver: selector identity mismatch";
   identity;;
+
+let candle_reflected_nl_selector_vector_identity selector boxes components =
+  candle_reflected_nl_selector_vector_identity_dim
+    `:6` selector boxes components;;
 
 let candle_reflected_nl_exact_component tm =
   try
