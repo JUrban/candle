@@ -2,9 +2,6 @@
 (* Focused regression for analytic shared-jet Taylor accumulation.           *)
 (* ========================================================================== *)
 
-load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
-
 needs "candle/cv_compute_analytic_expr_taylor_sound.ml";;
 
 open Candle_cv_analytic_expr_taylor_sound;;

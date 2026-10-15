@@ -2,9 +2,6 @@
 (* Regression for analytic-jet Flyspeck derivative list correspondence.      *)
 (* ========================================================================== *)
 
-load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-whole-box-v1"] @ !load_path;;
-
 needs "candle/cv_compute_analytic_expr_flyspeck_bridge.ml";;
 
 open Candle_cv_analytic_expr_flyspeck_bridge;;
