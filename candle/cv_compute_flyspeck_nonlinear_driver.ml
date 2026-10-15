@@ -223,7 +223,10 @@ let candle_reflected_nl_source_pass_with
   let upper_transport =
     TRANS upper_selector_theorem (SYM actual_upper_theorem) in
   let live_source_theorem =
-    REWRITE_RULE [lower_transport;upper_transport] source_theorem in
+    REWRITE_RULE
+      [lower_transport;upper_transport;
+       SYM actual_lower_theorem;SYM actual_upper_theorem]
+      source_theorem in
   let _ = candle_reflected_nl_profile_event "source-rewrite-complete" in
   let point,body = dest_forall (concl live_source_theorem) in
   let membership,claim = dest_imp body in

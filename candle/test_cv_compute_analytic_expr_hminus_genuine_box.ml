@@ -27,7 +27,7 @@ let source_expressions =
 
 let _ = print_endline "CANDLE_HMINUS_GENUINE_BOX_PHASE source-expanded";;
 
-let source_functions,_ =
+let source_functions,source_variable_vector =
   candle_direct_exprs_to_vector_fun source_expressions;;
 
 let six_function = List.nth source_functions 1;;

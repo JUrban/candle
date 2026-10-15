@@ -108,12 +108,15 @@ let candle_nl_hminus_parameter_defs =
 
 let candle_nl_hminus_parameter = `candle_hminus_parameter:real`;;
 
-let candle_nl_hminus_parameter_source_expressions source_id =
+let candle_nl_hminus_parameter_source_fixture source_id =
   let _,preparation,needs_delta = Break_case_exec.get_case source_id in
   let target =
     Break_case_exec.run_generic
       (fun selected -> preparation selected) needs_delta source_id in
-  let formula = candle_nl_hminus_parameter_formula target in
+  let reconstruction = candle_direct_ineqm_conv target in
+  if not (aconv (lhand (concl reconstruction)) target) then
+    failwith "hminus parameter fixture: reconstruction source mismatch";
+  let case_term = rand (concl reconstruction) in
   let expansion =
     (REWRITE_CONV
        [TAUT `(P ==> Q) <=> (~P \/ Q)`;
@@ -124,13 +127,21 @@ let candle_nl_hminus_parameter_source_expressions source_id =
      THENC candle_direct_expand_ineq_case
      THENC REWRITE_CONV candle_nl_hminus_parameter_defs
      THENC DEPTH_CONV let_CONV)
-      formula in
-  let inequality = rand (concl expansion) in
+      case_term in
+  let converted = rand (concl expansion) in
+  let inequality,variable_names,bounds =
+    M_verifier_main.dest_ineq converted in
   let standard =
     M_verifier_main.mk_standard_ineq
       [REAL_POW_1; real_pow] inequality in
   let disjuncts = striplist dest_disj ((lhand o concl) standard) in
+  target,reconstruction,expansion,converted,variable_names,bounds,standard,
   map lhand disjuncts;;
+
+let candle_nl_hminus_parameter_source_expressions source_id =
+  let _,_,_,_,_,_,_,expressions =
+    candle_nl_hminus_parameter_source_fixture source_id in
+  expressions;;
 
 let candle_nl_hminus_parameter_scan_source source_id =
   let expressions =
