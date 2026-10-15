@@ -33,6 +33,8 @@ let _ = marker "source-target";;
 
 let _,_,_,_,variable_names,bounds,_,expressions =
   candle_nl_hminus_parameter_fixture_from_target target;;
+let source_functions,source_variable_vector =
+  candle_direct_exprs_to_vector_fun expressions;;
 
 let parameter_decimal_bounds =
   REWRITE_RULE [interval_arith] hminus_interval;;
@@ -49,37 +51,53 @@ let parameter_lower = rand (concl parameter_lower_identity);;
    inverse instance, so plan at one representative certified endpoint.  The
    later reflected leaf proof still checks the complete hminus interval as a
    seventh coordinate; no theorem depends on this planning substitution. *)
+let candle_nl_hminus_plan_normalize tm =
+  let source_expansion =
+    REWRITE_CONV candle_nl_hminus_parameter_defs tm in
+  let division_expansion =
+    REWRITE_CONV [real_div] (rand (concl source_expansion)) in
+  let parameterized =
+    subst [parameter_lower,`hminus:real`]
+      (rand (concl division_expansion)) in
+  let late_expansion =
+    REWRITE_CONV
+      [Sphere.rotate2;Sphere.rotate3;
+       Sphere.delta_x4;
+       GSYM Nonlinear_lemma.sol0_over_pi_EQ_const1;Sphere.sol0]
+      parameterized in
+  rand
+    (concl
+      (REWRITE_CONV [real_div] (rand (concl late_expansion))));;
 let planning_expressions =
   map
-    (fun expression ->
-      let source_expansion =
-        REWRITE_CONV candle_nl_hminus_parameter_defs expression in
-      let division_expansion =
-        REWRITE_CONV [real_div] (rand (concl source_expansion)) in
-      subst [parameter_lower,`hminus:real`]
-        (rand (concl division_expansion)))
+    candle_nl_hminus_plan_normalize
     expressions;;
-let planning_expressions =
-  map
-    (fun expression ->
-      rand
-        (concl
-          (REWRITE_CONV
-            [Sphere.rotate2;Sphere.rotate3;
-             Sphere.delta_x4;
-             GSYM Nonlinear_lemma.sol0_over_pi_EQ_const1;Sphere.sol0]
-            expression)))
-    planning_expressions;;
-let planning_expressions =
-  map
-    (fun expression ->
-      rand (concl (REWRITE_CONV [real_div] expression)))
-    planning_expressions;;
 let functions,variable_vector =
   candle_direct_exprs_to_vector_fun planning_expressions;;
 
 if length functions <> 3 then
   failwith "hminus Iarg0 plan: source disjunct count drift";;
+
+let source_function0 = hd source_functions;;
+let function0 = hd functions;;
+let function0_normalization =
+  let source_expansion =
+    REWRITE_CONV candle_nl_hminus_parameter_defs source_function0 in
+  let division_expansion =
+    REWRITE_CONV [real_div] (rand (concl source_expansion)) in
+  let late_expansion =
+    REWRITE_CONV
+      [Sphere.rotate2;Sphere.rotate3;
+       Sphere.delta_x4;
+       GSYM Nonlinear_lemma.sol0_over_pi_EQ_const1;Sphere.sol0]
+      (rand (concl division_expansion)) in
+  let final_expansion =
+    REWRITE_CONV [real_div] (rand (concl late_expansion)) in
+  TRANS source_expansion
+    (TRANS division_expansion (TRANS late_expansion final_expansion));;
+
+if not (aconv (rand (concl function0_normalization)) function0) then
+  failwith "hminus Iarg0 plan: function0 normalization drift";;
 
 let vector_dimension = length (M_taylor.dest_vector variable_vector);;
 let scan_variables =
@@ -109,6 +127,11 @@ let ordered_bounds =
 let exact_lower,exact_upper = unzip ordered_bounds;;
 let exact_lower_term = Misc_vars.mk_real_list exact_lower
 and exact_upper_term = Misc_vars.mk_real_list exact_upper;;
+let domain_subset,(float_lower,float_upper) =
+  M_verifier_main.mk_float_domain 6
+    (exact_lower_term,exact_upper_term);;
+let root_domain =
+  M_taylor.mk_m_center_domain 6 6 float_lower float_upper;;
 let _ = marker "planning-domain";;
 
 let informal_lower =
