@@ -97,13 +97,43 @@ let vector_theorem =
     (SPECL [center_expression;tight_expression;boxes] sound_six)
     (end_itlist CONJ
       [erasure_equality;tight_valid_theorem;length_six;numerical_theorem]);;
+
+let denotation_term =
+  mk_icomb
+    (mk_icomb (`candle_analytic_denote_dim`,tight_expression),vector);;
+let denotation_theorem =
+  let expanded =
+    REWRITE_CONV
+      [candle_analytic_denote_dim_def;
+       DIMINDEX_CONV `dimindex (:6)`]
+      denotation_term in
+  let listed = CONV_RULE (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) expanded in
+  let beta = CONV_RULE (DEPTH_CONV BETA_CONV) listed in
+  CONV_RULE (DEPTH_CONV NUM_ADD_CONV) beta;;
+if not
+    (aconv (rand (concl denotation_theorem))
+       (lhand (concl tight_source_theorem))) then
+  failwith "genuine matan dual proof: vector environment mismatch";;
+let denotation_source_theorem =
+  TRANS denotation_theorem tight_source_theorem;;
 let original_theorem =
-  REWRITE_RULE[tight_source_theorem] vector_theorem;;
+  REWRITE_RULE[denotation_source_theorem] vector_theorem;;
+
+let point,body = dest_forall (concl original_theorem);;
+let _,claim = dest_imp body;;
+let partial,zero = dest_comb claim;;
+let relation,source_at_point = dest_comb partial;;
+let expected_source = vsubst [point,vector] source;;
 
 let seconds = Unix.gettimeofday () -. started;;
 if hyp erasure_equality <> [] || hyp numerical_theorem <> [] ||
    hyp vector_theorem <> [] || hyp original_theorem <> [] then
   failwith "genuine matan dual proof: theorem assumptions";;
+if not (aconv relation `(<):real->real->bool`) ||
+   not (aconv zero `&0:real`) ||
+   not (aconv source_at_point expected_source) ||
+   not (aconv (mk_abs (point,source_at_point)) function_term) then
+  failwith "genuine matan dual proof: original source theorem mismatch";;
 
 let axioms_after = axioms ();;
 if length axioms_after <> length axioms_before ||
