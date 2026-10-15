@@ -75,19 +75,20 @@ let candle_nl_matan_target_parts target =
         ("matan domain probe: bad target shape head=" ^ name ^
          " arity=" ^ string_of_int (length arguments));;
 
+let candle_nl_matan_expand_theorem formula =
+  (REWRITE_CONV
+     [TAUT `(P ==> Q) <=> (~P \/ Q)`;
+      REAL_ARITH `~(a > b:real) <=> a <= b`;
+      REAL_ARITH `~(a < b:real) <=> b <= a`;
+      REAL_ARITH `~(a >= b:real) <=> a < b`;
+      REAL_ARITH `~(a <= b:real) <=> b < a`]
+   THENC candle_direct_expand_ineq_case
+   THENC REWRITE_CONV candle_nl_matan_defs
+   THENC DEPTH_CONV let_CONV)
+    formula;;
+
 let candle_nl_matan_expand formula =
-  let expansion =
-    (REWRITE_CONV
-       [TAUT `(P ==> Q) <=> (~P \/ Q)`;
-        REAL_ARITH `~(a > b:real) <=> a <= b`;
-        REAL_ARITH `~(a < b:real) <=> b <= a`;
-        REAL_ARITH `~(a >= b:real) <=> a < b`;
-        REAL_ARITH `~(a <= b:real) <=> b < a`]
-     THENC candle_direct_expand_ineq_case
-     THENC REWRITE_CONV candle_nl_matan_defs
-     THENC DEPTH_CONV let_CONV)
-      formula in
-  rand (concl expansion);;
+  rand (concl (candle_nl_matan_expand_theorem formula));;
 
 let rec candle_nl_matan_subterms tm =
   let here =
