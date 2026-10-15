@@ -2,9 +2,6 @@
 (* Behavioral regression for analytic first-partial correspondence.          *)
 (* ========================================================================== *)
 
-load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
-
 needs "candle/cv_compute_analytic_expr_partials.ml";;
 
 open Candle_cv_linear_combination_realize;;
@@ -85,7 +82,40 @@ let candle_analytic_partials_theorem =
 let candle_analytic_partials_exact =
   TRANS candle_analytic_partials_theorem candle_analytic_partials_exact_d;;
 
-if hyp candle_analytic_partials_exact <> [] then
+let candle_analytic_partials_matan_fixture =
+ `Candle_analytic_matan (Candle_analytic_poly (Candle_poly_var 0))`;;
+
+let candle_analytic_partials_matan_valid = prove
+ (list_mk_comb
+    (`candle_analytic_valid_dim`,
+     [`1`;candle_analytic_partials_matan_fixture]),
+  REWRITE_TAC[candle_analytic_valid_dim_def;
+              candle_poly_valid_dim_def] THEN ARITH_TAC);;
+
+let candle_analytic_partials_matan_regular = prove
+ (list_mk_comb
+    (`candle_analytic_regular_at`,
+     [`[(&0)]`;candle_analytic_partials_matan_fixture]),
+  REWRITE_TAC[candle_analytic_regular_at_def;
+              candle_analytic_value_def; candle_poly_value_list_def;
+              candle_q_real_lookup_def] THEN
+  REAL_ARITH_TAC);;
+
+let candle_analytic_partials_matan_instantiated =
+  REWRITE_RULE[DIMINDEX_1; candle_analytic_partials_vec0_env;
+               ARITH_RULE `1 - 1 = 0`]
+    (ISPECL
+      [candle_analytic_partials_matan_fixture; `vec 0:real^1`; `1`]
+      candle_analytic_denote_dim_partial);;
+
+let candle_analytic_partials_matan_theorem =
+  MATCH_MP candle_analytic_partials_matan_instantiated
+    (CONJ candle_analytic_partials_matan_valid
+      (CONJ candle_analytic_partials_matan_regular
+        candle_analytic_partials_index));;
+
+if hyp candle_analytic_partials_exact <> [] ||
+   hyp candle_analytic_partials_matan_theorem <> [] then
   failwith "analytic partial bridge: theorem assumptions";;
 
 let candle_analytic_partials_axioms_after = axioms ();;
@@ -98,5 +128,5 @@ if length candle_analytic_partials_axioms_after <>
   failwith "analytic partial bridge: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_RESULT constructors=9 partial=-1/20";;
+  "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_RESULT constructors=10 matan=1 partial=-1/20";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_PARTIALS_OK";;

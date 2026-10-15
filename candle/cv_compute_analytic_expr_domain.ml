@@ -18,9 +18,11 @@ open Candle_cv_exact_interval_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_exact_interval_inv_core;;
 open Candle_cv_exact_interval_sqrt_certificate;;
+open Candle_cv_exact_interval_matan_series;;
 open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
+open Candle_cv_analytic_dim_jet_matan;;
 open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_calculus;;
 
@@ -73,6 +75,18 @@ let candle_q_dim_jet_sqrt_domain_value_positive = prove
    [MP_TAC (SPEC `x:real` SQRT_POS_LE) THEN ASM_REWRITE_TAC[] THEN
     ASM_REAL_ARITH_TAC;
     MP_TAC (SPEC `x:real` SQRT_LT_0) THEN ASM_REWRITE_TAC[]]);;
+
+let candle_q_dim_jet_matan_domain_value_gt_neg_one = prove
+ (`!a x.
+     candle_q_dim_jet_matan_domain a /\
+     candle_q_interval_contains (candle_q_dim_jet_f a) x
+     ==> -- &1 < x`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_dim_jet_matan_domain_def;
+              candle_q_interval_matan_series_domain_def;
+              candle_q_interval_contains_def; candle_q_le_real;
+              candle_q_matan_neg_one_fifth_real] THEN
+  REAL_ARITH_TAC);;
 
 let candle_q_dim_analytic_domain_regular = prove
  (`!e boxes env.
@@ -266,6 +280,44 @@ let candle_q_dim_analytic_domain_regular = prove
           (CONJ
             (ASSUME `candle_q_stack_contains boxes env`)
             (ASSUME `candle_q_dim_analytic_domain boxes a`))));
+    X_GEN_TAC `a:candle_analytic_expr` THEN DISCH_THEN
+      (LABEL_TAC "ih") THEN
+    MAP_EVERY X_GEN_TAC
+      [`boxes:(((num#num)#num)#((num#num)#num))list`; `env:real list`] THEN
+    REWRITE_TAC[candle_q_dim_analytic_domain_def;
+                candle_analytic_regular_at_def] THEN
+    STRIP_TAC THEN CONJ_TAC THENL
+     [USE_THEN "ih" (fun ih ->
+        ACCEPT_TAC
+          (MATCH_MP
+            (SPECL
+              [`boxes:(((num#num)#num)#((num#num)#num))list`;
+               `env:real list`] ih)
+            (CONJ
+              (ASSUME `candle_q_stack_contains boxes env`)
+              (ASSUME `candle_q_dim_analytic_domain boxes a`))));
+      let sound_th =
+        MATCH_MP
+          (SPECL [`a:candle_analytic_expr`;
+                  `boxes:(((num#num)#num)#((num#num)#num))list`;
+                  `env:real list`]
+            candle_q_dim_analytic_jet_sound)
+          (CONJ
+            (ASSUME `candle_q_stack_contains boxes env`)
+            (ASSUME `candle_q_dim_analytic_domain boxes a`)) in
+      let contains_th =
+        CONJUNCT1
+          (REWRITE_RULE[candle_q_dim_analytic_contains_def;
+                        candle_q_dim_jet_contains_components_def]
+            sound_th) in
+      ACCEPT_TAC
+        (MATCH_MP
+          candle_q_dim_jet_matan_domain_value_gt_neg_one
+          (CONJ
+            (ASSUME
+              `candle_q_dim_jet_matan_domain
+                (candle_q_dim_analytic_jet boxes a)`)
+            contains_th))];
     MAP_EVERY X_GEN_TAC
       [`boxes:(((num#num)#num)#((num#num)#num))list`; `env:real list`] THEN
     REWRITE_TAC[candle_q_dim_analytic_domain_def;

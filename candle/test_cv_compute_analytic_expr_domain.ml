@@ -2,9 +2,6 @@
 (* Focused regression for computed analytic-domain regularity.               *)
 (* ========================================================================== *)
 
-load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
-
 needs "candle/cv_compute_analytic_expr_domain.ml";;
 
 open Candle_cv_analytic_expr_domain;;
@@ -28,8 +25,16 @@ let candle_analytic_domain_sqrt_positive = prove
      ==> &0 < x`,
   MESON_TAC[candle_q_dim_jet_sqrt_domain_value_positive]);;
 
+let candle_analytic_domain_matan_gt_neg_one = prove
+ (`!a x.
+     candle_q_dim_jet_matan_domain a /\
+     candle_q_interval_contains (candle_q_dim_jet_f a) x
+     ==> -- &1 < x`,
+  MESON_TAC[candle_q_dim_jet_matan_domain_value_gt_neg_one]);;
+
 if hyp candle_analytic_domain_nonzero <> [] ||
-   hyp candle_analytic_domain_sqrt_positive <> [] then
+   hyp candle_analytic_domain_sqrt_positive <> [] ||
+   hyp candle_analytic_domain_matan_gt_neg_one <> [] then
   failwith "analytic domain regularity: component theorem assumptions";;
 
 let candle_analytic_domain_axioms_after = axioms ();;
@@ -42,5 +47,5 @@ if length candle_analytic_domain_axioms_after <>
   failwith "analytic domain regularity: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_RESULT constructors=9 inv=1 sqrt=1 atn=1 pi_half=1 universal=1";;
+  "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_RESULT constructors=10 inv=1 sqrt=1 atn=1 matan=1 pi_half=1 universal=1";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_DOMAIN_OK";;
