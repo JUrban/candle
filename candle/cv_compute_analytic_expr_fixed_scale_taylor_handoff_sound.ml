@@ -13,8 +13,11 @@ module Candle_cv_analytic_expr_fixed_scale_taylor_handoff_sound = struct
 open Candle_cv_linear_combination_core;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_whole_box_taylor;;
 open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
+open Candle_cv_polynomial_expr_dim_jet_sound;;
+open Candle_cv_analytic_expr_taylor_sound;;
 open Candle_cv_analytic_expr_fixed_scale_taylor_handoff_compute;;
 
 let candle_matan_fs_scale_def = new_definition
@@ -66,6 +69,18 @@ let candle_matan_fs_taylor_accept_def = new_definition
       candle_matan_fs_ceil_div
         (candle_matan_fs_weighted_rows_upper radii weights row_lists) 2 <
     SND (candle_matan_fs_q_upper value)`;;
+
+let candle_matan_fs_taylor_handoff_accept_def = new_definition
+ `candle_matan_fs_taylor_handoff_accept
+      domain valid boxes center_value center_gradient box_hessian <=>
+    domain /\ valid /\
+    candle_matan_fs_taylor_accept
+      (SND center_value)
+      (candle_q_dot_abs_upper
+        (candle_q_radius_list boxes) center_gradient)
+      (candle_q_radius_list boxes)
+      (candle_q_radius_list boxes)
+      box_hessian`;;
 
 let candle_cv_matan_fs_scale_correct = prove
  (`candle_cv_matan_fs_scale = Cexp_num candle_matan_fs_scale`,
@@ -149,6 +164,39 @@ let candle_cv_matan_fs_weighted_rows_upper_correct = prove
                     candle_cv_matan_fs_q_abs_upper_correct;
                     cexp_add_def]]);;
 let _ = marker "sound-weighted-rows-correct";;
+
+let candle_cv_matan_fs_taylor_finish_accept_correct = prove
+ (`!domain valid boxes center_value center_gradient box_hessian.
+     Cexp_fst
+       (candle_cv_matan_fs_taylor_finish
+         (candle_cv_bool domain) (candle_cv_bool valid)
+         (candle_cv_q_interval_list boxes)
+         (candle_cv_q_interval center_value)
+         (candle_cv_q_interval_list center_gradient)
+         (candle_cv_q_interval_matrix box_hessian)) =
+     Cexp_num
+       (if candle_matan_fs_taylor_handoff_accept
+             domain valid boxes center_value center_gradient box_hessian
+        then SUC 0 else 0)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_matan_fs_taylor_finish_def;
+              LET_DEF; LET_END_DEF;
+              candle_cv_bool_def;
+              candle_cv_q_radius_list_correct;
+              candle_cv_q_interval_snd_correct;
+              candle_cv_q_dot_abs_upper_correct;
+              candle_cv_matan_fs_q_upper_correct;
+              candle_cv_matan_fs_q_abs_upper_correct;
+              candle_cv_matan_fs_weighted_rows_upper_correct;
+              candle_cv_matan_fs_ceil_div_correct;
+              candle_matan_fs_taylor_handoff_accept_def;
+              candle_matan_fs_taylor_accept_def;
+              candle_cv_lc_z_def;
+              cexp_add_def; cexp_fst_def; cexp_snd_def;
+              cexp_less_def; cexp_if_def; FST; SND] THEN
+  REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]) THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+let _ = marker "sound-taylor-finish-accept-correct";;
 
 let candle_matan_fs_scale_pos = prove
  (`0 < candle_matan_fs_scale`,
@@ -500,5 +548,101 @@ let candle_matan_fs_taylor_accept_sound = prove
   ASM_REWRITE_TAC[] THEN DISCH_TAC THEN
   ASM_REAL_ARITH_TAC);;
 let _ = marker "sound-taylor-accept";;
+
+let candle_matan_fs_taylor_handoff_accept_sound = prove
+ (`!domain valid boxes center_value center_gradient box_hessian.
+     candle_matan_fs_taylor_handoff_accept
+       domain valid boxes center_value center_gradient box_hessian
+     ==>
+     candle_q_real (SND center_value) +
+       candle_q_real
+         (candle_q_dot_abs_upper
+           (candle_q_radius_list boxes) center_gradient) +
+       candle_q_real
+         (candle_q_weighted_rows_abs_upper
+           (candle_q_radius_list boxes)
+           (candle_q_radius_list boxes) box_hessian) / &2 <
+     &0`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_matan_fs_taylor_handoff_accept_def] THEN
+  STRIP_TAC THEN
+  MATCH_MP_TAC candle_matan_fs_taylor_accept_sound THEN
+  ASM_REWRITE_TAC[]);;
+let _ = marker "sound-taylor-handoff-accept";;
+
+let candle_matan_fs_taylor_handoff_jet_accept_sound = prove
+ (`!boxes center_jet box_jet.
+     candle_matan_fs_taylor_handoff_accept T T boxes
+       (candle_q_dim_jet_f center_jet)
+       (candle_q_dim_jet_gradient center_jet)
+       (candle_q_dim_jet_hessian box_jet)
+     ==>
+     candle_q_real
+       (candle_q_dim_jet_taylor_upper boxes center_jet box_jet) < &0`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  MP_TAC
+    (MATCH_MP candle_matan_fs_taylor_handoff_accept_sound
+      (ASSUME
+        `candle_matan_fs_taylor_handoff_accept T T boxes
+          (candle_q_dim_jet_f center_jet)
+          (candle_q_dim_jet_gradient center_jet)
+          (candle_q_dim_jet_hessian box_jet)`)) THEN
+  REWRITE_TAC[candle_q_dim_jet_taylor_upper_real; real_div] THEN
+  REAL_ARITH_TAC);;
+let _ = marker "sound-taylor-handoff-jet-accept";;
+
+let candle_matan_fs_taylor_handoff_analytic_sound = prove
+ (`!e boxes center_jet box_jet.
+     candle_analytic_valid_dim (dimindex (:N)) e /\
+     candle_q_dim_analytic_domain boxes e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_jet_shape (dimindex (:N)) center_jet /\
+     candle_q_dim_analytic_contains (dimindex (:N)) center_jet
+       (list_of_seq
+         (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+         (dimindex (:N))) e /\
+     candle_q_dim_jet_shape (dimindex (:N)) box_jet /\
+     (!(z:real^N). z IN interval
+          [candle_q_box_lower_vector boxes,
+           candle_q_box_upper_vector boxes]
+        ==> candle_q_dim_analytic_contains (dimindex (:N)) box_jet
+              (list_of_seq (\k. z$(k + 1)) (dimindex (:N))) e) /\
+     candle_matan_fs_taylor_handoff_accept T T boxes
+       (candle_q_dim_jet_f center_jet)
+       (candle_q_dim_jet_gradient center_jet)
+       (candle_q_dim_jet_hessian box_jet)
+     ==>
+     !(p:real^N). p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+       ==>
+       candle_analytic_denote_dim e p < &0`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `!(p:real^N). p IN interval
+      [candle_q_box_lower_vector boxes,
+       candle_q_box_upper_vector boxes]
+     ==>
+     candle_analytic_denote_dim e p <=
+     candle_q_real
+       (candle_q_dim_jet_taylor_upper boxes center_jet box_jet)`
+   (LABEL_TAC "analytic_upper") THENL
+   [MATCH_MP_TAC candle_q_dim_analytic_jet_taylor_upper_sound THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_q_real
+      (candle_q_dim_jet_taylor_upper boxes center_jet box_jet) < &0`
+   (LABEL_TAC "negative_upper") THENL
+   [MATCH_MP_TAC candle_matan_fs_taylor_handoff_jet_accept_sound THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  X_GEN_TAC `p:real^N` THEN DISCH_TAC THEN
+  REMOVE_THEN "analytic_upper" (MP_TAC o SPEC `p:real^N`) THEN
+  ASM_REWRITE_TAC[] THEN
+  USE_THEN "negative_upper" MP_TAC THEN
+  REAL_ARITH_TAC);;
+let _ = marker "sound-taylor-handoff-analytic";;
 
 end;;
