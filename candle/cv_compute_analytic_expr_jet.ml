@@ -9,6 +9,7 @@
 needs "candle/cv_compute_analytic_poly_inv.ml";;
 needs "candle/cv_compute_analytic_poly_sqrt.ml";;
 needs "candle/cv_compute_analytic_dim_jet_pi_half.ml";;
+needs "candle/cv_compute_analytic_dim_jet_matan.ml";;
 
 module Candle_cv_analytic_expr_jet = struct
 
@@ -22,6 +23,7 @@ open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_dim_jet_pi_half;;
+open Candle_cv_analytic_dim_jet_matan;;
 open Candle_cv_analytic_poly_inv;;
 
 let candle_analytic_expr_INDUCT,candle_analytic_expr_RECURSION = define_type
@@ -34,6 +36,7 @@ let candle_analytic_expr_INDUCT,candle_analytic_expr_RECURSION = define_type
      | Candle_analytic_inv candle_analytic_expr
      | Candle_analytic_sqrt num num num num num num candle_analytic_expr
      | Candle_analytic_atn candle_analytic_expr
+     | Candle_analytic_matan candle_analytic_expr
      | Candle_analytic_pi_half";;
 
 let candle_analytic_sqrt_interval_def = new_definition
@@ -58,6 +61,8 @@ let candle_analytic_value_def = define
      sqrt (candle_analytic_value env a)) /\
   (candle_analytic_value env (Candle_analytic_atn a) =
      atn (candle_analytic_value env a)) /\
+  (candle_analytic_value env (Candle_analytic_matan a) =
+     matan (candle_analytic_value env a)) /\
   (candle_analytic_value env Candle_analytic_pi_half = pi / &2)`;;
 
 let candle_analytic_d_def = define
@@ -85,6 +90,9 @@ let candle_analytic_d_def = define
   (candle_analytic_d i env (Candle_analytic_atn a) =
      inv (&1 + candle_analytic_value env a *
                 candle_analytic_value env a) *
+     candle_analytic_d i env a) /\
+  (candle_analytic_d i env (Candle_analytic_matan a) =
+     dmatan (candle_analytic_value env a) *
      candle_analytic_d i env a) /\
   (candle_analytic_d i env Candle_analytic_pi_half = &0)`;;
 
@@ -136,6 +144,11 @@ let candle_analytic_dd_def = define
      inv (&1 + candle_analytic_value env a *
                 candle_analytic_value env a) *
        candle_analytic_dd i j env a) /\
+  (candle_analytic_dd i j env (Candle_analytic_matan a) =
+     ddmatan (candle_analytic_value env a) *
+       (candle_analytic_d i env a * candle_analytic_d j env a) +
+     dmatan (candle_analytic_value env a) *
+       candle_analytic_dd i j env a) /\
   (candle_analytic_dd i j env Candle_analytic_pi_half = &0)`;;
 
 let candle_q_dim_analytic_jet_def = define
@@ -165,6 +178,8 @@ let candle_q_dim_analytic_jet_def = define
        (candle_q_dim_analytic_jet boxes a)) /\
   (candle_q_dim_analytic_jet boxes (Candle_analytic_atn a) =
      candle_q_dim_jet_atn (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_jet boxes (Candle_analytic_matan a) =
+     candle_q_dim_jet_matan (candle_q_dim_analytic_jet boxes a)) /\
   (candle_q_dim_analytic_jet boxes Candle_analytic_pi_half =
      candle_q_dim_jet_pi_half boxes)`;;
 
@@ -193,6 +208,10 @@ let candle_q_dim_analytic_domain_def = define
      candle_q_dim_analytic_domain boxes a /\
      candle_q_dim_jet_atn_domain
        (candle_q_dim_analytic_jet boxes a)) /\
+  (candle_q_dim_analytic_domain boxes (Candle_analytic_matan a) <=>
+     candle_q_dim_analytic_domain boxes a /\
+     candle_q_dim_jet_matan_domain
+       (candle_q_dim_analytic_jet boxes a)) /\
   (candle_q_dim_analytic_domain boxes Candle_analytic_pi_half <=> T)`;;
 
 let candle_q_dim_analytic_contains_def = new_definition
@@ -216,6 +235,7 @@ let candle_q_dim_analytic_jet_shape = prove
                 candle_q_dim_jet_inv_shape;
                 candle_q_dim_jet_sqrt_shape;
                 candle_q_dim_jet_atn_shape;
+                candle_q_dim_jet_matan_shape;
                 candle_q_dim_jet_pi_half_shape]);;
 
 let candle_q_dim_jet_neg_components_sound = prove
@@ -405,6 +425,12 @@ let candle_q_dim_analytic_jet_sound = prove
       REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
       ASM_SIMP_TAC[]];
     MATCH_MP_TAC candle_q_dim_jet_atn_components_sound THEN
+    REPEAT CONJ_TAC THENL
+     [MATCH_ACCEPT_TAC candle_q_dim_analytic_jet_shape;
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[GSYM candle_q_dim_analytic_contains_def] THEN
+      ASM_SIMP_TAC[]];
+    MATCH_MP_TAC candle_q_dim_jet_matan_components_sound THEN
     REPEAT CONJ_TAC THENL
      [MATCH_ACCEPT_TAC candle_q_dim_analytic_jet_shape;
       ASM_REWRITE_TAC[];

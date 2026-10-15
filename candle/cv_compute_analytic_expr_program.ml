@@ -19,6 +19,7 @@ open Candle_cv_polynomial_expr_dim_jet_semantics;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_dim_jet_pi_half;;
+open Candle_cv_analytic_dim_jet_matan;;
 open Candle_cv_analytic_expr_jet;;
 
 let candle_analytic_instruction_INDUCT,
@@ -33,6 +34,7 @@ let candle_analytic_instruction_INDUCT,
      | Candle_analytic_program_sqrt
          (((num#num)#num)#((num#num)#num))
      | Candle_analytic_program_atn
+     | Candle_analytic_program_matan
      | Candle_analytic_program_pi_half";;
 
 let candle_q_dim_analytic_result_domain_def = new_definition
@@ -148,6 +150,18 @@ let candle_q_dim_analytic_program_step_def = define
             (candle_q_dim_analytic_result_head boxes stack)))
        (candle_q_dim_analytic_result_tail stack)) /\
   (candle_q_dim_analytic_program_step boxes
+     Candle_analytic_program_matan stack =
+     CONS
+       ((candle_q_dim_analytic_result_domain
+           (candle_q_dim_analytic_result_head boxes stack) /\
+         candle_q_dim_jet_matan_domain
+           (candle_q_dim_analytic_result_jet
+             (candle_q_dim_analytic_result_head boxes stack))),
+        candle_q_dim_jet_matan
+          (candle_q_dim_analytic_result_jet
+            (candle_q_dim_analytic_result_head boxes stack)))
+       (candle_q_dim_analytic_result_tail stack)) /\
+  (candle_q_dim_analytic_program_step boxes
      Candle_analytic_program_pi_half stack =
      CONS (T,candle_q_dim_jet_pi_half boxes) stack)`;;
 
@@ -193,6 +207,9 @@ let candle_analytic_compile_def = define
   (candle_analytic_compile (Candle_analytic_atn a) =
      APPEND (candle_analytic_compile a)
        [Candle_analytic_program_atn]) /\
+  (candle_analytic_compile (Candle_analytic_matan a) =
+     APPEND (candle_analytic_compile a)
+       [Candle_analytic_program_matan]) /\
   (candle_analytic_compile Candle_analytic_pi_half =
      [Candle_analytic_program_pi_half])`;;
 
