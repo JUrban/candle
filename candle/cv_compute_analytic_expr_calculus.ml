@@ -36,6 +36,8 @@ let candle_analytic_valid_dim_def = define
      candle_analytic_valid_dim n a) /\
   (candle_analytic_valid_dim n (Candle_analytic_atn a) <=>
      candle_analytic_valid_dim n a) /\
+  (candle_analytic_valid_dim n (Candle_analytic_matan a) <=>
+     candle_analytic_valid_dim n a) /\
   (candle_analytic_valid_dim n Candle_analytic_pi_half <=> T)`;;
 
 let candle_analytic_regular_at_def = define
@@ -57,6 +59,9 @@ let candle_analytic_regular_at_def = define
      &0 < candle_analytic_value env a) /\
   (candle_analytic_regular_at env (Candle_analytic_atn a) <=>
      candle_analytic_regular_at env a) /\
+  (candle_analytic_regular_at env (Candle_analytic_matan a) <=>
+     candle_analytic_regular_at env a /\
+     -- &1 < candle_analytic_value env a) /\
   (candle_analytic_regular_at env Candle_analytic_pi_half <=> T)`;;
 
 let candle_analytic_denote_dim_def = new_definition
@@ -124,6 +129,13 @@ let candle_analytic_denote_dim_atn = prove
  (`!a. (candle_analytic_denote_dim (Candle_analytic_atn a) :
          real^N->real) =
        (\z. atn (candle_analytic_denote_dim a z))`,
+  REWRITE_TAC[FUN_EQ_THM; candle_analytic_denote_dim_def;
+              candle_analytic_value_def]);;
+
+let candle_analytic_denote_dim_matan = prove
+ (`!a. (candle_analytic_denote_dim (Candle_analytic_matan a) :
+         real^N->real) =
+       (\z. matan (candle_analytic_denote_dim a z))`,
   REWRITE_TAC[FUN_EQ_THM; candle_analytic_denote_dim_def;
               candle_analytic_value_def]);;
 
@@ -347,6 +359,36 @@ let candle_analytic_denote_dim_diff2c = prove
               [`z:real^N`;
                `(candle_analytic_denote_dim a):real^N->real`]
               diff2c_atn_compose)
+            source)));
+    X_GEN_TAC `a:candle_analytic_expr` THEN DISCH_THEN
+      (LABEL_TAC "ih") THEN X_GEN_TAC `z:real^N` THEN
+    REWRITE_TAC[candle_analytic_valid_dim_def;
+                candle_analytic_regular_at_def] THEN STRIP_TAC THEN
+    REWRITE_TAC[candle_analytic_denote_dim_matan] THEN
+    USE_THEN "ih" (fun ih ->
+      let source =
+        MATCH_MP (SPEC `z:real^N` ih)
+          (CONJ
+            (ASSUME `candle_analytic_valid_dim (dimindex (:N)) a`)
+            (ASSUME
+              `candle_analytic_regular_at
+                (list_of_seq (\k. (z:real^N)$(k + 1))
+                  (dimindex (:N))) a`)) in
+      let regular =
+        REWRITE_RULE[GSYM candle_analytic_denote_dim_def]
+          (ASSUME
+            `-- &1 < candle_analytic_value
+                (list_of_seq (\k. (z:real^N)$(k + 1))
+                  (dimindex (:N))) a`) in
+      ACCEPT_TAC
+        (REWRITE_RULE[o_DEF]
+          (MATCH_MP
+            (MATCH_MP
+              (SPECL
+                [`z:real^N`;
+                 `(candle_analytic_denote_dim a):real^N->real`]
+                diff2c_matan_compose)
+              regular)
             source)));
     X_GEN_TAC `z:real^N` THEN
     REWRITE_TAC[candle_analytic_valid_dim_def;

@@ -2,9 +2,6 @@
 (* Behavioral regression for the universal analytic calculus bridge.         *)
 (* ========================================================================== *)
 
-load_path :=
-  ["/project/worktrees/candle-cv-nonlinear-atn-expr-v1"] @ !load_path;;
-
 needs "candle/cv_compute_analytic_expr_calculus.ml";;
 
 open Candle_cv_polynomial_expr_jet;;
@@ -17,15 +14,18 @@ open Candle_cv_analytic_expr_calculus;;
 let candle_analytic_calculus_axioms_before = axioms ();;
 
 let candle_analytic_calculus_fixture =
- `Candle_analytic_add Candle_analytic_pi_half
-    (Candle_analytic_atn
-      (Candle_analytic_sqrt 2 0 0 2 0 0
-        (Candle_analytic_add
-          (Candle_analytic_inv
-            (Candle_analytic_poly
-              (Candle_poly_add
-                (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
-          (Candle_analytic_poly (Candle_poly_const 3 0 0)))))`;;
+ `Candle_analytic_add
+    (Candle_analytic_matan
+      (Candle_analytic_poly (Candle_poly_var 0)))
+    (Candle_analytic_add Candle_analytic_pi_half
+      (Candle_analytic_atn
+        (Candle_analytic_sqrt 2 0 0 2 0 0
+          (Candle_analytic_add
+            (Candle_analytic_inv
+              (Candle_analytic_poly
+                (Candle_poly_add
+                  (Candle_poly_const 1 0 0) (Candle_poly_var 0))))
+            (Candle_analytic_poly (Candle_poly_const 3 0 0))))))`;;
 
 let candle_analytic_calculus_valid = prove
  (list_mk_comb
@@ -71,5 +71,5 @@ if length candle_analytic_calculus_axioms_after <>
   failwith "analytic calculus bridge: changed the global axiom set";;
 
 let _ = print_endline
-  "CANDLE_CV_ANALYTIC_EXPR_CALCULUS_RESULT constructors=9 nested_depth=6 diff2c=1";;
+  "CANDLE_CV_ANALYTIC_EXPR_CALCULUS_RESULT constructors=10 nested_depth=7 matan=1 diff2c=1";;
 let _ = print_endline "CANDLE_CV_ANALYTIC_EXPR_CALCULUS_OK";;
