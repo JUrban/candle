@@ -31,7 +31,7 @@ open Candle_cv_analytic_expr_jet_check;;
 open Candle_cv_analytic_expr_first_jet_program_compute;;
 open Candle_cv_analytic_expr_first_center_check;;
 
-type candle_q_dim_analytic_jet_prepared_six = {
+type candle_q_dim_analytic_jet_prepared = {
   function_term : term;
   vector_term : term;
   source_term : term;
@@ -43,6 +43,11 @@ type candle_q_dim_analytic_jet_prepared_six = {
   program_representation : thm;
   program_representation_term : term;
 };;
+
+(* Retain the established public type name while the proof-producing adapter
+   grows beyond the original six-dimensional Flyspeck prototype. *)
+type candle_q_dim_analytic_jet_prepared_six =
+  candle_q_dim_analytic_jet_prepared;;
 
 let candle_q_dim_analytic_jet_profile = ref (fun (_:string) -> ());;
 
@@ -77,6 +82,7 @@ let candle_q_dim_analytic_jet_flag_accept = prove
   CONV_TAC NUM_REDUCE_CONV);;
 
 let candle_q_dim_analytic_jet_dim_six = DIMINDEX_CONV `dimindex (:6)`;;
+let candle_q_dim_analytic_jet_dim_seven = DIMINDEX_CONV `dimindex (:7)`;;
 
 let candle_q_dim_analytic_jet_sound_six =
   REWRITE_RULE
@@ -85,18 +91,27 @@ let candle_q_dim_analytic_jet_sound_six =
       [`:6`,`:N`]
       candle_q_dim_analytic_jet_whole_box_accept_sound);;
 
-let candle_q_dim_analytic_jet_prepare_six_with
-    sqrt_interval function_tm =
+let candle_q_dim_analytic_jet_sound_seven =
+  REWRITE_RULE
+    [candle_q_dim_analytic_jet_dim_seven]
+    (INST_TYPE
+      [`:7`,`:N`]
+      candle_q_dim_analytic_jet_whole_box_accept_sound);;
+
+let candle_q_dim_analytic_jet_prepare_dim_with
+    dimension vector_type dimension_theorem sqrt_interval function_tm =
   let vector,source = dest_abs function_tm in
-  if type_of vector <> `:real^6` || type_of source <> `:real` then
-    failwith "analytic shared-jet prover: expected real^6 -> real source";
-  let variables = candle_poly_vector_components vector 6 in
+  if dimension < 1 ||
+     type_of vector <> vector_type || type_of source <> `:real` then
+    failwith "analytic shared-jet prover: source dimension/type mismatch";
+  let dimension_term = mk_small_numeral dimension in
+  let variables = candle_poly_vector_components vector dimension in
   let expression,reified_source =
     candle_analytic_reify_real_expression
       sqrt_interval variables source in
   let valid = prove
     (list_mk_comb
-      (`candle_analytic_valid_dim`,[`6`;expression]),
+      (`candle_analytic_valid_dim`,[dimension_term;expression]),
      REWRITE_TAC
        [candle_analytic_valid_dim_def; candle_poly_valid_dim_def] THEN
      CONV_TAC NUM_REDUCE_CONV) in
@@ -106,7 +121,7 @@ let candle_q_dim_analytic_jet_prepare_six_with
     let expanded =
       REWRITE_CONV
         [candle_analytic_denote_dim_def;
-         candle_q_dim_analytic_jet_dim_six]
+         dimension_theorem]
         denotation_term in
     let listed =
       CONV_RULE (ONCE_DEPTH_CONV LIST_OF_SEQ_CONV) expanded in
@@ -142,8 +157,26 @@ let candle_q_dim_analytic_jet_prepare_six_with
     program_representation_term = rand (concl program_representation);
   };;
 
+let candle_q_dim_analytic_jet_prepare_six_with
+    sqrt_interval function_tm =
+  candle_q_dim_analytic_jet_prepare_dim_with
+    6 `:real^6` candle_q_dim_analytic_jet_dim_six
+    sqrt_interval function_tm;;
+
+let candle_q_dim_analytic_jet_prepare_seven_with
+    sqrt_interval function_tm =
+  candle_q_dim_analytic_jet_prepare_dim_with
+    7 `:real^7` candle_q_dim_analytic_jet_dim_seven
+    sqrt_interval function_tm;;
+
 let candle_q_dim_analytic_jet_prepare_six function_tm =
   candle_q_dim_analytic_jet_prepare_six_with
+    (fun _ ->
+      failwith "analytic shared-jet prover: square-root enclosure required")
+    function_tm;;
+
+let candle_q_dim_analytic_jet_prepare_seven function_tm =
+  candle_q_dim_analytic_jet_prepare_seven_with
     (fun _ ->
       failwith "analytic shared-jet prover: square-root enclosure required")
     function_tm;;
