@@ -133,6 +133,9 @@ let candle_cv_matan_fs_taylor_finish_def = new_definition
         (Cexp_num 0))
       (Cexp_pair upper_positive (Cexp_snd value))`;;
 let _ = marker "taylor-finish";;
+let candle_cv_matan_fs_taylor_finish_compute =
+  REWRITE_RULE[LET_DEF; LET_END_DEF]
+    candle_cv_matan_fs_taylor_finish_def;;
 
 let candle_cv_matan_fs_taylor_dual_check_def = new_definition
  `candle_cv_matan_fs_taylor_dual_check center_program box_program boxes =
@@ -153,6 +156,9 @@ let candle_cv_matan_fs_taylor_dual_check_def = new_definition
       (candle_cv_q_dim_jet_hessian
         (candle_cv_q_dim_analytic_result_jet box_result))`;;
 let _ = marker "dual-check";;
+let candle_cv_matan_fs_taylor_dual_check_compute =
+  REWRITE_RULE[LET_DEF; LET_END_DEF]
+    candle_cv_matan_fs_taylor_dual_check_def;;
 
 let candle_cv_matan_fs_taylor_handoff_compute_eqs =
   candle_cv_q_dim_analytic_jet_compute_eqs @
@@ -164,8 +170,8 @@ let candle_cv_matan_fs_taylor_handoff_compute_eqs =
     candle_cv_matan_fs_q_upper_def;
     candle_cv_matan_fs_q_abs_upper_def;
     candle_cv_matan_fs_weighted_rows_upper_compute;
-    candle_cv_matan_fs_taylor_finish_def;
-    candle_cv_matan_fs_taylor_dual_check_def];;
+    candle_cv_matan_fs_taylor_finish_compute;
+    candle_cv_matan_fs_taylor_dual_check_compute];;
 let _ = marker "compute-equations";;
 
 end;;
