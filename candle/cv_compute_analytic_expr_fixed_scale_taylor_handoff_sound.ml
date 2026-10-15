@@ -7,6 +7,7 @@
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_fixed_scale_taylor_handoff_compute.ml";;
+needs "candle/cv_compute_analytic_expr_certificate_erasure.ml";;
 
 module Candle_cv_analytic_expr_fixed_scale_taylor_handoff_sound = struct
 
@@ -18,6 +19,7 @@ open Candle_cv_whole_box_dim_taylor;;
 open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_dim_jet_sound;;
 open Candle_cv_analytic_expr_taylor_sound;;
+open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_fixed_scale_taylor_handoff_compute;;
 
 let candle_matan_fs_scale_def = new_definition
@@ -644,5 +646,40 @@ let candle_matan_fs_taylor_handoff_analytic_sound = prove
   USE_THEN "negative_upper" MP_TAC THEN
   REAL_ARITH_TAC);;
 let _ = marker "sound-taylor-handoff-analytic";;
+
+let candle_matan_fs_taylor_handoff_dual_analytic_sound = prove
+ (`!center_e box_e boxes center_jet box_jet.
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e /\
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     candle_q_dim_analytic_domain boxes box_e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_q_box_valid_list boxes /\
+     candle_q_dim_jet_shape (dimindex (:N)) center_jet /\
+     candle_q_dim_analytic_contains (dimindex (:N)) center_jet
+       (list_of_seq
+         (\k. (candle_q_box_center_vector boxes : real^N)$(k + 1))
+         (dimindex (:N))) center_e /\
+     candle_q_dim_jet_shape (dimindex (:N)) box_jet /\
+     (!(z:real^N). z IN interval
+          [candle_q_box_lower_vector boxes,
+           candle_q_box_upper_vector boxes]
+        ==> candle_q_dim_analytic_contains (dimindex (:N)) box_jet
+              (list_of_seq (\k. z$(k + 1)) (dimindex (:N))) box_e) /\
+     candle_matan_fs_taylor_handoff_accept T T boxes
+       (candle_q_dim_jet_f center_jet)
+       (candle_q_dim_jet_gradient center_jet)
+       (candle_q_dim_jet_hessian box_jet)
+     ==>
+     !(p:real^N). p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+       ==>
+       candle_analytic_denote_dim box_e p < &0`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_matan_fs_taylor_handoff_analytic_sound THEN
+  ASM_REWRITE_TAC[] THEN
+  ASM_MESON_TAC[candle_q_dim_analytic_contains_certificate_transport]);;
+let _ = marker "sound-taylor-handoff-dual-analytic";;
 
 end;;

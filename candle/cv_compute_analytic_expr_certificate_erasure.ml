@@ -37,6 +37,8 @@ let candle_analytic_erase_sqrt_certificates_def = define
        (candle_analytic_erase_sqrt_certificates a)) /\
   (candle_analytic_erase_sqrt_certificates (Candle_analytic_atn a) =
      Candle_analytic_atn (candle_analytic_erase_sqrt_certificates a)) /\
+  (candle_analytic_erase_sqrt_certificates (Candle_analytic_matan a) =
+     Candle_analytic_matan (candle_analytic_erase_sqrt_certificates a)) /\
   (candle_analytic_erase_sqrt_certificates Candle_analytic_pi_half =
      Candle_analytic_pi_half)`;;
 

@@ -13,5 +13,6 @@ env \
     "$output_dir" \
     CANDLE_CV_MATAN_FS_HANDOFF_SCALAR_SOUND_OK \
     candle/cv_compute_analytic_expr_fixed_scale_taylor_handoff_compute.ml \
+    candle/cv_compute_analytic_expr_certificate_erasure.ml \
     candle/cv_compute_analytic_expr_fixed_scale_taylor_handoff_sound.ml \
     candle/test_cv_compute_analytic_expr_fixed_scale_taylor_handoff_sound.ml
