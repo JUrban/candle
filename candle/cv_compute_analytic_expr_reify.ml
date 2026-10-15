@@ -37,6 +37,9 @@ let candle_analytic_inv_term child =
 let candle_analytic_atn_term child =
   mk_comb (`Candle_analytic_atn`,child);;
 
+let candle_analytic_matan_term child =
+  mk_comb (`Candle_analytic_matan`,child);;
+
 let candle_analytic_pi_half_term = `Candle_analytic_pi_half`;;
 
 let candle_analytic_q_components q =
@@ -262,6 +265,14 @@ let rec candle_analytic_reify_real_expression_with sqrt_interval variables tm =
       candle_analytic_reify_real_expression_with
         sqrt_interval variables child_tm in
     let ast = candle_analytic_atn_term child in
+    candle_analytic_finish_source variables ast tm
+      (candle_analytic_unfold_source variables ast [child_th])
+  else if candle_q_is_unary `matan:real->real` tm then
+    let child_tm = candle_q_dest_unary `matan:real->real` tm in
+    let child,child_th =
+      candle_analytic_reify_real_expression_with
+        sqrt_interval variables child_tm in
+    let ast = candle_analytic_matan_term child in
     candle_analytic_finish_source variables ast tm
       (candle_analytic_unfold_source variables ast [child_th])
   else if candle_q_is_binary `(pow):real->num->real` tm then
