@@ -151,17 +151,29 @@ let candle_q_box_sqrt_callback variables bounds tm =
   candle_q_box_sqrt_interval
     (candle_q_box_interval_eval variables bounds argument);;
 
-let candle_q_dim_analytic_jet_prepare_box_six function_term lower upper =
-  if length lower <> 6 || length upper <> 6 then
-    failwith "analytic box certificate: expected six coordinates";
+let candle_q_dim_analytic_jet_prepare_box_dim
+    dimension prepare function_term lower upper =
+  if dimension < 1 ||
+     length lower <> dimension || length upper <> dimension then
+    failwith "analytic box certificate: box dimension mismatch";
   let vector,_ = dest_abs function_term in
-  let variables = candle_poly_vector_components vector 6 in
+  let variables = candle_poly_vector_components vector dimension in
   let bounds =
     map2
       (fun lower_term upper_term ->
         rat_of_term lower_term,rat_of_term upper_term)
       lower upper in
-  candle_q_dim_analytic_jet_prepare_six_with
+  prepare
     (candle_q_box_sqrt_callback variables bounds) function_term;;
+
+let candle_q_dim_analytic_jet_prepare_box_six function_term lower upper =
+  candle_q_dim_analytic_jet_prepare_box_dim
+    6 candle_q_dim_analytic_jet_prepare_six_with
+    function_term lower upper;;
+
+let candle_q_dim_analytic_jet_prepare_box_seven function_term lower upper =
+  candle_q_dim_analytic_jet_prepare_box_dim
+    7 candle_q_dim_analytic_jet_prepare_seven_with
+    function_term lower upper;;
 
 end;;

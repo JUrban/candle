@@ -108,7 +108,7 @@ let candle_nl_hminus_parameter_defs =
 
 let candle_nl_hminus_parameter = `candle_hminus_parameter:real`;;
 
-let candle_nl_hminus_parameter_scan_source source_id =
+let candle_nl_hminus_parameter_source_expressions source_id =
   let _,preparation,needs_delta = Break_case_exec.get_case source_id in
   let target =
     Break_case_exec.run_generic
@@ -130,7 +130,11 @@ let candle_nl_hminus_parameter_scan_source source_id =
     M_verifier_main.mk_standard_ineq
       [REAL_POW_1; real_pow] inequality in
   let disjuncts = striplist dest_disj ((lhand o concl) standard) in
-  let expressions = map lhand disjuncts in
+  map lhand disjuncts;;
+
+let candle_nl_hminus_parameter_scan_source source_id =
+  let expressions =
+    candle_nl_hminus_parameter_source_expressions source_id in
   let parameterized =
     map
       (subst [candle_nl_hminus_parameter,`hminus:real`])
@@ -152,7 +156,7 @@ let candle_nl_hminus_parameter_scan_source source_id =
           (candle_nl_hminus_parameter_scan_expression variables body)
           result)
       functions [] in
-  dimension,length disjuncts,unsupported;;
+  dimension,length expressions,unsupported;;
 
 let candle_nl_hminus_parameter_probe_ids =
   ["prep-GLFVCVK4 2477216213 split(23/64)";

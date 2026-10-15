@@ -58,14 +58,18 @@ let candle_poly_fixture_vectorize_scalar_source
     failwith "Candle Flyspeck fixture: vector substitution escaped basis";
   vector_source;;
 
+let candle_poly_fixture_exact_rational tm =
+  if type_of tm <> `:real` || frees tm <> [] then
+    failwith "Candle Flyspeck fixture: expected a closed real bound";
+  if is_ratconst tm then rat_of_term tm
+  else if candle_q_is_binary `DECIMAL` tm then candle_q_decimal_rational tm
+  else
+    failwith "Candle Flyspeck fixture: expected an exact rational bound";;
+
 let candle_poly_fixture_q_interval lower upper =
-  if type_of lower <> `:real` || type_of upper <> `:real` ||
-     frees lower <> [] || frees upper <> [] ||
-     not (is_ratconst lower) || not (is_ratconst upper) then
-    failwith "Candle Flyspeck fixture: expected closed rational bounds";
   mk_pair
-    (candle_q_term (rat_of_term lower),
-     candle_q_term (rat_of_term upper));;
+    (candle_q_term (candle_poly_fixture_exact_rational lower),
+     candle_q_term (candle_poly_fixture_exact_rational upper));;
 
 let candle_poly_fixture_q_boxes lower upper =
   if lower = [] || length lower <> length upper then

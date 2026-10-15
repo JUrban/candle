@@ -16,6 +16,7 @@ open Report;;
 open Verifier_options;;
 open Candle_cv_linear_combination_realize;;
 open Candle_cv_exact_rational_core;;
+open Candle_cv_exact_interval_reify;;
 open Candle_cv_polynomial_expr_flyspeck_fixture;;
 open Candle_cv_polynomial_expr_flyspeck_dim_sound;;
 open Candle_cv_polynomial_expr_dim_jet_sound;;
@@ -144,7 +145,12 @@ let candle_reflected_nl_exact_component tm =
     let _ = rat_of_term tm in
     REFL tm
   with Failure _ ->
-    let th = Arith_float.FLOAT_TO_NUM_CONV tm in
+    let th =
+      if candle_q_is_binary `DECIMAL` tm then
+        let expanded = REWRITE_CONV[DECIMAL] tm in
+        TRANS expanded
+          (REAL_RAT_REDUCE_CONV (rand (concl expanded)))
+      else Arith_float.FLOAT_TO_NUM_CONV tm in
     let _ = rat_of_term (rand (concl th)) in
     th;;
 
@@ -174,7 +180,9 @@ let candle_reflected_nl_exact_component_data tm =
   try
     let _ = rat_of_term tm in tm
   with Failure _ ->
-    term_of_rat (More_float.num_of_float_tm tm);;
+    if candle_q_is_binary `DECIMAL` tm then
+      term_of_rat (candle_q_decimal_rational tm)
+    else term_of_rat (More_float.num_of_float_tm tm);;
 
 let candle_reflected_nl_normalize_vector_data vector_tm =
   let vector_head,vector_args = strip_comb vector_tm in
