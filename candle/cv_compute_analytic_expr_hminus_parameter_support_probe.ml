@@ -108,11 +108,7 @@ let candle_nl_hminus_parameter_defs =
 
 let candle_nl_hminus_parameter = `candle_hminus_parameter:real`;;
 
-let candle_nl_hminus_parameter_source_fixture source_id =
-  let _,preparation,needs_delta = Break_case_exec.get_case source_id in
-  let target =
-    Break_case_exec.run_generic
-      (fun selected -> preparation selected) needs_delta source_id in
+let candle_nl_hminus_parameter_fixture_from_target target =
   let reconstruction = candle_direct_ineqm_conv target in
   if not (aconv (lhand (concl reconstruction)) target) then
     failwith "hminus parameter fixture: reconstruction source mismatch";
@@ -137,6 +133,13 @@ let candle_nl_hminus_parameter_source_fixture source_id =
   let disjuncts = striplist dest_disj ((lhand o concl) standard) in
   target,reconstruction,expansion,converted,variable_names,bounds,standard,
   map lhand disjuncts;;
+
+let candle_nl_hminus_parameter_source_fixture source_id =
+  let _,preparation,needs_delta = Break_case_exec.get_case source_id in
+  let target =
+    Break_case_exec.run_generic
+      (fun selected -> preparation selected) needs_delta source_id in
+  candle_nl_hminus_parameter_fixture_from_target target;;
 
 let candle_nl_hminus_parameter_source_expressions source_id =
   let _,_,_,_,_,_,_,expressions =
