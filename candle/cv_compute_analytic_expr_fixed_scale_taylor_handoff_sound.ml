@@ -59,6 +59,14 @@ let candle_matan_fs_weighted_rows_upper_def = define
          (candle_q_dot_abs_upper radii interval_row)) +
      candle_matan_fs_weighted_rows_upper radii weights row_tail)`;;
 
+let candle_matan_fs_taylor_accept_def = new_definition
+ `candle_matan_fs_taylor_accept value gradient radii weights row_lists <=>
+    FST (candle_matan_fs_q_upper value) +
+      candle_matan_fs_q_abs_upper gradient +
+      candle_matan_fs_ceil_div
+        (candle_matan_fs_weighted_rows_upper radii weights row_lists) 2 <
+    SND (candle_matan_fs_q_upper value)`;;
+
 let candle_cv_matan_fs_scale_correct = prove
  (`candle_cv_matan_fs_scale = Cexp_num candle_matan_fs_scale`,
   REWRITE_TAC[candle_cv_matan_fs_scale_def;
@@ -358,5 +366,139 @@ let candle_matan_fs_weighted_rows_upper_sound = prove
                   REAL_ADD_RDISTRIB] THEN
       ASM_REAL_ARITH_TAC]]);;
 let _ = marker "sound-weighted-rows";;
+
+let candle_matan_fs_half_ceil_sound = prove
+ (`!numerator.
+     &numerator / &candle_matan_fs_scale / &2 <=
+     &(candle_matan_fs_ceil_div numerator 2) /
+     &candle_matan_fs_scale`,
+  GEN_TAC THEN
+  SUBGOAL_THEN `&0 < &(candle_matan_fs_scale)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LT; candle_matan_fs_scale_pos];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `&numerator / &candle_matan_fs_scale / &2 =
+    (&numerator / &2) / &candle_matan_fs_scale`
+   SUBST1_TAC THENL
+   [REWRITE_TAC[real_div] THEN CONV_TAC REAL_RING;
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_LE_DIV2_EQ] THEN
+  SUBGOAL_THEN `(&0:real) < &2` ASSUME_TAC THENL
+   [REAL_ARITH_TAC;
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_LE_LDIV_EQ] THEN
+  MP_TAC
+    (SPECL [`2`; `numerator:num`] candle_matan_fs_ceil_div_step) THEN
+  REWRITE_TAC[ARITH_RULE `~(2 = 0)`;
+              GSYM REAL_OF_NUM_LE; REAL_OF_NUM_MUL] THEN
+  REAL_ARITH_TAC);;
+let _ = marker "sound-half-ceil";;
+
+let candle_matan_fs_integer_cast_negative = prove
+ (`!positive negative gradient hessian.
+     positive + gradient + hessian < negative
+     ==>
+     &positive + &gradient + &hessian < &negative`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[GSYM REAL_OF_NUM_LT; GSYM REAL_OF_NUM_ADD]);;
+let _ = marker "sound-integer-cast-negative";;
+
+let candle_matan_fs_integer_negative = prove
+ (`!positive negative gradient hessian.
+     positive + gradient + hessian < negative
+     ==>
+     (&positive - &negative) / &candle_matan_fs_scale +
+       &gradient / &candle_matan_fs_scale +
+       &hessian / &candle_matan_fs_scale < &0`,
+  REPEAT STRIP_TAC THEN
+  SUBGOAL_THEN `&0 < &(candle_matan_fs_scale)` ASSUME_TAC THENL
+   [REWRITE_TAC[REAL_OF_NUM_LT; candle_matan_fs_scale_pos];
+    ALL_TAC] THEN
+  MP_TAC
+    (SPECL
+      [`positive:num`; `negative:num`; `gradient:num`; `hessian:num`]
+      candle_matan_fs_integer_cast_negative) THEN
+  ASM_REWRITE_TAC[] THEN DISCH_TAC THEN
+  SUBGOAL_THEN
+   `(&positive - &negative) / &candle_matan_fs_scale +
+      &gradient / &candle_matan_fs_scale +
+      &hessian / &candle_matan_fs_scale =
+    (&positive + &gradient + &hessian - &negative) /
+      &candle_matan_fs_scale`
+   SUBST1_TAC THENL
+   [REWRITE_TAC[real_div] THEN CONV_TAC REAL_RING;
+    ALL_TAC] THEN
+  ASM_SIMP_TAC[REAL_LT_LDIV_EQ; REAL_MUL_LZERO] THEN
+  ASM_REAL_ARITH_TAC);;
+let _ = marker "sound-integer-negative";;
+
+let candle_matan_fs_taylor_accept_sound = prove
+ (`!value gradient radii weights row_lists.
+     candle_matan_fs_taylor_accept
+       value gradient radii weights row_lists
+     ==>
+     candle_q_real value + candle_q_real gradient +
+       candle_q_real
+         (candle_q_weighted_rows_abs_upper radii weights row_lists) / &2 <
+     &0`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_matan_fs_taylor_accept_def] THEN DISCH_TAC THEN
+  ABBREV_TAC `value_bound = candle_matan_fs_q_upper value` THEN
+  ABBREV_TAC `gradient_bound = candle_matan_fs_q_abs_upper gradient` THEN
+  ABBREV_TAC
+   `row_bound =
+      candle_matan_fs_weighted_rows_upper radii weights row_lists` THEN
+  ABBREV_TAC
+   `hessian_bound = candle_matan_fs_ceil_div row_bound 2` THEN
+  SUBGOAL_THEN
+   `candle_q_real value <=
+    (&(FST value_bound) - &(SND value_bound)) /
+      &candle_matan_fs_scale`
+   ASSUME_TAC THENL
+   [MP_TAC (SPEC `value:(num#num)#num` candle_matan_fs_q_upper_sound) THEN
+    EXPAND_TAC "value_bound" THEN
+    REWRITE_TAC[candle_matan_fs_real_def; candle_lc_zreal_def];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_q_real gradient <=
+    &gradient_bound / &candle_matan_fs_scale`
+   ASSUME_TAC THENL
+   [MATCH_MP_TAC REAL_LE_TRANS THEN
+    EXISTS_TAC `abs (candle_q_real gradient)` THEN
+    REWRITE_TAC[candle_real_le_abs] THEN
+    EXPAND_TAC "gradient_bound" THEN
+    MATCH_ACCEPT_TAC candle_matan_fs_q_abs_upper_sound;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_q_real
+      (candle_q_weighted_rows_abs_upper radii weights row_lists) / &2 <=
+    &hessian_bound / &candle_matan_fs_scale`
+   ASSUME_TAC THENL
+   [SUBGOAL_THEN
+     `candle_q_real
+        (candle_q_weighted_rows_abs_upper radii weights row_lists) <=
+      &row_bound / &candle_matan_fs_scale`
+     ASSUME_TAC THENL
+     [EXPAND_TAC "row_bound" THEN
+      MATCH_ACCEPT_TAC candle_matan_fs_weighted_rows_upper_sound;
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `&row_bound / &candle_matan_fs_scale / &2 <=
+      &hessian_bound / &candle_matan_fs_scale`
+     ASSUME_TAC THENL
+     [EXPAND_TAC "hessian_bound" THEN
+      MATCH_ACCEPT_TAC candle_matan_fs_half_ceil_sound;
+      ASM_REAL_ARITH_TAC];
+    ALL_TAC] THEN
+  MP_TAC
+    (SPECL
+      [`FST (value_bound:num#num)`;
+       `SND (value_bound:num#num)`;
+       `gradient_bound:num`;
+       `hessian_bound:num`]
+      candle_matan_fs_integer_negative) THEN
+  ASM_REWRITE_TAC[] THEN DISCH_TAC THEN
+  ASM_REAL_ARITH_TAC);;
+let _ = marker "sound-taylor-accept";;
 
 end;;
