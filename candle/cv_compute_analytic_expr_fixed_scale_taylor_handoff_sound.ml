@@ -20,6 +20,8 @@ open Candle_cv_whole_box_dim_taylor_sound;;
 open Candle_cv_polynomial_expr_dim_jet_sound;;
 open Candle_cv_analytic_expr_taylor_sound;;
 open Candle_cv_analytic_expr_certificate_erasure;;
+open Candle_cv_analytic_expr_program_compute;;
+open Candle_cv_analytic_expr_jet_check;;
 open Candle_cv_analytic_expr_fixed_scale_taylor_handoff_compute;;
 
 let candle_matan_fs_scale_def = new_definition
@@ -83,6 +85,22 @@ let candle_matan_fs_taylor_handoff_accept_def = new_definition
       (candle_q_radius_list boxes)
       (candle_q_radius_list boxes)
       box_hessian`;;
+
+let candle_matan_fs_taylor_dual_numerical_accept_def = new_definition
+ `candle_matan_fs_taylor_dual_numerical_accept center_e box_e boxes <=>
+    candle_matan_fs_taylor_handoff_accept
+      (candle_q_dim_analytic_domain
+         (candle_q_center_environment_list boxes) center_e /\
+       candle_q_dim_analytic_domain boxes box_e)
+      (candle_q_box_valid_list boxes) boxes
+      (candle_q_dim_jet_f
+        (candle_q_dim_analytic_jet
+          (candle_q_center_environment_list boxes) center_e))
+      (candle_q_dim_jet_gradient
+        (candle_q_dim_analytic_jet
+          (candle_q_center_environment_list boxes) center_e))
+      (candle_q_dim_jet_hessian
+        (candle_q_dim_analytic_jet boxes box_e))`;;
 
 let candle_cv_matan_fs_scale_correct = prove
  (`candle_cv_matan_fs_scale = Cexp_num candle_matan_fs_scale`,
@@ -199,6 +217,38 @@ let candle_cv_matan_fs_taylor_finish_accept_correct = prove
   REPEAT(COND_CASES_TAC THEN ASM_REWRITE_TAC[cexp_if_def]) THEN
   CONV_TAC NUM_REDUCE_CONV);;
 let _ = marker "sound-taylor-finish-accept-correct";;
+
+let candle_cv_matan_fs_taylor_dual_check_correct = prove
+ (`!center_e box_e boxes.
+     Cexp_fst
+       (candle_cv_matan_fs_taylor_dual_check
+         (candle_cv_analytic_instruction_list
+           (candle_analytic_compile center_e))
+         (candle_cv_analytic_instruction_list
+           (candle_analytic_compile box_e))
+         (candle_cv_q_interval_list boxes)) =
+     Cexp_num
+       (if candle_matan_fs_taylor_dual_numerical_accept
+             center_e box_e boxes
+        then SUC 0 else 0)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_cv_matan_fs_taylor_dual_check_def;
+              LET_DEF; LET_END_DEF;
+              candle_cv_q_center_environment_list_correct;
+              candle_cv_q_dim_analytic_compile_program_correct;
+              candle_cv_q_dim_analytic_result_domain_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_q_box_valid_list_correct;
+              GSYM candle_cv_bool_def;
+              candle_cv_q_dim_analytic_result_jet_correct;
+              candle_cv_q_dim_jet_f_correct;
+              candle_cv_q_dim_jet_gradient_correct;
+              candle_cv_q_dim_jet_hessian_correct;
+              candle_cv_matan_fs_taylor_finish_accept_correct;
+              candle_matan_fs_taylor_dual_numerical_accept_def;
+              candle_q_dim_analytic_result_domain_def;
+              candle_q_dim_analytic_result_jet_def]);;
+let _ = marker "sound-taylor-dual-check-correct";;
 
 let candle_matan_fs_scale_pos = prove
  (`0 < candle_matan_fs_scale`,
@@ -681,5 +731,31 @@ let candle_matan_fs_taylor_handoff_dual_analytic_sound = prove
   ASM_REWRITE_TAC[] THEN
   ASM_MESON_TAC[candle_q_dim_analytic_contains_certificate_transport]);;
 let _ = marker "sound-taylor-handoff-dual-analytic";;
+
+let candle_matan_fs_taylor_dual_numerical_accept_sound = prove
+ (`!center_e box_e boxes.
+     candle_analytic_erase_sqrt_certificates center_e =
+       candle_analytic_erase_sqrt_certificates box_e /\
+     candle_analytic_valid_dim (dimindex (:N)) box_e /\
+     LENGTH boxes = dimindex (:N) /\
+     candle_matan_fs_taylor_dual_numerical_accept center_e box_e boxes
+     ==>
+     !(p:real^N). p IN interval
+       [candle_q_box_lower_vector boxes,
+        candle_q_box_upper_vector boxes]
+       ==>
+       candle_analytic_denote_dim box_e p < &0`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_matan_fs_taylor_dual_numerical_accept_def;
+              candle_matan_fs_taylor_handoff_accept_def] THEN
+  STRIP_TAC THEN
+  MATCH_MP_TAC candle_matan_fs_taylor_handoff_dual_analytic_sound THEN
+  ASM_MESON_TAC
+   [candle_q_dim_analytic_jet_center_shape;
+    candle_q_dim_analytic_jet_center_sound;
+    candle_q_dim_analytic_jet_box_shape;
+    candle_q_dim_analytic_jet_box_sound;
+    candle_matan_fs_taylor_handoff_accept_def]);;
+let _ = marker "sound-taylor-dual-numerical-accept";;
 
 end;;

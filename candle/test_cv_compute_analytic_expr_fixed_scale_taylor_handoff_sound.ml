@@ -8,6 +8,7 @@ if hyp candle_cv_matan_fs_q_upper_correct <> [] ||
    hyp candle_cv_matan_fs_q_abs_upper_correct <> [] ||
    hyp candle_cv_matan_fs_weighted_rows_upper_correct <> [] ||
    hyp candle_cv_matan_fs_taylor_finish_accept_correct <> [] ||
+   hyp candle_cv_matan_fs_taylor_dual_check_correct <> [] ||
    hyp candle_matan_fs_q_upper_sound <> [] ||
    hyp candle_matan_fs_q_abs_upper_sound <> [] ||
    hyp candle_matan_fs_weighted_rows_upper_sound <> [] ||
@@ -18,7 +19,8 @@ if hyp candle_cv_matan_fs_q_upper_correct <> [] ||
    hyp candle_matan_fs_taylor_handoff_accept_sound <> [] ||
    hyp candle_matan_fs_taylor_handoff_jet_accept_sound <> [] ||
    hyp candle_matan_fs_taylor_handoff_analytic_sound <> [] ||
-   hyp candle_matan_fs_taylor_handoff_dual_analytic_sound <> [] then
+   hyp candle_matan_fs_taylor_handoff_dual_analytic_sound <> [] ||
+   hyp candle_matan_fs_taylor_dual_numerical_accept_sound <> [] then
   failwith "fixed-scale Taylor handoff scalar soundness assumptions";;
 
 let candle_matan_fs_handoff_sound_axioms_after = axioms ();;
@@ -31,5 +33,5 @@ if length candle_matan_fs_handoff_sound_axioms_after <>
   failwith "fixed-scale Taylor handoff scalar soundness axiom growth";;
 
 print_endline
-  "CANDLE_CV_MATAN_FS_HANDOFF_SCALAR_SOUND_RESULT correctness=4 soundness=11 assumptions=0 axiom_growth=0";;
+  "CANDLE_CV_MATAN_FS_HANDOFF_SCALAR_SOUND_RESULT correctness=5 soundness=12 assumptions=0 axiom_growth=0";;
 print_endline "CANDLE_CV_MATAN_FS_HANDOFF_SCALAR_SOUND_OK";;
