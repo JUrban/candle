@@ -1,15 +1,16 @@
 (* ========================================================================== *)
-(* Fixed-scale Taylor handoff on one complete genuine Flyspeck [matan] root. *)
+(* Dual-program fixed Taylor handoff on a genuine Flyspeck [matan] root.     *)
 (*                                                                            *)
 (* DEVELOPMENT / NON-RELEASE.  Exact reflected execution authenticates the   *)
-(* complete analytic center and box jets.  Only the final Taylor aggregation  *)
-(* is outward-rounded to a 10^-12 integer scale.  The numerical verdict is a *)
-(* development result until the companion handoff soundness theorem lands.   *)
+(* point-tight center jet and whole-box Hessian jet.  Only the final Taylor   *)
+(* aggregation is outward-rounded to a 10^-12 integer scale.  The numerical  *)
+(* verdict is a development result until the companion soundness theorem     *)
+(* authenticates the distinct certificate payloads as one source expression. *)
 (* ========================================================================== *)
 
 needs "candle/cv_compute_analytic_expr_jet_check.ml";;
 needs "candle/cv_compute_analytic_expr_fixed_scale_taylor_handoff_compute.ml";;
-needs "candle/test_cv_compute_analytic_expr_matan_genuine_root_tight_prepare.ml";;
+needs "candle/test_cv_compute_analytic_expr_matan_genuine_root_center_prepare.ml";;
 
 open Candle_cv_linear_combination_core;;
 open Candle_cv_exact_rational_core;;
@@ -23,6 +24,7 @@ open Candle_cv_analytic_expr_jet_check;;
 open Candle_cv_analytic_expr_fixed_scale_taylor_handoff_compute;;
 open Test_cv_compute_analytic_expr_matan_genuine_root_prepare;;
 open Test_cv_compute_analytic_expr_matan_genuine_root_tight_prepare;;
+open Test_cv_compute_analytic_expr_matan_genuine_root_center_prepare;;
 
 module Test_cv_compute_analytic_expr_matan_genuine_root_fixed_handoff = struct
 
@@ -40,8 +42,10 @@ let boxes_representation =
      candle_cv_q_def; candle_cv_lc_z_def; FST; SND]
     (mk_comb (`candle_cv_q_interval_list`,boxes));;
 let boxes_representation_term = rand (concl boxes_representation);;
-let program_representation_term =
+let box_program_representation_term =
   rand (concl tight_program_representation);;
+let center_program_representation_term =
+  rand (concl center_program_representation);;
 
 let compute equations phase term =
   print_endline
@@ -65,14 +69,14 @@ let center_theorem =
   compute candle_cv_q_dim_analytic_jet_compute_eqs "center-full-jet"
     (list_mk_comb
       (`candle_cv_q_dim_analytic_program`,
-       [center_environment;program_representation_term]));;
+       [center_environment;center_program_representation_term]));;
 let center = rand (concl center_theorem);;
 
 let box_theorem =
   compute candle_cv_q_dim_analytic_jet_compute_eqs "box-full-jet"
     (list_mk_comb
       (`candle_cv_q_dim_analytic_program`,
-       [boxes_representation_term;program_representation_term]));;
+       [boxes_representation_term;box_program_representation_term]));;
 let box = rand (concl box_theorem);;
 
 let domain_theorem =
@@ -181,7 +185,8 @@ let verdict = rand (concl verdict_theorem);;
 let upper = list_mk_comb (`Cexp_pair`,[upper_positive;mk_comb (`Cexp_snd`,value)]);;
 let accepted = aconv verdict `Cexp_num 1`;;
 
-if hyp tight_source_theorem <> [] || hyp tight_valid_theorem <> [] ||
+if hyp center_source_theorem <> [] || hyp center_valid_theorem <> [] ||
+   hyp tight_source_theorem <> [] || hyp tight_valid_theorem <> [] ||
    hyp boxes_representation <> [] || hyp center_theorem <> [] ||
    hyp box_theorem <> [] || hyp weighted_rows_theorem <> [] ||
    hyp verdict_theorem <> [] then
@@ -196,8 +201,10 @@ print_endline
   ("CANDLE_CV_MATAN_GENUINE_ROOT_FIXED_HANDOFF_RESULT" ^
    " DEVELOPMENT_NON_RELEASE source_id=" ^ source_id ^
    " historical_cells=1 historical_glue=0" ^
-   " instructions=" ^ string_of_int tight_instruction_count ^
-   " sqrt_scale=" ^ string_of_int scale_int ^
+   " center_instructions=" ^ string_of_int center_instruction_count ^
+   " box_instructions=" ^ string_of_int tight_instruction_count ^
+   " center_sqrt_scale=" ^ string_of_int center_scale_int ^
+   " box_sqrt_scale=" ^ string_of_int scale_int ^
    " taylor_scale=1000000000000" ^
    " verdict=" ^ (if accepted then "accept" else "reject") ^
    " value_positive=" ^ cexp_num_string value_positive ^
