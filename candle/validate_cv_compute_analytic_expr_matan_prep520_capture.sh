@@ -41,6 +41,62 @@ function fail(message) {
   errors++;
 }
 
+function derive_box(component,prefix,    key,left_key,right_key,axis,
+                    left_path,right_path,coordinate) {
+  key = component SUBSEP prefix;
+  if (key in derived)
+    return;
+  if (key in leaf) {
+    for (coordinate = 1; coordinate <= 6; coordinate++) {
+      derived_lower[key,coordinate] = leaf_lower[key,coordinate];
+      derived_upper[key,coordinate] = leaf_upper[key,coordinate];
+    }
+    derived[key] = 1;
+    return;
+  }
+  if (!(key in internal)) {
+    fail("missing topology node: component " component ": " prefix);
+    return;
+  }
+
+  left_key = key SUBSEP "L";
+  right_key = key SUBSEP "R";
+  if (!(left_key in child_axis) || !(right_key in child_axis)) {
+    fail("cannot derive incomplete node: component " component ": " prefix);
+    return;
+  }
+  axis = child_axis[left_key];
+  left_path = (prefix == "" ? "L" axis : prefix ".L" axis);
+  right_path = (prefix == "" ? "R" axis : prefix ".R" axis);
+  derive_box(component,left_path);
+  derive_box(component,right_path);
+
+  left_key = component SUBSEP left_path;
+  right_key = component SUBSEP right_path;
+  if (!(left_key in derived) || !(right_key in derived)) {
+    fail("cannot derive child boxes: component " component ": " prefix);
+    return;
+  }
+  for (coordinate = 1; coordinate <= 6; coordinate++) {
+    if (coordinate == axis) {
+      if (derived_upper[left_key,coordinate] != \
+          derived_lower[right_key,coordinate])
+        fail("split-face mismatch: component " component ": " prefix);
+      derived_lower[key,coordinate] = derived_lower[left_key,coordinate];
+      derived_upper[key,coordinate] = derived_upper[right_key,coordinate];
+    } else {
+      if (derived_lower[left_key,coordinate] != \
+            derived_lower[right_key,coordinate] || \
+          derived_upper[left_key,coordinate] != \
+            derived_upper[right_key,coordinate])
+        fail("non-split face mismatch: component " component ": " prefix);
+      derived_lower[key,coordinate] = derived_lower[left_key,coordinate];
+      derived_upper[key,coordinate] = derived_upper[left_key,coordinate];
+    }
+  }
+  derived[key] = 1;
+}
+
 /CANDLE_CV_MATAN_PREP520_ALL_CAPTURE_LEAF / {
   component = value("component=");
   leaf_index = value("leaf=");
@@ -76,6 +132,8 @@ function fail(message) {
       if (lower_coordinate[coordinate] !~ /^-?[0-9]+(\/[1-9][0-9]*)?$/ ||
           upper_coordinate[coordinate] !~ /^-?[0-9]+(\/[1-9][0-9]*)?$/)
         fail("malformed exact rational at line " NR);
+      leaf_lower[leaf_key,coordinate] = lower_coordinate[coordinate];
+      leaf_upper[leaf_key,coordinate] = upper_coordinate[coordinate];
     }
   }
 
@@ -138,7 +196,7 @@ END {
     component = key_component[1];
     prefix = key_component[2];
     internal_count[component]++;
-    if (leaf[key])
+    if (key in leaf)
       fail("leaf path is also an internal prefix: component " component ": " prefix);
 
     left_key = key SUBSEP "L";
@@ -166,6 +224,7 @@ END {
   total_branch0 = 0;
   total_branch1 = 0;
   for (component = 0; component < 4; component++) {
+    derive_box(component,"");
     if (leaf_count[component] != expected_leaves[component])
       fail("unexpected leaf count for component " component);
     if (internal_count[component] != expected_leaves[component] - 1)
