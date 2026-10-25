@@ -15,6 +15,7 @@ open Candle_cv_exact_interval_core;;
 open Candle_cv_exact_interval_program;;
 open Candle_cv_exact_interval_inv_core;;
 open Candle_cv_exact_interval_sqrt_certificate;;
+open Candle_cv_exact_interval_matan_series_program;;
 open Candle_cv_polynomial_expr_dim_jet;;
 open Candle_cv_polynomial_expr_dim_jet_compute;;
 open Candle_cv_polynomial_expr_dim_jet_representation;;
