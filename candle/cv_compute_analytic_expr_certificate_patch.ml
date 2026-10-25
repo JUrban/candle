@@ -212,11 +212,11 @@ let candle_analytic_instruction_patch_sqrt_finish = prove
 
 let candle_analytic_program_patch_sqrt_compile_matan_step = prove
  (`!a intervals.
-     candle_analytic_program_patch_sqrt intervals
-       (candle_analytic_compile a) =
-       let patched =
-         candle_analytic_patch_sqrt_certificates intervals a in
-       (FST patched,candle_analytic_compile (SND patched))
+     (candle_analytic_program_patch_sqrt intervals
+        (candle_analytic_compile a) =
+        let patched =
+          candle_analytic_patch_sqrt_certificates intervals a in
+        (FST patched,candle_analytic_compile (SND patched)))
      ==>
      candle_analytic_program_patch_sqrt intervals
        (candle_analytic_compile (Candle_analytic_matan a)) =
