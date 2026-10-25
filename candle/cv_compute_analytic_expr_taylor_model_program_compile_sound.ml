@@ -1725,8 +1725,8 @@ let candle_q_dim_taylor_model_compile_run_analytic_invariant = prove
       ASM_REWRITE_TAC[candle_analytic_compile_length_certificate_equivalent;
                       candle_q_dim_taylor_model_program_step_matan] THEN
       ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
-      MATCH_MP_TAC
-        candle_q_dim_taylor_model_result_default_analytic_invariant];
+      REWRITE_TAC
+        [candle_q_dim_taylor_model_result_default_analytic_invariant]];
     REPEAT GEN_TAC THEN STRIP_TAC THEN
     RULE_ASSUM_TAC (REWRITE_RULE[candle_analytic_valid_dim_def]) THEN
     SUBGOAL_THEN `center_e = Candle_analytic_pi_half` SUBST_ALL_TAC THENL
