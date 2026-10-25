@@ -157,7 +157,7 @@ let candle_cv_fsn_logical_program_step_correct = prove
               candle_fsa_logical_item_q_def;
               candle_cv_fso_item_neg_correct;
               candle_cv_fso_item_add_correct;
-              LET_DEF; LET_END_DEF]);;
+              LET_DEF; LET_END_DEF; cexp_if_def]);;
 
 let candle_cv_fsn_logical_program_run_correct = prove
  (`!center_program box_program center_boxes boxes radii stack.
