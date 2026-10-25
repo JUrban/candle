@@ -321,7 +321,8 @@ let candle_cv_fsa_instruction_is_nonlinear_correct = prove
               cexp_fst_def; cexp_eq_def; distinctness "cval";
               injectivity "cval"; NOT_SUC] THEN
   CONV_TAC NUM_REDUCE_CONV THEN
-  REWRITE_TAC[cexp_if_def]);;
+  REWRITE_TAC[cexp_if_def] THEN
+  PRINT_GOAL_TAC);;
 
 let candle_cv_fsa_program_has_nonlinear_correct = prove
  (`!program.
@@ -425,7 +426,8 @@ let candle_cv_fsa_logical_program_step_correct = prove
               candle_fsa_logical_item_tag_def;
               candle_fsa_logical_item_fixed_def;
               candle_fsa_logical_item_q_def;
-              LET_DEF; LET_END_DEF]);;
+              LET_DEF; LET_END_DEF] THEN
+  PRINT_GOAL_TAC);;
 
 let candle_cv_fsa_logical_program_run_correct = prove
  (`!center_program box_program center_boxes boxes radii stack.
