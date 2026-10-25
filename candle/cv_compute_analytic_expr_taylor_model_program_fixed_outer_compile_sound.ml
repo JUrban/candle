@@ -787,7 +787,7 @@ let candle_fso_logical_compile_run_analytic_invariant = prove
        [candle_analytic_compile_length_certificate_equivalent;
         candle_fso_logical_program_step_matan] THEN
       ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
-      MATCH_MP_TAC
+      MATCH_ACCEPT_TAC
         candle_fsa_logical_item_matan_default_analytic_invariant];
 
     REPEAT GEN_TAC THEN STRIP_TAC THEN

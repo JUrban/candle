@@ -307,7 +307,7 @@ let candle_fsa_logical_item_matan_default_analytic_invariant = prove
               candle_fsa_logical_item_fixed_def;
               candle_fsa_logical_item_q_def;
               LET_DEF; LET_END_DEF; FST; SND] THEN
-  MATCH_MP_TAC candle_fsa_item_matan_default_analytic_invariant);;
+  MATCH_ACCEPT_TAC candle_fsa_item_matan_default_analytic_invariant);;
 
 let candle_fsa_logical_item_pi_half_analytic_invariant = prove
  (`!boxes (type_witness:real^N).
@@ -1115,7 +1115,7 @@ let candle_fsa_logical_compile_run_with_future_analytic_invariant = prove
         candle_fsa_instruction_is_nonlinear_def;
         candle_fsa_logical_program_step_matan; OR_CLAUSES] THEN
       ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
-      MATCH_MP_TAC
+      MATCH_ACCEPT_TAC
         candle_fsa_logical_item_matan_default_analytic_invariant];
 
     REPEAT GEN_TAC THEN STRIP_TAC THEN

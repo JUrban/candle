@@ -353,7 +353,8 @@ let candle_fsa_item_matan_default_analytic_invariant = prove
   REWRITE_TAC[LET_DEF; LET_END_DEF;
               candle_fsa_item_analytic_invariant_def;
               candle_fsa_item_q_view_def] THEN
-  MATCH_MP_TAC candle_q_dim_taylor_model_result_default_analytic_invariant);;
+  MATCH_ACCEPT_TAC
+    candle_q_dim_taylor_model_result_default_analytic_invariant);;
 
 let candle_fsa_item_pi_half_analytic_invariant = prove
  (`!boxes (type_witness:real^N).
