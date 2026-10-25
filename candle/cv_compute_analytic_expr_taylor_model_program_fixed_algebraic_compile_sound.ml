@@ -307,7 +307,9 @@ let candle_fsa_logical_item_matan_default_analytic_invariant = prove
               candle_fsa_logical_item_fixed_def;
               candle_fsa_logical_item_q_def;
               LET_DEF; LET_END_DEF; FST; SND] THEN
-  MATCH_ACCEPT_TAC candle_fsa_item_matan_default_analytic_invariant);;
+  MATCH_ACCEPT_TAC
+    (REWRITE_RULE[LET_DEF; LET_END_DEF]
+      candle_fsa_item_matan_default_analytic_invariant));;
 
 let candle_fsa_logical_item_pi_half_analytic_invariant = prove
  (`!boxes (type_witness:real^N).
