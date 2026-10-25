@@ -4870,7 +4870,7 @@ let candle_fs_hist_raw_cubic_contains = prove
         (SPECL
           [`candle_fs_scale * candle_fs_scale`; `candle_fs_scale`;
            `candle_fs_raw_interval_mul first second`;
-           `third:(num#num)#(num#num)`; `x * y`; `z:real`]
+           `third:(num#num)#(num#num)`; `x * y:real`; `z:real`]
           candle_fs_hist_raw_interval_mul_contains)
         (CONJ candle_fs_product_denominator_pos
           (CONJ candle_fs_scale_pos (CONJ inner_th third_raw_th))) in
