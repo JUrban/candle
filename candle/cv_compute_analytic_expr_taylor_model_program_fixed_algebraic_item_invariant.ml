@@ -342,6 +342,19 @@ let candle_fsa_item_atn_analytic_invariant = prove
     REWRITE_TAC[candle_fsa_item_analytic_invariant_def;
                 candle_fsa_item_q_view_def]]);;
 
+let candle_fsa_item_matan_default_analytic_invariant = prove
+ (`!center_e box_e center_boxes boxes (type_witness:real^N).
+     let q_result =
+       candle_q_dim_taylor_model_result_default center_boxes boxes in
+     candle_fsa_item_analytic_invariant type_witness boxes F
+       (candle_fsa_result_of_q q_result) q_result
+       (Candle_analytic_matan center_e) (Candle_analytic_matan box_e)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[LET_DEF; LET_END_DEF;
+              candle_fsa_item_analytic_invariant_def;
+              candle_fsa_item_q_view_def] THEN
+  MATCH_MP_TAC candle_q_dim_taylor_model_result_default_analytic_invariant);;
+
 let candle_fsa_item_pi_half_analytic_invariant = prove
  (`!boxes (type_witness:real^N).
      LENGTH boxes = dimindex (:N) /\

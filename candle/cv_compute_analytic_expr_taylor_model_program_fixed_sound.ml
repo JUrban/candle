@@ -333,6 +333,20 @@ let candle_q_dim_taylor_model_program_fixed_step_atn = prove
 
 let _ = print_endline "CANDLE_FIXED_PROGRAM_SOUND_STAGE step-atn";;
 
+let candle_q_dim_taylor_model_program_fixed_step_matan = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_fixed_step center_boxes boxes radii
+       Candle_analytic_program_matan Candle_analytic_program_matan
+       (CONS inner stack) =
+     CONS
+       (candle_q_dim_taylor_model_result_default center_boxes boxes) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_fixed_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_q_dim_taylor_model_program_step_matan] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let _ = print_endline "CANDLE_FIXED_PROGRAM_SOUND_STAGE step-matan";;
+
 let candle_q_dim_taylor_model_program_fixed_step_pi_half = prove
  (`!center_boxes boxes radii stack.
      candle_q_dim_taylor_model_program_fixed_step center_boxes boxes radii

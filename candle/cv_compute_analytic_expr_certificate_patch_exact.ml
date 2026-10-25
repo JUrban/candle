@@ -33,6 +33,8 @@ let candle_analytic_instruction_is_sqrt_def = define
   (candle_analytic_instruction_is_sqrt
       Candle_analytic_program_atn <=> F) /\
   (candle_analytic_instruction_is_sqrt
+      Candle_analytic_program_matan <=> F) /\
+  (candle_analytic_instruction_is_sqrt
       Candle_analytic_program_pi_half <=> F)`;;
 
 let candle_analytic_program_sqrt_data_exact_def = define

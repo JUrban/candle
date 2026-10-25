@@ -23,6 +23,7 @@ open Candle_cv_polynomial_expr_dim_first_jet_representation;;
 open Candle_cv_analytic_dim_jet_inv;;
 open Candle_cv_analytic_dim_jet_sqrt;;
 open Candle_cv_analytic_dim_jet_pi_half;;
+open Candle_cv_analytic_dim_jet_matan;;
 open Candle_cv_analytic_expr_program;;
 open Candle_cv_analytic_expr_program_compute;;
 
@@ -174,6 +175,31 @@ let candle_cv_q_dim_analytic_first_result_atn_def = new_definition
       (candle_cv_q_dim_analytic_first_jet_atn
         (candle_cv_q_dim_analytic_first_result_jet result))`;;
 
+let candle_cv_q_dim_analytic_first_jet_matan_def = new_definition
+ `candle_cv_q_dim_analytic_first_jet_matan a =
+    candle_cv_q_dim_first_jet_make
+      (candle_cv_q_interval_matan_series
+        (candle_cv_q_dim_first_jet_f a))
+      (candle_cv_q_dim_interval_list_scale
+        (candle_cv_q_interval_dmatan_series
+          (candle_cv_q_dim_first_jet_f a))
+        (candle_cv_q_dim_first_jet_gradient a))`;;
+
+let candle_cv_q_dim_analytic_first_jet_matan_domain_def = new_definition
+ `candle_cv_q_dim_analytic_first_jet_matan_domain a =
+    candle_cv_q_interval_matan_series_domain
+      (candle_cv_q_dim_first_jet_f a)`;;
+
+let candle_cv_q_dim_analytic_first_result_matan_def = new_definition
+ `candle_cv_q_dim_analytic_first_result_matan result =
+    candle_cv_q_dim_analytic_first_result_make
+      (candle_cv_bool_and
+        (candle_cv_q_dim_analytic_first_result_domain result)
+        (candle_cv_q_dim_analytic_first_jet_matan_domain
+          (candle_cv_q_dim_analytic_first_result_jet result)))
+      (candle_cv_q_dim_analytic_first_jet_matan
+        (candle_cv_q_dim_analytic_first_result_jet result))`;;
+
 let candle_cv_q_dim_analytic_first_jet_pi_half_def = new_definition
  `candle_cv_q_dim_analytic_first_jet_pi_half boxes =
     candle_cv_q_dim_first_jet_make candle_cv_q_pi_half_interval
@@ -253,9 +279,15 @@ let candle_cv_q_dim_analytic_first_program_step_def = new_definition
                     (Cexp_pair
                       (candle_cv_q_dim_analytic_first_result_pi_half boxes)
                       stack)
-                    (Cexp_pair
-                      (candle_cv_q_dim_analytic_first_result_default boxes)
-                      stack))))))))`;;
+                    (Cexp_if (Cexp_eq instruction (Cexp_num 9))
+                      (Cexp_pair
+                        (candle_cv_q_dim_analytic_first_result_matan
+                          (candle_cv_q_dim_analytic_first_result_head
+                            boxes stack))
+                        (candle_cv_q_dim_analytic_first_result_tail stack))
+                      (Cexp_pair
+                        (candle_cv_q_dim_analytic_first_result_default boxes)
+                        stack)))))))))`;;
 
 let candle_cv_q_dim_analytic_first_program_run_def = define
  `(candle_cv_q_dim_analytic_first_program_run
@@ -588,6 +620,64 @@ let candle_cv_q_dim_analytic_first_result_atn_correct = prove
               candle_cv_q_dim_analytic_first_jet_atn_correct;
               candle_cv_q_dim_analytic_first_result_make_correct]);;
 
+let candle_cv_q_dim_analytic_first_jet_matan_correct = prove
+ (`!a.
+     candle_cv_q_dim_analytic_first_jet_matan
+       (candle_cv_q_dim_first_jet_encode a) =
+     candle_cv_q_dim_first_jet_encode (candle_q_dim_jet_matan a)`,
+  REWRITE_TAC[candle_cv_q_dim_analytic_first_jet_matan_def;
+              candle_q_dim_jet_matan_def;
+              candle_q_dim_jet_matan_with_def;
+              candle_cv_q_dim_first_jet_f_correct;
+              candle_cv_q_dim_first_jet_gradient_correct;
+              candle_cv_q_interval_matan_series_correct;
+              candle_cv_q_interval_dmatan_series_correct;
+              candle_cv_q_dim_interval_list_scale_correct;
+              candle_cv_q_dim_first_jet_encode_def;
+              candle_cv_q_dim_first_jet_make_def;
+              candle_q_dim_jet_make_def;
+              candle_q_dim_jet_f_def;
+              candle_q_dim_jet_gradient_def; FST; SND]);;
+
+let candle_cv_q_dim_analytic_first_jet_matan_domain_raw_correct = prove
+ (`!a.
+     candle_cv_q_dim_analytic_first_jet_matan_domain
+       (candle_cv_q_dim_first_jet_encode a) =
+     Cexp_num (if candle_q_dim_jet_matan_domain a then 1 else 0)`,
+  REWRITE_TAC[candle_cv_q_dim_analytic_first_jet_matan_domain_def;
+              candle_q_dim_jet_matan_domain_def;
+              candle_cv_q_dim_first_jet_f_correct;
+              candle_cv_q_interval_matan_series_domain_correct]);;
+
+let candle_cv_q_dim_analytic_first_jet_matan_domain_correct = prove
+ (`!a.
+     candle_cv_q_dim_analytic_first_jet_matan_domain
+       (candle_cv_q_dim_first_jet_encode a) =
+     candle_cv_bool (candle_q_dim_jet_matan_domain a)`,
+  GEN_TAC THEN
+  REWRITE_TAC[candle_cv_q_dim_analytic_first_jet_matan_domain_raw_correct;
+              candle_cv_bool_def] THEN
+  COND_CASES_TAC THEN
+  ASM_REWRITE_TAC[ARITH_RULE `1 = SUC 0`]);;
+
+let candle_cv_q_dim_analytic_first_result_matan_correct = prove
+ (`!result.
+     candle_cv_q_dim_analytic_first_result_matan
+       (candle_cv_q_dim_analytic_first_result_encode result) =
+     candle_cv_q_dim_analytic_first_result_encode
+       ((candle_q_dim_analytic_result_domain result /\
+         candle_q_dim_jet_matan_domain
+           (candle_q_dim_analytic_result_jet result)),
+        candle_q_dim_jet_matan
+          (candle_q_dim_analytic_result_jet result))`,
+  REWRITE_TAC[candle_cv_q_dim_analytic_first_result_matan_def;
+              candle_cv_q_dim_analytic_first_result_domain_correct;
+              candle_cv_q_dim_analytic_first_result_jet_correct;
+              candle_cv_q_dim_analytic_first_jet_matan_domain_correct;
+              candle_cv_bool_and_correct;
+              candle_cv_q_dim_analytic_first_jet_matan_correct;
+              candle_cv_q_dim_analytic_first_result_make_correct]);;
+
 let candle_cv_q_dim_analytic_first_jet_pi_half_correct = prove
  (`!boxes.
      candle_cv_q_dim_analytic_first_jet_pi_half
@@ -636,6 +726,10 @@ let candle_cv_q_dim_analytic_first_step_correct_rewrites =
   candle_eight_ne_two; candle_eight_ne_three;
   candle_eight_ne_four; candle_eight_ne_five;
   candle_eight_ne_six; candle_eight_ne_seven;
+  ARITH_RULE `~(9 = 2)`; ARITH_RULE `~(9 = 3)`;
+  ARITH_RULE `~(9 = 4)`; ARITH_RULE `~(9 = 5)`;
+  ARITH_RULE `~(9 = 6)`; ARITH_RULE `~(9 = 7)`;
+  ARITH_RULE `~(9 = 8)`;
   candle_cv_q_dim_analytic_first_result_head_correct;
   candle_cv_q_dim_analytic_first_result_tail_correct];;
 
@@ -676,6 +770,9 @@ let candle_cv_q_dim_analytic_first_program_step_correct = prove
     REWRITE_TAC
      (candle_cv_q_dim_analytic_first_step_correct_rewrites @
       [candle_cv_q_dim_analytic_first_result_atn_correct]);
+    REWRITE_TAC
+     (candle_cv_q_dim_analytic_first_step_correct_rewrites @
+      [candle_cv_q_dim_analytic_first_result_matan_correct]);
     REWRITE_TAC
      (candle_cv_q_dim_analytic_first_step_correct_rewrites @
       [candle_cv_q_dim_analytic_first_result_pi_half_correct])]);;
@@ -745,6 +842,9 @@ let candle_cv_q_dim_analytic_first_program_compute_eqs =
     candle_cv_q_dim_analytic_first_jet_atn_def;
     candle_cv_q_dim_analytic_first_jet_atn_domain_def;
     candle_cv_q_dim_analytic_first_result_atn_def;
+    candle_cv_q_dim_analytic_first_jet_matan_def;
+    candle_cv_q_dim_analytic_first_jet_matan_domain_def;
+    candle_cv_q_dim_analytic_first_result_matan_def;
     candle_cv_q_dim_analytic_first_jet_pi_half_def;
     candle_cv_q_dim_analytic_first_result_pi_half_def;
     candle_cv_q_dim_analytic_first_program_step_def;

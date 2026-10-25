@@ -71,6 +71,10 @@ let candle_analytic_patch_sqrt_certificates_def = define
      let patched = candle_analytic_patch_sqrt_certificates intervals a in
      (FST patched,Candle_analytic_atn (SND patched))) /\
   (candle_analytic_patch_sqrt_certificates intervals
+      (Candle_analytic_matan a) =
+     let patched = candle_analytic_patch_sqrt_certificates intervals a in
+     (FST patched,Candle_analytic_matan (SND patched))) /\
+  (candle_analytic_patch_sqrt_certificates intervals
       Candle_analytic_pi_half =
      (intervals,Candle_analytic_pi_half))`;;
 
@@ -90,6 +94,8 @@ let candle_analytic_sqrt_count_def = define
       (Candle_analytic_sqrt lp ln ld up un ud a) =
      SUC (candle_analytic_sqrt_count a)) /\
   (candle_analytic_sqrt_count (Candle_analytic_atn a) =
+     candle_analytic_sqrt_count a) /\
+  (candle_analytic_sqrt_count (Candle_analytic_matan a) =
      candle_analytic_sqrt_count a) /\
   (candle_analytic_sqrt_count Candle_analytic_pi_half = 0)`;;
 
@@ -149,6 +155,9 @@ let candle_analytic_instruction_patch_sqrt_def = define
       Candle_analytic_program_atn =
      (intervals,Candle_analytic_program_atn)) /\
   (candle_analytic_instruction_patch_sqrt intervals
+      Candle_analytic_program_matan =
+     (intervals,Candle_analytic_program_matan)) /\
+  (candle_analytic_instruction_patch_sqrt intervals
       Candle_analytic_program_pi_half =
      (intervals,Candle_analytic_program_pi_half))`;;
 
@@ -200,6 +209,29 @@ let candle_analytic_instruction_patch_sqrt_finish = prove
      candle_analytic_sqrt_with_interval_def;
      candle_analytic_sqrt_interval_def;
      candle_analytic_compile_def; APPEND; FST; SND]);;
+
+let candle_analytic_program_patch_sqrt_compile_matan_step = prove
+ (`!a intervals.
+     candle_analytic_program_patch_sqrt intervals
+       (candle_analytic_compile a) =
+       let patched =
+         candle_analytic_patch_sqrt_certificates intervals a in
+       (FST patched,candle_analytic_compile (SND patched))
+     ==>
+     candle_analytic_program_patch_sqrt intervals
+       (candle_analytic_compile (Candle_analytic_matan a)) =
+       let patched =
+         candle_analytic_patch_sqrt_certificates intervals
+           (Candle_analytic_matan a) in
+       (FST patched,candle_analytic_compile (SND patched))`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  ASM_REWRITE_TAC
+    [candle_analytic_patch_sqrt_certificates_def;
+     candle_analytic_compile_def;
+     candle_analytic_program_patch_sqrt_append;
+     candle_analytic_program_patch_sqrt_def;
+     candle_analytic_instruction_patch_sqrt_def;
+     LET_DEF; LET_END_DEF; APPEND; FST; SND]);;
 
 let candle_analytic_program_patch_sqrt_compile = prove
  (`!e intervals.
@@ -274,13 +306,14 @@ let candle_analytic_program_patch_sqrt_compile = prove
        candle_analytic_program_patch_sqrt_def;
        candle_analytic_instruction_patch_sqrt_def;
        LET_DEF; LET_END_DEF; APPEND; FST; SND];
+    REPEAT GEN_TAC THEN REPEAT DISCH_TAC THEN
+    ASM_MESON_TAC[candle_analytic_program_patch_sqrt_compile_matan_step];
     REPEAT GEN_TAC THEN
     REWRITE_TAC
       [candle_analytic_patch_sqrt_certificates_def;
        candle_analytic_compile_def;
        candle_analytic_program_patch_sqrt_def;
        candle_analytic_instruction_patch_sqrt_def;
-       LET_DEF; LET_END_DEF; APPEND; FST; SND]] THEN
-  PRINT_GOAL_TAC);;
+       LET_DEF; LET_END_DEF; APPEND; FST; SND]]);;
 
 end;;

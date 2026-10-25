@@ -62,6 +62,9 @@ let rec candle_analytic_collect_sqrt_intervals
   else if candle_q_is_unary `atn:real->real` tm then
     candle_analytic_collect_sqrt_intervals sqrt_interval variables
       (candle_q_dest_unary `atn:real->real` tm)
+  else if candle_q_is_unary `matan:real->real` tm then
+    candle_analytic_collect_sqrt_intervals sqrt_interval variables
+      (candle_q_dest_unary `matan:real->real` tm)
   else if candle_q_is_binary `(pow):real->num->real` tm then
     let base,exponent = candle_q_dest_binary `(pow):real->num->real` tm in
     if dest_small_numeral exponent <> 2 then
@@ -77,7 +80,8 @@ let rec candle_analytic_replace_sqrt_intervals intervals expression =
   else if aconv operator `Candle_analytic_neg` ||
           aconv operator `Candle_analytic_square` ||
           aconv operator `Candle_analytic_inv` ||
-          aconv operator `Candle_analytic_atn` then
+          aconv operator `Candle_analytic_atn` ||
+          aconv operator `Candle_analytic_matan` then
     match arguments with
     | [child] ->
         let replaced,remaining =

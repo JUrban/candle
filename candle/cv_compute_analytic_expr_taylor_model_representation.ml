@@ -928,7 +928,7 @@ let candle_cv_q_dim_taylor_model_poly_program_correct = prove
               candle_cv_q_dim_taylor_model_result_head_correct]);;
 
 (* A small ordinary decoder mirrors the two cval instruction shapes.  Tags  *)
-(* 0 and 1 are paired payload instructions; tags 2--8 are nullary nodes.     *)
+(* 0 and 1 are paired payload instructions; tags 2--9 are nullary nodes.     *)
 
 let candle_q_analytic_instruction_tag_def = define
  `(candle_q_analytic_instruction_tag
@@ -941,6 +941,7 @@ let candle_q_analytic_instruction_tag_def = define
   (candle_q_analytic_instruction_tag
       (Candle_analytic_program_sqrt s) = 1) /\
   (candle_q_analytic_instruction_tag Candle_analytic_program_atn = 7) /\
+  (candle_q_analytic_instruction_tag Candle_analytic_program_matan = 9) /\
   (candle_q_analytic_instruction_tag Candle_analytic_program_pi_half = 8)`;;
 
 let candle_q_analytic_instruction_poly_def = define
@@ -954,6 +955,7 @@ let candle_q_analytic_instruction_poly_def = define
   (candle_q_analytic_instruction_poly
       (Candle_analytic_program_sqrt s) = []) /\
   (candle_q_analytic_instruction_poly Candle_analytic_program_atn = []) /\
+  (candle_q_analytic_instruction_poly Candle_analytic_program_matan = []) /\
   (candle_q_analytic_instruction_poly
       Candle_analytic_program_pi_half = [])`;;
 
@@ -974,6 +976,8 @@ let candle_q_analytic_instruction_sqrt_def = define
       (Candle_analytic_program_sqrt s) = s) /\
   (candle_q_analytic_instruction_sqrt
       Candle_analytic_program_atn = candle_q_zero_interval) /\
+  (candle_q_analytic_instruction_sqrt
+      Candle_analytic_program_matan = candle_q_zero_interval) /\
   (candle_q_analytic_instruction_sqrt
       Candle_analytic_program_pi_half = candle_q_zero_interval)`;;
 
@@ -1049,6 +1053,10 @@ let candle_q_dim_taylor_model_program_step_def = new_definition
         CONS
           (candle_q_dim_taylor_model_result_pi_half
             radii center_boxes boxes) stack
+      else if candle_q_analytic_instruction_tag center_instruction = 9 then
+        CONS
+          (candle_q_dim_taylor_model_result_default center_boxes boxes)
+          (candle_q_dim_taylor_model_result_tail stack)
       else CONS
         (candle_q_dim_taylor_model_result_default center_boxes boxes) stack
     else CONS
@@ -1094,6 +1102,10 @@ let candle_cv_q_dim_taylor_model_program_step_correct = prove
               candle_eight_ne_two; candle_eight_ne_three;
               candle_eight_ne_four; candle_eight_ne_five;
               candle_eight_ne_six; candle_eight_ne_seven;
+              ARITH_RULE `~(9 = 2)`; ARITH_RULE `~(9 = 3)`;
+              ARITH_RULE `~(9 = 4)`; ARITH_RULE `~(9 = 5)`;
+              ARITH_RULE `~(9 = 6)`; ARITH_RULE `~(9 = 7)`;
+              ARITH_RULE `~(9 = 8)`;
               candle_cv_q_dim_taylor_model_poly_program_correct;
               candle_cv_q_dim_taylor_model_result_default_correct;
               candle_cv_q_dim_taylor_model_result_head_correct;

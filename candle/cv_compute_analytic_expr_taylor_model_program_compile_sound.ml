@@ -647,6 +647,18 @@ let candle_q_dim_taylor_model_result_pi_half_analytic_invariant = prove
                 candle_analytic_dd_def] THEN
     ASM_MESON_TAC[candle_q_dim_jet_pi_half_components_sound]]);;
 
+let candle_q_dim_taylor_model_result_default_analytic_invariant = prove
+ (`!center_e box_e center_boxes boxes (type_witness:real^N).
+     candle_q_dim_taylor_model_result_analytic_invariant
+       type_witness boxes
+       (candle_q_dim_taylor_model_result_default center_boxes boxes)
+       center_e box_e`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def;
+              candle_q_dim_taylor_model_result_default_def;
+              candle_q_dim_taylor_model_result_domain_def;
+              candle_q_dim_taylor_model_result_make_def; FST; SND]);;
+
 let candle_analytic_compile_length_erase = prove
  (`!e.
      LENGTH (candle_analytic_compile e) =
@@ -812,6 +824,24 @@ let candle_analytic_erase_atn_eq = prove
               injectivity "candle_analytic_expr"] THEN
   MESON_TAC[]);;
 
+let candle_analytic_erase_matan_eq = prove
+ (`!center_e a.
+     candle_analytic_erase_sqrt_certificates center_e =
+       Candle_analytic_matan
+         (candle_analytic_erase_sqrt_certificates a)
+     <=> ?center_a.
+           center_e = Candle_analytic_matan center_a /\
+           candle_analytic_erase_sqrt_certificates center_a =
+             candle_analytic_erase_sqrt_certificates a`,
+  REPEAT GEN_TAC THEN
+  STRUCT_CASES_TAC
+    (SPEC `center_e:candle_analytic_expr`
+      (cases "candle_analytic_expr")) THEN
+  REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def;
+              distinctness "candle_analytic_expr";
+              injectivity "candle_analytic_expr"] THEN
+  MESON_TAC[]);;
+
 let candle_analytic_erase_pi_half_eq = prove
  (`!center_e.
      candle_analytic_erase_sqrt_certificates center_e =
@@ -927,6 +957,18 @@ let candle_q_dim_taylor_model_program_step_atn = prove
   REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
               candle_q_analytic_instruction_tag_def;
               candle_q_dim_taylor_model_result_head_def;
+              candle_q_dim_taylor_model_result_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
+let candle_q_dim_taylor_model_program_step_matan = prove
+ (`!center_boxes boxes radii inner stack.
+     candle_q_dim_taylor_model_program_step center_boxes boxes radii
+       Candle_analytic_program_matan Candle_analytic_program_matan
+       (CONS inner stack) =
+     CONS
+       (candle_q_dim_taylor_model_result_default center_boxes boxes) stack`,
+  REWRITE_TAC[candle_q_dim_taylor_model_program_step_def;
+              candle_q_analytic_instruction_tag_def;
               candle_q_dim_taylor_model_result_tail_def] THEN
   CONV_TAC NUM_REDUCE_CONV);;
 
@@ -1624,6 +1666,67 @@ let candle_q_dim_taylor_model_compile_run_analytic_invariant = prove
       ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
       MATCH_MP_TAC candle_q_dim_taylor_model_result_atn_analytic_invariant THEN
       ASM_REWRITE_TAC[candle_analytic_valid_dim_def]];
+    X_GEN_TAC `a:candle_analytic_expr` THEN
+    DISCH_THEN (LABEL_TAC "ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    RULE_ASSUM_TAC (REWRITE_RULE[candle_analytic_valid_dim_def]) THEN
+    SUBGOAL_THEN
+     `?center_a.
+        center_e = Candle_analytic_matan center_a /\
+        candle_analytic_erase_sqrt_certificates center_a =
+          candle_analytic_erase_sqrt_certificates a`
+     (X_CHOOSE_THEN `center_a:candle_analytic_expr`
+       (CONJUNCTS_THEN2 SUBST_ALL_TAC ASSUME_TAC)) THENL
+     [MATCH_MP_TAC
+       (fst
+         (EQ_IMP_RULE
+           (SPECL
+             [`center_e:candle_analytic_expr`; `a:candle_analytic_expr`]
+             candle_analytic_erase_matan_eq))) THEN
+      ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `?inner.
+        candle_q_dim_taylor_model_program_run
+          (candle_q_center_environment_list boxes) boxes
+          (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+          (candle_analytic_compile center_a)
+          (candle_analytic_compile a) stack = CONS inner stack /\
+        candle_q_dim_taylor_model_result_analytic_invariant
+          (type_witness:real^N) boxes inner center_a a`
+     (X_CHOOSE_THEN
+       `inner:
+          bool#
+          ((((num#num)#num)#(num#num)#num)#
+           (((num#num)#num)#(num#num)#num)list#
+           ((((num#num)#num)#(num#num)#num)list)list)#
+          (((num#num)#num)#(num#num)#num)#
+          (((num#num)#num)#(num#num)#num)list#
+          ((((num#num)#num)#(num#num)#num)list)list`
+       STRIP_ASSUME_TAC) THENL
+     [USE_THEN "ih" MATCH_MP_TAC THEN
+      ASM_REWRITE_TAC[candle_analytic_valid_dim_def];
+      ALL_TAC] THEN
+    EXISTS_TAC
+     `candle_q_dim_taylor_model_result_default
+       (candle_q_center_environment_list boxes) boxes` THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_analytic_compile_def] THEN
+      MATCH_MP_TAC candle_q_dim_taylor_model_program_run_append_single THEN
+      EXISTS_TAC
+       `inner:
+          bool#
+          ((((num#num)#num)#(num#num)#num)#
+           (((num#num)#num)#(num#num)#num)list#
+           ((((num#num)#num)#(num#num)#num)list)list)#
+          (((num#num)#num)#(num#num)#num)#
+          (((num#num)#num)#(num#num)#num)list#
+          ((((num#num)#num)#(num#num)#num)list)list` THEN
+      ASM_REWRITE_TAC[candle_analytic_compile_length_certificate_equivalent;
+                      candle_q_dim_taylor_model_program_step_matan] THEN
+      ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
+      MATCH_MP_TAC
+        candle_q_dim_taylor_model_result_default_analytic_invariant];
     REPEAT GEN_TAC THEN STRIP_TAC THEN
     RULE_ASSUM_TAC (REWRITE_RULE[candle_analytic_valid_dim_def]) THEN
     SUBGOAL_THEN `center_e = Candle_analytic_pi_half` SUBST_ALL_TAC THENL

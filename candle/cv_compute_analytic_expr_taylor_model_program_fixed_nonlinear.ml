@@ -310,9 +310,13 @@ let candle_cv_fso_program_step_fixed_nonlinear_def = new_definition
                       (Cexp_if (Cexp_eq center_instruction (Cexp_num 8))
                         (Cexp_pair
                           (candle_cv_fsn_item_pi_half radii boxes) stack)
-                        (Cexp_pair
-                          (candle_cv_fsa_item_default center_boxes boxes)
-                          stack))))))))
+                        (Cexp_if (Cexp_eq center_instruction (Cexp_num 9))
+                          (Cexp_pair
+                            (candle_cv_fsa_item_default center_boxes boxes)
+                            (candle_cv_fsa_item_tail stack))
+                          (Cexp_pair
+                            (candle_cv_fsa_item_default center_boxes boxes)
+                            stack)))))))))
           (Cexp_pair
             (candle_cv_fsa_item_default center_boxes boxes) stack)))`;;
 

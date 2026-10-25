@@ -78,6 +78,9 @@ let candle_fsn_logical_program_step_def = new_definition
           (candle_fsa_logical_item_tail stack)
       else if candle_q_analytic_instruction_tag center_instruction = 8 then
         CONS (candle_fsn_logical_item_pi_half radii boxes) stack
+      else if candle_q_analytic_instruction_tag center_instruction = 9 then
+        CONS (candle_fsa_logical_item_default center_boxes boxes)
+          (candle_fsa_logical_item_tail stack)
       else CONS (candle_fsa_logical_item_default center_boxes boxes) stack
     else CONS (candle_fsa_logical_item_default center_boxes boxes) stack`;;
 

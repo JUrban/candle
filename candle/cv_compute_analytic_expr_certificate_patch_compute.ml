@@ -61,6 +61,21 @@ let candle_cv_analytic_program_patch_sqrt_compute = prove
   REWRITE_TAC[candle_cv_analytic_program_patch_sqrt_def;
               cexp_if_def; cexp_ispair_def; cexp_fst_def; cexp_snd_def]);;
 
+let candle_cv_analytic_program_matan_patch_sqrt = prove
+ (`!intervals.
+     candle_cv_analytic_instruction_patch_sqrt
+       (candle_cv_q_interval_list intervals)
+       (candle_cv_analytic_instruction Candle_analytic_program_matan) =
+     Cexp_pair
+       (candle_cv_q_interval_list intervals)
+       (candle_cv_analytic_instruction Candle_analytic_program_matan)`,
+  REWRITE_TAC
+    [candle_cv_analytic_instruction_patch_sqrt_def;
+     candle_analytic_instruction_patch_sqrt_def;
+     candle_cv_analytic_instruction_def;
+     candle_cv_q_interval_list_def;
+     cexp_if_def; cexp_ispair_def; cexp_fst_def; cexp_snd_def]);;
+
 let candle_cv_analytic_instruction_patch_sqrt_correct = prove
  (`!instruction intervals.
      candle_cv_analytic_instruction_patch_sqrt
@@ -134,6 +149,7 @@ let candle_cv_analytic_instruction_patch_sqrt_correct = prove
        candle_cv_analytic_instruction_def;
        candle_cv_q_interval_list_def;
        cexp_if_def; cexp_ispair_def; cexp_fst_def; cexp_snd_def];
+    REWRITE_TAC[candle_cv_analytic_program_matan_patch_sqrt];
     REPEAT GEN_TAC THEN
     REWRITE_TAC
       [candle_cv_analytic_instruction_patch_sqrt_def;

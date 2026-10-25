@@ -187,6 +187,18 @@ let candle_fso_logical_program_step_atn = prove
               candle_fsa_logical_item_tail_def] THEN
   CONV_TAC NUM_REDUCE_CONV);;
 
+let candle_fso_logical_program_step_matan = prove
+ (`!center_boxes boxes radii item stack.
+     candle_fso_logical_program_step center_boxes boxes radii
+       Candle_analytic_program_matan Candle_analytic_program_matan
+       (CONS item stack) =
+     CONS (candle_fsa_logical_item_default center_boxes boxes) stack`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_fso_logical_program_step_def;
+              candle_q_analytic_instruction_tag_def;
+              candle_fsa_logical_item_tail_def] THEN
+  CONV_TAC NUM_REDUCE_CONV);;
+
 let candle_fso_logical_program_step_pi_half = prove
  (`!center_boxes boxes radii stack.
      candle_fso_logical_program_step center_boxes boxes radii
@@ -730,6 +742,53 @@ let candle_fso_logical_compile_run_analytic_invariant = prove
       ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
       MATCH_MP_TAC candle_fsa_logical_item_atn_analytic_invariant THEN
       ASM_REWRITE_TAC[candle_analytic_valid_dim_def]];
+
+    X_GEN_TAC `a:candle_analytic_expr` THEN
+    DISCH_THEN (LABEL_TAC "ih") THEN
+    REPEAT GEN_TAC THEN STRIP_TAC THEN
+    RULE_ASSUM_TAC (REWRITE_RULE[candle_analytic_valid_dim_def]) THEN
+    SUBGOAL_THEN
+     `?center_a.
+        center_e = Candle_analytic_matan center_a /\
+        candle_analytic_erase_sqrt_certificates center_a =
+          candle_analytic_erase_sqrt_certificates a`
+     (X_CHOOSE_THEN `center_a:candle_analytic_expr`
+       (CONJUNCTS_THEN2 SUBST_ALL_TAC ASSUME_TAC)) THENL
+     [MATCH_MP_TAC
+       (fst
+         (EQ_IMP_RULE
+           (SPECL
+             [`center_e:candle_analytic_expr`; `a:candle_analytic_expr`]
+             candle_analytic_erase_matan_eq))) THEN
+      ASM_REWRITE_TAC[candle_analytic_erase_sqrt_certificates_def];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `?inner:candle_fsa_logical_item_type.
+        candle_fso_logical_program_run
+          (candle_q_center_environment_list boxes) boxes
+          (candle_q_fixed_list_round_upper (candle_q_radius_list boxes))
+          (candle_analytic_compile center_a)
+          (candle_analytic_compile a) stack = CONS inner stack /\
+        candle_fsa_logical_item_analytic_invariant
+          (type_witness:real^N) boxes inner center_a a`
+     (X_CHOOSE_THEN `inner:candle_fsa_logical_item_type`
+       STRIP_ASSUME_TAC) THENL
+     [USE_THEN "ih" MATCH_MP_TAC THEN
+      ASM_REWRITE_TAC[candle_analytic_valid_dim_def];
+      ALL_TAC] THEN
+    EXISTS_TAC
+     `candle_fsa_logical_item_default
+       (candle_q_center_environment_list boxes) boxes` THEN
+    CONJ_TAC THENL
+     [REWRITE_TAC[candle_analytic_compile_def] THEN
+      MATCH_MP_TAC candle_fso_logical_program_run_append_single THEN
+      EXISTS_TAC `inner:candle_fsa_logical_item_type` THEN
+      ASM_REWRITE_TAC
+       [candle_analytic_compile_length_certificate_equivalent;
+        candle_fso_logical_program_step_matan] THEN
+      ASM_MESON_TAC[candle_analytic_compile_length_certificate_equivalent];
+      MATCH_MP_TAC
+        candle_fsa_logical_item_matan_default_analytic_invariant];
 
     REPEAT GEN_TAC THEN STRIP_TAC THEN
     RULE_ASSUM_TAC (REWRITE_RULE[candle_analytic_valid_dim_def]) THEN
