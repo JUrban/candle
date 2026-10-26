@@ -47,7 +47,7 @@ let candle_cv_case10173_hist_splice_aux_def = define
       (Cexp_pair x y) program = Cexp_num 0) /\
   (candle_cv_case10173_hist_splice_aux
       (Cexp_num 0) program =
-     Cexp_pair (Cexp_num 9)
+     Cexp_pair (Cexp_num 10)
        (candle_cv_case10173_hist_drop_eight program)) /\
   (candle_cv_case10173_hist_splice_aux
       (Cexp_num (SUC n)) (Cexp_num m) = Cexp_num 0) /\
@@ -61,7 +61,7 @@ let candle_cv_case10173_hist_splice_aux_compute = prove
      candle_cv_case10173_hist_splice_aux splice_count program =
      Cexp_if (Cexp_ispair splice_count) (Cexp_num 0)
        (Cexp_if (Cexp_eq splice_count (Cexp_num 0))
-         (Cexp_pair (Cexp_num 9)
+         (Cexp_pair (Cexp_num 10)
            (candle_cv_case10173_hist_drop_eight program))
          (Cexp_if (Cexp_ispair program)
            (Cexp_pair (Cexp_fst program)
@@ -88,14 +88,14 @@ let candle_cv_case10173_hist_splice_aux_compute = prove
 let candle_cv_case10173_hist_step_def = new_definition
  `candle_cv_case10173_hist_step center_boxes boxes radii roots
       center_instruction box_instruction stack =
-    Cexp_if (Cexp_eq center_instruction (Cexp_num 9))
-      (Cexp_if (Cexp_eq box_instruction (Cexp_num 9))
+    Cexp_if (Cexp_eq center_instruction (Cexp_num 10))
+      (Cexp_if (Cexp_eq box_instruction (Cexp_num 10))
         (Cexp_pair
           (candle_cv_case10173_hist_item center_boxes boxes radii roots)
           stack)
         (Cexp_pair
           (candle_cv_fsa_item_default center_boxes boxes) stack))
-      (Cexp_if (Cexp_eq box_instruction (Cexp_num 9))
+      (Cexp_if (Cexp_eq box_instruction (Cexp_num 10))
         (Cexp_pair
           (candle_cv_fsa_item_default center_boxes boxes) stack)
         (candle_cv_fso_program_step_fixed_nonlinear

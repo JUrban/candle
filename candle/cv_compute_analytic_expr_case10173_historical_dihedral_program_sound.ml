@@ -20,7 +20,7 @@ open Candle_cv_analytic_expr_case10173_historical_dihedral_item_sound;;
 
 let candle_cv_case10173_hist_final_program_def = define
  `(candle_cv_case10173_hist_final_program [] =
-     Cexp_pair (Cexp_num 9) (Cexp_num 0)) /\
+     Cexp_pair (Cexp_num 10) (Cexp_num 0)) /\
   (candle_cv_case10173_hist_final_program (CONS h t) =
      Cexp_pair (candle_cv_analytic_instruction h)
        (candle_cv_case10173_hist_final_program t))`;;
@@ -41,7 +41,7 @@ let candle_cv_case10173_hist_splice_final_eight = prove
                   cexp_snd_def; cexp_sub_def] THEN
   REWRITE_TAC[ARITH_RULE `SUC n - 1 = n`]);;
 
-(* Whatever the ordinary prefix computes, the aligned final tag-9 pair pushes
+(* Whatever the ordinary prefix computes, the aligned final tag-10 pair pushes
    the historical item above that stack.  This is the key reason the exact
    top-level result can be proved without trusting or decoding the prefix. *)
 

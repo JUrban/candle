@@ -13,7 +13,7 @@ open Candle_cv_analytic_expr_taylor_model_program_fixed_nonlinear_program_sound;
 open Candle_cv_analytic_expr_case10173_historical_dihedral_program_compute;;
 open Candle_cv_analytic_expr_case10173_historical_dihedral_item_sound;;
 
-(* Ordinary theorem-level stack item denoted by private instruction 9. *)
+(* Ordinary theorem-level stack item denoted by private instruction 10. *)
 
 let candle_case10173_hist_logical_item_def = new_definition
  `candle_case10173_hist_logical_item center_boxes boxes radii
@@ -50,11 +50,11 @@ let candle_cv_case10173_hist_logical_item_correct = prove
               candle_cv_case10173_hist_item_encode_correct;
               LET_DEF; LET_END_DEF]);;
 
-(* A source program with an ordinary prefix and suffix around instruction 9. *)
+(* A source program with an ordinary prefix and suffix around instruction 10. *)
 
 let candle_cv_case10173_hist_program_of_def = define
  `(candle_cv_case10173_hist_program_of [] suffix =
-     Cexp_pair (Cexp_num 9)
+     Cexp_pair (Cexp_num 10)
        (candle_cv_analytic_instruction_list suffix)) /\
   (candle_cv_case10173_hist_program_of (CONS h t) suffix =
      Cexp_pair (candle_cv_analytic_instruction h)
@@ -105,7 +105,7 @@ let candle_cv_case10173_hist_splice_segment = prove
   MATCH_MP_TAC candle_cv_case10173_hist_splice_prefix THEN
   REWRITE_TAC[candle_cv_case10173_hist_drop_segment]);;
 
-(* Away from private tag 9, the custom machine is exactly the proved generic
+(* Away from private tag 10, the custom machine is exactly the proved generic
    fixed-nonlinear machine. *)
 
 let candle_cv_case10173_hist_step_ordinary_correct = prove

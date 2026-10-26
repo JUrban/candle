@@ -56,7 +56,7 @@ let candle_case10173_hist_logical_item_analytic_invariant = prove
               LET_DEF; LET_END_DEF]);;
 
 (* Specialize the universal historical-dihedral bridge at the exact logical
-   item pushed by instruction 9. *)
+   item pushed by instruction 10. *)
 
 let candle_case10173_hist_logical_item_source_analytic_invariant = prove
  (`!boxes
