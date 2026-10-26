@@ -9,6 +9,111 @@
 
 module Candle_cv_flyspeck_direct_source_compat = struct
 
+(* The complete [Break_case_exec] module performs the historical nonlinear
+   replay as a top-level effect.  The reflected source fixture needs only the
+   following five rewrite theorems.  Prove that exact interface directly from
+   the same authenticated Flyspeck definitions, using the original proof
+   scripts, so loading the fast checker does not repeat the legacy replay. *)
+let candle_direct_subat_rules = prove_by_refinement(
+  `(!i (y:A). subat i y [] = []) /\
+    (!x xs (y:A). subat 0 y (x::xs) = y :: xs) /\
+    (!i x xs (y:A). subat (SUC i) y (x::xs) = x :: (subat i) y xs)`,
+  [
+  ONCE_REWRITE_TAC[Sphere.subat];
+  Hales_tactic.BY
+    (REWRITE_TAC
+      [Hales_tactic.arith `~(SUC i = 0)`;
+       Hales_tactic.arith `SUC i - 1 = i`])
+  ]);;
+
+let candle_direct_subat_explicit = prove_by_refinement(
+  `(!i x xs (y:A).
+      subat 9 y (x::xs) = x :: (subat 8 y xs) /\
+      subat 8 y (x::xs) = x :: (subat 7 y xs) /\
+      subat 7 y (x::xs) = x :: (subat 6 y xs) /\
+      subat 6 y (x::xs) = x :: (subat 5 y xs) /\
+      subat 5 y (x::xs) = x :: (subat 4 y xs) /\
+      subat 4 y (x::xs) = x :: (subat 3 y xs) /\
+      subat 3 y (x::xs) = x :: (subat 2 y xs) /\
+      subat 2 y (x::xs) = x :: (subat 1 y xs) /\
+      subat 1 y (x::xs) = x :: (subat 0 y xs) /\
+      subat 0 y (x::xs) = y :: xs)`,
+  [
+  Hales_tactic.BY(REWRITE_TAC
+    [Hales_tactic.arith
+      `9 = SUC 8 /\ 8 = SUC 7 /\ 7 = SUC 6 /\ 6 = SUC 5 /\
+       5 = SUC 4 /\ 4 = SUC 3 /\ 3 = SUC 2 /\ 2 = SUC 1 /\ 1 = SUC 0`;
+     candle_direct_subat_rules])
+  ]);;
+
+let candle_direct_bisect_left_frac = prove_by_refinement(
+  `!d i. bisect_left i d = frac_left i (#0.5) d`,
+  [
+  REWRITE_TAC
+    [Sphere.bisect_left;Sphere.frac_left;Hales_tactic.LET_THM];
+  LIST_INDUCT_TAC THEN REWRITE_TAC[Sphere.subat;LAMBDA_PAIR];
+  REPEAT Hales_tactic.WEAKER_STRIP_TAC;
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[EL;HD;TL;Sphere.pathL;CONS_11];
+    Hales_tactic.INTRO_TAC PAIR_SURJECTIVE [`h`] THEN
+      REPEAT Hales_tactic.WEAKER_STRIP_TAC THEN
+      ASM_REWRITE_TAC[Sphere.pathL;PAIR_EQ];
+    Hales_tactic.BY(ARITH_TAC);
+  Hales_tactic.INTRO_TAC num_CASES [`i`];
+  ASM_REWRITE_TAC[] THEN REPEAT Hales_tactic.WEAKER_STRIP_TAC THEN
+    ASM_REWRITE_TAC[];
+  ASM_REWRITE_TAC[EL;TL];
+  Hales_tactic.BY
+    (ASM_REWRITE_TAC
+      [EL;TL;Hales_tactic.arith `SUC n - 1 = n`;LAMBDA_PAIR])
+  ]);;
+
+let candle_direct_bisect_right_frac = prove_by_refinement(
+  `!d i. bisect_right i d = frac_right i (#0.5) d`,
+  [
+  REWRITE_TAC
+    [Sphere.bisect_right;Sphere.frac_right;Hales_tactic.LET_THM];
+  LIST_INDUCT_TAC THEN REWRITE_TAC[Sphere.subat;LAMBDA_PAIR];
+  REPEAT Hales_tactic.WEAKER_STRIP_TAC;
+  COND_CASES_TAC THEN ASM_REWRITE_TAC[EL;HD;TL;Sphere.pathR;CONS_11];
+    Hales_tactic.INTRO_TAC PAIR_SURJECTIVE [`h`] THEN
+      REPEAT Hales_tactic.WEAKER_STRIP_TAC THEN
+      ASM_REWRITE_TAC[Sphere.pathR;PAIR_EQ];
+    Hales_tactic.BY(ARITH_TAC);
+  Hales_tactic.INTRO_TAC num_CASES [`i`];
+  ASM_REWRITE_TAC[] THEN REPEAT Hales_tactic.WEAKER_STRIP_TAC THEN
+    ASM_REWRITE_TAC[];
+  ASM_REWRITE_TAC[EL;TL];
+  Hales_tactic.BY
+    (ASM_REWRITE_TAC
+      [EL;TL;Hales_tactic.arith `SUC n - 1 = n`;LAMBDA_PAIR])
+  ]);;
+
+let candle_direct_ineq6m = prove_by_refinement(
+  `!x1 x2 x3 x4 x5 x6 a1 a2 a3 a4 a5 a6 b1 b2 b3 b4 b5 b6 f.
+    ineqm [x1;x2;x3;x4;x5;x6]
+      [(a1,b1);(a2,b2);(a3,b3);(a4,b4);(a5,b5);(a6,b6)] f =
+    ineq
+      [(a1,x1,b1);(a2,x2,b2);(a3,x3,b3);(a4,x4,b4);(a5,x5,b5);
+       (a6,x6,b6)] f`,
+  [
+  REWRITE_TAC[Sphere.ineqm];
+  Hales_tactic.BY(REWRITE_TAC[MAP2])
+  ]);;
+
+let candle_direct_ineq9m = prove_by_refinement(
+  `!x1 x2 x3 x4 x5 x6 x7 x8 x9
+    a1 a2 a3 a4 a5 a6 a7 a8 a9 b1 b2 b3 b4 b5 b6 b7 b8 b9 f.
+    ineqm [x1;x2;x3;x4;x5;x6;x7;x8;x9]
+      [(a1,b1);(a2,b2);(a3,b3);(a4,b4);(a5,b5);(a6,b6);
+       (a7,b7);(a8,b8);(a9,b9)] f =
+    ineq
+      [(a1,x1,b1);(a2,x2,b2);(a3,x3,b3);(a4,x4,b4);(a5,x5,b5);
+       (a6,x6,b6);(a7,x7,b7);(a8,x8,b8);(a9,x9,b9)] f`,
+  [
+  REWRITE_TAC[Sphere.ineqm];
+  Hales_tactic.BY(REWRITE_TAC[MAP2])
+  ]);;
+
 (* The generated closure used [Break_case.ineqm_conv], whose rational
    reduction is deliberately confined to the domain-list reconstruction.
    [Break_case_exec.ineq_conv] is not equivalent here: it applies
@@ -21,9 +126,9 @@ let rec candle_direct_ineqm_conv =
     REWRITE_CONV
       [Sphere.frac_left;
        Sphere.frac_right;
-       Break_case_exec.bisect_left_frac;
-       Break_case_exec.bisect_right_frac;
-       Break_case_exec.subat_explicit;
+       candle_direct_bisect_left_frac;
+       candle_direct_bisect_right_frac;
+       candle_direct_subat_explicit;
        Hales_tactic.LET_THM;
        LAMBDA_PAIR;
        Basics.EL_EXPLICIT]
@@ -33,7 +138,7 @@ let rec candle_direct_ineqm_conv =
       let list_path = find_path is_list tm in
       if String.length list_path <= 2 then
         REWRITE_CONV
-          [Break_case_exec.ineq6m; Break_case_exec.ineq9m] tm
+          [candle_direct_ineq6m; candle_direct_ineq9m] tm
       else
         let parent_path =
           String.sub list_path 0 (String.length list_path - 1) in
