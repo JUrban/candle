@@ -36,6 +36,24 @@ let candle_q_packed_outer_covers_source_def = new_definition
              candle_q_real (SND (EL k source_boxes)) <=
              candle_q_real (SND (EL k outer_boxes)))`;;
 
+let candle_q_packed_center_contains_source_midpoint_def = new_definition
+ `candle_q_packed_center_contains_source_midpoint
+      source_boxes center_boxes <=>
+    LENGTH center_boxes = LENGTH source_boxes /\
+    (!k. k < LENGTH source_boxes
+         ==> candle_q_interval_contains (EL k center_boxes)
+               (candle_q_real
+                 (candle_q_midpoint (EL k source_boxes))))`;;
+
+let candle_q_packed_source_correspondence_def = new_definition
+ `candle_q_packed_source_correspondence
+      source_boxes center_boxes outer_boxes radii <=>
+    candle_q_box_valid_list source_boxes /\
+    candle_q_packed_center_contains_source_midpoint
+      source_boxes center_boxes /\
+    candle_q_packed_radii_cover_source source_boxes radii /\
+    candle_q_packed_outer_covers_source source_boxes outer_boxes`;;
+
 let candle_q_packed_radii_m_cell_domain = prove
  (`!source_boxes radii.
      LENGTH source_boxes = dimindex (:N) /\
@@ -199,6 +217,72 @@ let candle_q_packed_outer_interval_subset = prove
     EXISTS_TAC
       `(candle_q_box_upper_vector source_boxes : real^N)$i` THEN
     ASM_SIMP_TAC[candle_q_box_upper_vector_component]]);;
+
+let candle_q_packed_center_contains_source_midpoint_stack = prove
+ (`!source_boxes center_boxes.
+     LENGTH source_boxes = dimindex (:N) /\
+     candle_q_packed_center_contains_source_midpoint
+       source_boxes center_boxes
+     ==>
+     candle_q_stack_contains center_boxes
+       (list_of_seq
+         (\k. (candle_q_box_center_vector source_boxes : real^N)$(k + 1))
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_packed_center_contains_source_midpoint_def] THEN
+  STRIP_TAC THEN
+  MATCH_MP_TAC candle_q_box_stack_contains_vector THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[];
+    REWRITE_TAC[IN_INTERVAL] THEN
+    X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `i - 1 <
+       LENGTH
+         (source_boxes:(((num#num)#num)#((num#num)#num))list)`
+     ASSUME_TAC THENL
+     [UNDISCH_TAC `1 <= i /\ i <= dimindex (:N)` THEN
+      ASM_ARITH_TAC;
+      ALL_TAC] THEN
+    FIRST_X_ASSUM (MP_TAC o SPEC `i - 1`) THEN
+    ASM_REWRITE_TAC[candle_q_interval_contains_def] THEN
+    ASM_SIMP_TAC[candle_q_box_lower_vector_component;
+                 candle_q_box_upper_vector_component;
+                 candle_q_box_center_vector_component; IN_NUMSEG]]);;
+
+let candle_q_packed_source_correspondence_handoff = prove
+ (`!source_boxes center_boxes outer_boxes radii.
+     LENGTH source_boxes = dimindex (:N) /\
+     candle_q_packed_source_correspondence
+       source_boxes center_boxes outer_boxes radii
+     ==>
+     candle_q_stack_contains center_boxes
+       (list_of_seq
+         (\k. (candle_q_box_center_vector source_boxes : real^N)$(k + 1))
+         (dimindex (:N))) /\
+     m_cell_domain
+       (candle_q_box_lower_vector source_boxes,
+        candle_q_box_upper_vector source_boxes : real^N)
+       (candle_q_box_center_vector source_boxes)
+       (candle_q_list_real_vector radii) /\
+     interval
+       [candle_q_box_lower_vector source_boxes,
+        candle_q_box_upper_vector source_boxes : real^N]
+     SUBSET
+     interval
+       [candle_q_box_lower_vector outer_boxes,
+        candle_q_box_upper_vector outer_boxes]`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_packed_source_correspondence_def;
+              candle_q_packed_center_contains_source_midpoint_def] THEN
+  STRIP_TAC THEN
+  REPEAT CONJ_TAC THENL
+   [MATCH_MP_TAC candle_q_packed_center_contains_source_midpoint_stack THEN
+    ASM_REWRITE_TAC[candle_q_packed_center_contains_source_midpoint_def];
+    MATCH_MP_TAC candle_q_packed_radii_m_cell_domain THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_packed_outer_interval_subset THEN
+    ASM_REWRITE_TAC[]]);;
 
 print_endline
   "CANDLE_CV_PACKED_GEOMETRY_SOUND_OK DEVELOPMENT_NON_RELEASE";;
