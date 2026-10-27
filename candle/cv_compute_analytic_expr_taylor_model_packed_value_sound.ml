@@ -66,7 +66,54 @@ let candle_q_packed_hessian6_exact_value_bound_contains = prove
   MATCH_MP_TAC candle_q_packed_hessian6_analytic_partial2_contains THEN
   ASM_MESON_TAC[]);;
 
-if hyp candle_q_packed_hessian6_exact_value_bound_contains <> [] then
+let candle_q_packed_hessian6_exact_cell_negative = prove
+ (`!e (lower:real^6) (upper:real^6) (y:real^6)
+       radii center_value center_gradient packed.
+     candle_analytic_valid_dim 6 e /\
+     (!(z:real^6). z IN interval [lower,upper]
+       ==> candle_analytic_regular_at
+             (list_of_seq (\k. z$(k + 1)) 6) e) /\
+     LENGTH radii = 6 /\
+     ALL (\r. &0 <= candle_q_real r) radii /\
+     m_cell_domain (lower,upper) y (candle_q_list_real_vector radii) /\
+     diff2_domain (lower,upper) (candle_analytic_denote_dim e) /\
+     candle_q_interval_contains center_value
+       (candle_analytic_denote_dim e y) /\
+     candle_q_stack_contains center_gradient
+       (list_of_seq
+         (\di. partial (di + 1) (candle_analytic_denote_dim e) y) 6) /\
+     (!(z:real^6). z IN interval [lower,upper]
+       ==> candle_q_stack_contains packed
+             (candle_q_packed_hessian6_values
+               (\i j. candle_analytic_dd i j
+                 (list_of_seq (\k. z$(k + 1)) 6) e))) /\
+     candle_q_real
+       (SND
+         (candle_q_dim_taylor_model_value_bound radii
+           (candle_q_dim_jet_make center_value center_gradient
+             (candle_q_packed_hessian6_expand packed))
+           (candle_q_packed_hessian6_expand packed))) < &0
+     ==>
+     !(p:real^6). p IN interval [lower,upper]
+       ==> candle_analytic_denote_dim e p < &0`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  X_GEN_TAC `p:real^6` THEN DISCH_TAC THEN
+  MP_TAC
+   (ISPECL
+     [`e:candle_analytic_expr`;
+      `lower:real^6`; `upper:real^6`; `y:real^6`;
+      `radii:((num#num)#num)list`;
+      `center_value:((num#num)#num)#((num#num)#num)`;
+      `center_gradient:
+         (((num#num)#num)#((num#num)#num))list`;
+      `packed:(((num#num)#num)#((num#num)#num))list`;
+      `p:real^6`]
+     candle_q_packed_hessian6_exact_value_bound_contains) THEN
+  ASM_REWRITE_TAC[candle_q_interval_contains_def] THEN
+  ASM_REAL_ARITH_TAC);;
+
+if hyp candle_q_packed_hessian6_exact_value_bound_contains <> [] ||
+   hyp candle_q_packed_hessian6_exact_cell_negative <> [] then
   failwith "packed Hessian6 exact value soundness: assumptions";;
 
 print_endline
