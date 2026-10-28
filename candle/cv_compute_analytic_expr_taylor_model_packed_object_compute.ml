@@ -466,6 +466,13 @@ let candle_cv_q_packed_object_finish6_def = new_definition
         (Cexp_num 0))
       (Cexp_snd bound)`;;
 
+let candle_cv_q_packed_object_accept6_def = new_definition
+ `candle_cv_q_packed_object_accept6
+      domain radii center_value center_gradient packed =
+    Cexp_fst
+      (candle_cv_q_packed_object_finish6
+        domain radii center_value center_gradient packed)`;;
+
 let candle_cv_q_packed_object_finish6_correct = prove
  (`!domain radii center_value center_gradient packed.
      candle_cv_q_packed_object_finish6
@@ -497,15 +504,33 @@ let candle_cv_q_packed_object_finish6_correct = prove
               candle_cv_bool_guard_correct;
               LET_DEF; LET_END_DEF; CONJ_ASSOC]);;
 
-let candle_cv_q_packed_object_finish6_accept_conditions = prove
+let candle_cv_q_packed_object_accept6_correct = prove
  (`!domain radii center_value center_gradient packed.
-     Cexp_fst
-       (candle_cv_q_packed_object_finish6
+     candle_cv_q_packed_object_accept6
+       (candle_cv_bool domain)
+       (candle_cv_q_list radii)
+       (candle_cv_q_interval center_value)
+       (candle_cv_q_interval_list center_gradient)
+       (candle_cv_q_interval_list packed) =
+     candle_cv_bool
+       (domain /\ LENGTH radii = 6 /\
+        LENGTH center_gradient = 6 /\ LENGTH packed = 21 /\
+        ~(candle_q_le candle_q_zero
+           (SND
+             (candle_q_packed_object_value_bound6_lookup
+               radii center_value center_gradient packed))))`,
+  REWRITE_TAC[candle_cv_q_packed_object_accept6_def;
+              candle_cv_q_packed_object_finish6_correct;
+              cexp_fst_def]);;
+
+let candle_cv_q_packed_object_accept6_conditions = prove
+ (`!domain radii center_value center_gradient packed.
+     candle_cv_q_packed_object_accept6
          (candle_cv_bool domain)
          (candle_cv_q_list radii)
          (candle_cv_q_interval center_value)
          (candle_cv_q_interval_list center_gradient)
-         (candle_cv_q_interval_list packed)) =
+         (candle_cv_q_interval_list packed) =
      Cexp_num 1
      ==>
      domain /\ LENGTH radii = 6 /\
@@ -515,21 +540,20 @@ let candle_cv_q_packed_object_finish6_accept_conditions = prove
           (candle_q_packed_object_value_bound6_lookup
             radii center_value center_gradient packed)))`,
   REPEAT GEN_TAC THEN
-  REWRITE_TAC[candle_cv_q_packed_object_finish6_correct;
-              cexp_fst_def; candle_cv_bool_def;
+  REWRITE_TAC[candle_cv_q_packed_object_accept6_correct;
+              candle_cv_bool_def;
               injectivity "cval"] THEN
   COND_CASES_TAC THEN ASM_REWRITE_TAC[] THEN
   CONV_TAC NUM_REDUCE_CONV);;
 
-let candle_cv_q_packed_object_finish6_accept_negative = prove
+let candle_cv_q_packed_object_accept6_negative = prove
  (`!domain radii center_value center_gradient packed.
-     Cexp_fst
-       (candle_cv_q_packed_object_finish6
+     candle_cv_q_packed_object_accept6
          (candle_cv_bool domain)
          (candle_cv_q_list radii)
          (candle_cv_q_interval center_value)
          (candle_cv_q_interval_list center_gradient)
-         (candle_cv_q_interval_list packed)) =
+         (candle_cv_q_interval_list packed) =
      Cexp_num 1
      ==>
      domain /\ LENGTH radii = 6 /\
@@ -547,7 +571,7 @@ let candle_cv_q_packed_object_finish6_accept_negative = prove
        `center_gradient:
           (((num#num)#num)#((num#num)#num))list`;
        `packed:(((num#num)#num)#((num#num)#num))list`]
-      candle_cv_q_packed_object_finish6_accept_conditions) THEN
+      candle_cv_q_packed_object_accept6_conditions) THEN
   ASM_REWRITE_TAC[] THEN STRIP_TAC THEN
   SUBGOAL_THEN
    `candle_q_packed_object_value_bound6_lookup
@@ -575,7 +599,8 @@ let candle_cv_q_packed_object_compute_eqs =
        candle_cv_q_packed_quadratic_abs_upper6_def;
        candle_cv_q_packed_object_error6_def;
        candle_cv_q_packed_object_value_bound6_def;
-       candle_cv_q_packed_object_finish6_def]);;
+       candle_cv_q_packed_object_finish6_def;
+       candle_cv_q_packed_object_accept6_def]);;
 
 if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_list_lookup_compute;
@@ -597,8 +622,9 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_cv_bool_not_num_correct;
      candle_cv_bool_guard_correct;
      candle_cv_q_packed_object_finish6_correct;
-     candle_cv_q_packed_object_finish6_accept_conditions;
-     candle_cv_q_packed_object_finish6_accept_negative] then
+     candle_cv_q_packed_object_accept6_correct;
+     candle_cv_q_packed_object_accept6_conditions;
+     candle_cv_q_packed_object_accept6_negative] then
   failwith "packed object compute: assumptions";;
 
 print_endline
