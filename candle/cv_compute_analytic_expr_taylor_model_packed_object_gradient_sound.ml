@@ -52,6 +52,66 @@ let candle_q_packed_object_gradient_complete6_def = new_definition
     candle_q_packed_object_gradient_rows_complete radii center_gradient
       (candle_q_packed_hessian6_expand packed_hessian)`;;
 
+let candle_q_packed_object_gradient_rows_complete_length = prove
+ (`!radii center_gradient interval_rows.
+     LENGTH center_gradient = LENGTH interval_rows
+     ==>
+     LENGTH
+       (candle_q_packed_object_gradient_rows_complete
+         radii center_gradient interval_rows) =
+     LENGTH center_gradient`,
+  GEN_TAC THEN LIST_INDUCT_TAC THENL
+   [REWRITE_TAC[candle_q_packed_object_gradient_rows_complete_def; LENGTH];
+    POP_ASSUM (LABEL_TAC "length_ih") THEN
+    X_GEN_TAC
+      `interval_rows:
+        ((((num#num)#num)#((num#num)#num))list)list` THEN
+    MP_TAC
+      (ISPEC
+        `interval_rows:
+          ((((num#num)#num)#((num#num)#num))list)list`
+        list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (X_CHOOSE_THEN
+          `interval_row:
+            (((num#num)#num)#((num#num)#num))list`
+          (X_CHOOSE_THEN
+            `interval_rows':
+              ((((num#num)#num)#((num#num)#num))list)list`
+            SUBST_ALL_TAC))) THEN
+    REWRITE_TAC
+      [candle_q_packed_object_gradient_rows_complete_def; LENGTH;
+       SUC_INJ] THENL
+     [ARITH_TAC;
+      DISCH_TAC THEN
+      USE_THEN "length_ih" MATCH_MP_TAC THEN
+      ASM_ARITH_TAC]]);;
+
+let candle_q_packed_object_gradient_complete6_length = prove
+ (`!radii center_gradient packed_hessian.
+     LENGTH center_gradient = 6
+     ==>
+     LENGTH
+       (candle_q_packed_object_gradient_complete6
+         radii center_gradient packed_hessian) = 6`,
+  REPEAT GEN_TAC THEN DISCH_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_gradient_complete6_def] THEN
+  MP_TAC
+    (SPECL
+      [`radii:((num#num)#num)list`;
+       `center_gradient:
+          (((num#num)#num)#((num#num)#num))list`;
+       `candle_q_packed_hessian6_expand packed_hessian:
+          ((((num#num)#num)#((num#num)#num))list)list`]
+      candle_q_packed_object_gradient_rows_complete_length) THEN
+  MP_TAC
+    (ISPEC
+      `packed_hessian:
+        (((num#num)#num)#((num#num)#num))list`
+      candle_q_packed_hessian6_expand_shape) THEN
+  ASM_MESON_TAC[]);;
+
 let candle_q_packed_object_gradient_row_complete_real = prove
  (`!radii center_entry interval_row.
      candle_q_real
@@ -233,7 +293,9 @@ let candle_q_packed_object_gradient_complete6_sound = prove
   CONV_TAC NUM_REDUCE_CONV);;
 
 if exists (fun theorem -> hyp theorem <> [])
-    [candle_q_packed_object_gradient_row_complete_real;
+    [candle_q_packed_object_gradient_rows_complete_length;
+     candle_q_packed_object_gradient_complete6_length;
+     candle_q_packed_object_gradient_row_complete_real;
      candle_q_packed_object_gradient_row_complete_contains;
      candle_q_packed_object_gradient_rows_complete_contains;
      candle_q_packed_object_gradient_rows_complete_sound;

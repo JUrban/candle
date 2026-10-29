@@ -19,6 +19,7 @@ open Candle_cv_analytic_expr_extended_taylor;;
 open Candle_cv_analytic_expr_taylor_model_program_compute;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_taylor_model_semantics;;
+open Candle_cv_analytic_expr_taylor_model_exact_value_sound;;
 open Candle_cv_analytic_expr_taylor_model_packed_hessian_sound;;
 open Candle_cv_analytic_expr_taylor_model_packed_value_sound;;
 open Candle_cv_analytic_expr_taylor_model_packed_object_error_sound;;
@@ -109,6 +110,39 @@ let candle_q_packed_object_value_bound6_contains = prove
   REWRITE_TAC[candle_q_interval_contains_def] THEN
   ASM_REAL_ARITH_TAC);;
 
+let candle_q_packed_object_value_bound6_flyspeck_contains = prove
+ (`!(f:real^6->real) (lower:real^6) (upper:real^6) (y:real^6)
+       radii center_value center_gradient packed (p:real^6).
+     LENGTH radii = 6 /\
+     ALL (\r. &0 <= candle_q_real r) radii /\
+     m_cell_domain (lower,upper) y (candle_q_list_real_vector radii) /\
+     diff2_domain (lower,upper) f /\
+     candle_q_interval_contains center_value (f y) /\
+     candle_q_stack_contains center_gradient
+       (list_of_seq (\di. partial (di + 1) f y) 6) /\
+     (!(z:real^6). z IN interval [lower,upper]
+       ==> ALL2 candle_q_stack_contains
+             (candle_q_packed_hessian6_expand packed)
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z) 6) 6)) /\
+     p IN interval [lower,upper]
+     ==>
+     candle_q_interval_contains
+       (candle_q_packed_object_value_bound6
+         radii center_value center_gradient packed)
+       (f p)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_q_packed_object_value_bound6_contains THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC
+    (CONV_RULE (DEPTH_CONV DIMINDEX_CONV)
+      (INST_TYPE [`:6`,`:N`]
+        candle_q_exact_taylor_value_bound_contains)) THEN
+  MAP_EVERY EXISTS_TAC
+    [`lower:real^6`; `upper:real^6`; `y:real^6`] THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_q_packed_object_value_bound6_analytic_contains = prove
  (`!e (lower:real^6) (upper:real^6) (y:real^6)
        radii center_value center_gradient packed (p:real^6).
@@ -147,6 +181,7 @@ let candle_q_packed_object_value_bound6_analytic_contains = prove
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_packed_object_value_bound6_lower_real;
      candle_q_packed_object_value_bound6_contains;
+     candle_q_packed_object_value_bound6_flyspeck_contains;
      candle_q_packed_object_value_bound6_analytic_contains] then
   failwith "packed object value soundness: assumptions";;
 
