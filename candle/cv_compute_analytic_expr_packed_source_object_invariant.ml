@@ -49,6 +49,55 @@ let candle_q_packed_object_box_jet_def = new_definition
     candle_q_dim_jet_make value_bound gradient_bounds
       (candle_q_packed_hessian6_expand packed_hessian)`;;
 
+let candle_q_packed_object_result_def = new_definition
+ `candle_q_packed_object_result
+      domain center_value center_gradient value_bound gradient_bounds
+      packed_hessian =
+    candle_q_dim_taylor_model_result_make domain
+      (candle_q_packed_object_center_jet
+        center_value center_gradient packed_hessian)
+      value_bound gradient_bounds
+      (candle_q_packed_hessian6_expand packed_hessian)`;;
+
+let candle_q_packed_object_result_domain = prove
+ (`!domain center_value center_gradient value_bound gradient_bounds
+       packed_hessian.
+     candle_q_dim_taylor_model_result_domain
+       (candle_q_packed_object_result domain center_value center_gradient
+         value_bound gradient_bounds packed_hessian) = domain`,
+  REWRITE_TAC[candle_q_packed_object_result_def;
+              candle_q_dim_taylor_model_result_domain_def;
+              candle_q_dim_taylor_model_result_make_def; FST; SND]);;
+
+let candle_q_packed_object_result_center = prove
+ (`!domain center_value center_gradient value_bound gradient_bounds
+       packed_hessian.
+     candle_q_dim_taylor_model_result_center
+       (candle_q_packed_object_result domain center_value center_gradient
+         value_bound gradient_bounds packed_hessian) =
+     candle_q_packed_object_center_jet
+       center_value center_gradient packed_hessian`,
+  REWRITE_TAC[candle_q_packed_object_result_def;
+              candle_q_dim_taylor_model_result_center_def;
+              candle_q_dim_taylor_model_result_make_def; FST; SND]);;
+
+let candle_q_packed_object_result_proxy = prove
+ (`!domain center_value center_gradient value_bound gradient_bounds
+       packed_hessian.
+     candle_q_dim_taylor_model_proxy
+       (candle_q_packed_object_result domain center_value center_gradient
+         value_bound gradient_bounds packed_hessian) =
+     candle_q_packed_object_box_jet
+       value_bound gradient_bounds packed_hessian`,
+  REWRITE_TAC[candle_q_packed_object_result_def;
+              candle_q_dim_taylor_model_proxy_def;
+              candle_q_dim_taylor_model_result_value_bound_def;
+              candle_q_dim_taylor_model_result_gradient_bounds_def;
+              candle_q_dim_taylor_model_result_hessian_def;
+              candle_q_dim_taylor_model_result_make_def;
+              candle_q_packed_object_box_jet_def;
+              candle_q_dim_jet_make_def; FST; SND]);;
+
 let candle_q_packed_object_item_analytic_invariant_def = new_definition
  `candle_q_packed_object_item_analytic_invariant
       center_boxes outer_boxes domain center_value center_gradient
@@ -241,6 +290,274 @@ let candle_q_packed_object_outer_vector_invariant = prove
                    environment box_e`))
       outer_stack in
   MP_TAC outer_at_z THEN MESON_TAC[]);;
+
+let candle_q_packed_object_outer_to_source_vector_invariant = prove
+ (`!source_boxes outer_boxes box_jet box_e.
+     LENGTH source_boxes = 6 /\
+     candle_q_packed_outer_covers_source source_boxes outer_boxes /\
+     (!environment.
+        candle_q_stack_contains outer_boxes environment
+        ==> candle_analytic_regular_at environment box_e /\
+            candle_q_dim_analytic_contains 6 box_jet environment box_e)
+     ==>
+     (!(z:real^6). z IN interval
+          [candle_q_box_lower_vector source_boxes,
+           candle_q_box_upper_vector source_boxes]
+        ==> candle_analytic_regular_at
+              (list_of_seq (\k. z$(k + 1)) 6) box_e) /\
+     (!(z:real^6). z IN interval
+          [candle_q_box_lower_vector source_boxes,
+           candle_q_box_upper_vector source_boxes]
+        ==> candle_q_dim_analytic_contains 6 box_jet
+              (list_of_seq (\k. z$(k + 1)) 6) box_e)`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "source_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "outer_cover")
+        (LABEL_TAC "outer_stack_invariant"))) THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (outer_boxes:(((num#num)#num)#((num#num)#num))list) = 6`
+  (LABEL_TAC "outer_length") THENL
+   [USE_THEN "outer_cover" MP_TAC THEN
+    REWRITE_TAC[candle_q_packed_outer_covers_source_def] THEN
+    ASM_MESON_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `interval
+      [candle_q_box_lower_vector source_boxes,
+       candle_q_box_upper_vector source_boxes : real^6]
+    SUBSET
+    interval
+      [candle_q_box_lower_vector outer_boxes,
+       candle_q_box_upper_vector outer_boxes]`
+  (LABEL_TAC "source_subset_outer") THENL
+   [MATCH_MP_TAC
+      (CONV_RULE (DEPTH_CONV DIMINDEX_CONV)
+        (INST_TYPE [`:6`,`:N`]
+          candle_q_packed_outer_interval_subset)) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC
+    (MATCH_MP
+      (ISPECL
+        [`outer_boxes:
+           (((num#num)#num)#((num#num)#num))list`;
+         `box_jet:
+           (((num#num)#num)#((num#num)#num))#
+           ((((num#num)#num)#((num#num)#num))list#
+            ((((num#num)#num)#((num#num)#num))list)list)`;
+         `box_e:candle_analytic_expr`]
+        candle_q_packed_object_outer_vector_invariant)
+      (CONJ
+        (ASSUME
+          `LENGTH
+            (outer_boxes:
+              (((num#num)#num)#((num#num)#num))list) = 6`)
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains outer_boxes environment
+             ==> candle_analytic_regular_at environment box_e /\
+                 candle_q_dim_analytic_contains 6 box_jet
+                   environment box_e`))) THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "outer_regular")
+      (LABEL_TAC "outer_contains")) THEN
+  CONJ_TAC THEN
+  X_GEN_TAC `z:real^6` THEN DISCH_TAC THENL
+   [USE_THEN "outer_regular"
+      (fun th -> MATCH_MP_TAC (SPEC `z:real^6` th));
+    USE_THEN "outer_contains"
+      (fun th -> MATCH_MP_TAC (SPEC `z:real^6` th))] THEN
+  USE_THEN "source_subset_outer"
+    (fun th -> MATCH_MP_TAC (REWRITE_RULE[SUBSET] th)) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_item_source_analytic_invariant = prove
+ (`!source_boxes center_boxes outer_boxes radii domain
+       center_value center_gradient value_bound gradient_bounds
+       packed_hessian center_e box_e.
+     LENGTH source_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       source_boxes center_boxes outer_boxes radii /\
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes domain center_value center_gradient
+       value_bound gradient_bounds packed_hessian center_e box_e
+     ==>
+     candle_q_dim_taylor_model_result_analytic_invariant (ARB:real^6)
+       source_boxes
+       (candle_q_packed_object_result domain center_value center_gradient
+         value_bound gradient_bounds packed_hessian)
+       center_e box_e`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "source_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "correspondence")
+        (LABEL_TAC "object_invariant"))) THEN
+  USE_THEN "object_invariant" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_item_analytic_invariant_def] THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "valid")
+      (CONJUNCTS_THEN2 (LABEL_TAC "erasure")
+        (LABEL_TAC "domain_invariant"))) THEN
+  USE_THEN "correspondence" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_source_correspondence_def] THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "source_valid")
+      (CONJUNCTS_THEN2 (LABEL_TAC "center_midpoint")
+        (CONJUNCTS_THEN2 (LABEL_TAC "radii_cover")
+          (LABEL_TAC "outer_cover")))) THEN
+  REWRITE_TAC[candle_q_dim_taylor_model_result_analytic_invariant_def;
+              candle_q_packed_object_result_domain;
+              candle_q_packed_object_result_center;
+              candle_q_packed_object_result_proxy] THEN
+  CONV_TAC (DEPTH_CONV DIMINDEX_CONV) THEN
+  DISCH_TAC THEN
+  USE_THEN "domain_invariant"
+    (fun th -> MP_TAC (MATCH_MP th (ASSUME `domain:bool`))) THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "center_gradient_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "box_shape")
+        (CONJUNCTS_THEN2 (LABEL_TAC "center_all")
+          (LABEL_TAC "outer_all")))) THEN
+  let geometry =
+    MATCH_MP
+      (CONV_RULE (DEPTH_CONV DIMINDEX_CONV)
+        (SPECL
+          [`source_boxes:
+             (((num#num)#num)#((num#num)#num))list`;
+           `center_boxes:
+             (((num#num)#num)#((num#num)#num))list`;
+           `outer_boxes:
+             (((num#num)#num)#((num#num)#num))list`;
+           `radii:((num#num)#num)list`]
+          (INST_TYPE [`:6`,`:N`]
+            candle_q_packed_source_correspondence_handoff)))
+      (CONJ
+        (ASSUME
+          `LENGTH
+            (source_boxes:
+              (((num#num)#num)#((num#num)#num))list) = 6`)
+        (ASSUME
+          `candle_q_packed_source_correspondence
+            source_boxes center_boxes outer_boxes radii`)) in
+  let center_stack,_ = CONJ_PAIR geometry in
+  LABEL_TAC "center_stack" center_stack THEN
+  MP_TAC
+    (MATCH_MP
+      (ISPECL
+        [`source_boxes:
+           (((num#num)#num)#((num#num)#num))list`;
+         `outer_boxes:
+           (((num#num)#num)#((num#num)#num))list`;
+         `candle_q_packed_object_box_jet
+           value_bound gradient_bounds packed_hessian`;
+         `box_e:candle_analytic_expr`]
+        candle_q_packed_object_outer_to_source_vector_invariant)
+      (end_itlist CONJ
+        [ASSUME
+           `LENGTH
+             (source_boxes:
+               (((num#num)#num)#((num#num)#num))list) = 6`;
+         ASSUME
+           `candle_q_packed_outer_covers_source
+             source_boxes outer_boxes`;
+         ASSUME
+           `!environment.
+              candle_q_stack_contains outer_boxes environment
+              ==> candle_analytic_regular_at environment box_e /\
+                  candle_q_dim_analytic_contains 6
+                    (candle_q_packed_object_box_jet
+                      value_bound gradient_bounds packed_hessian)
+                    environment box_e`])) THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "source_regular")
+      (LABEL_TAC "source_contains")) THEN
+  let midpoint_environment =
+    `list_of_seq
+      (\k. (candle_q_box_center_vector source_boxes : real^6)$(k + 1))
+      6` in
+  let center_at_midpoint =
+    MATCH_MP
+      (SPEC midpoint_environment
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains center_boxes environment
+             ==> candle_analytic_regular_at environment center_e /\
+                 candle_q_packed_object_center_first_contains
+                   center_value center_gradient environment center_e`))
+      (ASSUME
+        `candle_q_stack_contains center_boxes
+          (list_of_seq
+            (\k.
+              (candle_q_box_center_vector source_boxes : real^6)$(k + 1))
+            6)`) in
+  let midpoint_in_source =
+    MATCH_MP
+      (CONV_RULE (DEPTH_CONV DIMINDEX_CONV)
+        (SPEC
+          `source_boxes:
+            (((num#num)#num)#((num#num)#num))list`
+          (INST_TYPE [`:6`,`:N`]
+            candle_q_packed_object_source_center_in_interval)))
+      (CONJ
+        (ASSUME
+          `LENGTH
+            (source_boxes:
+              (((num#num)#num)#((num#num)#num))list) = 6`)
+        (ASSUME `candle_q_box_valid_list source_boxes`)) in
+  let box_contains_midpoint =
+    MATCH_MP
+      (SPEC `candle_q_box_center_vector source_boxes:real^6`
+        (ASSUME
+          `!(z:real^6). z IN interval
+             [candle_q_box_lower_vector source_boxes,
+              candle_q_box_upper_vector source_boxes]
+            ==> candle_q_dim_analytic_contains 6
+                  (candle_q_packed_object_box_jet
+                    value_bound gradient_bounds packed_hessian)
+                  (list_of_seq (\k. z$(k + 1)) 6) box_e`))
+      midpoint_in_source in
+  let center_regular,center_first = CONJ_PAIR center_at_midpoint in
+  let center_shape =
+    MATCH_MP
+      (SPECL
+        [`center_value:((num#num)#num)#((num#num)#num)`;
+         `center_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `packed_hessian:
+            (((num#num)#num)#((num#num)#num))list`]
+        candle_q_packed_object_center_jet_shape)
+      (ASSUME
+        `LENGTH
+          (center_gradient:
+            (((num#num)#num)#((num#num)#num))list) = 6`) in
+  let center_complete =
+    MATCH_MP
+      (SPECL
+        [`center_value:((num#num)#num)#((num#num)#num)`;
+         `center_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `value_bound:((num#num)#num)#((num#num)#num)`;
+         `gradient_bounds:
+            (((num#num)#num)#((num#num)#num))list`;
+         `packed_hessian:
+            (((num#num)#num)#((num#num)#num))list`;
+         midpoint_environment;
+         `center_e:candle_analytic_expr`; `box_e:candle_analytic_expr`]
+        candle_q_packed_object_center_complete_contains)
+      (CONJ
+        (ASSUME
+          `candle_analytic_erase_sqrt_certificates center_e =
+           candle_analytic_erase_sqrt_certificates box_e`)
+        (CONJ center_first box_contains_midpoint)) in
+  REPEAT CONJ_TAC THENL
+   [MATCH_ACCEPT_TAC center_regular;
+    USE_THEN "source_regular" MATCH_ACCEPT_TAC;
+    MATCH_ACCEPT_TAC center_shape;
+    MATCH_ACCEPT_TAC center_complete;
+    USE_THEN "box_shape" MATCH_ACCEPT_TAC;
+    USE_THEN "source_contains" MATCH_ACCEPT_TAC]);;
 
 let candle_q_packed_object_item_complete_analytic_invariant = prove
  (`!source_boxes center_boxes outer_boxes radii domain
@@ -501,10 +818,15 @@ let candle_q_packed_object_item_complete_analytic_invariant = prove
           final_invariant)]);;
 
 if exists (fun theorem -> hyp theorem <> [])
-    [candle_q_packed_object_center_jet_shape;
+    [candle_q_packed_object_result_domain;
+     candle_q_packed_object_result_center;
+     candle_q_packed_object_result_proxy;
+     candle_q_packed_object_center_jet_shape;
      candle_q_packed_object_center_complete_contains;
      candle_q_packed_object_source_center_in_interval;
      candle_q_packed_object_outer_vector_invariant;
+     candle_q_packed_object_outer_to_source_vector_invariant;
+     candle_q_packed_object_item_source_analytic_invariant;
      candle_q_packed_object_item_complete_analytic_invariant] then
   failwith "packed object invariant: assumptions";;
 
