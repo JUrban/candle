@@ -92,7 +92,7 @@ let candle_q_exact_hessian_m_taylor_partial_error = prove
       ASM_REWRITE_TAC[]];
     DISCH_THEN MATCH_ACCEPT_TAC]);;
 
-let candle_q_exact_taylor_gradient_component_contains = prove
+let candle_q_exact_taylor_gradient_component_unrounded_contains = prove
  (`!(f:real^N->real) (lower:real^N) (upper:real^N) (y:real^N)
        radii center_gradient hessian (p:real^N) i.
      LENGTH radii = dimindex (:N) /\
@@ -116,10 +116,9 @@ let candle_q_exact_taylor_gradient_component_contains = prove
      p IN interval [lower,upper]
      ==>
      candle_q_interval_contains
-       (candle_q_fixed_interval_round
-         (EL (i - 1)
-           (candle_q_dim_taylor_model_gradient_bounds
-             radii center_gradient hessian)))
+       (EL (i - 1)
+         (candle_q_dim_taylor_model_gradient_bounds
+           radii center_gradient hessian))
        (partial i f p)`,
   REPEAT GEN_TAC THEN STRIP_TAC THEN
   SUBGOAL_THEN `i - 1 < dimindex (:N)` ASSUME_TAC THENL
@@ -290,7 +289,6 @@ let candle_q_exact_taylor_gradient_component_contains = prove
       `EL (i - 1)
          (candle_q_dim_taylor_model_gradient_bounds
            radii center_gradient hessian) = gradient_bound`] THEN
-  MATCH_MP_TAC candle_q_fixed_interval_round_contains THEN
   REWRITE_TAC[candle_q_interval_contains_def] THEN
   MP_TAC (REWRITE_RULE[m_bounded_on_int] bounded_th) THEN
   DISCH_THEN (MP_TAC o SPEC `p:real^N`) THEN
@@ -298,6 +296,144 @@ let candle_q_exact_taylor_gradient_component_contains = prove
   EXPAND_TAC "gradient_bound" THEN
   EXPAND_TAC "partial_error_q" THEN
   EXPAND_TAC "center_interval");;
+
+let candle_q_exact_taylor_gradient_component_contains = prove
+ (`!(f:real^N->real) (lower:real^N) (upper:real^N) (y:real^N)
+       radii center_gradient hessian (p:real^N) i.
+     LENGTH radii = dimindex (:N) /\
+     LENGTH center_gradient = dimindex (:N) /\
+     LENGTH hessian = dimindex (:N) /\
+     ALL (\r. &0 <= candle_q_real r) radii /\
+     m_cell_domain (lower,upper) y (candle_q_list_real_vector radii) /\
+     diff2_domain (lower,upper) f /\
+     candle_q_stack_contains center_gradient
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N))) /\
+     (!(z:real^N). z IN interval [lower,upper]
+       ==> ALL2 candle_q_stack_contains hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N)))) /\
+     i IN 1..dimindex (:N) /\
+     p IN interval [lower,upper]
+     ==>
+     candle_q_interval_contains
+       (candle_q_fixed_interval_round
+         (EL (i - 1)
+           (candle_q_dim_taylor_model_gradient_bounds
+             radii center_gradient hessian)))
+       (partial i f p)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC candle_q_fixed_interval_round_contains THEN
+  MATCH_MP_TAC
+    (ISPECL
+      [`f:real^N->real`; `lower:real^N`; `upper:real^N`; `y:real^N`;
+       `radii:((num#num)#num)list`;
+       `center_gradient:
+          (((num#num)#num)#((num#num)#num))list`;
+       `hessian:
+          ((((num#num)#num)#((num#num)#num))list)list`;
+       `p:real^N`; `i:num`]
+      candle_q_exact_taylor_gradient_component_unrounded_contains) THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_exact_taylor_gradient_bounds_unrounded_contains = prove
+ (`!(f:real^N->real) (lower:real^N) (upper:real^N) (y:real^N)
+       radii center_gradient hessian (p:real^N).
+     LENGTH radii = dimindex (:N) /\
+     LENGTH center_gradient = dimindex (:N) /\
+     LENGTH hessian = dimindex (:N) /\
+     ALL (\r. &0 <= candle_q_real r) radii /\
+     m_cell_domain (lower,upper) y (candle_q_list_real_vector radii) /\
+     diff2_domain (lower,upper) f /\
+     candle_q_stack_contains center_gradient
+       (list_of_seq
+         (\di. partial (di + 1) f y)
+         (dimindex (:N))) /\
+     (!(z:real^N). z IN interval [lower,upper]
+       ==> ALL2 candle_q_stack_contains hessian
+             (list_of_seq
+               (\di. list_of_seq
+                 (\dj. partial2 (dj + 1) (di + 1) f z)
+                 (dimindex (:N)))
+               (dimindex (:N)))) /\
+     p IN interval [lower,upper]
+     ==>
+     candle_q_stack_contains
+       (candle_q_dim_taylor_model_gradient_bounds
+         radii center_gradient hessian)
+       (list_of_seq
+         (\di. partial (di + 1) f p)
+         (dimindex (:N)))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  ABBREV_TAC
+   `(gradient_bounds:
+       (((num#num)#num)#((num#num)#num))list) =
+      candle_q_dim_taylor_model_gradient_bounds
+        radii center_gradient hessian` THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (gradient_bounds:
+        (((num#num)#num)#((num#num)#num))list) = dimindex (:N)`
+   ASSUME_TAC THENL
+   [EXPAND_TAC "gradient_bounds" THEN
+    MP_TAC
+      (SPECL
+        [`radii:((num#num)#num)list`;
+         `center_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `hessian:
+            ((((num#num)#num)#((num#num)#num))list)list`]
+        candle_q_dim_taylor_model_gradient_bounds_length) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `(gradient_bounds:
+       (((num#num)#num)#((num#num)#num))list) =
+    list_of_seq
+      (\di. EL di
+        (gradient_bounds:
+          (((num#num)#num)#((num#num)#num))list))
+      (dimindex (:N))`
+   (LABEL_TAC "gradient_sequence") THENL
+   [MP_TAC
+      (ISPECL
+        [`dimindex (:N)`;
+         `gradient_bounds:
+            (((num#num)#num)#((num#num)#num))list`]
+        candle_list_eq_list_of_seq_el) THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ONCE_REWRITE_TAC
+    [ASSUME
+      `(gradient_bounds:
+          (((num#num)#num)#((num#num)#num))list) =
+       list_of_seq
+         (\di. EL di
+           (gradient_bounds:
+             (((num#num)#num)#((num#num)#num))list))
+         (dimindex (:N))`] THEN
+  REWRITE_TAC[candle_q_stack_contains_all2;
+              candle_all2_list_of_seq] THEN
+  X_GEN_TAC `di:num` THEN DISCH_TAC THEN
+  SUBGOAL_THEN `di + 1 IN 1..dimindex (:N)` ASSUME_TAC THENL
+   [REWRITE_TAC[IN_NUMSEG] THEN ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  EXPAND_TAC "gradient_bounds" THEN
+  MP_TAC
+    (ISPECL
+      [`f:real^N->real`; `lower:real^N`; `upper:real^N`; `y:real^N`;
+       `radii:((num#num)#num)list`;
+       `center_gradient:
+          (((num#num)#num)#((num#num)#num))list`;
+       `hessian:
+          ((((num#num)#num)#((num#num)#num))list)list`;
+       `p:real^N`; `di + 1`]
+      candle_q_exact_taylor_gradient_component_unrounded_contains) THEN
+  ASM_REWRITE_TAC[ARITH_RULE `(di + 1) - 1 = di`]);;
 
 let candle_q_exact_taylor_gradient_bounds_contains = prove
  (`!(f:real^N->real) (lower:real^N) (upper:real^N) (y:real^N)
@@ -395,7 +531,9 @@ let candle_q_exact_taylor_gradient_bounds_contains = prove
 
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_exact_hessian_m_taylor_partial_error;
+     candle_q_exact_taylor_gradient_component_unrounded_contains;
      candle_q_exact_taylor_gradient_component_contains;
+     candle_q_exact_taylor_gradient_bounds_unrounded_contains;
      candle_q_exact_taylor_gradient_bounds_contains] then
   failwith "exact-rational Taylor gradient soundness: assumptions";;
 
