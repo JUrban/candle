@@ -13,7 +13,9 @@ module Candle_cv_analytic_expr_packed_source_object_unary_sound = struct
 
 open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_polynomial_expr_diff;;
+open Candle_cv_analytic_expr_jet;;
 open Candle_cv_analytic_expr_taylor_model_packed_hessian_sound;;
+open Candle_cv_analytic_expr_packed_source_object_invariant;;
 open Candle_cv_analytic_expr_packed_source_object_mul_sound;;
 
 let candle_q_packed_object_interval_list_scale_def = new_definition
@@ -401,6 +403,77 @@ let candle_q_packed_object_unary_hessian6_sound = prove
       MATCH_MP_TAC candle_q_interval_mul_sound THEN
       ASM_REWRITE_TAC[]]]);;
 
+(* Recover the two packed stack-containment facts needed by every unary      *)
+(* constructor from the ordinary analytic box-jet invariant.  Keeping this  *)
+(* extraction here avoids repeating coordinate reconstruction for sqrt and  *)
+(* atan after reciprocal established the first instance.                     *)
+
+let candle_q_packed_object_box_source_stacks = prove
+ (`!source_value source_gradient source_hessian environment source_e.
+     LENGTH source_gradient = 6 /\ LENGTH source_hessian = 21 /\
+     candle_q_dim_analytic_contains 6
+       (candle_q_packed_object_box_jet
+         source_value source_gradient source_hessian)
+       environment source_e
+     ==>
+     candle_q_stack_contains source_gradient
+       (list_of_seq (\i. candle_analytic_d i environment source_e) 6) /\
+     candle_q_stack_contains source_hessian
+       (candle_q_packed_hessian6_values
+         (\i j. candle_analytic_dd i j environment source_e))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let source_components =
+    REWRITE_RULE
+      [candle_q_dim_analytic_contains_def;
+       candle_q_dim_jet_contains_components_def;
+       candle_q_packed_object_box_jet_def;
+       candle_q_dim_jet_f_def;
+       candle_q_dim_jet_gradient_at_def;
+       candle_q_dim_jet_hessian_at_def;
+       candle_q_dim_jet_gradient_def;
+       candle_q_dim_jet_hessian_def;
+       candle_q_dim_jet_make_def; FST; SND]
+      (ASSUME
+        `candle_q_dim_analytic_contains 6
+          (candle_q_packed_object_box_jet
+            source_value source_gradient source_hessian)
+          environment source_e`) in
+  let _,source_derivatives = CONJ_PAIR source_components in
+  let gradient_contains,_ = CONJ_PAIR source_derivatives in
+  ASSUME_TAC gradient_contains THEN
+  CONJ_TAC THENL
+   [SUBGOAL_THEN
+     `source_gradient =
+      list_of_seq (\i. candle_q_interval_lookup i source_gradient) 6`
+    SUBST1_TAC THENL
+     [MATCH_MP_TAC candle_q_interval_list_eq_list_of_seq_lookup THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_stack_contains_all2;
+                  candle_all2_list_of_seq] THEN
+      X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+      ASM_SIMP_TAC[EL_LIST_OF_SEQ]];
+    SUBGOAL_THEN
+     `source_hessian =
+      list_of_seq (\i. candle_q_interval_lookup i source_hessian) 21`
+    SUBST1_TAC THENL
+     [MATCH_MP_TAC candle_q_interval_list_eq_list_of_seq_lookup THEN
+      ASM_REWRITE_TAC[];
+      REWRITE_TAC[candle_q_stack_contains_all2] THEN
+      ONCE_REWRITE_TAC[candle_q_packed_hessian6_values_coordinates] THEN
+      REWRITE_TAC[candle_all2_list_of_seq] THEN
+      X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+      ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+      MATCH_MP_TAC
+        (SPECL
+          [`source_value:((num#num)#num)#((num#num)#num)`;
+           `source_gradient:
+              (((num#num)#num)#((num#num)#num))list`;
+           `source_hessian:
+              (((num#num)#num)#((num#num)#num))list`;
+           `environment:real list`; `source_e:candle_analytic_expr`; `i:num`]
+          candle_q_packed_object_analytic_hessian_lookup_contains) THEN
+      ASM_REWRITE_TAC[]]]);;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_packed_object_interval_list_scale_length;
      candle_q_packed_object_interval_list_scale_lookup;
@@ -413,7 +486,8 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_q_packed_object_interval_self_outer6_sound;
      candle_q_packed_object_unary_hessian6_length;
      candle_q_packed_object_unary_hessian6_lookup;
-     candle_q_packed_object_unary_hessian6_sound] then
+     candle_q_packed_object_unary_hessian6_sound;
+     candle_q_packed_object_box_source_stacks] then
   failwith "packed source object unary sound: assumptions";;
 
 print_endline
