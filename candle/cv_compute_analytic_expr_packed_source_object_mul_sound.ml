@@ -14,7 +14,14 @@ module Candle_cv_analytic_expr_packed_source_object_mul_sound = struct
 open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_polynomial_expr_diff;;
 open Candle_cv_polynomial_expr_dim_jet;;
+open Candle_cv_polynomial_expr_dim_jet_semantics;;
+open Candle_cv_analytic_dim_jet_inv;;
+open Candle_cv_analytic_expr_jet;;
+open Candle_cv_analytic_expr_calculus;;
+open Candle_cv_analytic_expr_certificate_erasure;;
 open Candle_cv_analytic_expr_taylor_model_packed_hessian_sound;;
+open Candle_cv_analytic_expr_packed_source_object_invariant;;
+open Candle_cv_analytic_expr_packed_source_object_recomplete_sound;;
 open Candle_cv_analytic_expr_packed_source_object_add_sound;;
 
 (* The two- and four-product operations are the only arities used by the
@@ -684,6 +691,91 @@ let candle_q_packed_object_hessian6_coordinate_lookup = prove
   MATCH_MP_TAC candle_q_packed_object_hessian6_coordinate_index_lookup THEN
   ASM_REWRITE_TAC[]);;
 
+let candle_q_packed_object_analytic_hessian_lookup_contains = prove
+ (`!value_bound gradient_bounds packed_hessian environment e i.
+     LENGTH packed_hessian = 21 /\ i < 21 /\
+     candle_q_dim_analytic_contains 6
+       (candle_q_packed_object_box_jet
+         value_bound gradient_bounds packed_hessian)
+       environment e
+     ==>
+     candle_q_interval_contains
+       (candle_q_interval_lookup i packed_hessian)
+       (candle_analytic_dd
+         (candle_q_packed_object_hessian6_row i)
+         (candle_q_packed_object_hessian6_col i)
+         environment e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_q_interval_lookup i packed_hessian =
+    candle_q_interval_lookup
+      (candle_q_packed_object_hessian6_col i)
+      (candle_q_dim_interval_row_lookup
+        (candle_q_packed_object_hessian6_row i)
+        (candle_q_packed_hessian6_expand packed_hessian))`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_q_packed_object_hessian6_coordinate_lookup THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  MP_TAC
+    (SPECL
+      [`candle_q_packed_object_hessian6_row i`;
+       `candle_q_packed_object_hessian6_col i`]
+      (CONJUNCT2 (CONJUNCT2
+        (REWRITE_RULE
+          [candle_q_dim_analytic_contains_def;
+           candle_q_dim_jet_contains_components_def]
+          (ASSUME
+            `candle_q_dim_analytic_contains 6
+              (candle_q_packed_object_box_jet
+                value_bound gradient_bounds packed_hessian)
+              environment e`))))) THEN
+  REWRITE_TAC[candle_q_packed_object_box_jet_def;
+              candle_q_dim_jet_hessian_at_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def; FST; SND] THEN
+  ANTS_TAC THENL
+   [MP_TAC (SPEC `i:num`
+      candle_q_packed_object_hessian6_coordinate_bounds) THEN
+    ASM_REWRITE_TAC[];
+    MESON_TAC[]]);;
+
+let candle_q_packed_object_center_first_mul_contains = prove
+ (`!left_value left_gradient left_e
+       right_value right_gradient right_e environment.
+     LENGTH left_gradient = 6 /\ LENGTH right_gradient = 6 /\
+     candle_q_packed_object_center_first_contains
+       left_value left_gradient environment left_e /\
+     candle_q_packed_object_center_first_contains
+       right_value right_gradient environment right_e
+     ==>
+     candle_q_packed_object_center_first_contains
+       (candle_q_interval_mul left_value right_value)
+       (candle_q_packed_object_fused_scale_add
+         right_value left_gradient left_value right_gradient)
+       environment (Candle_analytic_mul left_e right_e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  RULE_ASSUM_TAC
+    (REWRITE_RULE[candle_q_packed_object_center_first_contains_def]) THEN
+  REWRITE_TAC[candle_q_packed_object_center_first_contains_def;
+              candle_analytic_value_def; candle_analytic_d_def] THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_q_interval_mul_sound THEN ASM_REWRITE_TAC[];
+    X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `candle_analytic_d i environment left_e *
+        candle_analytic_value environment right_e +
+      candle_analytic_value environment left_e *
+        candle_analytic_d i environment right_e =
+      candle_analytic_value environment right_e *
+        candle_analytic_d i environment left_e +
+      candle_analytic_value environment left_e *
+        candle_analytic_d i environment right_e`
+    SUBST1_TAC THENL [CONV_TAC REAL_RING; ALL_TAC] THEN
+    MATCH_MP_TAC
+      candle_q_packed_object_fused_scale_add_component_sound THEN
+    ASM_SIMP_TAC[]]);;
+
 let candle_q_packed_object_symmetric_product_pairs6_def = new_definition
  `candle_q_packed_object_symmetric_product_pairs6 left right =
     list_of_seq
@@ -832,6 +924,123 @@ let candle_real_packed_object_mul_hessian_def = new_definition
       right_gradient i * left_gradient j) +
      left_value * right_hessian i j)`;;
 
+let candle_real_packed_object_mul_hessian_analytic = prove
+ (`!left_e right_e environment i j.
+     candle_real_packed_object_mul_hessian
+       (candle_analytic_value environment left_e)
+       (candle_analytic_value environment right_e)
+       (\k. candle_analytic_d k environment left_e)
+       (\k. candle_analytic_d k environment right_e)
+       (\k l. candle_analytic_dd k l environment left_e)
+       (\k l. candle_analytic_dd k l environment right_e) i j =
+     candle_analytic_dd i j environment
+       (Candle_analytic_mul left_e right_e)`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_real_packed_object_mul_hessian_def;
+              candle_analytic_dd_def] THEN
+  CONV_TAC REAL_RING);;
+
+let candle_q_packed_object_analytic_hessian_contains = prove
+ (`!packed_hessian environment e i j.
+     candle_q_stack_contains packed_hessian
+       (candle_q_packed_hessian6_values
+         (\k l. candle_analytic_dd k l environment e)) /\
+     i < 6 /\ j < 6
+     ==>
+     candle_q_interval_contains
+       (candle_q_interval_lookup j
+         (candle_q_dim_interval_row_lookup i
+           (candle_q_packed_hessian6_expand packed_hessian)))
+       (candle_analytic_dd i j environment e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let expanded =
+    MATCH_MP
+      (SPECL
+        [`packed_hessian:
+           (((num#num)#num)#((num#num)#num))list`;
+         `(\k l. candle_analytic_dd k l environment e):num->num->real`]
+        candle_q_packed_hessian6_expand_contains_symmetric_values)
+      (ASSUME
+        `candle_q_stack_contains packed_hessian
+          (candle_q_packed_hessian6_values
+            (\k l. candle_analytic_dd k l environment e))`) in
+  ASSUME_TAC
+    (REWRITE_RULE[candle_q_symmetric_hessian6_analytic_values] expanded) THEN
+  SUBGOAL_THEN
+   `candle_q_stack_contains
+      (candle_q_dim_interval_row_lookup i
+        (candle_q_packed_hessian6_expand packed_hessian))
+      (list_of_seq (\l. candle_analytic_dd i l environment e) 6)`
+  (LABEL_TAC "row_contains") THENL
+   [SUBGOAL_THEN
+     `candle_q_dim_interval_row_lookup i
+        (candle_q_packed_hessian6_expand packed_hessian) =
+      EL i (candle_q_packed_hessian6_expand packed_hessian)`
+     SUBST1_TAC THENL
+     [MATCH_MP_TAC candle_q_dim_interval_row_lookup_in_range THEN
+      REWRITE_TAC[candle_q_packed_hessian6_expand_shape] THEN
+      ASM_REWRITE_TAC[];
+      ALL_TAC] THEN
+    SUBGOAL_THEN
+     `list_of_seq (\l. candle_analytic_dd i l environment e) 6 =
+      EL i
+        (list_of_seq
+          (\k. list_of_seq
+            (\l. candle_analytic_dd k l environment e) 6) 6)`
+    SUBST1_TAC THENL
+     [ASM_SIMP_TAC[EL_LIST_OF_SEQ];
+      ALL_TAC] THEN
+    MATCH_MP_TAC candle_all2_el_lt THEN
+    ASM_REWRITE_TAC[] THEN
+    MP_TAC
+      (CONJUNCT1
+        (ISPEC
+          `packed_hessian:
+            (((num#num)#num)#((num#num)#num))list`
+          candle_q_packed_hessian6_expand_shape)) THEN
+    ASM_REWRITE_TAC[] THEN ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (candle_q_dim_interval_row_lookup i
+        (candle_q_packed_hessian6_expand packed_hessian)) = 6`
+  ASSUME_TAC THENL
+   [MP_TAC
+      (MATCH_MP candle_all2_length
+        (REWRITE_RULE[candle_q_stack_contains_all2]
+          (ASSUME
+            `candle_q_stack_contains
+              (candle_q_dim_interval_row_lookup i
+                (candle_q_packed_hessian6_expand packed_hessian))
+              (list_of_seq
+                (\l. candle_analytic_dd i l environment e) 6)`))) THEN
+    REWRITE_TAC[LENGTH_LIST_OF_SEQ];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_q_interval_lookup j
+      (candle_q_dim_interval_row_lookup i
+        (candle_q_packed_hessian6_expand packed_hessian)) =
+    EL j
+      (candle_q_dim_interval_row_lookup i
+        (candle_q_packed_hessian6_expand packed_hessian))`
+  SUBST1_TAC THENL
+   [MATCH_MP_TAC candle_q_interval_lookup_in_range THEN
+    ASM_ARITH_TAC;
+    ALL_TAC] THEN
+  let el_seq =
+    MATCH_MP
+      (ISPECL
+        [`(\l. candle_analytic_dd i l environment e):num->real`;
+         `j:num`; `6`]
+        EL_LIST_OF_SEQ)
+      (ASSUME `j < 6`) in
+  let beta =
+    BETA_CONV `(\l. candle_analytic_dd i l environment e) j` in
+  let el_value = TRANS el_seq beta in
+  GEN_REWRITE_TAC RAND_CONV [GSYM el_value] THEN
+  MATCH_MP_TAC candle_q_stack_contains_el_lt THEN
+  ASM_REWRITE_TAC[]);;
+
 let candle_q_packed_object_mul_hessian6_sound = prove
  (`!left_value right_value left_gradient right_gradient
        left_hessian right_hessian
@@ -901,6 +1110,573 @@ let candle_q_packed_object_mul_hessian6_sound = prove
   MATCH_MP_TAC candle_q_packed_object_fused_hessian_entry_sound THEN
   ASM_SIMP_TAC[candle_q_packed_object_hessian6_coordinate_bounds]);;
 
+let candle_q_packed_object_box_mul_contains = prove
+ (`!left_value left_gradient left_hessian left_e
+       right_value right_gradient right_hessian right_e environment.
+     LENGTH left_gradient = 6 /\ LENGTH right_gradient = 6 /\
+     LENGTH left_hessian = 21 /\ LENGTH right_hessian = 21 /\
+     candle_q_dim_analytic_contains 6
+       (candle_q_packed_object_box_jet
+         left_value left_gradient left_hessian) environment left_e /\
+     candle_q_dim_analytic_contains 6
+       (candle_q_packed_object_box_jet
+         right_value right_gradient right_hessian) environment right_e
+     ==>
+     candle_q_dim_analytic_contains 6
+       (candle_q_packed_object_box_jet
+         (candle_q_interval_mul left_value right_value)
+         (candle_q_packed_object_fused_scale_add
+           right_value left_gradient left_value right_gradient)
+         (candle_q_packed_object_mul_hessian6
+           left_value right_value left_gradient right_gradient
+           left_hessian right_hessian))
+       environment (Candle_analytic_mul left_e right_e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  let left_components =
+    REWRITE_RULE
+      [candle_q_dim_analytic_contains_def;
+       candle_q_dim_jet_contains_components_def;
+       candle_q_packed_object_box_jet_def;
+       candle_q_dim_jet_f_def;
+       candle_q_dim_jet_gradient_at_def;
+       candle_q_dim_jet_hessian_at_def;
+       candle_q_dim_jet_gradient_def;
+       candle_q_dim_jet_hessian_def;
+       candle_q_dim_jet_make_def; FST; SND]
+      (ASSUME
+        `candle_q_dim_analytic_contains 6
+          (candle_q_packed_object_box_jet
+            left_value left_gradient left_hessian) environment left_e`) in
+  let right_components =
+    REWRITE_RULE
+      [candle_q_dim_analytic_contains_def;
+       candle_q_dim_jet_contains_components_def;
+       candle_q_packed_object_box_jet_def;
+       candle_q_dim_jet_f_def;
+       candle_q_dim_jet_gradient_at_def;
+       candle_q_dim_jet_hessian_at_def;
+       candle_q_dim_jet_gradient_def;
+       candle_q_dim_jet_hessian_def;
+       candle_q_dim_jet_make_def; FST; SND]
+      (ASSUME
+        `candle_q_dim_analytic_contains 6
+          (candle_q_packed_object_box_jet
+            right_value right_gradient right_hessian) environment right_e`) in
+  let left_value_contains,left_derivatives = CONJ_PAIR left_components in
+  let left_gradient_contains,left_hessian_contains =
+    CONJ_PAIR left_derivatives in
+  let right_value_contains,right_derivatives = CONJ_PAIR right_components in
+  let right_gradient_contains,right_hessian_contains =
+    CONJ_PAIR right_derivatives in
+  MAP_EVERY ASSUME_TAC
+    [left_value_contains; left_gradient_contains; left_hessian_contains;
+     right_value_contains; right_gradient_contains;
+     right_hessian_contains] THEN
+  SUBGOAL_THEN
+   `candle_q_stack_contains
+      (candle_q_packed_object_mul_hessian6
+        left_value right_value left_gradient right_gradient
+        left_hessian right_hessian)
+      (candle_q_packed_hessian6_values
+        (\i j. candle_analytic_dd i j environment
+          (Candle_analytic_mul left_e right_e)))`
+  (LABEL_TAC "output_hessian_contains") THENL
+   [MP_TAC
+      (SPECL
+        [`left_value:((num#num)#num)#((num#num)#num)`;
+         `right_value:((num#num)#num)#((num#num)#num)`;
+         `left_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `right_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `left_hessian:
+            (((num#num)#num)#((num#num)#num))list`;
+         `right_hessian:
+            (((num#num)#num)#((num#num)#num))list`;
+         `candle_analytic_value environment left_e`;
+         `candle_analytic_value environment right_e`;
+         `(\i. candle_analytic_d i environment left_e):num->real`;
+         `(\i. candle_analytic_d i environment right_e):num->real`;
+         `(\i j. candle_analytic_dd i j environment left_e):
+            num->num->real`;
+         `(\i j. candle_analytic_dd i j environment right_e):
+            num->num->real`]
+        candle_q_packed_object_mul_hessian6_sound) THEN
+    ANTS_TAC THENL
+     [REPEAT CONJ_TAC THENL
+       [ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        ASM_REWRITE_TAC[];
+        X_GEN_TAC `k:num` THEN DISCH_TAC THEN
+        BETA_TAC THEN
+        MATCH_MP_TAC
+          (SPECL
+            [`left_value:((num#num)#num)#((num#num)#num)`;
+             `left_gradient:
+                (((num#num)#num)#((num#num)#num))list`;
+             `left_hessian:
+                (((num#num)#num)#((num#num)#num))list`;
+             `environment:real list`; `left_e:candle_analytic_expr`; `k:num`]
+            candle_q_packed_object_analytic_hessian_lookup_contains) THEN
+        ASM_REWRITE_TAC[];
+        X_GEN_TAC `k:num` THEN DISCH_TAC THEN
+        BETA_TAC THEN
+        MATCH_MP_TAC
+          (SPECL
+            [`right_value:((num#num)#num)#((num#num)#num)`;
+             `right_gradient:
+                (((num#num)#num)#((num#num)#num))list`;
+             `right_hessian:
+                (((num#num)#num)#((num#num)#num))list`;
+             `environment:real list`; `right_e:candle_analytic_expr`; `k:num`]
+            candle_q_packed_object_analytic_hessian_lookup_contains) THEN
+        ASM_REWRITE_TAC[]];
+      DISCH_TAC THEN
+      SUBGOAL_THEN
+       `(\i j. candle_analytic_dd i j environment
+          (Candle_analytic_mul left_e right_e)) =
+        (candle_real_packed_object_mul_hessian
+          (candle_analytic_value environment left_e)
+          (candle_analytic_value environment right_e)
+          (\i. candle_analytic_d i environment left_e)
+          (\i. candle_analytic_d i environment right_e)
+          (\i j. candle_analytic_dd i j environment left_e)
+          (\i j. candle_analytic_dd i j environment right_e))`
+      SUBST1_TAC THENL
+       [REWRITE_TAC[FUN_EQ_THM] THEN REPEAT GEN_TAC THEN
+        REWRITE_TAC[candle_real_packed_object_mul_hessian_analytic];
+        ASM_REWRITE_TAC[]]];
+    ALL_TAC] THEN
+  REWRITE_TAC[candle_q_dim_analytic_contains_def;
+              candle_q_dim_jet_contains_components_def;
+              candle_q_packed_object_box_jet_def;
+              candle_q_dim_jet_f_def;
+              candle_q_dim_jet_gradient_at_def;
+              candle_q_dim_jet_hessian_at_def;
+              candle_q_dim_jet_gradient_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def;
+              candle_analytic_value_def;
+              candle_analytic_d_def; FST; SND] THEN
+  CONJ_TAC THENL
+   [MATCH_MP_TAC candle_q_interval_mul_sound THEN ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  CONJ_TAC THENL
+   [X_GEN_TAC `i:num` THEN DISCH_TAC THEN
+    SUBGOAL_THEN
+     `candle_analytic_d i environment left_e *
+        candle_analytic_value environment right_e +
+      candle_analytic_value environment left_e *
+        candle_analytic_d i environment right_e =
+      candle_analytic_value environment right_e *
+        candle_analytic_d i environment left_e +
+      candle_analytic_value environment left_e *
+        candle_analytic_d i environment right_e`
+    SUBST1_TAC THENL [CONV_TAC REAL_RING; ALL_TAC] THEN
+    MATCH_MP_TAC
+      candle_q_packed_object_fused_scale_add_component_sound THEN
+    ASM_SIMP_TAC[];
+    REPEAT STRIP_TAC THEN
+    MATCH_MP_TAC candle_q_packed_object_analytic_hessian_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_q_packed_object_center_all_mul_contains = prove
+ (`!center_boxes
+       left_value left_gradient left_e
+       right_value right_gradient right_e.
+     LENGTH left_gradient = 6 /\ LENGTH right_gradient = 6 /\
+     (!environment.
+        candle_q_stack_contains center_boxes environment
+        ==> candle_analytic_regular_at environment left_e /\
+            candle_q_packed_object_center_first_contains
+              left_value left_gradient environment left_e) /\
+     (!environment.
+        candle_q_stack_contains center_boxes environment
+        ==> candle_analytic_regular_at environment right_e /\
+            candle_q_packed_object_center_first_contains
+              right_value right_gradient environment right_e)
+     ==>
+     (!environment.
+        candle_q_stack_contains center_boxes environment
+        ==> candle_analytic_regular_at environment
+              (Candle_analytic_mul left_e right_e) /\
+            candle_q_packed_object_center_first_contains
+              (candle_q_interval_mul left_value right_value)
+              (candle_q_packed_object_fused_scale_add
+                right_value left_gradient left_value right_gradient)
+              environment (Candle_analytic_mul left_e right_e))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  X_GEN_TAC `environment:real list` THEN DISCH_TAC THEN
+  let left_at =
+    MATCH_MP
+      (SPEC `environment:real list`
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains center_boxes environment
+             ==> candle_analytic_regular_at environment left_e /\
+                 candle_q_packed_object_center_first_contains
+                   left_value left_gradient environment left_e`))
+      (ASSUME `candle_q_stack_contains center_boxes environment`) in
+  let right_at =
+    MATCH_MP
+      (SPEC `environment:real list`
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains center_boxes environment
+             ==> candle_analytic_regular_at environment right_e /\
+                 candle_q_packed_object_center_first_contains
+                   right_value right_gradient environment right_e`))
+      (ASSUME `candle_q_stack_contains center_boxes environment`) in
+  let left_regular,left_contains = CONJ_PAIR left_at in
+  let right_regular,right_contains = CONJ_PAIR right_at in
+  MAP_EVERY ASSUME_TAC
+    [left_regular; left_contains; right_regular; right_contains] THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_analytic_regular_at_def];
+    MATCH_MP_TAC candle_q_packed_object_center_first_mul_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_q_packed_object_box_all_mul_contains = prove
+ (`!outer_boxes
+       left_value left_gradient left_hessian left_e
+       right_value right_gradient right_hessian right_e.
+     LENGTH left_gradient = 6 /\ LENGTH right_gradient = 6 /\
+     LENGTH left_hessian = 21 /\ LENGTH right_hessian = 21 /\
+     (!environment.
+        candle_q_stack_contains outer_boxes environment
+        ==> candle_analytic_regular_at environment left_e /\
+            candle_q_dim_analytic_contains 6
+              (candle_q_packed_object_box_jet
+                left_value left_gradient left_hessian)
+              environment left_e) /\
+     (!environment.
+        candle_q_stack_contains outer_boxes environment
+        ==> candle_analytic_regular_at environment right_e /\
+            candle_q_dim_analytic_contains 6
+              (candle_q_packed_object_box_jet
+                right_value right_gradient right_hessian)
+              environment right_e)
+     ==>
+     (!environment.
+        candle_q_stack_contains outer_boxes environment
+        ==> candle_analytic_regular_at environment
+              (Candle_analytic_mul left_e right_e) /\
+            candle_q_dim_analytic_contains 6
+              (candle_q_packed_object_box_jet
+                (candle_q_interval_mul left_value right_value)
+                (candle_q_packed_object_fused_scale_add
+                  right_value left_gradient left_value right_gradient)
+                (candle_q_packed_object_mul_hessian6
+                  left_value right_value left_gradient right_gradient
+                  left_hessian right_hessian))
+              environment (Candle_analytic_mul left_e right_e))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  X_GEN_TAC `environment:real list` THEN DISCH_TAC THEN
+  let left_at =
+    MATCH_MP
+      (SPEC `environment:real list`
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains outer_boxes environment
+             ==> candle_analytic_regular_at environment left_e /\
+                 candle_q_dim_analytic_contains 6
+                   (candle_q_packed_object_box_jet
+                     left_value left_gradient left_hessian)
+                   environment left_e`))
+      (ASSUME `candle_q_stack_contains outer_boxes environment`) in
+  let right_at =
+    MATCH_MP
+      (SPEC `environment:real list`
+        (ASSUME
+          `!environment.
+             candle_q_stack_contains outer_boxes environment
+             ==> candle_analytic_regular_at environment right_e /\
+                 candle_q_dim_analytic_contains 6
+                   (candle_q_packed_object_box_jet
+                     right_value right_gradient right_hessian)
+                   environment right_e`))
+      (ASSUME `candle_q_stack_contains outer_boxes environment`) in
+  let left_regular,left_contains = CONJ_PAIR left_at in
+  let right_regular,right_contains = CONJ_PAIR right_at in
+  MAP_EVERY ASSUME_TAC
+    [left_regular; left_contains; right_regular; right_contains] THEN
+  CONJ_TAC THENL
+   [ASM_REWRITE_TAC[candle_analytic_regular_at_def];
+    MATCH_MP_TAC candle_q_packed_object_box_mul_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_q_packed_object_box_mul_shape = prove
+ (`!left_value right_value left_gradient right_gradient
+       left_hessian right_hessian.
+     LENGTH left_gradient = 6 /\ LENGTH right_gradient = 6
+     ==>
+     candle_q_dim_jet_shape 6
+       (candle_q_packed_object_box_jet
+         (candle_q_interval_mul left_value right_value)
+         (candle_q_packed_object_fused_scale_add
+           right_value left_gradient left_value right_gradient)
+         (candle_q_packed_object_mul_hessian6
+           left_value right_value left_gradient right_gradient
+           left_hessian right_hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  REWRITE_TAC[candle_q_dim_jet_shape_def;
+              candle_q_packed_object_box_jet_def;
+              candle_q_dim_jet_gradient_def;
+              candle_q_dim_jet_hessian_def;
+              candle_q_dim_jet_make_def; FST; SND;
+              candle_q_dim_interval_matrix_shape_def;
+              candle_q_dim_interval_rows_width_all] THEN
+  CONJ_TAC THENL
+   [MP_TAC
+      (SPECL
+        [`right_value:((num#num)#num)#((num#num)#num)`;
+         `left_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `left_value:((num#num)#num)#((num#num)#num)`;
+         `right_gradient:
+            (((num#num)#num)#((num#num)#num))list`]
+        candle_q_packed_object_fused_scale_add_length) THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC[candle_q_packed_hessian6_expand_shape]]);;
+
+let candle_q_packed_object_item_mul_raw_analytic_invariant = prove
+ (`!center_boxes outer_boxes
+       left_domain left_center_value left_center_gradient
+       left_value_bound left_gradient_bounds left_hessian
+       left_center_e left_box_e
+       right_domain right_center_value right_center_gradient
+       right_value_bound right_gradient_bounds right_hessian
+       right_center_e right_box_e.
+     LENGTH left_hessian = 21 /\ LENGTH right_hessian = 21 /\
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes left_domain
+       left_center_value left_center_gradient
+       left_value_bound left_gradient_bounds left_hessian
+       left_center_e left_box_e /\
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes right_domain
+       right_center_value right_center_gradient
+       right_value_bound right_gradient_bounds right_hessian
+       right_center_e right_box_e
+     ==>
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes (left_domain /\ right_domain)
+       (candle_q_interval_mul left_center_value right_center_value)
+       (candle_q_packed_object_fused_scale_add
+         right_center_value left_center_gradient
+         left_center_value right_center_gradient)
+       (candle_q_interval_mul left_value_bound right_value_bound)
+       (candle_q_packed_object_fused_scale_add
+         right_value_bound left_gradient_bounds
+         left_value_bound right_gradient_bounds)
+       (candle_q_packed_object_mul_hessian6
+         left_value_bound right_value_bound
+         left_gradient_bounds right_gradient_bounds
+         left_hessian right_hessian)
+       (Candle_analytic_mul left_center_e right_center_e)
+       (Candle_analytic_mul left_box_e right_box_e)`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "left_hessian_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "right_hessian_length")
+        (CONJUNCTS_THEN2 (LABEL_TAC "left_invariant")
+          (LABEL_TAC "right_invariant")))) THEN
+  USE_THEN "left_invariant" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_item_analytic_invariant_def] THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "left_valid")
+      (CONJUNCTS_THEN2 (LABEL_TAC "left_erasure")
+        (LABEL_TAC "left_domain_all"))) THEN
+  USE_THEN "right_invariant" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_item_analytic_invariant_def] THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "right_valid")
+      (CONJUNCTS_THEN2 (LABEL_TAC "right_erasure")
+        (LABEL_TAC "right_domain_all"))) THEN
+  REWRITE_TAC[candle_q_packed_object_item_analytic_invariant_def;
+              candle_analytic_valid_dim_def;
+              candle_analytic_erase_sqrt_certificates_def] THEN
+  ASM_REWRITE_TAC[] THEN
+  DISCH_TAC THEN
+  let domains = ASSUME `left_domain /\ right_domain` in
+  let left_true,right_true = CONJ_PAIR domains in
+  MP_TAC (MATCH_MP
+    (ASSUME
+      `left_domain
+       ==> LENGTH left_center_gradient = 6 /\
+           candle_q_dim_jet_shape 6
+             (candle_q_packed_object_box_jet
+               left_value_bound left_gradient_bounds left_hessian) /\
+           (!environment.
+              candle_q_stack_contains center_boxes environment
+              ==> candle_analytic_regular_at environment left_center_e /\
+                  candle_q_packed_object_center_first_contains
+                    left_center_value left_center_gradient
+                    environment left_center_e) /\
+           (!environment.
+              candle_q_stack_contains outer_boxes environment
+              ==> candle_analytic_regular_at environment left_box_e /\
+                  candle_q_dim_analytic_contains 6
+                    (candle_q_packed_object_box_jet
+                      left_value_bound left_gradient_bounds left_hessian)
+                    environment left_box_e)`)
+    left_true) THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "left_center_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "left_box_shape")
+        (CONJUNCTS_THEN2 (LABEL_TAC "left_center_all")
+          (LABEL_TAC "left_box_all")))) THEN
+  MP_TAC (MATCH_MP
+    (ASSUME
+      `right_domain
+       ==> LENGTH right_center_gradient = 6 /\
+           candle_q_dim_jet_shape 6
+             (candle_q_packed_object_box_jet
+               right_value_bound right_gradient_bounds right_hessian) /\
+           (!environment.
+              candle_q_stack_contains center_boxes environment
+              ==> candle_analytic_regular_at environment right_center_e /\
+                  candle_q_packed_object_center_first_contains
+                    right_center_value right_center_gradient
+                    environment right_center_e) /\
+           (!environment.
+              candle_q_stack_contains outer_boxes environment
+              ==> candle_analytic_regular_at environment right_box_e /\
+                  candle_q_dim_analytic_contains 6
+                    (candle_q_packed_object_box_jet
+                      right_value_bound right_gradient_bounds right_hessian)
+                    environment right_box_e)`)
+    right_true) THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "right_center_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "right_box_shape")
+        (CONJUNCTS_THEN2 (LABEL_TAC "right_center_all")
+          (LABEL_TAC "right_box_all")))) THEN
+  SUBGOAL_THEN `LENGTH
+      (left_gradient_bounds:
+        (((num#num)#num)#((num#num)#num))list) = 6`
+   (LABEL_TAC "left_box_gradient_length") THENL
+   [USE_THEN "left_box_shape" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_jet_shape_def;
+                candle_q_packed_object_box_jet_def;
+                candle_q_dim_jet_gradient_def;
+                candle_q_dim_jet_make_def; FST; SND] THEN
+    MESON_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN `LENGTH
+      (right_gradient_bounds:
+        (((num#num)#num)#((num#num)#num))list) = 6`
+   (LABEL_TAC "right_box_gradient_length") THENL
+   [USE_THEN "right_box_shape" MP_TAC THEN
+    REWRITE_TAC[candle_q_dim_jet_shape_def;
+                candle_q_packed_object_box_jet_def;
+                candle_q_dim_jet_gradient_def;
+                candle_q_dim_jet_make_def; FST; SND] THEN
+    MESON_TAC[];
+    ALL_TAC] THEN
+  REPEAT CONJ_TAC THENL
+   [MP_TAC
+      (SPECL
+        [`right_center_value:((num#num)#num)#((num#num)#num)`;
+         `left_center_gradient:
+            (((num#num)#num)#((num#num)#num))list`;
+         `left_center_value:((num#num)#num)#((num#num)#num)`;
+         `right_center_gradient:
+            (((num#num)#num)#((num#num)#num))list`]
+        candle_q_packed_object_fused_scale_add_length) THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_packed_object_box_mul_shape THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_packed_object_center_all_mul_contains THEN
+    ASM_REWRITE_TAC[];
+    MATCH_MP_TAC candle_q_packed_object_box_all_mul_contains THEN
+    ASM_REWRITE_TAC[]]);;
+
+let candle_q_packed_object_item_mul_analytic_invariant = prove
+ (`!center_boxes outer_boxes radii
+       left_domain left_center_value left_center_gradient
+       left_value_bound left_gradient_bounds left_hessian
+       left_center_e left_box_e
+       right_domain right_center_value right_center_gradient
+       right_value_bound right_gradient_bounds right_hessian
+       right_center_e right_box_e.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     LENGTH left_hessian = 21 /\ LENGTH right_hessian = 21 /\
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes left_domain
+       left_center_value left_center_gradient
+       left_value_bound left_gradient_bounds left_hessian
+       left_center_e left_box_e /\
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes right_domain
+       right_center_value right_center_gradient
+       right_value_bound right_gradient_bounds right_hessian
+       right_center_e right_box_e
+     ==>
+     candle_q_packed_object_item_analytic_invariant
+       center_boxes outer_boxes (left_domain /\ right_domain)
+       (candle_q_interval_mul left_center_value right_center_value)
+       (candle_q_packed_object_fused_scale_add
+         right_center_value left_center_gradient
+         left_center_value right_center_gradient)
+       (candle_q_packed_object_value_bound6 radii
+         (candle_q_interval_mul left_center_value right_center_value)
+         (candle_q_packed_object_fused_scale_add
+           right_center_value left_center_gradient
+           left_center_value right_center_gradient)
+         (candle_q_packed_object_mul_hessian6
+           left_value_bound right_value_bound
+           left_gradient_bounds right_gradient_bounds
+           left_hessian right_hessian))
+       (candle_q_packed_object_gradient_complete6 radii
+         (candle_q_packed_object_fused_scale_add
+           right_center_value left_center_gradient
+           left_center_value right_center_gradient)
+         (candle_q_packed_object_mul_hessian6
+           left_value_bound right_value_bound
+           left_gradient_bounds right_gradient_bounds
+           left_hessian right_hessian))
+       (candle_q_packed_object_mul_hessian6
+         left_value_bound right_value_bound
+         left_gradient_bounds right_gradient_bounds
+         left_hessian right_hessian)
+       (Candle_analytic_mul left_center_e right_center_e)
+       (Candle_analytic_mul left_box_e right_box_e)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC
+    (SPECL
+      [`center_boxes:
+         (((num#num)#num)#((num#num)#num))list`;
+       `outer_boxes:
+         (((num#num)#num)#((num#num)#num))list`;
+       `radii:((num#num)#num)list`;
+       `left_domain /\ right_domain`;
+       `candle_q_interval_mul left_center_value right_center_value`;
+       `candle_q_packed_object_fused_scale_add
+          right_center_value left_center_gradient
+          left_center_value right_center_gradient`;
+       `candle_q_interval_mul left_value_bound right_value_bound`;
+       `candle_q_packed_object_fused_scale_add
+          right_value_bound left_gradient_bounds
+          left_value_bound right_gradient_bounds`;
+       `candle_q_packed_object_mul_hessian6
+          left_value_bound right_value_bound
+          left_gradient_bounds right_gradient_bounds
+          left_hessian right_hessian`;
+       `Candle_analytic_mul left_center_e right_center_e`;
+       `Candle_analytic_mul left_box_e right_box_e`]
+      candle_q_packed_object_item_recomplete_analytic_invariant) THEN
+  ASM_REWRITE_TAC[] THEN
+  MATCH_MP_TAC candle_q_packed_object_item_mul_raw_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_packed_object_products_sum2_sound;
      candle_q_packed_object_products_sum4_sound;
@@ -935,10 +1711,20 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_q_packed_object_fused_hessian_lookup;
      candle_q_packed_object_mul_hessian6_lookup;
      candle_q_packed_object_hessian_lookup_contains;
-     candle_q_packed_object_mul_hessian6_sound] then
-  failwith "packed source object mul primitives sound: assumptions";;
+     candle_q_packed_object_analytic_hessian_lookup_contains;
+     candle_q_packed_object_center_first_mul_contains;
+     candle_real_packed_object_mul_hessian_analytic;
+     candle_q_packed_object_analytic_hessian_contains;
+     candle_q_packed_object_mul_hessian6_sound;
+     candle_q_packed_object_box_mul_contains;
+     candle_q_packed_object_center_all_mul_contains;
+     candle_q_packed_object_box_all_mul_contains;
+     candle_q_packed_object_box_mul_shape;
+     candle_q_packed_object_item_mul_raw_analytic_invariant;
+     candle_q_packed_object_item_mul_analytic_invariant] then
+  failwith "packed source object mul sound: assumptions";;
 
 print_endline
-  "CANDLE_CV_PACKED_SOURCE_OBJECT_MUL_PRIMITIVES_OK DEVELOPMENT_NON_RELEASE";;
+  "CANDLE_CV_PACKED_SOURCE_OBJECT_MUL_SOUND_OK DEVELOPMENT_NON_RELEASE";;
 
 end;;
