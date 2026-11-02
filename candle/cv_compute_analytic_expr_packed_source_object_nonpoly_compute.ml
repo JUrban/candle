@@ -719,6 +719,118 @@ let candle_cv_q_packed_object_nonpoly_sqrt_correct = prove
 
 let _ = print_endline "CANDLE_OBJECT_NONPOLY_STAGE sqrt";;
 
+let candle_cv_q_packed_object_nonpoly_atn_correct = prove
+ (`!center_boxes outer_boxes radii item rest
+       (center_input:((num#num)#num)#((num#num)#num))
+       (box_input:((num#num)#num)#((num#num)#num))
+       center_result
+       (center_square:((num#num)#num)#((num#num)#num)) center_derivative
+       (box_square:((num#num)#num)#((num#num)#num))
+       box_derivative box_derivative_square certificate_rest.
+     LENGTH radii = 6 /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item /\
+     candle_q_interval_atn_outer_certificate
+       (candle_q_packed_object_item_center_value item)
+       center_input center_result /\
+     candle_q_interval_square_outer_certificate
+       (candle_q_packed_object_item_center_value item)
+       center_input center_square /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_atn_denominator center_square)
+       center_derivative /\
+     candle_q_interval_square_outer_certificate
+       (candle_q_packed_object_item_value_bound item)
+       box_input box_square /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_atn_denominator box_square)
+       box_derivative /\
+     candle_q_interval_square_outer_certificate
+       box_derivative box_derivative box_derivative_square
+     ==>
+     candle_cv_q_packed_object_nonpoly_step
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list outer_boxes)
+       (candle_cv_q_list radii)
+       (candle_cv_analytic_instruction Candle_analytic_program_atn)
+       (candle_cv_q_interval_list
+         (CONS center_input
+           (CONS box_input
+             (CONS center_result
+               (CONS center_square
+                 (CONS center_derivative
+                   (CONS box_square
+                     (CONS box_derivative
+                       (CONS box_derivative_square certificate_rest)))))))))
+       (candle_cv_q_packed_object_stack_encode (CONS item rest)) =
+     candle_cv_q_packed_object_certificate_state T
+       (candle_cv_q_packed_object_stack_encode
+         (CONS
+           (candle_q_packed_object_source_item_atn radii center_input
+             center_result center_square center_derivative box_input
+             box_square box_derivative box_derivative_square item)
+           rest))
+       (candle_cv_q_interval_list certificate_rest)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_cv_q_packed_object_state_atn
+      (candle_cv_q_list radii)
+      (candle_cv_q_interval center_result)
+      (candle_cv_q_interval center_derivative)
+      (candle_cv_q_interval box_derivative)
+      (candle_cv_q_interval box_derivative_square)
+      (candle_cv_q_packed_object_item_state_encode item) =
+    candle_cv_q_packed_object_item_state_encode
+      (candle_q_packed_object_source_item_atn radii center_input
+        center_result center_square center_derivative box_input box_square
+        box_derivative box_derivative_square item)`
+  (LABEL_TAC "atn") THENL
+   [MATCH_MP_TAC
+      (SPECL
+        [`radii:((num#num)#num)list`;
+         `center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`]
+        candle_cv_q_packed_object_source_item_atn_correct) THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC
+      [candle_cv_q_packed_object_nonpoly_step_def;
+       candle_cv_analytic_instruction_def;
+       cexp_ispair_def; cexp_eq_def; cexp_if_def;
+       injectivity "cval"; NOT_SUC] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    REWRITE_TAC[candle_cv_cval_one_suc; cexp_if_def] THEN
+    REWRITE_TAC
+      [candle_cv_q_packed_object_atn_step_def;
+       LET_DEF; LET_END_DEF;
+       candle_cv_q_packed_object_stack_encode_def;
+       candle_cv_q_interval_list_def;
+       candle_cv_cval_one_suc; candle_cv_cval_two_suc;
+       candle_cv_cval_three_suc; candle_cv_cval_four_suc;
+       candle_cv_cval_five_suc; candle_cv_cval_six_suc;
+       candle_cv_cval_seven_suc; candle_cv_cval_eight_suc;
+       candle_cv_cval_list_has_def;
+       candle_cv_cval_list_nth_def;
+       candle_cv_cval_list_drop_def;
+       cexp_ispair_def; cexp_fst_def; cexp_snd_def;
+       candle_cv_q_packed_object_item_center_value_correct;
+       candle_cv_q_packed_object_item_value_bound_correct;
+       candle_cv_q_packed_object_atn_denominator_correct;
+       candle_cv_q_interval_atn_outer_certificate_correct;
+       candle_cv_q_interval_square_outer_certificate_correct;
+       candle_cv_q_interval_inv_certificate_correct] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    ASM_REWRITE_TAC
+      [candle_cv_bool_and_def; candle_cv_bool_def; cexp_if_def] THEN
+    USE_THEN "atn" (fun theorem -> REWRITE_TAC[theorem]) THEN
+    REWRITE_TAC[candle_cv_cval_one_suc; cexp_if_def] THEN
+    MP_TAC
+      (SPEC `item:candle_q_packed_object_item`
+        candle_q_packed_object_item_full_cases) THEN
+    DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+    REWRITE_TAC[candle_q_packed_object_source_item_atn_def]]);;
+
+let _ = print_endline "CANDLE_OBJECT_NONPOLY_STAGE atn";;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_packed_object_certificate_from_execution_correct;
      candle_cv_q_packed_object_atn_denominator_correct;
@@ -728,7 +840,8 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_cv_q_packed_object_nonpoly_square_correct;
      candle_cv_q_packed_object_nonpoly_pi_half_correct;
      candle_cv_q_packed_object_nonpoly_inverse_correct;
-     candle_cv_q_packed_object_nonpoly_sqrt_correct] then
+     candle_cv_q_packed_object_nonpoly_sqrt_correct;
+     candle_cv_q_packed_object_nonpoly_atn_correct] then
   failwith "packed object nonpoly compute: assumptions";;
 
 print_endline
