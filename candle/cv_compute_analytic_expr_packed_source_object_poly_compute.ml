@@ -354,13 +354,109 @@ let candle_cv_q_packed_object_poly_step_square_correct = prove
 
 let _ = print_endline "CANDLE_OBJECT_POLY_STAGE square";;
 
+let candle_cv_q_packed_object_poly_step_correct = prove
+ (`!center_boxes outer_boxes radii instruction stack next.
+     LENGTH radii = 6 /\
+     candle_q_packed_object_source_stack_analytic_invariant
+       center_boxes outer_boxes stack /\
+     candle_q_packed_object_poly_step
+       radii center_boxes outer_boxes instruction stack next
+     ==>
+     candle_cv_q_packed_object_poly_step
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list outer_boxes)
+       (candle_cv_q_list radii)
+       (candle_cv_q_instruction instruction)
+       (candle_cv_q_packed_object_stack_encode stack) =
+     candle_cv_q_packed_object_execution_state T
+       (candle_cv_q_packed_object_stack_encode next)`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "radii_length")
+      (CONJUNCTS_THEN2 (LABEL_TAC "stack_invariant")
+        (LABEL_TAC "step"))) THEN
+  USE_THEN "step" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_poly_step_def] THEN
+  DISCH_THEN STRIP_ASSUME_TAC THENL
+   [ASM_REWRITE_TAC[candle_cv_q_packed_object_poly_step_push_correct];
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `radii:((num#num)#num)list`; `variable:num`;
+         `stack:candle_q_packed_object_item list`]
+        candle_cv_q_packed_object_poly_step_load_correct) THEN
+    ASM_REWRITE_TAC[];
+    REMOVE_THEN "stack_invariant" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_source_stack_analytic_invariant_def; ALL] THEN
+    STRIP_TAC THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `radii:((num#num)#num)list`;
+         `item:candle_q_packed_object_item`;
+         `rest:candle_q_packed_object_item list`]
+        candle_cv_q_packed_object_poly_step_neg_correct) THEN
+    ASM_REWRITE_TAC[];
+    REMOVE_THEN "stack_invariant" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_source_stack_analytic_invariant_def; ALL] THEN
+    STRIP_TAC THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `radii:((num#num)#num)list`;
+         `left:candle_q_packed_object_item`;
+         `right:candle_q_packed_object_item`;
+         `rest:candle_q_packed_object_item list`]
+        candle_cv_q_packed_object_poly_step_add_correct) THEN
+    ASM_REWRITE_TAC[];
+    REMOVE_THEN "stack_invariant" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_source_stack_analytic_invariant_def; ALL] THEN
+    STRIP_TAC THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `radii:((num#num)#num)list`;
+         `left:candle_q_packed_object_item`;
+         `right:candle_q_packed_object_item`;
+         `rest:candle_q_packed_object_item list`]
+        candle_cv_q_packed_object_poly_step_mul_correct) THEN
+    ASM_REWRITE_TAC[];
+    REMOVE_THEN "stack_invariant" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_source_stack_analytic_invariant_def; ALL] THEN
+    STRIP_TAC THEN
+    ASM_REWRITE_TAC[] THEN
+    MATCH_MP_TAC
+      (SPECL
+        [`center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `radii:((num#num)#num)list`;
+         `item:candle_q_packed_object_item`;
+         `rest:candle_q_packed_object_item list`]
+        candle_cv_q_packed_object_poly_step_square_correct) THEN
+    ASM_REWRITE_TAC[]]);;
+
+let _ = print_endline "CANDLE_OBJECT_POLY_STAGE generic_step";;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_packed_object_poly_step_push_correct;
      candle_cv_q_packed_object_poly_step_load_correct;
      candle_cv_q_packed_object_poly_step_neg_correct;
      candle_cv_q_packed_object_poly_step_add_correct;
      candle_cv_q_packed_object_poly_step_mul_correct;
-     candle_cv_q_packed_object_poly_step_square_correct] then
+     candle_cv_q_packed_object_poly_step_square_correct;
+     candle_cv_q_packed_object_poly_step_correct] then
   failwith "packed object poly compute: assumptions";;
 
 print_endline
