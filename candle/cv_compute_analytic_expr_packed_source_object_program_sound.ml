@@ -48,6 +48,37 @@ let candle_q_packed_object_item_INDUCT,
      Candle_q_packed_object_item candle_q_packed_object_state
        candle_analytic_expr candle_analytic_expr";;
 
+let candle_q_packed_object_item_center_value_def = define
+ `candle_q_packed_object_item_center_value
+      (Candle_q_packed_object_item
+        (Candle_q_packed_object_state domain center_value center_gradient
+          value_bound gradient_bounds packed_hessian) center_e box_e) =
+    center_value`;;
+
+let candle_q_packed_object_item_value_bound_def = define
+ `candle_q_packed_object_item_value_bound
+      (Candle_q_packed_object_item
+        (Candle_q_packed_object_state domain center_value center_gradient
+          value_bound gradient_bounds packed_hessian) center_e box_e) =
+    value_bound`;;
+
+let candle_q_packed_object_item_full_cases = prove
+ (`!item.
+     ?domain center_value center_gradient value_bound gradient_bounds
+        packed_hessian center_e box_e.
+       item =
+         Candle_q_packed_object_item
+           (Candle_q_packed_object_state domain center_value center_gradient
+             value_bound gradient_bounds packed_hessian) center_e box_e`,
+  MATCH_MP_TAC candle_q_packed_object_item_INDUCT THEN
+  X_GEN_TAC `state:candle_q_packed_object_state` THEN
+  X_GEN_TAC `center_e:candle_analytic_expr` THEN
+  X_GEN_TAC `box_e:candle_analytic_expr` THEN
+  MP_TAC
+    (SPEC `state:candle_q_packed_object_state`
+      (cases "candle_q_packed_object_state")) THEN
+  MESON_TAC[]);;
+
 let candle_q_packed_object_source_item_analytic_invariant_def = define
  `candle_q_packed_object_source_item_analytic_invariant center_boxes outer_boxes
       (Candle_q_packed_object_item
@@ -707,6 +738,206 @@ let candle_q_packed_object_source_item_atn_analytic_invariant = prove
         candle_q_packed_object_item_atn_analytic_invariant) THEN
     ASM_REWRITE_TAC[]]);;
 
+let candle_q_packed_object_source_item_neg_analytic_invariant_generic = prove
+ (`!item center_boxes outer_boxes radii.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_neg radii item)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  MATCH_MP_TAC candle_q_packed_object_source_item_neg_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_add_analytic_invariant_generic = prove
+ (`!left right center_boxes outer_boxes radii.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes left /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes right
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_add radii left right)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `left:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  MP_TAC
+    (SPEC `right:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  MATCH_MP_TAC candle_q_packed_object_source_item_add_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_mul_analytic_invariant_generic = prove
+ (`!left right center_boxes outer_boxes radii.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes left /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes right
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_mul radii left right)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `left:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  MP_TAC
+    (SPEC `right:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  MATCH_MP_TAC candle_q_packed_object_source_item_mul_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_square_analytic_invariant = prove
+ (`!item center_boxes outer_boxes radii.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_mul radii item item)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MATCH_MP_TAC
+    candle_q_packed_object_source_item_mul_analytic_invariant_generic THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_inverse_analytic_invariant_generic =
+  prove
+ (`!item center_boxes outer_boxes radii center_reciprocal box_reciprocal.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_item_center_value item) center_reciprocal /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_item_value_bound item) box_reciprocal /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_inverse radii center_reciprocal
+         box_reciprocal item)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  RULE_ASSUM_TAC
+    (REWRITE_RULE
+      [candle_q_packed_object_item_center_value_def;
+       candle_q_packed_object_item_value_bound_def]) THEN
+  MATCH_MP_TAC
+    candle_q_packed_object_source_item_inverse_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_sqrt_analytic_invariant_generic = prove
+ (`!item center_boxes outer_boxes radii center_root center_derivative
+       box_root box_derivative box_second_reciprocal.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_interval_sqrt_certificate
+       (candle_q_packed_object_item_center_value item) center_root /\
+     candle_q_interval_inv_certificate
+       (candle_q_interval_add center_root center_root) center_derivative /\
+     candle_q_interval_sqrt_certificate
+       (candle_q_packed_object_item_value_bound item) box_root /\
+     candle_q_interval_inv_certificate
+       (candle_q_interval_add box_root box_root) box_derivative /\
+     candle_q_interval_inv_certificate
+       (candle_q_interval_mul
+         (candle_q_interval_add box_root box_root)
+         (candle_q_interval_add
+           (candle_q_packed_object_item_value_bound item)
+           (candle_q_packed_object_item_value_bound item)))
+       box_second_reciprocal /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_sqrt radii center_root
+         center_derivative box_root box_derivative box_second_reciprocal
+         item)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  RULE_ASSUM_TAC
+    (REWRITE_RULE
+      [candle_q_packed_object_item_center_value_def;
+       candle_q_packed_object_item_value_bound_def]) THEN
+  MATCH_MP_TAC candle_q_packed_object_source_item_sqrt_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
+let candle_q_packed_object_source_item_atn_analytic_invariant_generic = prove
+ (`!item center_boxes outer_boxes radii center_input center_result
+       center_square center_derivative box_input box_square box_derivative
+       box_derivative_square.
+     LENGTH outer_boxes = 6 /\
+     candle_q_packed_source_correspondence
+       outer_boxes center_boxes outer_boxes radii /\
+     candle_q_interval_atn_outer_certificate
+       (candle_q_packed_object_item_center_value item)
+       center_input center_result /\
+     candle_q_interval_square_outer_certificate
+       (candle_q_packed_object_item_center_value item)
+       center_input center_square /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_atn_denominator center_square)
+       center_derivative /\
+     candle_q_interval_square_outer_certificate
+       (candle_q_packed_object_item_value_bound item)
+       box_input box_square /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_atn_denominator box_square)
+       box_derivative /\
+     candle_q_interval_square_outer_certificate
+       box_derivative box_derivative box_derivative_square /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item
+     ==>
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes
+       (candle_q_packed_object_source_item_atn radii center_input
+         center_result center_square center_derivative box_input box_square
+         box_derivative box_derivative_square item)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  RULE_ASSUM_TAC
+    (REWRITE_RULE
+      [candle_q_packed_object_item_center_value_def;
+       candle_q_packed_object_item_value_bound_def]) THEN
+  MATCH_MP_TAC candle_q_packed_object_source_item_atn_analytic_invariant THEN
+  ASM_REWRITE_TAC[]);;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_packed_object_source_item_constant_analytic_invariant;
      candle_q_packed_object_source_item_variable_analytic_invariant;
@@ -716,7 +947,14 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_q_packed_object_source_item_pi_half_analytic_invariant;
      candle_q_packed_object_source_item_inverse_analytic_invariant;
      candle_q_packed_object_source_item_sqrt_analytic_invariant;
-     candle_q_packed_object_source_item_atn_analytic_invariant] then
+     candle_q_packed_object_source_item_atn_analytic_invariant;
+     candle_q_packed_object_source_item_neg_analytic_invariant_generic;
+     candle_q_packed_object_source_item_add_analytic_invariant_generic;
+     candle_q_packed_object_source_item_mul_analytic_invariant_generic;
+     candle_q_packed_object_source_item_square_analytic_invariant;
+     candle_q_packed_object_source_item_inverse_analytic_invariant_generic;
+     candle_q_packed_object_source_item_sqrt_analytic_invariant_generic;
+     candle_q_packed_object_source_item_atn_analytic_invariant_generic] then
   failwith "packed object program sound: assumptions";;
 
 print_endline
