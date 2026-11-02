@@ -69,6 +69,15 @@ let candle_cv_cval_list_nth_def = new_definition
  `candle_cv_cval_list_nth position values =
     Cexp_fst (candle_cv_cval_list_drop position values)`;;
 
+let candle_cv_cval_one_suc = ARITH_RULE `1 = SUC 0`;;
+let candle_cv_cval_two_suc = ARITH_RULE `2 = SUC 1`;;
+let candle_cv_cval_three_suc = ARITH_RULE `3 = SUC 2`;;
+let candle_cv_cval_four_suc = ARITH_RULE `4 = SUC 3`;;
+let candle_cv_cval_five_suc = ARITH_RULE `5 = SUC 4`;;
+let candle_cv_cval_six_suc = ARITH_RULE `6 = SUC 5`;;
+let candle_cv_cval_seven_suc = ARITH_RULE `7 = SUC 6`;;
+let candle_cv_cval_eight_suc = ARITH_RULE `8 = SUC 7`;;
+
 let candle_cv_q_packed_object_atn_denominator_def = new_definition
  `candle_cv_q_packed_object_atn_denominator square =
     candle_cv_q_interval_add candle_cv_q_atn_one_interval square`;;
@@ -522,6 +531,86 @@ let candle_cv_q_packed_object_nonpoly_pi_half_correct = prove
 
 let _ = print_endline "CANDLE_OBJECT_NONPOLY_STAGE pi_half";;
 
+let candle_cv_q_packed_object_nonpoly_inverse_correct = prove
+ (`!center_boxes outer_boxes radii item rest center_reciprocal
+       box_reciprocal certificate_rest.
+     LENGTH radii = 6 /\
+     candle_q_packed_object_source_item_analytic_invariant
+       center_boxes outer_boxes item /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_item_center_value item)
+       center_reciprocal /\
+     candle_q_interval_inv_certificate
+       (candle_q_packed_object_item_value_bound item)
+       box_reciprocal
+     ==>
+     candle_cv_q_packed_object_nonpoly_step
+       (candle_cv_q_interval_list center_boxes)
+       (candle_cv_q_interval_list outer_boxes)
+       (candle_cv_q_list radii)
+       (candle_cv_analytic_instruction Candle_analytic_program_inv)
+       (candle_cv_q_interval_list
+         (CONS center_reciprocal (CONS box_reciprocal certificate_rest)))
+       (candle_cv_q_packed_object_stack_encode (CONS item rest)) =
+     candle_cv_q_packed_object_certificate_state T
+       (candle_cv_q_packed_object_stack_encode
+         (CONS
+           (candle_q_packed_object_source_item_inverse radii
+             center_reciprocal box_reciprocal item)
+           rest))
+       (candle_cv_q_interval_list certificate_rest)`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_cv_q_packed_object_state_inverse
+      (candle_cv_q_list radii)
+      (candle_cv_q_interval center_reciprocal)
+      (candle_cv_q_interval box_reciprocal)
+      (candle_cv_q_packed_object_item_state_encode item) =
+    candle_cv_q_packed_object_item_state_encode
+      (candle_q_packed_object_source_item_inverse radii
+        center_reciprocal box_reciprocal item)`
+  (LABEL_TAC "inverse") THENL
+   [MATCH_MP_TAC
+      (SPECL
+        [`radii:((num#num)#num)list`;
+         `center_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `outer_boxes:((((num#num)#num)#((num#num)#num))list)`;
+         `center_reciprocal:((num#num)#num)#((num#num)#num)`;
+         `box_reciprocal:((num#num)#num)#((num#num)#num)`;
+         `item:candle_q_packed_object_item`]
+        candle_cv_q_packed_object_source_item_inverse_correct) THEN
+    ASM_REWRITE_TAC[];
+    REWRITE_TAC
+      [candle_cv_q_packed_object_nonpoly_step_def;
+       candle_cv_analytic_instruction_def;
+       cexp_ispair_def; cexp_eq_def; cexp_if_def;
+       injectivity "cval"; NOT_SUC] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    REWRITE_TAC[cexp_if_def] THEN
+    REWRITE_TAC
+      [candle_cv_q_packed_object_inv_step_def;
+       LET_DEF; LET_END_DEF;
+       candle_cv_q_packed_object_stack_encode_def;
+       candle_cv_q_interval_list_def;
+       candle_cv_cval_one_suc; candle_cv_cval_two_suc;
+       candle_cv_cval_three_suc; candle_cv_cval_four_suc;
+       candle_cv_cval_five_suc; candle_cv_cval_six_suc;
+       candle_cv_cval_seven_suc; candle_cv_cval_eight_suc;
+       candle_cv_cval_list_has_def;
+       candle_cv_cval_list_nth_def;
+       candle_cv_cval_list_drop_def;
+       cexp_ispair_def; cexp_fst_def; cexp_snd_def;
+       candle_cv_q_packed_object_item_center_value_correct;
+       candle_cv_q_packed_object_item_value_bound_correct;
+       candle_cv_q_interval_inv_certificate_correct] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    ASM_REWRITE_TAC
+      [candle_cv_bool_and_def; candle_cv_bool_def; cexp_if_def] THEN
+    USE_THEN "inverse" (fun theorem -> REWRITE_TAC[theorem]) THEN
+    REWRITE_TAC[candle_cv_cval_one_suc; cexp_if_def]]);;
+
+let _ = print_endline "CANDLE_OBJECT_NONPOLY_STAGE inverse";;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_packed_object_certificate_from_execution_correct;
      candle_cv_q_packed_object_atn_denominator_correct;
@@ -529,7 +618,8 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_cv_q_packed_object_nonpoly_add_correct;
      candle_cv_q_packed_object_nonpoly_mul_correct;
      candle_cv_q_packed_object_nonpoly_square_correct;
-     candle_cv_q_packed_object_nonpoly_pi_half_correct] then
+     candle_cv_q_packed_object_nonpoly_pi_half_correct;
+     candle_cv_q_packed_object_nonpoly_inverse_correct] then
   failwith "packed object nonpoly compute: assumptions";;
 
 print_endline
