@@ -10,11 +10,13 @@ needs "candle/cv_compute_analytic_expr_packed_source_object_linear_compute.ml";;
 
 module Candle_cv_analytic_expr_packed_source_object_mul_compute = struct
 
+open Candle_cv_analytic_expr_program_compute;;
 open Candle_cv_exact_interval_core;;
 open Candle_cv_exact_interval_mul_core;;
 open Candle_cv_analytic_expr_taylor_model_representation;;
 open Candle_cv_analytic_expr_packed_source_delta_value;;
 open Candle_cv_analytic_expr_packed_source_object_mul_sound;;
+open Candle_cv_analytic_expr_packed_source_object_representation;;
 open Candle_cv_analytic_expr_packed_source_object_linear_compute;;
 
 let candle_cv_q_packed_object_products_sum2_def = new_definition
@@ -561,6 +563,131 @@ let candle_cv_q_packed_object_mul_hessian6_correct = prove
 
 let _ = print_endline "CANDLE_OBJECT_MUL_STAGE hessian-complete";;
 
+let candle_cv_q_packed_object_state_mul_def = new_definition
+ `candle_cv_q_packed_object_state_mul radii left right =
+    let center_value = candle_cv_q_interval_mul
+      (candle_cv_q_packed_object_state_center_value left)
+      (candle_cv_q_packed_object_state_center_value right) in
+    let center_gradient = candle_cv_q_packed_object_fused_scale_add
+      (candle_cv_q_packed_object_state_center_value right)
+      (candle_cv_q_packed_object_state_center_gradient left)
+      (candle_cv_q_packed_object_state_center_value left)
+      (candle_cv_q_packed_object_state_center_gradient right) in
+    let packed_hessian = candle_cv_q_packed_object_mul_hessian6
+      (candle_cv_q_packed_object_state_value_bound left)
+      (candle_cv_q_packed_object_state_value_bound right)
+      (candle_cv_q_packed_object_state_gradient_bounds left)
+      (candle_cv_q_packed_object_state_gradient_bounds right)
+      (candle_cv_q_packed_object_state_packed_hessian left)
+      (candle_cv_q_packed_object_state_packed_hessian right) in
+    candle_cv_q_packed_object_state_recomplete radii
+      (candle_cv_bool_and
+        (candle_cv_q_packed_object_state_domain left)
+        (candle_cv_q_packed_object_state_domain right))
+      center_value center_gradient packed_hessian`;;
+
+let candle_cv_q_packed_object_state_mul_correct = prove
+ (`!radii left_domain left_center_value left_center_gradient
+       left_value_bound left_gradient_bounds left_hessian
+       right_domain right_center_value right_center_gradient
+       right_value_bound right_gradient_bounds right_hessian.
+     LENGTH radii = 6 /\
+     LENGTH left_center_gradient = 6 /\
+     LENGTH right_center_gradient = 6 /\
+     LENGTH left_hessian = 21 /\ LENGTH right_hessian = 21
+     ==>
+     candle_cv_q_packed_object_state_mul (candle_cv_q_list radii)
+       (candle_cv_q_packed_object_state_encode
+         (Candle_q_packed_object_state left_domain left_center_value
+           left_center_gradient left_value_bound left_gradient_bounds
+           left_hessian))
+       (candle_cv_q_packed_object_state_encode
+         (Candle_q_packed_object_state right_domain right_center_value
+           right_center_gradient right_value_bound right_gradient_bounds
+           right_hessian)) =
+     candle_cv_q_packed_object_state_encode
+       (Candle_q_packed_object_state (left_domain /\ right_domain)
+         (candle_q_interval_mul left_center_value right_center_value)
+         (candle_q_packed_object_fused_scale_add
+           right_center_value left_center_gradient
+           left_center_value right_center_gradient)
+         (candle_q_packed_object_value_bound6 radii
+           (candle_q_interval_mul left_center_value right_center_value)
+           (candle_q_packed_object_fused_scale_add
+             right_center_value left_center_gradient
+             left_center_value right_center_gradient)
+           (candle_q_packed_object_mul_hessian6
+             left_value_bound right_value_bound
+             left_gradient_bounds right_gradient_bounds
+             left_hessian right_hessian))
+         (candle_q_packed_object_gradient_complete6 radii
+           (candle_q_packed_object_fused_scale_add
+             right_center_value left_center_gradient
+             left_center_value right_center_gradient)
+           (candle_q_packed_object_mul_hessian6
+             left_value_bound right_value_bound
+             left_gradient_bounds right_gradient_bounds
+             left_hessian right_hessian))
+         (candle_q_packed_object_mul_hessian6
+           left_value_bound right_value_bound
+           left_gradient_bounds right_gradient_bounds
+           left_hessian right_hessian))`,
+  REPEAT GEN_TAC THEN STRIP_TAC THEN
+  SUBGOAL_THEN
+   `candle_cv_q_packed_object_fused_scale_add
+      (candle_cv_q_interval right_center_value)
+      (candle_cv_q_interval_list left_center_gradient)
+      (candle_cv_q_interval left_center_value)
+      (candle_cv_q_interval_list right_center_gradient) =
+    candle_cv_q_interval_list
+      (candle_q_packed_object_fused_scale_add
+        right_center_value left_center_gradient
+        left_center_value right_center_gradient)`
+   ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_cv_q_packed_object_fused_scale_add_correct THEN
+    TRANS_TAC EQ_TRANS `6` THEN ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `candle_cv_q_packed_object_mul_hessian6
+      (candle_cv_q_interval left_value_bound)
+      (candle_cv_q_interval right_value_bound)
+      (candle_cv_q_interval_list left_gradient_bounds)
+      (candle_cv_q_interval_list right_gradient_bounds)
+      (candle_cv_q_interval_list left_hessian)
+      (candle_cv_q_interval_list right_hessian) =
+    candle_cv_q_interval_list
+      (candle_q_packed_object_mul_hessian6
+        left_value_bound right_value_bound
+        left_gradient_bounds right_gradient_bounds
+        left_hessian right_hessian)`
+   ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_cv_q_packed_object_mul_hessian6_correct THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  SUBGOAL_THEN
+   `LENGTH
+      (candle_q_packed_object_mul_hessian6
+        left_value_bound right_value_bound
+        left_gradient_bounds right_gradient_bounds
+        left_hessian right_hessian) = 21`
+   ASSUME_TAC THENL
+   [MATCH_MP_TAC candle_q_packed_object_mul_hessian6_length THEN
+    ASM_REWRITE_TAC[];
+    ALL_TAC] THEN
+  ASM_REWRITE_TAC
+    [candle_cv_q_packed_object_state_mul_def; LET_DEF; LET_END_DEF;
+     candle_cv_q_packed_object_state_domain_correct;
+     candle_cv_q_packed_object_state_center_value_correct;
+     candle_cv_q_packed_object_state_center_gradient_correct;
+     candle_cv_q_packed_object_state_value_bound_correct;
+     candle_cv_q_packed_object_state_gradient_bounds_correct;
+     candle_cv_q_packed_object_state_packed_hessian_correct;
+     candle_cv_q_interval_mul_correct; candle_cv_bool_and_correct] THEN
+  MATCH_MP_TAC candle_cv_q_packed_object_state_recomplete_correct THEN
+  ASM_REWRITE_TAC[]);;
+
+let _ = print_endline "CANDLE_OBJECT_MUL_STAGE state-mul";;
+
 if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_packed_object_products_sum2_correct;
      candle_cv_q_packed_object_products_sum4_correct;
@@ -576,7 +703,8 @@ if exists (fun theorem -> hyp theorem <> [])
      candle_cv_q_packed_object_mul_hessian6_entries_correct;
      candle_q_packed_object_mul_hessian6_entries_sequence;
      candle_q_packed_object_mul_hessian6_entries_eq;
-     candle_cv_q_packed_object_mul_hessian6_correct] then
+     candle_cv_q_packed_object_mul_hessian6_correct;
+     candle_cv_q_packed_object_state_mul_correct] then
   failwith "packed object multiplication compute: assumptions";;
 
 print_endline
