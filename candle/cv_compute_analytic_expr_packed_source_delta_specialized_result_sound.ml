@@ -254,8 +254,7 @@ let candle_q_packed_delta_neg_derivative_result_analytic_invariant = prove
        (`candle_analytic_valid_dim 6
            (candle_packed_delta_neg_derivative_expr coordinate) <=>
          candle_poly_valid_dim 6
-           (Candle_poly_neg
-             (candle_poly_diff coordinate candle_packed_delta_poly))`,
+           (candle_packed_delta_neg_derivative_poly coordinate)`,
         REWRITE_TAC[candle_packed_delta_neg_derivative_expr_def;
                     candle_analytic_valid_dim_def]) in
     EQ_MP (SYM valid_equivalence) polynomial_valid in

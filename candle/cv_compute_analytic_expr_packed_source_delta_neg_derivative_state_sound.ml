@@ -235,7 +235,13 @@ let candle_q_packed_delta_neg_derivative_center_gradient_sound = prove
     ASM_SIMP_TAC[EL_LIST_OF_SEQ];
     ALL_TAC] THEN
   REWRITE_TAC[candle_q_packed_delta_neg_derivative_center_gradient_def] THEN
-  REWRITE_TAC[candle_packed_delta_neg_derivative_analytic_d] THEN
+  let gradient_identity =
+    MATCH_MP
+      (SPECL
+        [`v0:real`;`v1:real`;`v2:real`;`v3:real`;`v4:real`;`v5:real`;
+         `coordinate:num`]
+        candle_packed_delta_neg_derivative_analytic_gradient_six)
+      (ASSUME `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`) in
   let row_contains =
     ASSUME
       `candle_q_stack_contains
@@ -249,7 +255,9 @@ let candle_q_packed_delta_neg_derivative_center_gradient_sound = prove
     MATCH_MP candle_q_dim_interval_list_neg_contains row_contains in
   let rewritten_neg_contains =
     REWRITE_RULE [MAP_LIST_OF_SEQ; o_DEF] neg_contains in
-  ACCEPT_TAC rewritten_neg_contains);;
+  let analytic_neg_contains =
+    REWRITE_RULE [GSYM gradient_identity] rewritten_neg_contains in
+  ACCEPT_TAC analytic_neg_contains);;
 
 if exists (fun theorem -> hyp theorem <> [])
     [candle_q_dim_interval_list_neg_contains;

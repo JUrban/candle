@@ -157,8 +157,7 @@ let candle_packed_delta_neg_derivative_source_instruction_def =
     source =
       Candle_analytic_push_poly
         (candle_poly_compile
-          (Candle_poly_neg
-            (candle_poly_diff coordinate candle_packed_delta_poly)))`;;
+          (candle_packed_delta_neg_derivative_poly coordinate))`;;
 
 let candle_packed_delta_product_source_instruction_def = new_definition
  `candle_packed_delta_product_source_instruction coordinate source <=>

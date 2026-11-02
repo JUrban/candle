@@ -21,22 +21,147 @@ open Candle_cv_analytic_expr_packed_source_delta_value;;
 open Candle_cv_analytic_expr_packed_source_delta_hessian;;
 open Candle_cv_analytic_expr_packed_source_delta_analytic;;
 
+(* These are the compact polynomial ASTs used by the direct Flyspeck source  *)
+(* and by the fast checked-word specialization.  They are intentionally not *)
+(* aliases for arbitrary equal polynomials: the compiler image below must    *)
+(* match one of these exact three ASTs.                                      *)
+
+let candle_packed_delta_neg_derivative_poly3_def = new_definition
+ `candle_packed_delta_neg_derivative_poly3 =
+    Candle_poly_neg
+      (Candle_poly_add
+        (Candle_poly_add
+          (Candle_poly_mul
+            (Candle_poly_neg (Candle_poly_var 1))
+            (Candle_poly_var 2))
+          (Candle_poly_neg
+            (Candle_poly_mul (Candle_poly_var 0) (Candle_poly_var 3))))
+        (Candle_poly_add
+          (Candle_poly_mul (Candle_poly_var 1) (Candle_poly_var 4))
+          (Candle_poly_add
+            (Candle_poly_add
+              (Candle_poly_mul (Candle_poly_var 2) (Candle_poly_var 5))
+              (Candle_poly_neg
+                (Candle_poly_mul (Candle_poly_var 4) (Candle_poly_var 5))))
+            (Candle_poly_mul
+              (Candle_poly_var 0)
+              (Candle_poly_add
+                (Candle_poly_neg (Candle_poly_var 0))
+                (Candle_poly_add
+                  (Candle_poly_var 1)
+                  (Candle_poly_add
+                    (Candle_poly_add
+                      (Candle_poly_var 2)
+                      (Candle_poly_neg (Candle_poly_var 3)))
+                    (Candle_poly_add
+                      (Candle_poly_var 4) (Candle_poly_var 5)))))))))`;;
+
+let candle_packed_delta_neg_derivative_poly4_def = new_definition
+ `candle_packed_delta_neg_derivative_poly4 =
+    Candle_poly_neg
+      (Candle_poly_add
+        (Candle_poly_add
+          (Candle_poly_mul
+            (Candle_poly_neg (Candle_poly_var 2))
+            (Candle_poly_var 0))
+          (Candle_poly_neg
+            (Candle_poly_mul (Candle_poly_var 1) (Candle_poly_var 4))))
+        (Candle_poly_add
+          (Candle_poly_mul (Candle_poly_var 2) (Candle_poly_var 5))
+          (Candle_poly_add
+            (Candle_poly_add
+              (Candle_poly_mul (Candle_poly_var 0) (Candle_poly_var 3))
+              (Candle_poly_neg
+                (Candle_poly_mul (Candle_poly_var 5) (Candle_poly_var 3))))
+            (Candle_poly_mul
+              (Candle_poly_var 1)
+              (Candle_poly_add
+                (Candle_poly_neg (Candle_poly_var 1))
+                (Candle_poly_add
+                  (Candle_poly_var 2)
+                  (Candle_poly_add
+                    (Candle_poly_add
+                      (Candle_poly_var 0)
+                      (Candle_poly_neg (Candle_poly_var 4)))
+                    (Candle_poly_add
+                      (Candle_poly_var 5) (Candle_poly_var 3)))))))))`;;
+
+let candle_packed_delta_neg_derivative_poly5_def = new_definition
+ `candle_packed_delta_neg_derivative_poly5 =
+    Candle_poly_neg
+      (Candle_poly_add
+        (Candle_poly_add
+          (Candle_poly_mul
+            (Candle_poly_neg (Candle_poly_var 0))
+            (Candle_poly_var 1))
+          (Candle_poly_neg
+            (Candle_poly_mul (Candle_poly_var 2) (Candle_poly_var 5))))
+        (Candle_poly_add
+          (Candle_poly_mul (Candle_poly_var 0) (Candle_poly_var 3))
+          (Candle_poly_add
+            (Candle_poly_add
+              (Candle_poly_mul (Candle_poly_var 1) (Candle_poly_var 4))
+              (Candle_poly_neg
+                (Candle_poly_mul (Candle_poly_var 3) (Candle_poly_var 4))))
+            (Candle_poly_mul
+              (Candle_poly_var 2)
+              (Candle_poly_add
+                (Candle_poly_neg (Candle_poly_var 2))
+                (Candle_poly_add
+                  (Candle_poly_var 0)
+                  (Candle_poly_add
+                    (Candle_poly_add
+                      (Candle_poly_var 1)
+                      (Candle_poly_neg (Candle_poly_var 5)))
+                    (Candle_poly_add
+                      (Candle_poly_var 3) (Candle_poly_var 4)))))))))`;;
+
+let candle_packed_delta_neg_derivative_poly_def = new_definition
+ `candle_packed_delta_neg_derivative_poly coordinate =
+    if coordinate = 3 then candle_packed_delta_neg_derivative_poly3
+    else if coordinate = 4 then candle_packed_delta_neg_derivative_poly4
+    else if coordinate = 5 then candle_packed_delta_neg_derivative_poly5
+    else Candle_poly_neg
+      (candle_poly_diff coordinate candle_packed_delta_poly)`;;
+
 let candle_packed_delta_neg_derivative_expr_def = new_definition
  `candle_packed_delta_neg_derivative_expr coordinate =
     Candle_analytic_poly
-      (Candle_poly_neg
-        (candle_poly_diff coordinate candle_packed_delta_poly))`;;
+      (candle_packed_delta_neg_derivative_poly coordinate)`;;
+
+print_endline "CANDLE_COMPACT_NEG_DELTA_STAGE definitions";;
 
 let candle_packed_delta_neg_derivative_poly_valid = prove
  (`!coordinate.
      coordinate < 6
      ==> candle_poly_valid_dim 6
-           (Candle_poly_neg
-             (candle_poly_diff coordinate candle_packed_delta_poly))`,
+           (candle_packed_delta_neg_derivative_poly coordinate)`,
   REPEAT STRIP_TAC THEN
-  REWRITE_TAC[candle_poly_valid_dim_def] THEN
+  ASM_CASES_TAC `coordinate = 3` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly3_def;
+       candle_poly_valid_dim_def] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  ASM_CASES_TAC `coordinate = 4` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly4_def;
+       candle_poly_valid_dim_def] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  ASM_CASES_TAC `coordinate = 5` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly5_def;
+       candle_poly_valid_dim_def] THEN ARITH_TAC;
+    ALL_TAC] THEN
+  ASM_REWRITE_TAC
+    [candle_packed_delta_neg_derivative_poly_def;
+     candle_poly_valid_dim_def] THEN
   MATCH_MP_TAC candle_poly_diff_valid THEN
   REWRITE_TAC[candle_packed_delta_poly_valid]);;
+
+print_endline "CANDLE_COMPACT_NEG_DELTA_STAGE valid";;
 
 let candle_packed_delta_neg_derivative_analytic_value = prove
  (`!env coordinate.
@@ -45,21 +170,112 @@ let candle_packed_delta_neg_derivative_analytic_value = prove
      --(candle_analytic_d coordinate env candle_packed_delta_expr)`,
   REWRITE_TAC[candle_packed_delta_neg_derivative_expr_def;
               candle_packed_delta_expr_def;
-              candle_analytic_value_def; candle_analytic_d_def;
-              candle_poly_value_list_def;
-              candle_poly_diff_value_list]);;
+              candle_analytic_value_def; candle_analytic_d_def] THEN
+  REPEAT GEN_TAC THEN
+  ASM_CASES_TAC `coordinate = 3` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly3_def;
+       candle_packed_delta_poly_def; candle_poly_diff_def;
+       candle_poly_value_list_def; candle_poly_d_list_def;
+       candle_poly_zero_real; candle_poly_one_real] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    CONV_TAC REAL_RING;
+    ALL_TAC] THEN
+  ASM_CASES_TAC `coordinate = 4` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly4_def;
+       candle_packed_delta_poly_def; candle_poly_diff_def;
+       candle_poly_value_list_def; candle_poly_d_list_def;
+       candle_poly_zero_real; candle_poly_one_real] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    CONV_TAC REAL_RING;
+    ALL_TAC] THEN
+  ASM_CASES_TAC `coordinate = 5` THENL
+   [ASM_REWRITE_TAC
+      [candle_packed_delta_neg_derivative_poly_def;
+       candle_packed_delta_neg_derivative_poly5_def;
+       candle_packed_delta_poly_def; candle_poly_diff_def;
+       candle_poly_value_list_def; candle_poly_d_list_def;
+       candle_poly_zero_real; candle_poly_one_real] THEN
+    CONV_TAC NUM_REDUCE_CONV THEN
+    CONV_TAC REAL_RING;
+    ALL_TAC] THEN
+  ASM_REWRITE_TAC
+    [candle_packed_delta_neg_derivative_poly_def;
+     candle_poly_value_list_def; candle_poly_diff_value_list]);;
+
+print_endline "CANDLE_COMPACT_NEG_DELTA_STAGE value";;
+
+(* Enumerate only the 18 consistent supported coordinate pairs.  Splitting *)
+(* all derivative conditionals independently creates contradictory branches *)
+(* and makes the ring proof reconstruction needlessly fragile.              *)
 
 let candle_packed_delta_neg_derivative_analytic_d = prove
- (`!env coordinate derivative_coordinate.
-     candle_analytic_d derivative_coordinate env
-       (candle_packed_delta_neg_derivative_expr coordinate) =
-     --(candle_analytic_dd coordinate derivative_coordinate env
-          candle_packed_delta_expr)`,
-  REWRITE_TAC[candle_packed_delta_neg_derivative_expr_def;
-              candle_packed_delta_expr_def;
-              candle_analytic_d_def; candle_analytic_dd_def;
-              candle_poly_d_list_def;
-              candle_poly_diff_d_list]);;
+ (`!v0 v1 v2 v3 v4 v5 coordinate derivative_coordinate.
+     (coordinate = 3 \/ coordinate = 4 \/ coordinate = 5) /\
+     derivative_coordinate < 6
+     ==> candle_analytic_d derivative_coordinate
+           [v0;v1;v2;v3;v4;v5]
+           (candle_packed_delta_neg_derivative_expr coordinate) =
+         --(candle_analytic_dd coordinate derivative_coordinate
+              [v0;v1;v2;v3;v4;v5]
+              candle_packed_delta_expr)`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2
+      (LABEL_TAC "coordinate_cases")
+      (LABEL_TAC "derivative_bound")) THEN
+  USE_THEN "coordinate_cases"
+    (REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  USE_THEN "derivative_bound" MP_TAC THEN
+  REWRITE_TAC
+    [ARITH_RULE
+      `d < 6 <=>
+       d = 0 \/ d = 1 \/ d = 2 \/ d = 3 \/ d = 4 \/ d = 5`] THEN
+  DISCH_THEN(REPEAT_TCL DISJ_CASES_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC
+    [candle_packed_delta_neg_derivative_expr_def;
+     candle_packed_delta_expr_def;
+     candle_analytic_d_def; candle_analytic_dd_def;
+     candle_packed_delta_neg_derivative_poly_def;
+     candle_packed_delta_neg_derivative_poly3_def;
+     candle_packed_delta_neg_derivative_poly4_def;
+     candle_packed_delta_neg_derivative_poly5_def;
+     candle_packed_delta_poly_def; candle_poly_diff_def;
+     candle_poly_d_list_def; candle_poly_dd_list_def;
+     candle_poly_value_list_def;
+     candle_poly_zero_real; candle_poly_one_real] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REWRITE_TAC[candle_poly_d_list_def; candle_poly_dd_list_def;
+              candle_poly_value_list_def;
+              candle_poly_zero_real; candle_poly_one_real] THEN
+  CONV_TAC NUM_REDUCE_CONV THEN
+  REAL_ARITH_TAC);;
+
+let candle_packed_delta_neg_derivative_analytic_gradient_six = prove
+ (`!v0 v1 v2 v3 v4 v5 coordinate.
+     (coordinate = 3 \/ coordinate = 4 \/ coordinate = 5)
+     ==> list_of_seq
+           (\derivative_coordinate.
+             candle_analytic_d derivative_coordinate
+               [v0;v1;v2;v3;v4;v5]
+               (candle_packed_delta_neg_derivative_expr coordinate)) 6 =
+         list_of_seq
+           (\derivative_coordinate.
+             --(candle_analytic_dd coordinate derivative_coordinate
+                  [v0;v1;v2;v3;v4;v5]
+                  candle_packed_delta_expr)) 6`,
+  REPEAT GEN_TAC THEN
+  DISCH_TAC THEN
+  REWRITE_TAC[LIST_EQ; LENGTH_LIST_OF_SEQ] THEN
+  X_GEN_TAC `derivative_coordinate:num` THEN DISCH_TAC THEN
+  ASM_SIMP_TAC[EL_LIST_OF_SEQ] THEN
+  MATCH_MP_TAC candle_packed_delta_neg_derivative_analytic_d THEN
+  ASM_REWRITE_TAC[]);;
+
+print_endline "CANDLE_COMPACT_NEG_DELTA_STAGE derivative";;
 
 let candle_real_packed_delta_basis_six_def = new_definition
  `candle_real_packed_delta_basis_six coordinate =
@@ -117,6 +333,10 @@ let candle_packed_delta_neg_derivative_analytic_dd_upper = prove
               candle_real_packed_delta_sum_def;
               candle_real_packed_delta_sum_aux_def;
               candle_packed_delta_neg_derivative_expr_def;
+              candle_packed_delta_neg_derivative_poly_def;
+              candle_packed_delta_neg_derivative_poly3_def;
+              candle_packed_delta_neg_derivative_poly4_def;
+              candle_packed_delta_neg_derivative_poly5_def;
               candle_packed_delta_poly_def;
               candle_analytic_dd_def; candle_poly_diff_def;
               candle_poly_dd_list_def; candle_poly_d_list_def;
@@ -142,6 +362,7 @@ if exists (fun theorem -> hyp theorem <> [])
     [candle_packed_delta_neg_derivative_poly_valid;
      candle_packed_delta_neg_derivative_analytic_value;
      candle_packed_delta_neg_derivative_analytic_d;
+     candle_packed_delta_neg_derivative_analytic_gradient_six;
      candle_packed_delta_neg_derivative_analytic_dd_upper] then
   failwith "packed source negative delta derivative analytic: assumptions";;
 
