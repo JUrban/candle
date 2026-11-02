@@ -113,6 +113,42 @@ let candle_cv_q_packed_object_source_item_mul_correct = prove
 
 let _ = print_endline "CANDLE_OBJECT_ITEM_STAGE mul";;
 
+let candle_cv_q_packed_object_item_center_value_correct = prove
+ (`!item.
+     candle_cv_q_packed_object_state_center_value
+       (candle_cv_q_packed_object_item_state_encode item) =
+     candle_cv_q_interval
+       (candle_q_packed_object_item_center_value item)`,
+  GEN_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN
+    (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC
+    [candle_cv_q_packed_object_item_state_encode_def;
+     candle_q_packed_object_item_center_value_def;
+     candle_cv_q_packed_object_state_center_value_correct]);;
+
+let candle_cv_q_packed_object_item_value_bound_correct = prove
+ (`!item.
+     candle_cv_q_packed_object_state_value_bound
+       (candle_cv_q_packed_object_item_state_encode item) =
+     candle_cv_q_interval
+       (candle_q_packed_object_item_value_bound item)`,
+  GEN_TAC THEN
+  MP_TAC
+    (SPEC `item:candle_q_packed_object_item`
+      candle_q_packed_object_item_full_cases) THEN
+  DISCH_THEN
+    (REPEAT_TCL CHOOSE_THEN SUBST_ALL_TAC) THEN
+  REWRITE_TAC
+    [candle_cv_q_packed_object_item_state_encode_def;
+     candle_q_packed_object_item_value_bound_def;
+     candle_cv_q_packed_object_state_value_bound_correct]);;
+
+let _ = print_endline "CANDLE_OBJECT_ITEM_STAGE projections";;
+
 let candle_cv_q_packed_object_source_item_inverse_correct = prove
  (`!radii center_boxes outer_boxes center_reciprocal box_reciprocal item.
      LENGTH radii = 6 /\
@@ -235,6 +271,8 @@ if exists (fun theorem -> hyp theorem <> [])
     [candle_cv_q_packed_object_source_item_neg_correct;
      candle_cv_q_packed_object_source_item_add_correct;
      candle_cv_q_packed_object_source_item_mul_correct;
+     candle_cv_q_packed_object_item_center_value_correct;
+     candle_cv_q_packed_object_item_value_bound_correct;
      candle_cv_q_packed_object_source_item_inverse_correct;
      candle_cv_q_packed_object_source_item_sqrt_correct;
      candle_cv_q_packed_object_source_item_atn_correct;
