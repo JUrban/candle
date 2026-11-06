@@ -92,7 +92,10 @@ let candle_case16594_prefix4_read_cells () =
     read (index + 1) ((lower,upper) :: result) in
   read 0 [];;
 
-let candle_case16594_prefix4_pack_coordinate lower upper =
+let candle_case16594_prefix4_pack_coordinate_with_radius_padding
+    radius_padding lower upper =
+  if radius_padding < 0 then
+    failwith "case16594 prefix4 input contract: negative radius padding";
   let midpoint =
     Num.div_num (Num.add_num lower upper) candle_case16594_prefix4_two
   and radius =
@@ -104,8 +107,10 @@ let candle_case16594_prefix4_pack_coordinate lower upper =
     Num.ceiling_num
       (Num.mul_num midpoint candle_case16594_prefix4_scale)
   and radius_upper =
-    Num.ceiling_num
-      (Num.mul_num radius candle_case16594_prefix4_scale) in
+    Num.add_num
+      (Num.ceiling_num
+        (Num.mul_num radius candle_case16594_prefix4_scale))
+      (Num.num_of_int radius_padding) in
   let outer_lower =
     Num.floor_num
       (Num.mul_num lower candle_case16594_prefix4_scale)
@@ -121,11 +126,17 @@ let candle_case16594_prefix4_pack_coordinate lower upper =
       candle_case16594_prefix4_scaled_q outer_upper),
    candle_case16594_prefix4_scaled_q radius_upper);;
 
-let candle_case16594_prefix4_pack_cell (lower,upper) =
+let candle_case16594_prefix4_pack_coordinate =
+  candle_case16594_prefix4_pack_coordinate_with_radius_padding 0;;
+
+let candle_case16594_prefix4_pack_cell_with_radius_padding
+    radius_padding (lower,upper) =
   if length lower <> 6 || length upper <> 6 then
     failwith "case16594 prefix4 input contract: cell shape drift";
   let coordinates =
-    List.map2 candle_case16594_prefix4_pack_coordinate
+    List.map2
+      (candle_case16594_prefix4_pack_coordinate_with_radius_padding
+        radius_padding)
       lower upper in
   let source_boxes =
     mk_list (map (fun (source,_,_,_) -> source) coordinates,
@@ -140,6 +151,9 @@ let candle_case16594_prefix4_pack_cell (lower,upper) =
     mk_list (map (fun (_,_,_,radius) -> radius) coordinates,
       `:((num#num)#num)`) in
   radii,mk_pair (outer_boxes,mk_pair (center_boxes,source_boxes));;
+
+let candle_case16594_prefix4_pack_cell =
+  candle_case16594_prefix4_pack_cell_with_radius_padding 0;;
 
 let candle_case16594_prefix4_cells =
   candle_case16594_prefix4_read_cells ();;

@@ -34,9 +34,12 @@ let candle_case16594_prefix_contract_read_cells count =
     read (index + 1) ((lower,upper) :: result) in
   read 0 [];;
 
-let candle_case16594_prefix_contract_data count =
+let candle_case16594_prefix_contract_data_with_radius_padding
+    radius_padding count =
   let geometry =
-    map candle_case16594_prefix4_pack_cell
+    map
+      (candle_case16594_prefix4_pack_cell_with_radius_padding
+        radius_padding)
       (candle_case16594_prefix_contract_read_cells count) in
   let radii_batches =
     mk_list
@@ -49,6 +52,9 @@ let candle_case16594_prefix_contract_data count =
          (((((num#num)#num)#((num#num)#num))list) #
           ((((num#num)#num)#((num#num)#num))list)))`) in
   radii_batches,jobs;;
+
+let candle_case16594_prefix_contract_data =
+  candle_case16594_prefix_contract_data_with_radius_padding 0;;
 
 let candle_case16594_prefix_contract_job_geometry_goal
     radii_batches jobs =
@@ -105,9 +111,11 @@ let candle_case16594_prefix_contract_input
       [ASM_REWRITE_TAC[LENGTH] THEN ARITH_TAC;
        MATCH_ACCEPT_TAC (BETA_RULE job_geometry)]);;
 
-let candle_case16594_prefix_contract_prove count =
+let candle_case16594_prefix_contract_prove_with_radius_padding
+    radius_padding count =
   let radii_batches,jobs =
-    candle_case16594_prefix_contract_data count in
+    candle_case16594_prefix_contract_data_with_radius_padding
+      radius_padding count in
   let job_geometry =
     candle_case16594_prefix_contract_job_geometry radii_batches jobs in
   let input_contract =
@@ -116,5 +124,8 @@ let candle_case16594_prefix_contract_prove count =
   if hyp job_geometry <> [] || hyp input_contract <> [] then
     failwith "case16594 prefix contract support: assumptions";
   radii_batches,jobs,job_geometry,input_contract;;
+
+let candle_case16594_prefix_contract_prove =
+  candle_case16594_prefix_contract_prove_with_radius_padding 0;;
 
 end;;
