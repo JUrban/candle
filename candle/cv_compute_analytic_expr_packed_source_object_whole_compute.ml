@@ -61,8 +61,10 @@ let candle_cv_q_packed_object_whole_jobs_check_def = define
       plan_codes source_instructions (Cexp_pair packed_cell packed_cells)
       (Cexp_pair job jobs) =
     candle_cv_bool_and
-      (candle_cv_q_packed_object_whole_job_check
-        plan_codes source_instructions packed_cell job)
+      (Cexp_eq
+        (candle_cv_q_packed_object_whole_job_check
+          plan_codes source_instructions packed_cell job)
+        (Cexp_num 1))
       (candle_cv_q_packed_object_whole_jobs_check
         plan_codes source_instructions packed_cells jobs))`;;
 
