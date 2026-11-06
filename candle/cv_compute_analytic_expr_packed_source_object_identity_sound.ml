@@ -18,6 +18,8 @@ open Candle_cv_analytic_expr_packed_source_object_program_sound;;
 open Candle_cv_analytic_expr_packed_source_object_poly_program_sound;;
 open Candle_cv_analytic_expr_packed_source_object_nonpoly_program_sound;;
 open Candle_cv_analytic_expr_packed_source_object_ordinary_program_sound;;
+open Candle_cv_analytic_expr_packed_source_object_delta_product_source_sound;;
+open Candle_cv_analytic_expr_packed_source_object_delta_neg_derivative_sound;;
 open Candle_cv_analytic_expr_packed_source_object_complete_program_sound;;
 
 let candle_q_packed_object_item_box_expr_def = define
@@ -498,5 +500,284 @@ if exists (fun theorem -> hyp theorem <> [])
 
 print_endline
   "CANDLE_CV_PACKED_SOURCE_OBJECT_IDENTITY_ORDINARY_OK DEVELOPMENT_NON_RELEASE";;
+
+let candle_q_packed_object_planned_product_result = prove
+ (`!center_boxes outer_boxes radii coordinate source certificates stack next
+      certificate_rest.
+     coordinate < 3 /\
+     candle_q_packed_object_source_planned_step center_boxes outer_boxes radii
+       (SUC coordinate) source certificates stack next certificate_rest
+     ==>
+     next =
+       CONS
+         (candle_q_packed_object_delta_product_source_item
+           radii center_boxes outer_boxes coordinate) stack /\
+     certificate_rest = certificates`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_source_planned_step_def] THEN
+  MESON_TAC
+    [NOT_SUC; SUC_INJ;
+     ARITH_RULE
+       `coordinate < 3 /\
+        (coordinate = 3 \/ coordinate = 4 \/ coordinate = 5) ==> F`]);;
+
+let candle_q_packed_object_planned_neg_result = prove
+ (`!center_boxes outer_boxes radii coordinate source certificates stack next
+      certificate_rest.
+     (coordinate = 3 \/ coordinate = 4 \/ coordinate = 5) /\
+     candle_q_packed_object_source_planned_step center_boxes outer_boxes radii
+       (SUC coordinate) source certificates stack next certificate_rest
+     ==>
+     next =
+       CONS
+         (candle_q_packed_object_delta_neg_derivative_item
+           radii center_boxes coordinate) stack /\
+     certificate_rest = certificates`,
+  REPEAT GEN_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_source_planned_step_def] THEN
+  MESON_TAC
+    [NOT_SUC; SUC_INJ;
+     ARITH_RULE
+       `coordinate < 3 /\
+        (coordinate = 3 \/ coordinate = 4 \/ coordinate = 5) ==> F`]);;
+
+let candle_q_packed_object_planned_step_erased_equal = prove
+ (`!left_center_boxes right_center_boxes left_outer_boxes right_outer_boxes
+      left_radii right_radii code source left_certificates right_certificates
+      left_stack right_stack left_next right_next left_certificate_rest
+      right_certificate_rest.
+     candle_q_packed_object_source_planned_step left_center_boxes
+       left_outer_boxes left_radii code source left_certificates left_stack
+       left_next left_certificate_rest /\
+     candle_q_packed_object_source_planned_step right_center_boxes
+       right_outer_boxes right_radii code source right_certificates right_stack
+       right_next right_certificate_rest /\
+     candle_q_packed_object_erased_stack left_stack =
+       candle_q_packed_object_erased_stack right_stack
+     ==>
+     candle_q_packed_object_erased_stack left_next =
+       candle_q_packed_object_erased_stack right_next`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "left_step")
+      (CONJUNCTS_THEN2 (LABEL_TAC "right_step")
+        (LABEL_TAC "input_identity"))) THEN
+  REMOVE_THEN "left_step" MP_TAC THEN
+  REWRITE_TAC[candle_q_packed_object_source_planned_step_def] THEN
+  DISCH_THEN STRIP_ASSUME_TAC THENL
+   [REMOVE_THEN "right_step" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_source_planned_step_def; NOT_SUC] THEN
+    DISCH_TAC THEN
+    ASM_MESON_TAC[candle_q_packed_object_ordinary_step_erased_equal];
+    REMOVE_THEN "right_step"
+      (fun right_step ->
+        MP_TAC
+          (MATCH_MP
+            (SPEC_ALL candle_q_packed_object_planned_product_result)
+            (CONJ (ASSUME `coordinate < 3`)
+              (SUBS [ASSUME `code = SUC coordinate`] right_step)))) THEN
+    DISCH_THEN STRIP_ASSUME_TAC THEN
+    REMOVE_THEN "input_identity" MP_TAC THEN
+    ASM_REWRITE_TAC
+      [candle_q_packed_object_erased_stack_def;
+       candle_q_packed_object_delta_product_source_item_def;
+       candle_q_packed_object_item_box_expr_def;
+       LET_DEF; LET_END_DEF; MAP; CONS_11];
+    SUBGOAL_THEN
+      `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+      (LABEL_TAC "neg_coordinate") THENL
+     [ASM_REWRITE_TAC[];
+      REMOVE_THEN "right_step"
+        (fun right_step ->
+          MP_TAC
+            (MATCH_MP
+              (SPEC_ALL candle_q_packed_object_planned_neg_result)
+              (CONJ
+                (ASSUME
+                  `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`)
+                (SUBS [ASSUME `code = SUC coordinate`] right_step)))) THEN
+      DISCH_THEN STRIP_ASSUME_TAC THEN
+      REMOVE_THEN "input_identity" MP_TAC THEN
+      ASM_REWRITE_TAC
+        [candle_q_packed_object_erased_stack_def;
+         candle_q_packed_object_delta_neg_derivative_item_def;
+         candle_q_packed_object_item_box_expr_def;
+         LET_DEF; LET_END_DEF; MAP; CONS_11]];
+    SUBGOAL_THEN
+      `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+      (LABEL_TAC "neg_coordinate") THENL
+     [ASM_REWRITE_TAC[];
+      REMOVE_THEN "right_step"
+        (fun right_step ->
+          MP_TAC
+            (MATCH_MP
+              (SPEC_ALL candle_q_packed_object_planned_neg_result)
+              (CONJ
+                (ASSUME
+                  `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`)
+                (SUBS [ASSUME `code = SUC coordinate`] right_step)))) THEN
+      DISCH_THEN STRIP_ASSUME_TAC THEN
+      REMOVE_THEN "input_identity" MP_TAC THEN
+      ASM_REWRITE_TAC
+        [candle_q_packed_object_erased_stack_def;
+         candle_q_packed_object_delta_neg_derivative_item_def;
+         candle_q_packed_object_item_box_expr_def;
+         LET_DEF; LET_END_DEF; MAP; CONS_11]];
+    SUBGOAL_THEN
+      `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`
+      (LABEL_TAC "neg_coordinate") THENL
+     [ASM_REWRITE_TAC[];
+      REMOVE_THEN "right_step"
+        (fun right_step ->
+          MP_TAC
+            (MATCH_MP
+              (SPEC_ALL candle_q_packed_object_planned_neg_result)
+              (CONJ
+                (ASSUME
+                  `coordinate = 3 \/ coordinate = 4 \/ coordinate = 5`)
+                (SUBS [ASSUME `code = SUC coordinate`] right_step)))) THEN
+      DISCH_THEN STRIP_ASSUME_TAC THEN
+      REMOVE_THEN "input_identity" MP_TAC THEN
+      ASM_REWRITE_TAC
+        [candle_q_packed_object_erased_stack_def;
+         candle_q_packed_object_delta_neg_derivative_item_def;
+         candle_q_packed_object_item_box_expr_def;
+         LET_DEF; LET_END_DEF; MAP; CONS_11]]]);;
+
+if exists (fun theorem -> hyp theorem <> [])
+    [candle_q_packed_object_planned_product_result;
+     candle_q_packed_object_planned_neg_result;
+     candle_q_packed_object_planned_step_erased_equal] then
+  failwith "packed object identity: planned step assumptions";;
+
+print_endline
+  "CANDLE_CV_PACKED_SOURCE_OBJECT_IDENTITY_PLANNED_OK DEVELOPMENT_NON_RELEASE";;
+
+let candle_q_packed_object_planned_program_erased_equal = prove
+ (`!codes sources left_center_boxes right_center_boxes left_outer_boxes
+      right_outer_boxes left_radii right_radii left_certificates
+      right_certificates left_stack right_stack left_result right_result
+      left_certificate_rest right_certificate_rest.
+     candle_q_packed_object_source_planned_program_run left_center_boxes
+       left_outer_boxes left_radii codes sources left_certificates left_stack
+       left_result left_certificate_rest /\
+     candle_q_packed_object_source_planned_program_run right_center_boxes
+       right_outer_boxes right_radii codes sources right_certificates
+       right_stack right_result right_certificate_rest /\
+     candle_q_packed_object_erased_stack left_stack =
+       candle_q_packed_object_erased_stack right_stack
+     ==>
+     candle_q_packed_object_erased_stack left_result =
+       candle_q_packed_object_erased_stack right_result`,
+  LIST_INDUCT_TAC THENL
+   [GEN_TAC THEN
+    MP_TAC (ISPEC `sources:candle_analytic_instruction list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THEN
+    REPEAT GEN_TAC THEN
+    REWRITE_TAC
+      [candle_q_packed_object_source_planned_program_run_def] THEN
+    MESON_TAC[];
+    POP_ASSUM (LABEL_TAC "induction_hypothesis") THEN
+    GEN_TAC THEN
+    MP_TAC (ISPEC `sources:candle_analytic_instruction list` list_CASES) THEN
+    DISCH_THEN
+      (DISJ_CASES_THEN2 SUBST_ALL_TAC
+        (CHOOSE_THEN (CHOOSE_THEN SUBST_ALL_TAC))) THENL
+     [REPEAT GEN_TAC THEN
+      REWRITE_TAC
+        [candle_q_packed_object_source_planned_program_run_def];
+      REPEAT GEN_TAC THEN
+      REWRITE_TAC
+        [candle_q_packed_object_source_planned_program_run_def] THEN
+      DISCH_THEN
+        (CONJUNCTS_THEN2
+          (REPEAT_TCL CHOOSE_THEN
+            (CONJUNCTS_THEN2 (LABEL_TAC "left_head")
+              (LABEL_TAC "left_tail")))
+          (CONJUNCTS_THEN2
+            (REPEAT_TCL CHOOSE_THEN
+              (CONJUNCTS_THEN2 (LABEL_TAC "right_head")
+                (LABEL_TAC "right_tail")))
+            (LABEL_TAC "input_identity"))) THEN
+      REMOVE_THEN "left_head"
+        (fun left_head ->
+          REMOVE_THEN "right_head"
+            (fun right_head ->
+              USE_THEN "input_identity"
+                (fun input_identity ->
+                  MP_TAC
+                    (MATCH_MP
+                      (SPEC_ALL
+                        candle_q_packed_object_planned_step_erased_equal)
+                      (CONJ left_head
+                        (CONJ right_head input_identity)))))) THEN
+      DISCH_THEN (LABEL_TAC "next_identity") THEN
+      REMOVE_THEN "left_tail"
+        (fun left_tail ->
+          REMOVE_THEN "right_tail"
+            (fun right_tail ->
+              USE_THEN "next_identity"
+                (fun next_identity ->
+                  USE_THEN "induction_hypothesis"
+                    (fun induction_hypothesis ->
+                      MATCH_ACCEPT_TAC
+                        (MATCH_MP (SPEC_ALL induction_hypothesis)
+                          (CONJ left_tail
+                            (CONJ right_tail next_identity)))))))]]);;
+
+if hyp candle_q_packed_object_planned_program_erased_equal <> [] then
+  failwith "packed object identity: planned program assumptions";;
+
+print_endline
+  "CANDLE_CV_PACKED_SOURCE_OBJECT_IDENTITY_PROGRAM_INDUCTION_OK DEVELOPMENT_NON_RELEASE";;
+
+let candle_q_packed_object_planned_singleton_expr_equal = prove
+ (`!codes sources left_center_boxes right_center_boxes left_outer_boxes
+      right_outer_boxes left_radii right_radii left_certificates
+      right_certificates left_item right_item left_certificate_rest
+      right_certificate_rest.
+     candle_q_packed_object_source_planned_program_run left_center_boxes
+       left_outer_boxes left_radii codes sources left_certificates []
+       [left_item] left_certificate_rest /\
+     candle_q_packed_object_source_planned_program_run right_center_boxes
+       right_outer_boxes right_radii codes sources right_certificates []
+       [right_item] right_certificate_rest
+     ==>
+     candle_analytic_erase_sqrt_certificates
+       (candle_q_packed_object_item_box_expr left_item) =
+     candle_analytic_erase_sqrt_certificates
+       (candle_q_packed_object_item_box_expr right_item)`,
+  REPEAT GEN_TAC THEN
+  DISCH_THEN
+    (CONJUNCTS_THEN2 (LABEL_TAC "left_run") (LABEL_TAC "right_run")) THEN
+  REMOVE_THEN "left_run"
+    (fun left_run ->
+      REMOVE_THEN "right_run"
+        (fun right_run ->
+          let rule =
+            SPEC_ALL candle_q_packed_object_planned_program_erased_equal in
+          let antecedent,_ = dest_imp (concl rule) in
+          let _,right_and_identity = dest_conj antecedent in
+          let _,input_identity_pattern = dest_conj right_and_identity in
+          let erased_left,_ = dest_eq input_identity_pattern in
+          let erased_function = rator erased_left in
+          let _,left_run_arguments = strip_comb (concl left_run) in
+          let left_stack = el 6 left_run_arguments in
+          let input_identity =
+            REFL (mk_comb (erased_function,left_stack)) in
+          MP_TAC
+            (MATCH_MP rule
+              (CONJ left_run (CONJ right_run input_identity))))) THEN
+  REWRITE_TAC
+    [candle_q_packed_object_erased_stack_def; MAP; CONS_11]);;
+
+if hyp candle_q_packed_object_planned_singleton_expr_equal <> [] then
+  failwith "packed object identity: singleton expression assumptions";;
+
+print_endline
+  "CANDLE_CV_PACKED_SOURCE_OBJECT_IDENTITY_PROGRAM_OK DEVELOPMENT_NON_RELEASE";;
 
 end;;
